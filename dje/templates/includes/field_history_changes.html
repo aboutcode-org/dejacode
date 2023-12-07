@@ -1,0 +1,27 @@
+{% load humanize i18n %}
+
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+
+{% if values %}
+  <dt class="col-sm-2 text-end pt-2 pe-0">
+    {% if help_text %}<span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{% trans help_text %}">{% endif %}
+    {% trans label %}
+    {% if help_text %}</span>{% endif %}
+  </dt>
+  <dd class="col-sm-10 pt-2">
+    <ul class="timeline pt-1">
+      {% for history_entry in values %}
+        {% with change_message=history_entry.get_change_message %}
+          <li class="timeline-item {% if 'Added' in change_message %}timeline-item-addition{% elif 'Deleted' in change_message %}timeline-item-deletion{% endif %} mb-3">
+            {{ change_message }}
+            <small class="text-muted-darker d-block" title="{{ history_entry.action_time|date:'N j, Y, f A' }}">
+              {{ history_entry.action_time|naturaltime }} by <strong>{{ history_entry.user }}</strong>
+            </small>
+          </li>
+        {% endwith %}
+      {% endfor %}
+    </ul>
+  </dd>
+{% endif %}
+
+{% if forloop.last %}</dl>{% endif %}

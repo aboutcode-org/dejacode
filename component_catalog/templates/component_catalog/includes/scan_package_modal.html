@@ -1,0 +1,23 @@
+<div class="modal" tabindex="-1" role="dialog" id="scan-package-modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Scan Package</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light">
+        You are about to initiate a scan on the ScanCode.io server for this
+        Package, based on the URL defined for this Package.<br><br>
+        <strong>Note that this may take some time to complete.</strong><br><br>
+        You can view the status of all the scans by selecting the
+        <a target="_blank" href="{% url 'component_catalog:scan_list' %}">Scans</a> option
+        from the DejaCode Tools dropdown menu, where you can also select each Package in the list
+        to view scan results details in the "Scan" tab of that Package.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <a id="submit-scan-request" href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}" class="btn btn-success">Submit Scan Request</a>
+      </div>
+    </div>
+  </div>
+</div>

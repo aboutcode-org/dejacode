@@ -1,0 +1,45 @@
+{% extends 'object_list_base.html' %}
+{% load i18n %}
+
+{% block page_title %}Scans{% endblock %}
+
+{% block top-right-buttons %}
+  {{ block.super }}
+  {% if has_add_package_permission %}
+    <div class="btn-group">
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-package-modal">Add Package</button>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block nav-list-head %}
+  <li class="nav-item">
+    <a class="nav-link{% if "created_by_me" not in request.GET %} active{% endif %}" href="{{ request.path }}?all=true">{% trans 'All' %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link{% if "created_by_me" in request.GET %} active{% endif %}" href="?created_by_me=1">{% trans 'Created by me' %}</a>
+  </li>
+  <li class="nav-item ms-3 mt-1">
+    {% include 'pagination/object_list_pagination.html' %}
+  </li>
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% if has_add_package_permission %}
+    {% include 'component_catalog/includes/add_package_modal.html' %}
+  {% endif %}
+  {% include 'component_catalog/includes/scan_delete_modal.html' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $('.scan_delete_link').on('click', function() {
+        let delete_url = $(this).data('delete-url');
+        $('#scan-delete-modal a.delete-confirm').attr('href', delete_url);
+      });
+    });
+  </script>
+{% endblock %}

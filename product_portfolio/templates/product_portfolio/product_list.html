@@ -1,0 +1,59 @@
+{% extends "object_list_base.html" %}
+{% load i18n %}
+
+{% block top-right-buttons %}
+  <div class="btn-group">
+    <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled" data-bs-toggle="tooltip"><i class="far fa-clone"></i> {% trans "Compare" %}</button>
+  </div>
+  {{ block.super }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script>
+    $(document).ready(function () {
+        let compare_button = $('#compare_button');
+
+        let handle_compare_button_display = function () {
+            let count = $('tbody input[type="checkbox"]:checked').length;
+            if (count === 2) {
+                compare_button.removeClass('disabled');
+                compare_button.attr('data-bs-title', '');
+            }
+            else {
+                compare_button.addClass('disabled');
+                compare_button.attr('data-bs-title', 'Select first two products to compare, then click this button');
+            }
+        };
+
+        $('tbody input[type="checkbox"]').click(function() {
+            handle_compare_button_display();
+        });
+
+        $('.select-all').click(function() {
+            handle_compare_button_display();
+        });
+
+        // Runs on load to support the "back" button of the browser
+        handle_compare_button_display();
+
+        compare_button.click(function(event) {
+            event.preventDefault();
+            let checked = $('tbody input[type="checkbox"]:checked');
+            if (checked.length === 2) {
+                let left = $(checked[0]);
+                let right = $(checked[1]);
+
+                // Swap variables to display oldest on the left
+                if (String(left.data('version')) > String(right.data('version'))) {
+                    [left, right] = [right, left];
+                }
+
+                let current_href = $(this).attr('href');
+                let parameters = left.attr('value') + '/' + right.attr('value') + '/';
+                $(location).attr('href', current_href + parameters);
+            }
+        });
+    });
+    </script>
+{% endblock %}

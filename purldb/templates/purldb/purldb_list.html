@@ -1,0 +1,28 @@
+{% extends 'object_list_base.html' %}
+{% load i18n %}
+
+{% block page_title %}{% trans "PurlDB" %}{% endblock %}
+
+{% block nav-list-head %}
+  {{ block.super }}
+  <li class="nav-item mt-1 ms-3">
+    <form class="form-search">
+      <div class="input-group input-group-sm">
+        <input type="text" class="form-control" name="q" value="{{ search_query|default_if_none:'' }}" aria-label="Search">
+        <button class="btn btn-outline-dark" type="submit">Search</button>
+      </div>
+    </form>
+  </li>
+{% endblock %}
+
+{% block top-right-buttons %}
+  {{ block.super }}
+   <div class="btn-group">
+    <button type="button" class="btn btn-outline-dark {% if filter.form.changed_data %}active{% endif %}" data-bs-toggle="modal" data-bs-target="#purldb-filterset-modal"><i class="fas fa-filter"></i> Filters</button>
+  </div>
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% include 'purldb/includes/filterset_modal.html' %}
+{% endblock %}

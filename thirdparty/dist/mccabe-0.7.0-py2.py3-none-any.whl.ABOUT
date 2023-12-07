@@ -1,0 +1,14 @@
+about_resource: mccabe-0.7.0-py2.py3-none-any.whl
+name: mccabe
+version: 0.7.0
+download_url: https://files.pythonhosted.org/packages/27/1a/1f68f9ba0c207934b35b86a8ca3aad8395a3d6dd7921c0686e23853ff5a9/mccabe-0.7.0-py2.py3-none-any.whl
+package_url: pkg:pypi/mccabe@0.7.0
+license_expression: mit
+copyright: Copyright mccabe project contributors
+attribute: yes
+checksum_md5: 9e5647aa3a016a0e27b50403efc5d8e7
+checksum_sha1: 6c3765aafe845915615226aba7f86764de4bae7e
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

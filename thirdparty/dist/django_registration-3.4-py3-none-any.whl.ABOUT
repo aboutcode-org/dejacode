@@ -1,0 +1,16 @@
+about_resource: django_registration-3.4-py3-none-any.whl
+name: django-registration
+version: '3.4'
+download_url: https://files.pythonhosted.org/packages/06/3a/455455a208cd38c7fececec136e0de4a848004a7dafe4d62e55566dcbbfe/django_registration-3.4-py3-none-any.whl
+homepage_url: https://pypi.org/project/django-registration/3.4/
+package_url: pkg:pypi/django-registration@3.4
+license_expression: bsd-new
+copyright: Copyright django-registration project contributors
+attribute: yes
+owner: django-registration Project
+checksum_md5: 88953470aad0f58b43e50c48cc713d6a
+checksum_sha1: f02b07990bef0a3f565e1bda5e00f5c3946f5829
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

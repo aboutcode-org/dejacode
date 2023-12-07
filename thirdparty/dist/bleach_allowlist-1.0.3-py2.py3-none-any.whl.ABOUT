@@ -1,0 +1,17 @@
+about_resource: bleach_allowlist-1.0.3-py2.py3-none-any.whl
+name: bleach-allowlist
+version: 1.0.3
+download_url: https://files.pythonhosted.org/packages/e8/6b/927c955e350468e4c1a2a7fc73ef2d6197f66ab88f21fc259f3b543db3ed/bleach_allowlist-1.0.3-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/bleach-allowlist/1.0.3/
+package_url: pkg:pypi/bleach-allowlist@1.0.3
+license_expression: bsd-new
+copyright: Copyright (c) Charlie DeTar
+notice_file: bleach_allowlist-1.0.3-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Charlie DeTar
+checksum_md5: 47ca98877dd9e7d33d6e0fcd78725fd6
+checksum_sha1: fdf65fbedfd383c8e15bc4d93f0087b8bb22f2f0
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

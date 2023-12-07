@@ -1,0 +1,51 @@
+{% load i18n %}
+{% load humanize %}
+{% load urlize_target_blank from dje_tags %}
+<section id="packages_section">
+  {% if results.object_list %}
+    <h3>
+      {% trans 'Package' %}
+      {% if is_reference_data %}
+        <span class="badge text-bg-warning">{% trans 'Reference Data' %}</span>
+      {% endif %}
+      <small class="text-muted">
+        {{ results.paginator_count|intcomma }} result{{ results.paginator_count|pluralize }} for this search.
+        {% if is_reference_data %}
+          Click <a href="{% url 'component_catalog:package_list' reference_dataspace %}?q={{ search_query }}">here</a> to see the full list.
+        {% else %}
+          Click <a href="{% url 'component_catalog:package_list' %}?q={{ search_query }}">here</a> to see the full list.
+        {% endif %}
+      </small>
+    </h3>
+    <table class="table table-bordered table-striped table-md">
+      <thead>
+        <tr>
+          <th>Identifier</th>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Version</th>
+          <th>License</th>
+          <th>Download URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in results.object_list|slice:':20' %}
+          <tr>
+            <td>
+              <strong>
+                <a href="{{ object.details_url }}">{{ object }}</a>
+              </strong>
+            </td>
+            <td>{{ object.type|default_if_none:"" }}</td>
+            <td>{{ object.name|default_if_none:"" }}</td>
+            <td>{{ object.version|default_if_none:"" }}</td>
+            <td style="max-width: 200px;">{{ object.license_expression_linked|default_if_none:"" }}</td>
+            <td class="text-truncate" style="max-width: 200px;">{{ object.download_url|urlize_target_blank }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <h3>{% trans 'Package' %} <small class="text-muted">No packages found.</small></h3>
+  {% endif %}
+</section>

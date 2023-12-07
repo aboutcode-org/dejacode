@@ -1,0 +1,12 @@
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+{% if values.full_width %}
+  <dt></dt>
+{% else %}
+  <dt class="col-sm-2 text-end pt-2 pe-0">{{ label }}</dt>
+{% endif %}
+<dd class="col-sm-{% if values.full_width %}12{% else %}10{% endif %}">
+  <div class="alert {{ values.alert_class }} m-0" role="alert">
+    <p class="m-0">{{ values.message }}</p>
+  </div>
+</dd>
+{% if forloop.last %}</dl>{% endif %}

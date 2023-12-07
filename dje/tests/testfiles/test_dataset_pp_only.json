@@ -1,0 +1,316 @@
+[
+{
+  "model": "component_catalog.package",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "b91a9a06-b709-45a4-ac8e-a57bde0c8f38",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "type": "",
+    "namespace": "",
+    "name": "",
+    "version": "",
+    "qualifiers": "",
+    "subpath": "",
+    "holder": "",
+    "keywords": [],
+    "cpe": "",
+    "homepage_url": "",
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "sha256": "",
+    "sha512": "",
+    "filename": "systemu-2.5.2.gem",
+    "download_url": "https://s3.amazonaws.com/production.s3.rubygems.org/gems/systemu-2.5.2.gem",
+    "sha1": "",
+    "md5": "",
+    "size": null,
+    "release_date": null,
+    "primary_language": "",
+    "description": "",
+    "project": "",
+    "notes": "",
+    "license_expression": "",
+    "copyright": "",
+    "notice_text": "",
+    "author": "",
+    "dependencies": "",
+    "repository_homepage_url": "",
+    "repository_download_url": "",
+    "api_data_url": "",
+    "declared_license": "",
+    "datasource_id": "",
+    "file_references": [],
+    "parties": []
+  }
+},
+{
+  "model": "product_portfolio.productstatus",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "addd9c5d-a5ec-48ec-a565-ddb81092f49d",
+    "default_on_addition": false,
+    "label": "Approved",
+    "text": "Approved",
+    "request_to_generate": null
+  }
+},
+{
+  "model": "product_portfolio.product",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "565737ed-ab23-46eb-bbcf-185da2da50dc",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "keywords": [
+      "Framework"
+    ],
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "name": "Starship Widget Framework",
+    "version": "7.1",
+    "owner": [
+      "nexB",
+      "0b9931db-db6e-49d1-b3f1-218cb302b20c"
+    ],
+    "release_date": "2012-12-21",
+    "description": "SWF is a web application that allows users to easily access all their online tools from one location. Not only can users access websites and applications with widgets, they can group them and configure some applications to interact with each other via widget intents.",
+    "copyright": "Copyright (c) 2014 Components Unlimited\r\nSoftware (c) 2012 Next Century Corporation  \r\nPortions (c) 2009 TexelTek Inc.  ",
+    "homepage_url": "https://www.owfgoss.org/",
+    "primary_language": "Java",
+    "admin_notes": "",
+    "notice_text": "Starship Widget Framework (SWF) \nis an adaptation of the open source\nOZONE Widget Framework (OWF)\n\nPortions of this software were developed under contract to the U.S. Government, and are made available pursuant to the DFARS clauses cited below.\n\nCopyright 2009-2012, Next Century Corporation.\nThe U.S. Government has Unlimited Rights in this computer software pursuant to\nthe clause DFARS 252.227-7014 of contract no. H98230-07-C-0614. Any\nreproduction of this computer software, or portions thereof, marked with this\nlegend must also reproduce these markings.\n\nCopyright 2009-2010, Texeltek Inc.\nThe U.S. Government has Unlimited Rights in this computer software pursuant to\nthe clause DFARS 252.227-7014 of contract no. H98230-07-C-0046. Any\nreproduction of this computer software, or portions thereof, marked with this\nlegend must also reproduce these markings.\n\nThis product further may include software developed by other individuals, entities, or agencies.  These groups have granted rights to the OWFGOSS Board to apply that code in the OWF or Marketplace code baselines, without further claim or copyright.\n\nThe product further references the following libraries or capabilities which are NOT included as part of this copyright statement, and are hereby listed with their license terms.\n* Ext JS, developed by Sencha, licensed under GNU General Public License, Version 3, http://www.gnu.org/licenses/gpl.html \n* Grails and its supporting capabilities, including Groovy, Hibernate, and Spring.  Available at grails.org, licensed Apache License, Version 2.0, http://grails.org/License\n* YUI Compressor Javascript/CSS compressor , http://yuilibrary.com/license/ (based on BSD license)\n* Dojo cross-domain library, Dojo BSD License, http://dojotoolkit.org/license\n* Shindig messaging library, http://shindig.apache.org/, Apache License, Version 2.0, http://www.apache.org/licenses/\n* JQuery Ajax/eventing library, http://jquery.com, based on MIT License, https://raw.github.com/jquery/jquery/master/MIT-LICENSE.txt\n* Spring Security jars, licensed under Apache License, Version 2, http://www.apache.org/licenses/ \n* log4javascript logging library, http://log4javascript.org,  Apache License, Version 2.0, http://www.apache.org/licenses/\n* stubconsole logging utility, http://getfirebug.com/firebug/firebugx.js, Firebug BSD License, http://fbug.googlecode.com/svn/trunk/license.txt\n* UXMedia, Ext Flash / Flex components, see http://code.google.com/p/uxmedia.  GNU General Public License, Version 3, http://www.gnu.org/licenses/gpl.html \n",
+    "license_expression": "commercial-option",
+    "is_active": true,
+    "configuration_status": [
+      "nexB",
+      "addd9c5d-a5ec-48ec-a565-ddb81092f49d"
+    ],
+    "contact": ""
+  }
+},
+{
+  "model": "product_portfolio.productrelationstatus",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "bb2ab052-387f-40af-96fe-56a030e01b8d",
+    "default_on_addition": false,
+    "label": "Approved in this context",
+    "text": "The component is being used in a package or product in a way that is compliant with the license terms and with company policy. If the component authors offered a choice of licenses, then the license most compliant with company policy has been chosen. "
+  }
+},
+{
+  "model": "product_portfolio.productitempurpose",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "ab2ab052-387f-40af-96fe-56a030e01b8d",
+    "default_on_addition": false,
+    "icon": "",
+    "color_code": "",
+    "label": "Core",
+    "text": "The functional code used to execute the application features of the product."
+  }
+},
+{
+  "model": "product_portfolio.productcomponent",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "dc39ab30-d521-4dd4-a281-8742a5f83770",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "notes": "",
+    "is_deployed": true,
+    "is_modified": false,
+    "extra_attribution_text": "",
+    "package_paths": "/owf/log4j/",
+    "product": [
+      "nexB",
+      "565737ed-ab23-46eb-bbcf-185da2da50dc"
+    ],
+    "review_status": [
+      "nexB",
+      "bb2ab052-387f-40af-96fe-56a030e01b8d"
+    ],
+    "purpose": [
+      "nexB",
+      "ab2ab052-387f-40af-96fe-56a030e01b8d"
+    ],
+    "feature": "",
+    "issue_ref": "",
+    "component": null,
+    "license_expression": "apache-2.0",
+    "name": "c1",
+    "version": "",
+    "owner": "",
+    "copyright": "",
+    "homepage_url": "",
+    "download_url": "",
+    "primary_language": ""
+  }
+},
+{
+  "model": "product_portfolio.productpackage",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "7204dec9-63d7-40c0-b745-b48776afe189",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "notes": "",
+    "is_deployed": true,
+    "is_modified": false,
+    "extra_attribution_text": "",
+    "package_paths": "",
+    "product": [
+      "nexB",
+      "565737ed-ab23-46eb-bbcf-185da2da50dc"
+    ],
+    "review_status": [
+      "nexB",
+      "bb2ab052-387f-40af-96fe-56a030e01b8d"
+    ],
+    "purpose": [
+      "nexB",
+      "ab2ab052-387f-40af-96fe-56a030e01b8d"
+    ],
+    "feature": "",
+    "issue_ref": "",
+    "package": [
+      "nexB",
+      "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
+    ],
+    "license_expression": ""
+  }
+},
+{
+  "model": "product_portfolio.productassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "38286efe-7de9-4ad7-a948-cbf31483895c",
+    "product": [
+      "nexB",
+      "565737ed-ab23-46eb-bbcf-185da2da50dc"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "product_portfolio.productcomponentassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "c3eda1d7-fa38-43ae-a78b-84a008be443b",
+    "productcomponent": [
+      "nexB",
+      "dc39ab30-d521-4dd4-a281-8742a5f83770"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "product_portfolio.productpackageassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "fde71922-c015-42c9-91ec-699ce57c9caf",
+    "productpackage": [
+      "nexB",
+      "7204dec9-63d7-40c0-b745-b48776afe189"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "product_portfolio.codebaseresource",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "4ec1aba0-04cb-434c-8d3d-864281d7d9f1",
+    "created_date": "2018-01-30T08:26:43.832",
+    "last_modified_date": "2018-01-30T11:28:46.029",
+    "product": [
+      "nexB",
+      "565737ed-ab23-46eb-bbcf-185da2da50dc"
+    ],
+    "path": "/sde/dewey.ko",
+    "is_deployment_path": true,
+    "product_component": null,
+    "product_package": null,
+    "additional_details": {},
+    "admin_notes": ""
+  }
+},
+{
+  "model": "product_portfolio.codebaseresource",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "34311f4e-51c5-4443-86d9-2e1b218ebb3b",
+    "created_date": "2018-01-30T08:23:57.960",
+    "last_modified_date": "2018-01-30T11:35:38.631",
+    "product": [
+      "nexB",
+      "565737ed-ab23-46eb-bbcf-185da2da50dc"
+    ],
+    "path": "/sde/huey.ko",
+    "is_deployment_path": false,
+    "product_component": null,
+    "product_package": null,
+    "additional_details": {},
+    "admin_notes": ""
+  }
+},
+{
+  "model": "product_portfolio.codebaseresourceusage",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "3b997a71-02b6-4fe7-9a26-1da5257c52d5",
+    "created_date": "2018-01-30T11:31:04.965",
+    "last_modified_date": "2018-01-30T11:31:04.965",
+    "deployed_from": [
+      "nexB",
+      "34311f4e-51c5-4443-86d9-2e1b218ebb3b"
+    ],
+    "deployed_to": [
+      "nexB",
+      "4ec1aba0-04cb-434c-8d3d-864281d7d9f1"
+    ]
+  }
+}
+]

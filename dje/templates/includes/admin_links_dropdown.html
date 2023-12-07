@@ -1,0 +1,22 @@
+{% load i18n %}
+{% if show_admin_links %}
+  <div class="btn-group">
+    <button class="btn btn-outline-primary dropdown-toggle{% if extra_btn_class %} {{ extra_btn_class }}{% endif %}" type="button" data-bs-toggle="dropdown">
+      <i class="far fa-edit"></i> Admin
+    </button>
+    <div class="dropdown-menu dropdown-menu-end">
+      {% if has_add_permission %}
+        <a href="{{ addition_url }}" class="dropdown-item" target="_blank">Add {% trans opts.verbose_name %}</a>
+      {% endif %}
+      {% if has_change_permission %}
+        <a href="{{ changelist_url }}" class="dropdown-item" target="_blank">Browse {% trans opts.verbose_name_plural %}</a>
+      {% endif %}
+      {% if import_url and has_add_permission %}
+        <a href="{{ import_url }}" class="dropdown-item" target="_blank">Import {% trans opts.verbose_name_plural %}</a>
+      {% endif %}
+      {% if show_license_policy_dump_link %}
+        <a href="{% url 'admin:policy_usagepolicy_license_dump' %}" class="dropdown-item" target="_blank">{% trans 'Download policies as YAML' %}</a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

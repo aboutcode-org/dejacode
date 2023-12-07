@@ -1,0 +1,13 @@
+{# WARNING: This template needs to be a standalone, see #8394 #}
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{% trans 'Server error (500)' %}</title>
+  </head>
+  <body>
+    <h1>{% trans 'Server Error <em>(500)</em>' %}</h1>
+    <p>{% trans "There's been an error. It's been reported to the site administrators via e-mail." %}</p>
+  </body>
+</html>

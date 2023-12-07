@@ -1,0 +1,34 @@
+{% extends "admin/set_policy_base.html" %}
+
+{% block content_title %}
+    <h1>Set usage policy from components</h1>
+{% endblock %}
+
+{% block table %}
+    <table class="grp-table">
+        <tr>
+            <th>Subcomponent relationship</th>
+            <th>Parent</th>
+            <th>Child</th>
+            <th>Usage policy</th>
+            <th>Policy from child component</th>
+            <th>License expression</th>
+            <th><input type="checkbox" id="action-toggle" title=""></th>
+        </tr>
+        {% for subcomponent in form.get_objects %}
+            <tr class="grp-row-{% if subcomponent.policy_from_child_component and subcomponent.usage_policy != subcomponent.policy_from_child_component %}even{% else %}odd{% endif %}">
+                <td><a href="{{ subcomponent.get_admin_url }}" target="_blank">{{ subcomponent }}</a></td>
+                <td><a href="{{ subcomponent.parent.get_admin_url }}" target="_blank">{{ subcomponent.parent }}</a></td>
+                <td><a href="{{ subcomponent.child.get_admin_url }}" target="_blank">{{ subcomponent.child }}</a></td>
+                <td>{{ subcomponent.usage_policy|default:'' }}</td>
+                <td>{{ subcomponent.policy_from_child_component|default:'' }}</td>
+                <td>{{ subcomponent.license_expression }}</td>
+                <td>
+                    {% if subcomponent.policy_from_child_component and subcomponent.usage_policy != subcomponent.policy_from_child_component %}
+                        <input type="checkbox" name="checked_id_{{ subcomponent.id }}" class="enabler">
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

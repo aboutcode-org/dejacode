@@ -1,0 +1,212 @@
+{% extends 'bootstrap_base.html' %}
+
+{% load i18n static %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block page_title %}{% trans verbose_name_plural|title %}: {{ object }}{% endblock %}
+
+{% block main_class %}white-background{% endblock %}
+
+{% block content %}
+  <div class="header container">
+    <div class="header-body py-0 border-bottom-0">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            <a class="me-1" href="{% inject_preserved_filters list_url %}" title="Return to {% trans verbose_name %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans verbose_name_plural|title %}</a>
+            {% if referer_link %}
+              / <span class="mx-1">{{ referer_link|safe }}</span>
+            {% endif %}
+            {% if is_reference_data %}
+              {% include 'includes/reference_data_label.html' %}
+            {% endif %}
+          </div>
+          <h1 class="header-title break-word">
+            {% block header_title %}
+              {{ object }}
+              <small class="ms-1" style="font-size: 70%">
+                {% if is_user_dataspace %}
+                  {% if has_change_permission %}
+                    {% with object.get_change_url as object_change_url %}
+                      <a href="{{ object_change_url }}" data-bs-toggle="tooltip" title="Edit"{% if 'admin' in object_change_url %} target="_blank"{% endif %} aria-label="Edit object"><i class="far fa-edit"></i></a>
+                    {% endwith %}
+                  {% endif %}
+                  {% with object.get_delete_url as object_delete_url %}
+                    {% if has_delete_permission and object_delete_url %}
+                      <a href="{{ object_delete_url }}" data-bs-toggle="tooltip" title="Delete" aria-label="Delete object"><i class="far fa-trash-alt ms-1"></i></a>
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
+              </small>
+            {% endblock %}
+          </h1>
+        </div>
+        <div class="col-auto pe-0">
+          {% block pager-toolbar %}
+            {% if copy_or_update_link %}
+              <a class="btn btn-primary" href="{{ copy_or_update_link.url }}" target="_blank"><i class="fas fa-copy"></i> {% trans copy_or_update_link.label %}</a>
+            {% endif %}
+            {# Workflow Request: request_templates will always be empty if the feature is not enabled. #}
+            {% if request_templates %}
+              <div class="dropdown btn-group">
+                <a class="btn btn-request dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#">{% trans 'Requests' %}</a>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <div class="dropdown-header">Request forms</div>
+                  {% for request_template in request_templates %}
+                    <a class="dropdown-item" href="{{ request_template.get_absolute_url }}?content_object_id={{ object.id }}">{{ request_template.name }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            <div class="btn-group">
+              {% if previous_object_url %}
+                <a class="btn btn-outline-secondary" href="{{ previous_object_url }}" id="previous-button" data-bs-toggle="tooltip" title="Previous {% trans verbose_name %}" aria-label="Previous object"><i class="fas fa-arrow-left"></i></a>
+              {% endif %}
+              {% if next_object_url %}
+                <a class="btn btn-outline-secondary" href="{{ next_object_url }}" id="next-button" data-bs-toggle="tooltip" title="Next {% trans verbose_name %}" aria-label="Next object"><i class="fas fa-arrow-right"></i></a>
+              {% endif %}
+            </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% block messages-alert %}
+    {% include 'includes/messages_alert.html' with wrapper_classes='container pe-0' %}
+  {% endblock %}
+
+  <nav role="navigation">
+    <ul class="nav nav-tabs container px-3" id="details_tab" role="tablist">
+      {% for tab_name, tab_context in tabsets.items %}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link{% if forloop.first %} active{% endif %}" id="tab_{{ tab_name|slugify }}-tab" data-bs-toggle="tab" data-bs-target="#tab_{{ tab_name|slugify }}" type="button" role="tab" aria-controls="tab_{{ tab_name|slugify }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+            {% if tab_context.label %}
+              {{ tab_context.label }}
+            {% else %}
+              {{ tab_name }}
+            {% endif %}
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="background-white">
+    <div class="tab-content pt-4 px-0 container" style="height: 100%; min-height: 28.5em;">
+      {% for tab_name, tab_context in tabsets.items %}
+        {# IDs are prefixed with "tab_" to avoid autoscroll issue #}
+        <div class="tab-pane{% if forloop.first %} show active{% endif %}" id="tab_{{ tab_name|slugify }}" role="tabpanel" aria-labelledby="tab_{{ tab_name|slugify }}-tab" tabindex="0">
+          {% include 'tabs/tab_content.html' %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{% static 'js/clipboard-2.0.0.min.js' %}" integrity="sha384-5tfO0soa+FisnuBhaHP2VmPXQG/JZ8dLcRL43IkJFzbsXTXT6zIX8q8sIT0VSe2G" crossorigin="anonymous"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Activate the tags
+    const triggerTabList = document.querySelectorAll('#details_tab button');
+    triggerTabList.forEach(triggerEl => {
+      const tabTrigger = new bootstrap.Tab(triggerEl)
+      triggerEl.addEventListener('click', event => {
+        event.preventDefault();
+        tabTrigger.show();
+      })
+    })
+
+    // Check if a hash is present in the URL
+    if (document.location.hash === "") {
+      // If not, set the tab to the first one
+      const firstTabButton = document.querySelector('#details_tab button[data-bs-toggle="tab"]:first-of-type');
+      if (firstTabButton) {
+        bootstrap.Tab.getInstance(firstTabButton).show();
+      }
+    } else {
+      // Build a selector based on the hash and the 'tab_' prefix
+      // This prefix is used to avoid auto-scrolling when coming from a URL containing
+      // a tab in the hash.
+      const tabName = document.location.hash.slice(1); // Remove the '#' symbol
+      const selector = 'button[data-bs-target="#tab_' + tabName + '"]';
+      const tabButton = document.querySelector(selector);
+      // If an element is found, set it as the active tab
+      if (tabButton) {
+        bootstrap.Tab.getInstance(tabButton).show();
+      } else {
+        // If no matching element is found, set the first tab as active
+        const firstTabButton = document.querySelector('#details_tab button[data-bs-toggle="tab"]:first-of-type');
+        if (firstTabButton) {
+          bootstrap.Tab.getInstance(firstTabButton).show();
+        }
+      }
+    }
+
+    // When changing the active tab, reflect the change in the url
+    const tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabButtons.forEach((button) => {
+      button.addEventListener('shown.bs.tab', function (e) {
+        // Clean the 'tab_' prefix from the href before injecting it in the hash
+        document.location.hash = e.target.getAttribute('data-bs-target').replace('tab_', '');
+      });
+    });
+
+    {# Left and right keys navigation #}
+    {% if previous_object_url or next_object_url %}
+      document.addEventListener('keydown', function(e) {
+        const focusedElement = document.activeElement;
+        if (focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA')) {
+          return; // If an input or textarea has focus, do nothing
+        }
+        {% if previous_object_url %}
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            window.location.href = document.querySelector('a#previous-button').getAttribute('href');
+          }
+        {% endif %}
+        {% if next_object_url %}
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            window.location.href = document.querySelector('a#next-button').getAttribute('href');
+          }
+        {% endif %}
+      });
+    {% endif %}
+
+    /* Policy tooltip */
+    $('[data-bs-toggle="tooltip"]').tooltip({placement: 'bottom', container: 'body'});
+
+    $('.toggle-details')
+      .tooltip({container: 'body', placement: 'top'})
+      .on('click', function() {
+          $('.extra-details').toggle();
+      });
+
+    // clipboard.js
+    let clip = new ClipboardJS(".btn-clipboard", {
+      target: function(trigger){
+        return trigger.nextElementSibling
+      }
+    });
+    clip.on("success", function(clip){
+      $(clip.trigger)
+        .attr("title", "Copied!")
+        .tooltip("_fixTitle")
+        .tooltip("show")
+        .attr("title", "Copy to clipboard")
+        .tooltip("_fixTitle");
+      clip.clearSelection()
+    });
+
+    $('.btn-expend').on("click", function() {
+        let button = $(this);
+        let dd = button.parent();
+        let icon = button.children("i");
+        dd.toggleClass("reduced");
+        icon.toggleClass("fa-expand").toggleClass("fa-compress");
+    });
+  });
+  </script>
+{% endblock %}

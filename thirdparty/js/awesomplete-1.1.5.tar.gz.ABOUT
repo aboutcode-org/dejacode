@@ -1,0 +1,18 @@
+about_resource: awesomplete-1.1.5.tar.gz
+name: awesomplete
+version: 1.1.5
+download_url: https://github.com/LeaVerou/awesomplete/archive/v1.1.5.tar.gz
+description: Ultra lightweight, usable autocomplete with zero dependencies.
+homepage_url: https://github.com/LeaVerou/awesomplete
+package_url: pkg:github/leaverou/awesomplete@1.1.5?version_prefix=v
+license_expression: mit
+copyright: Copyright (c) Lea Verou
+notice_file: awesomplete-1.1.5.tar.gz.NOTICE
+attribute: yes
+owner: Lea Verou
+checksum_md5: d61941125d7a7ee8166bfbb732ca659e
+checksum_sha1: 9e251d749e4b0068ecb9f51ef37a62f4387b5ba4
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,12 @@
+{% extends "bootstrap_base.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% trans 'Page not found' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='404' title='Page not found' %}
+  <p>{% trans "The requested page could not be found." %}</p>
+{% endblock %}

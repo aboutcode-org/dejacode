@@ -1,0 +1,33 @@
+{% load i18n static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>{% block page_title %}{{ SITE_TITLE }}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block extrahead %}{% endblock %}
+    <link href="{% static 'bootstrap-5.3.2/css/bootstrap.min.css' %}" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="{% static 'fontawesome-free-6.5.1/css/all.min.css' %}" rel="stylesheet" integrity="sha384-t1nt8BQoYMLFN5p42tRAtuAAFQaCQODekUVeKKZrEnEyp4H2R0RHFz0KWpmj7i8g" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/dejacode_bootstrap.css' %}">
+    {% block extrastyle %}{% endblock %}
+    {# This should be loaded at the end with others scripts but it breaks the inlines scripts (Add Package) #}
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous"></script>
+    {% if FAVICON_HREF %}<link rel="icon" href="{{ FAVICON_HREF }}">{% endif %}
+  </head>
+  <body class="{% block bodyclass %}{% endblock %}">
+    {% block header %}
+      {% include HEADER_TEMPLATE %}
+    {% endblock %}
+    <main class="{% block main_class %}container{% endblock %} pb-5">
+      {% block content %}{% endblock %}
+    </main>
+    {% block footer %}
+      {% include FOOTER_TEMPLATE %}
+    {% endblock %}
+    <div id="back-to-top" class="btn btn-dark"><i class="fas fa-chevron-up"></i></div>
+    <script src="{% static 'bootstrap-5.3.2/js/bootstrap.bundle.min.js' %}" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script defer src="{% static 'js/htmx-1.9.8.min.js' %}" integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr" crossorigin="anonymous"></script>
+    {% include 'bootstrap_base_js.html' %}
+    {% block javascripts %}{% endblock %}
+  </body>
+</html>

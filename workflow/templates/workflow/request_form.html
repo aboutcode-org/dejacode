@@ -1,0 +1,76 @@
+{% extends "object_form.html" %}
+{% load i18n static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}
+  {% if request_instance %}
+    Edit: {{ request_instance.title }}
+  {% else %}
+    New {% trans "Request" %}: {{ form.request_template.name }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col-auto me-auto">
+          <div class="header-pretitle">
+            <a class="me-1" href="{% url 'workflow:request_list' %}" title="Return to {% trans "Requests" %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans "Requests" %}</a>
+          </div>
+          <h1 class="header-title">
+            {% if request_instance %}{# Edition #}
+              Edit: <a href="{{ request_instance.get_absolute_url }}">{{ request_instance }} {{ request_instance.title }}</a>
+            {% else %}{# Addition #}
+              New Request
+            {% endif %}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages_alert.html' %}
+  {% include 'includes/form_errors_alert.html' %}
+
+  <form method="{{ form.helper.form_method }}" id="{{ form.helper.form_id }}" class="{{ form.helper.form_class }}" autocomplete="off">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card card-border-color card-border-color-primary">
+          <div class="card-header card-header-divider m-0 p-3">
+            <h2 class="h4">{{ form.request_template.name }}</h2>
+            <span class="card-subtitle mb-0" style="font-size: 0.875rem;">{{ form.request_template.description }}</span>
+          </div>
+          <div class="card-body">
+            {% crispy form %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pt-3">
+        {% crispy form form.helper_right_side %}
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link href="{% static "awesomplete/awesomplete-1.1.5.css" %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $('#button-id-cancel').click(function(event) {
+        event.preventDefault();
+        parent.history.back();
+        window.location.href = {% url 'workflow:request_list' %};
+        return false;
+      });
+
+      $('form#workflow-request-form').dirtyForms();
+    });
+  </script>
+{% endblock %}

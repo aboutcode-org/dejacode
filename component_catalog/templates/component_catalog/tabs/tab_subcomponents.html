@@ -1,0 +1,93 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% spaceless %}
+<table class="table table-bordered table-hover table-md">
+    <thead>
+        <tr>
+            <th>
+                {% trans 'Name' %}
+                &nbsp;<button class="btn btn-xs btn-outline-secondary toggle-details" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
+            </th>
+            <th>{% trans 'Version' %}</th>
+            <th>{% trans 'Owner' %}</th>
+            <th>{% trans 'Purpose' %}</th>
+            <th>{% trans 'License' %}</th>
+            {% if values and 'usage_policy' in values.0.keys %}
+                <th>{% trans 'Subcomponent usage policy' %}</th>
+            {% endif %}
+            <th>{% trans 'Deployed' %}</th>
+            <th>{% trans 'Modified' %}</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in values %}
+            <tr class="{% cycle 'odd' '' %}">
+                <td>
+                    {% if 'usage_policy' in data and data.child.usage_policy %}
+                        <span class="float-end" data-bs-toggle="tooltip" title="{{ data.child.usage_policy.label }}">{{ data.child.get_usage_policy_as_icon }}</span>
+                    {% endif %}
+                    {% if data.child.is_active %}
+                        <strong><a href="{{ data.child.get_absolute_url }}" target="_blank">{{ data.child.name }}</a></strong>
+                    {% else %}
+                        <strong>{{ data.child.name }}</strong>
+                    {% endif %}
+                </td>
+                <td>{{ data.child.version }}</td>
+                <td>{{ data.child.owner }}</td>
+                <td>{{ data.subcomponent.purpose }}</td>
+                <td>
+                    {% if data.subcomponent.license_expression %}
+                        {{ data.subcomponent.license_expression_linked }}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </td>
+                {% if data.usage_policy %}
+                    <td>{{ data.usage_policy }}</td>
+                {% endif %}
+                <td class="text-center">{{ data.subcomponent.is_deployed|as_icon }}</td>
+                <td class="text-center">{{ data.subcomponent.is_modified|as_icon }}</td>
+                <td>
+                    {% if component.is_active %}
+                        <ul class="list-inline">
+                            <li class="list-inline-item">
+                                <a href="{{ data.child.get_absolute_url }}#hierarchy" target="_blank" title="{% trans 'Hierarchy' %}"><i class="fas fa-sitemap"></i></a>
+                            </li>
+                            {% if request.user.is_authenticated and is_user_dataspace and data.child.request_count %}
+                                <li class="list-inline-item">
+                                    <a href="{{ data.child.get_absolute_url }}#activity" target="_blank" title="{% trans 'Requests' %}"><span class="badge text-bg-request">R</span></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if data.subcomponent.reference_notes %}
+                <tr class="{% cycle 'odd' '' %} extra-details">
+                    <td>- {% trans 'Reference notes' %}:</td>
+                    <td colspan="{% if data.usage_policy %}8{% else %}7{% endif %}">{{ data.subcomponent.reference_notes }}</td>
+                </tr>
+            {% endif %}
+            {% if data.subcomponent.package_paths %}
+                <tr class="{% cycle 'odd' '' %} extra-details">
+                    <td>- {% trans 'Package paths' %}:</td>
+                    <td colspan="{% if data.usage_policy %}8{% else %}7{% endif %}">{{ data.subcomponent.package_paths }}</td>
+                </tr>
+            {% endif %}
+            {% if data.subcomponent.extra_attribution_text %}
+                <tr class="{% cycle 'odd' '' %} extra-details">
+                    <td>- {% trans 'Extra attribution text' %}:</td>
+                    <td colspan="{% if data.usage_policy %}8{% else %}7{% endif %}">{{ data.subcomponent.extra_attribution_text }}</td>
+                </tr>
+            {% endif %}
+            {% if data.subcomponent.notes %}
+                <tr class="{% cycle 'odd' '' %} extra-details">
+                    <td>- {% trans 'Notes' %}:</td>
+                    <td colspan="{% if data.usage_policy %}8{% else %}7{% endif %}">{{ data.subcomponent.notes }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endspaceless %}

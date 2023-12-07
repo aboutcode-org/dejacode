@@ -1,0 +1,41 @@
+<div class="grp-tr">
+    <input type="hidden" {{bind-attr name="idName"}} {{bind-attr value="idValue"}}>
+
+    {{#if predeleted}}
+        {{view deleteCheckbox}}
+    {{/if}}
+
+    <div class="grp-td">
+        {{view fieldNameSelector}}
+        <input type="hidden" {{bind-attr name="fieldNameName"}} {{bind-attr value="fieldNameValue"}}>
+    </div>
+    <div class="grp-td">
+        {{view lookupSelect}}
+        <input type="hidden" {{bind-attr name="lookupName"}} {{bind-attr value="lookupValue"}}>
+    </div>
+    <div class="grp-td">
+        {{input value=valueValue}}
+        <input type="hidden" {{bind-attr name="valueName"}} {{bind-attr value="valueValue"}}>
+    </div>
+    <div class="grp-td">
+        {{view runtimeParameterCheckbox}}
+        <input type="hidden" {{bind-attr name="runtimeParameterName"}} {{bind-attr value="runtimeParameterValue"}}>
+    </div>
+    <div class="grp-td">
+        {{view negateCheckbox}}
+        <input type="hidden" {{bind-attr name="negateName"}} {{bind-attr value="negateValue"}}>
+    </div>
+    <div class="grp-td grp-tools-container">
+        <ul class="grp-tools">
+            {{#if isInitial}}
+                <li class="grp-delete-handler-container">
+                    <a href="javascript://" class="grp-icon grp-delete-handler" title="Delete Item" {{action "togglePredeletion"}}></a>
+                </li>
+            {{else}}
+                <li>
+                    <a href="javascript://" class="grp-icon grp-remove-handler" title="Delete Item" {{action "removeForm"}}></a>
+                </li>
+            {{/if}}
+        </ul>
+    </div>
+</div>

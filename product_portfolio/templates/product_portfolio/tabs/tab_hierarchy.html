@@ -1,0 +1,31 @@
+<div class="row mb-4">
+  <div class="col">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <a class="nav-link{% if values.is_deployed != 'yes' and values.is_deployed != 'no' %} active{% endif %}" href="?hierarchy-is_deployed=all#hierarchy">Inventory <small>(Deployed=All)</small></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link{% if values.is_deployed == 'yes' %} active{% endif %}" href="?hierarchy-is_deployed=yes#hierarchy">BOM  <small>(Deployed=Yes)</small></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link{% if values.is_deployed == 'no' %} active{% endif %}" href="?hierarchy-is_deployed=no#hierarchy">Internal Use Only  <small>(Deployed=No)</small></a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-4">
+    {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=object is_current=True is_product=True %}
+  </div>
+  <div class="col-sm-5 offset-md-3">
+    {% for feature, relationships in values.relations_feature_grouped.items %}
+      {% if feature %}
+        <h4 class="feature-title text-center">{{ feature }}</h4>
+      {% endif %}
+      {% for relation in relationships %}
+        {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=relation.related_component_or_package relation=relation %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>

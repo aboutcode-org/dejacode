@@ -1,0 +1,25 @@
+{% load i18n %}
+<form method="post">{% csrf_token %}
+  <div id="delete-attachment-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {% trans 'Attachment' %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-light">
+          <input type="hidden" name="delete_attachment_uuid" id="delete_attachment_uuid" value="">
+          <p>
+            You are about to delete:<br>
+            <strong id="delete_attachment_filename"></strong><br>
+            Are you sure?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger">Delete {% trans 'Attachment' %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

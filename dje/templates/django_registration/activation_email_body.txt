@@ -1,0 +1,16 @@
+Hello and Welcome to DejaCode!
+
+Your DejaCode {{ user.dataspace.name }} account is pending activation.
+
+Username: {{ user.username }}
+
+To activate the account please click on the link below:
+https://{{ site }}{% url 'django_registration_activate' activation_key %}
+
+If you cannot click on the link, please copy it to your browser.
+
+Please note that you have {{ expiration_days }} days to activate your account. After this delay, please contact us at support@dejacode.com and we will send you a new activation link.
+
+Thank You,
+
+The DejaCode Team.

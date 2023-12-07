@@ -1,0 +1,34 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block page_title %}{% trans 'Two-factor authentication' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Security' title='Two-factor authentication' %}
+  {% include 'includes/messages_alert.html' %}
+  <p>
+    To <strong>setup two-factor authentication</strong> on your account,
+    you need to use one of the following app on your mobile device:
+  </p>
+  <ul>
+    <li>Authy</li>
+    <li>Google Authenticator</li>
+    <li>FreeOTP Authenticator</li>
+    <li>LastPass Authenticator</li>
+    <li>1Password</li>
+  </ul>
+  <p>
+    <strong>Scan the QR code below</strong>, then <strong>enter the token generated</strong>
+    by the app.
+  </p>
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="text-center">
+        {{ qr_code|safe }}
+      </div>
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}

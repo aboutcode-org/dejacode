@@ -1,0 +1,87 @@
+{% extends 'object_list_base.html' %}
+{% load i18n %}
+
+{% block top-right-buttons %}
+  <button class="btn btn-outline-dark disabled" id="download-aboutcode-files" href="{% if opts.model_name == 'package' %}{% url 'component_catalog:package_multi_about_files' %}{% elif opts.model_name == 'component' %}{% url 'component_catalog:component_multi_about_files' %}{% endif %}" data-bs-toggle="tooltip">
+    <i class="fas fa-download"></i> AboutCode
+  </button>
+  {% if form or add_to_component_form %}
+    <div class="btn-group">
+      <div class="dropdown" data-bs-toggle="tooltip" title="{% trans 'Select objects first' %}">
+        <button id="add-to-btn" class="btn btn-outline-dark dropdown-toggle disabled" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-plus-circle"></i> Add to
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          {% if form %}
+            <button type="button" class="btn btn-link dropdown-item" data-bs-toggle="modal" data-bs-target="#add-to-product-modal">Product</button>
+          {% endif %}
+          {% if add_to_component_form and opts.model_name == 'package' %}
+            <button type="button" class="btn btn-link dropdown-item" data-bs-toggle="modal" data-bs-target="#add-to-component-modal">Component</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {{ block.super }}
+  <div class="btn-group">
+    {{ filter.form.sort }}
+  </div>
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% if form %}
+    {% include 'component_catalog/includes/add_to_modal.html' %}
+  {% endif %}
+  {% if add_to_component_form %}
+    {% include 'component_catalog/includes/add_to_modal.html' with form=add_to_component_form %}
+  {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  {% if form or add_to_component_form %}
+    {% include 'component_catalog/includes/add_to.js.html' %}
+  {% endif %}
+
+  <script>
+    $(document).ready(function () {
+      let download_aboutcode_btn = $('#download-aboutcode-files');
+
+      let handle_button_display = function() {
+        let count = $('main input[type="checkbox"]:checked').length;
+        if (count >= 1) {
+          download_aboutcode_btn.removeClass('disabled');
+          download_aboutcode_btn.attr('data-bs-title', 'Download AboutCode files');
+        }
+        else {
+          download_aboutcode_btn.addClass('disabled');
+          download_aboutcode_btn.attr('data-bs-title', 'Select objects first');
+        }
+      };
+
+      $('main input[type="checkbox"]').on('change', function() {
+        handle_button_display();
+      });
+
+      // Runs on load to support the "back" button of the browser
+      handle_button_display();
+
+      download_aboutcode_btn.on('click', function(event) {
+        let checked = $('main input[type="checkbox"]:checked');
+        if (checked.length < 1) {
+          event.preventDefault();
+          return false;
+        }
+
+        let selected_ids = [];
+        checked.each(function() {
+          selected_ids.push(this.value);
+        });
+
+        let download_aboutcode_url = download_aboutcode_btn.attr('href') + '?ids=' + selected_ids.join();
+        window.open(download_aboutcode_url);
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,20 @@
+about_resource: django_guardian-2.4.0-py3-none-any.whl
+name: django-guardian
+version: 2.4.0
+download_url: https://files.pythonhosted.org/packages/a2/25/869df12e544b51f583254aadbba6c1a95e11d2d08edeb9e58dd715112db5/django_guardian-2.4.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/django-guardian/2.4.0/
+package_url: pkg:pypi/django-guardian@2.4.0
+license_expression: bsd-simplified AND mit
+copyright: Copyright (c) Lukasz Balcerzak, Code Charm Ltd
+notice_file: django_guardian-2.4.0-py3-none-any.whl.NOTICE
+attribute: yes
+owner: django-guardian
+checksum_md5: dfe84f444671fd8769099fb6e7746a6a
+checksum_sha1: ea0c714588f900d1011bb2f0aa1fe0b5e6b40710
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE

@@ -1,0 +1,20 @@
+about_resource: jquery.json-viewer-1.4.0.tar.gz
+name: jquery.json-viewer
+version: 1.4.0
+download_url: https://github.com/abodelot/jquery.json-viewer/archive/v1.4.0.tar.gz
+description: jQuery plugin for displaying JSON data
+homepage_url: https://github.com/abodelot/jquery.json-viewer
+package_url: pkg:github/abodelot/jquery.json-viewer@1.4.0?version_prefix=v
+license_expression: mit
+copyright: Copyright (c) Alexandre Bodelot
+notice_file: jquery.json-viewer-1.4.0.tar.gz.NOTICE
+notice_url: https://github.com/abodelot/jquery.json-viewer/blob/v1.4.0/LICENSE
+attribute: yes
+owner: Alexandre Bodelot
+owner_url: https://github.com/abodelot
+checksum_md5: df193e98bf5987c4a74b2308b54838ad
+checksum_sha1: a986e1ff8896fd394988dc30c302455305838abc
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

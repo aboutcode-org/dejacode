@@ -1,0 +1,22 @@
+<strong class="ms-1">{{ scan.runs.0.status|title }}</strong>
+{% include 'component_catalog/includes/scan_status.html' with status=scan.runs.0.status only %}
+
+{% if compact_mode %}
+  <div class="mt-1">
+    {% if view_url %}
+      <a class="text-dark" href="{{ view_url }}#scan" target="_blank" data-bs-toggle="tooltip" data-bs-title="View Scan results"><i class="far fa-file-alt"></i></a>&nbsp;
+    {% endif %}
+    {% if scan.download_result_url %}
+      <a class="text-dark" href="{{ scan.download_result_url }}" target="_blank" data-bs-toggle="tooltip" data-bs-title="Download Scan results"><i class="fas fa-download"></i></a>
+    {% endif %}
+  </div>
+{% else %}
+  <div class="text-center">
+    {% if scan.download_result_url %}
+      <a class="btn btn-outline-dark btn-sm mt-2" href="{{ scan.download_result_url }}" target="_blank"><i class="fas fa-download"></i> Results</a>
+    {% endif %}
+    {% if scan.delete_url %}
+      <a class="btn btn-outline-danger btn-sm mt-2 scan_delete_link" href="#scan-delete-modal" role="button" data-delete-url="{{ scan.delete_url }}" title="Delete" data-bs-toggle="modal"><i class="far fa-trash-alt"></i></a>
+    {% endif %}
+  </div>
+{% endif %}

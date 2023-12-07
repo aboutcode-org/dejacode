@@ -1,0 +1,84 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}{% trans 'Profile settings' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Account' title='Profile settings' %}
+  {% include 'includes/messages_alert.html' %}
+  <form method="{{ form.helper.form_method }}" id="{{ form.helper.form_id }}" class="{{ form.helper.form_class }}">
+    {% crispy form %}
+  </form>
+
+  <hr class="my-4">
+  {% include 'includes/header_title.html' with pretitle='Security' title='Two-factor authentication' %}
+  {% if not user_has_device %}
+    <p>Two-factor authentication (2FA) is a way to increase the security of your account by adding a trusted device in the authentication process.</p>
+    <a class="btn btn-outline-dark" href="{% url 'account_2fa_enable' %}">Enable two-factor authentication</a>
+  {% else %}
+    <p>Two-factor authentication is enabled your account.</p>
+    <a class="btn btn-outline-dark" href="{% url 'account_2fa_disable' %}">Disable two-factor authentication</a>
+  {% endif %}
+
+  <hr class="my-4">
+  <form class="mb-5" autocomplete="off">
+    <div class="row">
+      <div class="col-6">
+        <div>
+          <label for="api_key" class="form-label">API Key</label>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
+            <button class="btn btn-secondary" type="button" id="show_api_key" data-bs-toggle="tooltip" title="Display/Hide API key" aria-label="Display/Hide API key">
+              <i id="eye_icon" class="far fa-eye-slash"></i>
+            </button>
+          </div>
+        </div>
+        <strong class="form-text text-muted">An API key is like a password and should be treated with the same care.</strong>
+        <a href="#" class="btn btn-outline-dark mt-3" data-bs-toggle="modal" data-bs-target="#regen-api-key">Regenerate API key</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="modal" tabindex="-1" role="dialog" id="regen-api-key">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Regenerate API key</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-light">
+          You are about to regenerate your API key.<br><br>
+          <strong>Your old key will be unusable once the new one is generated.</strong><br><br>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <form id="regenerate-api-key-form" method="post">{% csrf_token %}
+            <input type="hidden" name="regenerate-api-key" value="yes">
+            <button type="submit" class="btn btn-success">Regenerate</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $("#show_api_key").on("click", function() {
+        let api_key_field = $("#api_key");
+        if (api_key_field.hasClass('transparent')) {
+          api_key_field.removeClass('transparent');
+          $("#eye_icon").attr('class', 'far fa-eye');
+        } else {
+           api_key_field.addClass('transparent');
+           $("#eye_icon").attr('class', 'far fa-eye-slash');
+        }
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{# LicenseProfileDetailView #}
+{% load as_icon_admin from dje_tags %}
+<fieldset class="grp-module">
+    <h2>{{ object }}{% if object.category %} - Category: {{ object.category }}{% endif %}</h2>
+    {% for tag in tags %}
+        {% if tag.value == True or tag.value == False %}
+            <div class="grp-row grp-cells-1">
+                <div class="g-d-fluid">
+                    {{ tag.value|as_icon_admin }}&nbsp;
+                    <strong style="font-size:12px !important;">{{ tag.label }}</strong>
+                    <p class="help" style="color:#000 !important; font-size:11px !important;">{{ tag.text }}</p>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</fieldset>

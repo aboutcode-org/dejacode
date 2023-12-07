@@ -1,0 +1,63 @@
+{% load i18n %}
+{% load inject_preserved_filters from dje_tags %}
+{% load dje_tags %}
+<table id="object-list-table" class="table table-bordered table-striped table-md licenses-table">
+    {% include 'includes/object_list_table_header.html' %}
+    <tbody>
+    {% for object in object_list %}
+        <tr>
+            <td>
+                {% if request.user.is_authenticated and is_user_dataspace and object.request_count %}
+                    <ul class="list-inline float-end mb-0">
+                        <li class="list-inline-item">
+                            <a href="{% inject_preserved_filters object.details_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
+                        </li>
+                    </ul>
+                {% endif %}
+                <strong>
+                  <a href="{% inject_preserved_filters object.details_url %}">{{ object.name }}</a>
+                </strong>
+                {% include 'license_library/includes/license_short_name_and_key.html' with license=object only %}
+                {% if object.dataspace.show_spdx_short_identifier_in_license_list_view and object.spdx_license_key %}
+                  <div class="row-fluid mt-1">
+                    <small class="fw-bold cursor-help" data-bs-toggle="tooltip" title="SPDX Short Identifier">SPDX</small><code class="key ms-1">{{ object.spdx_license_key }}</code>
+                  </div>
+                {% endif %}
+            </td>
+            {% if object.dataspace.show_usage_policy_in_user_views %}
+                <td class="text-center">
+                    {% if object.usage_policy %}
+                        {{ object.get_usage_policy_icon_tooltip }}
+                    {% endif %}
+                </td>
+            {% endif %}
+            <td>
+                {% if object.category %}
+                    <span class="help_text" data-category-pk="{{ object.category_id }}">{{ object.category }}</span>
+                {% endif %}
+            </td>
+            {% if object.dataspace.show_license_type_in_license_list_view %}
+                <td>{% if object.category.license_type %}{{ object.category.license_type }}{% endif %}</td>
+            {% endif %}
+            {% if object.dataspace.show_license_profile_in_license_list_view %}
+                <td>
+                    {% if object.license_profile %}
+                        <a href="{% inject_preserved_filters object.details_url %}#license-conditions">{{ object.license_profile }}</a>
+                    {% endif %}
+                </td>
+            {% endif %}
+            {% for assigned_tag in object.licenseassignedtag_set.all %}
+                <td class="text-center">
+                    {{ assigned_tag.value|as_icon }}
+                </td>
+            {% endfor %}
+            <td>
+                {% if object.owner %}
+                    <a href="{% inject_preserved_filters object.details_url %}#owner">{{ object.owner }}</a>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="100">No results.</td></tr>
+    {% endfor %}
+</table>

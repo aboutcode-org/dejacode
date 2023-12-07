@@ -1,0 +1,176 @@
+{% extends "admin/base.html" %}
+{% load i18n grp_tags static %}
+
+{% block title %}
+    {{ SITE_TITLE }} {{ DEJACODE_VERSION }} Administration
+{% endblock %}
+
+{% block admin_title %}
+    <h1 id="grp-admin-title">
+        {{ SITE_TITLE }} {{ DEJACODE_VERSION }} Administration
+    </h1>
+{% endblock %}
+
+{% block blockbots %}
+    {{ block.super }}
+    <link rel="icon" href="{{ FAVICON_HREF }}" type="image/x-icon" />
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link href="{% static 'css/hint-2.7.0.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'css/dejacode_admin.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block userlinks %}
+    <li>
+        <a href="{% url 'product_portfolio:product_list' %}">{% trans 'Products' %}</a>
+    </li>
+    <li>
+        <a href="{% url 'component_catalog:component_list' %}">{% trans 'Components' %}</a>
+    </li>
+      <li>
+        <a href="{% url 'component_catalog:package_list' %}">{% trans 'Packages' %}</a>
+    </li>
+    <li>
+        <a href="{% url 'license_library:license_list' %}">{% trans 'Licenses' %}</a>
+    </li>
+      <li>
+        <a href="{% url 'organization:owner_list' %}">{% trans 'Owners' %}</a>
+    </li>
+    {% url 'reporting:report_list' as report_list_url %}
+    {% url 'workflow:request_list' as request_list_url %}
+    {% url 'component_catalog:scan_list' as scan_list_url %}
+    {% url 'purldb:purldb_list' as purldb_list_url %}
+    {% url 'api_v2:api-root' as api_root_url %}
+    {% if report_list_url or request_list_url or api_root_url %}
+        <li class="grp-collapse grp-closed">
+            <a href="javascript://" class="grp-collapse-handler">{% trans 'Tools' %}</a>
+            <ul>
+                {% if report_list_url %}
+                    <li class="nav-header">{% trans 'Reporting' %}</li>
+                    <li><a href="{{ report_list_url }}">{% trans 'Reports' %}</a></li>
+                {% endif %}
+                {% if request_list_url %}
+                    <li class="nav-header">{% trans 'Workflow' %}</li>
+                    <li><a href="{{ request_list_url }}">{% trans 'Requests' %}</a></li>
+                {% endif %}
+                {% if user.dataspace.enable_package_scanning or user.dataspace.enable_purldb_access %}
+                  <li class="nav-header">{% trans 'Packages' %}</li>
+                  {% if user.dataspace.enable_package_scanning %}
+                      <li><a href="{{ scan_list_url }}">{% trans 'Scans' %}</a></li>
+                  {% endif %}
+                  {% if user.dataspace.enable_purldb_access %}
+                      <li><a href="{{ purldb_list_url }}">{% trans 'PurlDB' %}</a></li>
+                  {% endif %}
+                {% endif %}
+                {% if api_root_url %}
+                    <li class="nav-header">{% trans 'API' %}</li>
+                    <li><a href="{{ api_root_url }}">{% trans 'API Root' %}</a></li>
+                    <li><a href="{% url 'api-docs:docs-index' %}">{% trans 'API Documentation' %}</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+    <li class="grp-user-options-container grp-collapse grp-closed">
+        <a href="javascript://" class="user-options-handler grp-collapse-handler">
+            {% filter force_escape %}{% firstof user.first_name|truncatechars:12 user.username|truncatechars:12 %} ({{ user.dataspace|truncatechars:10 }}){% endfilter %}
+        </a>
+        <ul class="grp-user-options">
+            <li class="nav-header">Account</li>
+            <li>
+                <a href="{% url 'account_profile' %}">{% trans 'Profile settings' %}</a>
+            </li>
+            <li>
+                <a href="{% url 'password_change' %}">{% trans 'Change password' %}</a>
+            </li>
+            <li class="nav-header">Administration</li>
+            <li>
+                <a href="{% url 'admin:index' %}">{% trans 'Dashboard' %}</a>
+            </li>
+            {% if perms.product_portfolio.change_product %}
+                <li>
+                    <a href="{% url 'admin:product_portfolio_product_changelist' %}">{% trans 'Products' %}</a>
+                </li>
+            {% endif %}
+            {% if perms.component_catalog.change_component %}
+                <li>
+                    <a href="{% url 'admin:component_catalog_component_changelist' %}">{% trans 'Components' %}</a>
+                </li>
+            {% endif %}
+            {% if perms.component_catalog.change_package %}
+                <li>
+                    <a href="{% url 'admin:component_catalog_package_changelist' %}">{% trans 'Packages' %}</a>
+                </li>
+            {% endif %}
+            {% if perms.license_library.change_license %}
+                <li>
+                    <a href="{% url 'admin:license_library_license_changelist' %}">{% trans 'Licenses' %}</a>
+                </li>
+            {% endif %}
+            {% if perms.organization.change_owner %}
+                <li>
+                    <a href="{% url 'admin:organization_owner_changelist' %}">{% trans 'Owners' %}</a>
+                </li>
+            {% endif %}
+            {% if user.is_staff %}
+              <li class="nav-header">Status</li>
+              <li>
+                  <a href="{% url 'integrations_status' %}">{% trans 'Integrations Status' %}</a>
+              </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'logout' %}">{% trans 'Sign out' %}</a>
+            </li>
+        </ul>
+    </li>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {{ client_data|json_script:"client_data" }}
+    <script>
+        NEXB = {};
+        NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
+
+        NEXB.displayOverlay = function(text) {
+          const overlay = document.createElement('div');
+          overlay.id = 'overlay';
+          overlay.textContent = text;
+
+          Object.assign(overlay.style, {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, .5)',
+              zIndex: 10000,
+              verticalAlign: 'middle',
+              paddingTop: '300px',
+              textAlign: 'center',
+              color: '#fff',
+              fontSize: '30px',
+              fontWeight: 'bold',
+              cursor: 'wait'
+          });
+
+          document.body.appendChild(overlay);
+        }
+
+        // Allow to inject custom logic in the `grp_inline.onAfterAdded` function.
+        // Since the `onAfterAdded` is already defined in "block grp_inline_options"
+        // and cannot be easily extended without duplicated a lot of code,
+        // we are extending the `grappelli.updateSelectFilter` function as a workaround,
+        // which is called within the `onAfterAdded` function.
+        NEXB.patch_grappelli_grp_inline = function patch_grappelli_grp_inline(patch_callback) {
+            // Saves the original function
+            var original_updateSelectFilter = grappelli.updateSelectFilter;
+            // Overrides the `updateSelectFilter` function to inject the `patch_callback` function
+            grappelli.updateSelectFilter = function(form) {
+                patch_callback(form);
+                return original_updateSelectFilter(form);
+            }
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,19 @@
+about_resource: clamd-1.0.2-py2.py3-none-any.whl
+name: clamd
+version: 1.0.2
+download_url: https://files.pythonhosted.org/packages/3d/d0/84614de2a53ad52370adc9f9260bea420e53e0c228a248ec0eacfa65ccbb/clamd-1.0.2-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/clamd/1.0.2/
+package_url: pkg:pypi/clamd@1.0.2
+license_expression: lgpl-2.0-plus
+copyright: Copyright (c) Thomas Grainger
+notice_file: clamd-1.0.2-py2.py3-none-any.whl.NOTICE
+redistribute: yes
+attribute: yes
+track_changes: yes
+owner: Thomas Grainger
+checksum_md5: 355f5210a2a4096a3fd88aeb9e41630c
+checksum_sha1: c7c6cdae81ca38057442fdfc0d6c9ddc4317dcc3
+licenses:
+  - key: lgpl-2.0-plus
+    name: GNU Library General Public License 2.0 or later
+    file: lgpl-2.0-plus.LICENSE

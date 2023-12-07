@@ -1,0 +1,11 @@
+{% extends "bootstrap_base.html" %}
+
+{% block page_title %}Account locked{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with title="Account locked" %}
+  <p>
+    Your account is locked following too many failed login attempts.<br>
+    Contact the DejaCode support team at <a href="mailto:support@dejacode.com">support@dejacode.com</a> to unlock your account.
+  </p>
+{% endblock %}

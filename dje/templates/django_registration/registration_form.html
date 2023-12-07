@@ -1,0 +1,56 @@
+{% extends "bootstrap_base.html" %}
+
+{% load i18n static crispy_forms_tags %}
+
+{% block page_title %}{% trans 'Sign Up' %}{% endblock %}
+
+{% block header %}{% endblock %}
+{% block bodyclass %}signup-form{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-sm-6 text-white">
+      <h2 class="mb-3">Explore DejaCode now</h2>
+      <p>
+        A free DejaCode trial account allows you to use DejaCode in a shared public dataspace!
+      </p>
+      <p>When you sign in to the DejaCode public evaluation dataspace with your free trial account, you can:</p>
+      <ul>
+        <li>Explore, create, and modify components, packages, licenses and assign usage policies to them.</li>
+        <li>Create your own test products and generate attribution.</li>
+        <li>Exercise the DejaCode API and DejaCode integrations with open source tools, such as ScanCode.io.</li>
+        <li>Run reports and use workflow requests.</li>
+      </ul>
+      <p>To get started, sign up for a free DejaCode trial account via the form on this page.</p>
+
+      <h2 class="mt-4 mb-3">Securely use your own data</h2>
+      <p>
+        We can set up a private instance for evaluating DejaCode using your own data,
+        with access to all features including:
+      </p>
+      <ul>
+        <li>Import your own data privately and securely, including proprietary and third-party software components and licenses.</li>
+        <li>Design and apply your own usage policies.</li>
+        <li>Create your own workflow requests and reports.</li>
+        <li>Generate FOSS compliance artifacts, including Software Bill of Materials (SBOM) for your products and attribution notices.</li>
+      </ul>
+      <p>Each private evaluation is limited to 30 days with unlimited use of DejaCode and free support.</p>
+      <a class="btn btn-warning" href="https://nexb.com/evaluation/" target="_blank">
+        Request private evaluation
+      </a>
+    </div>
+
+    <div class="col-sm-5 offset-sm-1">
+      <div class="card">
+        <div class="card-body">
+          {% crispy form %}
+        </div>
+      </div>
+      <div class="text-center fw-normal m-4">
+        <a href="{% url 'login' %}" class="text-white">Already have an account?</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

@@ -1,0 +1,20 @@
+about_resource: fontawesome-free-6.5.1-web.zip
+name: fontawesome-free-6.5.1-web.zip
+download_url: https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-web.zip
+package_url: pkg:generic/fontawesome-free-6.5.1-web.zip?download_url=https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-web.zip
+license_expression: mit AND ofl-1.1 AND cc-by-4.0
+copyright: Copyright Fonticons, Inc.
+attribute: yes
+track_changes: yes
+checksum_md5: aa6b1ac868039b3e517dbb77c0e37f69
+checksum_sha1: 0185a918d7b40792f1b1c63a70f9f1259e978711
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: ofl-1.1
+    name: SIL Open Font License 1.1
+    file: ofl-1.1.LICENSE
+  - key: cc-by-4.0
+    name: Creative Commons Attribution 4.0 International Public License
+    file: cc-by-4.0.LICENSE

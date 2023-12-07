@@ -1,0 +1,16 @@
+{% load admin_urls %}
+<div id="{{ verbose_name }}_{{ owner.pk }}" class="card bg-light mb-2">
+  <div class="card-body py-1 px-2">
+    {# We use different links for Admin and User views. #}
+    {% if is_current %}
+      <strong>{{ owner }}</strong>
+    {% else %}
+      <a href="{{ owner.get_absolute_url }}#hierarchy">{{ owner }}</a>
+      <ul class="fa-ul ms-4 mb-0">
+        {% for alias in owner.get_alias_list %}
+          {% if alias %}<li><span class="fa-li"><i class="fas fa-angle-right"></i></span>{{ alias }}</li>{% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>

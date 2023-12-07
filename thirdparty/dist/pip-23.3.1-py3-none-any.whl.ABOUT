@@ -1,0 +1,14 @@
+about_resource: pip-23.3.1-py3-none-any.whl
+name: pip
+version: 23.3.1
+download_url: https://files.pythonhosted.org/packages/47/6a/453160888fab7c6a432a6e25f8afe6256d0d9f2cbd25971021da6491d899/pip-23.3.1-py3-none-any.whl
+package_url: pkg:pypi/pip@23.3.1
+license_expression: mit
+copyright: Copyright pip project contributors
+attribute: yes
+checksum_md5: 5d2d058044a3ae2800d18e358ddc72ca
+checksum_sha1: 4b2baddc0673f73017e531648a9ee27e47925e7a
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

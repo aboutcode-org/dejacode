@@ -1,0 +1,20 @@
+{% extends "admin/change_list_extended.html" %}
+
+{% load static %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+    (function($) {
+        document.addEventListener('DOMContentLoaded', function () {
+            let action_go_button = $('.grp-changelist-actions button[type="submit"]');
+            action_go_button.click(function(e) {
+                let select_action = $('select[name="action"]');
+                if (select_action.val() === 'collect_data_action') {
+                    NEXB.displayOverlay("Data collection in progress...");
+                }
+            });
+        });
+    }(grp.jQuery));
+    </script>
+{% endblock %}

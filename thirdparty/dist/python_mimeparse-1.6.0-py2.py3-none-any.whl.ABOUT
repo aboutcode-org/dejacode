@@ -1,0 +1,21 @@
+about_resource: python_mimeparse-1.6.0-py2.py3-none-any.whl
+name: python-mimeparse
+version: 1.6.0
+download_url: https://pypi.python.org/packages/26/2e/03bce213a9bf02a2750dcb04e761785e9c763fc11071edc4b447eacbb842/python_mimeparse-1.6.0-py2.py3-none-any.whl#md5=e2780ceb12929f2f8557c467fa8c2567
+description: Python-MimeParse provides basic functions for handling mime-types. It can handle
+  matching mime-types against a list of media-ranges.
+homepage_url: https://github.com/dbtsai/python-mimeparse
+package_url: pkg:pypi/python-mimeparse@1.6.0
+license_expression: mit
+copyright: Copyright (c) 2010 Joe Gregorio
+notice_file: python_mimeparse-1.6.0-py2.py3-none-any.whl.NOTICE
+notice_url: https://raw.github.com/dbtsai/python-mimeparse/master/LICENSE
+attribute: yes
+owner: Joe Gregorio
+vcs_repository: https://github.com/dbtsai/python-mimeparse.git
+checksum_md5: e2780ceb12929f2f8557c467fa8c2567
+checksum_sha1: a48227647fe3d9f33e6b8175e6757f4e8d463cce
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

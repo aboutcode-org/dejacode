@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load humanize %}
+{% load urlize_target_blank from dje_tags %}
+<section id="owners_section">
+  {% if results.object_list %}
+    <h3>
+      {% trans 'Owner' %}
+      {% if is_reference_data %}
+        <span class="badge text-bg-warning">{% trans 'Reference Data' %}</span>
+      {% endif %}
+      <small class="text-muted">
+        {{ results.paginator_count|intcomma }} result{{ results.paginator_count|pluralize }} for this search.
+        {% if is_reference_data %}
+          Click <a href="{% url 'organization:owner_list' reference_dataspace %}?q={{ search_query }}">here</a> to see the full list.
+        {% else %}
+          Click <a href="{% url 'organization:owner_list' %}?q={{ search_query }}">here</a> to see the full list.
+        {% endif %}
+      </small>
+    </h3>
+    <table class="table table-bordered table-striped table-md">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Alias</th>
+          <th>Homepage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in results.object_list|slice:':10' %}
+          <tr>
+            <td><a href="{{ object.details_url }}"><strong>{{ object.name }}</strong></a></td>
+            <td>{{ object.alias|default_if_none:"" }}</td>
+            <td>{{ object.homepage_url|urlize_target_blank }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <h3>{% trans 'Owner' %} <small class="text-muted">No owner found.</small></h3>
+  {% endif %}
+</section>

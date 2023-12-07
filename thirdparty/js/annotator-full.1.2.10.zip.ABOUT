@@ -1,0 +1,20 @@
+about_resource: annotator-full.1.2.10.zip
+checksum_md5: 4590b73fe316532bf7139bcc7e898c70
+checksum_sha1: fd2404f8e47ffd5156123a77d30292506d20c1de
+contact: http://okfn.org/contact/
+copyright: Copyright (c) Annotator Authors
+description: Annotation tools for the web. Select text, images, or (nearly) anything
+  else, and add your notes.
+download_url: https://github.com/openannotation/annotator/releases/download/v1.2.10/annotator-full.1.2.10.zip
+homepage_url: http://okfnlabs.org/projects/annotator/
+license_expression: mit
+name: Annotator
+notice_url: https://github.com/openannotation/annotator/blob/master/LICENSE
+owner: Open Knowledge Foundation
+owner_url: http://okfn.org/
+vcs_repository: https://github.com/openannotation/annotator.git
+version: 1.2.10
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

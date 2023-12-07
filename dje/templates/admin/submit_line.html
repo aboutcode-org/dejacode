@@ -1,0 +1,39 @@
+{% load i18n admin_urls %}
+<footer class="grp-module grp-submit-row grp-fixed-footer">
+    <header style="display:none"><h1>Submit Options</h1></header>
+    <ul>
+        {% if show_delete_link %}
+            {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
+            <li class="grp-float-left"><a href="{% add_preserved_filters delete_url %}" class="grp-button grp-delete-link">{% trans "Delete" %}</a></li>
+        {% endif %}
+        {# DJE CUSTOM: Add #}
+        <li class="grp-float-left">
+            {% if not is_popup %}
+                {% url opts|admin_urlname:'changelist' as changelist_url %}
+                <a href="{% add_preserved_filters changelist_url %}" class="grp-button cancel-link">{% trans 'Return to list' %}</a>
+            {% else %}
+                <a href="javascript:self.close()" class="grp-button cancel-link">Close</a>
+            {% endif %}
+        </li>
+        {# /DJE CUSTOM #}
+        {% if show_save %}
+        	<li><input type="submit" value="{% trans 'Save' %}" class="grp-button grp-default" name="_save" /></li>
+        {% endif %}
+        {% if show_save_as_new %}
+        	<li><input type="submit" value="{% trans 'Save as new' %}" class="grp-button" name="_saveasnew" /></li>
+        {% endif %}
+        {% if show_save_and_add_another %}
+        	<li><input type="submit" value="{% trans 'Save and add another' %}" class="grp-button" name="_addanother" /></li>
+        {% endif %}
+        {% if show_save_and_continue %}
+        	<li><input type="submit" value="{% trans 'Save and continue editing' %}" class="grp-button" name="_continue" /></li>
+        {% endif %}
+        {# DJE CUSTOM: Add. See also PackageAdmin.add_view() #}
+        {% if show_save_and_collect_data %}
+        	<li data-hint="SHA1, MD5, and Size fields will be collected from the provided URL" class="hint--top">
+                <input type="submit" value="{% trans 'Save and collect data' %}" class="grp-button" name="_collectdata" />
+            </li>
+        {% endif %}
+        {# /DJE CUSTOM #}
+    </ul>
+</footer>

@@ -1,0 +1,51 @@
+{% load i18n %}
+{% spaceless %}
+{% for licenses_table in extra_context.licenses_tables %}
+  <table class="table table-bordered table-md col-count-{{ licenses_table|length }}">
+    <tr>
+      <th>
+        {% trans 'License' %}
+      </th>
+      {% for license in licenses_table %}
+        <td>
+          {% if license.is_active or license.is_component_license  %}
+            {{ license.get_absolute_link }}
+          {% else %}
+            {{ license.short_name }} ({{ license.key }})
+          {% endif %}
+        </td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <th>
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{% trans extra_context.help_texts.guidance %}">
+          {% trans 'License guidance' %}
+        </span>
+      </th>
+      {% for license in licenses_table %}
+        <td>{{ license.guidance }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <th>
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{% trans extra_context.help_texts.category %}">
+          {% trans 'License category' %}
+        </span>
+      </th>
+      {% for license in licenses_table %}
+        <td>{{ license.category }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      <th>
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{% trans extra_context.help_texts.license_conditions %}">
+          {% trans 'License conditions' %}
+        </span>
+      </th>
+      {% for license in licenses_table %}
+        <td>{% include 'component_catalog/includes/license_tags.html' with license=license only %}</td>
+      {% endfor %}
+    </tr>
+  </table>
+{% endfor %}
+{% endspaceless %}

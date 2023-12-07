@@ -1,0 +1,19 @@
+about_resource: jquery-1.12.4.zip
+checksum_md5: 8cd313a653441dbaa7965b65749c001b
+checksum_sha1: a4e38de55c9a9ace7b64e835955ce1d149c5a7fe
+contact: http://docs.jquery.com/Discussion
+copyright: Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
+description: jQuery JavaScript Library
+download_url: https://github.com/jquery/jquery/archive/1.12.4.zip
+homepage_url: http://jquery.com/
+license_expression: mit
+name: jQuery
+notice_url: https://github.com/jquery/jquery/blob/1.12.4/LICENSE.txt
+owner: jQuery Project
+owner_url: http://jquery.org/
+vcs_repository: https://github.com/jquery/jquery.git
+version: 1.12.4
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

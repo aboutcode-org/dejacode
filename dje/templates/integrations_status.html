@@ -1,0 +1,41 @@
+{% extends 'bootstrap_base.html' %}
+
+{% block page_title %}Integrations status{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Status' title='Integrations' %}
+
+  <div class="row">
+    {% for label, status in integrations_status.items %}
+      <div class="col-sm-4">
+        <div class="card">
+          <h5 class="card-header">{{ label }}</h5>
+          {% if status.service_url %}
+            <small class="d-inline-flex px-3 py-1 fw-semibold text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle">
+              {{ status.service_url }}
+            </small>
+          {% endif %}
+          <div class="card-body py-2">
+            {% if status.is_configured %}
+              <div class="text-success mb-1"><i class="fas fa-check-circle"></i> Configured</div>
+              {% if status.is_available %}
+                <div class="text-success mb-1"><i class="fas fa-check-circle"></i> Available</div>
+              {% else %}
+                <div class="text-danger mb-1"><i class="fas fa-times-circle"></i> Not available</div>
+                {% if status.error_log %}
+                  <div class="alert alert-warning p-2" role="alert">
+                    {{ status.error_log }}
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% else %}
+              <div class="text-danger">Not configured <i class="fas fa-times-circle"></i></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

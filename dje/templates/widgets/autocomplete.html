@@ -1,0 +1,19 @@
+{% include "django/forms/widgets/input.html" %}
+
+{% if absolute_url %}
+  <a href="{{ absolute_url }}" id="{{ object_link_id }}" target="_blank" title="View object" data-bs-toggle="tooltip">
+    <i class="fas fa-external-link-alt fa-lg ms-1"></i>
+  </a>
+{% endif %}
+
+{% if can_add %}
+  <a href="#" role="button" class="text-success" data-bs-toggle="modal" data-bs-target="#create-component-modal">
+    <span data-bs-toggle="tooltip" title="Create new Component">
+      <i class="fas fa-plus-circle"></i>
+    </span>
+  </a>
+{% endif %}
+
+<script>
+  AutocompleteWidget.init("{{ field_selector }}", "#id_object_id", "#{{ object_link_id }}", "{{ display_attribute }}");
+</script>

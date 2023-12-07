@@ -1,0 +1,10 @@
+Localization
+============
+
+Compilation of .mo files
+------------------------
+
+This requires "gettext" to be installed. For more details see:
+https://docs.djangoproject.com/en/dev/ref/django-admin/#compilemessages
+
+    $ ./manage.py compilemessages

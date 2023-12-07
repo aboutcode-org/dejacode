@@ -1,0 +1,19 @@
+about_resource: PyJWT-2.4.0-py3-none-any.whl
+name: pyjwt
+version: 2.4.0
+download_url: https://files.pythonhosted.org/packages/1c/fb/b82e9601b00d88cf8bbee1f39b855ae773f9d5bcbcedb3801b2f72460696/PyJWT-2.4.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/pyjwt/2.4.0/
+package_url: pkg:pypi/pyjwt@2.4.0
+license_expression: mit
+copyright: Copyright (c) Jose Padilla
+notice_file: PyJWT-2.4.0-py3-none-any.whl.NOTICE
+attribute: yes
+owner: Jose Padilla
+owner_url: https://github.com/jpadilla
+contact: hello@jpadilla.com
+checksum_md5: 79db059e7b5de6e878e1252c0489e96e
+checksum_sha1: 5219e41b2e82f1201693e114caaae5c5d4d9ce91
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,17 @@
+about_resource: django_debug_toolbar-4.1.0-py3-none-any.whl
+name: django-debug-toolbar
+version: 4.1.0
+download_url: https://files.pythonhosted.org/packages/5b/11/22ae178ae870945970250bdad22530583384b3438be87e08c075016f3b07/django_debug_toolbar-4.1.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/django-debug-toolbar/4.1.0/
+package_url: pkg:pypi/django-debug-toolbar@4.1.0
+license_expression: bsd-new
+copyright: Copyright django-debug-toolbar project contributors
+attribute: yes
+owner: Django Debug Toolbar authors
+owner_url: https://github.com/django-debug-toolbar
+checksum_md5: a76039dfea390887e6bb2692a9d7dc76
+checksum_sha1: '1916237711a17dd34c40ae73811189b5b0e5d3e3'
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

@@ -1,0 +1,96 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+  <meta name="description" content="audit open source code">
+  <meta name="keywords" content="audit open source code,due diligence open source,open source code audit,open source code scanning,open source component management,open source due diligence,open source license,open source license management,open source review,open source scanner,software analysis,software audit,software audit services,software bom,software code audit,software scanning,software component management">
+  <meta name="author" content="nexB">
+{% endblock %}
+
+{% block page_title %}{{ block.super }} - Open Source and Third-Party Software Component License Management{% endblock %}
+{% block main_class %}{% endblock %}
+
+{% block content %}
+  <section class="py-3 text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">DejaCode - What's in your software!</h1>
+      <p class="lead text-muted">Open Source and Third-Party Software Component License Management.</p>
+    </div>
+  </section>
+  <div class="bg-light p-4 mb-4">
+    <div class="container">
+      <div class="row">
+
+          <div class="col-md-4">
+            <div class="card" style="min-height: 165px;">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <span class="fa-stack fa-xs float-end" style="margin: -5px -5px 0 0;">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fas fa-puzzle-piece fa-stack-1x fa-inverse"></i>
+                  </span>
+                  <a href="{% url 'component_catalog:component_list' %}">{% trans 'Components' %}</a>
+                </h5>
+                <ul class="m-0 text-muted" style="padding-inline-start: 20px;">
+                  <li>Catalog of open source and proprietary software.</li>
+                  <li>Curated metadata: license, origin, notice.</li>
+                  <li>Document usage in your own Products.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card" style="min-height: 165px;">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <a href="{% url 'component_catalog:package_list' %}">{% trans 'Packages' %}</a>
+                  <span class="fa-stack fa-xs float-end" style="margin: -5px -5px 0 0;">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fas fa-archive fa-stack-1x fa-inverse"></i>
+                  </span>
+                </h5>
+                <ul class="m-0 text-muted" style="padding-inline-start: 20px;">
+                  <li>Software package details.</li>
+                  <li>Integrated with ScanCode.</li>
+                  <li>Document usage in your own Products.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card" style="min-height: 165px;">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <a href="{% url 'license_library:license_list' %}">{% trans 'Licenses' %}</a>
+                  <span class="fa-stack fa-xs float-end" style="margin: -5px -5px 0 0;">
+                    <i class="fas fa-circle fa-stack-2x"></i>
+                    <i class="fas fa-book fa-stack-1x fa-inverse"></i>
+                  </span>
+                </h5>
+                <ul class="m-0 text-muted" style="padding-inline-start: 20px;">
+                  <li>Extensive library of public licenses.</li>
+                  <li>Metadata to highlight license terms.</li>
+                  <li>Apply your own Usage Policies.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="container mb-4">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="alert alert-success" style="min-height: 220px;">
+          <h4 style="margin-bottom: 10px;">Welcome to DejaCode!</h4>
+          <p>You can view sample data for Components, Packages and Licenses by clicking on the banner above.</p>
+          <p>You can create your own account from the Sign Up button on the top right and get immediate access to the DejaCode User experience.</p>
+          <p>If you think that you may need a private Dataspace to load your own data, please go to <a href="https://www.nexb.com/contact-us/" target="_blank">https://www.nexb.com/contact-us/</a> and enter "DejaCode Private Evaluation" in the "Type of Inquiry".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

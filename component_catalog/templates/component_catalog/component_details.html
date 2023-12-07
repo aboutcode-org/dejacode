@@ -1,0 +1,63 @@
+{% extends 'component_catalog/base_component_package_details.html' %}
+{% load i18n static %}
+
+{% block pager-toolbar %}
+  {% if form %}
+    <span data-bs-toggle="modal" data-bs-target="#add-to-product-modal">
+      <button type="button" class="btn btn-outline-dark" data-bs-toggle="tooltip" title="{% trans 'Assign to a Product' %}">
+        <i class="fas fa-plus-circle"></i> Add to Product
+      </button>
+    </span>
+  {% endif %}
+  {% if user.is_authenticated %}
+    <div class="btn-group">
+      <div class="dropdown">
+        <button id="add-to-btn" class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-share-alt"></i> Share
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          <div class="dropdown-header">Download</div>
+          {% if tabsets.Packages %}
+            <a href="{{ object.get_about_files_url }}" class="dropdown-item" target="_blank">
+              <i class="fas fa-download"></i> AboutCode files
+            </a>
+          {% endif %}
+          <a href="{{ object.get_export_spdx_url }}" class="dropdown-item" target="_blank">
+            <i class="fas fa-download"></i> SPDX document
+          </a>
+          <a href="{{ object.get_export_cyclonedx_url }}" class="dropdown-item" target="_blank">
+            <i class="fas fa-download"></i> CycloneDX SBOM
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% if user.is_staff and is_user_dataspace %}
+    {% if has_change_permission or has_change_subcomponent_permission or has_change_package_permission %}
+      <div class="dropdown btn-group">
+        <a class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="far fa-edit"></i> {% trans 'Admin' %}</a>
+        <div class="dropdown-menu dropdown-menu-end">
+          {% if has_change_permission %}
+            <a class="dropdown-item" href="{{ object.get_admin_url }}" target="_blank">{% trans 'Edit Component' %}</a>
+          {% endif %}
+          {% if has_change_subcomponent_permission %}
+            <a class="dropdown-item" href="{% url 'admin:component_catalog_subcomponent_changelist' %}?parent__id__exact={{ object.id }}" target="_blank">{% trans 'Manage Subcomponent relationships' %}</a>
+          {% endif %}
+          {% if has_change_package_permission %}
+            <a class="dropdown-item" href="{% url 'admin:component_catalog_package_changelist' %}?component__id__exact={{ object.id }}" target="_blank">{% trans 'Manage Packages' %}</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static "js/jquery.jsPlumb-1.7.2-min.js" %}" integrity="sha384-ITD4LUuh8ImLrJ5g55OIlG2QoiYVUuXLN9CStlO1e2SQZm0SyGfNkMiwPboMOv8D" crossorigin="anonymous"></script>
+  {% include 'component_catalog/includes/component_hierarchy.js.html' with related_parents=tabsets.Hierarchy.fields.0.1.related_parents related_children=tabsets.Hierarchy.fields.0.1.related_children  productcomponents=tabsets.Hierarchy.fields.0.1.productcomponents %}
+  {% if tabsets.Owner.extra %}
+    {% include 'organization/includes/owner_hierarchy.js.html' with current_owner=object.owner parents=tabsets.Owner.extra.context.owner_parents children=tabsets.Owner.extra.context.owner_children tab_name="tab_owner" %}
+  {% endif %}
+{% endblock %}

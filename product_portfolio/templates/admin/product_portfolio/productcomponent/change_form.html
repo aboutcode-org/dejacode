@@ -1,0 +1,33 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% block javascripts %}
+{{ block.super }}
+<script type="text/javascript">
+    (function($) {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Injects a link under the Component related lookup input to provide a way to
+            // make the lookup with the value from the Custom Component name, when available.
+            let custom_name = $("#id_name").val();
+
+            if (custom_name) {
+                let value = 'Lookup Component using "' + custom_name + '" from Custom Component name';
+                let custom_lookup_link = '<a href="#" class="custom-lookup">' + value + '</a>';
+                let related_component_input_c2 = $(".row.component .c-2");
+                related_component_input_c2.append('<div style="padding-top:5px;">' + custom_lookup_link + '</div>');
+
+                let lookup_id_component = $("#lookup_id_component");
+                $('.custom-lookup').click(function(e) {
+                    e.preventDefault();
+                    let original_href = lookup_id_component.prop('href');
+                    // Overrides the lookup URL injecting the extra search params,
+                    // triggers a click and sets the original URL back
+                    lookup_id_component.prop('href', original_href + '&q=name:"' + custom_name + '"');
+                    lookup_id_component.click();
+                    lookup_id_component.prop('href', original_href);
+                });
+            }
+
+        });
+    })(grp.jQuery);
+</script>
+{% endblock %}

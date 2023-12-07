@@ -1,0 +1,42 @@
+{% load admin_list i18n %}
+{% spaceless %}
+<nav class="grp-pagination">
+    <header style="display:none"><h1>Pagination</h1></header>
+    <ul>
+        {% if cl.result_count != cl.full_result_count %}
+            <li class="grp-results"><span>
+                {% blocktrans count cl.result_count as counter %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}
+            </span></li>
+        {% endif %}
+        <li class="grp-results">
+            {% if cl.result_count != cl.full_result_count or cl.show_all %}
+                {# DJE CUSTOM: Edit #}
+                {# Removed the wrong count as a side effect of default filtering #}
+                {# See https://code.djangoproject.com/ticket/22810 #}
+                <a href="?{% if cl.is_popup %}_popup=1{% endif %}" class="total">Show all</a>
+                {# /DJE CUSTOM #}
+            {% else %}
+                <span>{% blocktrans with cl.full_result_count as full_result_count %}{{ full_result_count }} total{% endblocktrans %}</span>
+            {% endif %}
+        </li>
+        {% if cl.reference_params %}
+            <li class="grp-results">
+                <a href="{{ cl.reference_params }}" class="reference-data-link">{% trans 'View Reference Data' %}</a>
+            </li>
+        {% elif cl.my_dataspace_link %}
+            <li class="grp-results">
+                <a href="?" class="reference-data-link">{% trans 'View My Data' %}</a>
+            </li>
+        {% endif %}
+        {% if pagination_required %}
+            {% for i in page_range %}
+                {% if not i|floatformat %}
+                    <li class="grp-separator"><span>...</span></li>
+                {% else %}
+                    <li>{% paginator_number cl i %}</li>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </ul>
+</nav>
+{% endspaceless %}

@@ -1,0 +1,365 @@
+[
+{
+  "model": "component_catalog.componenttype",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "dd1bb18f-3d5b-407f-8ad9-9c9aebe68b68",
+    "label": "Directory",
+    "notes": ""
+  }
+},
+{
+  "model": "component_catalog.componentstatus",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "cd130149-0f38-42c9-822e-a51ffed6c7df",
+    "default_on_addition": false,
+    "label": "Pending Review",
+    "text": "Text"
+  }
+},
+{
+  "model": "component_catalog.acceptablelinkage",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "cc4626fb-0758-4155-9909-19522841ec10",
+    "label": "Any Linkage Allowed",
+    "description": ""
+  }
+},
+{
+  "model": "component_catalog.component",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "7c5af42c-9b26-40ab-a24c-a539e8e9e685",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "holder": "",
+    "keywords": [
+      "Framework"
+    ],
+    "cpe": "",
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "name": "AES",
+    "version": "12th September 2011",
+    "owner": [
+      "nexB",
+      "0b9931db-db6e-49d1-b3f1-218cb302b20c"
+    ],
+    "release_date": null,
+    "description": "This version of my AES code supports both.",
+    "copyright": "Copyright (c) 2001 Dr Brian Gladman",
+    "homepage_url": "http://gladman.plushost.co.uk/oldsite/AES/",
+    "primary_language": "Java",
+    "admin_notes": "",
+    "notice_text": "",
+    "license_expression": "",
+    "configuration_status": null,
+    "type": [
+      "nexB",
+      "dd1bb18f-3d5b-407f-8ad9-9c9aebe68b68"
+    ],
+    "approval_reference": "",
+    "guidance": "",
+    "is_active": true,
+    "curation_level": 0,
+    "completion_level": 60,
+    "is_license_notice": null,
+    "is_copyright_notice": null,
+    "is_notice_in_codebase": null,
+    "notice_filename": "",
+    "notice_url": "",
+    "dependencies": "",
+    "project": "",
+    "codescan_identifier": "",
+    "website_terms_of_use": "",
+    "ip_sensitivity_approved": false,
+    "affiliate_obligations": false,
+    "affiliate_obligation_triggers": "",
+    "concluded_license": "",
+    "legal_comments": "",
+    "sublicense_allowed": null,
+    "express_patent_grant": null,
+    "covenant_not_to_assert": null,
+    "indemnification": null,
+    "legal_reviewed": false,
+    "distribution_formats_allowed": "",
+    "acceptable_linkages": null,
+    "export_restrictions": "",
+    "approved_download_location": "",
+    "approved_community_interaction": ""
+  }
+},
+{
+  "model": "component_catalog.component",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "a03c5662-b30c-43c9-b88a-e5e8915522d1",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "holder": "",
+    "keywords": [
+      "Framework"
+    ],
+    "cpe": "",
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "name": "Zlib",
+    "version": "1.2.5",
+    "owner": [
+      "nexB",
+      "1711f308-8072-4357-b72d-29afd075816a"
+    ],
+    "release_date": null,
+    "description": "ZLIB DATA COMPRESSION LIBRARY\r\n\r\nzlib 1.2.5",
+    "copyright": "(C) 1995-2010 Jean-loup Gailly and Mark Adler",
+    "homepage_url": "http",
+    "primary_language": "Java",
+    "admin_notes": "",
+    "notice_text": "",
+    "license_expression": "",
+    "configuration_status": null,
+    "type": [
+      "nexB",
+      "dd1bb18f-3d5b-407f-8ad9-9c9aebe68b68"
+    ],
+    "approval_reference": "",
+    "guidance": "",
+    "is_active": true,
+    "curation_level": 0,
+    "completion_level": 60,
+    "is_license_notice": null,
+    "is_copyright_notice": null,
+    "is_notice_in_codebase": null,
+    "notice_filename": "",
+    "notice_url": "",
+    "dependencies": "",
+    "project": "",
+    "codescan_identifier": "",
+    "website_terms_of_use": "",
+    "ip_sensitivity_approved": false,
+    "affiliate_obligations": false,
+    "affiliate_obligation_triggers": "",
+    "concluded_license": "",
+    "legal_comments": "",
+    "sublicense_allowed": null,
+    "express_patent_grant": null,
+    "covenant_not_to_assert": null,
+    "indemnification": null,
+    "legal_reviewed": false,
+    "distribution_formats_allowed": "",
+    "acceptable_linkages": null,
+    "export_restrictions": "",
+    "approved_download_location": "",
+    "approved_community_interaction": ""
+  }
+},
+{
+  "model": "component_catalog.subcomponent",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "2a9ef27e-9240-44f8-8a3c-73f52d474d06",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "notes": "again, yes",
+    "is_deployed": true,
+    "is_modified": false,
+    "extra_attribution_text": "",
+    "package_paths": "",
+    "parent": [
+      "nexB",
+      "a03c5662-b30c-43c9-b88a-e5e8915522d1"
+    ],
+    "child": [
+      "nexB",
+      "7c5af42c-9b26-40ab-a24c-a539e8e9e685"
+    ],
+    "license_expression": "",
+    "purpose": ""
+  }
+},
+{
+  "model": "component_catalog.componentassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "0686fc90-3b18-4647-9dbf-bd91ed3c25fc",
+    "component": [
+      "nexB",
+      "7c5af42c-9b26-40ab-a24c-a539e8e9e685"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "component_catalog.componentassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "0686fc90-3b18-4647-9dbf-bd91ed3c25fb",
+    "component": [
+      "nexB",
+      "a03c5662-b30c-43c9-b88a-e5e8915522d1"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "component_catalog.subcomponentassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "8473fc90-3b18-8735-9dbf-bd91ed3c25fb",
+    "subcomponent": [
+      "nexB",
+      "2a9ef27e-9240-44f8-8a3c-73f52d474d06"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+},
+{
+  "model": "component_catalog.componentkeyword",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "a66fda01-71b4-4527-9d42-87955ef620a4",
+    "label": "Framework",
+    "description": ""
+  }
+},
+{
+  "model": "component_catalog.package",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "b91a9a06-b709-45a4-ac8e-a57bde0c8f38",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "type": "",
+    "namespace": "",
+    "name": "",
+    "version": "",
+    "qualifiers": "",
+    "subpath": "",
+    "holder": "",
+    "keywords": [],
+    "cpe": "",
+    "homepage_url": "",
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "sha256": "",
+    "sha512": "",
+    "filename": "systemu-2.5.2.gem",
+    "download_url": "https://s3.amazonaws.com/production.s3.rubygems.org/gems/systemu-2.5.2.gem",
+    "sha1": "",
+    "md5": "",
+    "size": null,
+    "release_date": null,
+    "primary_language": "",
+    "description": "",
+    "project": "",
+    "notes": "",
+    "license_expression": "",
+    "copyright": "",
+    "notice_text": "",
+    "author": "",
+    "dependencies": "",
+    "repository_homepage_url": "",
+    "repository_download_url": "",
+    "api_data_url": "",
+    "declared_license": "",
+    "datasource_id": "",
+    "file_references": [],
+    "parties": []
+  }
+},
+{
+  "model": "component_catalog.componentassignedpackage",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "23318a0b-0eee-4545-9c25-0f5c04298c3b",
+    "component": [
+      "nexB",
+      "7c5af42c-9b26-40ab-a24c-a539e8e9e685"
+    ],
+    "package": [
+      "nexB",
+      "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
+    ]
+  }
+},
+{
+  "model": "component_catalog.componentassignedpackage",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "14418a0b-0eee-4545-9c25-0f5c04289c4a",
+    "component": [
+      "nexB",
+      "a03c5662-b30c-43c9-b88a-e5e8915522d1"
+    ],
+    "package": [
+      "nexB",
+      "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
+    ]
+  }
+},
+{
+  "model": "component_catalog.packageassignedlicense",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "9b1773b4-2361-4008-a0ca-045a1a7c5bc5",
+    "package": [
+      "nexB",
+      "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
+    ],
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ]
+  }
+}
+]

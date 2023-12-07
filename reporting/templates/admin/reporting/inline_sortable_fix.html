@@ -1,0 +1,33 @@
+{# #8750: This snippet was copied from grappelli/templates/admin/edit_inline/tabular.html #}
+{# The tabular.html template is not used in the reporting changeform for inlines, those   #}
+{# are rendered with ember.js instead. The purpose is this code is to force to set the    #}
+{# sortable_field_name values when submitting the form #}
+<script>
+(function($) {
+    $(document).ready(function($) {
+            $("#{{ model_name }}_form").bind("submit", function(){
+                var sortable_field_name = "{{ sortable_field_name }}",
+                    sortable_excludes = [],
+                    i = 0;
+                $("#ember_content").find("div.grp-tbody.grp-dynamic-form").each(function(){
+                    var fields = $(this).find("div.grp-td :input[type!=radio][type!=checkbox],input:checked,input[type=file]"),
+                        submit_values = false,
+                        has_value;
+                    $(fields).each(function() {
+                        // position is being updated if
+                        // a) the field has a value
+                        // b) if the field is not exluded with sortable_excludes (e.g. with default values)
+                        has_value = $(this).val() || ($(this).attr('type') == 'file' && $(this).siblings('a').length);
+                        if (has_value && $(this).attr("name") && $.inArray($(this).attr("name").split("-").pop(), sortable_excludes) == -1) {
+                            submit_values = true;
+                        }
+                    });
+                    if (submit_values) {
+                        $(this).find("input[name$='"+sortable_field_name+"']").val(i);
+                        i++;
+                    }
+                });
+            });
+    });
+})(grp.jQuery);
+</script>

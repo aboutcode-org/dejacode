@@ -1,0 +1,19 @@
+about_resource: importlib_metadata-4.11.4-py3-none-any.whl
+name: importlib-metadata
+version: 4.11.4
+download_url: https://files.pythonhosted.org/packages/ab/b5/1bd220dd470b0b912fc31499e0d9c652007a60caf137995867ccc4b98cb6/importlib_metadata-4.11.4-py3-none-any.whl
+homepage_url: https://pypi.org/project/importlib-metadata/4.11.4/
+package_url: pkg:pypi/importlib-metadata@4.11.4
+license_expression: apache-2.0
+copyright: Copyright (c) Jason R. Coombs, Barry Warsaw
+notice_file: importlib_metadata-4.11.4-py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: python-devs
+owner_url: https://gitlab.com/python-devs
+checksum_md5: b91661e6d59c6b2b352cd2f0d2ad28fc
+checksum_sha1: de7d170b7feb185ef2300d32ddf432d20aa52997
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

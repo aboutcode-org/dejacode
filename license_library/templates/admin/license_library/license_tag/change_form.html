@@ -1,0 +1,30 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% block content %}
+    {{ block.super }}
+    {% if examples %}
+        <div class="grp-group grp-tabular">
+            <h2>Examples from license annotations</h2>
+            <div class="grp-module grp-table">
+                <div class="grp-module grp-thead">
+                    <div class="grp-tr">
+                        <div class="grp-th">License</div>
+                        <div class="grp-th">Tag value</div>
+                        <div class="grp-th">Annotation quote</div>
+                    </div>
+                </div>
+                <div class="grp-module grp-tbody">
+                    {% for license, value, quote in examples %}
+                        <div class="grp-tr">
+                            <div class="grp-td">{{ license }}</div>
+                            <div class="grp-td">{{ value }}</div>
+                            <div class="grp-td" style="white-space: normal; font-style: italic;">
+                                &ldquo;{{ quote }}&rdquo;
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

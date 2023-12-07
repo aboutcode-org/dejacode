@@ -1,0 +1,55 @@
+{% load crispy_forms_tags %}
+<div id="scan-summary-to-package-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Set values from Scan Summary to Package</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form autocomplete="off" method="{{ scan_summary_to_package_form.helper.form_method }}" action="{{ scan_summary_to_package_form.helper.form_action }}" id="{{ scan_summary_to_package_form.helper.form_id }}" class="{{ scan_summary_to_package_form.helper.form_class }}">
+        <div class="modal-body bg-light">
+          {% crispy scan_summary_to_package_form %}
+        </div>
+        <div class="modal-footer">
+          <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
+          <input type="submit" name="submit-{{ scan_summary_to_package_form.helper.form_id }}" value="Set values" class="btn btn-primary btn-success">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  NEXB.setup_awesomplete_builder($('#id_scan-summary-to-package-license_expression').get(0));
+
+  $('#scan-summary-to-package-modal').on('show.bs.modal', function () {
+    let checkbox_and_radio = $("#tab_scan").find("input[type='checkbox']:checked, input[type='radio']:checked");
+    let dict_values = {};
+
+    $.each(checkbox_and_radio, function(index, element) {
+      let text_value = element.value.trim();
+      let field_name = element.name;
+      let join_separator = '\n';
+
+      if (field_name === 'license_expression') {
+        join_separator = ' AND ';
+        if (text_value.toLowerCase().includes(' or ')) text_value = '(' + text_value + ')';
+      }
+
+      if (dict_values[field_name])
+        dict_values[field_name] += join_separator + text_value;
+      else
+        dict_values[field_name] = text_value;
+    });
+
+    let input_text_and_textarea = $("#scan-summary-to-package-modal").find("textarea, input[type='text']");
+    $.each(input_text_and_textarea, function(index, element) {
+      let field_name = element.name.replace('scan-summary-to-package-', '');
+      if (dict_values[field_name])
+        element.value = dict_values[field_name];
+    });
+
+  });
+});
+</script>

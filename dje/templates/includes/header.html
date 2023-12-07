@@ -1,0 +1,22 @@
+{% extends 'includes/navbar_header.html' %}
+{% load i18n %}
+
+{% block nav-brand %}
+  <div class="navbar-nav navbar-brand me-4 p-0">
+    <a class="nav-link dropdown-toggle me-md-2 p-0" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+      {{ SITE_TITLE }}
+    </a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="/">Home</a>{# No trans for Home on purpose #}
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="https://www.nexb.com/resources/#support" target="_blank" rel="noreferrer">{% trans 'Support' %}</a>
+      <a class="dropdown-item" href="https://www.nexb.com/dejacode/" target="_blank" rel="noreferrer">{% trans 'About' %}</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="https://github.com/nexB/dejacode" target="_blank" rel="noreferrer">{% trans 'Source Code' %}</a>
+      <a class="dropdown-item" href="https://github.com/nexB/dejacode/releases" target="_blank" rel="noreferrer">{% trans 'Releases' %}</a>
+      <a class="dropdown-item" href="https://scancode-licensedb.aboutcode.org/agpl-3.0.html" target="_blank" rel="noreferrer">{% trans 'License' %}</a>
+      <div class="dropdown-divider"></div>
+      <h6 class="dropdown-header">DejaCode: v{{ DEJACODE_VERSION }}</h6>
+    </div>
+  </div>
+{% endblock %}

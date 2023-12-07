@@ -1,0 +1,16 @@
+about_resource: natsort-8.4.0-py3-none-any.whl
+name: natsort
+version: 8.4.0
+download_url: https://files.pythonhosted.org/packages/ef/82/7a9d0550484a62c6da82858ee9419f3dd1ccc9aa1c26a1e43da3ecd20b0d/natsort-8.4.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/natsort/8.4.0/
+package_url: pkg:pypi/natsort@8.4.0
+license_expression: mit
+copyright: Copyright natsort project contributors
+attribute: yes
+owner: Seth Morton
+checksum_md5: 452702a5eb6ca9b99d14f6006403906a
+checksum_sha1: ab8eb3a495e2c812a2296d6258de92d77b5fd243
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

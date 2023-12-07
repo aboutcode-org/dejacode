@@ -1,0 +1,20 @@
+{# 'License' tab in the Product/Component/Package details views #}
+{% load as_icon from dje_tags %}
+{% load i18n %}
+{% if license %}
+  <ul class="list-unstyled mb-2">
+  {% for label, value, text in license.get_license_tab_displayed_tags %}
+    {% if value == True or value == False or include_unknown_value %}
+      <li>
+        {{ value|as_icon }}
+        <span class="tag_popover ms-1" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-content="{{ text }}" data-bs-title="{{ label }}">{{ label }}</span>
+      </li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+  {% if license.is_active or license.is_component_license %}
+    <a href="{{ license.get_absolute_url }}#license-conditions"><i class="fas fa-list-ul"></i> Detailed license conditions</a>
+  {% endif %}
+{% else %}
+  <i>No tag for this license.</i>
+{% endif %}

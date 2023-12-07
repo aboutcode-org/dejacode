@@ -1,0 +1,27 @@
+about_resource: jsPlumb-1.7.2.tar.gz
+name: jsplumb
+version: 1.7.2
+download_url: https://github.com/sporritt/jsPlumb/archive/1.7.2.tar.gz
+description: Visual connectivity for webapps
+homepage_url: http://jsplumbtoolkit.com
+package_url: pkg:github/sporritt/jsplumb@1.7.2
+license_expression: mit OR gpl-2.0
+copyright: Copyright (c) 2010 - 2014 jsPlumb, http://jsplumbtoolkit.com/
+notice_file: jsPlumb-1.7.2.tar.gz.NOTICE
+notice_url: https://github.com/jsplumb/jsPlumb/blob/master/jsPlumb-LICENSE.txt
+redistribute: yes
+attribute: yes
+track_changes: yes
+owner: Simon Porritt
+owner_url: https://github.com/sporritt
+contact: simon.porritt@gmail.com
+vcs_repository: https://github.com/sporritt/jsPlumb.git
+checksum_md5: 4240e1765eafd7e59652f7553d00a5a1
+checksum_sha1: 7728e13a12fd1aba083a5876df1e62f1f0d71532
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: gpl-2.0
+    name: GNU General Public License 2.0
+    file: gpl-2.0.LICENSE

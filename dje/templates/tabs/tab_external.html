@@ -1,0 +1,40 @@
+{% load i18n %}
+{% load urlize_target_blank from dje_tags %}
+<table class="table table-bordered table-striped table-md">
+    <thead>
+        <tr>
+            <th>
+                <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{{ tab_context.help_texts.external_source_label }}">
+                    Source
+                </span>
+            </th>
+            <th>
+                <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{{ tab_context.help_texts.external_id }}">
+                    ID
+                </span>
+            </th>
+            <th>
+                <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="{{ tab_context.help_texts.external_url }}">
+                    URL
+                </span>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for external_reference in values %}
+        <tr>
+            <td>
+                {% if external_reference.external_source.homepage_url %}
+                    <a href="{{ external_reference.external_source.homepage_url }}" target="_blank">
+                        {{ external_reference.external_source }}
+                    </a>
+                {% else %}
+                    {{ external_reference.external_source }}
+                {% endif %}
+            </td>
+            <td>{{ external_reference.external_id }}</td>
+            <td>{{ external_reference.external_url|urlize_target_blank }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

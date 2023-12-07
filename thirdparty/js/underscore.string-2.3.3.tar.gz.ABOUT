@@ -1,0 +1,21 @@
+about_resource: underscore.string-2.3.3.tar.gz
+name: underscore.string
+version: 2.3.3
+download_url: https://github.com/epeli/underscore.string/archive/2.3.3.tar.gz
+description: String manipulation extensions for Underscore.js javascript library
+homepage_url: http://epeli.github.io/underscore.string/
+package_url: pkg:github/epeli/underscore.string@2.3.3
+license_expression: mit
+copyright: Copyright (c) 2011 Esa-Matti Suuronen esa-matti@suuronen.org
+notice_file: underscore.string-2.3.3.tar.gz.NOTICE
+attribute: yes
+owner: Esa-Matti Suuronen
+owner_url: http://esa-matti.suuronen.org/
+contact: esa-matti@suuronen.org
+vcs_repository: https://github.com/epeli/underscore.string.git
+checksum_md5: 44fd9dab2c378070af86bdfb685bed3e
+checksum_sha1: b544d96583aaca01fd4a12b9eef016fbcdd7a463
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

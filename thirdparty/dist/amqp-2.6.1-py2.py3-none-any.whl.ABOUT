@@ -1,0 +1,20 @@
+about_resource: amqp-2.6.1-py2.py3-none-any.whl
+name: amqp
+version: 2.6.1
+download_url: https://files.pythonhosted.org/packages/bc/90/bb5ce93521772f083cb2d7a413bb82eda5afc62b4192adb7ea4c7b4858b9/amqp-2.6.1-py2.py3-none-any.whl#sha256=aa7f313fb887c91f15474c1229907a04dac0b8135822d6603437803424c0aa59
+description: This is a fork of amqplib which was originally written by Barry Pederson. It is
+  maintained by the Celery project, and used by kombu as a pure python alternative when librabbitmq
+  is not available. This library should be API compatible with librabbitmq.
+homepage_url: http://github.com/celery/py-amqp
+package_url: pkg:pypi/amqp@2.6.1
+license_expression: bsd-new
+copyright: Copyright (c) 2015-2016 Ask Solem & contributors.
+notice_file: amqp-2.6.1-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Ask Solem
+checksum_md5: 7e7552f78e16e1d0467af9cfb91ac9d0
+checksum_sha1: b4ae4bce329860abbd147501438267fae5e9600d
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

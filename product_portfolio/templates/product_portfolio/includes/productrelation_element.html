@@ -1,0 +1,54 @@
+{% spaceless %}
+{% if relation.package %}
+  <span class="me-2">
+    {% include 'includes/object_icon.html' with object=relation.package only %}
+  </span>
+  {% if relation.package.package_url in values.vulnerable_purls %}
+    <a class="me-2" href="{{ relation.package.get_absolute_url }}#vulnerabilities" target="_blank" data-bs-toggle="tooltip" title="Vulnerabilities">
+      <i class="fas fa-bug vulnerability"></i>
+    </a>
+  {% endif %}
+  <strong><a href="{{ relation.package.get_absolute_url }}" target="_blank">{{ relation.package }}</a></strong>
+{% elif relation.component %}
+  <span class="me-1">
+    {% include 'includes/object_icon.html' with object=relation.component only %}
+  </span>
+  {% if relation.component.is_active %}
+    <strong><a href="{{ relation.component.get_absolute_url }}" target="_blank">{{ relation.component }}</a></strong>
+  {% else %}
+    <strong>{{ relation.component }}</strong>
+  {% endif %}
+{% else %}
+  <span data-bs-toggle="tooltip" title="Custom Component">
+    <i class="fa fa-puzzle-piece me-1 text-muted"></i>
+  </span>
+  {% if relation.name %}
+    <strong>{{ relation.name }}{% if relation.version %} {{ relation.version }}{% endif %}</strong>
+  {% else %}
+    <i>(Component data missing)</i>
+  {% endif %}
+{% endif %}
+{% if relation.package_id and has_edit_productpackage %}
+  <span data-bs-toggle="modal" data-bs-target="#edit-productrelation-modal" class="ms-1"
+        data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'package' relation.uuid %}"
+        {% if has_delete_productpackage %}
+          data-can-delete="yes"
+        {% endif %}
+  >
+    <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+  </span>
+{% elif has_edit_productcomponent %}
+  <span data-bs-toggle="modal" data-bs-target="#edit-productrelation-modal" class="ms-1"
+        {% if relation.component %}
+          data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'component' relation.uuid %}"
+        {% else %}
+          data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'custom-component' relation.uuid %}"
+        {% endif %}
+        {% if has_delete_productcomponent %}
+          data-can-delete="yes"
+        {% endif %}
+  >
+    <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+  </span>
+{% endif %}
+{% endspaceless %}

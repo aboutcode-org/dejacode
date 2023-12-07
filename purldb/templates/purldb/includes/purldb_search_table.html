@@ -1,0 +1,44 @@
+{% load i18n humanize %}
+{% load urlize_target_blank from dje_tags %}
+
+{% if object_count %}
+  <h3>
+    <span class="badge text-bg-purldb">{% trans 'PurlDB' %}</span>
+    <small class="text-muted">
+      <span id="purldb-count">{{ object_count|intcomma }}</span> package result{{ object_list|pluralize }} for this search.
+      Click <a href="{% url 'purldb:purldb_list' %}?q={{ search_query }}">here</a> to see the full list.
+    </small>
+  </h3>
+  <table class="table table-bordered table-striped table-md">
+    <thead>
+      <tr>
+        <th>Identifier</th>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Version</th>
+        <th>License</th>
+        <th>Download URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for object in object_list %}
+        <tr>
+          <td>
+            <strong>
+              <a href="{% url 'purldb:purldb_details' object.uuid %}">
+                {% include 'purldb/includes/package_identifier.html' with package=object only %}
+              </a>
+            </strong>
+          </td>
+          <td>{{ object.type|default_if_none:"" }}</td>
+          <td>{{ object.name|default_if_none:"" }}</td>
+          <td>{{ object.version|default_if_none:"" }}</td>
+          <td class="license-expression" style="max-width: 200px;">
+            {{ object.license_expression_formatted|default_if_none:"" }}
+          </td>
+          <td class="text-truncate" style="max-width: 200px;">{{ object.download_url|iriencode|urlize_target_blank }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

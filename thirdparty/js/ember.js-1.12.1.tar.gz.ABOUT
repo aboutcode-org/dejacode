@@ -1,0 +1,20 @@
+about_resource: ember.js-1.12.1.tar.gz
+name: ember.js
+version: 1.12.1
+download_url: https://github.com/emberjs/ember.js/archive/v1.12.1.tar.gz
+description: Ember.js - A JavaScript framework for creating ambitious web applications
+homepage_url: http://emberjs.com/
+package_url: pkg:github/emberjs/ember.js@1.12.1?version_prefix=v
+license_expression: mit
+copyright: Copyright (c) 2015 Yehuda Katz, Tom Dale and Ember.js contributors
+notice_file: ember.js-1.12.1.tar.gz.NOTICE
+notice_url: https://raw.github.com/emberjs/ember.js/master/LICENSE
+attribute: yes
+owner: Ember.js
+vcs_repository: https://github.com/emberjs/ember.js
+checksum_md5: ea555e6c8d4fde1d36e546b3040d539d
+checksum_sha1: ce2ad78547c49748df1dbef3f07b7ac7fcb22e19
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

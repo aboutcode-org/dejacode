@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block header %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content-class %}group-details{% endblock %}
+
+{% block content %}
+<div class="grp-content-container g-d-c" style="margin-top:-40px;margin-bottom:-100px;">
+    <table class="grp-table">
+        <thead>
+            <tr>
+                <th></th>
+                {% for group in groups %}
+                    <th><strong>{{ group.name }}</strong></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for perm_name, row in permission_group.items %}
+            <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                <td><strong>{{ perm_name }}</strong></td>
+                {% for is_available in row %}
+                    <td>{{ is_available }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        <tbody>
+    </table>
+</div>
+{% endblock %}

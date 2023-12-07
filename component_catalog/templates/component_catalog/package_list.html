@@ -1,0 +1,13 @@
+{% extends 'component_catalog/base_component_package_list.html' %}
+{% load i18n %}
+
+{% block add_button %}
+  <button type="button" class="btn btn-success{% if extra_add_urls %} pe-2{% endif %}" data-bs-toggle="modal" data-bs-target="#add-package-modal">Add {{ opts.verbose_name|title }}</button>
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% if has_add_package_permission %}
+    {% include 'component_catalog/includes/add_package_modal.html' %}
+  {% endif %}
+{% endblock %}

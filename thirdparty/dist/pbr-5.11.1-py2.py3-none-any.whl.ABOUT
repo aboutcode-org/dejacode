@@ -1,0 +1,18 @@
+about_resource: pbr-5.11.1-py2.py3-none-any.whl
+name: pbr
+version: 5.11.1
+download_url: https://files.pythonhosted.org/packages/01/06/4ab11bf70db5a60689fc521b636849c8593eb67a2c6bdf73a16c72d16a12/pbr-5.11.1-py2.py3-none-any.whl
+package_url: pkg:pypi/pbr@5.11.1
+license_expression: apache-2.0 AND bsd-new
+copyright: Copyright pbr project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 01f8e66eeafb92da41652c6b6deaeeee
+checksum_sha1: faa64b9dd6ce10c9aa87cf55be4fd66f564fde29
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

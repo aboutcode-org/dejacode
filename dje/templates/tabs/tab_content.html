@@ -1,0 +1,10 @@
+{% for label, values, help_text, template_name in tab_context.fields %}
+  {% if template_name %}
+    {% include template_name %}
+  {% else %}
+    {% include 'tabs/tab_default.html' %}
+  {% endif %}
+{% endfor %}
+{% if tab_context.extra %}
+  {% include tab_context.extra.template with extra_context=tab_context.extra.context %}
+{% endif %}

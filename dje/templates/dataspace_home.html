@@ -1,0 +1,82 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% load urlize_target_blank from dje_tags %}
+
+{% block page_title %}DejaCode for {{ user.dataspace }}{% endblock %}
+
+{% block content %}
+  <div class="pb-2 text-center">
+    <h1 class="display-5">DejaCode for {{ user.dataspace }}</h1>
+  </div>
+
+  <div class="alert alert-success" role="alert">
+    <strong>
+      {% if user.dataspace.home_page_announcements %}
+        {{ user.dataspace.home_page_announcements|urlize_target_blank|linebreaksbr }}
+      {% else %}
+        Welcome to DejaCode!
+      {% endif %}
+    </strong>
+  </div>
+
+  {% if cards %}
+    <div class="row sm-gutter mb-3">
+      {% for card in cards %}
+        <div class="col">
+          <div class="card shadow-sm">
+            <div class="h6 card-header fw-bold px-2">{{ card.title }}</div>
+            <div class="card-body p-2">
+              {% for obj in card.object_list %}
+                {% if forloop.first %}
+                  <ul class="mb-1 ps-3">
+                {% endif %}
+                <li>{{ obj }}</li>
+                {% if forloop.last %}
+                  </ul>
+                {% endif %}
+              {% empty %}
+                No results.
+              {% endfor %}
+            </div>
+            {% if card.display_changelist_link and request.user.is_staff %}
+              {% with changelist_url=card.query.get_changelist_url_with_filters %}
+                {% if changelist_url %}
+                  <div class="card-footer text-center p-2">
+                    <a href="{{ changelist_url }}" class="card-link smaller">View all the objects in changelist</a>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row row-cols-3 sm-gutter">
+    <div class="col">
+      <div class="card">
+        <div class="card-body pb-1">
+          {% for header, urls in sections.items %}
+            <h2 class="h5">{{ header }}:</h2>
+            <ul class="ps-4">
+              {% for value, url in urls.items %}
+                <li><a target="_blank" href="{{ url }}" rel="noreferrer">{{ value }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% if request_assigned_to_me or request_followed_by_me %}
+      <div class="col">
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Requests assigned to me' filter_name='assignee' %}
+      </div>
+      <div class="col">
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Requests I am following' filter_name='following' %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

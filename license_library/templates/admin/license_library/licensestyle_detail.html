@@ -1,0 +1,18 @@
+{% load i18n %}
+
+{% block content %}
+<div style="margin-bottom:0;">
+    <fieldset class="grp-module">
+        <div class="grp-row grp-cells-1">
+            <div class="g-d-3"><label class="required">Name:</label></div>
+            <div class="g-d-fluid">{{ licensestyle.name }}</div>
+        </div>
+        {% if category.label|cut:" " %}
+        <div class="grp-row grp-cells-1">
+            <div class="g-d-3"><label class="required">Notes:</label></div>
+            <div class="g-d-fluid">{{ licensestyle.notes }}</div>
+        </div>
+        {%  endif %}
+    </fieldset>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load i18n %}
+{% load inject_preserved_filters from dje_tags %}
+{% load urlize_target_blank from dje_tags %}
+<table class="table table-bordered table-striped table-md purldb-table">
+  {% include 'includes/object_list_table_header.html' %}
+  <tbody>
+  {% for object in object_list %}
+    <tr>
+      <td class="break-all">
+        <strong>
+          <a href="{% url 'purldb:purldb_details' object.uuid %}">
+            {% include 'purldb/includes/package_identifier.html' with package=object only %}
+          </a>
+        </strong>
+      </td>
+      <td>{{ object.type|default_if_none:"" }}</td>
+      <td>{{ object.name|default_if_none:"" }}</td>
+      <td class="break-all">{{ object.version|default_if_none:"" }}</td>
+      <td class="license-expression">
+        {{ object.license_expression_formatted|default_if_none:"" }}
+      </td>
+      <td class="text-truncate" style="max-width: 200px;" title="{{ object.download_url }}">
+        {{ object.download_url|iriencode|urlize_target_blank }}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="100">No results.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

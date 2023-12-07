@@ -1,0 +1,23 @@
+[
+  {
+    "api_url": "http://127.0.0.1:8000/api/v2/packages/49b9b9f2-74b2-41e1-9b1b-cf1931f5adc5/",
+    "absolute_url": "http://127.0.0.1:8000/packages/nexB/49b9b9f2-74b2-41e1-9b1b-cf1931f5adc5/",
+    "download_url": "https://pypi.python.org/packages/source/D/Django/Django-1.6.tar.gz",
+    "uuid": "49b9b9f2-74b2-41e1-9b1b-cf1931f5adc5",
+    "filename": "Django-1.6.tar.gz",
+    "sha1": "adf539ecb45bed3f103233297561776898915bfc",
+    "md5": "65db1bc313124c3754c89073942e38a8",
+    "size": 6597874,
+    "release_date": null,
+    "notes": "",
+    "license_expression": "",
+    "licenses": [],
+    "licenses_summary": [],
+    "components": [
+        "http://127.0.0.1:8000/api/v2/components/f3712a82-f5d8-4035-a1b2-5b8384647e3d/"
+    ],
+    "external_references": [],
+    "created_date": "2014-02-24T15:44:15.154000",
+    "last_modified_date": "2014-02-24T15:44:15.154000"
+  }
+]

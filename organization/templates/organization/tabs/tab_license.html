@@ -1,0 +1,39 @@
+{% load i18n %}
+{% spaceless %}
+<table class="table table-bordered table-hover table-md">
+    <thead>
+        <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'Short name' %}</th>
+            <th>{% trans 'Key' %}</th>
+            <th>{% trans 'Category' %}</th>
+            <th>{% trans 'License profile' %}</th>
+            {% if show_licenses_policy %}
+                <th>{% trans 'Usage policy' %}</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for license in values %}
+            <tr class="{% cycle 'odd' '' %}">
+                <td>
+                    <strong>
+                        {% if license.is_active or license.is_component_license  %}
+                            <a href="{{ license.get_absolute_url }}">{{ license.name }}</a>
+                        {% else %}
+                            {{ license.name }}
+                        {% endif %}
+                    </strong>
+                </td>
+                <td>{{ license.short_name }}</td>
+                <td>{{ license.key }}</td>
+                <td>{{ license.category }}</td>
+                <td>{{ license.license_profile|default_if_none:'' }}</td>
+                {% if show_licenses_policy %}
+                    <td>{{ license.get_usage_policy_display_with_icon|default_if_none:'' }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endspaceless %}

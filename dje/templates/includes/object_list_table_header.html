@@ -1,0 +1,40 @@
+{% load i18n %}
+<thead>
+  <tr>
+    {% if is_grouping_active %}
+      <th class="column-grouping" scope="col">
+        <button class="btn btn-xs btn-outline-secondary j_expand_all_versions" type="button" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="hover" title="Expand/Collapse all" aria-label="Expand/Collapse all"><i class="fas fa-plus j_icon"></i></button>
+      </th>
+    {% endif %}
+    {% if include_checkbox %}
+      <th class="column-selection" scope="col">
+        {% if checkbox_select_all %}
+          <input id="checkbox-select-all" type="checkbox" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="hover" title="Select all" aria-label="Select all rows">
+        {% endif %}
+      </th>
+    {% endif %}
+    {% for header in table_headers %}
+      <th class="column-{{ header.field_name }}" scope="col">
+        {% if header.filter %}
+          <div class="float-end">{{ header.filter }}</div>
+        {% endif %}
+        {% if header.help_text %}
+          <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ header.help_text }}">
+        {% endif %}
+        {% trans header.verbose_name %}
+        {% if header.help_text %}
+          </span>
+        {% endif %}
+        {% if header.sort %}
+          {% with query_no_sort=filter.get_query_no_sort %}
+            {% if filter.form.sort.data and header.field_name in filter.form.sort.data.0 %}
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={% if '-' not in filter.form.sort.data.0 %}-{% endif %}{{ header.field_name }}" class="sort active" aria-label="Sort"><i class="fas fa-sort-{% if '-' not in filter.form.sort.data.0 %}up{% else %}down{% endif %}"></i></a>
+            {% else %}
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={{ header.field_name }}" class="sort" aria-label="Sort"><i class="fas fa-sort"></i></a>
+            {% endif %}
+          {% endwith %}
+        {% endif %}
+      </th>
+    {% endfor %}
+  </tr>
+</thead>

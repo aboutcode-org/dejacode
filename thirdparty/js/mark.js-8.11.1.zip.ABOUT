@@ -1,0 +1,19 @@
+about_resource: mark.js-8.11.1.zip
+name: mark.js
+version: 8.11.1
+download_url: https://github.com/julmot/mark.js/archive/8.11.1.zip
+description: JavaScript keyword highlighting. Mark text with with options that fit every application.
+  Also available as jQuery plugin.
+homepage_url: https://markjs.io/
+package_url: pkg:github/julmot/mark.js@8.11.1
+license_expression: mit
+copyright: Copyright (c) Julian Kühnel
+notice_file: mark.js-8.11.1.zip.NOTICE
+attribute: yes
+owner: Julian Kühnel
+checksum_md5: 76d6fc6f1108d931aea314962a58b444
+checksum_sha1: c52b2e00f8d7430829e7018dd5078937b16df696
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

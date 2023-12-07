@@ -1,0 +1,14 @@
+about_resource: pyflakes-3.1.0-py2.py3-none-any.whl
+name: pyflakes
+version: 3.1.0
+download_url: https://files.pythonhosted.org/packages/00/e9/1e1fd7fae559bfd07704991e9a59dd1349b72423c904256c073ce88a9940/pyflakes-3.1.0-py2.py3-none-any.whl
+package_url: pkg:pypi/pyflakes@3.1.0
+license_expression: mit
+copyright: Copyright pyflakes project contributors
+attribute: yes
+checksum_md5: 8fe9be379ddf5f077238690c049532a9
+checksum_sha1: 3a3ce0968cf3da51db88b36c218a49931071d5c8
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,178 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+
+{% block extrahead %}
+    {# Loading before dejacode_bootstrap.css for proper overrides #}
+    <link rel="stylesheet" href="{% static 'bootstrap-select-1.14.0-beta3/css/bootstrap-select.min.css' %}">
+{% endblock %}
+
+{% block page_title %}{% trans opts.verbose_name_plural|title %}{% endblock %}
+
+{% block bodyclass %}{% endblock %}
+
+{% block content %}
+    {% include 'includes/messages_alert.html' %}
+
+    <div class="row align-items-end">
+      <div class="col">
+        <ul class="nav nav-pills">
+          {% block nav-list-head %}
+            <li class="nav-item">
+              <a class="nav-link {% if not filter.is_active %}active{% endif %}" href="{{ request.path }}?all=true">{% trans 'All' %}</a>
+            </li>
+            {% if is_reference_data %}
+              <li class="nav-item text-center px-3" style="line-height: 1em;">
+                <div class="h6 mb-0" style="font-size: 0.9rem;">{{ paginator.count|intcomma }} results</div>
+                {% include 'includes/reference_data_label.html' %}
+              </li>
+            {% elif is_purldb %}
+              <li class="nav-item text-center px-3" style="line-height: 1em;">
+                <div class="h6 mb-0" style="font-size: 0.9rem;">{{ paginator.count|intcomma }} results</div>
+                {% include 'includes/purldb_label.html' %}
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link disabled">{{ paginator.count|intcomma }} results</a>
+              </li>
+            {% endif %}
+            {% if is_paginated %}
+              <li class="nav-item mt-1">
+                 {% include 'pagination/object_list_pagination.html' %}
+              </li>
+            {% endif %}
+          {% endblock %}
+        </ul>
+      </div>
+      <div class="col-auto">
+        {% block top-right-buttons %}
+          {% if reference_data_link %}
+            <a href="{{ reference_data_link }}" class="btn btn-outline-warning">View Reference Data</a>
+          {% elif my_data_link %}
+            <a href="{{ my_data_link }}" class="btn btn-outline-warning">View My Data</a>
+          {% endif %}
+          {% include 'includes/admin_links_dropdown.html' %}
+          {% if has_add_permission and add_url %}
+            <div class="btn-group">
+              {% block add_button %}
+                <a class="btn btn-success{% if extra_add_urls %} pe-2{% endif %}" href="{{ add_url }}">Add {{ opts.verbose_name|title }}</a>
+              {% endblock %}
+              {% if extra_add_urls %}
+                <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Actions dropdown"></button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  {% for label, href in extra_add_urls %}
+                    <a href="{{ href }}" class="dropdown-item">{{ label }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endblock %}
+      </div>
+    </div>
+
+    <div class="my-1">
+      {% include 'includes/filters_breadcrumbs.html' with filterset=filter only %}
+    </div>
+
+    {% block template_list_table %}{% include template_list_table %}{% endblock %}
+
+    {% if is_paginated %}
+      <div class="d-flex justify-content-center">
+        {% include 'pagination/object_list_pagination.html' %}
+      </div>
+      <div class="text-center">
+        <strong>Tip:</strong> You can use <kbd>&larr;</kbd> and <kbd>&rarr;</kbd> keys to navigate.
+      </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{% static 'bootstrap-select-1.14.0-beta3/js/bootstrap-select.min.js' %}" integrity="sha384-9Q6WYox+EJ0woUyO2q27atOpUdbUzrABDlL6Qhpr4eDqY0CxPs8GYD4ZSJYwv4pB" crossorigin="anonymous"></script>
+  <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            /* Tooltips on hierarchy and activity links */
+            $('.h-link').tooltip({placement: 'bottom', title: 'Hierarchy view', container: 'body'});
+            $('.r-link').tooltip({placement: 'bottom', title: 'Request view', container: 'body'});
+
+            /* Select all checkboxes */
+            let checkbox_select_all = $("thead th #checkbox-select-all");
+            checkbox_select_all.click(function() {
+              let checkboxes = $("table#object-list-table tbody td input[type='checkbox']");
+              checkboxes.prop("checked", $(this).prop("checked"));
+              // Fire the `change` event on the first item to trigger the `handle_button_display`
+              // There's no need to trigger that event for each checkbox in this "select all" action
+              checkboxes.first().change();
+            });
+
+            // Left and Right keys navigation
+            {% if is_paginated %}
+                $(document).keydown(function(e) {
+                    // Do not trigger the navigation if an <input> or <textarea> currently has the focus
+                    var any_input_has_focus = (function() {return ($("input,textarea").is(":focus"))});
+                    {% if page_obj.has_previous %}
+                        if (e.keyCode == 37 && !any_input_has_focus()) {
+                            e.preventDefault();
+                            window.location.href = window.location.href.replace( /[\?#].*|$/, "?{{ previous_url }}" );
+                        }
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        if (e.keyCode == 39 && !any_input_has_focus()) {
+                            e.preventDefault();
+                            window.location.href = window.location.href.replace( /[\?#].*|$/, "?{{ next_url }}" );
+                        }
+                    {% endif %}
+                });
+            {% endif %}
+
+            $('select.bootstrap-select-filter')
+              .selectpicker()
+              .on('changed.bs.select', function (event) {
+                  // Hide the opened filter box
+                  const dropdownMenu = document.querySelector('.dropdown-menu.show');
+                  if (dropdownMenu) {
+                      dropdownMenu.style.display = 'none';
+                  }
+
+                  let selectedValues = $(event.target).val();
+                  const fieldName = event.target.name;
+
+                  // Parse the search string into an object
+                  const params = new URLSearchParams(window.location.search);
+
+                  // Remove the 'all' parameter if it exists
+                  params.delete('all');
+
+                  // Remove all parameters with the same fieldName
+                  params.delete(fieldName);
+
+                  if (selectedValues) {
+                    if (!Array.isArray(selectedValues)) {
+                        selectedValues = [selectedValues];
+                    }
+
+                    selectedValues.forEach((value) => {
+                      if (value === null || value === "") {
+                        params.delete(fieldName);
+                      } else {
+                        // Set the parameter specified by field_name to the new value
+                        params.append(fieldName, value);
+                      }
+                    });
+                  }
+
+                  /// If there are no active search/filters, add 'all=true' to the parameters
+                  if (params.toString() === "") {
+                      params.set('all', 'true');
+                  }
+
+                  // Set the new search string to the window's location
+                  window.location.search = params.toString();
+             });
+        });
+    </script>
+    {% if is_grouping_active %}
+        {% include "version_grouping_script.html" %}
+    {% endif %}
+{% endblock %}

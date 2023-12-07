@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+<div id="purldb-filterset-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form autocomplete="off" method="{{ form_helper.form_method }}" class="{{ form_helper.form_class }}">
+        <div class="modal-body bg-light">
+          {% crispy filter.form form_helper %}
+        </div>
+        <div class="modal-footer">
+          <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
+          <input type="submit" value="Filter" class="btn btn-primary">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

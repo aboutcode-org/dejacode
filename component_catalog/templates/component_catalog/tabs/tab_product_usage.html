@@ -1,0 +1,64 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% spaceless %}
+<table class="table table-bordered table-hover table-md">
+    <thead>
+        <tr>
+            <th>{% trans 'Product name' %}</th>
+            <th>{% trans 'Version' %}</th>
+            <th>{% trans 'Owner' %}</th>
+            <th>{% trans 'Purpose' %}</th>
+            <th>{% trans 'License' %}</th>
+            <th>{% trans 'Review status' %}</th>
+            <th>{% trans 'Deployed' %}</th>
+            <th>{% trans 'Modified' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for productrelation in values %}
+            <tr class="{% cycle 'odd' '' %}">
+                <td>
+                    <strong>
+                        <a href="{{ productrelation.product.get_absolute_url }}" target="_blank">{{ productrelation.product.name }}</a>
+                    </strong>
+                </td>
+                <td>{{ productrelation.product.version }}</td>
+                <td>{{ productrelation.product.owner|default_if_none:"" }}</td>
+                <td>
+                  {% if productrelation.purpose %}
+                    <div class="text-nowrap">{{ productrelation.purpose.label_with_icon }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if show_licenses_policy %}
+                    {{ productrelation.get_license_expression_linked_with_policy|default_if_none:"" }}
+                  {% else %}
+                    {{ productrelation.license_expression_linked|default_if_none:"" }}
+                  {% endif %}
+                </td>
+                <td>{{ productrelation.review_status|default_if_none:'' }}</td>
+                <td class="text-center">{{ productrelation.is_deployed|as_icon }}</td>
+                <td class="text-center">{{ productrelation.is_modified|as_icon }}</td>
+            </tr>
+            {% if productrelation.notes %}
+                <tr class="{% cycle 'odd' '' %}">
+                    <td>&nbsp;</td>
+                    <td colspan="7"><strong>{% trans 'Notes' %}:</strong> {{ productrelation.notes }}</td>
+                </tr>
+            {% endif %}
+            {% if productrelation.package_paths %}
+                <tr class="{% cycle 'odd' '' %}">
+                    <td>&nbsp;</td>
+                    <td colspan="7"><strong>{% trans 'Package paths' %}:</strong> {{ productrelation.package_paths }}</td>
+                </tr>
+            {% endif %}
+            {% if productrelation.extra_attribution_text %}
+                <tr class="{% cycle 'odd' '' %}">
+                    <td>&nbsp;</td>
+                    <td colspan="7"><strong>{% trans 'Extra attribution text' %}:</strong> {{ productrelation.extra_attribution_text }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endspaceless %}

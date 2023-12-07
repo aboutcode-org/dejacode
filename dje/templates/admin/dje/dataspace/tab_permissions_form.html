@@ -1,0 +1,80 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}
+    {{ block.super }} - Tab permissions
+{% endblock %}
+
+{% block content_title %}
+    <h1>Tab permission for {{ user.dataspace }}</h1>
+    <ul class="grp-object-tools">
+        <li>
+            <a href="{% url 'admin:docs_models' %}" class="grp-state-focus" target="_blank">{% trans 'Models documentation' %}</a>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Tab permissions' %}
+{% endblock %}
+
+{% block content %}
+    <div id="short_description">
+        <p style="margin-bottom: 5px;">
+            Use this form to assign tab visibility to each User Group. If you do not make any assignments
+            at all (everything unchecked), DejaCode will assume that you do not want to restrict tab
+            visibility at all by User Group, and all tabs will be visible to all users in the user views.
+            Also note that Superusers have visibility to all DejaCode tabs.
+        </p>
+        <p style="margin-bottom: 5px;">
+            The main purpose of restricting visibility by User Group is to provide sensitive information
+            on a need-to-know basis only. For example, the Legal tab on the Component may contain information
+            that is only appropriate for your Legal team to see.
+        </p>
+        <p>
+            Note that if you enable tab visibility control by User Group, then you must assign at least one Group
+            to each of your DejaCode Users (who is not a Superuser) in order for them to see any application data.
+        </p>
+    </div>
+    <form method="post" action="">{% csrf_token %}
+        {{ formset.management_form }}
+        <table class="grp-table">
+            {% for form in formset %}
+                <tr>
+                    <td colspan="2" style="background-color: #e5e5e5;">
+                        <h2>Group: {{ form.group_name.value }}</h2>
+                    </td>
+                </tr>
+                {{ form }}
+            {% endfor %}
+        </table>
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'change' object.pk|admin_urlquote as object_url %}
+                    <a class="grp-button cancel-link" href="{{ object_url }}">{% trans 'Return' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Update tab permissions">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+    (function($) {
+        document.addEventListener('DOMContentLoaded', function () {
+            var check_all_checkboxes = $("th label [type='checkbox']");
+            check_all_checkboxes.attr("data-hint", "Check/Un-check all").addClass("hint--bottom");
+
+            check_all_checkboxes.click(function() {
+                var row_checkboxes = $(this).parents("tr").children("td").find("input[type='checkbox']");
+                row_checkboxes.prop("checked", $(this).prop("checked"));
+            });
+        });
+    }(grp.jQuery));
+    </script>
+{% endblock %}

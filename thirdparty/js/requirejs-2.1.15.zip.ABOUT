@@ -1,0 +1,24 @@
+about_resource: requirejs-2.1.15.zip
+name: requirejs
+version: 2.1.15
+download_url: https://github.com/requirejs/requirejs/archive/2.1.15.zip
+description: RequireJS loads plain JavaScript files as well as more defined modules. It is optimized
+  for in-browser use, including in a Web Worker, but it can be used in other JavaScript environments,
+  like Rhino and Node. It implements the Asynchronous Module API.
+homepage_url: http://requirejs.org
+package_url: pkg:github/requirejs/requirejs@2.1.15
+license_expression: mit
+copyright: Copyright jQuery Foundation and other contributors
+notice_file: requirejs-2.1.15.zip.NOTICE
+notice_url: https://raw.github.com/jrburke/requirejs/master/LICENSE
+attribute: yes
+owner: Dojo Foundation
+owner_url: http://dojofoundation.org/
+contact: http://dojofoundation.org/contact
+vcs_repository: https://github.com/jrburke/requirejs
+checksum_md5: 8b191ab81dee53559c6ef248aa3d331b
+checksum_sha1: 76d64c1f3da9d4220cbbe676608df8a6ab1ca2df
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

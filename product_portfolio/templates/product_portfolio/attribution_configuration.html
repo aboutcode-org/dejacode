@@ -1,0 +1,37 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n crispy_forms_tags %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block page_title %}{% trans "Attribution configuration" %}{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% inject_preserved_filters 'product_portfolio:product_list' %}">{% trans "Products" %}</a>
+            / {{ object.get_absolute_link }}
+          </div>
+          <h1 class="header-title">
+            {% trans "Attribution configuration" %}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="lead">
+    Attribution Generation will select all of the components assigned to your Product.<br>
+    If you would like to filter out any components that do not belong in your Attribution
+    document (for example, components that are only available under a commercial license) you
+    can optionally select a Query that will restrict the list of eligible components to those
+    that meet your attribution criteria.
+  </p>
+
+  <div class="row">
+    <div class="col-8">
+      {% crispy configuration_form %}
+    </div>
+  </div>
+{% endblock %}

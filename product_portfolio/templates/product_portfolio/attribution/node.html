@@ -1,0 +1,27 @@
+{% load attribution %}
+{# WARNING: `none` here is a AttributionNode object, not a model instance #}
+<div class="oss-component" id="{{ node|get_html_id }}">
+    {# 1. Component name, version, owner #}
+    <h3 class="component-name">{{ node.display_name }}{% if node.owner %}, {{ node.owner }}{% endif %}</h3>
+
+    {# 2. Homepage URL, if configured and available #}
+    {% if node.homepage_url %}Homepage: {{ node.homepage_url|urlize }}{% endif %}
+
+    {# 3. Copyright statement, if available #}
+    {% if node.copyright %}<pre>{{ node.copyright }}</pre>{% endif %}
+
+    {# 4. Relationship extra attribution text, if available #}
+    {% if node.extra_attribution_text %}<pre>{{ node.extra_attribution_text }}</pre>{% endif %}
+
+    {# 5. Relationship license expression, if available #}
+    {% if node.relationship_expression %}<p>This {{ node.model_name }} is licensed under {{ node.relationship_expression }}</p>{% endif %}
+
+    {# 6. Standard notice from Relationship license expression licenses, if configured and available #}
+    {% if node.standard_notice %}<pre>{{ node.standard_notice }}</pre>{% endif %}
+
+    {# 7. License expression, if available #}
+    {% if node.component_expression %}<p>The original {{ node.model_name }} is licensed under {{ node.component_expression }}</p>{% endif %}
+
+    {# 8. Notice text, if available #}
+    {% if node.notice_text %}<pre>{{ node.notice_text }}</pre>{% endif %}
+</div>

@@ -1,0 +1,49 @@
+<div id="search_help_dialog" title="Search help" style="display:none;">
+<p>
+    You can refine your search to operate on specific data fields, using the convention
+    <br><br>
+    <strong>[field name][operator][search value]</strong>
+    <br><br>
+    1. Field name. Position your pointer over the search field to get a list of available field names.
+    <br><br>
+    2. Operators.
+    <br>
+    Use <strong>=</strong> for an exact match<br>
+    Use <strong>^</strong> for "starts with".<br>
+    Use <strong>:</strong> for "contains".<br>
+    <br>
+    3. Note that the search value is not case sensitive. "apache" and "Apache" and "APACHE" are equivalent values for search purposes.
+    <br><br>
+    Examples:<br>
+    <strong>name=apache</strong><br>
+    will find all cases where the name exactly matches apache or Apache or APACHE.
+    <br><br>
+    <strong>name^apache</strong><br>
+    will find all cases where the name starts with apache or Apache or APACHE.<br><br>
+    <strong>name:apache</strong><br>
+    will find all cases where the name contains apache or Apache or APACHE.<br>
+    <br>
+    If you enter a search value without using the special syntax, the application will simply search multiple fields to find those that contain the value you entered.
+</p>
+</div>
+
+<script>
+    (function($){
+        $(document).ready(function(){
+            $("#search_help_dialog").dialog({
+                autoOpen: false,
+                draggable: true,
+                width: 600,
+                resizable: false,
+                modal: true,
+                // Prevent the autofocus on the "close" element.
+                open: function() { $(this).parent().focus(); },
+                close: function() { $('#grp-changelist-search').focus(); }
+            });
+            $("#search_help_link").click(function(event) {
+                event.preventDefault();
+                $('#search_help_dialog').dialog('open');
+            });
+        });
+    })(grp.jQuery);
+</script>

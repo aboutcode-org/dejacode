@@ -1,0 +1,296 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% load urlize_target_blank from dje_tags %}
+{% spaceless %}
+<table class="table table-bordered table-md">
+  <thead>
+    <tr>
+      <th style="min-width: 300px;">
+        {% trans 'Item' %}
+        {{ filter_productcomponent.form.object_type }}
+        <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
+      </th>
+      <th style="min-width: 100px;">
+        {% trans 'Purpose' %}
+        {{ filter_productcomponent.form.purpose }}
+      </th>
+      <th style="min-width: 140px;">
+        {% trans 'License' %}
+      </th>
+      <th style="width: 140px;">
+        {% trans 'Review status' %}
+        {{ filter_productcomponent.form.review_status }}
+      </th>
+      <th style="width: 106px;">
+        {% trans 'Deployed' %}
+        {{ filter_productcomponent.form.is_deployed }}
+      </th>
+      <th style="width: 100px;">
+        {% trans 'Modified' %}
+        {{ filter_productcomponent.form.is_modified }}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for feature, relationships in values.inventory_items.items %}
+      {% if feature %}
+        <tr>
+          <td colspan="100" class="sub-header"><strong>{{ feature }}</strong></td>
+        </tr>
+      {% endif %}
+      {% for relation in relationships %}
+        {% cycle 'table-odd' '' as rowcolors silent %}
+        <tr class="{{ rowcolors }}{% if show_licenses_policy and relation.inventory_item_compliance_alert %} {{ relation.compliance_table_class }}{% endif %}">
+          <td class="break-all"{% if relation.package %} data-purl="{{ relation.package.package_url }}"{% endif %}>
+            <ul class="list-inline float-end mb-0">
+              {% if request.user.is_authenticated and is_user_dataspace and relation.related_component_or_package.request_count %}
+                <li class="list-inline-item me-1">
+                  <a href="{{ relation.related_component_or_package.get_absolute_url }}#activity" data-bs-toggle="tooltip" title="{% trans 'Requests' %}">
+                    <span class="badge text-bg-request align-top" style="font-size: 87%">R</span>
+                  </a>
+                </li>
+              {% endif %}
+              {% if relation.related_component_or_package.dataspace.show_usage_policy_in_user_views and relation.related_component_or_package.usage_policy %}
+                <li class="list-inline-item">
+                  <span data-bs-toggle="tooltip" title="{{ relation.related_component_or_package.usage_policy.label }}">{{ relation.related_component_or_package.get_usage_policy_as_icon }}</span>
+                </li>
+              {% endif %}
+            </ul>
+            {% include 'product_portfolio/includes/productrelation_element.html' with relation=relation %}
+            {% if relation.component.owner or relation.owner %}
+              <div data-bs-toggle="tooltip" title="Owner">
+                <i class="fas fa-user me-2"></i>{{ relation.component.owner.get_absolute_link }}{{ relation.owner }}
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            {% if relation.purpose %}
+              <div class="text-nowrap">{{ relation.purpose.label_with_icon }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if show_licenses_policy %}
+              {{ relation.get_license_expression_linked_with_policy|default_if_none:'' }}
+            {% else %}
+              {{ relation.license_expression_linked|default_if_none:'' }}
+            {% endif %}
+          </td>
+          <td>{{ relation.review_status|default_if_none:'' }}</td>
+          <td class="text-center">{{ relation.is_deployed|as_icon }}</td>
+          <td class="text-center">{{ relation.is_modified|as_icon }}</td>
+        </tr>
+        {% if relation.package and display_scan_features %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <div class="col-4 p-0">
+                {% if relation.scan %}
+                  <strong>{% trans 'Scan' %}:</strong> {% include 'component_catalog/includes/scan_progress.html' with scan=relation.scan view_url=relation.package.get_absolute_url compact_mode=True only %}
+                {% else %}
+                  {% with relation.package.download_url as download_url %}
+                    <span{% if download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace relation.package.uuid %}"{% endif %}>
+                      <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}" data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}"><i class="fas fa-barcode"></i> Scan</button>
+                    </span>
+                  {% endwith %}
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.package.download_url %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4 text-break">
+              <strong class="me-1">{% trans 'Download URL' %}:</strong>{{ relation.package.download_url|urlize }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.component.children.all %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Child components' %}:</strong>
+              {% for child in relation.component.children.all %}
+                <div>
+                  <span class="me-2">
+                    {% include 'includes/object_icon.html' with object=child only %}
+                  </span>
+                  {{ child.get_absolute_link }}
+                  {% if child.license_expression %}
+                    <code class="key ms-1 white-space-normal">{{ child.license_expression }}</code>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.component.packages.all %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Packages' %}:</strong>
+              {% for package in relation.component.packages.all %}
+                <div>
+                  <span class="me-2">
+                    {% include 'includes/object_icon.html' with object=package only %}
+                  </span>
+                  {{ package.get_absolute_link }}
+                  {% if package.license_expression %}
+                    <code class="key ms-1 white-space-normal">{{ package.license_expression }}</code>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.notes %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Notes' %}:</strong> {{ relation.notes|linebreaksbr }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.package_paths %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Package paths' %}:</strong> {{ relation.package_paths|linebreaksbr }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.extra_attribution_text %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Extra attribution text' %}:</strong> {{ relation.extra_attribution_text }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if relation.issue_ref %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Issue ref' %}:</strong> {{ relation.issue_ref }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if not relation.component and relation.copyright %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Copyright' %}:</strong> {{ relation.copyright }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if not relation.component and relation.homepage_url %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Homepage URL' %}:</strong> {{ relation.homepage_url|urlize_target_blank }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if not relation.component and relation.download_url %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Download URL' %}:</strong> {{ relation.download_url|urlize_target_blank }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if not relation.component and relation.primary_language %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Primary language' %}:</strong> {{ relation.primary_language }}
+            </td>
+          </tr>
+        {% endif %}
+        {% if not relation.component and relation.reference_notes %}
+          <tr class="{{ rowcolors }} extra-details">
+            <td colspan="100" class="ps-4">
+              <strong>{% trans 'Reference notes' %}:</strong> {{ relation.reference_notes }}
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    {% empty %}
+      <tr><td colspan="100">No results.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endspaceless %}
+
+{% if purldb_enabled %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('check-package-versions').addEventListener('click', function (event) {
+      event.preventDefault();
+      let checkPackageLink = this;
+      checkPackageLink.classList.add("disabled");
+
+      document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+        row.style.display = 'none';
+      });
+
+      let newVersionRow = document.createElement('tr');
+      newVersionRow.className = 'spinner new-version';
+      newVersionRow.innerHTML = '<td colspan="100">' +
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' +
+        'Checking new Package versions...' +
+        '</td>';
+
+      document.querySelector("#tab_inventory tbody").insertBefore(newVersionRow, document.querySelector("#tab_inventory tbody").firstChild);
+      document.querySelector('button[data-bs-target="#tab_inventory"]').click();
+
+      let spinnerTd = document.querySelector("tr.spinner > td");
+
+      function handleSuccess(data) {
+        if (data['success']) {
+          spinnerTd.innerHTML =
+            'Version check completed. ' +
+            '<a id="show-all-items" href="#">Show All Items</a> / ' +
+            '<a id="show-new-version" href="#">Show New Version Alerts</a>';
+
+          document.getElementById('show-all-items').addEventListener('click', function () {
+            document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+              if (!row.classList.contains("extra-details")) {
+                row.style.display = '';
+              }
+            });
+            return false;
+          });
+
+          document.getElementById('show-new-version').addEventListener('click', function () {
+            document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+              if (!row.classList.contains("new-version")) {
+                row.style.display = 'none';
+              }
+            });
+            return false;
+          });
+
+          let upgradeAvailable = data['upgrade_available'];
+          upgradeAvailable.forEach(function (value) {
+            let td = document.querySelector(`[data-purl="${value.purl}"]`);
+            if (td) {
+              td.insertAdjacentHTML('beforeend', `
+                <div>
+                  <a class="text-success" href="/purldb/${value.latest_version_uuid}/" target="_blank">
+                    <i class="fas fa-arrow-alt-circle-up"></i> Version ${value.latest_version} available
+                  </a>
+                </div>
+              `);
+              td.parentElement.classList.add('new-version');
+              td.parentElement.style.display = '';
+            }
+          });
+        }
+      }
+
+      fetch("{{ product.get_check_package_version_url }}", { method: 'GET' })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => handleSuccess(data))
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          spinnerTd.innerHTML = 'Error.';
+        });
+
+    })
+  });
+</script>
+{% endif %}

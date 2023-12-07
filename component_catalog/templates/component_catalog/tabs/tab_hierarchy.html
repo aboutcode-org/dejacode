@@ -1,0 +1,26 @@
+<div class="row">
+  {% if values.related_parents or values.productcomponents %}
+    <div class="{% if values.related_children %}col-sm-3{% else %}col-sm-4{% endif %}">
+      {% for related_parent in values.related_parents %}
+        {% if forloop.first %}<h4 class="text-center">Parent components</h4>{% endif %}
+        {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=related_parent.parent %}
+      {% endfor %}
+      {% for productcomponent in values.productcomponents %}
+        {% if forloop.first %}<h4 class="text-center">Products</h4>{% endif %}
+        {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=productcomponent.product is_product=True %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="col-sm-4 {% if not values.related_children %}offset-md-4{% elif values.related_parents or values.productcomponents %}offset-md-1{% endif %}">
+    <h4 class="text-center">Selected</h4>
+    {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=object is_current=True %}
+  </div>
+  {% if values.related_children %}
+    <div class="{% if values.related_parents or values.productcomponents %}col-sm-3 offset-md-1{% else %}col-sm-4 offset-md-4{% endif %}">
+      <h4 class="text-center">Child components</h4>
+      {% for related_child in values.related_children %}
+        {% include "component_catalog/includes/hierarchy_instance_box.html" with instance=related_child.child subcomponent=related_child %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

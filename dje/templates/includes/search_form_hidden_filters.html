@@ -1,0 +1,5 @@
+{% for field in filter.form %}
+  {% if field.value and field.name != 'q' and field.name != 'sort' %}
+    {{ field.as_hidden }}
+  {% endif %}
+{% endfor %}

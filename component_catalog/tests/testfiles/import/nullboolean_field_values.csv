@@ -1,0 +1,4 @@
+is_notice_in_codebase,is_license_notice,is_copyright_notice,owner,name,version,is_active
+Yes,No,WRONG,Apache Software Foundation,log4j,1.9,
+yes,no,,Apache Software Foundation,log4j,2.0,
+,Y,N,Apache Software Foundation,log4j,3.0,False

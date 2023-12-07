@@ -1,0 +1,101 @@
+{% load static %}
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0"></dt>
+<dd class="col-sm-10">
+  <table class="table table-bordered table-md">
+    <thead>
+      <tr>
+        <th>Key file</th>
+        <th>License expression</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for key_file in values %}
+        <tr>
+          <td>
+            <button type="button" class="btn btn-link p-0 me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#key-files-modal"
+                    data-filename="{{ key_file.name }}"
+                    data-path="{{ key_file.path }}"
+                    data-size="{{ key_file.size|filesizeformat }}"
+                    data-summary="{{ key_file.summary }}"
+                    data-content="{{ key_file.content|escape }}"
+                    data-matched-texts="{{ key_file.matched_texts|join:" // " }}"
+            >
+              <i class="far fa-file-alt"></i>
+              {{ key_file.name }}
+            </button>
+          </td>
+          <td>
+            <span class="license-expression">
+              {{ key_file.formatted_expression|safe }}
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="modal" id="key-files-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pb-0">
+          <dl id="summary" class="row mb-1">
+          </dl>
+          <div class="card mb-3">
+            <div class="card-header">
+            </div>
+            <div class="card-body pb-0 pt-2">
+              {# WARNING: Keep this line as a one-liner for proper display #}
+              <pre class="mb-2"><span class="line-number"></span><code id="key-file-source"></code><span class="clearfix"></span></pre>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</dd>
+{% if forloop.last %}</dl>{% endif %}
+
+<script src="{% static 'js/jquery.mark-8.11.1.min.js' %}" integrity="sha384-iqnguDoMujGknA4B5Jk7pbSn7sb7M8Tc0zVsTNQXm629Xx00jGEpD9TsZXbfNjKO" crossorigin="anonymous"></script>
+<script>
+  $('#key-files-modal').on('show.bs.modal', function (event) {
+    let button = $(event.relatedTarget);
+    let content = button.data('content');
+    let matched_texts = button.data('matched-texts');
+    let summary = button.data('summary');
+    let filename = button.data('filename');
+    let path = button.data('path');
+    let size = button.data('size');
+    let modal = $(this);
+    let key_file_source = modal.find('.modal-body #key-file-source');
+
+    let line_count = content.split(/\n/).length;
+    let line_number = modal.find('.modal-body span.line-number');
+    line_number.text("");
+    $.each(new Array(line_count), function(index) {
+      line_number.append(`<span>${index+1}</span>`);
+    });
+
+    let formatted_path = path.replace(filename, `<strong>${filename}</strong>`);
+    modal.find('.modal-title').html(`<i class="far fa-file-alt"></i> ${formatted_path}`);
+    modal.find('.modal-body #summary').html($(summary));
+    key_file_source.text(content);
+    modal.find('.modal-body .card-header').html(`${line_count} lines <small class='ms-1'>${size}</small>`);
+
+    if (matched_texts) {
+      matched_texts = matched_texts.split(' // ');
+      key_file_source.mark(matched_texts, {
+          'separateWordSearch': false,
+      });
+    }
+  });
+</script>

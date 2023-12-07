@@ -1,0 +1,143 @@
+{% load attribution %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Attribution</title>
+        <style>
+            pre {white-space: pre-wrap;}
+            ul.list-unstyled {padding-left: 0; list-style: none;}
+            ul.list-unstyled > li {line-height: 25px;}
+            li.feature {margin-top: 15px;}
+        </style>
+    </head>
+    {% autoescape on %}
+    <body>
+        <h1>Attribution for {{ product }}{% if product.owner %} by {{ product.owner }}{% endif %}</h1>
+
+        {% with dataspace=product.dataspace %}
+            <p>For instructions on how to obtain a copy of any source code
+            being made publicly available by {% if dataspace.full_name %}{{ dataspace.full_name }}{% else %}{% verbatim %}{{dataspace_full_name}}{% endverbatim %}{% endif %} related to
+            software used in {{ product.name }} you may send your request in writing to:<br><br>
+            {% if dataspace.full_name %}{{ dataspace.full_name }}{% else %}{% verbatim %}{{dataspace_full_name}}{% endverbatim %}{% endif %}<br>
+            {% if dataspace.address %}{{ dataspace.address|linebreaks }}{% else %}{% verbatim %}{{dataspace_address}}{% endverbatim %}{% endif %}</p>
+            <p>Contact: {% if dataspace.contact_info %}{{ dataspace.contact_info|urlize }}{% else %}{% verbatim %}{{dataspace_contact_info}}{% endverbatim %}{% endif %}</p>
+        {% endwith %}
+
+        {% block about-product-header %}
+            <h2>About {{ product }}:</h2>
+        {% endblock %}
+        {% with product_license_expression=product.license_expression_attribution %}
+            {% if product_license_expression %}
+                <p>{{ product }} is licensed under {{ product_license_expression }} and the third-party licenses listed below.</p>
+            {% endif %}
+        {% endwith %}
+        <pre>{{ product.copyright }}</pre>
+        <pre>{{ product.notice_text }}</pre>
+
+        {% block component-list-header %}
+            {% if hierarchy or unique_component_nodes %}
+                <h2>{{ product.name }} contains the following software components:</h2>
+            {% endif %}
+        {% endblock %}
+        <ul class="oss-table-of-contents list-unstyled">
+            {% if toc_as_nested_list %}
+                {% for feature, hierarchy_nodes in hierarchy.items %}
+                    {% if feature and group_by_feature %}
+                        <li class="feature"><strong>{{ feature }}</strong></li>
+                    {% endif %}
+                    {% for node, children in hierarchy_nodes %}
+                        {% show_hierarchy_toc node children %}
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                {% for node in unique_component_nodes %}
+                    {% if node.is_displayed %}
+                        <li><a href="#{{ node|get_html_id }}">{{ node.display_name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </ul>
+
+        {% if package_nodes %}
+            {% block package-list-header %}
+                <h2>{{ product.name }} contains the following software packages:</h2>
+            {% endblock %}
+            <ul class="list-unstyled">
+                {% if group_by_feature %}
+                    {% for feature, package_nodes in package_nodes_by_feature.items %}
+                        {% if feature %}
+                            <li class="feature"><strong>{{ feature }}</strong></li>
+                        {% endif %}
+                        {% for node in package_nodes %}
+                            {% if node.is_displayed %}
+                                <li><a href="#{{ node|get_html_id }}">{{ node.display_name }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    {% for node in package_nodes %}
+                        {% if node.is_displayed %}
+                            <li><a href="#{{ node|get_html_id }}">{{ node.display_name }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        {% endif %}
+
+        {% if hierarchy_licenses %}
+            {% block license-list-header %}
+                <h2>The following licenses are used in {{ product.name }}:</h2>
+            {% endblock %}
+            <ul class="list-unstyled">
+                {% for license in hierarchy_licenses %}
+                    <li><a href="#license_{{ license.key }}">{{ license.short_name }}</a></li>
+                {% endfor %}
+            </ul>
+            <p>The <a href="#license_texts"> full text of these licenses</a> is available at the end of this document.</p>
+        {% endif %}
+
+        <hr>
+
+        {% block component-details-header %}
+            {% if unique_component_nodes %}
+                <h2>List of component details:</h2>
+            {% endif %}
+        {% endblock %}
+        {% for node in unique_component_nodes %}
+            {% if node.is_displayed %}
+                {% include 'product_portfolio/attribution/node.html' with node=node only %}
+            {% endif %}
+        {% endfor %}
+
+        {% if package_nodes %}
+            {% block package-details-header %}
+                <h2>List of package details:</h2>
+            {% endblock %}
+            {% for node in package_nodes %}
+                {% if node.is_displayed %}
+                    {% include 'product_portfolio/attribution/node.html' with node=node only %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if all_available_licenses %}
+            <hr>
+            {% block license-details-header %}
+                <h2 id="license_texts">Licenses that apply to {{ product.name }}</h2>
+            {% endblock %}
+            {% for license in all_available_licenses %}
+                <p><a href="#license_{{ license.key }}">{{ license.short_name }}</a></p>
+            {% endfor %}
+
+            {% for license in all_available_licenses %}
+                <h3 id="license_{{ license.key }}">{{ license.short_name }}</h3>
+                <pre>{{ license.full_text }}</pre>
+                <hr>
+            {% endfor %}
+        {% endif %}
+
+        <h3><a id="End">End</a></h3>
+    </body>
+    {% endautoescape %}
+</html>

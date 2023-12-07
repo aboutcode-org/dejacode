@@ -1,0 +1,20 @@
+about_resource: flatpickr-4.5.2.tar.gz
+name: flatpickr
+version: 4.5.2
+download_url: https://github.com/flatpickr/flatpickr/archive/v4.5.2.tar.gz
+description: lightweight, powerful javascript datetimepicker with no dependencies
+homepage_url: https://flatpickr.js.org/
+package_url: pkg:github/flatpickr/flatpickr@4.5.2?version_prefix=v
+license_expression: mit
+copyright: Copyright (c) Gregory Petrosyan
+notice_file: flatpickr-4.5.2.tar.gz.NOTICE
+notice_url: https://github.com/flatpickr/flatpickr/blob/v4.5.2/LICENSE.md
+attribute: yes
+owner: Gregory Petrosyan
+vcs_repository: https://github.com/flatpickr/flatpickr/
+checksum_md5: 385091d9ee59656ba200cb6010295c4d
+checksum_sha1: 1a327d9397c3ae1908b96710a02d729c538f7a91
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

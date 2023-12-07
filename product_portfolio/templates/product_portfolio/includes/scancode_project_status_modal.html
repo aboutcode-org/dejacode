@@ -1,0 +1,44 @@
+<div class="modal" tabindex="-1" role="dialog" id="scancode-project-status-modal">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Loading the project status ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  $('#scancode-project-status-modal').on('show.bs.modal', function (event) {
+    let modal_body = $('#scancode-project-status-modal div.modal-body')
+    let modal_trigger = $(event.relatedTarget);
+    let fetch_status_url = modal_trigger.data('fetch-status-url');
+
+    modal_body.html(
+        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' +
+        'Loading the project status ...'
+    );
+
+    $.ajax({
+      url: fetch_status_url,
+      type: 'GET',
+      success: function(data) {
+        modal_body.html(data);
+      },
+      error: function(){
+        modal_body.html("Error fetching data.");
+      }
+    });
+
+  });
+});
+</script>

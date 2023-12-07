@@ -1,0 +1,114 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n static admin_urls %}
+
+<!-- COLTYPE/BODYCLASS-- >
+{% block bodyclass %}grp-delete-confirmation{% endblock %}
+{% block content-class %}g-d-c{% endblock %}
+
+{% block title %}
+    {{ block.super }} - {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Copy and update results' %}
+{% endblock %}
+
+<!-- CONTENT-TITLE -->
+{% block content_title %}
+    <h1>Results of the copy/update.</h1>
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <div class="g-d-c">
+    {% if errors %}
+        <div class="grp-group grp-errors">
+            <h2>Errors for the following {% trans opts.verbose_name_plural|capfirst %}.</h2>
+            <div class="grp-row">
+                <ul class="grp-nested-list">
+                    {% for object, error_message in errors %}
+                        <li>
+                            {% if user.dataspace.is_reference %}
+                                <a href="{% add_preserved_filters object.get_admin_url %}">{{ object }} ({{ object.dataspace }})</a>
+                            {% else %}
+                                <strong>{{ object }}</strong>
+                            {% endif %}
+                            {% if error_message %}
+                                <ul><li>{{ error_message }}</li></ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if updated %}
+        <div class="grp-group">
+            <h2>The following {% trans opts.verbose_name_plural|capfirst %} have been updated.</h2>
+            <div class="grp-row">
+                <ul class="grp-nested-list">
+                    {% for reference, target in updated %}
+                        <li>
+                            {% if user.dataspace.is_reference %}
+                                <a href="{% add_preserved_filters reference.get_admin_url %}">{{ reference }} ({{ reference.dataspace }})</a>
+                            {% else %}
+                                <strong>{{ reference }}</strong>
+                            {% endif %}
+                            &nbsp;
+                            <img src="{% static 'grappelli/images/icons/selector-add-m2m-horizontal_hover.png' %}">&nbsp;
+                            <a href="{% add_preserved_filters target.get_admin_url %}">{{ target }} ({{ target.dataspace }})</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if copied %}
+        <div class="grp-group">
+            <h2>The following {% trans opts.verbose_name_plural|capfirst %} have been copied</h2>
+            <div class="grp-row">
+                <ul class="grp-nested-list">
+                    {% for reference, target in copied %}
+                        <li>
+                            {% if user.dataspace.is_reference %}
+                                <a href="{% add_preserved_filters reference.get_admin_url %}">{{ reference }} ({{ reference.dataspace }})</a>
+                            {% else %}
+                                <strong>{{ reference }}</strong>
+                            {% endif %}
+                            &nbsp;
+                            <img src="{% static 'grappelli/images/icons/selector-add-m2m-horizontal_hover.png' %}">&nbsp;
+                            <a href="{% add_preserved_filters target.get_admin_url %}">{{ target }} ({{ target.dataspace }})</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+    </div>
+
+    <footer class="grp-module grp-submit-row grp-fixed-footer">
+        <ul>
+            <li class="grp-float-left">
+                {% url opts|admin_urlname:'changelist' as changelist_url %}
+                <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+            </li>
+        </ul>
+    </footer>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                {% if object_for_raw_id_lookup %}
+                    opener.dismissRelatedLookupPopup(window, {{ object_for_raw_id_lookup.id }});
+                    return false;
+                {% endif %}
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}

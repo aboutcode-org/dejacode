@@ -1,0 +1,7 @@
+{% if req.is_open %}
+  <i class="fas fa-circle-notch text-success"></i>
+{% elif req.is_closed %}
+  <i class="fas fa-check-circle text-secondary"></i>
+{% elif req.is_draft %}
+  <i class="fab fa-firstdraft text-success"></i>
+{% endif %}

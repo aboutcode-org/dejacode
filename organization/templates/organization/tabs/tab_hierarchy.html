@@ -1,0 +1,22 @@
+<div class="row mt-4">
+  {% if extra_context.owner_parents %}
+    <div class="{% if extra_context.owner_children %}col-sm-3{% else %}col-sm-4{% endif %}">
+      <h4 class="text-center">Parent {{ extra_context.owner_verbose_name_plural|capfirst }}</h4>
+      {% for parent in extra_context.owner_parents %}
+        {% include "organization/includes/hierarchy_owner_box.html" with owner=parent verbose_name=extra_context.owner_verbose_name %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  <div class="col-sm-4 {% if not extra_context.owner_children %}offset-md-4{% elif extra_context.owner_parents %}offset-md-1{% endif %}">
+    <h4 class="text-center">Selected {{ extra_context.owner_verbose_name|capfirst }}</h4>
+    {% include "organization/includes/hierarchy_owner_box.html" with owner=extra_context.owner is_current=True verbose_name=extra_context.owner_verbose_name %}
+  </div>
+  {% if extra_context.owner_children %}
+    <div class="{% if extra_context.owner_parents %}col-sm-3 offset-md-1{% else %}col-sm-4 offset-md-4{% endif %}">
+      <h4 class="text-center">Child {{ extra_context.owner_verbose_name_plural|capfirst }}</h4>
+      {% for child in extra_context.owner_children %}
+          {% include "organization/includes/hierarchy_owner_box.html" with owner=child verbose_name=extra_context.owner_verbose_name %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

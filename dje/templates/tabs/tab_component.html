@@ -1,0 +1,51 @@
+{% load i18n %}
+{% load urlize_target_blank from dje_tags %}
+{% spaceless %}
+<table class="table table-bordered table-hover table-md">
+    <thead>
+        <tr>
+            <th>{% trans 'Name' %}</th>
+            <th>{% trans 'Version' %}</th>
+            <th>{% trans 'License' %}</th>
+            <th>{% trans 'Primary language' %}</th>
+            <th>{% trans 'Homepage URL' %}</th>
+            <th>{% trans 'Packages' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for component in values %}
+            <tr class="{% cycle 'odd' '' %}">
+                <td>
+                    <strong>
+                      {% if component.is_active %}
+                          <a href="{{ component.get_absolute_url }}">{{ component.name }}</a>
+                      {% else %}
+                          {{ component.name }}
+                      {% endif %}
+                    </strong>
+                </td>
+                <td>{{ component.version }}</td>
+                <td class="break-word" style="max-width: 250px;">
+                    {% if show_licenses_policy %}
+                        {{ component.get_license_expression_linked_with_policy|default_if_none:'' }}
+                    {% else %}
+                        {{ component.license_expression_linked|default_if_none:'' }}
+                    {% endif %}
+                </td>
+                <td>{{ component.primary_language }}</td>
+                <td>{{ component.homepage_url|urlize_target_blank }}</td>
+                <td style="min-width: 150px;">
+                    <ul class="fa-ul ms-4 mb-0">
+                        {% for p in component.packages.all %}
+                            <li>
+                                <span class="fa-li"><i class="fas fa-angle-right"></i></span>
+                                {% if p == object %}{{ p }}{% else %}{{ p.get_absolute_link }}{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endspaceless %}

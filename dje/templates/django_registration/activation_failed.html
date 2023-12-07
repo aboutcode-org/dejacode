@@ -1,0 +1,16 @@
+{% extends "bootstrap_base.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% trans 'Account activation' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Account' title='Error during your account activation' %}
+  <p>
+    {{ activation_error.message }}
+    <br><br>
+    If the problem persists, send us an email at <a href="mailto:support@dejacode.com">support@dejacode.com</a>
+  </p>
+{% endblock %}

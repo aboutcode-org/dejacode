@@ -1,0 +1,20 @@
+about_resource: hint.css-2.7.0.tar.gz
+name: hint.css
+version: 2.7.0
+download_url: https://github.com/chinchang/hint.css/archive/v2.7.0.tar.gz
+description: A CSS only tooltip library for your lovely websites.
+homepage_url: http://kushagragour.in/lab/hint/
+package_url: pkg:github/chinchang/hint.css@2.7.0?version_prefix=v
+license_expression: mit
+copyright: Copyright (c) Kushagra Gour
+notice_file: hint.css-2.7.0.tar.gz.NOTICE
+notice_url: https://github.com/chinchang/hint.css/blob/v2.7.0/LICENSE-MIT
+attribute: yes
+owner: Kushagra Gour
+vcs_repository: https://github.com/chinchang/hint.css
+checksum_md5: 80ba82515eb6aae7369a2c91f3c54cc1
+checksum_sha1: ab50d1ff28e42bda0c87e1f91d5549f5897b6282
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

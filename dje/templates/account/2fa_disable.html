@@ -1,0 +1,21 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n crispy_forms_tags %}
+
+{% block page_title %}{% trans 'Two-factor authentication' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Security' title='Disable Two-factor Authentication' %}
+  {% include 'includes/messages_alert.html' %}
+  <p>
+    You are about to disable two-factor authentication.
+    This <strong>weakens your account security</strong>.<br>
+    Enter your two-factor verification code to confirm this action:
+  </p>
+  <div class="row">
+    <div class="col-sm-4">
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}

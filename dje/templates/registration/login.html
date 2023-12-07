@@ -1,0 +1,45 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static crispy_forms_tags %}
+
+{% block page_title %}{% trans 'Sign In' %}{% endblock %}
+
+{% block header %}{% endblock %}
+{% block bodyclass %}signup-form{% endblock %}
+
+{% block content %}
+  <h1>Sign in to DejaCode</h1>
+
+  <div class="row justify-content-md-center">
+    <div class="col-sm-4">
+      <div class="card">
+        <div class="card-body">
+          {% if AXES_ENABLED and form.errors %}
+            <div class="alert alert-warning">
+              <p class="m-0">
+                Your account will be locked following too many failed login attempts.
+                Use the <a href="{% url 'password_reset' %}">Forgot password</a> link instead.
+              </p>
+            </div>
+          {% endif %}
+          {% if LOGIN_FORM_ALERT %}
+            {{ LOGIN_FORM_ALERT|safe }}
+          {% endif %}
+          <form method="{{ form.helper.form_method }}" action="{{ form.helper.form_action }}" id="{{ form.helper.form_id }}" class="{{ form.helper.form_class }}">
+            {% crispy form %}
+            <input type="hidden" name="next" value="{{ next }}" />
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center fw-normal mt-4">
+    <a href="{% url 'password_reset' %}" class="text-white">Forgot password?</a>
+    {% url 'django_registration_register' as register_url %}
+    {% if register_url %}
+      <a href="{{ register_url }}" class="text-white ms-4">New to DejaCode? Sign Up</a>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

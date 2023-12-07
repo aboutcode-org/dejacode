@@ -1,0 +1,31 @@
+<div class="grp-tr">
+    <input type="hidden" {{bind-attr name="idName"}} {{bind-attr value="idValue"}}>
+
+    {{#if predeleted}}
+        {{view deleteCheckbox}}
+    {{/if}}
+
+    <div class="grp-td">
+        {{view fieldNameSelector}}
+        <input type="hidden" {{bind-attr name="fieldNameName"}} {{bind-attr value="fieldNameValue"}}>
+    </div>
+    <div class="grp-td">
+        {{input value=displayNameValue}}
+        <input type="hidden" {{bind-attr name="displayNameName"}} {{bind-attr value="displayNameValue"}}>
+    </div>
+    <input type="hidden" {{bind-attr name="seqName"}} {{bind-attr value="seqValue"}}>
+    <div class="grp-td grp-tools-container">
+        <ul class="grp-tools">
+            <li><a href="javascript://" class="grp-icon grp-drag-handler" title="Move Item"></a></li>
+            {{#if isInitial}}
+                <li class="grp-delete-handler-container">
+                    <a href="javascript://" class="grp-icon grp-delete-handler" title="Delete Item" {{action "togglePredeletion"}}></a>
+                </li>
+            {{else}}
+                <li>
+                    <a href="javascript://" class="grp-icon grp-remove-handler" title="Delete Item" {{action "removeForm"}}></a>
+                </li>
+            {{/if}}
+        </ul>
+    </div>
+</div>

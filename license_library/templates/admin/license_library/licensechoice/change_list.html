@@ -1,0 +1,19 @@
+{% extends "admin/change_list_extended.html" %}
+
+{% load i18n admin_urls %}
+
+{% block content %}
+    {{ block.super }}
+    {% if is_user_dataspace %}
+        <div class="grp-module">
+            <div class="grp-row">
+                <form id="grp-changelist-test-choices" method="get">
+                    <label for="test_expression">Test license choice for an expression:</label>
+                    <input type="text" name="test_expression" id="test_expression" value="{{ test_expression }}">
+                    <button type="submit" class="submit-inline-button">Test</button>
+                </form>
+                {% if to_expression %}&rArr; <code class="license_expression">{{ to_expression }}</code>{% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

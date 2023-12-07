@@ -1,0 +1,39 @@
+{% for run in scan_data.runs %}
+  <ul class="list-unstyled mb-1">
+    <li><strong>Pipeline name:</strong> {{ run.pipeline_name }}</li>
+    <li>
+      <strong>Status:</strong>
+        <span class="badge
+          {% if run.status == 'success' %}
+            text-bg-success
+          {% elif run.status == 'failure' or status == 'stopped' or status == 'stale' %}
+            text-bg-danger
+          {% elif run.status == 'running' %}
+            text-bg-primary
+          {% else %}
+            text-bg-secondary
+          {% endif %}
+        ">
+          {{ run.status }}
+        </span>
+    </li>
+    {% if run.scancodeio_version %}
+      <li><strong>ScanCode.io version:</strong> {{ run.scancodeio_version }}</li>
+    {% endif %}
+    {% if run.execution_time %}
+      <li><strong>Execution time:</strong> {{ run.execution_time }} seconds</li>
+    {% endif %}
+  </ul>
+  {% if run.task_output %}
+    <div>
+      <strong>Task output:</strong>
+      <pre class="log p-2"><code>{{ run.task_output }}</code></pre>
+    </div>
+  {% endif %}
+  {% if run.log %}
+    <div>
+      <strong>Execution log:</strong>
+      <pre class="log p-2"><code>{{ run.log }}</code></pre>
+    </div>
+  {% endif %}
+{% endfor %}

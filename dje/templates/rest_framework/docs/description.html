@@ -1,0 +1,559 @@
+<a href="/">Back to DejaCode</a>
+
+<h2 id="authentication" class="coredocs-section-title">Authentication <a href="#authentication"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<h3>API Key</h3>
+<p>An API request can be made in a script or cURL-style command line using an API Key for authentication.</p>
+<p>Your API Key is available from the <a href="/account/profile/" target="_blank">Profile settings</a> page.</p>
+<blockquote><strong>Your API key is like a password and should be treated with the same care.</strong></blockquote>
+<h3>Browsable API</h3>
+<p>You can browse the API once logged-in DejaCode, using the <a href="/api/v2/" target="_blank">API Root</a> link under the <strong>Tools</strong> section of the navigation bar.</p>
+
+<h2 id="permissions" class="coredocs-section-title">Permissions <a href="#permissions"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<h3>Read</h3>
+<strong>Read</strong> API requests <span class="label label-primary">GET</span> are available to all logged-in users.<br>
+Product visibility is restricted based on per-Product permissions.
+<h3>Write</h3>
+<strong>Write</strong> API requests <span class="label label-primary">POST</span>, <span class="label label-primary">PUT</span>, and <span class="label label-primary">PATCH</span>
+require permissions that are inherited from the user admin add/change/delete permissions assigned through the <strong>Permissions Groups.</strong><br>
+The staff status is not required for write requests.
+
+<h2 id="metadata" class="coredocs-section-title">Metadata <a href="#metadata"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+
+The <span class="label label-primary">OPTIONS</span> method is available on each endpoint.
+It provides a list of available actions and fields documentation.
+<pre>
+curl -X OPTIONS -H "Authorization: Token &lt;api_key&gt;" {{ site_url }}/api/v2/components/?format=json
+</pre>
+<pre>
+[...]
+"name": "Component List",
+"actions": {
+    "POST": {
+        "name": {
+            "type": "string",
+            "required": true,
+            "read_only": false,
+            "label": "Name",
+            "help_text": "Name by which the component is commonly referenced."
+        },
+[...]
+</pre>
+
+<h2 id="filtering-search" class="coredocs-section-title">Filtering and Search <a href="#filtering-search"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<blockquote><strong>Filters are case-sensitive, search is case-insensitive.</strong></blockquote>
+
+Filter a component using its ``name`` and ``version``:
+<pre>{{ site_url }}/api/v2/components/?name=jQuery&version=1.7.2</pre>
+
+Or alternatively using the ``name_version`` syntax (supports multiple values):
+<pre>{{ site_url }}/api/v2/components/?name_version=jQuery:1.7.2</pre>
+
+List components using "Java" as their `primary_language`:
+<pre>{{ site_url }}/api/v2/components/?primary_language=Java</pre>
+
+Filter components created or updated since a date (``YYYY-MM-DD`` or ``YYYY-MM-DD HH:MM``):
+<pre>{{ site_url }}/api/v2/components/?last_modified_date=2016-01-31</pre>
+
+Search components:
+<pre>{{ site_url }}/api/v2/components/?search=apache</pre>
+
+Filter multiple owners by ``name``:
+<pre>{{ site_url }}/api/v2/owners/?name=Apache Directory Project&name=Apache Software Foundation</pre>
+
+<h2 id="ordering" class="coredocs-section-title">Ordering <a href="#ordering"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+Each endpoint offers ordering ability on selected fields. The query parameter is named ``ordering``.<br>
+The list of supported field is available in the <strong>list</strong> section of each endpoint documentation.
+<br><br>
+For example, to order components by name:
+<pre>{{ site_url }}/api/v2/components/?ordering=name</pre>
+
+The client may also specify reverse orderings by prefixing the field name with ``-``, like so:
+<pre>{{ site_url }}/api/v2/components/?ordering=-name</pre>
+
+Multiple orderings may also be specified:
+<pre>{{ site_url }}/api/v2/components/?ordering=name,version</pre>
+
+<h2 id="pagination" class="coredocs-section-title">Pagination <a href="#pagination"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+The number of results per page is limited to 10 by default.
+This can be raise up to 100 using the ``page_size`` parameter.<br>
+The page navigation is available using the ``page`` parameter.<br><br>
+For example, to retrieve 100 components starting at item 201:
+<pre>{{ site_url }}/api/v2/components/?page=3&page_size=100</pre>
+
+<h2 id="reference-data" class="coredocs-section-title">Reference data access <a href="#reference-data"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+To access the reference data while using the API, you can provide the ``?reference=yes`` parameter in the URL.<br>
+Two special values for that parameter are available: ``combine`` and ``merge``.
+<ul>
+  <li>Using ``?reference=combine`` will include all records from your local dataspace and the reference dataspace.</li>
+  <li>Using ``?reference=merge`` parameter is similar to ``combine`` but will not include objects from the reference dataspace that already exist in your local dataspace.</li>
+</ul>
+
+<h2 id="api-usage" class="coredocs-section-title">API usage <a href="#api-usage"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<h3>Read <span class="label label-primary">GET</span></h3>
+<h4>cURL</h4>
+<pre>
+curl -X GET -H "Authorization: Token &lt;api_key&gt;" {{ site_url }}/api/v2/components/?format=json
+curl -X GET -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4" {{ site_url }}/api/v2/owners/
+</pre>
+<h4>Python</h4>
+<pre>
+import requests
+
+api_url = '{{ site_url }}/api/v2/components/'
+headers = {
+    'Authorization': 'Token &lt;api_key&gt;',
+    'Accept': 'application/json; indent=4',
+}
+payload = {
+    'name': 'jQuery',
+    'ordering': 'name',
+}
+response = requests.get(api_url, headers=headers, params=payload)
+response.json()
+</pre>
+
+<h3>Create <span class="label label-primary">POST</span></h3>
+<h4>cURL</h4>
+<pre>
+curl -X POST -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4" -d "name=Apache Software Fundation&alias=Apache&homepage_url=https://www.apache.org/" {{ site_url }}/api/v2/owners/
+curl -X POST -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4" -H "Content-Type: application/json" -d '{"name":"value","alias":"Apache Software Fundation","homepage_url": "https://www.apache.org/"}' {{ site_url }}/api/v2/owners/
+</pre>
+<h4>Python</h4>
+<pre>
+import requests
+
+api_url = '{{ site_url }}/api/v2/owners/'
+headers = {
+    'Authorization': 'Token &lt;api_key&gt;',
+    'Accept': 'application/json; indent=4',
+}
+data = {
+    'name': 'Apache Software Foundation',
+    'homepage_url': 'https://www.apache.org/',
+    'contact_info': '',
+    'notes': '',
+    'alias': 'Apache',
+    'type': 'Organization',
+}
+response = requests.post(api_url, headers=headers, data=data)
+response.json()
+</pre>
+
+<h3>Update <span class="label label-primary">PUT</span></h3>
+<h4>cURL</h4>
+<pre>
+curl -X PUT -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4"  -H "Content-Type: application/json" -d '{"name":"UpdatedName","homepage_url":"","contact_info":"contact","notes":"notes","alias":"alias","type":"Organization"}' {{ site_url }}/api/v2/owners/9a2adef8-6155-4794-abc2-801e8b846a92/
+</pre>
+<h4>Python</h4>
+<pre>
+import requests
+
+api_url = '{{ site_url }}/api/v2/owners/9a2adef8-6155-4794-abc2-801e8b846a92/'
+headers = {
+    'Authorization': 'Token &lt;api_key&gt;',
+    'Accept': 'application/json; indent=4',
+}
+data = {
+    'name': 'UpdatedName',
+    'homepage_url': '',
+    'contact_info': 'contact',
+    'notes': 'notes',
+    'alias': 'alias',
+    'type': 'Organization',
+}
+response = requests.put(api_url, headers=headers, data=data)
+response.json()
+</pre>
+
+<h3>Partial update <span class="label label-primary">PATCH</span></h3>
+<h4>cURL</h4>
+<pre>
+curl -X PATCH -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4"  -H "Content-Type: application/json" -d '{"notes":"updated notes"}' {{ site_url }}/api/v2/owners/9a2adef8-6155-4794-abc2-801e8b846a92/
+</pre>
+<h4>Python</h4>
+<pre>
+import requests
+
+api_url = '{{ site_url }}/api/v2/owners/9a2adef8-6155-4794-abc2-801e8b846a92/'
+headers = {
+    'Authorization': 'Token &lt;api_key&gt;',
+    'Accept': 'application/json; indent=4',
+}
+data = {
+    'notes': 'updated notes',
+}
+response = requests.patch(api_url, headers=headers, data=data)
+response.json()
+</pre>
+
+<h2 id="examples" class="coredocs-section-title">Examples <a href="#examples"><i class="fa fa-link" aria-hidden="true"></i></a></h2>
+<h3>Create a DejaCode Request</h3>
+Find the RequestTemplate corresponding to your DejaCode Request needs:
+<pre>
+curl -X GET -H "Authorization: Token &lt;api_key&gt;" -H "Accept: application/json; indent=4" {{ site_url }}/api/v2/request_templates/
+</pre>
+You will need the ``name`` or ``api_url`` field value of the RequestTemplate for the Request creation:
+
+- ``Add New License to the License Library``
+- ``{{ site_url }}/api/v2/request_templates/04f6d1e1-a619-4e42-975d-34c04e41ca17/``
+
+The ``form_data_layout`` field of the RequestTemplate offers a skeleton to be used in the ``serialized_data`` field of the Request.
+
+<pre>
+[...]
+"name": "Add New License to the License Library",
+"form_data_layout": {
+    "License Homepage URL": "",
+    "License Name": "",
+    "License Keywords": "",
+    "License Full Text": "",
+    "License Notes": ""
+}
+[...]
+</pre>
+
+Submit the new Request:
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/requests/"
+
+data='{
+    "title": "Add Xming License in the Library",
+    "request_template": "Add New License to the License Library",
+    "status": "Submitted",
+    "assignee": "tomd",
+    "priority": null,
+    "product_context": null,
+    "serialized_data": {
+        "License Homepage URL": "http://www.straightrunning.com/XmingNotes/terms.php",
+        "License Name": "Xming License",
+        "License Keywords": "",
+        "License Full Text": "",
+        "License Notes": ""
+    },
+    "is_private": false
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+A DejaCode object can be attached to the Request if the ``include_applies_to`` field of the
+RequestTemplate is enabled.
+The ``content_object`` field value supports the fully qualified object API URL for the
+following object types: ``Component``, ``License``, and ``Product``.
+
+Add the ``content_object`` value to the Request data:
+<pre>
+data='{
+    "content_object": "{{ site_url }}/api/v2/components/6e07237c-1c58-42ae-addb-889e6ddbe67e/",
+    [...]
+}'
+</pre>
+
+<h3>Update a Request</h3>
+Update a Request ``status`` and ``priority`` fields.
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/requests/13cdcc09-4e44-4a4f-9f15-d475fe87bf5e/"
+
+data='{
+    "status": "Submitted",
+    "priority": "Urgent"
+}'
+
+curl -X PATCH -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+<h3>Create a Component</h3>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/components/"
+
+data='{
+    "name": "RapidJSON",
+    "version": "1.0.2",
+    "owner": "Tencent Holdings Ltd",
+    "copyright": "Copyright (C) 2015 THL A29 Limited, a Tencent company, and Milo Yip.",
+    "license_expression": "mit AND bsd-new AND (json AND apache-2.0)",
+    "release_date": "2015-05-14",
+    "description": "RapidJSON is a JSON parser and generator for C++. It was inspired by RapidXml.",
+    "homepage_url": "http://rapidjson.org/",
+    "vcs_url": "https://github.com/miloyip/rapidjson.git",
+    "code_view_url": "https://github.com/miloyip/rapidjson",
+    "bug_tracking_url": "https://github.com/miloyip/rapidjson/issues",
+    "primary_language": "C++",
+    "type": "Library",
+    "notice_text": "Tencent is pleased to support the open source community by making RapidJSON available.",
+    "is_license_notice": true,
+    "is_copyright_notice": true,
+    "is_notice_in_codebase": true,
+    "notice_filename": "license.txt",
+    "notice_url": "https://github.com/miloyip/rapidjson/blob/master/license.txt",
+    "dependencies": "",
+    "configuration_status": "Approved",
+    "is_active": true,
+    "usage_policy": "Approved Component",
+    "curation_level": 45,
+    "guidance": "There are two files licensed under BSD-Modified",
+    "admin_notes": "",
+    "keywords": [
+        "API",
+        "Framework"
+    ],
+    "packages": [
+        "{{ site_url }}/api/v2/packages/8972eb65-59b7-45a8-9e69-abe85aefdbb0/",
+        "32ed05d6-7b85-408f-9d04-9b4a5ec47af7"
+    ],
+    "ip_sensitivity_approved": false,
+    "affiliate_obligations": false,
+    "affiliate_obligation_triggers": "",
+    "concluded_license": "",
+    "legal_comments": "",
+    "sublicense_allowed": null,
+    "express_patent_grant": null,
+    "covenant_not_to_assert": null,
+    "indemnification": null,
+    "legal_reviewed": false,
+    "approval_reference": "",
+    "distribution_formats_allowed": null,
+    "acceptable_linkages": null,
+    "export_restrictions": "",
+    "approved_download_location": "",
+    "approved_community_interaction": ""
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+The ``owner`` field value supports both:
+
+- the Owner name: ``nexB``
+- the fully qualified API URL: ``{{ site_url }}/api/v2/owners/f3dd6ce9-850c-4a5e-be28-97d8661890d6/``
+
+The ``packages`` field value supports both:
+
+- the Package UUID: ``8972eb65-59b7-45a8-9e69-abe85aefdbb0``
+- the fully qualified API URL: ``{{ site_url }}/api/v2/packages/8972eb65-59b7-45a8-9e69-abe85aefdbb0/``
+
+<h3>Update a Component</h3>
+Update multiple Component fields.
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/components/e18ee2a9-449c-47af-a224-c6bf562ccc7e/"
+
+data='{
+    "configuration_status": "Approved",
+    "is_active": true,
+    "usage_policy": "Approved Component",
+    "curation_level": 45
+}'
+
+curl -X PATCH -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+<h3>Create a License</h3>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/licenses/"
+
+data='{
+    "key": "mit",
+    "name": "MIT License",
+    "short_name": "MIT License",
+    "reviewed": true,
+    "owner": "MIT",
+    "homepage_url": "http://opensource.org/licenses/mit-license.php",
+    "full_text": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\r\n\r\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\r\n\r\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+    "publication_year": "1988",
+    "category": "Permissive",
+    "license_style": "MIT-Style",
+    "license_profile": "3: Classic 2-Clause",
+    "license_status": "Approved",
+    "is_active": true,
+    "usage_policy": null,
+    "is_component_license": false,
+    "curation_level": 48,
+    "guidance": "",
+    "guidance_url": "",
+    "special_obligations": "",
+    "admin_notes": "",
+    "faq_url": "",
+    "osi_url": "http://www.opensource.org/licenses/MIT",
+    "text_urls": "http://opensource.org/licenses/mit-license.php",
+    "other_urls": "",
+    "spdx_license_key": "MIT",
+    "tags": [
+        {
+            "label": "License Text in Source",
+            "value": true
+        },
+        {
+            "label": "License Text in Documentation",
+            "value": false
+        }
+    ]
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+<h3>Update a License</h3>
+Update ``reviewed`` field of a License.
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/licenses/deba0042-1567-4194-b458-390ef93c228e/"
+
+data='{
+    "reviewed": true
+}'
+
+curl -X PATCH -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+<h3>Create a Product</h3>
+<blockquote>Product creation requires the <strong>Add product</strong> permission.</blockquote>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/products/"
+
+data='{
+    "name": "Starship Widget Framework",
+    "version": "7.10",
+    "owner": "Starship Enterprises",
+    "configuration_status": "Approved",
+    "license_expression": "commercial-option AND mit",
+    "release_date": "2012-12-21",
+    "description": "SWF is a web application that allows users to easily access...",
+    "copyright": "Copyright (c) 2014 Components Unlimited",
+    "contact": "",
+    "homepage_url": "https://www.owfgoss.org/",
+    "vcs_url": "",
+    "code_view_url": "",
+    "bug_tracking_url": "",
+    "primary_language": "Java",
+    "admin_notes": "",
+    "keywords": [
+        "API",
+        "Framework"
+    ],
+    "notice_text": "(SWF)"
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+
+<h3>Create a ProductComponent</h3>
+<blockquote>ProductComponent creation requires the <strong>Change product</strong> permission.</blockquote>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/product_components/"
+
+data='{
+    "product": "/api/v2/products/565737ed-ab23-46eb-bbcf-185da2da50dc/",
+    "component": "/api/v2/components/88017433-ee78-4144-863d-c518d9fb39de/",
+    "review_status": "Approved in this context",
+    "license_expression": "mit AND bsd-new",
+    "purpose": "Build",
+    "notes": "",
+    "is_deployed": true,
+    "is_modified": false,
+    "extra_attribution_text": "",
+    "package_paths": "/path/"
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+The ``product`` and ``component`` fields also supports the name:version
+syntax: ``Starship Widget Framework:7.1`` as value in place of the fully qualified API URL.
+
+<h3>Create a ProductPackage</h3>
+<blockquote>ProductPackage creation requires the <strong>Change product</strong> permission.</blockquote>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/product_packages/"
+
+data='{
+    "product": "/api/v2/products/565737ed-ab23-46eb-bbcf-185da2da50dc/",
+    "package": "/api/v2/packages/88017433-ee78-4144-863d-c518d9fb39de/",
+    "review_status": "Approved in this context",
+    "license_expression": "mit",
+    "purpose": "Core",
+    "notes": "",
+    "is_deployed": true,
+    "is_modified": false,
+    "extra_attribution_text": "",
+    "package_paths": "/path/",
+    "reference_notes": ""
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+The ``product`` field also supports the ``name:version`` syntax: ``Starship Widget Framework:7.1``
+as value in place of the the fully qualified API URL.
+
+<h3>Create a CodebaseResource</h3>
+<blockquote>CodebaseResource creation requires the <strong>Change product</strong> permission.</blockquote>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/codebase_resources/"
+
+data='{
+    "product": "DejaCode:3.2",
+    "path": "/path/",
+    "is_deployment_path": false,
+    "product_component": "/api/v2/product_components/4af809ee-b51e-4192-8126-24eccd1d7272/",
+    "product_package": "/api/v2/product_packages/75763811-dad0-498c-8ccd-7b6ee2a8651a/",
+    "additional_details": {
+        "JSON field 1": "Content",
+        "JSON field 2": "Content"
+    },
+    "deployed_to": [
+        "/path1/",
+        "/path2/"
+    ]
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+The ``product`` field also supports the the fully qualified API URL.
+
+<h3>Create an ExternalReference</h3>
+<pre>
+authorization="Authorization: Token &lt;api_key&gt;"
+accept="Accept: application/json; indent=4"
+content_type="Content-Type: application/json"
+api_url="{{ site_url }}/api/v2/external_references/"
+
+data='{
+    "content_object": "{{ site_url }}/api/v2/components/6e07237c-1c58-42ae-addb-889e6ddbe67e/",
+    "external_source": "GitHub",
+    "external_id": "rapidjson",
+    "external_url": "https://github.com/miloyip/rapidjson"
+}'
+
+curl -X POST -H "$authorization" -H "$accept" -H "$content_type" -d "$data" "$api_url"
+</pre>
+The ``content_object`` field value supports the fully qualified object API URL for the following
+object types: ``Component``, ``Package``, ``License``, and ``Owner``.
+
+<hr style="margin-top: 30px; margin-bottom: 30px;">
+<h1>Endpoints:</h1>

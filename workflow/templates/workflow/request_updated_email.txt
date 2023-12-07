@@ -1,0 +1,19 @@
+{% autoescape off %}The request {{ req }} has been updated in the {{ req.dataspace }} dataspace on {{ req.last_modified_date|date:'N d, Y, h:ia' }}
+
+================================================================================
+Ref. {{ req }} {{ req.title }}
+- Request template: {{ req.request_template }}
+- Product context: {{ req.product_context|default_if_none:'(none)' }}
+- Applies to: {{ req.content_object|default_if_none:'(none)' }}
+- Submitted by: {{ req.requester }}
+- Assigned to: {{ req.assignee }}
+- Priority: {{ req.priority|default_if_none:'(none)' }}
+
+{{ site_url }}{{ req.get_absolute_url }}
+================================================================================
+
+- Status: {{ req.get_status_display }}
+- Notes: {{ req.notes|default_if_none:'(none)' }}
+
+You can follow the request at {{ site_url }}{{ req.get_absolute_url }}
+{% endautoescape %}

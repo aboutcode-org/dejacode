@@ -1,0 +1,7 @@
+about_resource: initdb.sql.gz
+name: initdb.sql.gz
+license_expression: cc-by-sa-4.0
+copyright: Copyright (c) nexB Inc.
+attribute: yes
+license_file: cc-by-sa-4.0.LICENSE
+notes: these are sample, seed data for the DejaCode reference dataspace.

@@ -1,0 +1,14 @@
+about_resource: urllib3-2.1.0-py3-none-any.whl
+name: urllib3
+version: 2.1.0
+download_url: https://files.pythonhosted.org/packages/96/94/c31f58c7a7f470d5665935262ebd7455c7e4c7782eb525658d3dbf4b9403/urllib3-2.1.0-py3-none-any.whl
+package_url: pkg:pypi/urllib3@2.1.0
+license_expression: mit
+copyright: Copyright urllib3 project contributors
+attribute: yes
+checksum_md5: 56a1919e2243cc6af59b23c06eda3783
+checksum_sha1: 1e197082cd0d0f98bc97f2fbfd7d2a597e3ff3e4
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,24 @@
+{% load i18n %}
+{% url 'product_portfolio:product_list' as product_list_url %}
+{% url 'component_catalog:component_list' as component_list_url %}
+{% url 'component_catalog:package_list' as package_list_url %}
+{% url 'license_library:license_list' as license_list_url %}
+{% url 'organization:owner_list' as owner_list_url %}
+
+{% if not user.is_anonymous and SHOW_PP_IN_NAV %}
+  <li class="nav-item{% if product_list_url in request.path %} active{% endif %}">
+    <a class="nav-link" href="{{ product_list_url }}">{% trans 'Products' %}</a>
+  </li>
+{% endif %}
+<li class="nav-item{% if component_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ component_list_url }}">{% trans 'Components' %}</a>
+</li>
+<li class="nav-item{% if package_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ package_list_url }}">{% trans 'Packages' %}</a>
+</li>
+  <li class="nav-item{% if license_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ license_list_url }}">{% trans 'Licenses' %}</a>
+</li>
+<li class="nav-item{% if owner_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ owner_list_url }}">{% trans 'Owners' %}</a>
+</li>

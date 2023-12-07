@@ -1,0 +1,56 @@
+[
+{
+  "model": "organization.owner",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "0b9931db-db6e-49d1-b3f1-218cb302b20c",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "name": "Linus Torvalds",
+    "homepage_url": "http://en.wikipedia.org/wiki/Linus_Torvalds",
+    "contact_info": "",
+    "notes": "Finnish software engineer and hacker, best known for having initiated the development of the open source Linux kernel. He later became the chief architect of the Linux kernel, and now acts as the project's coordinator. He also created the revision control system Git.",
+    "alias": "",
+    "type": "Person"
+  }
+},
+{
+  "model": "organization.owner",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "1711f308-8072-4357-b72d-29afd075816a",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "name": "Test Organization",
+    "homepage_url": "",
+    "contact_info": "",
+    "notes": "",
+    "alias": "",
+    "type": "Organization"
+  }
+},
+{
+  "model": "organization.subowner",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "7f2dc0cf-ee18-4dbb-b4c8-c9e35252d4a8",
+    "parent": [
+      "nexB",
+      "1711f308-8072-4357-b72d-29afd075816a"
+    ],
+    "child": [
+      "nexB",
+      "0b9931db-db6e-49d1-b3f1-218cb302b20c"
+    ],
+    "notes": "In June 2003, Linus Torvalds moved to the Open Source Development Labs, which has since merged with the Free Standards Group to become the Linux Foundation, under whose auspices he continues to work.",
+    "start_date": "2003-06-01",
+    "end_date": null
+  }
+}
+]

@@ -1,0 +1,18 @@
+about_resource: djangorestframework-3.14.0-py3-none-any.whl
+name: djangorestframework
+version: 3.14.0
+download_url: https://files.pythonhosted.org/packages/ff/4b/3b46c0914ba4b7546a758c35fdfa8e7f017fcbe7f23c878239e93623337a/djangorestframework-3.14.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/djangorestframework/3.14.0/
+package_url: pkg:pypi/djangorestframework@3.14.0
+license_expression: bsd-new
+copyright: Copyright djangorestframework project contributors
+attribute: yes
+owner: Encode OSS Ltd.
+owner_url: https://github.com/encode
+contact: http://www.encode.io/
+checksum_md5: d0faf84d9235e15bf8bd8a2656071b16
+checksum_sha1: 3e11a86dfd03b863e338fe928b36517c624c73f3
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

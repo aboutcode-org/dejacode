@@ -1,0 +1,19 @@
+<div id="edit-productrelation-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><span id="title-add-update">Update</span> relationship of {{ product }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div id="edit-productrelation-body" class="modal-body bg-light pt-1">
+      </div>
+      <div class="modal-footer">
+        {% if has_delete_productpackage or has_delete_productcomponent %}
+          <a id="update-productrelation-delete" class="btn btn-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="top" title="Click here to delete this relationship">Delete</a>
+        {% endif %}
+        <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
+        <input type="button" id="update-productrelation-submit" value="Update" class="btn btn-primary btn-success">
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+{% extends "admin/change_list_extended.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        {% url opts|admin_urlname:'permission_export_csv' as export_csv_url %}
+        <a class="grp-state-focus" href="{{ export_csv_url }}">{% trans 'Export as CSV' %}</a>
+    </li>
+    {{ block.super }}
+{% endblock %}

@@ -1,0 +1,14 @@
+about_resource: django_crispy_forms-2.1-py3-none-any.whl
+name: django-crispy-forms
+version: '2.1'
+download_url: https://files.pythonhosted.org/packages/58/b4/0fc9eed10828d538b0706e64ec3b8c32e42539ba9c6245d17ad4a3873163/django_crispy_forms-2.1-py3-none-any.whl
+package_url: pkg:pypi/django-crispy-forms@2.1
+license_expression: mit
+copyright: Copyright django-crispy-forms project contributors
+attribute: yes
+checksum_md5: 42afc54ee22275b489a5b9e962022186
+checksum_sha1: a723f5fdab15363f05b5b57f62b9d6a88a7913f1
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

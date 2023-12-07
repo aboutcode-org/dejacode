@@ -1,0 +1,18 @@
+about_resource: async_timeout-4.0.2-py3-none-any.whl
+name: async-timeout
+version: 4.0.2
+download_url: https://files.pythonhosted.org/packages/d6/c1/8991e7c5385b897b8c020cdaad718c5b087a6626d1d11a23e1ea87e325a7/async_timeout-4.0.2-py3-none-any.whl
+homepage_url: https://pypi.org/project/async-timeout/4.0.2/
+package_url: pkg:pypi/async-timeout@4.0.2
+license_expression: apache-2.0
+copyright: Copyright (c) aio-libs collaboration
+notice_file: async_timeout-4.0.2-py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: aio-libs
+checksum_md5: 20b0b49e7f25f99586331675f4e2e7de
+checksum_sha1: c490b7de0828f946f7b6a06c6a7e9c0f6107b733
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

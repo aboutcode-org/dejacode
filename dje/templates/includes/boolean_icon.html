@@ -1,0 +1,6 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0">{% if help_text %}<span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{% trans help_text %}">{% endif %}{% trans label %}{% if help_text %}</span>{% endif %}</dt>
+<dd class="col-sm-10 pt-2 mb-3">{{ values|as_icon }}</dd>
+{% if forloop.last %}</dl>{% endif %}

@@ -1,0 +1,17 @@
+about_resource: mypy_extensions-0.4.3-py2.py3-none-any.whl
+name: mypy-extensions
+version: 0.4.3
+download_url: https://files.pythonhosted.org/packages/5c/eb/975c7c080f3223a5cdaff09612f3a5221e4ba534f7039db34c35d95fa6a5/mypy_extensions-0.4.3-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/mypy-extensions/0.4.3/
+package_url: pkg:pypi/mypy-extensions@0.4.3
+license_expression: mit
+copyright: Copyright (c) Jukka Lehtosalo and contributors
+notice_file: mypy_extensions-0.4.3-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Jukka Lehtosalo
+checksum_md5: b9c790261bc8932c80b5938c69e5b65f
+checksum_sha1: b17fb71194bd21b8ec20d711298d2197c5eb34d0
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

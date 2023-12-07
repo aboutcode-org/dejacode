@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ verbose_name|capfirst }} Activity Log</title>
+    <style>
+        {{ bootstrap_css_code|safe }}
+    </style>
+</head>
+<body class="p-3">
+    <h1>{{ verbose_name|capfirst }} Activity Log</h1>
+    <h4>Activity for the last: {{ days }} days, for Dataspace: {{ dataspace.name }}</h4>
+    <h5>Generated on {{ now }}</h5>
+    <table class="table table-striped table-bordered table-hover table-md mt-3">
+        <thead>
+            <tr>
+                <th>{{ verbose_name|capfirst }}</th>
+                <th>Action</th>
+                <th>Change details</th>
+                <th>Action time</th>
+                <th>User</th>
+                <th>Dataspace</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in objects %}
+                <tr>
+                    <td>{{ data.obj }}</td>
+                    <td>{{ data.action }}</td>
+                    <td>{{ data.history.get_change_message }}</td>
+                    <td>{{ data.history.action_time }}</td>
+                    <td>{{ data.history.user.username }}</td>
+                    <td>{{ data.history.object_dataspace }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

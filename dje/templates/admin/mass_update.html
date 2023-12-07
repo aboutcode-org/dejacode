@@ -1,0 +1,139 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+    <style>
+        #col1 { float: left; width: 60%; }
+        #col2 { float: right; width: 40%; }
+        #col1 table { width: 98%; }
+        input[type="text"], textarea { width: 95%; }
+    </style>
+{% endblock %}
+
+{% block title %}
+    {{ block.super }} - Mass update {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{% block content_title %}
+    <h1>Mass update {{ opts.verbose_name_plural|capfirst }}</h1>
+{% endblock %}
+
+{% block bodyclass %}mass_update{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Mass Update' %}
+{% endblock %}
+
+{% block object-tools %}
+    <ul class="grp-object-tools">
+        <li><a class="grp-state-focus" href="javascript://" onclick="(function($){$('td.help_text').toggle('fast');})(grp.jQuery);">{% trans "Show/Hide help" %}</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    {% if adminform.form.errors %}
+        <p class="errornote">{% if adminform.form.errors|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}</p>
+        <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+    <form method="post">{% csrf_token %}
+        <div id='col1'>
+            <table class="grp-table">
+                <tr>
+                    <th>Field name</th>
+                    <th>Update</th>
+                    <th>New value</th>
+                </tr>
+                {% for field in adminform.form.model_fields %}
+                    <tr class="grp-row-{% cycle 'even' 'odd' %} {{ field.name }}-row">
+                        <td>
+                            {% if field.field.required %}
+                                <b>{% endif %} {{ field.label_tag }}{% if field.field.required %}</b>
+                            {% endif %}
+                        </td>
+                        <td class='col_enabler'>
+                            <input type="checkbox" name="chk_id_{{ field.name }}" class="enabler"{% if field.field.enabled %} checked="checked"{% endif %}>
+                        </td>
+                        <td class='col_field field-{{ field.name }}-value'>
+                            {{ field.errors }}
+                            {{ field }}
+                        </td>
+                    </tr>
+                    <tr class="grp-row-{% cycle 'even' 'odd' %}">
+                        <td colspan="3" class="help_text" style="display:none;">
+                            <p class="grp-help" style="margin-top:0; padding-top: 0;">{{ field.help_text }}</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div id='col2'>
+            <div class="grp-module">
+                <h2>Selected records.</h2>
+                <div class="grp-row">
+                    <ul class="grp-nested-list">
+                        {% for object in queryset %}
+                            <li><a href="{% add_preserved_filters object.get_admin_url %}">{{ object }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Update records" name="apply">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {# Adds support for raw_id_fields #}
+    <script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
+    <script type="text/javascript" charset="utf-8">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                {% include 'includes/keywords_autocomplete.js.html' %}
+                $('.vForeignKeyRawIdAdminField').grp_autocomplete_fk({
+                    lookup_url:"{% url 'grp_related_lookup' %}",
+                    autocomplete_lookup_url:"{% url 'grp_autocomplete_lookup' %}"
+                });
+                $('.related-lookup').click(function(e) {
+                    e.preventDefault();
+                    showRelatedObjectLookupPopup(this);
+                });
+            });
+        })(grp.jQuery);
+    </script>
+
+    <script>
+        (function ($) {
+            $(function () {
+                $('.col_field input, .col_field select, .col_field textarea').each(function () {
+                    if (!$(this).parent().parent().find('.col_enabler input[type=checkbox]').is(':checked')) {
+                        $(this).prop('disabled', true);
+                    }
+                });
+                $('.enabler').click(function () {
+                    var target = $(this).parent().parent().find('.col_field input, .col_field select, .col_field textarea');
+                    if ($(this).is(':checked')) {
+                        $(target).prop('disabled', false);
+                    } else {
+                        $(target).prop('disabled', true);
+                    }
+                })
+            });
+        })(django.jQuery);
+    </script>
+{% endblock %}

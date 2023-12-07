@@ -1,0 +1,18 @@
+about_resource: pymemcache-3.5.2-py2.py3-none-any.whl
+name: pymemcache
+version: 3.5.2
+download_url: https://files.pythonhosted.org/packages/9b/a3/58af0a398c490092e8039edcda815c172309f8037b75519b7b8138fa0322/pymemcache-3.5.2-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/pymemcache/3.5.2/
+package_url: pkg:pypi/pymemcache@3.5.2
+license_expression: apache-2.0
+copyright: Copyright (c) Pinterest.com
+notice_file: pymemcache-3.5.2-py2.py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: Pinterest.com
+checksum_md5: bcd3872d0bcb4130e054dae77e7e8b61
+checksum_sha1: 1c27963efae0b1d5b5b87111134190c448833da1
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

@@ -1,0 +1,26 @@
+{% load naturaltime from humanize %}
+{% load crispy_forms_tags %}
+<div class="card bg-light mt-3" id="attachments_section">
+  <div class="card-header fw-bold">
+    Attachments
+  </div>
+  <div class="card-body">
+    {% if attachments %}
+      <ul>
+        {% for attachment in attachments %}
+          <li>
+            <a href="{% url 'workflow:send_attachment' attachment.uuid %}">{{ attachment.filename }}</a>
+            ({{ attachment.file.size|filesizeformat }})
+            <span class="text-muted-light">- Uploaded {{ attachment.created_date|naturaltime }}</span>
+            {% if attachment.can_delete %}
+              <a href="#delete-attachment-modal" class="delete_attachment_link" role="button" data-bs-toggle="modal" data-uuid="{{ attachment.uuid }}" data-filename="{{ attachment.filename }}" style="color: #b94a48;"><i class="fas fa-minus-circle"></i></a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <hr>
+    {% endif %}
+    <label for="id_file" class="form-label fw-bold">Upload a new file:</label>
+    {% crispy attachment_form %}
+  </div>
+</div>

@@ -1,0 +1,17 @@
+about_resource: zipp-3.8.0-py3-none-any.whl
+name: zipp
+version: 3.8.0
+download_url: https://files.pythonhosted.org/packages/80/0e/16a7ee38617aab6a624e95948d314097cc2669edae9b02ded53309941cfc/zipp-3.8.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/zipp/3.8.0/
+package_url: pkg:pypi/zipp@3.8.0
+license_expression: mit
+copyright: Copyright (c) Jason R. Coombs
+notice_file: zipp-3.8.0-py3-none-any.whl.NOTICE
+attribute: yes
+owner: Jason R. Coombs
+checksum_md5: da531f1b3a5c5e65470cb74729242bfc
+checksum_sha1: 94d2e7505ec6471aebf3fd34a1a249e8e7607ab8
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

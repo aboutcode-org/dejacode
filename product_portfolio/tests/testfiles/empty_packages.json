@@ -1,0 +1,38 @@
+{
+  "headers": [
+    {
+      "tool_name": "scancode-toolkit",
+      "tool_version": "32.0.0rc1",
+      "options": {
+        "input": [
+          "artifacts/"
+        ],
+        "--copyright": true,
+        "--info": true,
+        "--json-pp": "artifacts.json",
+        "--license": true,
+        "--package": true
+      },
+      "notice": "Generated with ScanCode and provided on an \"AS IS\" BASIS, WITHOUT WARRANTIES\nOR CONDITIONS OF ANY KIND, either express or implied. No content created from\nScanCode should be considered or used as legal advice. Consult an Attorney\nfor any legal advice.\nScanCode is a free software code scanning tool from nexB Inc. and others.\nVisit https://github.com/nexB/scancode-toolkit/ for support and download.",
+      "start_timestamp": "2023-02-16T230435.013759",
+      "end_timestamp": "2023-02-16T230450.785867",
+      "output_format_version": "3.0.0",
+      "duration": 15.772117376327515,
+      "message": null,
+      "errors": [],
+      "warnings": [],
+      "extra_data": {
+        "system_environment": {
+          "operating_system": "linux",
+          "cpu_architecture": "64",
+          "platform": "Linux-5.4.0-137-generic-x86_64-with-glibc2.27",
+          "platform_version": "#154~18.04.1-Ubuntu SMP Tue Jan 10 16:58:20 UTC 2023",
+          "python_version": "3.10.4 (main, May 22 2022, 00:46:26) [GCC 7.5.0]"
+        },
+        "spdx_license_list_version": "3.19",
+        "files_count": 32
+      }
+    }
+  ],
+  "packages": []
+}

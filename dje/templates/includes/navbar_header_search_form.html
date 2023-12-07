@@ -1,0 +1,36 @@
+{% load i18n %}
+<form id="search-form" class="d-flex mt-3 me-sm-2" role="search" action="{% if product_list_url in request.path %}{{ product_list_url }}{% elif component_list_url in request.path %}{{ component_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif package_list_url in request.path %}{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif license_list_url in request.path %}{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif owner_list_url in request.path %}{{ owner_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% else %}{{ global_search_url }}{% endif %}">
+  <div class="input-group input-group-sm mb-3">
+    <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <span id="search-selector-content">
+        {% if product_list_url in request.path %}
+          <i class="fa fa-briefcase"></i> {% trans 'Product' %}
+        {% elif component_list_url in request.path %}
+          <i class="fa fa-puzzle-piece"></i> {% trans 'Component' %}
+        {% elif package_list_url in request.path %}
+          <i class="fas fa-archive"></i> {% trans 'Package' %}
+        {% elif license_list_url in request.path %}
+          <i class="fa fa-book"></i> {% trans 'License' %}
+        {% elif owner_list_url in request.path %}
+          <i class="fa fa-users"></i> {% trans 'Owner' %}
+        {% else %}
+          <i class="fa fa-globe" aria-hidden="true"></i> {% trans 'Global' %}
+        {% endif %}
+      </span>
+    </button>
+    <div id="search-selector-list" class="dropdown-menu">
+      {% if not user.is_anonymous and SHOW_PP_IN_NAV %}
+        <a class="dropdown-item" href="{{ product_list_url }}"><i class="fa fa-briefcase" aria-hidden="true"></i> {% trans 'Product' %}</a>
+      {% endif %}
+      <a class="dropdown-item" href="{{ component_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}"><i class="fa fa-puzzle-piece" aria-hidden="true"></i> {% trans 'Component' %}</a>
+      <a class="dropdown-item" href="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}"><i class="fas fa-archive" aria-hidden="true"></i> {% trans 'Package' %}</a>
+      <a class="dropdown-item" href="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}"><i class="fa fa-book" aria-hidden="true"></i> {% trans 'License' %}</a>
+      <a class="dropdown-item" href="{{ owner_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}"><i class="fa fa-users" aria-hidden="true"></i> {% trans 'Owner' %}</a>
+      <div role="separator" class="dropdown-divider"></div>
+      <a class="dropdown-item" href="{{ global_search_url }}"><i class="fa fa-globe" aria-hidden="true"></i> {% trans 'Global' %}</a>
+    </div>
+    <input type="text" class="form-control" id="search-input" name="q" placeholder="Search" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+  </div>
+  <a id="search-help-link" href="#search-help-modal" style="margin-top: 4px;margin-left:4px;color: white;" data-bs-toggle="modal" aria-label="Open search help"><i class="fas fa-question-circle fa-sm"></i></a>
+  {% include 'includes/search_form_hidden_filters.html' %}
+</form>

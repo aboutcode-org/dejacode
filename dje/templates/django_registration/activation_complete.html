@@ -1,0 +1,15 @@
+{% extends "bootstrap_base.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% trans 'Account activated' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Account' title='Congratulations, your account is now active!' %}
+  <p>
+    Thank you for activating your account, please enter your credentials on
+    the <a href="{% url 'login' %}">login page to sign in.</a>
+  </p>
+{% endblock %}

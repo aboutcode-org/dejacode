@@ -1,0 +1,38 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static admin_urls %}
+
+{% block page_title %}
+  Delete {{ object }}
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col-auto me-auto">
+          <div class="header-pretitle">
+            <a class="me-1" href="{{ list_url }}" title="Return to {% trans verbose_name_plural %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans verbose_name_plural %}</a>
+          </div>
+          <h1 class="header-title">
+            Delete <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if perms_needed %}
+    <p>You do not have all the permissions required to delete this {{ opts.verbose_name }} and its relationships.</p>
+  {% elif protected %}
+    <p>You cannot delete this {{ opts.verbose_name }} because it is already used by other objects.</p>
+    {% if user.is_staff %}
+      <a href="{% url opts|admin_urlname:'delete' object.pk|admin_urlquote %}" target="_blank">Click here for details</a> in the admin interface.
+    {% endif %}
+  {% else %}
+    <form method="post">{% csrf_token %}
+      <p>Are you sure you want to delete "{{ object }}"?</p>
+      <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Cancel</a>
+      <input type="submit" class="btn btn-danger" value="Confirm deletion">
+    </form>
+  {% endif %}
+{% endblock %}

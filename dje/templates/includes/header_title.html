@@ -1,0 +1,17 @@
+{% load i18n %}
+<div class="header">
+  <div class="header-body">
+    <div class="row align-items-center">
+      <div class="col">
+        {% if pretitle %}
+          <div class="header-pretitle">
+            {% trans pretitle %}
+          </div>
+        {% endif %}
+        <h1 class="header-title">
+          {% trans title %}
+        </h1>
+      </div>
+    </div>
+  </div>
+</div>

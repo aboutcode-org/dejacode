@@ -1,0 +1,17 @@
+about_resource: pyasn1-0.5.0-py2.py3-none-any.whl
+name: pyasn1
+version: 0.5.0
+download_url: https://files.pythonhosted.org/packages/14/e5/b56a725cbde139aa960c26a1a3ca4d4af437282e20b5314ee6a3501e7dfc/pyasn1-0.5.0-py2.py3-none-any.whl
+package_url: pkg:pypi/pyasn1@0.5.0
+license_expression: bsd-new AND bsd-simplified
+copyright: Copyright Ilya Etingof (etingof@gmail.com)
+attribute: yes
+checksum_md5: 095d55d909065c490d9da12211872d24
+checksum_sha1: a2d9efce70292694a4b0ba449be06f5512359f32
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

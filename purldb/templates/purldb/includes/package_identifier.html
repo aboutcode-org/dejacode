@@ -1,0 +1,7 @@
+{% if package.purl %}
+  {{ package.purl }}
+{% elif package.filename %}
+  {{ package.filename }}
+{% else %}
+  {{ package.name }} {{ package.version }}
+{% endif %}

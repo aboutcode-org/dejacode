@@ -1,0 +1,18 @@
+about_resource: asgiref-3.7.2-py3-none-any.whl
+name: asgiref
+version: 3.7.2
+download_url: https://files.pythonhosted.org/packages/9b/80/b9051a4a07ad231558fcd8ffc89232711b4e618c15cb7a392a17384bbeef/asgiref-3.7.2-py3-none-any.whl
+homepage_url: https://pypi.org/project/asgiref/3.7.2/
+package_url: pkg:pypi/asgiref@3.7.2
+license_expression: bsd-new
+copyright: Copyright asgiref project contributors
+attribute: yes
+owner: Django Software Foundation
+owner_url: https://www.djangoproject.com/foundation/
+contact: https://www.djangoproject.com/contact/foundation/
+checksum_md5: d4d9c9c26865c416dc29553bc712df5b
+checksum_sha1: 4de59604f7301d0a3595da7b5ea95833e2fdbdb2
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

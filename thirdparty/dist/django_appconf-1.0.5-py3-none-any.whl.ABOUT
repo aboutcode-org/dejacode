@@ -1,0 +1,17 @@
+about_resource: django_appconf-1.0.5-py3-none-any.whl
+name: django-appconf
+version: 1.0.5
+download_url: https://files.pythonhosted.org/packages/48/95/78c279b7861efd8b0282e9373d40ec7247664bf1246a6cdc9e59d281ceb0/django_appconf-1.0.5-py3-none-any.whl
+homepage_url: https://pypi.org/project/django-appconf/1.0.5/
+package_url: pkg:pypi/django-appconf@1.0.5
+license_expression: bsd-new
+copyright: Copyright (c) Jannis Leidel and individual contributors
+notice_file: django_appconf-1.0.5-py3-none-any.whl.NOTICE
+attribute: yes
+owner: Jannis Leidel
+checksum_md5: 083823d8fa230a7afd18f93b3ecb5498
+checksum_sha1: b996b9fc2bde89977403a7f582405b7ee7a1fb8f
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

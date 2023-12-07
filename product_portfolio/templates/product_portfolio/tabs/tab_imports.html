@@ -1,0 +1,64 @@
+{% load i18n %}
+{% load naturaltime_short from dje_tags %}
+{% load as_icon from dje_tags %}
+
+{% spaceless %}
+<div
+  {% if has_projects_in_progress %} hx-get="{{ tab_view_url }}" hx-trigger="load delay:10s" hx-swap="outerHTML"{% endif %}
+>
+  {% if has_projects_in_progress %}
+    <div class="alert alert-primary" role="alert">
+      <i class="fas fa-spinner fa-spin"></i>
+      Imports are currently in progress. This view will automatically refresh upon
+      completion of the import process.
+    </div>
+  {% endif %}
+
+  <table class="table table-bordered table-md table-fixed-layout">
+    <thead>
+      <tr>
+        <th>{% trans 'Import type' %}</th>
+        <th style="width:115px;">{% trans 'Status' %}</th>
+        <th>{% trans 'Input file' %}</th>
+        <th colspan="2">{% trans 'Log' %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for scancode_project in scancode_projects %}
+        <tr class="{% cycle 'odd' '' %}">
+          <td>
+            {{ scancode_project.get_type_display }}
+            {% if scancode_project.update_existing_packages %}
+              <div class="smaller text-muted-darker">
+                + Update exising packages
+              </div>
+            {% endif %}
+            <div class="smaller text-muted-darker">
+              <span title="{{ scancode_project.created_date|date:'N j, Y, f A' }}">
+                {{ scancode_project.created_date|naturaltime_short }}
+              </span>
+              by {{ scancode_project.created_by }}
+            </div>
+          </td>
+          <td>
+            <strong>
+              {{ scancode_project.get_status_display|title }}
+              {% if scancode_project.has_errors %}
+                <div class="float-start"> with errors</div>
+              {% endif %}
+            </strong>
+            {% if scancode_project.project_uuid %}
+              <a href="#" role="button" class="ms-1 float-end" data-bs-toggle="modal" data-bs-target="#scancode-project-status-modal" data-fetch-status-url="{% url 'product_portfolio:scancodeio_project_status' scancode_project.uuid %}">
+                <i class="fas fa-info-circle"></i>
+              </a>
+            {% endif %}
+            {% include 'component_catalog/includes/scan_status.html' with status=scancode_project.status has_errors=scancode_project.has_errors only %}
+          </td>
+          <td>{{ scancode_project.input_file_filename|default_if_none:"" }}</td>
+          <td colspan="2">{{ scancode_project.import_log|join:"<br>" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endspaceless %}

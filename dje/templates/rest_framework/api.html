@@ -1,0 +1,34 @@
+{% extends "rest_framework/base.html" %}
+
+{% block meta %}
+    {% if FAVICON_HREF %}
+        <link rel="shortcut icon" href="{{ FAVICON_HREF }}">
+    {% endif %}
+{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <style>
+        body {background: none;}
+        .navbar {background: #5a7db4; border-top: 3px solid #f7bf3c;}
+        .navbar-inverse .navbar-brand {color: white;}
+    </style>
+{% endblock %}
+
+{% block title %}
+    DejaCode REST API
+{% endblock %}
+
+{% block branding %}
+    <span class="navbar-brand">{{ SITE_TITLE }} REST API</span>
+    <ul class="nav navbar-nav">
+        {% include 'includes/navbar_header_left_menu.html' %}
+    </ul>
+{% endblock %}
+
+{% block userlinks %}
+    <li class="navbar-link">
+        <a href="/">Back to app</a>
+    </li>
+    {{ block.super }}
+{% endblock %}

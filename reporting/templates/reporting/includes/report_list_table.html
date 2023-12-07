@@ -1,0 +1,85 @@
+{% load i18n humanize %}
+{% load inject_preserved_filters from dje_tags %}
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <div style="font-size: 120%; font-weight: bold;">
+              <span class="cursor-help"
+                    data-bs-toggle="popover"
+                    data-bs-placement="right"
+                    data-bs-trigger="hover"
+                    data-bs-title="Reports"
+                    data-bs-content="The Reports listed below provide you with various ways to select, view,
+                                  and export information from DejaCode to help you get maximum benefit from
+                                  application data, including policies and guidance supplied by your organization.
+                                  If you have additional reporting requirements, contact your DejaCode administrator."
+              >{% trans "Reports" %}</span>
+              {% if paginator %}: {{ paginator.count|intcomma }} results{% endif %}
+            </div>
+          </div>
+          <div class="col-auto">
+            {% if filter %}
+              <ul class="nav">
+                {{ filter.form.query__content_type }}
+                {{ filter.form.sort }}
+              </ul>
+            {% endif %}
+          </div>
+          <div class="col-auto">
+            {% include 'includes/admin_links_dropdown.html' with extra_btn_class='btn-sm' %}
+          </div>
+        </div>
+      </div>
+      <div class="card-header">
+        <div class="row">
+          <div class="col-12">
+            <form>
+              <input id="#id_{{ filter.form.q.name }}" name="{{ filter.form.q.name }}" type="search" class="form-control form-control-prepended search" value="{{ filter.form.q.value|default_if_none:"" }}" placeholder="Search">
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-lg list-group-flush">
+          {% for group, reports in object_list.items %}
+            {% if group %}
+              <li class="list-group-item py-2" style="color: #95aac9; background-color: #f9fbfd;">
+                <h5 class="mb-0">
+                  {{ group }}
+                </h5>
+              </li>
+            {% endif %}
+            {% for report in reports %}
+              <li class="list-group-item py-2">
+                <div class="row align-items-center">
+                  <div class="col">
+                    <h5 class="card-title mb-1">
+                      <a href="{% inject_preserved_filters report.get_absolute_url %}">{{ report.name }}</a>
+                    </h5>
+                    <p class="card-text text-muted">
+                      {{ report.description }}
+                    </p>
+                  </div>
+                  <div class="col-auto">
+                    <a href="?{{ filter.form.query__content_type.name }}={{ report.query.content_type.model }}" class="text-muted" style="color: black;">{{ report.query.content_type.model }}</a>
+                    {% if not report.user_available %}
+                      <p class="text-end"><span class="badge text-bg-info">admin-only</span></p>
+                    {% endif %}
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          {% empty %}
+            <li class="list-group-item">
+              <strong>No results.</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

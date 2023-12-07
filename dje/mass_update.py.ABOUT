@@ -1,0 +1,16 @@
+about_resource: mass_update.py
+name: django-adminactions
+version: 03f0deb545e09761d5ea7b5a6e348e15038d8189
+download_url: https://github.com/saxix/django-adminactions/blob/03f0deb545e09761d5ea7b5a6e348e15038d8189/adminactions/mass_update.py
+package_url: pkg:github/saxix/django-adminactions@03f0deb545e09761d5ea7b5a6e348e15038d8189#adminactions/mass_update.py
+
+copyright: Copyright (c) 2010, Stefano Apostolico (s.apostolico@gmail.com)
+license_expression: bsd-1-clause AND (mit OR gpl-2.0-plus)
+notice_file: mass_update.py.NOTICE
+
+homepage_url: https://github.com/saxix/django-adminactions
+
+notes: Forked from https://github.com/saxix/django-adminactions/blob/03f0deb545e09761d5ea7b5a6e348e15038d8189/adminactions/mass_update.py
+ The license is peculiar because it starts with a MIT or GPL notice and then
+ continues with a BSD-1-Clause license.
+ Newer versions are no longer using an open source license.

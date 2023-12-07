@@ -1,0 +1,33 @@
+{% extends 'object_details_base.html' %}
+{% load i18n static %}
+
+{% block content %}
+  {{ block.super }}
+  {% if form %}
+    {% include 'component_catalog/includes/add_to_modal.html' with modal_dialog_class='modal-lg' %}
+  {% endif %}
+  {% if add_to_component_form %}
+    {% include 'component_catalog/includes/add_to_modal.html' with form=add_to_component_form %}
+  {% endif %}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
+  <link href="{% static 'json-viewer/jquery.json-viewer-1.4.0.css' %}" rel="stylesheet" integrity="sha384-DmZAkMO3nwB4hNMUT3hEhJxxO0cuJHi8Av9y1dGpWNklTqw2mco8gSSHpNa5iXjP" crossorigin="anonymous">
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
+  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+  <script src="{% static 'json-viewer/jquery.json-viewer-1.4.0.js' %}" integrity="sha384-mCd7P/7rxz1zpQAb195/BFZG4pDkLO6GdkRi772EZRiLTGdfnlhC74NrrwtSHvBI" crossorigin="anonymous"></script>
+  {% include 'includes/dependencies-json-viewer.js.html' %}
+  {% if open_add_to_package_modal %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        $('#add-to-product-modal').modal('show');
+      });
+    </script>
+  {% endif %}
+{% endblock %}

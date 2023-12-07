@@ -1,0 +1,49 @@
+{% extends 'object_list_base.html' %}
+{% load i18n %}
+
+{% block bodyclass %}requests-list{% endblock %}
+
+{% block top-right-buttons %}
+  <a href="#new-request-modal" role="button" class="btn btn-success" data-bs-toggle="modal">New {% trans "Request" %}</a>
+{% endblock %}
+
+{% block nav-list-head %}
+  <li class="nav-item">
+    <a class="nav-link{% if not filter.is_active %} active{% endif %}" href="{{ request.path }}?all=true">{% trans 'All' %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link{% if filter.form.requester.value == request.user.username %} active{% endif %}" href="?{{ filter.form.requester.name }}={{ request.user.username }}">{% trans 'Created by me' %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link{% if filter.form.assignee.value == request.user.username %} active{% endif %}" href="?{{ filter.form.assignee.name }}={{ request.user.username }}">{% trans 'Assigned to me' %}</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link{% if filter.form.following.value == 'yes' %} active{% endif %}" href="?{{ filter.form.following.name }}=yes">{% trans 'Following' %}</a>
+  </li>
+  <li class="nav-item ms-3">
+    {% include 'pagination/object_list_pagination.html' %}
+  </li>
+{% endblock %}
+
+{% block template_list_table %}
+  {% include template_list_table with request_qs=object_list include_content_object=True exclude_product_context=False %}
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% include 'workflow/includes/new_request_modal.html' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // is_private icon tooltip
+      $('.help_text').tooltip({ placement: 'right'});
+      // hide the modal after a click on a new request link, since opening in _blank
+      $('.new-request').on('click', function() {
+        $('#new-request-modal').modal('hide');
+      });
+    });
+  </script>
+{% endblock %}

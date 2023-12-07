@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n admin_urls %}
+
+{% block title %}
+    {{ block.super }} - {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Copy' %}
+{% endblock %}
+
+{% block content_title %}
+    <h1>Choose the target Dataspace(s).</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="get">
+        {% block before_fieldset %}
+            <a id="select_all" href="#">Select all</a> / <a id="unselect_all" href="#">Un-select all</a>
+        {% endblock %}
+        {{ form }}
+        {% block after_fieldset %}{% endblock %}
+
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}"{% if is_popup %} onclick="window.history.back(); return false;"{% endif %}>{% trans 'Return to list' %}</a>
+                </li>
+                {% if not form.non_field_errors %}
+                    <li>
+                        <input type="submit" class="grp-button grp-default" value="Continue">
+                    </li>
+                {% endif %}
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                var checkboxes = $("#id_target [type='checkbox']");
+                $("#select_all").click(function() { checkboxes.prop("checked", true); });
+                $("#unselect_all").click(function() { checkboxes.prop("checked", false); });
+            });
+        }(grp.jQuery));
+    </script>
+{% endblock %}

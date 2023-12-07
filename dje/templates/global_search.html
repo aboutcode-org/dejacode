@@ -1,0 +1,150 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static humanize %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-3">
+      <div class="sticky-top" style="top: 64px;">
+        <div class="list-group">
+          {% if include_products %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#products" data-scroll-to="#products_section">
+              {% trans 'Products' %}
+              <span class="badge text-bg-primary rounded-pill">{{ product_results.paginator_count|intcomma }}</span>
+            </a>
+          {% endif %}
+
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#components" data-scroll-to="#components_section">
+            {% trans 'Components' %}
+            <span class="badge text-bg-primary rounded-pill">{{ component_results.paginator_count|intcomma }}</span>
+          </a>
+          {% if reference_component_results %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_components" data-scroll-to="#reference_components_section">
+              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
+              <span class="badge text-bg-warning rounded-pill">{{ reference_component_results.paginator_count|intcomma }}</span>
+            </a>
+          {% endif %}
+
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#packages" data-scroll-to="#packages_section">
+            {% trans 'Packages' %}
+            <span class="badge text-bg-primary rounded-pill">{{ package_results.paginator_count|intcomma }}</span>
+          </a>
+          {% if reference_package_results %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_packages" data-scroll-to="#reference_packages_section">
+              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
+              <span class="badge text-bg-warning rounded-pill">{{ reference_package_results.paginator_count|intcomma }}</span>
+            </a>
+          {% endif %}
+
+          {% if include_purldb %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#purldb" data-scroll-to="#purldb_section">
+              <span class="badge text-bg-purldb" style="font-size: 90%;">{% trans 'PurlDB' %}</span>
+              <span id="purldb-badge-count" class="badge text-bg-purldb rounded-pill"><i class="fas fa-spinner fa-spin"></i></span>
+            </a>
+          {% endif %}
+
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#licenses" data-scroll-to="#licenses_section">
+            {% trans 'Licenses' %}
+            <span class="badge text-bg-primary rounded-pill">{{ license_results.paginator_count|intcomma }}</span>
+          </a>
+          {% if reference_license_results %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_licenses" data-scroll-to="#reference_licenses_section">
+              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
+              <span class="badge text-bg-warning rounded-pill">{{ reference_license_results.paginator_count|intcomma }}</span>
+            </a>
+          {% endif %}
+
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#owners" data-scroll-to="#owners_section">
+            {% trans 'Owners' %}
+            <span class="badge text-bg-primary rounded-pill">{{ owner_results.paginator_count|intcomma }}</span>
+          </a>
+          {% if reference_owner_results %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_owners" data-scroll-to="#reference_owners_section">
+              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
+              <span class="badge text-bg-warning rounded-pill">{{ reference_owner_results.paginator_count|intcomma }}</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-9">
+      {% if include_products %}
+        {% include 'includes/global_search_product_table.html' with results=product_results %}
+        <hr>
+      {% endif %}
+
+      {% include 'includes/global_search_component_table.html' with results=component_results %}
+      <hr>
+      {% if reference_component_results %}
+        <section id="reference_components_section">
+          {% include 'includes/global_search_component_table.html' with results=reference_component_results is_reference_data=True %}
+        </section>
+        <hr>
+      {% endif %}
+
+      {% include 'includes/global_search_package_table.html' with results=package_results %}
+      <hr>
+      {% if reference_package_results %}
+        <section id="reference_packages_section">
+          {% include 'includes/global_search_package_table.html' with results=reference_package_results is_reference_data=True %}
+        </section>
+        <hr>
+      {% endif %}
+
+      {% if include_purldb %}
+        <section id="purldb_section">
+          <h3>
+            <span class="badge text-bg-purldb">{% trans 'PurlDB' %}</span>
+            <small class="text-muted" id="purldb-spinner"><i class="fas fa-spinner fa-spin"></i> Search in progress...</small>
+          </h3>
+        </section>
+        <hr>
+      {% endif %}
+
+      {% include 'includes/global_search_license_table.html' with results=license_results %}
+      <hr>
+      {% if reference_license_results %}
+        <section id="reference_licenses_section">
+          {% include 'includes/global_search_license_table.html' with results=reference_license_results is_reference_data=True %}
+        </section>
+        <hr>
+      {% endif %}
+
+      {% include 'includes/global_search_owner_table.html' with results=owner_results %}
+      {% if reference_owner_results %}
+        <hr>
+        <section id="reference_owners_section">
+          {% include 'includes/global_search_owner_table.html' with results=reference_owner_results is_reference_data=True %}
+        </section>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script src="{% static 'js/scroll_to.js' %}" integrity="sha384-4gCm4SPCq9O/y66P13LOCfjqfgMtrLt+7DzjdZfHi00UBDkeqn7oAf9Ywdi1HeXN" crossorigin="anonymous"></script>
+
+    {% if include_purldb %}
+        <script>
+        {% url 'purldb:purldb_search_table' as purldb_search_table_url %}
+        document.addEventListener('DOMContentLoaded', function () {
+            const purldb_section = $('#purldb_section');
+            if (purldb_section.length) {
+                $.ajax({
+                    url: '{{ purldb_search_table_url }}' + '?q={{ search_query }}',
+                    type: 'GET',
+                    success: function(data) {
+                        purldb_section.html(data);
+                        $('#purldb-badge-count').html($('#purldb-count').html());
+                        $('[data-bs-toggle="tooltip"]').tooltip({container: 'body'});  // Enables all tooltip
+                    },
+                    error: function() {
+                        $('#purldb-spinner').html('No packages found.');
+                        $('#purldb-badge-count').html('0');
+                    }
+                });
+            }
+        });
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                function handle_select_on_change(select_input) {
+                    select_input.change(function() {
+                        var selected_id = $(this).find("option:selected").attr('value');
+                        var tr_div = $(this).parent().parent();
+                        var text_div = tr_div.find('.text div')[0];
+                        var guidance_div = tr_div.find('.guidance div')[0];
+                        var tag_data = NEXB.client_data.tags_dict[selected_id];
+                        $(text_div).html(tag_data.text);
+                        $(guidance_div).html(tag_data.guidance);
+                    });
+                }
+
+                // Attach the function to each tag <select>
+                $('select[id*="license_tag"]').each(function(){
+                    handle_select_on_change($(this));
+                });
+
+            });
+        }(grp.jQuery));
+    </script>
+{% endblock %}

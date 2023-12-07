@@ -1,0 +1,29 @@
+[
+  {
+    "api_url": "http://127.0.0.1:8000/api/v2/owners/86c73dc6-b888-4764-a80d-08faa7ce3c6f/",
+    "absolute_url": "http://127.0.0.1:8000/owners/nexB/Django+Software+Foundation/",
+    "uuid": "86c73dc6-b888-4764-a80d-08faa7ce3c6f",
+    "name": "Django Software Foundation",
+    "homepage_url": "https://www.djangoproject.com/foundation/",
+    "contact_info": "https://www.djangoproject.com/contact/foundation/",
+    "notes": "Development of Django is supported by an independent foundation established as a 501(c)(3) non-profit. Like most open-source foundations, the goal of the Django Software Foundation is to promote, support, and advance its open-source project: in our case, the Django Web framework. ",
+    "alias": "",
+    "type": "Organization",
+    "licenses": [],
+    "components": [
+      "http://127.0.0.1:8000/api/v2/components/ff553472-19e9-4635-98c5-8923b74fb42b/",
+      "http://127.0.0.1:8000/api/v2/components/088c6ec6-7b60-4c18-8f7b-e50c7eff9279/",
+      "http://127.0.0.1:8000/api/v2/components/9de8fbf7-de3c-4cb1-ad85-0260617515ff/",
+      "http://127.0.0.1:8000/api/v2/components/78991f42-0d8a-4225-8ccc-33e3cca1cd02/",
+      "http://127.0.0.1:8000/api/v2/components/382873d2-997c-427f-adb9-fc9e7cbeb042/",
+      "http://127.0.0.1:8000/api/v2/components/f3712a82-f5d8-4035-a1b2-5b8384647e3d/",
+      "http://127.0.0.1:8000/api/v2/components/0ef95b39-888f-4704-a28b-e9dc49b9761e/",
+      "http://127.0.0.1:8000/api/v2/components/68a44a85-e3a7-4bf4-83e4-7be79deb4ce5/",
+      "http://127.0.0.1:8000/api/v2/components/f90f87c8-593f-4f1f-953e-6b5dae5ab1ba/"
+    ],
+    "external_references": [],
+    "urn": "urn:dje:owner:Django+Software+Foundation",
+    "created_date": "2012-06-26T15:31:56.297000",
+    "last_modified_date": "2012-06-26T15:31:56.297000"
+  }
+]

@@ -1,0 +1,9 @@
+{% extends 'object_details_base.html' %}
+{% load static %}
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static "js/jquery.jsPlumb-1.7.2-min.js" %}" integrity="sha384-ITD4LUuh8ImLrJ5g55OIlG2QoiYVUuXLN9CStlO1e2SQZm0SyGfNkMiwPboMOv8D" crossorigin="anonymous"></script>
+  {% if tabsets.Hierarchy.extra %}
+    {% include 'organization/includes/owner_hierarchy.js.html' with current_owner=tabsets.Hierarchy.extra.context.owner parents=tabsets.Hierarchy.extra.context.owner_parents children=tabsets.Hierarchy.extra.context.owner_children tab_name="tab_hierarchy" %}
+  {% endif %}
+{% endblock %}

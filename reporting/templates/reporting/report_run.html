@@ -1,0 +1,123 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static %}
+{% load smart_page_range from dje_tags %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block page_title %}{% trans "Reports" %}: {{ object.name }}{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% inject_preserved_filters 'reporting:report_list' %}">{% trans "Reports" %}</a>
+          </div>
+          <h1 class="header-title">
+            {{ object.name }}
+            <small class="ms-1" style="font-size: 70%">
+              {% if user.is_staff and has_change_permission %}
+                <a href="{{ object.get_admin_url }}" data-bs-toggle="tooltip" title="Edit" target="_blank"><i class="far fa-edit"></i></a>
+              {% endif %}
+            </small>
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if errors %}
+    <div class="alert alert-danger">
+      <strong>Errors:</strong>
+      <ul>
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if report.description %}
+    <p class="lead">
+      {{ report.description }}
+    </p>
+  {% endif %}
+
+  <div class="card bg-light mb-4">
+    <form class="card-body p-2">
+      <fieldset>
+        <label for="id_format" class="form-label mb-0">Choose format for export:</label>
+        <select id="id_format" name="format">
+          <option value="doc">doc</option>
+          <option value="html">html</option>
+          <option value="json">json</option>
+          <option value="xls">xls</option>
+          <option value="xlsx" selected="selected">xlsx</option>
+          <option value="yaml">yaml</option>
+        </select>
+        {# Put the query string parameters into the form so that the export will respect the runtime parameters #}
+        {% for key, value in query_string_params %}
+          <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+        <button type="submit" class="btn btn-outline-dark btn-sm ms-2">Export</button>
+      </fieldset>
+    </form>
+  </div>
+
+  {# Check ``runtime_filter_formset.forms`` so that nothing is displayed if there are no editable filters #}
+  {% if runtime_filter_formset.forms %}
+    <p class="mb-1">Editable Runtime Parameters:</p>
+    {% if runtime_filter_formset.non_form_errors %}
+      <div class="alert alert-danger">
+        <strong>Value error:</strong>
+        <ul class="mb-0">
+          {% for error in runtime_filter_formset.non_form_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <form class="mb-4">
+      <table class="table table-striped table-bordered table-hover table-md mb-2">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Lookup</th>
+            <th data-bs-toggle="tooltip" data-bs-title="The lookup is negated when enabed, as in &quot;does NOT match&quot;">
+              <span class="help_text">Negate</span>
+            </th>
+            <th>Value/Query Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for form in runtime_filter_formset %}
+            <tr>
+              <td>{{ form.filter.field_with_arrows }}</td>
+              <td>{{ form.filter.get_lookup_display }}</td>
+              <td>{% if form.filter.negate %}Enabled{% endif %}</td>
+              <td>{{ form.value }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {{ runtime_filter_formset.management_form }}
+      <button type="submit" class="btn btn-primary">Rerun Report</button>
+      <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Reset Report</a>
+    </form>
+  {% endif %}
+
+  {% if interpolated_report_context %}
+    <em class="text-muted">{{ interpolated_report_context }}</em>
+  {% endif %}
+
+  <div class="mb-2">
+    <p>Showing {{ output|length }} result{{ output|pluralize }} on {{ paginator.count }} total.</p>
+    {% if is_paginated %}{% include 'pagination/object_list_pagination.html' %}{% endif %}
+  </div>
+
+  {% include 'reporting/includes/report_results_table.html' %}
+
+  {% if is_paginated %}
+    {% include 'pagination/object_list_pagination.html' %}
+  {% endif %}
+{% endblock %}

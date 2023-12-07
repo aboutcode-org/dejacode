@@ -1,0 +1,2 @@
+parent,child,usage_policy,is_deployed,is_modified
+log4j:1.0,log4j:,SubcomponentPolicy,T,Y

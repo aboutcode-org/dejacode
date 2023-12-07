@@ -1,0 +1,73 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}
+    {{ block.super }} - Copy defaults
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style media="screen">
+        table.grp-table tbody tr th {min-width: 195px;}
+    </style>
+{% endblock %}
+
+{% block content_title %}
+    <h1>Copy defaults for {{ user.dataspace }}</h1>
+    <ul class="grp-object-tools">
+        <li>
+            <a href="{% url 'admin:docs_models' %}" class="grp-state-focus" target="_blank">{% trans 'Models documentation' %}</a>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Copy defaults' %}
+{% endblock %}
+
+{% block content %}
+    <div id="short_description">
+        <p style="margin-bottom: 5px;">
+            Use this form to identify the Reference Data fields that you do NOT want to copy by
+            default when you copy an application object from nexB Reference Data to your own
+            dataspace.
+        </p>
+        <p style="margin-bottom: 5px;">
+            The main purpose of not automatically copying specific fields from Reference Data is
+            to support the values that you want to assign those fields to support your own
+            business requirements and practices. For example, some of the Component fields are
+            most appropriate for your Legal team to update after reviewing that component and
+            its licensing.
+        </p>
+        <p>
+            Note that as part of its ongoing Reference Data curation, the nexB team does not
+            update certain fields (such as Guidance and Usage Policy settings). Using this Copy
+            Configuration feature is your tool to ensure that those fields, as well as any others
+            that you want to control, will always be the values that you prefer for your business.
+        </p>
+    </div>
+    <form method="post" action="">{% csrf_token %}
+        {{ formset.management_form }}
+        <table class="grp-table">
+            {% for form in formset %}
+                <tr>
+                    <td colspan="2" style="background-color: #e5e5e5;">
+                        <h2>{{ form.app_name.value }}</h2>
+                    </td>
+                </tr>
+                {{ form }}
+            {% endfor %}
+        </table>
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'change' object.pk|admin_urlquote as object_url %}
+                    <a class="grp-button cancel-link" href="{{ object_url }}">{% trans 'Return' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Update copy defaults">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}

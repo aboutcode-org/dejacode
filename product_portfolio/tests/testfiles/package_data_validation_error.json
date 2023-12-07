@@ -1,0 +1,320 @@
+{
+  "headers": [
+    {
+      "tool_name": "scancode-toolkit",
+      "tool_version": "32.0.0rc1",
+      "options": {
+        "input": [
+          "artifacts/"
+        ],
+        "--copyright": true,
+        "--info": true,
+        "--json-pp": "package_data_validation_error.json",
+        "--license": true,
+        "--package": true
+      },
+      "notice": "Generated with ScanCode and provided on an \"AS IS\" BASIS, WITHOUT WARRANTIES\nOR CONDITIONS OF ANY KIND, either express or implied. No content created from\nScanCode should be considered or used as legal advice. Consult an Attorney\nfor any legal advice.\nScanCode is a free software code scanning tool from nexB Inc. and others.\nVisit https://github.com/nexB/scancode-toolkit/ for support and download.",
+      "start_timestamp": "2023-02-16T233632.600917",
+      "end_timestamp": "2023-02-16T233635.927382",
+      "output_format_version": "3.0.0",
+      "duration": 3.3264784812927246,
+      "message": null,
+      "errors": [],
+      "warnings": [],
+      "extra_data": {
+        "system_environment": {
+          "operating_system": "linux",
+          "cpu_architecture": "64",
+          "platform": "Linux-5.4.0-137-generic-x86_64-with-glibc2.27",
+          "platform_version": "#154~18.04.1-Ubuntu SMP Tue Jan 10 16:58:20 UTC 2023",
+          "python_version": "3.10.4 (main, May 22 2022, 00:46:26) [GCC 7.5.0]"
+        },
+        "spdx_license_list_version": "3.19",
+        "files_count": 3
+      }
+    }
+  ],
+  "packages": [
+    {
+      "type": "pypi",
+      "namespace": null,
+      "name": "six",
+      "version": null,
+      "qualifiers": {},
+      "subpath": null,
+      "primary_language": "Python",
+      "description": "Python 2 and 3 compatibility utilities",
+      "release_date": null,
+      "parties": [
+        {
+          "type": "person",
+          "role": "author",
+          "name": "Benjamin Peterson",
+          "email": "benjamin@python.org",
+          "url": null
+        }
+      ],
+      "keywords": [
+        "Development Status :: 5 - Production/Stable",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Utilities"
+      ],
+      "homepage_url": "https://github.com/benjaminp/six",
+      "download_url": null,
+      "size": null,
+      "sha1": null,
+      "md5": null,
+      "sha256": null,
+      "sha512": null,
+      "bug_tracking_url": null,
+      "code_view_url": null,
+      "vcs_url": null,
+      "copyright": null,
+      "declared_license_expression": "389-exception AND adapt-1.0 AND adobe-scl AND afl-1.1 AND afl-1.2 AND afl-2.0 AND afl-2.1 AND afl-3.0 AND agpl-1.0 AND agpl-1.0-plus AND agpl-3.0 AND agpl-3.0-plus AND allegro-4 AND amdplpa AND antlr-pd AND apache-1.1 AND apache-2.0 AND apafml AND apsl-1.0 AND apsl-1.1 AND apsl-1.2 AND apsl-2.0 AND artistic-1.0 AND artistic-1.0-cl8 AND artistic-2.0 AND artistic-clarified AND artistic-perl-1.0 AND autoconf-exception-2.0 AND autoconf-exception-3.0 AND beerware AND bison-exception-2.2 AND bittorrent-1.0 AND bittorrent-1.1 AND bootloader-exception AND borceux AND bsd-1-clause AND bsd-2-clause-views AND bsd-3-clause-no-nuclear-warranty AND bsd-ack AND bsd-new AND bsd-original AND bsd-original-uc AND bsd-plus-patent AND bsd-protection AND bsd-simplified AND bsd-source-code AND bsd-zero AND ca-tosl-1.1 AND cc0-1.0 AND cddl-1.0 AND cddl-1.1 AND cdla-permissive-1.0 AND cdla-sharing-1.0 AND cecill-1.0 AND cecill-1.1 AND cecill-2.0 AND cecill-2.1 AND cecill-b AND cecill-c AND classpath-exception-2.0 AND clear-bsd AND clisp-exception-2.0 AND cmu-uc AND cnri-jython AND condor-1.1 AND copyleft-next-0.3.0 AND cpal-1.0 AND cpl-1.0 AND cpol-1.02 AND cua-opl-1.0 AND d-fsl-1.0-de AND digirule-foss-exception AND ecl-1.0 AND ecl-2.0 AND ecos-exception-2.0 AND efl-1.0 AND efl-2.0 AND enlightenment AND enna AND epl-1.0 AND epl-2.0 AND erlangpl-1.1 AND eu-datagrid AND fawkes-runtime-exception AND fltk-exception-lgpl-2.0 AND font-exception-gpl AND freertos-exception-2.0 AND gcc-exception-3.1 AND gcc-linking-exception-2.0 AND gfdl-1.1 AND gfdl-1.1-plus AND gfdl-1.2 AND gfdl-1.2-plus AND gfdl-1.3 AND gfdl-1.3-plus AND glulxe AND gnu-javamail-exception AND gpl-1.0 AND gpl-1.0-plus AND gpl-2.0 AND gpl-2.0 WITH gcc-linking-exception-2.0 AND gpl-2.0-plus AND gpl-3.0 AND gpl-3.0-plus AND gsoap-1.3b AND henry-spencer-1999 AND hs-regexp AND i2p-gpl-java-exception AND ibmpl-1.0 AND imlib2 AND lbnl-bsd AND lgpl-2.0 AND lgpl-2.0-plus AND lgpl-2.1 AND lgpl-2.1-plus AND lgpl-3.0 AND lgpl-3.0-plus AND lgpllr AND libtool-exception-2.0 AND linux-syscall-exception-gpl AND lppl-1.0 AND lppl-1.1 AND lppl-1.2 AND lppl-1.3a AND lppl-1.3c AND lucent-pl-1.0 AND lucent-pl-1.02 AND mif-exception AND mit-ack AND mit-no-false-attribs AND mpl-1.0 AND mpl-1.1 AND mpl-2.0 AND mpl-2.0-no-copyleft-exception AND nasa-1.3 AND nbpl-1.0 AND newsletr AND nlod-1.0 AND nosl-1.0 AND nosl-3.0 AND noweb AND npl-1.0 AND npl-1.1 AND occt-exception-1.0 AND occt-pl AND oclc-2.0 AND odbl-1.0 AND ofl-1.0 AND ofl-1.1 AND opengroup AND openjdk-assembly-exception-1.0 AND openldap-1.1 AND openldap-1.2 AND openldap-1.3 AND openldap-1.4 AND openldap-2.0 AND openldap-2.0.1 AND openldap-2.1 AND openldap-2.2 AND openldap-2.2.1 AND openldap-2.2.2 AND openldap-2.3 AND openldap-2.4 AND openldap-2.5 AND openldap-2.6 AND openldap-2.7 AND openldap-2.8 AND openvpn-openssl-exception AND oracle-bsd-no-nuclear AND qwt-exception-1.0 AND regexp AND rpl-1.5 AND rpsl-1.0 AND sax-pd AND sgi-freeb-1.1 AND sgi-freeb-2.0 AND sgi-fslb-1.0 AND simpl-2.0 AND spl-1.0 AND sugarcrm-1.1.3 AND sun-bsd-no-nuclear AND sun-sissl-1.1 AND sun-sissl-1.2 AND sybase AND torque-1.1 AND u-boot-exception-2.0 AND unicode-dfs-2015 AND unicode-dfs-2016 AND unicode-tou AND unknown-license-reference AND unlicense AND upl-1.0 AND vsl-1.0 AND w3c-software-19980720 AND w3c-software-doc-20150513 AND wtfpl-2.0 AND wxwindows-exception-3.1 AND xfree86-1.1 AND ypl-1.0 AND ypl-1.1 AND zimbra-1.3 AND zimbra-1.4 AND zlib-acknowledgement",
+      "declared_license_expression_spdx": "MIT",
+      "license_detections": [
+        {
+          "license_expression": "mit",
+          "detection_log": [
+            "not-combined"
+          ],
+          "matches": [
+            {
+              "score": 100.0,
+              "start_line": 1,
+              "end_line": 1,
+              "matched_length": 1,
+              "match_coverage": 100.0,
+              "matcher": "1-spdx-id",
+              "license_expression": "mit",
+              "rule_identifier": "spdx-license-identifier-mit-5da48780aba670b0860c46d899ed42a0f243ff06",
+              "rule_url": null,
+              "matched_text": "MIT"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "detection_log": [
+            "not-combined"
+          ],
+          "matches": [
+            {
+              "score": 100.0,
+              "start_line": 1,
+              "end_line": 1,
+              "matched_length": 5,
+              "match_coverage": 100.0,
+              "matcher": "1-hash",
+              "license_expression": "mit",
+              "rule_identifier": "pypi_mit_license.RULE",
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/rules/pypi_mit_license.RULE",
+              "matched_text": "['License :: OSI Approved :: MIT License']"
+            }
+          ]
+        }
+      ],
+      "other_license_expression": null,
+      "other_license_expression_spdx": null,
+      "other_license_detections": [],
+      "extracted_license_statement": "{'license': 'MIT', 'classifiers': ['License :: OSI Approved :: MIT License']}",
+      "notice_text": null,
+      "source_packages": [],
+      "extra_data": {
+        "python_requires": ">=2.6, !=3.0.*, !=3.1.*"
+      },
+      "repository_homepage_url": "https://pypi.org/project/six",
+      "repository_download_url": null,
+      "api_data_url": "https://pypi.org/pypi/six/json",
+      "package_uid": "pkg:pypi/six?uuid=bbe2794a-d81a-4728-a66d-5700a3735977",
+      "datafile_paths": [
+        "artifacts/six-1.13.0/setup.py"
+      ],
+      "datasource_ids": [
+        "pypi_setup_py"
+      ],
+      "purl": "pkg:pypi/six2"
+    },
+    {
+      "type": "pypi",
+      "namespace": null,
+      "name": "six",
+      "version": null,
+      "qualifiers": {},
+      "subpath": null,
+      "primary_language": "Python",
+      "description": "Python 2 and 3 compatibility utilities",
+      "release_date": null,
+      "parties": [
+        {
+          "type": "person",
+          "role": "author",
+          "name": "Benjamin Peterson",
+          "email": "benjamin@python.org",
+          "url": null
+        }
+      ],
+      "keywords": [
+        "Development Status :: 5 - Production/Stable",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Utilities"
+      ],
+      "homepage_url": "https://github.com/benjaminp/six",
+      "download_url": null,
+      "size": null,
+      "sha1": null,
+      "md5": null,
+      "sha256": null,
+      "sha512": null,
+      "bug_tracking_url": null,
+      "code_view_url": null,
+      "vcs_url": null,
+      "copyright": null,
+      "declared_license_expression": "mit",
+      "declared_license_expression_spdx": "MIT",
+      "license_detections": [
+        {
+          "license_expression": "mit",
+          "detection_log": [
+            "not-combined"
+          ],
+          "matches": [
+            {
+              "score": 100.0,
+              "start_line": 1,
+              "end_line": 1,
+              "matched_length": 1,
+              "match_coverage": 100.0,
+              "matcher": "1-spdx-id",
+              "license_expression": "mit",
+              "rule_identifier": "spdx-license-identifier-mit-5da48780aba670b0860c46d899ed42a0f243ff06",
+              "rule_url": null,
+              "matched_text": "MIT"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "detection_log": [
+            "not-combined"
+          ],
+          "matches": [
+            {
+              "score": 100.0,
+              "start_line": 1,
+              "end_line": 1,
+              "matched_length": 5,
+              "match_coverage": 100.0,
+              "matcher": "1-hash",
+              "license_expression": "mit",
+              "rule_identifier": "pypi_mit_license.RULE",
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/rules/pypi_mit_license.RULE",
+              "matched_text": "['License :: OSI Approved :: MIT License']"
+            }
+          ]
+        }
+      ],
+      "other_license_expression": null,
+      "other_license_expression_spdx": null,
+      "other_license_detections": [],
+      "extracted_license_statement": "{'license': 'MIT', 'classifiers': ['License :: OSI Approved :: MIT License']}",
+      "notice_text": null,
+      "source_packages": [],
+      "extra_data": {
+        "python_requires": ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+      },
+      "repository_homepage_url": "https://pypi.org/project/six",
+      "repository_download_url": "not a url",
+      "api_data_url": "https://pypi.org/pypi/six/json",
+      "package_uid": "pkg:pypi/six?uuid=bd0ba183-ace6-489e-8f74-44cc11da93c8",
+      "datafile_paths": [
+        "artifacts/six-1.14.0/setup.py"
+      ],
+      "datasource_ids": [
+        "pypi_setup_py"
+      ],
+      "purl": "pkg:pypi/sixsix"
+    },
+    {
+      "type": "npm",
+      "namespace": null,
+      "name": "test-package",
+      "version": "0.0.1",
+      "qualifiers": {},
+      "subpath": null,
+      "primary_language": "JavaScript",
+      "description": null,
+      "release_date": null,
+      "parties": [
+        {
+          "type": "person",
+          "role": "author",
+          "name": "The Apache Software Foundation",
+          "email": null,
+          "url": null
+        }
+      ],
+      "keywords": [],
+      "homepage_url": null,
+      "download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+      "size": null,
+      "sha1": null,
+      "md5": null,
+      "sha256": null,
+      "sha512": null,
+      "bug_tracking_url": null,
+      "code_view_url": null,
+      "vcs_url": null,
+      "copyright": null,
+      "declared_license_expression": "apache-2.0",
+      "declared_license_expression_spdx": "Apache-2.0",
+      "license_detections": [
+        {
+          "license_expression": "apache-2.0",
+          "detection_log": [
+            "not-combined"
+          ],
+          "matches": [
+            {
+              "score": 100.0,
+              "start_line": 1,
+              "end_line": 1,
+              "matched_length": 3,
+              "match_coverage": 100.0,
+              "matcher": "1-hash",
+              "license_expression": "apache-2.0",
+              "rule_identifier": "spdx_license_id_apache-2.0_for_apache-2.0.RULE",
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/rules/spdx_license_id_apache-2.0_for_apache-2.0.RULE",
+              "matched_text": "Apache-2.0"
+            }
+          ]
+        }
+      ],
+      "other_license_expression": null,
+      "other_license_expression_spdx": null,
+      "other_license_detections": [],
+      "extracted_license_statement": "['Apache-2.0']",
+      "notice_text": null,
+      "source_packages": [],
+      "extra_data": {},
+      "repository_homepage_url": "https://www.npmjs.com/package/test-package",
+      "repository_download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+      "api_data_url": "https://registry.npmjs.org/test-package/0.0.1",
+      "package_uid": "pkg:npm/test-package@0.0.1?uuid=65f231ee-972c-427e-b227-155edf817773",
+      "datafile_paths": [
+        "artifacts/package/package.json"
+      ],
+      "datasource_ids": [
+        "npm_package_json"
+      ],
+      "purl": "pkg:npm/test-package@0.0.1"
+    }
+  ],
+  "dependencies": []
+}

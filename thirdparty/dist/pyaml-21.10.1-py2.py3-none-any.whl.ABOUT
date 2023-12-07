@@ -1,0 +1,16 @@
+about_resource: pyaml-21.10.1-py2.py3-none-any.whl
+name: pyaml
+version: 21.10.1
+download_url: https://files.pythonhosted.org/packages/35/fd/78a3a11c7b9b11878ebbf4461a09cbc758bdfc1b45168972727f7334b09a/pyaml-21.10.1-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/pyaml/21.10.1/
+package_url: pkg:pypi/pyaml@21.10.1
+license_expression: wtfpl-2.0
+copyright: Copyright (c) Mike Kazantsev
+notice_file: pyaml-21.10.1-py2.py3-none-any.whl.NOTICE
+owner: Mike Kazantsev
+checksum_md5: a99385e1e3457a3c00867283f0ca9d7c
+checksum_sha1: 7cb2074609c542fe4ea2dd3bbc84e28432640168
+licenses:
+  - key: wtfpl-2.0
+    name: WTFPL 2.0
+    file: wtfpl-2.0.LICENSE

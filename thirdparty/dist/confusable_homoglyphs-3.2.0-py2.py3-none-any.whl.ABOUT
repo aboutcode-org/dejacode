@@ -1,0 +1,20 @@
+about_resource: confusable_homoglyphs-3.2.0-py2.py3-none-any.whl
+name: confusable-homoglyphs
+version: 3.2.0
+download_url: https://files.pythonhosted.org/packages/a4/38/aadd1c42ae353943cd1523cdd38ffb267ba95861b4e8bb1a559d975ae612/confusable_homoglyphs-3.2.0-py2.py3-none-any.whl#sha256=e3ce611028d882b74a5faa69e3cbb5bd4dcd9f69936da6e73d33eda42c917944
+description: Detect confusable usage of unicode homoglyphs, prevent homograph attacks.
+homepage_url: https://github.com/vhf/confusable_homoglyphs
+package_url: pkg:pypi/confusable-homoglyphs@3.2.0
+license_expression: mit
+copyright: Copyright (c) 2016 Victor Felder
+notice_file: confusable_homoglyphs-3.2.0-py2.py3-none-any.whl.NOTICE
+notice_url: https://github.com/vhf/confusable_homoglyphs/blob/master/LICENSE
+attribute: yes
+owner: Victor Felder
+owner_url: https://github.com/vhf
+checksum_md5: eff03a1e88ff8583f7c7ef896922481d
+checksum_sha1: d7b85ed7dd9b19d46d17cba3b419865ea44fe752
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

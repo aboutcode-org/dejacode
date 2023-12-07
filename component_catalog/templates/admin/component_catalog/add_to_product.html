@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n static admin_urls %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Add To Product' %}
+{% endblock %}
+
+{% block content_title %}
+    <h1>Add {% trans opts.verbose_name %} to a product</h1>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+        <p style="font-size: 12px; font-style: italic; margin-bottom: 7px;">
+            You can use this page to assign {% trans opts.verbose_name_plural|title %} to a Product, either an existing one or a
+            new Product that you specify.
+            The Product provides you with a group of {% trans opts.verbose_name_plural|title %} that are used together, so that
+            you can generate Attribution documentation for all of the {% trans opts.verbose_name_plural|title %} in that Product.
+        </p>
+        <p style="margin-bottom: 10px;">
+            {{ form.non_field_errors }}
+            <label for="id_product">Product:</label>
+            {{ form.product.errors }}
+            {{ form.product }}
+            {% if perms.product_portfolio.add_product %}
+                <a href="{% url 'admin:product_portfolio_product_add' %}" class="add-another"></a>
+            {% endif %}
+            {{ form.ct }}
+            {{ form.ids }}
+        </p>
+        <p id="description" style="margin-bottom: 10px;"></p>
+        <div class="grp-content-container g-d-c">
+            <div class="grp-module">
+                <h2>The following {% trans opts.verbose_name_plural %} will be added to the product:</h2>
+                <div class="grp-row">
+                    <ul class="grp-nested-list">
+                        {% for obj in form.get_selected_objects %}
+                            <li><a href="{% add_preserved_filters obj.get_admin_url %}">{{ obj }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Add To Product">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script>
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                var api_url = "{% url 'api_v2:product-list' %}";
+                $('#id_product').on('change', function() {
+                    var product_pk = $(this).val();
+                    if (product_pk) {
+                        $.getJSON(api_url+'?format=json&id='+product_pk, function (json) {
+                            if (json.count == 1) {
+                                $('#description').text('Description: ' + json.results[0].description);
+                            }
+                        });
+                    } else {
+                        $('#description').text('');
+                    }
+                });
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}

@@ -1,0 +1,17 @@
+about_resource: django_hcaptcha_field-1.4.0-py3-none-any.whl
+name: django-hcaptcha-field
+version: 1.4.0
+download_url: https://files.pythonhosted.org/packages/c3/9a/977f3f63f9183fda6573743db72c433ee293e4c5551dfa007713fa7877c4/django_hcaptcha_field-1.4.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/django-hcaptcha-field/1.4.0/
+package_url: pkg:pypi/django-hcaptcha-field@1.4.0
+license_expression: bsd-new
+copyright: Copyright (c) Ties Jan Hefting
+notice_file: django_hcaptcha_field-1.4.0-py3-none-any.whl.NOTICE
+attribute: yes
+owner: Ties Jan Hefting
+checksum_md5: f729c3e1f1eee0c0a930de000cb12c98
+checksum_sha1: c2d9932429ef14d71fdfbd7ac9a97a444a3aa690
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

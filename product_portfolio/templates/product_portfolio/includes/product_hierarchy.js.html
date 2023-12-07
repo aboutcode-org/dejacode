@@ -1,0 +1,51 @@
+<script>
+  function is_active_tab(id) {
+    let active_tab_id = $('.tab-pane.active')[0].id;
+    return (active_tab_id === id);
+  }
+
+  jsPlumb.ready(function() {
+    let jsPlumbProductHierarchy = jsPlumb.getInstance({
+      Connector: ['Straight'],
+      PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
+      EndpointStyle: {radius: 3, fillStyle: 'gray'},
+      Anchors: ['LeftMiddle', 'RightMiddle'],
+      Container: $('#tab_hierarchy')
+    });
+
+    // Do not draw right away as the tab may be hidden
+    jsPlumbProductHierarchy.setSuspendDrawing(true);
+
+    let connection;
+
+    {% for feature, relationships in relations_feature_grouped.items %}
+      {% for relation in relationships %}
+        connection = {
+          source: '{% if relation.package_id %}package{% else %}component{% endif %}_{{ relation.pk }}',
+          target: 'product_{{ object.pk }}',
+          paintStyle: {strokeStyle: 'gray', lineWidth: 2}
+        };
+        {% if not relation.is_deployed %}
+          connection['paintStyle']['dashstyle'] = '2 2';
+        {% endif %}
+        jsPlumbProductHierarchy.connect(connection);
+      {% endfor %}
+    {% endfor %}
+
+    // Draw if the related tab is active
+    if (is_active_tab('tab_hierarchy'))
+      jsPlumbProductHierarchy.setSuspendDrawing(false, true);
+
+    // Repaint on opening the tab, as when the tab content is hidden
+    // the connectors are not painted properly
+    $('button[data-bs-target="#tab_hierarchy"]').on('shown.bs.tab', function () {
+        // Second argument instructs jsPlumb to perform a full repaint.
+        jsPlumbProductHierarchy.setSuspendDrawing(false, true);
+    });
+
+    // Repaint on resizing the browser window if the related tab is active
+    $(window).resize(function(){
+      if (is_active_tab('tab_hierarchy')) jsPlumbProductHierarchy.repaintEverything();
+    });
+  });
+</script>

@@ -1,0 +1,8 @@
+{% extends 'admin/delete_confirmation.html' %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {% if not perms_lacking and not protected and object.packages.exists %}
+        {% include 'admin/component_catalog/component/delete_packages_js.html' with packages=object.packages.all %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "admin/docs/index.html" %}
+
+{% block body %}
+  <div class="sidebar" style="width: 270px;">
+    <h3 class="brand"><a href="#">Models documentation</a></h3>
+    <span data-bs-toggle="collapse" data-bs-target="#menu-content">
+      <i class="fa fa-bars fa-2x toggle-btn"></i>
+    </span>
+    <div class="menu-list">
+      <ul id="menu-content" class="menu-content collapse out">
+        {% for app_verbose_name, models in help_data.items %}
+          <li data-bs-toggle="collapse" data-bs-target="#{{ app_verbose_name|slugify }}-dropdown" class="collapsed" aria-expanded="false">
+            <a><i class="fa fa-dot-circle-o fa-lg"></i> {{ app_verbose_name }} <span class="arrow"></span></a>
+          </li>
+          <ul class="sub-menu collapse" id="{{ app_verbose_name|slugify }}-dropdown" aria-expanded="false" style="height: 0;">
+            {% for model in models %}
+              <li><a href="#{{ model.verbose_name }}-list">{{ model.verbose_name|title }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container" id="main" style="width: calc(100% - 270px);">
+    <div class="row">
+      <div class="col-md-12 main-container">
+        {% for app_verbose_name, models in help_data.items %}
+          <h2 id="{{ app_verbose_name|slugify }}" class="coredocs-section-title">
+            {{ app_verbose_name }}
+            <a href="#{{ app_verbose_name|slugify }}"><i class="fa fa-link" aria-hidden="true"></i></a>
+          </h2>
+          {% for model in models %}
+            <h3 id="{{ model.verbose_name }}-list" class="coredocs-link-title">
+              {{ model.verbose_name|title }}
+              <a href="#{{ model.verbose_name }}-list"><i class="fa fa-link" aria-hidden="true"></i></a>
+            </h3>
+            {% if model.short_description %}
+              <h4>Short description:</h4>
+              <p>{{ model.short_description }}</p>
+            {% endif %}
+            {% if model.long_description %}
+              <h4>Long description:</h4>
+              <p>{{ model.long_description }}</p>
+            {% endif %}
+            <table class="parameters table table-bordered table-striped">
+              <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for field in model.fields %}
+                <tr>
+                  <td class="parameter-name"><code>{{ field.name }}</code></td>
+                  <td>{{ field.help_text }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          {% endfor %}
+          <hr style="margin: 40px 0;">
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Turns the menu into an accordion-like menu to avoid overflow issues
+    $('#menu-content').on('show.bs.collapse', function () {
+      $('.sub-menu').collapse('hide');
+    });
+
+    // Change the page location on left menu main section click
+    $('ul#menu-content li[data-bs-toggle="collapse"]').on('click', function () {
+      let target = $(this).data('target').replace('-dropdown', '');
+      window.location.replace(target);
+    });
+  </script>
+{% endblock %}

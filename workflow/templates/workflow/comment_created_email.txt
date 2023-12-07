@@ -1,0 +1,21 @@
+{% autoescape off %}Request {{ req }} {% if action == 'closed' %}closed{% else %}has a new comment{% endif %} in the {{ comment.dataspace }} dataspace on {{ comment.created_date|date:'N d, Y, h:ia' }}
+
+Comment by {{ comment.user }}:
+'{{ comment.text }}'
+
+You can follow the discussion at {{ site_url }}{% url 'workflow:request_details' req.uuid %}#comments
+
+
+================================================================================
+Ref. {{ req }} {{ req.title }}
+Request template: {{ req.request_template }}
+Product context: {{ req.product_context|default_if_none:'(none)' }}
+Applies to: {{ req.content_object|default_if_none:'(none)' }}
+Submitted by: {{ req.requester }}
+{{ site_url }}{% url 'workflow:request_details' req.uuid %}
+================================================================================
+
+Status: {{ req.get_status_display }}
+Assignee: {{ req.assignee|default_if_none:'(none)' }}
+Notes: {{ req.notes|default_if_none:'(none)' }}
+{% endautoescape %}

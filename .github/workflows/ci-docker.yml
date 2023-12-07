@@ -1,0 +1,17 @@
+name: Test on Docker CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate the .env file and the SECRET_KEY
+        run: make envfile
+
+      - name: Run tests
+        run: docker compose run web python ./manage.py test --verbosity=2 --noinput

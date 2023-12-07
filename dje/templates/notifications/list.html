@@ -1,0 +1,76 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static %}
+
+{% block page_title %}{% trans 'Notifications' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            Account
+          </div>
+          <h1 class="header-title">
+            Notifications
+          </h1>
+        </div>
+        <div class="col-auto">
+          <a class="btn btn-outline-dark btn-sm" href="{% url 'notifications:mark_all_as_read' %}">Mark all as read</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-5">
+    <div class="col-3">
+      <div class="sticky-top" style="top: 64px;">
+        <div class="list-group">
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{% url 'notifications:unread' %}">
+            Unread
+            <span class="badge text-bg-dark rounded-pill">{{ unread_count }}</span>
+          </a>
+          <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{% url 'notifications:all' %}">
+            All
+            <span class="badge text-bg-dark rounded-pill">{{ all_count }}</span>
+          </a>
+          {% for action_object_content_type, notifs in grouped_notifications.items %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#{{ action_object_content_type.model }}" data-scroll-to="#{{ action_object_content_type.model }}_section">
+              <span><i class="fas fa-angle-right me-2"></i>{{ action_object_content_type.model|title }}</span>
+              <span class="badge text-bg-dark rounded-pill">{{ notifs|length }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-9">
+      {% for action_object_content_type, notifs in grouped_notifications.items %}
+        <section  id="{{ action_object_content_type.model }}_section">
+          <div class="card mb-3">
+            <div class="card-header">
+              <strong>{{ action_object_content_type.model|title }}</strong>
+            </div>
+            <div class="list-group list-group-flush">
+              {% for notice in notifs %}
+                {% include 'notifications/notice.html' %}
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+      {% empty %}
+        <div class="card text-center">
+          <div class="card-body">
+            <div class="h6 card-title mb-0">No new notifications.</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script src="{% static 'js/scroll_to.js' %}" integrity="sha384-4gCm4SPCq9O/y66P13LOCfjqfgMtrLt+7DzjdZfHi00UBDkeqn7oAf9Ywdi1HeXN" crossorigin="anonymous"></script>
+{% endblock %}

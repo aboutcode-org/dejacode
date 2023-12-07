@@ -1,0 +1,19 @@
+about_resource: python_dateutil-2.8.2-py2.py3-none-any.whl
+name: python-dateutil
+version: 2.8.2
+download_url: https://files.pythonhosted.org/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/python-dateutil/2.8.2/
+package_url: pkg:pypi/python-dateutil@2.8.2
+license_expression: bsd-new
+copyright: Copyright (c) dateutil contributors
+notice_file: python_dateutil-2.8.2-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Gustavo Niemeyer
+owner_url: http://labix.org/
+contact: gustavo@niemeyer.net
+checksum_md5: 95743ca628ad14d4aeb3628907f017bd
+checksum_sha1: 2416d5b8978b5531998436aa5fb6b32b15c819e1
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

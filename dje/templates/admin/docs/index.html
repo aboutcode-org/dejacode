@@ -1,0 +1,32 @@
+{# This template body is taken from rest_framework/templates/rest_framework/docs/index.html #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	    <title>{{ document.title }}</title>
+
+        <link href="{% static 'rest_framework/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'rest_framework/css/bootstrap-theme.min.css' %}" rel="stylesheet">
+        <link href="{% static 'rest_framework/css/font-awesome-4.0.3.css' %}" rel="stylesheet">
+        <link href="{% static 'rest_framework/docs/css/base.css' %}" rel="stylesheet">
+        <link href="{% static 'rest_framework/docs/css/jquery.json-view.min.css' %}" rel="stylesheet">
+
+        <link href="{% static 'rest_framework/docs/img/favicon.ico' %}" rel="shortcut icon">
+
+        {% if code_style %}<style>{{ code_style }}</style>{% endif %}
+        <script src="{% static 'rest_framework/js/coreapi-0.1.1.js' %}"></script>
+        <script src="{% url 'api-docs:schema-js' %}"></script>
+
+        <script src="{% static 'rest_framework/js/jquery-3.5.1.min.js' %}"></script>
+        <script src="{% static 'rest_framework/js/bootstrap.min.js' %}"></script>
+
+    </head>
+
+    <body data-spy="scroll" data-bs-target="#sidebar-nav" data-offset="50">
+      {% block body %}{% endblock %}
+    </body>
+</html>

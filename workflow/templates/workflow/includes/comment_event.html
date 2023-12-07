@@ -1,0 +1,11 @@
+{% load naturaltime from humanize %}
+<div class="d-flex flex-row mb-3">
+  <i class="ms-1 me-2 mt-1 {{ icon }}"></i>
+  <div>
+    {{ event.text|linebreaksbr }}
+    <div class="text-muted-light">
+      {{ action }} by {{ event.user }}
+      <span title="{{ event.created_date|date:'N j, Y, f A T' }}">{{ event.created_date|naturaltime }}</span>
+    </div>
+  </div>
+</div>

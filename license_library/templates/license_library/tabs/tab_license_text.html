@@ -1,0 +1,34 @@
+{% load i18n %}
+
+{% if values.use_annotator %}
+  <div id="licensetext" class="row">
+    <div class="col-1"></div>
+    <div class="col-11">
+{% endif %}
+
+<div class="row align-items-end mb-2">
+ <div class="col text-muted pb-1">
+   {% if help_text %}
+     <i>{% trans help_text %}</i>
+   {% endif %}
+ </div>
+ <div class="col-auto">
+   {% if request.user.is_authenticated %}
+     <a class="btn btn-sm btn-outline-dark" href="{{ license.get_download_text_url }}">
+       <i class="fas fa-file-download"></i> Download license text
+     </a>
+   {% endif %}
+ </div>
+</div>
+
+<div class="clipboard">
+  {% if values %}
+    <button class="btn-clipboard px-0" data-bs-toggle="tooltip" title="Copy to clipboard" style="right: 0.5rem;"><i class="fas fa-clipboard"></i></button>
+  {% endif %}
+  <pre class="pre-bg-light mb-1">{{ values.license_text }}</pre>
+</div>
+
+{% if values.use_annotator %}
+    </div>
+  </div>
+{% endif %}

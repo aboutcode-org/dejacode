@@ -1,0 +1,26 @@
+{% with notice.action_object.get_absolute_url as action_object_url %}
+  <a href="{{ action_object_url }}{% if action_object_content_type|slugify == 'package' %}#scan{% endif %}" class="list-group-item list-group-item-action flex-column align-items-start{% if not action_object_url %} disabled{% endif %}">
+    <div class="d-flex w-100 justify-content-between">
+      <div class="h6 mb-1">
+        {% if notice.actor != request.user %}
+          {{ notice.actor }}
+        {% endif %}
+        {{ notice.verb }}
+        {% if notice.action_object %}
+          {{ notice.action_object }}
+        {% else %}
+          <i>(object not found)</i>
+        {% endif %}
+        {% if notice.target %}
+          of {{ notice.target }}
+        {% endif %}
+      </div>
+      <small class="text-muted">
+        {{ notice.timesince }} ago
+      </small>
+    </div>
+    {% if notice.description %}
+      <small class="mb-0 text-muted">{{ notice.description|linebreaksbr }}</small>
+    {% endif %}
+  </a>
+{% endwith %}

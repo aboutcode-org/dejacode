@@ -1,0 +1,84 @@
+<script>
+  function isTabActive(id) {
+    const activeTab = document.querySelector('.tab-pane.active');
+    if (activeTab) {
+      return activeTab.id === id;
+    }
+    return false;
+  }
+
+  jsPlumb.ready(function() {
+    var jsPlumbComponentHierarchy = jsPlumb.getInstance({
+      Connector: ['Straight'],
+      PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
+      EndpointStyle: {radius: 3, fillStyle: 'gray'},
+      Anchors: ['LeftMiddle', 'RightMiddle'],
+      Container: $("#tab_hierarchy")
+    });
+
+    // Do not draw right away as the tab may be hidden
+    jsPlumbComponentHierarchy.setSuspendDrawing(true);
+    {% for related_parent in related_parents %}
+      var connection = {
+        source: 'component_{{ object.pk }}',
+        target: 'component_{{ related_parent.parent.pk }}',
+        paintStyle: {strokeStyle: 'gray', lineWidth: 2}
+      };
+      {% if object.dataspace.show_usage_policy_in_user_views and related_parent.usage_policy %}
+        var fill_color = '{{ related_parent.get_usage_policy_color }}';
+          connection['endpointStyle'] =  {fillStyle: fill_color, radius: 4};
+          connection['paintStyle'] =  {strokeStyle: fill_color, lineWidth: 2};
+      {% endif %}
+      {% if not related_parent.is_deployed %}
+        connection['paintStyle']['dashstyle'] = '2 2';
+      {% endif %}
+      jsPlumbComponentHierarchy.connect(connection);
+    {% endfor %}
+
+    {% for productcomponent in productcomponents %}
+      var connection = {
+        source: 'component_{{ object.pk }}',
+        target: 'product_{{ productcomponent.product.pk }}',
+        paintStyle: {strokeStyle: 'grey', lineWidth: 2}
+      };
+      {% if not productcomponent.is_deployed %}
+        connection['paintStyle']['dashstyle'] = '2 2';
+      {% endif %}
+      jsPlumbComponentHierarchy.connect(connection);
+    {% endfor %}
+
+    {% for related_child in related_children %}
+      var connection = {
+        source: 'component_{{ related_child.child.pk }}',
+        target: 'component_{{ object.pk }}',
+        paintStyle: {strokeStyle: 'gray', lineWidth: 2}
+      };
+      {% if object.dataspace.show_usage_policy_in_user_views and related_child.usage_policy %}
+        var fill_color = '{{ related_child.get_usage_policy_color }}';
+        connection['endpointStyle'] =  {fillStyle: fill_color, radius: 4};
+        connection['paintStyle'] =  {strokeStyle: fill_color, lineWidth: 2};
+      {% endif %}
+      {% if not related_parent.is_deployed %}
+        connection['paintStyle']['dashstyle'] = '2 2';
+      {% endif %}
+      jsPlumbComponentHierarchy.connect(connection);
+    {% endfor %}
+
+    // Draw if the related tab is active
+    if (isTabActive("tab_hierarchy"))
+      jsPlumbComponentHierarchy.setSuspendDrawing(false, true);
+
+    // Repaint on opening the tab, as when the tab content is hidden
+    // the connectors are not painted properly
+    $('button[data-bs-target="#tab_hierarchy"]').on('shown.bs.tab', function (e) {
+        // Second argument instructs jsPlumb to perform a full repaint.
+        jsPlumbComponentHierarchy.setSuspendDrawing(false, true);
+    });
+
+    // Repaint on resizing the browser window if the related tab is active
+    $(window).resize(function(){
+        if (isTabActive("tab_hierarchy"))
+          jsPlumbComponentHierarchy.repaintEverything();
+    });
+  });
+</script>

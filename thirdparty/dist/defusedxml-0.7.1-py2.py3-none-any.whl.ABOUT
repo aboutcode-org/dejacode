@@ -1,0 +1,18 @@
+about_resource: defusedxml-0.7.1-py2.py3-none-any.whl
+name: defusedxml
+version: 0.7.1
+download_url: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/defusedxml/0.7.1/
+package_url: pkg:pypi/defusedxml@0.7.1
+license_expression: python
+copyright: Copyright (c) Christian Heimes
+notice_file: defusedxml-0.7.1-py2.py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: Christian Heimes
+checksum_md5: f0f8408ec7056772fe2872cc31b55640
+checksum_sha1: e23475023105199c3e59753407e921869e04720d
+licenses:
+  - key: python
+    name: Python Software Foundation License v2
+    file: python.LICENSE

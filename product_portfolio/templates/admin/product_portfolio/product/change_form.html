@@ -1,0 +1,37 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if change %}{# Do not display the following on ADDITION #}
+        <li>
+            <a href="{{ original.get_attribution_url }}" target="_blank" class="grp-state-focus">{% trans 'Generate Attribution' %}</a>
+        </li>
+        {% url opts|admin_urlname:'permissions' original.pk|admin_urlquote as permissions_url %}
+        {% if permissions_url %}{% if user.is_superuser or user == original.created_by %}
+            <li>
+                <a href="{% add_preserved_filters permissions_url %}" class="permissionslink">{% trans "Object permissions" %}</a>
+            </li>
+        {% endif %}{% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {% url 'admin:product_portfolio_productcomponent_changelist' as productcomponent_changelist_url %}
+    {% url 'admin:product_portfolio_productpackage_changelist' as productpackage_changelist_url %}
+    {% if original.is_active %}
+    <script>
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                {% include 'includes/keywords_autocomplete.js.html' %}
+                var productcomponent_link = '<h2><a href="{{ productcomponent_changelist_url }}?product__id__exact={{ original.pk|admin_urlquote }}" target="_blank" style="width:auto;margin-top:3px;">(Manage relationships)</a></h2>';
+                $('#productcomponents-group > ul.grp-tools').append('<li>' + productcomponent_link + '</li>');
+                var productpackage_link = '<h2><a href="{{ productpackage_changelist_url }}?product__id__exact={{ original.pk|admin_urlquote }}" target="_blank" style="width:auto;margin-top:3px;">(Manage relationships)</a></h2>';
+                $('#productpackages-group > ul.grp-tools').append('<li>' + productpackage_link + '</li>');
+            });
+        })(grp.jQuery);
+    </script>
+    {% endif %}
+{% endblock %}

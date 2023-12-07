@@ -1,0 +1,439 @@
+{
+"headers": [
+{
+  "tool_name": "scanpipe",
+  "tool_version": "32.0.1",
+  "notice": "Generated with ScanCode.io and provided on an \"AS IS\" BASIS, WITHOUT WARRANTIES\nOR CONDITIONS OF ANY KIND, either express or implied.\nNo content created from ScanCode.io should be considered or used as legal advice.\nConsult an Attorney for any legal advice.\nScanCode.io is a free software code scanning tool from nexB Inc. and others\nlicensed under the Apache License version 2.0.\nScanCode is a trademark of nexB Inc.\nVisit https://github.com/nexB/scancode.io for support and download.\n",
+  "uuid": "35ee6b2b-88b3-4baf-9d40-5bd7e56c9741",
+  "created_date": "2023-02-23T00:58:29.226Z",
+  "input_sources": [
+    {
+      "filename": "package.tar.xz",
+      "source": "uploaded"
+    }
+  ],
+  "runs": [
+    {
+      "pipeline_name": "scan_codebase",
+      "status": "success",
+      "description": "A pipeline to scan a codebase resource with ScanCode-toolkit.\n\nInput files are copied to the project's codebase/ directory and are extracted\nin place before running the scan.\nAlternatively, the code can be manually copied to the project codebase/\ndirectory.",
+      "uuid": "69c3f45b-87ba-4b22-aed0-106348452e92",
+      "created_date": "2023-02-23T00:58:29.229984Z",
+      "scancodeio_version": "32.0.1",
+      "task_id": "69c3f45b-87ba-4b22-aed0-106348452e92",
+      "task_start_date": "2023-02-23T00:58:29.241792Z",
+      "task_end_date": "2023-02-23T00:58:35.965123Z",
+      "task_exitcode": 0,
+      "task_output": "",
+      "log": "2023-02-23 00:58:29.24 Pipeline [scan_codebase] starting\n2023-02-23 00:58:29.24 Step [copy_inputs_to_codebase_directory] starting\n2023-02-23 00:58:29.24 Step [copy_inputs_to_codebase_directory] completed in 0.00 seconds\n2023-02-23 00:58:29.25 Step [extract_archives] starting\n2023-02-23 00:58:29.27 Step [extract_archives] completed in 0.03 seconds\n2023-02-23 00:58:29.28 Step [collect_and_create_codebase_resources] starting\n2023-02-23 00:58:29.33 Step [collect_and_create_codebase_resources] completed in 0.05 seconds\n2023-02-23 00:58:29.33 Step [tag_empty_files] starting\n2023-02-23 00:58:29.33 Step [tag_empty_files] completed in 0.00 seconds\n2023-02-23 00:58:29.33 Step [scan_for_application_packages] starting\n2023-02-23 00:58:31.95 Step [scan_for_application_packages] completed in 2.62 seconds\n2023-02-23 00:58:31.96 Step [scan_for_files] starting\n2023-02-23 00:58:35.95 Step [scan_for_files] completed in 3.99 seconds\n2023-02-23 00:58:35.96 Pipeline completed\n",
+      "execution_time": 6
+    }
+  ],
+  "extra_data": {}
+}],
+"packages": [
+{
+  "purl": "pkg:npm/test-package@0.0.1",
+  "type": "npm",
+  "namespace": "",
+  "name": "test-package",
+  "version": "0.0.1",
+  "qualifiers": "",
+  "subpath": "",
+  "primary_language": "JavaScript",
+  "description": "",
+  "release_date": null,
+  "parties": [
+    {
+      "url": null,
+      "name": "The Apache Software Foundation",
+      "role": "author",
+      "type": "person",
+      "email": null
+    }
+  ],
+  "keywords": [],
+  "homepage_url": "",
+  "download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+  "bug_tracking_url": "",
+  "code_view_url": "",
+  "vcs_url": "",
+  "repository_homepage_url": "https://www.npmjs.com/package/test-package",
+  "repository_download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+  "api_data_url": "https://registry.npmjs.org/test-package/0.0.1",
+  "size": null,
+  "md5": "",
+  "sha1": "",
+  "sha256": "",
+  "sha512": "",
+  "copyright": "Copyright",
+  "license_expression": "apache-2.0",
+  "declared_license": "['Apache-2.0']",
+  "notice_text": "",
+  "source_packages": [],
+  "extra_data": {},
+  "package_uid": "pkg:npm/test-package@0.0.1?uuid=3c30a94e-bb41-46e3-9a66-d99242b05309",
+  "manifest_path": "",
+  "contains_source_code": null,
+  "datasource_id": "",
+  "file_references": [],
+  "missing_resources": [],
+  "modified_resources": []
+}],
+"dependencies": [
+],
+"files": [
+{
+  "path": "package.tar.xz",
+  "type": "file",
+  "name": "package.tar.xz",
+  "status": "scanned",
+  "tag": "",
+  "extension": ".tar.xz",
+  "size": 356,
+  "md5": "3ba0e53199d189e8587a081b5ecd5c8e",
+  "sha1": "33e4ef54c9ff4d8549efe14e359c751ec8e0a729",
+  "sha256": "bd2a975f3911c2caa2f2639ba12b50c3f4e013ca5348ad93f86b46323fbe8a13",
+  "sha512": "",
+  "mime_type": "application/x-xz",
+  "file_type": "XZ compressed data",
+  "programming_language": "",
+  "is_binary": true,
+  "is_text": false,
+  "is_archive": true,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [],
+  "license_expressions": [],
+  "compliance_alert": "",
+  "copyrights": [],
+  "holders": [],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+},
+{
+  "path": "package.tar.xz-extract",
+  "type": "directory",
+  "name": "package.tar.xz-extract",
+  "status": "scanned",
+  "tag": "",
+  "extension": ".tar.xz-extract",
+  "size": 4096,
+  "md5": "",
+  "sha1": "",
+  "sha256": "",
+  "sha512": "",
+  "mime_type": "",
+  "file_type": "",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": false,
+  "is_archive": false,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [],
+  "license_expressions": [],
+  "compliance_alert": "",
+  "copyrights": [],
+  "holders": [],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+},
+{
+  "path": "package.tar.xz-extract/package",
+  "type": "directory",
+  "name": "package",
+  "status": "scanned",
+  "tag": "",
+  "extension": "",
+  "size": 4096,
+  "md5": "",
+  "sha1": "",
+  "sha256": "",
+  "sha512": "",
+  "mime_type": "",
+  "file_type": "",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": false,
+  "is_archive": false,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [],
+  "license_expressions": [],
+  "compliance_alert": "",
+  "copyrights": [],
+  "holders": [],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+},
+{
+  "path": "package.tar.xz-extract/package/package.json",
+  "type": "file",
+  "name": "package.json",
+  "status": "application-package",
+  "tag": "",
+  "extension": ".json",
+  "size": 124,
+  "md5": "520ac78fd38012848d1b09068bfa7e7d",
+  "sha1": "83ba278caca8dc035cfcc25c0490932f81981b3a",
+  "sha256": "9321983102c9a8e9796c870754becd35b7f7cf0a8a2718730f74b2ef5e31c1b6",
+  "sha512": "",
+  "mime_type": "application/json",
+  "file_type": "JSON data",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": true,
+  "is_archive": false,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [],
+  "license_expressions": [],
+  "compliance_alert": "",
+  "copyrights": [],
+  "holders": [],
+  "authors": [],
+  "package_data": [
+    {
+      "md5": null,
+      "name": "test-package",
+      "purl": "pkg:npm/test-package@0.0.1",
+      "sha1": null,
+      "size": null,
+      "type": "npm",
+      "sha256": null,
+      "sha512": null,
+      "parties": [
+        {
+          "url": null,
+          "name": "The Apache Software Foundation",
+          "role": "author",
+          "type": "person",
+          "email": null
+        }
+      ],
+      "subpath": null,
+      "vcs_url": null,
+      "version": "0.0.1",
+      "keywords": [],
+      "copyright": null,
+      "namespace": null,
+      "extra_data": {},
+      "qualifiers": {},
+      "description": null,
+      "notice_text": null,
+      "api_data_url": "https://registry.npmjs.org/test-package/0.0.1",
+      "dependencies": [],
+      "download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+      "homepage_url": null,
+      "release_date": null,
+      "code_view_url": null,
+      "datasource_id": "npm_package_json",
+      "file_references": [],
+      "source_packages": [],
+      "bug_tracking_url": null,
+      "declared_license": [
+        "Apache-2.0"
+      ],
+      "primary_language": "JavaScript",
+      "license_expression": "apache-2.0",
+      "repository_download_url": "https://registry.npmjs.org/test-package/-/test-package-0.0.1.tgz",
+      "repository_homepage_url": "https://www.npmjs.com/package/test-package"
+    }
+  ],
+  "for_packages": [
+    "pkg:npm/test-package@0.0.1?uuid=3c30a94e-bb41-46e3-9a66-d99242b05309"
+  ],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+},
+{
+  "path": "package.tar.xz-extract/package/src1",
+  "type": "file",
+  "name": "src1",
+  "status": "scanned",
+  "tag": "",
+  "extension": "",
+  "size": 56,
+  "md5": "2c83032298cf2cc80238d47dcd8260f0",
+  "sha1": "dab23f227b065e0dc81b043a71ef7c21a51a417c",
+  "sha256": "52be3208185baa989fbb805056a95d2bdfe03396c44ce00b41aafe342c7b90d9",
+  "sha512": "",
+  "mime_type": "text/plain",
+  "file_type": "ASCII text",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": true,
+  "is_archive": false,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [
+    {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "owner": "Apache Software Foundation",
+      "score": 100.0,
+      "category": "Permissive",
+      "end_line": 3,
+      "spdx_url": "https://spdx.org/licenses/Apache-2.0",
+      "text_url": "http://www.apache.org/licenses/LICENSE-2.0",
+      "is_unknown": false,
+      "short_name": "Apache 2.0",
+      "start_line": 3,
+      "homepage_url": "http://www.apache.org/licenses/",
+      "is_exception": false,
+      "matched_rule": {
+        "matcher": "2-aho",
+        "licenses": [
+          "apache-2.0"
+        ],
+        "identifier": "spdx_license_id_apache-2.0_for_apache-2.0.RULE",
+        "has_unknown": false,
+        "rule_length": 3,
+        "is_license_tag": false,
+        "match_coverage": 100.0,
+        "matched_length": 3,
+        "rule_relevance": 100,
+        "is_license_text": false,
+        "is_license_intro": false,
+        "is_license_notice": false,
+        "license_expression": "apache-2.0",
+        "is_license_reference": true,
+        "referenced_filenames": []
+      },
+      "matched_text": "apache-2.0",
+      "reference_url": "https://scancode-licensedb.aboutcode.org/apache-2.0",
+      "spdx_license_key": "Apache-2.0",
+      "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/apache-2.0.yml",
+      "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/apache-2.0.LICENSE"
+    }
+  ],
+  "license_expressions": [
+    "apache-2.0"
+  ],
+  "compliance_alert": "",
+  "copyrights": [
+    {
+      "end_line": 1,
+      "copyright": "Copyright (c) The Apache Software Foundation",
+      "start_line": 1
+    }
+  ],
+  "holders": [
+    {
+      "holder": "The Apache Software Foundation",
+      "end_line": 1,
+      "start_line": 1
+    }
+  ],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [
+    "pkg:npm/test-package@0.0.1?uuid=3c30a94e-bb41-46e3-9a66-d99242b05309"
+  ],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+},
+{
+  "path": "package.tar.xz-extract/package/src2",
+  "type": "file",
+  "name": "src2",
+  "status": "scanned",
+  "tag": "",
+  "extension": "",
+  "size": 33,
+  "md5": "19464283583a84d42e4b94f63c0e3a07",
+  "sha1": "83ef8eaf3f5695ed15aab498aca5061efe597f95",
+  "sha256": "c8c7eba9aafd40a3d05c1e1e4c5562722aacb585cfef0fbc7e6320fc2fef05e2",
+  "sha512": "",
+  "mime_type": "text/plain",
+  "file_type": "ASCII text",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": true,
+  "is_archive": false,
+  "is_media": false,
+  "is_key_file": false,
+  "licenses": [
+    {
+      "key": "gpl-2.0",
+      "name": "GNU General Public License 2.0",
+      "owner": "Free Software Foundation (FSF)",
+      "score": 100.0,
+      "category": "Copyleft",
+      "end_line": 3,
+      "spdx_url": "https://spdx.org/licenses/GPL-2.0-only",
+      "text_url": "http://www.gnu.org/licenses/gpl-2.0.txt",
+      "is_unknown": false,
+      "short_name": "GPL 2.0",
+      "start_line": 3,
+      "homepage_url": "http://www.gnu.org/licenses/gpl-2.0.html",
+      "is_exception": false,
+      "matched_rule": {
+        "matcher": "2-aho",
+        "licenses": [
+          "gpl-2.0"
+        ],
+        "identifier": "gpl-2.0_52.RULE",
+        "has_unknown": false,
+        "rule_length": 3,
+        "is_license_tag": false,
+        "match_coverage": 100.0,
+        "matched_length": 3,
+        "rule_relevance": 100,
+        "is_license_text": false,
+        "is_license_intro": false,
+        "is_license_notice": false,
+        "license_expression": "gpl-2.0",
+        "is_license_reference": true,
+        "referenced_filenames": []
+      },
+      "matched_text": "gpl-2.0",
+      "reference_url": "https://scancode-licensedb.aboutcode.org/gpl-2.0",
+      "spdx_license_key": "GPL-2.0-only",
+      "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/gpl-2.0.yml",
+      "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/gpl-2.0.LICENSE"
+    }
+  ],
+  "license_expressions": [
+    "gpl-2.0"
+  ],
+  "compliance_alert": "",
+  "copyrights": [
+    {
+      "end_line": 1,
+      "copyright": "Copyright (c) IBM Corp.",
+      "start_line": 1
+    }
+  ],
+  "holders": [
+    {
+      "holder": "IBM Corp.",
+      "end_line": 1,
+      "start_line": 1
+    }
+  ],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [
+    "pkg:npm/test-package@0.0.1?uuid=3c30a94e-bb41-46e3-9a66-d99242b05309"
+  ],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+}]
+}

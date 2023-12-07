@@ -1,0 +1,20 @@
+{# WARNING: This template is not Dataspace customizable yet because used in a templatetag #}
+{% load attribution %}
+<li>
+    {% if node.is_displayed %}
+        <a href="#{{ node|get_html_id }}">{{ node.display_name }}</a>
+    {% else %}
+        {{ node.display_name }}
+    {% endif %}
+
+    {% if children %}
+        <ul>
+            {# `feature` field is not available on Subcomponent relationship #}
+            {% for feature, children_nodes in children.items %}
+                {% for node_, children_ in children_nodes %}
+                    {% show_hierarchy_toc node_ children_ %}
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

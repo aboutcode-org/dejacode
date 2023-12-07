@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ object.name }}</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        {% if format == 'html' %}
+            <style>
+                {{ bootstrap_css_code|safe }}
+            </style>
+        {% endif %}
+
+        {% if format == 'xls' %}
+            <meta name="ProgId" content="Excel.Sheet">
+            <meta name="Generator" content="Microsoft Excel 11">
+            <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorkbook>
+                        <x:ExcelWorksheets>
+                            <x:ExcelWorksheet>
+                                {# Excel worksheet names have a 31 character limit #}
+                                <x:Name>{{ object.name|truncatechars:31 }}</x:Name>
+                            </x:ExcelWorksheet>
+                        </x:ExcelWorksheets>
+                    </x:ExcelWorkbook>
+                </xml>
+            <![endif]-->
+            <style>
+                {# Do not create a new cell for the next row on <br> #}
+                br {mso-data-placement:same-cell;}
+                {# Forces the excel formatting to "text" #}
+                .text {mso-number-format:"\@";}
+            </style>
+        {% endif %}
+    </head>
+    <body>
+        {% if format == 'html' or format == 'doc' %}
+            <div class="page-header">
+                <h1 style="display: inline;">{{ object.name }}</h1>
+            </div>
+        {% endif %}
+
+        {% if interpolated_report_context and format != 'xls' %}
+            <p>{{ interpolated_report_context }}</p>
+        {% endif %}
+
+        {% include 'reporting/includes/report_results_table.html' %}
+    </body>
+</html>

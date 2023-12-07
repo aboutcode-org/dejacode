@@ -1,0 +1,51 @@
+<div id="search-help-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search help</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <p>
+          Note that the search value you enter is not case-sensitive.<br>
+          <code>apache</code> and <code>Apache</code> and <code>APACHE</code> are equivalent
+          values for search purposes.
+        </p>
+        <p>
+          The search starts with a simple case-insensitive containment search on the Name field
+          of the application object (Component, License, Owner, Package, Product, "Global"),
+          ordering the results by exact match first.<br>
+          If the simple search returns nothing, a second step searches the application object by
+          field ranking, using fields in the application object that help identify it.
+        </p>
+        <p>Search results are ordered by</p>
+          <ol>
+            <li>exact matches</li>
+            <li>word matches</li>
+            <li>text string matches</li>
+          </ol>
+        <p>alphabetically within each group.</p>
+        <p>
+          You can also filter search results by various column headers, selecting one or more values
+          for that purpose, optionally using "type ahead" to quickly find the value you want.
+          DejaCode limits the values you can select for filtering by those that will actually
+          return results. You can use the column filters with or without a value in the search
+          field. You can clear any filter simply by clicking the "x" on the label that identifies
+          an active filter.
+        </p>
+        <p>
+          You can reorder the search results simply by clicking the up or down arrow next to a
+          column header.
+        </p>
+        <p style="margin-bottom: 0;">
+          Note that, unlike a Google search, DejaCode will not try to guess what you intended if
+          your spelling of search text is not accurate - e.g. DejaCode will not not return
+          results for a mis-spelled search value.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

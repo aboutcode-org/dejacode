@@ -1,0 +1,2 @@
+fname,download_url,version,owner,name,component_urn,admin_notes,copyright,license
+cppcheck-1.47.tar.bz2,http://master.dl.sourceforge.net/project/cppcheck/cppcheck/1.47/cppcheck-1.47.tar.bz2,1.47,Cppcheck,Cppcheck,urn:dje:component:Cppcheck:1.47,,Copyright (c) 2007-2011 Daniel Marjam�ki and Cppcheck team.,GPL 3.0

@@ -1,0 +1,47 @@
+{% extends "object_form.html" %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      function build_purl(type, namespace, name, version, qualifiers, subpath) {
+        if (!type || !name) return '';
+
+        let purl = ['pkg:', type, '/'];
+
+        if (namespace) purl.push(namespace, '/');
+        purl.push(name)
+        if (version) purl.push('@', version);
+        if (qualifiers) purl.push('?', qualifiers);
+        if (subpath) purl.push('#', subpath);
+
+        return purl.join('');
+      }
+
+      let type_input = $('#id_type');
+      let namespace_input = $('#id_namespace');
+      let name_input = $('#id_name');
+      let version_input = $('#id_version');
+      let qualifiers_input = $('#id_qualifiers');
+      let subpath_input = $('#id_subpath');
+
+      function update_purl() {
+        let purl = build_purl(
+          type_input.val(),
+          namespace_input.val(),
+          name_input.val(),
+          version_input.val(),
+          qualifiers_input.val(),
+          subpath_input.val(),
+        );
+        $('#id_package_url').html(purl);
+      }
+
+      update_purl();  // Call once on start for Update view.
+
+      let all_purl_inputs = $('#id_type,#id_namespace,#id_name,#id_version,#id_qualifiers,#id_subpath');
+      all_purl_inputs.on('keyup', update_purl);
+
+    });
+  </script>
+{% endblock %}

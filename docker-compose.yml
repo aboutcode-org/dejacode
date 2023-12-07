@@ -1,0 +1,96 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:16
+    env_file:
+      - docker.env
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+      - ./data/postgresql:/docker-entrypoint-initdb.d/
+    shm_size: "1gb"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    # Enable redis data persistence using the "Append Only File" with the
+    # default policy of fsync every second. See https://redis.io/topics/persistence
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  web:
+    build: .
+    command: sh -c "
+        ./manage.py migrate &&
+        ./manage.py collectstatic --no-input --verbosity 0 --clear &&
+        gunicorn dejacode.wsgi:application --bind :8000 --timeout 600 \
+          --workers 4 --worker-tmp-dir /dev/shm"
+    env_file:
+      - docker.env
+    expose:
+      - 8000
+    volumes:
+      - .env:/opt/dejacode/.env
+      - /etc/dejacode/:/etc/dejacode/
+      - static:/var/dejacode/static
+      - media:/var/dejacode/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      clamav:
+        condition: service_started
+
+  worker:
+    build: .
+    # Ensure that potential db migrations run first by waiting until "web" is up
+    command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
+        celery worker --app=dejacode --concurrency=2 --time-limit=300 --loglevel=INFO"
+    env_file:
+      - docker.env
+    volumes:
+      - .env:/opt/dejacode/.env
+      - /etc/dejacode/:/etc/dejacode/
+      # The media volume is required to access uploaded files from the worker
+      - media:/var/dejacode/media
+    depends_on:
+      - redis
+      - db
+      - web
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${NGINX_PUBLISHED_HTTP_PORT:-80}:80"
+      - "${NGINX_PUBLISHED_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./etc/nginx/conf.d/:/etc/nginx/conf.d/
+      - /var/www/html:/var/www/html
+      - static:/var/dejacode/static/
+    depends_on:
+      - web
+    restart: always
+
+  clamav:
+    image: clamav/clamav
+    volumes:
+      - clamav_data:/var/lib/clamav
+      - media:/var/dejacode/media
+    ports:
+      - "3310:3310"
+    restart: always
+
+volumes:
+  db_data:
+  redis_data:
+  clamav_data:
+  static:
+  media:

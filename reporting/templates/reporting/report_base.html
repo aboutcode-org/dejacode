@@ -1,0 +1,5 @@
+{% if downloaded %}
+  {% include 'reporting/report_export.html' %}
+{% else %}
+  {% include 'reporting/report_run.html' %}
+{% endif %}

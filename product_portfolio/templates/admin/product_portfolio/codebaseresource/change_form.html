@@ -1,0 +1,49 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style media="screen">
+        .hide-thead .grp-table .grp-thead {display: none;}
+        .grp-module.grp-table .deployed_to .grp-autocomplete-wrapper-fk {max-width: 100%;}
+        .deployed_to .grp-autocomplete-wrapper-fk input.vTextField {width: 758px;}
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+{{ block.super }}
+<script type="text/javascript">
+    (function($) {
+        function inject_product_id_query_string(lookup_input) {
+            // Adds the current `product_id` in the related lookup link.
+            // This allow to scope the results to the current Product in both:
+            // - the "lookup popup"
+            // - and the "autocomplete input"
+            // The injected attributes are also sent to the view through the `query_string`
+            // parameter and converted into QuerySet filters in `RelatedLookup.get_filtered_queryset()`
+            var autocomplete_wrapper = lookup_input.parent();
+            var original_href = lookup_input.prop('href');
+
+            autocomplete_wrapper.hover(function(){
+                var product_id = $("#id_product").prop('value');
+                if (product_id) {
+                    lookup_input.prop('href', original_href + '&product__id__exact=' + product_id);
+                    console.log('product__id__exact=' + product_id + ' injected in #' + lookup_input.prop('id'))
+                } else {
+                    lookup_input.prop('href', original_href);
+                }
+            });
+        }
+
+        function inject_product_id_in_deployed_to_inline(form) {
+            var related_lookup_input = form.find(".deployed_to .related-lookup");
+            if (related_lookup_input) inject_product_id_query_string(related_lookup_input);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            inject_product_id_query_string($("#lookup_id_product_component"));
+            inject_product_id_query_string($("#lookup_id_product_package"));
+            NEXB.patch_grappelli_grp_inline(inject_product_id_in_deployed_to_inline);
+        });
+    })(grp.jQuery);
+</script>
+{% endblock %}

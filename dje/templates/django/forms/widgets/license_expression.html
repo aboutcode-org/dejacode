@@ -1,0 +1,9 @@
+<div class="license-expression-header">
+    {% if widget.attrs.related_object_license_expression %}
+        {{ widget.attrs.related_model_name }} license: <code class="license_expression">{{ widget.attrs.related_object_license_expression }}</code>
+        {% if widget.attrs.license_choices_expression %}
+            &nbsp;&rArr;&nbsp;&nbsp;License choices: <code class="license_expression">{{ widget.attrs.license_choices_expression }}</code>
+        {% endif %}
+    {% endif %}
+</div>
+{% include "django/forms/widgets/textarea.html" %}

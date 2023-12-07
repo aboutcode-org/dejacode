@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n static admin_urls %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Set Policy' %}
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+    {% if adminform.form.errors %}
+            <p class="errornote">{% if adminform.form.errors|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}</p>
+            <ul class="errorlist">{% for error in adminform.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+
+        <p style="font-style: italic; margin-bottom: 7px;">
+            You can set the usage policy on the application objects below where the object has
+            no policy set, or where the policy is different from the associated component or
+            license, by selecting the object(s) that you want to update and clicking the
+            "Set policies" button below.
+        </p>
+
+        {% block table %}
+        {% endblock %}
+
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Set policies">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script>
+        (function ($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#action-toggle').on('change', function(e) {
+                    if ($(this).is(':checked')) {
+                        $('.enabler').prop('checked', true)
+                            .parent().parent().removeClass('grp-row-even').addClass('grp-selected');
+                    } else {
+                        $('.enabler').prop('checked', false)
+                            .parent().parent().addClass('grp-row-even').removeClass('grp-selected');
+                    }
+                });
+
+                $('.enabler').on('change', function(e) {
+                    if ($(this).is(':checked')) {
+                        $(this).parent().parent().removeClass('grp-row-even').addClass('grp-selected');
+                    } else {
+                        $(this).parent().parent().addClass('grp-row-even').removeClass('grp-selected');
+                    }
+                });
+            });
+        })(django.jQuery);
+    </script>
+{% endblock %}

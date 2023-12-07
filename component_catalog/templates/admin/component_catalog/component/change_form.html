@@ -1,0 +1,12 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript">
+    (function($) {
+      document.addEventListener('DOMContentLoaded', function () {
+        {% include 'includes/keywords_autocomplete.js.html' %}
+      });
+    }(grp.jQuery));
+  </script>
+{% endblock %}

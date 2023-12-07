@@ -1,0 +1,47 @@
+{% load i18n %}
+{% if not user.is_anonymous and SHOW_TOOLS_IN_NAV %}
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle{% if report_list_url in request.path or request_list_url in request.path or scan_list_url in request.path or purldb_list_url in request.path %} active{% endif %}" href="#" id="navbarDropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Tools
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+      <div class="dropdown-header">Reporting</div>
+      <a class="dropdown-item{% if report_list_url in request.path %} active{% endif %}" href="{{ report_list_url }}">
+        <i class="far fa-chart-bar" aria-hidden="true"></i>
+        Reports
+      </a>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-header">Workflow</div>
+      <a class="dropdown-item{% if request_list_url in request.path %} active{% endif %}" href="{{ request_list_url }}">
+        <span class="badge text-bg-request">R</span>
+        {% trans 'Requests' %}
+      </a>
+      {% if user.dataspace.enable_package_scanning or user.dataspace.enable_purldb_access %}
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header">{% trans 'Packages' %}</div>
+        {% if user.dataspace.enable_package_scanning %}
+          <a class="dropdown-item{% if scan_list_url in request.path %} active{% endif %}" href="{{ scan_list_url }}">
+            <i class="fas fa-barcode"></i>
+            {% trans 'Scans' %}
+          </a>
+        {% endif %}
+        {% if user.dataspace.enable_purldb_access %}
+          <a class="dropdown-item{% if purldb_list_url in request.path %} active{% endif %}" href="{{ purldb_list_url }}">
+            <i class="fas fa-database"></i>
+            {% trans 'PurlDB' %}
+          </a>
+        {% endif %}
+      {% endif %}
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-header">API</div>
+      <a class="dropdown-item" href="{{ api_root_url }}">
+        <i class="fa fa-retweet" aria-hidden="true"></i>
+        API Browser
+      </a>
+      <a class="dropdown-item" href="{% url 'api-docs:docs-index' %}">
+        <i class="fab fa-leanpub" aria-hidden="true"></i>
+        API Documentation
+      </a>
+    </div>
+  </li>
+{% endif %}

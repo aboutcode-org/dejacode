@@ -1,0 +1,144 @@
+{% load i18n static %}
+{% load has_notification from notifications_tags %}
+
+{% url 'product_portfolio:product_list' as product_list_url %}
+{% url 'component_catalog:component_list' as component_list_url %}
+{% url 'component_catalog:package_list' as package_list_url %}
+{% url 'license_library:license_list' as license_list_url %}
+{% url 'organization:owner_list' as owner_list_url %}
+{% url 'global_search' as global_search_url %}
+{% url 'reporting:report_list' as report_list_url %}
+{% url 'workflow:request_list' as request_list_url %}
+{% url 'component_catalog:scan_list' as scan_list_url %}
+{% url 'purldb:purldb_list' as purldb_list_url %}
+{% url 'django_registration_register' as register_url %}
+{% url 'api_v2:api-root' as api_root_url %}
+{% url 'account_profile' as account_profile_url %}
+
+<nav class="navbar navbar-expand-xl navbar-dark fixed-top" role="navigation">
+  {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
+  {% if not user.is_authenticated and not user.dataspace %}
+    <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
+  {% else %}
+    {% block nav-brand %}
+      <div class="navbar-brand me-4">{{ SITE_TITLE }}</div>
+    {% endblock %}
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        {% include 'includes/navbar_header_left_menu.html' %}
+        {% include 'includes/navbar_header_tools_menu.html' %}
+      </ul>
+      {% include 'includes/navbar_header_search_form.html' %}
+    </div>
+    {% block right-nav %}
+      <ul class="navbar-nav flex-row ms-auto">
+        {% if not user.is_authenticated and register_url %}
+          <li class="nav-item">
+            <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
+          </li>
+        {% endif %}
+        {% if user.is_anonymous %}
+          <li class="nav-item">
+            <a class="nav-item nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
+          </li>
+        {% else %}
+          <li class="nav-item position-relative">
+            {% if user|has_notification %}
+              <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
+                <span>
+                  <i class="fa-solid fa-bell"></i>
+                  <span class="bg-danger notification-active">&nbsp;</span>
+                </span>
+              </a>
+            {% else %}
+              <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="No unread notifications" data-bs-toggle="tooltip" aria-label="No unread notifications">
+                <i class="fas fa-bell"></i>
+              </a>
+            {% endif %}
+          </li>
+          <li class="nav-item dropdown">
+            <button class="btn nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {% firstof user.first_name|truncatechars:10 user.username|truncatechars:10 %}&nbsp;({{ user.dataspace|truncatechars:8 }})
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <div class="text-center">
+                {{ user.first_name }} {{ user.last_name }}
+                <div class="dropdown-header">{{ user.email|truncatechars:30 }}</div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-header">Account</div>
+              <a class="dropdown-item {% if account_profile_url in request.path %}active{% endif %}" href="{{ account_profile_url }}">
+                <i class="fas fa-user-circle" aria-hidden="true"></i>
+                Profile Settings
+              </a>
+              <a class="dropdown-item" href="{% url 'password_change' %}">
+                <i class="fa fa-key" aria-hidden="true"></i>
+                Change Password
+              </a>
+              {% if user.is_staff %}
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-header">Administration</div>
+                <a class="dropdown-item" href="{% url 'admin:index' %}">
+                  <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                  Dashboard
+                </a>
+                {% if perms.product_portfolio.change_product %}
+                  <a class="dropdown-item" href="{% url 'admin:product_portfolio_product_changelist' %}">
+                    <i class="fa fa-briefcase" aria-hidden="true"></i>
+                    {% trans 'Products' %}
+                  </a>
+                {% endif %}
+                {% if perms.component_catalog.change_component %}
+                  <a class="dropdown-item" href="{% url 'admin:component_catalog_component_changelist' %}">
+                    <i class="fa fa-puzzle-piece" aria-hidden="true"></i>
+                    {% trans 'Components' %}
+                  </a>
+                {% endif %}
+                {% if perms.component_catalog.change_package %}
+                  <a class="dropdown-item" href="{% url 'admin:component_catalog_package_changelist' %}">
+                    <i class="fas fa-archive" aria-hidden="true"></i>
+                    {% trans 'Packages' %}
+                  </a>
+                {% endif %}
+                {% if perms.license_library.change_license %}
+                  <a class="dropdown-item" href="{% url 'admin:license_library_license_changelist' %}">
+                    <i class="fa fa-book" aria-hidden="true"></i>
+                    {% trans 'Licenses' %}
+                  </a>
+                {% endif %}
+                {% if perms.organization.change_owner %}
+                  <a class="dropdown-item" href="{% url 'admin:organization_owner_changelist' %}">
+                    <i class="fa fa-users" aria-hidden="true"></i>
+                    {% trans 'Owners' %}
+                  </a>
+                {% endif %}
+              {% endif %}
+              {% if user.is_staff %}
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-header">Status</div>
+                <a class="dropdown-item" href="{% url 'integrations_status' %}">
+                  <i class="fas fa-stethoscope"></i>
+                  Integrations Status
+                </a>
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-header">DejaCode: v{{ DEJACODE_VERSION }}</div>
+              <div class="dropdown-divider"></div>
+              <form id="logout-form" method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">
+                  <i class="fa fa-power-off" aria-hidden="true"></i>
+                  {% trans "Sign Out" %}
+                </button>
+              </form>
+            </div>
+          </li>
+        {% endif %}
+      </ul>
+    {% endblock %}
+  {% endif %}
+</nav>
+{% include 'includes/search_help_modal.html' %}

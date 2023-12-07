@@ -1,0 +1,36 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% load i18n %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {% if not_editable %}
+        {# Removes the "Save" and "Save and continue editing" buttons #}
+        <script>
+            (function($){
+                $(document).ready(function(){
+                    $("input[name='_continue']").parent().remove();
+                    $("input[name='_save']").parent().remove();
+                });
+            })(grp.jQuery);
+        </script>
+    {% endif %}
+
+    <script>
+        (function($){
+            function set_include_product_checkbox() {
+                var include_product = $("#id_include_product");
+                if ($("#id_content_type option:selected").text() == 'product')
+                    include_product.prop('checked', false).prop('disabled', true);
+                // WARNING: Do not force "checked" when the content type is not "product".
+                else include_product.prop('disabled', false);
+            }
+            $(document).ready(function(){
+                set_include_product_checkbox();
+                $("#id_content_type").change(function() {
+                    set_include_product_checkbox();
+                });
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}

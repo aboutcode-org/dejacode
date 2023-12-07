@@ -1,0 +1,18 @@
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    let dependencies_fields = $('pre.field-dependencies');
+    dependencies_fields.each(function() {
+      let dependencies_field = $(this);
+      let dependencies_data = dependencies_field.data('value');
+      if (dependencies_data) {
+        dependencies_field.jsonViewer(dependencies_data, {rootCollapsable: true, collapsed: true, withQuotes: false, withLinks: true});
+        let root_node_link = dependencies_field.find('.json-toggle.collapsed:first');
+        root_node_link.on('click', function(event) {
+          event.preventDefault();
+          let is_collapsed = $(this).hasClass('collapsed');
+          if (is_collapsed) dependencies_field.jsonViewer(dependencies_data, {rootCollapsable: true, collapsed: false, withQuotes: false, withLinks: true});
+        });
+      }
+    });
+  });
+</script>

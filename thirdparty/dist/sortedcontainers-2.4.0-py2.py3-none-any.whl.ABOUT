@@ -1,0 +1,18 @@
+about_resource: sortedcontainers-2.4.0-py2.py3-none-any.whl
+name: sortedcontainers
+version: 2.4.0
+download_url: https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/sortedcontainers/2.4.0/
+package_url: pkg:pypi/sortedcontainers@2.4.0
+license_expression: apache-2.0
+copyright: Copyright (c) Grant Jenks
+notice_file: sortedcontainers-2.4.0-py2.py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: Grant Jenks
+checksum_md5: 5bede1950ae4d8ef1a037de51c3071cf
+checksum_sha1: d25d40e6cabfcf860e3813c462d589a28ac5bca6
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

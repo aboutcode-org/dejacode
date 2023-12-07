@@ -1,0 +1,121 @@
+{% extends "admin/change_list.html" %}
+
+{% load admin_list i18n grp_tags static %}
+{% load admin_urls %}
+
+{% block title %}
+    {{ block.super }} - {{ cl.opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+<!-- CONTENT-TITLE -->
+{% block content_title %}
+    <h1>Browse {{ cl.opts.verbose_name_plural|capfirst }}</h1>
+{% endblock %}
+
+<!-- OBJECT-TOOLS -->
+{% block object-tools-items %}
+    {% if cl.model_admin.has_activity_log and not is_popup %}
+        <li>
+            <a id="activity_log_link" class="grp-state-focus" href="{% url cl.opts|admin_urlname:'activity_log' %}" target="_blank">{% trans "Activity Log" %}</a>
+        </li>
+    {% endif %}
+    {% if cl.model_admin.has_importer and not is_popup and has_add_permission %}
+        <li>
+            <a href="{% url cl.opts|admin_urlname:'import' %}" target="_blank" class="grp-add-link grp-state-focus">{{ cl.opts.verbose_name_plural|capfirst }} {% trans "Import" %}</a>
+        </li>
+    {% endif %}
+    {% if cl.model_admin.long_description %}{# No need to display the following button if no long_description is declared #}
+        <li>
+            <a class="grp-state-focus" href="javascript://" onclick="(function($){$('#long_description').toggle('fast');})(grp.jQuery);">{% trans "Show/Hide help" %}</a>
+        </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}
+
+{% block filters %}
+    <div id="grp-filters" class="g-d-6 g-d-l">
+        <div class="grp-filter">
+            <div class="grp-pulldown-container">
+                {# DJE CUSTOM: Edited #}
+                <a href="javascript://" class="grp-button grp-pulldown-handler{% if cl.has_filters_activated %} filter-active{% endif %}">
+                    {% if cl.has_filters_activated %}{% trans 'Filters Active' %}{% else %}{% trans 'Filter' %}{% endif %}
+                </a>
+                {# /DJE CUSTOM #}
+                <div class="grp-pulldown-content" style="display: none;">
+                    {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <div id="short_description">{% trans cl.model_admin.short_description %}</div>
+    <div id="long_description">{% trans cl.model_admin.long_description %}</div>
+    {{ block.super }}
+    {% if cl.model_admin.has_activity_log and not is_popup %}
+        {% include 'admin/includes/activity_log_dialog.html' %}
+    {% endif %}
+    {% if cl.search_fields and not is_popup %}
+        {% include 'admin/includes/search_help_dialog.html' %}
+    {% endif %}
+{% endblock %}
+
+{% if cl.search_fields %}
+    {% block search %}
+        <div id="search" class="g-d-6 g-d-f">
+            <a id="search_help_link" class="grp-state-focus" href="#" target="_blank"><img src="/static/img/icon-unknown.png"></a>
+            {% search_form cl %}
+        </div>
+    {% endblock %}
+{% endif %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                // Required for the dje.filters.RelatedLookupListFilter
+                // using on focus as elem.focus() is called at the end of dismissRelatedLookupPopup
+                $(".grp-autocomplete-hidden-field").on("focus", function(){
+                    var lookup_kwarg = $(this).data("lookup-kwarg");
+                    var pk = $(this).val();
+                    var regex = new RegExp('('+lookup_kwarg+'=)[^\&]+');
+                    var params = window.location.search;
+
+                    if (params.match(regex))
+                        window.location.search = params.replace(regex, '$1' + pk);
+                    else {
+                        var sep = params.indexOf('?') !== -1 ? '&':'?';
+                        window.location.search = params + sep + lookup_kwarg + '=' + pk;
+                    }
+                });
+
+                // Tooltip with a list of the searchable fields.
+                {% if cl.search_fields %}
+                    $("#grp-changelist-search-form")
+                        .attr("style", "width: 90%;")
+                        .attr("data-hint", "Search fields: {{ cl.search_fields|join:', ' }}")
+                        .addClass("hint--bottom");
+                {% endif %}
+
+                // Opens actions listed in `target_blank_actions` in a new tab.
+                target_blank_actions = [
+                    'check_related_updates_in_reference',
+                    'check_related_newer_version_in_reference'
+                ];
+                var changelist_form = $('#grp-changelist-form');
+                changelist_form.on('submit', function(e) {
+                    selected_action = $('select[name="action"]').val();
+                    if (selected_action && target_blank_actions.indexOf(selected_action) != -1) {
+                        changelist_form.attr('target', '_blank');
+                    }
+                    else {
+                        changelist_form.attr('target', '');
+                    }
+                });
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}

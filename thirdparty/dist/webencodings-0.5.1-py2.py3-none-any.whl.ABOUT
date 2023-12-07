@@ -1,0 +1,20 @@
+about_resource: webencodings-0.5.1-py2.py3-none-any.whl
+name: webencodings
+version: 0.5.1
+download_url: https://files.pythonhosted.org/packages/f4/24/2a3e3df732393fed8b3ebf2ec078f05546de641fe1b667ee316ec1dcf3b7/webencodings-0.5.1-py2.py3-none-any.whl
+description: Character encoding for the web. This is a Python implementation of the WHATWG Encoding
+  standard.
+homepage_url: https://github.com/gsnedders/python-webencodings
+package_url: pkg:pypi/webencodings@0.5.1
+license_expression: bsd-new
+copyright: Copyright by Simon Sapin
+notice_file: webencodings-0.5.1-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Geoffrey Sneddon
+owner_url: https://github.com/gsnedders
+checksum_md5: 36654e7c7b772611b536014fa9e6e918
+checksum_sha1: e3a9cf249ab74b68056e96e5968245291b40ca1a
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

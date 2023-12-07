@@ -1,0 +1,30 @@
+<div class="modal" id="scan-matches-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title">
+          Matched texts for <strong id="detected-license-key"></strong>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pb-0">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#scan-matches-modal').on('show.bs.modal', function (event) {
+      let modal = $(this);
+      let button = $(event.relatedTarget);
+      let matches = button.data('matches');
+      let license_key = button.data('license-key');
+      modal.find('.modal-title #detected-license-key').text(license_key);
+      modal.find('.modal-body').html($(matches));
+    });
+  });
+</script>

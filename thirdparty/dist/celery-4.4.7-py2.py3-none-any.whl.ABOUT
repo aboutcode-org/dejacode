@@ -1,0 +1,21 @@
+about_resource: celery-4.4.7-py2.py3-none-any.whl
+name: celery
+version: 4.4.7
+download_url: https://files.pythonhosted.org/packages/c8/0c/609e3611d20c9f8d883852d1be5516671f630fb08c8c1e56911567dfba7b/celery-4.4.7-py2.py3-none-any.whl#sha256=a92e1d56e650781fb747032a3997d16236d037c8199eacd5217d1a72893bca45
+description: |
+  Celery: Distributed Task Queue
+
+  Celery is an asynchronous task queue/job queue based on distributed message passing. It is focused on real-time operation, but supports scheduling as well.
+
+  The execution units, called tasks, are executed concurrently on a single or more worker servers using multiprocessing, Eventlet, or gevent. Tasks can execute asynchronously (in the background) or synchronously (wait until ready).
+homepage_url: http://celeryproject.org/
+package_url: pkg:pypi/celery@4.4.7
+license_expression: bsd-new
+copyright: Copyright (c) Ask Solem & contributors.
+attribute: yes
+checksum_md5: 47e3db7a5255406eda40645cf6d62409
+checksum_sha1: 835d42936d1089352b521c25db15ea4b61b7a68a
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

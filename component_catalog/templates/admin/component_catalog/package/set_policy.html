@@ -1,0 +1,32 @@
+{% extends "admin/set_policy_base.html" %}
+
+{% block content_title %}
+    <h1>Set usage policy from licenses</h1>
+{% endblock %}
+
+{% block table %}
+    <table class="grp-table">
+        <tr>
+            <th>Package</th>
+            <th>Usage policy</th>
+            <th>Policy from license</th>
+            <th>Primary license</th>
+            <th>License expression</th>
+            <th><input type="checkbox" id="action-toggle" title=""></th>
+        </tr>
+        {% for package in form.get_objects %}
+            <tr class="grp-row-{% if package.policy_from_primary_license and package.usage_policy != package.policy_from_primary_license %}even{% else %}odd{% endif %}">
+                <td><a href="{{ package.get_admin_url }}" target="_blank">{{ package }}</a></td>
+                <td>{{ package.usage_policy|default:'' }}</td>
+                <td>{{ package.policy_from_primary_license|default:'' }}</td>
+                <td>{{ package.primary_license|default:'' }}</td>
+                <td>{{ package.license_expression }}</td>
+                <td>
+                    {% if package.policy_from_primary_license and package.usage_policy != package.policy_from_primary_license %}
+                        <input type="checkbox" name="checked_id_{{ package.id }}" class="enabler">
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

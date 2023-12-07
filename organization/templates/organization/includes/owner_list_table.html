@@ -1,0 +1,76 @@
+{% load i18n %}
+{% load inject_preserved_filters from dje_tags %}
+{% load urlize_target_blank from dje_tags %}
+<table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout owners-table">
+    {% include 'includes/object_list_table_header.html' %}
+    <tbody>
+    {% for object in object_list %}
+        <tr>
+            <td>
+                <strong>
+                    <a href="{% inject_preserved_filters object.details_url %}">{{ object.name }}</a>
+                </strong>
+                <ul class="fa-ul ms-4 mb-0">
+                    {% for alias in object.get_alias_list %}
+                        {% if alias %}<li><span class="fa-li"><i class="fas fa-angle-right"></i></span>{{ alias }}</li>{% endif %}
+                    {% endfor %}
+                </ul>
+            </td>
+            <td class="break-word">
+                {% with licenses=object.license_set.all %}
+                    <ul class="fa-ul ms-4 mb-0">
+                        {% for license in licenses|slice:":8" %}
+                            <li>
+                                <span class="fa-li"><i class="fas fa-angle-right"></i></span>
+                                {% if license.is_active or license.is_component_license  %}
+                                    <a href="{{ license.get_absolute_url }}" title="{{ license.short_name }}">{{ license.key }}</a>
+                                {% else %}
+                                    <span title="{{ license.short_name }}">{{ license.key }}</span>
+                                {% endif %}
+                                {% if dataspace.show_usage_policy_in_user_views %}
+                                    {% if license.usage_policy %}
+                                        {{ license.get_usage_policy_icon_tooltip }}
+                                    {% endif %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        {% if licenses|length > 8 %}
+                            <li>...</li>
+                            <li><a href="{{ object.details_url }}#licenses">See all {{ licenses|length }} Licenses</a></li>
+                        {% endif %}
+                    </ul>
+                {% endwith %}
+            </td>
+            <td>
+                {% with components=object.component_set.all %}
+                    <ul class="fa-ul ms-4 mb-0">
+                        {% for component in components|slice:":8" %}
+                            <li>
+                                <span class="fa-li"><i class="fas fa-angle-right"></i></span>
+                                {% if component.is_active  %}
+                                    {{ component.get_absolute_link }}
+                                {% else %}
+                                    {{ component }}
+                                {% endif %}
+                                {% if dataspace.show_usage_policy_in_user_views %}
+                                    {% if component.usage_policy %}
+                                        {{ component.get_usage_policy_icon_tooltip }}
+                                    {% endif %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        {% if components|length > 8 %}
+                            <li>...</li>
+                            <li><a href="{{ object.details_url }}#components">See all {{ components|length }} Components</a></li>
+                        {% endif %}
+                    </ul>
+                {% endwith %}
+            </td>
+            <td>{{ object.homepage_url|urlize_target_blank }}</td>
+            <td>{{ object.type }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No results.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,60 @@
+{% load humanize %}
+
+<div class="card mb-4 shadow-sm">
+  <h2 class="card-header fw-bold px-2 h6">
+    {{ header_title }}
+    <span class="badge text-bg-request float-end">R</span>
+  </h2>
+
+  <div class="card-body p-2">
+    {% for req in request_qs|slice:":5" %}
+      <div class="row">
+        <div class="col" style="width: 82%;">
+          <strong>
+            <a href="{{ req.get_absolute_url }}">#{{ req.id }} {{ req.title }}</a>
+          </strong>
+          <div class="small text-muted-darker">
+            {% if req.last_modified_by %}
+              <div>
+                Last edited <span title="{{ req.last_modified_date|date:'N j, Y, f A T' }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+              </div>
+            {% else %}
+              <div>
+                Created <span title="{{ req.created_date|date:'N j, Y, f A T' }}">{{ req.created_date|naturaltime }}</span> by {{ req.requester.username }}
+              </div>
+            {% endif %}
+            {% if req.assignee and filter_name != 'assignee' %}
+              <div>Assigned to {{ req.assignee }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-auto text-end">
+          <div>
+            <strong>{% include 'workflow/includes/request_status_icon.html' %} {{ req.get_status_display }}</strong>
+          </div>
+          {% if req.attachments_count %}
+            <a href="{{ req.get_absolute_url }}#attachments"><i class="fas fa-file"></i> {{ req.attachments_count }}</a>
+          {% endif %}
+          {% if req.comments_count %}
+            <a class="ms-2" href="{{ req.get_absolute_url }}#comments"><i class="fas fa-comments"></i> {{ req.comments_count }}</a>
+          {% endif %}
+        </div>
+      </div>
+      {% if not forloop.last %}<hr class="my-2">{% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="card-footer text-center p-2 smaller">
+    {% if request_qs %}
+      {% if filter_name == 'following' %}
+        <a href="{% url 'workflow:request_list' %}?following=yes">
+          {% else %}
+            <a href="{% url 'workflow:request_list' %}?{{ filter_name }}={{ request.user.username }}">
+          {% endif %}
+          View all {{ request_qs.count }} requests</a>
+      {% else %}
+        <a href="{% url 'workflow:request_list' %}">View all requests</a>
+    {% endif %}
+  </div>
+
+</div>

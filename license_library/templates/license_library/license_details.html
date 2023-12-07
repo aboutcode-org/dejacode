@@ -1,0 +1,112 @@
+{% extends 'object_details_base.html' %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% if use_annotator %}
+    <link href="{% static "js/annotator/annotator.1.2.10.min.css" %}" rel="stylesheet">
+  {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {% if tabsets.Owner.extra %}
+      <script src="{% static "js/jquery.jsPlumb-1.7.2-min.js" %}" integrity="sha384-ITD4LUuh8ImLrJ5g55OIlG2QoiYVUuXLN9CStlO1e2SQZm0SyGfNkMiwPboMOv8D" crossorigin="anonymous"></script>
+      {% include 'organization/includes/owner_hierarchy.js.html' with current_owner=object.owner parents=tabsets.Owner.extra.context.owner_parents children=tabsets.Owner.extra.context.owner_children tab_name="tab_owner" %}
+    {% endif %}
+
+    {% if use_annotator %}
+        <script src="{% static 'js/annotator/annotator-full.1.2.10.min.js' %}" integrity="sha384-sEO2jPWk30x9NENDIYgqrh055b5T+L2LIwyjYmR7aUa2tcilfgpuZxJk+FVfGn7B" crossorigin="anonymous"></script>
+        <script src="{% static 'js/annotator_plugins/TagsInSelect.js' %}" integrity="sha384-alg5wwJ8txecPoo95o+qi7GLwHYhkPVhtHp2TJeHI3eB5+GNTErrOj2sWXUM8vGj" crossorigin="anonymous"></script>
+        <script>
+            (function ($) {
+                $(document).ready(function () {
+                    var annotator = $('#licensetext .clipboard').annotator({readOnly: true}).data('annotator');
+                    annotator.addPlugin('Store', {
+                        prefix: NEXB.client_data.api_url,
+                        urls: {
+                            search: 'license_annotations/?format=json'
+                        },
+                        loadFromSearch: {
+                            license: NEXB.client_data.license_pk
+                        }
+                    });
+                    annotator.addPlugin('TagsInSelect', {
+                        // ``values`` is required, but since we are using
+                        // read-only mode, an empty array is fine
+                        values: []
+                    });
+
+                    Annotator.Plugin.AnonymousPlugin = (function () {
+                        // This plugin exists so that we can use the annotationsLoaded event
+
+                        function AnonymousPlugin(element, options) {
+                            // Call the Annotator.Plugin constructor this sets up the .element and
+                            // .options properties.
+                            Annotator.Plugin.apply(this, arguments);
+                        }
+
+                        // Set the plugin prototype.  This gives us all of the Annotator.Plugin methods.
+                        AnonymousPlugin.prototype = new Annotator.Plugin();
+
+                        AnonymousPlugin.prototype.pluginInit = function () {
+                            this.subscribe('annotationsLoaded', function (annotations) {
+                                var position_anchors = function () {
+                                    $.each(NEXB.client_data.annotation_pks, function (index, pk) {
+                                        var top = $('span.annotator-hl[data-annotation-id="' + pk + '"]').offset().top;
+                                        var anchor = $('.reverse_annotation_link[data-annotation-id="' + pk + '"]');
+                                        anchor.offset({top: top}).css('display', 'block').css('width', '100%').css('padding-left', '80%');
+                                    });
+                                };
+
+                                $.each(NEXB.client_data.annotation_pks, function (index, pk) {
+                                    var anchor = $('<a class="reverse_annotation_link" href="#" title="See license tag" data-annotation-id="' + pk + '"><i class="fas fa-tag"></i></a>');
+                                    anchor.on('click', function (e) {
+                                        e.preventDefault();
+                                        // Activate and show the license-conditions tab
+                                        $('#details_tab').find('button[data-bs-target="#tab_license-conditions"]').tab('show');
+                                        // Locate the related annotation link
+                                        var annotation_link = $('a.annotation_link[data-annotation-id="' + pk + '"]');
+                                        var link_position = annotation_link.offset().top;
+                                        // Scroll the body position to the link
+                                        // "html" is for Firefox compatibility and "body" for webkit
+                                        $('html,body').scrollTop(link_position - 80);
+                                    });
+                                    $('#licensetext .col-1').append(anchor);
+                                });
+
+                                // If the page is loaded on the license text tab, position the reverse annotation links
+                                if (top.location.hash === '#license-text') {
+                                    position_anchors();
+                                }
+
+                                $('button[data-bs-target="#tab_license-text"]').on('shown.bs.tab', function (e) {
+                                    position_anchors();
+                                });
+                            });
+                        };
+
+                        return AnonymousPlugin;
+                    }());
+                    annotator.addPlugin('AnonymousPlugin');
+                });
+            }(Annotator.$));
+
+            $(document).ready(function () {
+                // Setup for the annotations links
+                $('.annotation_link').on('click', function (e) {
+                    e.preventDefault();
+                    // Activate and show the license-text tab
+                    $('#details_tab').find('button[data-bs-target="#tab_license-text"]').tab('show');
+                    // Locate the related annotation position
+                    var annotation_pk = $(this).attr('data-annotation-id');
+                    var annotator_span = $('span.annotator-hl[data-annotation-id=' + annotation_pk + ']');
+                    var span_position = annotator_span.offset().top;
+                    // Scroll the body position to the annotation
+                    // "html" is for Firefox compatibility and "body" for webkit
+                    $('html,body').scrollTop(span_position - 80);
+                });
+            });
+        </script>
+    {% endif %}
+{% endblock %}

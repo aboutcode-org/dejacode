@@ -1,0 +1,20 @@
+about_resource: billiard-3.6.3.0-py3-none-any.whl
+name: billiard
+version: 3.6.3.0
+download_url: https://files.pythonhosted.org/packages/e8/5e/7591866ff45b370354bd20291cb6f87ddb2eef1f1c88c890a38412037e11/billiard-3.6.3.0-py3-none-any.whl#sha256=bff575450859a6e0fbc2f9877d9b715b0bbc07c3565bb7ed2280526a0cdf5ede
+description: Multiprocessing Pool Extensions
+homepage_url: http://github.com/celery/billiard
+package_url: pkg:pypi/billiard@3.6.3.0
+license_expression: bsd-new
+copyright: Copyright (c) 2006-2008, R Oudkerk and Contributors
+notice_file: billiard-3.6.3.0-py3-none-any.whl.NOTICE
+notice_url: https://github.com/celery/billiard/blob/master/LICENSE.txt
+attribute: yes
+owner: Celery
+owner_url: http://celeryproject.org/
+checksum_md5: ef0831df429e9ec89f3b40fea4e143d4
+checksum_sha1: c9100731b41e1bcb3bbaffd777f991057d3bd09b
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

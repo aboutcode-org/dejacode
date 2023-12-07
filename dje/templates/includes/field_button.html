@@ -1,0 +1,12 @@
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0"></dt>
+<dd class="col-sm-10">
+  <a class="btn btn-outline-dark {{ values.btn_class }}"
+     href="{{ values.href }}"
+     target="{{ values.target }}"
+     {% if values.data_toggle %}data-bs-toggle="{{ values.data_toggle }}"{% endif %}
+     {% if values.data_target %}data-bs-target="{{ values.data_target }}"{% endif %}
+  >
+  {% if values.icon_class %}<i class="{{ values.icon_class }}"></i> {% endif %}{{ label }}</a>
+</dd>
+{% if forloop.last %}</dl>{% endif %}

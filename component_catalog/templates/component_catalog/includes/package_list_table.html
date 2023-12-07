@@ -1,0 +1,91 @@
+{% load i18n %}
+{% load inject_preserved_filters from dje_tags %}
+{% load urlize_target_blank from dje_tags %}
+{% load naturaltime_short from dje_tags %}
+<table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout packages-table">
+  {% if form or add_to_component_form %}
+    {% include 'includes/object_list_table_header.html' with include_checkbox=True checkbox_select_all=True %}
+  {% else %}
+    {% include 'includes/object_list_table_header.html' %}
+  {% endif %}
+  <tbody>
+  {% for object in object_list %}
+    <tr>
+      {% if form or add_to_component_form %}
+        <td>
+          <input name="checkbox-for-selection" value="{{ object.id }}" data-object-repr="{{ object }}" type="checkbox" aria-label="Select row">
+        </td>
+      {% endif %}
+      <td>
+        <ul class="list-inline float-end mb-0 list-inline-margin-sm">
+          {% if object.request_count and request.user.is_authenticated and is_user_dataspace %}
+            <li class="list-inline-item">
+              <a href="{% inject_preserved_filters object.details_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
+            </li>
+          {% endif %}
+          {% if object.plain_package_url in vulnerable_purls %}
+            <li class="list-inline-item">
+              {% include 'component_catalog/includes/vulnerability_icon_link.html' %}
+            </li>
+          {% endif %}
+        </ul>
+        <strong>
+          <a href="{% inject_preserved_filters object.details_url %}">{{ object }}</a>
+        </strong>
+        {% if filter.show_created_date %}
+          <div class="smaller text-muted-darker" title="{{ object.created_date|date:'N j, Y, f A' }}">Created {{ object.created_date|naturaltime_short }}</div>
+        {% endif %}
+        {% if filter.show_last_modified_date %}
+          <div class="smaller text-muted-darker" title="{{ object.last_modified_date|date:'N j, Y, f A' }}">Modified {{ object.last_modified_date|naturaltime_short }}</div>
+        {% endif %}
+      </td>
+      {% if dataspace.show_usage_policy_in_user_views %}
+        <td class="text-center">
+          {% if object.usage_policy %}
+            {{ object.get_usage_policy_icon_tooltip }}
+          {% endif %}
+        </td>
+      {% endif %}
+      <td class="break-word">
+        {% if dataspace.show_usage_policy_in_user_views %}
+          {{ object.get_license_expression_linked_with_policy|default_if_none:"" }}
+        {% else %}
+          {{ object.license_expression_linked|default_if_none:"" }}
+        {% endif %}
+      </td>
+      <td>
+        {{ object.primary_language }}
+      </td>
+      <td title="{{ object.download_url }}"{% if not object.filename %} class="text-truncate"{% endif %}>
+        {% if object.download_url %}
+          <a href="{{ object.download_url }}">
+            {% if object.filename %}{{ object.filename }}{% else %}{{ object.download_url }}{% endif %}
+          </a>
+        {% endif %}
+      </td>
+      <td>
+        {% with components=object.component_set.all %}
+          <ul class="fa-ul ms-4 mb-0">
+            {% for component in components|slice:":8" %}
+              <li>
+                <span class="fa-li"><i class="fas fa-angle-right"></i></span>
+                {% if component.is_active %}
+                  {{ component.get_absolute_link }}
+                {% else %}
+                  {{ component }}
+                {% endif %}
+              </li>
+            {% endfor %}
+            {% if components|length > 8 %}
+              <li>...</li>
+              <li><a href="{{ object.details_url }}#components">See all {{ components|length }} Components</a></li>
+            {% endif %}
+          </ul>
+        {% endwith %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="{% if form or add_to_component_form %}7{% else %}6{% endif %}">No results.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

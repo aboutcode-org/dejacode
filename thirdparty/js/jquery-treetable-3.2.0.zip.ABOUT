@@ -1,0 +1,27 @@
+about_resource: jquery-treetable-3.2.0.zip
+name: jquery-treetable
+version: 3.2.0
+download_url: https://github.com/ludo/jquery-treetable/archive/3.2.0.zip
+description: jQuery plugin to show a tree structure in a table
+homepage_url: https://github.com/ludo/jquery-treetable
+package_url: pkg:github/ludo/jquery-treetable@3.2.0
+license_expression: mit OR gpl-2.0
+copyright: Copyright (c) 2013 Ludo van den Boom, http://ludovandenboom.com
+notice_file: jquery-treetable-3.2.0.zip.NOTICE
+notice_url: https://github.com/ludo/jquery-treetable/blob/master/README.md
+redistribute: yes
+attribute: yes
+track_changes: yes
+owner: Ludo Van Den Boom
+owner_url: http://ludovandenboom.com/
+contact: me@ludo.is
+vcs_repository: https://github.com/ludo/jquery-treetable.git
+checksum_md5: 0375c4841fff46c5f9fe209ec41a4131
+checksum_sha1: 85cda4791cb3a93ddac2b1aa816b9cddd00d2d5d
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: gpl-2.0
+    name: GNU General Public License 2.0
+    file: gpl-2.0.LICENSE

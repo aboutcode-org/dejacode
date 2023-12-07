@@ -1,0 +1,14 @@
+about_resource: gunicorn-21.2.0-py3-none-any.whl
+name: gunicorn
+version: 21.2.0
+download_url: https://files.pythonhosted.org/packages/0e/2a/c3a878eccb100ccddf45c50b6b8db8cf3301a6adede6e31d48e8531cab13/gunicorn-21.2.0-py3-none-any.whl
+package_url: pkg:pypi/gunicorn@21.2.0
+license_expression: mit
+copyright: Copyright gunicorn project contributors
+attribute: yes
+checksum_md5: 1f3b9879f716cf19cf540310a7cf1bae
+checksum_sha1: 25f950c66b7d03c37cdc3bfb881821694d89bc53
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

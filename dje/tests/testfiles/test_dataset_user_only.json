@@ -1,0 +1,55 @@
+[
+{
+  "model": "dje.dataspace",
+  "fields": {
+    "uuid": "ad835a25-4cb3-4fc6-a9d3-5fad74c48911",
+    "name": "nexB",
+    "homepage_url": "",
+    "contact_info": "",
+    "notes": "",
+    "show_license_profile_in_license_list_view": true,
+    "show_license_type_in_license_list_view": true,
+    "show_spdx_short_identifier_in_license_list_view": false,
+    "show_usage_policy_in_user_views": false,
+    "show_type_in_component_list_view": false,
+    "hide_empty_fields_in_component_details_view": false,
+    "set_usage_policy_on_new_component_from_licenses": false,
+    "logo_url": "",
+    "full_name": "",
+    "address": "",
+    "open_source_information_url": "",
+    "open_source_download_url": "",
+    "home_page_announcements": "",
+    "enable_package_scanning": false,
+    "update_packages_from_scan": false,
+    "enable_purldb_access": false,
+    "enable_vulnerablecodedb_access": false
+  }
+},
+{
+  "model": "dje.dejacodeuser",
+  "fields": {
+    "password": "sha1$e7042$dfcb7d3a5962b60e6009ea66a3b688c26827d1c0",
+    "last_login": "2011-08-24T09:20:01",
+    "is_superuser": true,
+    "username": "nexb_user",
+    "first_name": "",
+    "last_name": "",
+    "email": "test@test.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2011-08-24T09:20:01",
+    "uuid": "e7b90a81-f68f-4416-98d8-4eea0b2b6ac7",
+    "dataspace": [
+      "nexB"
+    ],
+    "data_email_notification": false,
+    "workflow_email_notification": false,
+    "updates_email_notification": false,
+    "company": "",
+    "last_api_access": null,
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

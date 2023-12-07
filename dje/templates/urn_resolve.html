@@ -1,0 +1,56 @@
+{% extends "bootstrap_base.html" %}
+
+{% load i18n %}
+
+{% block page_title %}{% trans 'URN' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='URN' title='Uniform Resource Name' %}
+
+  <p>
+    In DejaCode, a URN is a globally unique and universal way to reference
+    DejaCode data across installations and related data sources.
+    <br>
+    A DejaCode URN follows the URN syntax and is generally case sensitive.
+    It does support UTF-8 characters that are then URL-encoded (using the quote +
+    plus encoding)
+  </p>
+
+  <h3>Access object</h3>
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form action="{% url 'urn_resolve' %}" method="get" class="mb-4">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control col-4" placeholder="URN" name="urn" id="urn_input" autocomplete="off" value="{{ urn }}">
+      <button class="btn btn-outline-secondary" type="submit">Go</button>
+    </div>
+  </form>
+
+  <h3>Usage</h3>
+  <p>
+    The generic syntax of a <strong>DJE URN</strong> is:
+    <code>urn:&lt;namespace&gt;:&lt;model&gt;:&lt;segments&gt;</code>
+    where:
+  </p>
+  <ul>
+    <li>&lt;namespace&gt; is always "dje"</li>
+    <li>&lt;model&gt; is a DejaCode model identifier. Not all Models of DJE are supported.<br>
+    Current support includes licenses and components.</li>
+    <li>&lt;segments&gt; is model-defined and model-specific</li>
+  </ul>
+
+  <p>
+    The syntax for a <strong>License URN</strong> is:
+    <code>urn:dje:license:&lt;license.key&gt;</code>
+    where license.key is the key of the license.
+  </p>
+
+  <p class="mb-5">
+    The syntax for a <strong>Component URN</strong> is:
+    <code>urn:dje:component:&lt;component.owner__name&gt;:&lt;component.name&gt;:&lt;component.version&gt;</code>
+  </p>
+{% endblock %}

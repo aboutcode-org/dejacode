@@ -1,0 +1,235 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+<!-- COLTYPE/BODYCLASS-- >
+{% block content-class %}g-d-c-fluid{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style media="screen">
+        .exclude-list li {width: 24%; float:left;}
+    </style>
+{% endblock %}
+
+{% block title %}
+    {{ block.super }} - {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Copy' %}
+{% endblock %}
+
+<!-- CONTENT-TITLE -->
+{% block content_title %}
+    <h1>Copy the following {% trans opts.verbose_name_plural|capfirst %}.</h1>
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <form id="copy-form" action="" method="post">{% csrf_token %}
+        <input type="hidden" name="copy_candidates" value="{% for obj, _ in copy_candidates %}{{ obj.id }}{% if not forloop.last %},{% endif %}{% endfor %}" />
+        {{ m2m_formset.management_form }}
+        {# Include the hidden fields #}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        {% if update_candidates %}
+            <div class="grp-content-container g-d-c" style="margin-bottom: 25px;">
+                <div class="grp-module">
+                    <h2>
+                        The {% trans opts.verbose_name_plural|capfirst %} identified below already exist in the target Dataspace. Select the ones that you would like to apply data changes.
+                    </h2>
+                    <div class="grp-row">
+                        <ul id="candidates-for-update" class="grp-nested-list">
+                            <li>
+                                <input type="checkbox" id="select_all" name="select_all">
+                                <label for="select_all" style="margin-left: -2px;font-weight: bold;">Select all</label>
+                            </li>
+                            {% for matched_object, source_object in update_candidates %}
+                                <li>
+                                    <input type="checkbox" name="select_for_update" value="{{ matched_object.id }}">
+                                    {% if user.dataspace.is_reference %}
+                                        <a href="{% add_preserved_filters source_object.get_admin_url %}">{{ source_object }}</a>
+                                    {% else %}
+                                        <strong>{{ source_object }}</strong>
+                                    {% endif %}
+                                     in {{ source_object.dataspace }} exists as
+                                    <a href="{% add_preserved_filters matched_object.get_admin_url %}">{{ matched_object }}</a> in {{ matched_object.dataspace }}
+                                    {% with source_object.get_compare_url as compare_url %}
+                                      {% if compare_url %}
+                                        (<a target="_blank" href="{% add_preserved_filters compare_url %}&target={{ matched_object.dataspace_id }}">compare</a>)
+                                      {% endif %}
+                                    {% endwith %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% if form.fields.exclude_update.choices %}
+                    <div id="exclude-update-fields" class="grp-module">
+                        <h2>
+                            Exclude fields during update.
+                            (<a id="uncheck-exclude-update-fields" href="#">Un-check all</a>)
+                        </h2>
+                        <div class="grp-row">
+                            <strong>
+                                The value of the following selected fields will not be updated on the object.
+                                Instead, the current value will remain the same.
+                            </strong>
+                            <div class="exclude-list">
+                                {{ form.exclude_update }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if m2m_formset.forms %}
+                    <div id="exclude-update-m2m" class="grp-module">
+                        <h2>
+                            Exclude relation fields (many to many) during update.
+                            (<a id="uncheck-exclude-update-m2m" href="#">Un-check all</a>)
+                        </h2>
+                        <div class="grp-row">
+                            <strong>
+                                The value of the following selected fields will not be updated on the related object.
+                                Instead, the current value will remain the same.
+                            </strong>
+                        </div>
+                        {% for form in m2m_formset %}
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            <div class="grp-row">
+                                <strong>{{ form.model_verbose_name|capfirst }}</strong>
+                                <span class="pull-right">{{ form.skip_on_update.label_tag }}{{ form.skip_on_update.as_widget }}</span>
+                                <div class="exclude-list">
+                                    {{ form.exclude_update }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if copy_candidates %}
+            <div class="grp-content-container g-d-c">
+                <div class="grp-module">
+                    <h2>The following {% trans opts.verbose_name_plural|capfirst %} will be copied.</h2>
+                    <div class="grp-row">
+                        <ul class="grp-nested-list">
+                            {% for object, target in copy_candidates %}
+                                <li>
+                                    {% if user.dataspace.is_reference %}
+                                        <a href="{% add_preserved_filters object.get_admin_url %}">{{ object }}</a>
+                                    {% else %}
+                                        <strong>{{ object }}</strong>
+                                    {% endif %}
+                                    from {{ object.dataspace.name }} to {{ target.name }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% if form.exclude_copy.field.choices %}
+                    <div id="exclude-copy-fields" class="grp-module">
+                        <h2>
+                            Exclude fields during copy.
+                            (<a id="uncheck-exclude-copy-fields" href="#">Un-check all</a>)
+                        </h2>
+                        <div class="grp-row">
+                            <strong>
+                                The value of the following selected fields will not be copied with the object.
+                                Instead, no value or the default value, if available, will be set.
+                            </strong>
+                            <div class="exclude-list">
+                                {{ form.exclude_copy }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% if m2m_formset.forms %}
+                <div id="exclude-copy-m2m" class="grp-module">
+                    <h2>
+                        Exclude relation fields (many to many) during copy.
+                        (<a id="uncheck-exclude-copy-m2m" href="#">Un-check all</a>)
+                    </h2>
+                    <div class="grp-row">
+                        <strong>
+                            The value of the following selected fields will not be copied on the related object.
+                            Instead, no value or the default value, if available, will be set.
+                        </strong>
+                    </div>
+                    {% for form in m2m_formset %}
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <div class="grp-row">
+                            <strong>{{ form.model_verbose_name|capfirst }}</strong>
+                            <span class="pull-right">{{ form.skip_on_copy.label_tag }}{{ form.skip_on_copy.as_widget }}</span>
+                            <div class="exclude-list">
+                                {{ form.exclude_copy }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            </div>
+        {% endif %}
+
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                </li>
+                <li>
+                    <input type="submit" class="grp-button grp-default" value="Make the Copy{% if update_candidates %} and Update{% endif %}">
+                </li>
+            </ul>
+        </footer>
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">
+    (function($) {
+        document.addEventListener('DOMContentLoaded', function () {
+            $("#select_all").click(function() {
+                // Limits the scope to #candidates-for-update ul block
+                var checkboxes = $("#candidates-for-update [type='checkbox']");
+                if($("#select_all").prop("checked")) checkboxes.prop("checked", true);
+                else checkboxes.prop("checked", false);
+            });
+
+            $("#uncheck-exclude-copy-fields").click(function(event) {
+                event.preventDefault();
+                $("#exclude-copy-fields [type='checkbox']").prop("checked", false);
+            });
+
+            $("#uncheck-exclude-copy-m2m").click(function(event) {
+                event.preventDefault();
+                $("#exclude-copy-m2m [type='checkbox']").prop("checked", false);
+            });
+
+            $("#uncheck-exclude-update-fields").click(function(event) {
+                event.preventDefault();
+                $("#exclude-update-fields [type='checkbox']").prop("checked", false);
+            });
+
+            $("#uncheck-exclude-update-m2m").click(function(event) {
+                event.preventDefault();
+                $("#exclude-update-m2m [type='checkbox']").prop("checked", false);
+            });
+
+            $('#copy-form').on('submit', function(e) {
+                // Prevent from re-submitting the form by mistake
+                $('input[type="submit"]').prop('disabled', true);
+                NEXB.displayOverlay("Copy in progress...");
+            });
+        });
+    }(grp.jQuery));
+    </script>
+{% endblock %}

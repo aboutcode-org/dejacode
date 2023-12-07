@@ -1,0 +1,8 @@
+{% for message in messages %}
+  {% if wrapper_classes %}<div class="{{ wrapper_classes }}">{% endif %}
+    <div class="alert alert-{% if message.level_tag == 'error' %}danger{% else %}{{ message.level_tag }}{% endif %} alert-dismissible" role="alert">
+      <strong>{{ message.level_tag|title }}:</strong> {{ message|linebreaksbr }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% if wrapper_classes %}</div>{% endif %}
+{% endfor %}

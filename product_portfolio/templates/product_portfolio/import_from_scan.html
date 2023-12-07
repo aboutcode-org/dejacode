@@ -1,0 +1,74 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n dje_tags static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}
+  Import from Scan
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% url 'product_portfolio:product_list' %}" title="Return to product list" data-bs-toggle="tooltip" data-bs-placement="bottom">Products</a>
+            >
+            <a href="{{ product.get_absolute_url }}">{{ product }}</a>
+          </div>
+          <h1 class="header-title">
+            Import from Scan
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages_alert.html' %}
+
+  <div class="alert alert-primary" role="alert">
+    When you upload your <strong>JSON-formatted ScanCode output results</strong>, DejaCode will:
+    <ul class="mb-0 mt-2">
+      <li><strong>Create new Packages</strong> using the ScanCode data if those Packages do not yet exist in your dataspace.</li>
+      <li><strong>Assign the Packages</strong> identified in the ScanCode data to the Product you are updating.</li>
+      {# <li><strong>Create new Custom Components</strong>  on the Product you are updating, based on data produced by the ScanCode "consolidate" feature, which summarizes related files from the scanned codebase.</li>#}
+      <li>Return you to the Product details so that you can review and edit the results as necessary. DejaCode shows you the Source name of the original ScanCode file with each new object that it created on your Product. Note that you can import multiple scans to your Product. You can also generate Attribution for your Product at any time to see what your new data will look like when you are ready to publish Attribution for your third-party software usage.</li>
+    </ul>
+  </div>
+
+  <div class="alert alert-dark bg-light">
+    <h5>Option 1: From a ScanCode-toolkit scan output</h5>
+    <div class="mb-2">
+      Upload a ScanCode-toolkit JSON output file, generated with <strong>version 31.2.3 or later</strong>, the following <strong>options are mandatory</strong>:
+    </div>
+    <kbd>$ scancode --copyright --license --info --package --json {file_output.json} {input_directory}</kbd>
+  </div>
+
+  <div class="alert alert-dark bg-light">
+    <h5>Option 2: From ScanCode.io pipeline results</h5>
+    <p class="mb-1">
+      Upload a ScanCode.io JSON output file, <strong>generated with one of the following pipelines:</strong>
+    </p>
+    <p class="mb-0">
+      <code>docker</code>, <code>docker_windows</code>, <code>inspect_manifest</code>, <code>load_inventory</code>
+      <code>root_filesystems</code>, <code>scan_codebase</code>, <code>scan_package</code>
+    </p>
+  </div>
+
+  {{ form.errors }}
+  {% crispy form %}
+
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $('form').on('submit', function(e) {
+        // Prevent from re-submitting the form by mistake
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Import in progress...");
+      });
+    });
+  </script>
+{% endblock %}

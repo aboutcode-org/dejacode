@@ -1,0 +1,37 @@
+{% load i18n %}
+{% load humanize %}
+<section id="products_section">
+  {% if results.object_list %}
+    <h3>
+      {% trans 'Product' %}
+      <small class="text-muted">
+        {{ results.paginator_count|intcomma }} result{{ results.paginator_count|pluralize }} for this search.
+        Click <a href="{% url 'product_portfolio:product_list' %}?q={{ search_query }}">here</a> to see the full list.
+      </small>
+    </h3>
+    <table class="table table-bordered table-striped table-md">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Version</th>
+          <th>License</th>
+          <th>Language</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in results.object_list|slice:':20' %}
+          <tr>
+            <td><a href="{{ object.get_absolute_url }}"><strong>{{ object.name }}</strong></a></td>
+            <td>{{ object.version|default_if_none:"" }}</td>
+            <td>{{ object.license_expression_linked|default_if_none:"" }}</td>
+            <td>{{ object.primary_language|default_if_none:"" }}</td>
+            <td>{% if object.owner %}<a href="{{ object.get_absolute_url }}#owner">{{ object.owner }}</a>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <h3>{% trans 'Product' %} <small class="text-muted">No products found.</small></h3>
+  {% endif %}
+</section>

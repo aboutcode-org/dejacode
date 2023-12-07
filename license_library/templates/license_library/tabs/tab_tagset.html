@@ -1,0 +1,30 @@
+{# 'License conditions' tab in the License details view #}
+{% load as_icon from dje_tags %}
+{% for group_name, tag_list in values.items %}
+  {% if forloop.first %}
+    <div class="text-end mb-3">
+      <button type="button" class="btn btn-outline-primary" onclick="$('.tag-False').toggle()">Show/hide un-checked Tags</button>
+    </div>
+  {% endif %}
+  <div class="card bg-light mb-3">
+    <h4 class="card-header p-2">{{ group_name }}</h4>
+    <div class="card-body p-2">
+      {% for label, value, text, annotations in tag_list %}
+        {% if value == True or value == False or include_unknown_value %}
+          <div class="tag-{{ value }} mb-2 " {% if value != True %}style="display: none;"{% endif %}>
+            {{ value|as_icon }}
+            <strong>{{ label }}</strong>
+            {% if use_annotator %}
+              {% for annotation in annotations %}
+                <a data-annotation-id="{{ annotation.pk }}" class="annotation_link" title="See annotation" href="#">
+                  <i class="fas fa-tag"></i>
+                </a>
+              {% endfor %}
+            {% endif %}
+            <p class="card-text">{{ text }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}

@@ -1,0 +1,19 @@
+{% autoescape off %}{{ req.requester }} has submitted a new {% if req.is_private %}private{% else %}public{% endif %} request in the {{ req.dataspace }} dataspace on {{ req.created_date|date:'N d, Y, h:ia' }}
+
+================================================================================
+Ref. {{ req }}  {{ req.title }}
+- Request template: {{ req.request_template }}
+- Product context: {{ req.product_context|default_if_none:'(none)' }}
+- Applies to: {{ req.content_object|default_if_none:'(none)' }}
+- Submitted by: {{ req.requester }}
+- Assigned to: {{ req.assignee }}
+- Priority: {{ req.priority|default_if_none:'(none)' }}
+
+{{ site_url }}{{ req.get_absolute_url }}
+================================================================================
+{% for question in req.get_serialized_data_as_list %}* {{ question.label }}:
+{% if question.input_type == 'BooleanField' %}{% if question.value == 1 or question.value == '1' %}Yes{% else %}No{% endif %}{% else %}{{ question.value|wordwrap:80 }}{% endif %}
+--------------------------------------------------------------------------------
+{% endfor %}
+You can follow the request at {{ site_url }}{{ req.get_absolute_url }}
+{% endautoescape %}

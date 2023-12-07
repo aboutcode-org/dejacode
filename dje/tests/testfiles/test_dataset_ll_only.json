@@ -1,0 +1,222 @@
+[
+{
+  "model": "license_library.licensecategory",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "c0278684-6f6b-43fb-8674-f3dd3f0384b6",
+    "label": "1: Category 1",
+    "text": "Some text",
+    "license_type": null
+  }
+},
+{
+  "model": "license_library.licensetag",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "b3a25677-c300-4793-9bb9-65fc62b6e7d9",
+    "label": "Change Tracking in Documentation",
+    "text": "Text",
+    "guidance": "",
+    "default_value": null,
+    "show_in_license_list_view": false,
+    "attribution_required": false,
+    "redistribution_required": false,
+    "change_tracking_required": false
+  }
+},
+{
+  "model": "license_library.licenseprofile",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "5a4ec739-50be-4744-a7d6-4ba36f9ba4cd",
+    "name": "1: LicenseProfile1",
+    "examples": "",
+    "notes": ""
+  }
+},
+{
+  "model": "license_library.licenseprofileassignedtag",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "2ae436d8-5a9b-4744-b754-0f19c2946931",
+    "license_profile": [
+      "nexB",
+      "5a4ec739-50be-4744-a7d6-4ba36f9ba4cd"
+    ],
+    "license_tag": [
+      "nexB",
+      "b3a25677-c300-4793-9bb9-65fc62b6e7d9"
+    ],
+    "value": false
+  }
+},
+{
+  "model": "license_library.licensestyle",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "9ccb3d34-4bba-4fbf-b2f0-49912da5423a",
+    "name": "style1",
+    "notes": ""
+  }
+},
+{
+  "model": "license_library.licensestatus",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "b14beab3-a5fa-4009-96e6-d7ed3bddc431",
+    "code": "Approved",
+    "text": "Approved for Library"
+  }
+},
+{
+  "model": "license_library.licensetaggroup",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "340f3d7a-847a-44f9-8466-49ea5f881ee7",
+    "name": "Obligations",
+    "seq": 1,
+    "notes": "Things you must do as prescribed by the license."
+  }
+},
+{
+  "model": "license_library.licensetaggroupassignedtag",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "fe6a2f74-ca0e-4125-b244-0d69fa523954",
+    "license_tag_group": [
+      "nexB",
+      "340f3d7a-847a-44f9-8466-49ea5f881ee7"
+    ],
+    "license_tag": [
+      "nexB",
+      "b3a25677-c300-4793-9bb9-65fc62b6e7d9"
+    ],
+    "seq": 1
+  }
+},
+{
+  "model": "license_library.license",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "acb266e4-ec8a-49bc-b388-e3e006aa9623",
+    "created_date": "2011-08-24T09:20:01",
+    "last_modified_date": "2011-08-24T09:20:01",
+    "reference_notes": "",
+    "usage_policy": null,
+    "owner": [
+      "nexB",
+      "1711f308-8072-4357-b72d-29afd075816a"
+    ],
+    "key": "license1",
+    "name": "License1",
+    "short_name": "License1",
+    "keywords": "",
+    "homepage_url": "",
+    "full_text": "",
+    "standard_notice": "",
+    "text_urls": "",
+    "faq_url": "",
+    "osi_url": "",
+    "other_urls": "",
+    "reviewed": false,
+    "publication_year": "",
+    "spdx_license_key": "",
+    "category": [
+      "nexB",
+      "c0278684-6f6b-43fb-8674-f3dd3f0384b6"
+    ],
+    "license_style": [
+      "nexB",
+      "9ccb3d34-4bba-4fbf-b2f0-49912da5423a"
+    ],
+    "license_profile": [
+      "nexB",
+      "5a4ec739-50be-4744-a7d6-4ba36f9ba4cd"
+    ],
+    "license_status": [
+      "nexB",
+      "b14beab3-a5fa-4009-96e6-d7ed3bddc431"
+    ],
+    "is_active": true,
+    "curation_level": 0,
+    "admin_notes": "",
+    "guidance": "",
+    "special_obligations": "",
+    "is_component_license": false,
+    "is_exception": false,
+    "guidance_url": "",
+    "popularity": 0,
+    "language": ""
+  }
+},
+{
+  "model": "license_library.licenseassignedtag",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "9568877a-ce7f-472b-9188-31616bb8bdb2",
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ],
+    "license_tag": [
+      "nexB",
+      "b3a25677-c300-4793-9bb9-65fc62b6e7d9"
+    ],
+    "value": null
+  }
+},
+{
+  "model": "license_library.licenseannotation",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "a37e4a3a-003d-4602-af84-9fed499624b3",
+    "license": [
+      "nexB",
+      "acb266e4-ec8a-49bc-b388-e3e006aa9623"
+    ],
+    "assigned_tag": [
+      "nexB",
+      "9568877a-ce7f-472b-9188-31616bb8bdb2"
+    ],
+    "text": "",
+    "quote": "The author makes no representations about the suitability of this software for any purpose. It is provided \"as is\" without any express or implied warranty.",
+    "range_start_offset": 1162,
+    "range_end_offset": 1317
+  }
+},
+{
+  "model": "license_library.licensechoice",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "9a0786aa-4497-4ee3-9d77-909c36d956fc",
+    "from_expression": "cddl-1.0 OR gpl-2.0-classpath",
+    "to_expression": "cddl-1.0",
+    "seq": 0,
+    "notes": "CDDL 1.0 (cddl-1.0) is the preferred choice from"
+  }
+}
+]

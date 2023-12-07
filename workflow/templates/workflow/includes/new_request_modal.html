@@ -1,0 +1,43 @@
+{% load i18n %}
+<div id="new-request-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New {% trans "Request" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <p>
+          You can attach a new {% trans "Request" %} to an existing Product, Component, Package, or License from its details page.<br>
+          Locate and select a <a href="{% url 'component_catalog:component_list' %}">Component</a>,
+          <a href="{% url 'component_catalog:package_list' %}">Package</a>,
+          or a <a href="{% url 'license_library:license_list' %}">License</a>, click on the "{% trans "Requests" %}" button,
+          and then select the {% trans "Request" %} form appropriate to the action that you need.<br>
+          You can also use one of the following forms to request the addition of a new Component, Package, or License.
+        </p>
+        <div id="request-template-list">
+          {% for content_type, request_templates in request_templates_grouped %}
+            <h4>{{ content_type.model|title }}:</h4>
+            <ul class="list-unstyled">
+              {% for request_template in request_templates %}
+                <li>
+                  <a href="{{ request_template.get_absolute_url }}" class="new-request" target="_blank" >
+                    <i class="fas fa-plus-circle"></i>
+                    {{ request_template.name }}
+                  </a>
+                  <br>
+                  <em class="text-muted">{{ request_template.description }}</em>
+                </li>
+              {% endfor %}
+            </ul>
+          {% empty %}
+            No {% trans "Request" %} form available.
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

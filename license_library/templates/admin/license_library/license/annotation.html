@@ -1,0 +1,101 @@
+{% extends "admin/base_site.html" %}
+
+<!-- LOADING -->
+{% load i18n static admin_urls %}
+
+{% block bodyclass %}license-annotation grp-delete-confirmation{% endblock %}
+
+<!-- STYLESHEETS -->
+{% block stylesheets %}
+    {{ block.super }}
+    <style>
+        body.grp-delete-confirmation ul.grp-nested-list > li {font-size: 12px;}
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Annotations' %}
+{% endblock %}
+
+<!-- CONTENT-TITLE -->
+{% block content_title %}
+    <h1>Annotate: {{ object.name }}</h1>
+{% endblock %}
+
+<!-- OBJECT-TOOLS -->
+{% block object-tools %}
+    <ul class="grp-object-tools">
+        {% url opts|admin_urlname:'change' object.pk|admin_urlquote as object_url %}
+        <li><a class="grp-state-focus" href="{% add_preserved_filters object_url %}">Return to License</a></li>
+        <li>
+            <a class="grp-state-focus" href="javascript://" onclick="(function($){$('em.help-text').toggle('fast');})(grp.jQuery);">
+                {% trans "Show/Hide tag descriptions" %}
+            </a>
+        </li>
+    </ul>
+{% endblock %}
+
+<!-- JAVASCRIPT -->
+{% block javascripts %}
+    {{ block.super }}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+    <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
+    <script src="{% static 'js/annotator/annotator-full.1.2.10.min.js' %}" integrity="sha384-sEO2jPWk30x9NENDIYgqrh055b5T+L2LIwyjYmR7aUa2tcilfgpuZxJk+FVfGn7B" crossorigin="anonymous"></script>
+    <script src="{% static 'js/annotator_plugins/TagsInSelect.js' %}" integrity="sha384-alg5wwJ8txecPoo95o+qi7GLwHYhkPVhtHp2TJeHI3eB5+GNTErrOj2sWXUM8vGj" crossorigin="anonymous"></script>
+    <link href="{% static "js/annotator/annotator.1.2.10.min.css" %}" rel='stylesheet' />
+
+    <!--Initialize Annotator on the licensetext div only -->
+    <script type="text/javascript">
+        (function ($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                function csrfSafeMethod(method) {
+                    // these HTTP methods do not require CSRF protection
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                }
+
+                $.ajaxSetup({
+                    beforeSend: function(xhr, settings) {
+                        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        }
+                    }
+                });
+                var api_url = '{% url 'api_v2:api-root' %}';
+                var annotator = $('#licensetext').annotator().data('annotator');
+                annotator.addPlugin('Store', {
+                    prefix: api_url,
+                    urls: {
+                        create:  'license_annotations/',
+                        read:    'license_annotations/:id/?format=json',
+                        update:  'license_annotations/:id/',
+                        destroy: 'license_annotations/:id/',
+                        search:  'license_annotations/?format=json'
+                    },
+                    annotationData: {
+                        license: '{{ object.pk }}'
+                    },
+                    loadFromSearch: {
+                        license: '{{ object.pk }}'
+                    }
+                });
+                annotator.addPlugin('TagsInSelect', {
+                    values: {{ tag_labels|safe }}
+                });
+            });
+        }(Annotator.$));
+    </script>
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    <div id="licensetext">
+        <pre>{{ object.full_text|force_escape }}</pre>
+    </div>
+    <div id="tags-list">
+        {% if tagset %}
+            {% include "admin/license_library/includes/tagset_for_annotation.html" with include_unknown_value=True %}
+        {% else %}
+            <p>&nbsp;No tag assigned to this license.</p>
+        {% endif %}
+    </div>
+{% endblock %}

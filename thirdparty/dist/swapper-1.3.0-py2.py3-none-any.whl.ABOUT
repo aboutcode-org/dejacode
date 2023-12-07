@@ -1,0 +1,17 @@
+about_resource: swapper-1.3.0-py2.py3-none-any.whl
+name: swapper
+version: 1.3.0
+download_url: https://files.pythonhosted.org/packages/53/10/6730e2afcbf3f75d9c9203be16ef64730a9777226a6be3235d5b11c52b41/swapper-1.3.0-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/swapper/1.3.0/
+package_url: pkg:pypi/swapper@1.3.0
+license_expression: mit
+copyright: Copyright (c) S. Andrew Sheppard
+notice_file: swapper-1.3.0-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Jakub Brzezniak
+checksum_md5: e7fa17e1e98739c69517b11706d3af28
+checksum_sha1: e58b090ec5003af7804c2e85cf26b384875975c6
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

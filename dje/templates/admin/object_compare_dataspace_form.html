@@ -1,0 +1,25 @@
+{% extends "admin/object_copy_dataspace_form.html" %}
+
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Compare' %}
+{% endblock %}
+
+{% block content_title %}
+    <h1>Compare the selected object with an existing object in another Dataspace</h1>
+{% endblock %}
+
+{% block before_fieldset %}
+{% endblock %}
+
+{% block after_fieldset %}
+    <div class="grp-content-container g-d-c" style="margin-top: 10px;">
+        <div class="grp-module">
+            <h2>Selected object.</h2>
+            <div class="grp-row">
+                <a href="{% add_preserved_filters object_to_compare.get_admin_url %}">{{ object_to_compare }}</a> in {{ object_to_compare.dataspace }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

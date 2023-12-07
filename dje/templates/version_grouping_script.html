@@ -1,0 +1,44 @@
+<script>
+    $('.j_expand_multiple_versions').click(function() {
+        var active = $(this).data('active');
+        if (active) {
+            active = false;
+        } else {
+            active = true;
+        }
+        $(this).data('active', active);
+
+        if(active) {
+            $(this).find('.j_icon').removeClass('fa-plus').addClass('fa-minus');
+
+            // Subtract 1 because we want to know the number of rows *after* the current one
+            var rows_to_display_count = $(this).data('count') - 1;
+            var parent_tr = $(this).parents('tr');
+            parent_tr.nextAll('tr').slice(0, rows_to_display_count).addClass('active').show();
+        }
+        else {
+            $(this).find('.j_icon').removeClass('fa-minus').addClass('fa-plus');
+
+            // Subtract 1 because we want to know the number of rows *after* the current one
+            var rows_to_display_count = $(this).data('count') - 1;
+            var parent_tr = $(this).parents('tr');
+            parent_tr.nextAll('tr').slice(0, rows_to_display_count).hide().removeClass('active');
+        }
+    });
+    $('.j_expand_all_versions').click(function() {
+        var active = $(this).data('active');
+        if (active) active = false;
+        else active = true;
+        $(this).data('active', active);
+
+        if(active) {
+            $('.j_icon').removeClass('fa-plus').addClass('fa-minus');
+            var hidden_tr = $('tr').filter(function() { return $(this).css("display") == "none" });
+            hidden_tr.addClass('showed').addClass('active').show();
+        }
+        else {
+            $('.j_icon').removeClass('fa-minus').addClass('fa-plus');
+            $('tr.active').hide().removeClass('active').removeClass('showed');
+        }
+    });
+</script>

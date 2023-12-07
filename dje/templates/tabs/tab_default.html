@@ -1,0 +1,14 @@
+{% load i18n %}
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0">
+  {% if help_text %}<span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{% trans help_text %}">{% endif %}
+  {% trans label %}
+  {% if help_text %}</span>{% endif %}
+</dt>
+<dd class="col-sm-10 clipboard">
+  {% if values %}
+    <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+  {% endif %}
+  <pre class="pre-bg-light mb-1 field-{{ label|slugify }}"{% if label.lower == 'dependencies' %} data-value="{{ values }}"{% endif %}>{{ values|default_if_none:"&nbsp;"|default:"&nbsp;" }}</pre>
+</dd>
+{% if forloop.last %}</dl>{% endif %}

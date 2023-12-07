@@ -1,0 +1,45 @@
+<div id="activity_log_dialog" title="Activity Log" style="display:none;">
+    <form action="activity_log" target="_blank">
+        <fieldset class="grp-module">
+            <div class="grp-row grp-cells-1">
+                <div class="g-d-4">
+                    <label for="id_days">Days of activity:</label>
+                </div>
+                <div class="g-d-fluid">
+                    <input type="text" id="id_days" maxlength="3" value="90" name="days" />
+                    <p class="grp-help">This value is used by the report to determine the number of days activity (going backwards) to show. Enter any value from 1 to 999.</p>
+                </div>
+            </div>
+            <div class="grp-row grp-cells-1">
+                <div class="g-d-4">&nbsp;</div>
+                <div class="g-d-fluid">
+                    <input type="submit" class="grp-button" id="activity_log_submit" value="Download Activity Log" />
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<script>
+    (function($){
+        $(document).ready(function(){
+            $("#activity_log_dialog").dialog({
+                autoOpen: false,
+                draggable: true,
+                width: 600,
+                resizable: false,
+                modal: true
+            });
+
+
+            $("#activity_log_submit").click(function(event) {
+                $('#activity_log_dialog').dialog('close');
+            });
+
+            $("#activity_log_link").click(function(event) {
+                event.preventDefault();
+                $('#activity_log_dialog').dialog('open');
+            });
+        });
+    })(grp.jQuery);
+</script>

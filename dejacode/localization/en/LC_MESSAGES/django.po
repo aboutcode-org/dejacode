@@ -1,0 +1,28 @@
+#
+# Copyright (c) nexB Inc. and others. All rights reserved.
+# DejaCode is a trademark of nexB Inc.
+# SPDX-License-Identifier: AGPL-3.0-only
+# See https://github.com/nexB/dejacode for support or download.
+# See https://aboutcode.org for more information about AboutCode FOSS projects.
+#
+
+# WARNING: The following header is required by translation system
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-12-22 12:36-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Home"
+msgstr "Administration"
+
+# Placeholers
+msgid "copyright_placeholder"
+msgstr ""

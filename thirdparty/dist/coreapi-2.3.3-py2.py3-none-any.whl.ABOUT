@@ -1,0 +1,20 @@
+about_resource: coreapi-2.3.3-py2.py3-none-any.whl
+name: coreapi
+version: 2.3.3
+download_url: https://pypi.python.org/packages/fc/3a/9dedaad22962770edd334222f2b3c3e7ad5e1c8cab1d6a7992c30329e2e5/coreapi-2.3.3-py2.py3-none-any.whl#md5=05f392bc31296d90377f1a2f1cd1e271
+description: Python client library for Core API.
+homepage_url: https://github.com/core-api/python-client
+package_url: pkg:pypi/coreapi@2.3.3
+license_expression: bsd-simplified
+copyright: Copyright 2015-2016, Tom Christie
+notice_file: coreapi-2.3.3-py2.py3-none-any.whl.NOTICE
+attribute: yes
+owner: Tom Christie
+owner_url: https://github.com/tomchristie
+vcs_repository: https://github.com/core-api/python-client.git
+checksum_md5: 05f392bc31296d90377f1a2f1cd1e271
+checksum_sha1: 0ae2fd413f8966c63d188b1e43c70acf73779c9b
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE

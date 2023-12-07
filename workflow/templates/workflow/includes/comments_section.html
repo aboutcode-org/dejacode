@@ -1,0 +1,57 @@
+{% load naturaltime from humanize %}
+<div id="comments_section" class="mt-3">
+  {% for event in comments_and_events %}
+    {% if not event.event_type %}
+      <div class="card bg-light mb-3 {% if event.user == request.user %}border-highlight{% endif %}" id="comment-{{ event.uuid }}">
+        <div class="card-header">
+          <div class="float-end">
+            {% if event.user == request_instance.requester %}
+              <span class="badge text-bg-secondary rounded-pill border me-2">Creator</span>
+            {% elif event.user == request_instance.assignee %}
+              <span class="badge text-bg-secondary rounded-pill border me-2">Assignee</span>
+            {% endif %}
+            {% if event.can_delete %}
+              <a href="#delete-comment-modal" class="delete_comment_link" role="button" data-bs-toggle="modal" data-uuid="{{ event.uuid }}" style="color: #999999;" aria-label="Delete comment"><i class="far fa-trash-alt"></i></a>
+            {% endif %}
+          </div>
+          <strong>{{ event.user.username }}</strong> <span class="text-muted">commented</span> <a href="#{{ event.uuid }}" data-scroll-to="#comment-{{ event.uuid }}" class="text-muted">{{ event.created_date|naturaltime }}</a>
+        </div>
+        <div class="card-body">
+          {{ event.as_html }}
+        </div>
+      </div>
+    {% elif event.event_type == event.ATTACHMENT %}
+      {% include 'workflow/includes/comment_event.html' with icon='far fa-file' action='Uploaded' %}
+      <hr>
+    {% elif event.event_type == event.EDIT %}
+      {% include 'workflow/includes/comment_event.html' with icon='far fa-edit' action='Edited' %}
+      <hr>
+    {% elif event.event_type == event.CLOSED %}
+      {% include 'workflow/includes/comment_event.html' with icon='fas fa-check-circle' action='Closed' %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div class="card bg-light mt-3" id="add_comment_section">
+  <div class="card-body p-2">
+    <form id="add-comment" method="post">{% csrf_token %}
+      <div class="mb-2">
+        <textarea class="form-control input-block-level" placeholder="Add a comment..." rows="4" name="comment_content"></textarea>
+      </div>
+      <div>
+        <div class="float-end pt-1">
+          {% if has_close_permission %}
+            <a href="#close-request-modal" role="button" data-bs-toggle="modal" class="btn btn-outline-dark">
+              <i class="fas fa-times-circle"></i> Close request
+            </a>
+          {% endif %}
+          <button class="btn btn-success" type="submit">Comment</button>
+        </div>
+        <div class="text-muted smaller ps-1">
+          <i class="fas fa-info-circle"></i> Format and style your comments with the <a href="https://www.markdownguide.org/basic-syntax/" target="_blank"><i class="fab fa-markdown"></i> Markdown syntax</a>.
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+about_resource: pytz-2023.3.post1-py2.py3-none-any.whl
+name: pytz
+version: 2023.3.post1
+download_url: https://files.pythonhosted.org/packages/32/4d/aaf7eff5deb402fd9a24a1449a8119f00d74ae9c2efa79f8ef9994261fc2/pytz-2023.3.post1-py2.py3-none-any.whl
+package_url: pkg:pypi/pytz@2023.3.post1
+license_expression: mit
+copyright: Copyright pytz project contributors
+attribute: yes
+checksum_md5: 689e3bcbde7448826b0e4df41a5fbd0e
+checksum_sha1: 08472b3fd1bcb696fd121bf0a20fa93329cfbbad
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

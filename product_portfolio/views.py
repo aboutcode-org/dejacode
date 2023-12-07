@@ -1,0 +1,1946 @@
+#
+# Copyright (c) nexB Inc. and others. All rights reserved.
+# DejaCode is a trademark of nexB Inc.
+# SPDX-License-Identifier: AGPL-3.0-only
+# See https://github.com/nexB/dejacode for support or download.
+# See https://aboutcode.org for more information about AboutCode FOSS projects.
+#
+
+import csv
+import json
+from collections import OrderedDict
+from collections import defaultdict
+from collections import namedtuple
+from operator import attrgetter
+from urllib.parse import unquote_plus
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core import signing
+from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db import models
+from django.db import transaction
+from django.db.models.functions import Lower
+from django.forms import modelformset_factory
+from django.http import Http404
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.utils.html import format_html
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.views.generic import DetailView
+from django.views.generic import FormView
+
+from crispy_forms.utils import render_crispy_form
+from guardian.shortcuts import get_perms as guardian_get_perms
+
+from component_catalog.forms import ComponentAjaxForm
+from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import parse_expression
+from component_catalog.models import Component
+from component_catalog.models import Package
+from dejacode_toolkit.purldb import PurlDB
+from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import get_hash_uid
+from dejacode_toolkit.scancodeio import get_package_download_url
+from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
+from dejacode_toolkit.utils import sha1
+from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import tasks
+from dje.client_data import add_client_data
+from dje.filters import BooleanChoiceFilter
+from dje.models import DejacodeUser
+from dje.models import History
+from dje.templatetags.dje_tags import urlize_target_blank
+from dje.utils import chunked
+from dje.utils import get_object_compare_diff
+from dje.utils import is_uuid4
+from dje.views import DataspacedCreateView
+from dje.views import DataspacedDeleteView
+from dje.views import DataspacedFilterView
+from dje.views import DataspacedModelFormMixin
+from dje.views import DataspacedUpdateView
+from dje.views import DataspaceScopeMixin
+from dje.views import ExportCycloneDXBOMView
+from dje.views import ExportSPDXDocumentView
+from dje.views import GetDataspacedObjectMixin
+from dje.views import Header
+from dje.views import LicenseDataForBuilderMixin
+from dje.views import ObjectDetailsView
+from dje.views import PreviousNextPaginationMixin
+from dje.views import SendAboutFilesView
+from dje.views import TabContentView
+from dje.views import TabField
+from dje.views_formset import FormSetView
+from license_library.filters import LicenseFilterSet
+from license_library.models import License
+from license_library.models import LicenseAssignedTag
+from product_portfolio.filters import CodebaseResourceFilterSet
+from product_portfolio.filters import ProductComponentFilterSet
+from product_portfolio.filters import ProductFilterSet
+from product_portfolio.filters import ProductPackageFilterSet
+from product_portfolio.forms import AttributionConfigurationForm
+from product_portfolio.forms import BaseProductRelationshipInlineFormSet
+from product_portfolio.forms import ComparisonExcludeFieldsForm
+from product_portfolio.forms import ImportFromScanForm
+from product_portfolio.forms import ImportManifestForm
+from product_portfolio.forms import ProductComponentForm
+from product_portfolio.forms import ProductComponentInlineForm
+from product_portfolio.forms import ProductCustomComponentForm
+from product_portfolio.forms import ProductForm
+from product_portfolio.forms import ProductGridConfigurationForm
+from product_portfolio.forms import ProductPackageForm
+from product_portfolio.forms import ProductPackageInlineForm
+from product_portfolio.forms import PullProjectDataForm
+from product_portfolio.forms import TableInlineFormSetHelper
+from product_portfolio.importers import ImportFromScan
+from product_portfolio.models import CodebaseResource
+from product_portfolio.models import Product
+from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductPackage
+from product_portfolio.models import ScanCodeProject
+
+
+class BaseProductView:
+    model = Product
+    slug_url_kwarg = ("name", "version")
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="view_product",
+        )
+
+
+class ProductListView(
+    LoginRequiredMixin,
+    DataspacedFilterView,
+):
+    model = Product
+    filterset_class = ProductFilterSet
+    template_name = "product_portfolio/product_list.html"
+    template_list_table = "product_portfolio/includes/product_list_table.html"
+    paginate_by = 50
+    put_results_in_session = False
+    group_name_version = True
+    table_headers = (
+        Header("name", "Product name"),
+        Header("version", "Version"),
+        Header("license_expression", "License", filter="licenses"),
+        Header("primary_language", "Language", filter="primary_language"),
+        Header("owner", "Owner"),
+        Header("configuration_status", "Status", filter="configuration_status"),
+        Header("keywords", "Keywords", filter="keywords"),
+    )
+
+    def get_queryset(self):
+        return (
+            self.model.objects.get_queryset(
+                user=self.request.user,
+                perms="view_product",
+            )
+            .only(
+                "uuid",
+                "name",
+                "version",
+                "license_expression",
+                "owner",
+                "primary_language",
+                "keywords",
+                "configuration_status",
+                "request_count",
+                "dataspace",
+            )
+            .select_related(
+                "owner",
+                "configuration_status",
+            )
+            .prefetch_related(
+                "licenses__usage_policy",
+            )
+        )
+
+    def get_extra_add_urls(self):
+        extra_add_urls = super().get_extra_add_urls()
+        user = self.request.user
+
+        if user.has_perm("product_portfolio.add_productcomponent"):
+            extra_add_urls.append(
+                (
+                    "Import product components",
+                    reverse("admin:product_portfolio_productcomponent_import"),
+                )
+            )
+        if user.has_perm("product_portfolio.add_productpackage"):
+            extra_add_urls.append(
+                (
+                    "Import product packages",
+                    reverse("admin:product_portfolio_productpackage_import"),
+                )
+            )
+        if user.has_perm("product_portfolio.add_codebaseresource"):
+            extra_add_urls.append(
+                (
+                    "Import codebase resources",
+                    reverse("admin:product_portfolio_codebaseresource_import"),
+                )
+            )
+
+        return extra_add_urls
+
+
+class ProductDetailsView(
+    LoginRequiredMixin,
+    BaseProductView,
+    ObjectDetailsView,
+):
+    template_name = "product_portfolio/product_details.html"
+    include_reference_dataspace = False
+    show_previous_and_next_object_links = False
+    tabset = {
+        "essentials": {
+            "fields": [
+                "display_name",
+                "name",
+                "version",
+                "owner",
+                "description",
+                "configuration_status",
+                "copyright",
+                "homepage_url",
+                "keywords",
+                "primary_language",
+                "release_date",
+                "contact",
+                "vcs_url",
+                "code_view_url",
+                "bug_tracking_url",
+                "dataspace",
+            ],
+        },
+        "inventory": {
+            "fields": [
+                "components",
+                "packages",
+            ],
+        },
+        "codebase": {
+            "fields": [
+                "path",
+                "is_deployment_path",
+                "components",
+                "packages",
+                "deployed_from",
+                "deployed_to",
+            ],
+        },
+        "hierarchy": {
+            "fields": [
+                "components",
+            ],
+        },
+        "notice": {
+            "fields": [
+                "notice_text",
+            ],
+        },
+        "license": {
+            "fields": [
+                "license_expression",
+                "licenses",
+            ],
+        },
+        "owner": {
+            "fields": [
+                "owner",
+            ],
+        },
+        "activity": {},
+        "imports": {},
+        "history": {
+            "fields": [
+                "created_date",
+                "created_by",
+                "last_modified_date",
+                "last_modified_by",
+            ],
+        },
+    }
+
+    def get_queryset(self):
+        licenses_prefetch = models.Prefetch(
+            "licenses", License.objects.select_related("usage_policy")
+        )
+
+        productcomponent_qs = ProductComponent.objects.select_related(
+            "component__dataspace",
+            "component__owner__dataspace",
+            "component__usage_policy",
+            "review_status",
+            "purpose",
+        ).prefetch_related(
+            "component__packages",
+            "component__children",
+            licenses_prefetch,
+        )
+
+        productpackage_qs = ProductPackage.objects.select_related(
+            "package__dataspace",
+            "package__usage_policy",
+            "review_status",
+            "purpose",
+        ).prefetch_related(
+            licenses_prefetch,
+        )
+
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "owner",
+                "configuration_status",
+            )
+            .prefetch_related(
+                "licenses__category",
+                "licenses__usage_policy",
+                "scancodeprojects",
+                LicenseAssignedTag.prefetch_for_license_tab(),
+                models.Prefetch("productcomponents", queryset=productcomponent_qs),
+                models.Prefetch("productpackages", queryset=productpackage_qs),
+            )
+        )
+
+    def get_tabsets(self):
+        self.filter_productpackage = ProductPackageFilterSet(
+            self.request.GET,
+            queryset=self.object.productpackages,
+            dataspace=self.object.dataspace,
+            prefix="inventory",
+            anchor="#inventory",
+        )
+
+        self.filter_productcomponent = ProductComponentFilterSet(
+            self.request.GET,
+            queryset=self.object.productcomponents,
+            dataspace=self.object.dataspace,
+            prefix="inventory",
+            anchor="#inventory",
+        )
+
+        return super().get_tabsets()
+
+    def tab_essentials(self):
+        tab_fields = [
+            TabField("name"),
+            TabField("version"),
+            TabField("owner", source="owner.get_absolute_link"),
+            TabField("description"),
+            TabField("configuration_status"),
+            TabField("copyright"),
+            TabField("homepage_url", value_func=urlize_target_blank),
+            TabField("keywords", source="keywords", value_func=lambda x: "\n".join(x)),
+            TabField("primary_language"),
+            TabField("release_date"),
+            TabField("contact"),
+            TabField("vcs_url", value_func=urlize_target_blank),
+            TabField("code_view_url", value_func=urlize_target_blank),
+            TabField("bug_tracking_url", value_func=urlize_target_blank),
+            TabField("dataspace"),
+        ]
+
+        return {"fields": self.get_tab_fields(tab_fields)}
+
+    def tab_notice(self):
+        if self.object.notice_text:
+            return {"fields": self.get_tab_fields([TabField("notice_text")])}
+
+    def tab_hierarchy(self):
+        template = "product_portfolio/tabs/tab_hierarchy.html"
+        productcomponent_qs = (
+            self.object.productcomponents.select_related(
+                "component",
+            )
+            .prefetch_related(
+                "component__licenses",
+            )
+            .order_by(
+                "feature",
+                "component",
+                "name",
+                "version",
+            )
+        )
+
+        productpackage_qs = (
+            self.object.productpackages.select_related(
+                "package",
+            )
+            .prefetch_related(
+                "package__licenses",
+            )
+            .order_by(
+                "feature",
+                "package",
+            )
+        )
+
+        is_deployed = self.request.GET.get("hierarchy-is_deployed")
+        if is_deployed:
+            is_deployed_filter = BooleanChoiceFilter(field_name="is_deployed")
+            productcomponent_qs = is_deployed_filter.filter(productcomponent_qs, is_deployed)
+            productpackage_qs = is_deployed_filter.filter(productpackage_qs, is_deployed)
+
+        if not (productcomponent_qs or productpackage_qs or is_deployed):
+            return
+
+        relations_feature_grouped = defaultdict(list)
+        for relation_qs in [productcomponent_qs, productpackage_qs]:
+            for feature, relation in relation_qs.group_by("feature").items():
+                relations_feature_grouped[feature].extend(relation)
+
+        context = {
+            "verbose_name": self.model._meta.verbose_name,
+            "verbose_name_plural": self.model._meta.verbose_name_plural,
+            "relations_feature_grouped": dict(sorted(relations_feature_grouped.items())),
+            "is_deployed": is_deployed,
+        }
+
+        return {"fields": [(None, context, None, template)]}
+
+    def tab_inventory(self):
+        productcomponent_qs = self.filter_productcomponent.qs.order_by(
+            "feature", "component", "name", "version"
+        ).group_by("feature")
+        productpackage_qs = self.filter_productpackage.qs.order_by("feature", "package").group_by(
+            "feature"
+        )
+
+        user = self.request.user
+        dataspace = user.dataspace
+
+        scancodeio = ScanCodeIO(user)
+        display_scan_features = all(
+            [
+                scancodeio.is_configured(),
+                dataspace.enable_package_scanning,
+                productpackage_qs,
+            ]
+        )
+
+        if display_scan_features:
+            self.display_scan_features = True
+            injected_feature_grouped = self.inject_scan_data(
+                scancodeio, productpackage_qs, dataspace.uuid
+            )
+            # Do not override the original data if ScanCode.io couldn't be reach
+            if injected_feature_grouped:
+                productpackage_qs = injected_feature_grouped
+
+        inventory_items = defaultdict(list)
+        for relation_qs in [productcomponent_qs, productpackage_qs]:
+            for feature, relation in relation_qs.items():
+                inventory_items[feature].extend(relation)
+
+        display_tab = any(
+            [
+                inventory_items,
+                self.filter_productcomponent.is_active(),
+                self.filter_productpackage.is_active(),
+            ]
+        )
+
+        if not display_tab:
+            return
+
+        count = sum((len(items) for items in inventory_items.values()))
+        label = f'Inventory <span class="badge text-bg-primary">{count}</span>'
+        inventory_items = dict(sorted(inventory_items.items()))
+        tab_context = {
+            "inventory_items": inventory_items,
+        }
+
+        if self.show_licenses_policy:
+            compliance_alerts = set(
+                inventory_item.inventory_item_compliance_alert
+                for inventory_group in inventory_items.values()
+                for inventory_item in inventory_group
+            )
+
+            if "error" in compliance_alerts:
+                label = (
+                    f'<i class="fas fa-exclamation-circle text-danger" '
+                    f'   data-bs-toggle="tooltip" '
+                    f'   title="Compliance errors"></i> {label}'
+                )
+
+        vulnerablecode = VulnerableCode(user)
+        enable_vulnerabilities = all(
+            [
+                user.dataspace.enable_vulnerablecodedb_access,
+                vulnerablecode.is_configured(),
+            ]
+        )
+
+        if enable_vulnerabilities:
+            # Re-use the inventory mapping to prevent duplicated queries
+            packages = [
+                inventory_item.package
+                for inventory_group in inventory_items.values()
+                for inventory_item in inventory_group
+                if isinstance(inventory_item, ProductPackage)
+            ]
+
+            tab_context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
+
+        return {
+            "label": format_html(label),
+            "fields": [
+                (None, tab_context, None, "product_portfolio/tabs/tab_inventory.html"),
+            ],
+        }
+
+    @staticmethod
+    def inject_scan_data(scancodeio, feature_grouped, dataspace_uuid):
+        download_urls = [
+            product_package.package.download_url
+            for product_packages in feature_grouped.values()
+            for product_package in product_packages
+        ]
+
+        # WARNING: Do not trigger a Request for an empty list of download_urls
+        if not download_urls:
+            return
+
+        scoped_url_uids = [
+            f"{get_hash_uid(url)}.{get_hash_uid(dataspace_uuid)}" for url in download_urls
+        ]
+
+        scans = []
+        max_results_per_page = 50
+        for names in chunked(scoped_url_uids, chunk_size=max_results_per_page):
+            scan_list_data = scancodeio.fetch_scan_list(names=",".join(names))
+            if scan_list_data:
+                scans.extend(scan_list_data.get("results", []))
+
+        if not scans:
+            return
+
+        scans_by_uri = {get_package_download_url(scan): scan for scan in scans}
+
+        injected_feature_grouped = {}
+        for feature_label, productpackages in feature_grouped.items():
+            injected_productpackages = []
+            for productpackage in productpackages:
+                scan = scans_by_uri.get(productpackage.package.download_url)
+                if scan:
+                    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                    productpackage.scan = scan
+                injected_productpackages.append(productpackage)
+
+            if injected_productpackages:
+                injected_feature_grouped[feature_label] = injected_productpackages
+
+        return injected_feature_grouped
+
+    def tab_codebase(self):
+        codebaseresources_count = self.object.codebaseresources.count()
+        if not codebaseresources_count:
+            return
+
+        label = f'Codebase <span class="badge text-bg-primary">{codebaseresources_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_codebase")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "codebase resources",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def tab_activity(self, exclude_product_context=False):
+        return super().tab_activity(exclude_product_context=True)
+
+    def tab_imports(self):
+        scancodeprojects_count = self.object.scancodeprojects.count()
+        if not scancodeprojects_count:
+            return
+
+        label = f'Imports <span class="badge text-bg-primary">{scancodeprojects_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_imports")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "imports",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        if user.is_authenticated:
+            self.object.mark_all_notifications_as_read(user)
+
+        context = super().get_context_data(**kwargs)
+
+        context["has_change_productcomponent_permission"] = user.has_perm(
+            "product_portfolio.change_productcomponent"
+        )
+        context["has_change_productpackage_permission"] = user.has_perm(
+            "product_portfolio.change_productpackage"
+        )
+        context["has_change_codebaseresource_permission"] = user.has_perm(
+            "product_portfolio.change_codebaseresource"
+        )
+
+        context["filter_productcomponent"] = self.filter_productcomponent
+        context["filter_productpackage"] = self.filter_productpackage
+        # The reference data label and help does not make sense in the Product context
+        context["is_reference_data"] = None
+
+        perms = guardian_get_perms(user, self.object)
+        context["has_change_permission"] = "change_product" in perms
+        context["has_delete_permission"] = "delete_product" in perms
+
+        context["has_edit_productpackage"] = all(
+            [
+                context["has_change_productpackage_permission"],
+                context["has_change_permission"],
+            ]
+        )
+        context["has_delete_productpackage"] = user.has_perm(
+            "product_portfolio.delete_productpackage"
+        )
+
+        context["has_add_productcomponent"] = all(
+            [
+                user.has_perm("product_portfolio.add_productcomponent"),
+                context["has_change_permission"],
+            ]
+        )
+        context["has_edit_productcomponent"] = all(
+            [
+                context["has_change_productcomponent_permission"],
+                context["has_change_permission"],
+            ]
+        )
+        context["has_delete_productcomponent"] = user.has_perm(
+            "product_portfolio.delete_productcomponent"
+        )
+
+        if context["has_edit_productpackage"] or context["has_edit_productcomponent"]:
+            all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
+            add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
+
+        scancodeio = ScanCodeIO(user)
+        include_scancodeio_features = all(
+            [
+                scancodeio.is_configured(),
+                user.is_superuser,
+                user.dataspace.enable_package_scanning,
+                context["is_user_dataspace"],
+            ]
+        )
+        context["has_scan_all_packages"] = include_scancodeio_features
+
+        if include_scancodeio_features:
+            context["pull_project_data_form"] = PullProjectDataForm()
+
+        context["purldb_enabled"] = all(
+            [
+                PurlDB(user).is_configured(),
+                user.dataspace.enable_purldb_access,
+                context["is_user_dataspace"],
+            ]
+        )
+
+        context["display_scan_features"] = getattr(self, "display_scan_features", False)
+
+        return context
+
+
+class ProductTabCodebaseView(
+    LoginRequiredMixin,
+    BaseProductView,
+    PreviousNextPaginationMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_codebase.html"
+    paginate_by = 25
+    query_dict_page_param = "codebase-page"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        codebaseresource_qs = CodebaseResource.objects.filter(
+            product=self.object
+        ).default_select_prefetch()
+
+        filter_codebaseresource = CodebaseResourceFilterSet(
+            self.request.GET,
+            queryset=codebaseresource_qs,
+            dataspace=self.object.dataspace,
+            prefix="codebase",
+        )
+
+        paginator = Paginator(filter_codebaseresource.qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        fields = [
+            "path",
+            "is_deployment_path",
+            "product_component",
+            "product_package",
+            "additional_details",
+            "deployed_from_paths",
+            "deployed_to_paths",
+        ]
+
+        codebase_resources = [
+            {field: getattr(resource, field, None) for field in fields}
+            for resource in page_obj.object_list
+        ]
+
+        def has_any_values(field_name):
+            filter_is_active = field_name in filter_codebaseresource.form.changed_data
+            if filter_is_active:
+                return True
+
+            return any(
+                [
+                    resource.get(field_name)
+                    for resource in codebase_resources
+                    if resource.get(field_name)
+                ]
+            )
+
+        context_data.update(
+            {
+                "filter_codebaseresource": filter_codebaseresource,
+                "codebase_resources": codebase_resources,
+                "paginator": paginator,
+                "page_obj": page_obj,
+                "search_query": self.request.GET.get("codebase-q", ""),
+                "has_product_component": has_any_values("product_component"),
+                "has_product_package": has_any_values("product_package"),
+                "has_deployed_paths": has_any_values("deployed_from_paths"),
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + "#codebase",
+                    "next_url": (next_url or "") + "#codebase",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabImportsView(
+    LoginRequiredMixin,
+    BaseProductView,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_imports.html"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        scancode_projects = self.object.scancodeprojects.all()
+        submitted_projects = self.get_submitted_import_manifest_projects(scancode_projects)
+
+        # Check the status of the "submitted" projects on ScanCode.io and update the
+        # local ScanCodeProject instances accordingly.
+        scancodeio = ScanCodeIO(self.request.user)
+        for submitted_project in submitted_projects:
+            self.synchronize(scancodeio=scancodeio, project=submitted_project)
+
+        context_data.update(
+            {
+                "scancode_projects": scancode_projects,
+                "has_projects_in_progress": bool(submitted_projects),
+                "tab_view_url": self.object.get_url("tab_imports"),
+            }
+        )
+
+        return context_data
+
+    @staticmethod
+    def get_submitted_import_manifest_projects(scancode_projects):
+        return [
+            project
+            for project in scancode_projects
+            if project.status == ScanCodeProject.Status.SUBMITTED
+            and project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
+        ]
+
+    def synchronize(self, scancodeio, project):
+        scan_detail_url = scancodeio.get_scan_detail_url(project.project_uuid)
+        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
+        if not scan_data:
+            return
+
+        runs = scan_data.get("runs")
+        if not (runs and len(runs) == 1):
+            return
+
+        run = runs[0]
+        run_status = run.get("status")
+        if run_status != project.status:
+            if run_status == "success":
+                transaction.on_commit(
+                    lambda: tasks.pull_project_data_from_scancodeio.delay(
+                        scancodeproject_uuid=project.uuid,
+                    )
+                )
+            elif run_status == "failure":
+                project.status = ScanCodeProject.Status.FAILURE
+                project.save(update_fields=["status"])
+
+
+@login_required
+def add_customcomponent_ajax_view(request, dataspace, name, version=""):
+    user = request.user
+    form_class = ProductCustomComponentForm
+
+    qs = Product.objects.get_queryset(user, perms="change_product")
+    product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    if not user.has_perm("product_portfolio.add_productcomponent"):
+        return JsonResponse({"error_message": "Permission denied"}, status=403)
+
+    if request.method == "POST":
+        form = form_class(user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Custom Component relationship successfully added.")
+            return JsonResponse({"success": "added"}, status=200)
+    else:
+        form = form_class(user, initial={"product": product})
+
+    rendered_form = render_crispy_form(form)
+
+    return HttpResponse(rendered_form)
+
+
+@login_required
+def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
+    user = request.user
+
+    model_class = {
+        "component": ProductComponent,
+        "custom-component": ProductComponent,
+        "package": ProductPackage,
+    }.get(relation_type)
+
+    form_class = {
+        "component": ProductComponentForm,
+        "custom-component": ProductCustomComponentForm,
+        "package": ProductPackageForm,
+    }.get(relation_type)
+
+    if not (model_class and form_class):
+        return JsonResponse({"error_message": "Permission denied"}, status=403)
+
+    related_model_name = relation_type if relation_type != "custom-component" else "component"
+    relationship_model_name = model_class._meta.model_name
+
+    qs = model_class.objects.scope(user.dataspace)
+    relation_instance = get_object_or_404(qs, uuid=relation_uuid)
+    product = relation_instance.product
+
+    has_permissions = all(
+        [
+            product.can_be_changed_by(user),
+            user.has_perm(f"product_portfolio.change_{relationship_model_name}"),
+        ]
+    )
+
+    if not has_permissions:
+        return JsonResponse({"error_message": "Permission denied"}, status=403)
+
+    has_delete_permission = user.has_perm(f"product_portfolio.delete_{relationship_model_name}")
+    if request.GET.get("delete"):
+        if has_delete_permission:
+            History.log_deletion(user, relation_instance)
+            relation_verbose_name = relation_type.replace("-", " ")
+            message = f'Deleted {relation_verbose_name} "{relation_instance}"'
+            History.log_change(user, product, message=message)
+            product.last_modified_by = user
+            product.save()
+            relation_instance.delete()
+            msg = (
+                f"{related_model_name.title()} relationship {relation_instance} "
+                f"successfully deleted."
+            )
+            messages.success(request, msg)
+        return redirect(f"{product.get_absolute_url()}#inventory")
+
+    if request.method == "POST":
+        form = form_class(user, instance=relation_instance, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, f"{related_model_name.title()} relationship successfully updated."
+            )
+            return JsonResponse({"success": "updated"}, status=200)
+    else:
+        form = form_class(user, instance=relation_instance)
+
+    rendered_form = render_crispy_form(form)
+
+    relationship_field = f"""
+    <div class="mb-3">
+      <label for="id_relationship_instance" class="col-form-label form-label">
+        {related_model_name.title()}
+      </label>
+      <input type="text" value="{relation_instance}" class="form-control" disabled
+       id="id_relationship_instance">
+    </div>
+    """
+
+    if relation_type != "custom-component":
+        rendered_form = relationship_field + rendered_form
+
+    return HttpResponse(rendered_form)
+
+
+class ProductAddView(
+    LicenseDataForBuilderMixin,
+    DataspacedCreateView,
+):
+    model = Product
+    form_class = ProductForm
+    permission_required = "product_portfolio.add_product"
+
+
+class ProductUpdateView(
+    LicenseDataForBuilderMixin,
+    BaseProductView,
+    DataspacedUpdateView,
+):
+    form_class = ProductForm
+    permission_required = "product_portfolio.change_product"
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="change_product",
+        )
+
+    def get_success_url(self):
+        if not self.object.is_active:
+            return reverse("product_portfolio:product_list")
+        return super().get_success_url()
+
+
+class ProductDeleteView(BaseProductView, DataspacedDeleteView):
+    permission_required = "product_portfolio.delete_product"
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="delete_product",
+        )
+
+
+@login_required
+def product_tree_comparison_view(request, left_uuid, right_uuid):
+    guarded_qs = Product.objects.get_queryset(request.user)
+
+    left_product = get_object_or_404(guarded_qs, uuid=left_uuid)
+    right_product = get_object_or_404(guarded_qs, uuid=right_uuid)
+
+    def get_productrelationship_dict(instance):
+        component_qs = instance.productcomponents.select_related(
+            "review_status",
+            "component__owner",
+        ).prefetch_related("licenses")
+
+        package_qs = instance.productpackages.select_related("review_status").prefetch_related(
+            "licenses"
+        )
+
+        relationship_dict = {}
+        for relationship in list(component_qs) + list(package_qs):
+            related = relationship.related_component_or_package
+            if related:
+                key = related.uuid
+            elif relationship.name:  # custom component
+                key = f"{relationship.name}-{relationship.version}"
+            else:
+                continue
+            relationship_dict[key] = relationship
+
+        return relationship_dict
+
+    left_dict = get_productrelationship_dict(left_product)
+    right_dict = get_productrelationship_dict(right_product)
+
+    left_keys = set(left_dict.keys())
+    right_keys = set(right_dict.keys())
+
+    removed = list(left_keys.difference(right_keys))
+    added = list(right_keys.difference(left_keys))
+
+    def get_name(relationship):
+        related = relationship.related_component_or_package
+        if related:
+            # Use filename for Package without a purl
+            return related.name or related.filename
+        return relationship.name  # custom component
+
+    removed_names = [get_name(left_dict[k]) for k in removed]
+    added_names = [get_name(right_dict[k]) for k in added]
+
+    updated = [
+        (removed[removed_names.index(name)], added[added_names.index(name)])
+        for name in removed_names
+        if added_names.count(name) == 1 and removed_names.count(name) == 1
+    ]
+
+    for k, l in updated:
+        del removed[removed.index(k)]
+        del added[added.index(l)]
+
+    unchanged, changed = [], []
+    diffs = {}
+    excluded = ["product", "uuid"] + request.GET.getlist("exclude")
+
+    for k in left_keys.intersection(right_keys):
+        diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
+        changed.append(k) if diff else unchanged.append(k)
+        diffs[k] = OrderedDict(sorted(diff.items()))
+
+    rows = [("added", None, right_dict[k], None) for k in added]
+    rows.extend(("removed", left_dict[k], None, None) for k in removed)
+    rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+    rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
+    rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
+
+    def sort_by_name_version(row):
+        index = 1 if row[1] else 2
+        relationship = row[index]
+        related = relationship.related_component_or_package
+        if related:
+            name = related.name or related.filename
+            return name.lower(), related.version
+        return relationship.name.lower(), relationship.version
+
+    rows.sort(key=sort_by_name_version)
+
+    action_filters = [
+        {"value": "added", "count": len(added), "checked": True},
+        {"value": "changed", "count": len(changed), "checked": True},
+        {"value": "updated", "count": len(updated), "checked": True},
+        {"value": "removed", "count": len(removed), "checked": True},
+        {"value": "unchanged", "count": len(unchanged), "checked": False},
+    ]
+
+    context = {
+        "left_product": left_product,
+        "right_product": right_product,
+        "action_filters": action_filters,
+        "rows": rows,
+        "exclude_fields_form": ComparisonExcludeFieldsForm(request.GET),
+    }
+
+    return render(request, "product_portfolio/product_tree_comparison.html", context)
+
+
+AttributionNode = namedtuple(
+    "AttributionNode",
+    [
+        "model_name",
+        "display_name",
+        "owner",
+        "copyright",
+        "extra_attribution_text",
+        "relationship_expression",
+        "component_expression",
+        "notice_text",
+        "is_displayed",
+        "homepage_url",
+        "standard_notice",
+    ],
+)
+
+
+class AttributionView(
+    LoginRequiredMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseProductView,
+    DetailView,
+):
+    template_name = "product_portfolio/attribution/base.html"
+
+    def get_template_names(self):
+        """
+        Prepend a Dataspace specific template in the list of template names.
+        If that template exists, it will be used first, in place of the common template.
+
+        To Generate the Dataspace hash for the template directory name:
+        >>> from dejacode_toolkit.utils import sha1; sha1(b'<Dataspace name>')[:7]
+        """
+        names = super().get_template_names()
+        dataspace_hash = sha1(self.object.dataspace.name.encode("utf-8"))[:7]
+        if not self.template_name.endswith("attribution_configuration.html"):
+            names.insert(0, f"product_portfolio/attribution/{dataspace_hash}/base.html")
+        return names
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("owner")
+
+    def is_displayed(self, instance):
+        """
+        Return True if the instance is allowed for display,
+        ie: not excluded by a Component Query.
+        """
+        return any(
+            [
+                not isinstance(instance, Component),
+                not self.allowed_component_ids,
+                instance.pk in self.allowed_component_ids,
+            ]
+        )
+
+    @staticmethod
+    def get_sorted(data, sort_attr="short_name"):
+        """
+        Return a list sorted by sort_attr.
+        Sorts alphabetically ignoring the case.
+        """
+        return sorted(set(data), key=lambda x: attrgetter(sort_attr)(x).lower())
+
+    @staticmethod
+    def apply_productcomponent_query(productcomponents, query, user):
+        """
+        Limit a ProductComponent QuerySet using the results of a reporting Query.
+        ProductComponent instances not returned in the Query results are excluded.
+        """
+        ids = query.get_qs(user=user).values_list("id", flat=True)
+        return [pc for pc in productcomponents if pc.id in ids]
+
+    def as_attribution_node(self, relationship):
+        """Return a AttributionNode from a relationship (ProductComponent or Subcomponent)."""
+        component = relationship.related_component_or_package
+
+        if not component:
+            return AttributionNode(
+                model_name="component",
+                display_name=str(relationship),
+                owner=relationship.owner,
+                copyright=relationship.copyright,
+                extra_attribution_text=relationship.extra_attribution_text,
+                relationship_expression=relationship.license_expression_attribution,
+                component_expression=None,
+                notice_text=None,
+                is_displayed=True,
+                homepage_url=relationship.homepage_url if self.include_homepage_url else "",
+                standard_notice=relationship.standard_notice
+                if self.include_standard_notice
+                else "",
+            )
+
+        copyright_ = ""
+        if component.copyright and not getattr(component, "is_copyright_notice", False):
+            copyright_ = component.copyright
+
+        component_expression = None
+        if self.include_all_licenses:
+            licensing = build_licensing()
+            rel_ex = parse_expression(
+                relationship.license_expression, validate_known=False, validate_strict=False
+            )
+            com_ex = parse_expression(
+                component.license_expression, validate_known=False, validate_strict=False
+            )
+            if not licensing.is_equivalent(rel_ex, com_ex):
+                component_expression = component.license_expression_attribution
+
+        return AttributionNode(
+            model_name=component._meta.model_name,
+            display_name=str(component),
+            owner=str(getattr(component, "owner", None) or ""),
+            copyright=copyright_,
+            extra_attribution_text=relationship.extra_attribution_text,
+            relationship_expression=relationship.license_expression_attribution,
+            component_expression=component_expression,
+            notice_text=component.notice_text,
+            is_displayed=self.is_displayed(component),
+            homepage_url=component.homepage_url if self.include_homepage_url else "",
+            standard_notice=relationship.standard_notice if self.include_standard_notice else "",
+        )
+
+    def get_hierarchy(self, relationship_qs, include_subcomponents):
+        """
+        Return a data structure suitable for the Attribution Generation.
+
+        If a license is only referenced by a Component.license_expression and not by any
+        <Relationship>.license_expression then include that license text at the end of the
+        document only if "Include all License texts" is checked.
+        """
+        hierarchy = {}
+
+        for relationship in relationship_qs:
+            component = relationship.related_component_or_package
+
+            children_hierarchy = []
+            if component and include_subcomponents:
+                children_qs = component.related_children.order_by(Lower("child__name"))
+                children_hierarchy = self.get_hierarchy(children_qs, include_subcomponents)
+
+            if component and self.is_displayed(component):
+                self.hierarchy_licenses.extend(relationship.licenses.all())
+                if self.include_all_licenses:
+                    self.hierarchy_licenses.extend(component.licenses.all())
+            elif not component:  # Custom component
+                self.hierarchy_licenses.extend(relationship.licenses.all())
+
+            node = self.as_attribution_node(relationship)
+            # Using namedtuples in a set to avoid exact duplicates
+            self.unique_component_nodes.add(node)
+
+            feature = getattr(relationship, "feature", "")
+            # Not using a defaultdict as not supported by Django templates
+            if feature not in hierarchy:
+                hierarchy[feature] = []
+            hierarchy[feature].append((node, children_hierarchy))
+
+        return hierarchy
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+        product = self.object
+        submitted = request.GET.get("submit")
+
+        initial = {}
+        if not submitted and product.productpackages.exists():
+            initial = {"include_packages": True}
+
+        form = AttributionConfigurationForm(request, data=request.GET or None, initial=initial)
+
+        context.update(
+            {
+                "is_user_dataspace": product.dataspace == request.user.dataspace,
+                "is_reference_data": product.dataspace.is_reference,
+                "configuration_form": form,
+            }
+        )
+
+        if not submitted or not form.is_valid():
+            self.template_name = "product_portfolio/attribution_configuration.html"
+            return context
+
+        product_licenses = list(product.licenses.order_by("short_name"))
+        productcomponents = product.productcomponents.order_by("component", "name", "version")
+
+        group_by_feature = bool(form.cleaned_data.get("group_by_feature"))
+        if group_by_feature:
+            # Empty string first then alphabetical order
+            productcomponents = productcomponents.order_by(
+                "feature", "component", "name", "version"
+            )
+
+        if form.cleaned_data.get("is_deployed"):
+            productcomponents = productcomponents.filter(is_deployed=True)
+
+        pc_query = form.cleaned_data.get("pc_query")
+        if pc_query:
+            productcomponents = self.apply_productcomponent_query(
+                productcomponents, pc_query, user=request.user
+            )
+
+        component_query = form.cleaned_data.get("component_query")
+        self.allowed_component_ids = []
+        if component_query:
+            self.allowed_component_ids = component_query.get_qs(user=request.user).values_list(
+                "id", flat=True
+            )
+
+        self.include_all_licenses = bool(form.cleaned_data.get("all_license_texts"))
+        self.include_homepage_url = bool(form.cleaned_data.get("include_homepage_url"))
+        self.include_standard_notice = bool(form.cleaned_data.get("include_standard_notice"))
+
+        # self.hierarchy_licenses and self.unique_component_nodes are populated during the
+        # self.get_hierarchy() call
+        self.hierarchy_licenses = []
+        self.unique_component_nodes = set()
+
+        include_subcomponents = bool(form.cleaned_data.get("subcomponent_hierarchy"))
+        context["hierarchy"] = self.get_hierarchy(productcomponents, include_subcomponents)
+
+        include_packages = bool(form.cleaned_data.get("include_packages"))
+        package_nodes = []
+        package_nodes_by_feature = {}
+        if include_packages:
+            productpackages = product.productpackages.all()
+            if group_by_feature:
+                # Empty string first then alphabetical order
+                productpackages = productpackages.order_by("feature")
+            for relationship in productpackages:
+                attribution_node = self.as_attribution_node(relationship)
+                package_nodes.append(attribution_node)
+                self.hierarchy_licenses.extend(relationship.licenses.all())
+                if group_by_feature:
+                    feature = getattr(relationship, "feature", "")
+                    if feature not in package_nodes_by_feature:
+                        package_nodes_by_feature[feature] = []
+                    package_nodes_by_feature[feature].append(attribution_node)
+
+        context["hierarchy_licenses"] = self.get_sorted(set(self.hierarchy_licenses))
+        all_available_licenses = product_licenses + context["hierarchy_licenses"]
+
+        context.update(
+            {
+                "all_available_licenses": self.get_sorted(set(all_available_licenses)),
+                "toc_as_nested_list": bool(form.cleaned_data.get("toc_as_nested_list")),
+                "group_by_feature": group_by_feature,
+                "unique_component_nodes": self.get_sorted(
+                    self.unique_component_nodes, "display_name"
+                ),
+                "package_nodes": package_nodes,
+                "package_nodes_by_feature": package_nodes_by_feature,
+            }
+        )
+
+        return context
+
+
+class ProductSendAboutFilesView(BaseProductView, SendAboutFilesView):
+    pass
+
+
+class ProductExportSPDXDocumentView(BaseProductView, ExportSPDXDocumentView):
+    pass
+
+
+class ProductExportCycloneDXBOMView(BaseProductView, ExportCycloneDXBOMView):
+    pass
+
+
+@login_required
+def scan_all_packages_view(request, dataspace, name, version=""):
+    user = request.user
+
+    scancodeio = ScanCodeIO(user)
+    conditions = [
+        scancodeio.is_configured(),
+        user.is_superuser,
+        user.dataspace.enable_package_scanning,
+        user.dataspace.name == dataspace,
+    ]
+
+    if not all(conditions):
+        raise Http404
+
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    if not product.all_packages:
+        raise Http404("No packages available for this product.")
+
+    transaction.on_commit(lambda: product.scan_all_packages_task(user))
+
+    scan_list_url = reverse("component_catalog:scan_list")
+    scancode_msg = format_html(
+        'All "{}" packages submitted to ScanCode.io for scanning.'
+        ' <a href="{}" target="_blank">Click here to see the Scans list.</a>',
+        product.get_absolute_link(),
+        scan_list_url,
+    )
+    messages.success(request, scancode_msg)
+
+    return redirect(product)
+
+
+@login_required
+def import_from_scan_view(request, dataspace, name, version=""):
+    """
+    Import the scan results in a Product.
+
+    If any errors are raised during the import, the transaction is rollbacked
+    an no data will be kept to avoid half-imported results.
+    """
+    user = request.user
+    form_class = ImportFromScanForm
+
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    if request.method == "POST":
+        form = form_class(
+            user=request.user,
+            data=request.POST,
+            files=request.FILES,
+        )
+        if form.is_valid():
+            sid = transaction.savepoint()
+            importer = ImportFromScan(
+                product,
+                user,
+                upload_file=form.cleaned_data.get("upload_file"),
+                create_codebase_resources=form.cleaned_data.get("create_codebase_resources"),
+                stop_on_error=form.cleaned_data.get("stop_on_error"),
+            )
+            try:
+                warnings, created_counts = importer.save()
+            except ValidationError as error:
+                transaction.savepoint_rollback(sid)
+                messages.error(request, " ".join(error.messages))
+                return redirect(request.path)
+
+            transaction.savepoint_commit(sid)
+
+            if not created_counts:
+                messages.warning(request, "Nothing imported.")
+            else:
+                msg = "Imported from Scan:"
+                for key, value in created_counts.items():
+                    msg += f"<br> &bull; {value} {key}"
+                messages.success(request, format_html(msg))
+            if warnings:
+                messages.warning(request, format_html("<br>".join(warnings)))
+            return redirect(product)
+    else:
+        form = form_class(request.user)
+
+    return render(
+        request,
+        "product_portfolio/import_from_scan.html",
+        {
+            "form": form,
+            "product": product,
+        },
+    )
+
+
+class BaseProductManageGridView(
+    LoginRequiredMixin,
+    LicenseDataForBuilderMixin,
+    GetDataspacedObjectMixin,
+    PermissionRequiredMixin,
+    BaseProductView,
+    FormSetView,
+):
+    """A base view for managing product relationship through a grid."""
+
+    formset_class = BaseProductRelationshipInlineFormSet
+    helper_class = TableInlineFormSetHelper
+    template_name = "product_portfolio/object_manage_grid.html"
+    related_model = None
+    relationship_model = None
+    filterset_class = None
+    can_delete_permission = None
+    configuration_session_key = None
+    base_fields = []
+
+    def get_relationship_queryset(self):
+        raise ImproperlyConfigured("`get_relationship_queryset` must be defined.")
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.filterset = self.get_filterset()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if "update-grid-configuration" in request.POST:
+            grid_configuration_form = ProductGridConfigurationForm(data=request.POST)
+            if grid_configuration_form.is_valid():
+                displayed_fields = request.POST.getlist("displayed_fields")
+                request.session[self.configuration_session_key] = displayed_fields
+                messages.success(request, "Grid configuration updated.")
+            return redirect(self.get_success_url())
+
+        self.object = self.get_object()
+        self.filterset = self.get_filterset()
+        return super().post(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="change_product",
+        )
+
+    def get_success_url(self):
+        """
+        Use the HTTP_REFERER when available allows to keep the request.GET
+        state of the view, keeping sort and filters for example.
+        """
+        return self.request.META.get("HTTP_REFERER") or self.request.path
+
+    def formset_valid(self, formset):
+        request = self.request
+
+        if formset.has_changed():
+            formset.save()
+            messages.success(request, "Product changes saved.")
+        else:
+            messages.warning(request, "No changes to save.")
+
+        if "save" in request.POST:
+            return redirect(self.object)
+
+        return redirect(self.get_success_url())
+
+    def get_filterset(self):
+        filterset = self.filterset_class(
+            self.request.GET,
+            queryset=self.get_relationship_queryset(),
+            dataspace=self.object.dataspace,
+        )
+        return filterset
+
+    def get_formset(self, formset_class=None):
+        can_delete = False
+        if self.can_delete_permission:
+            can_delete = self.request.user.has_perm(self.can_delete_permission)
+
+        FormSet = modelformset_factory(
+            self.relationship_model,
+            form=self.form_class,
+            formset=self.formset_class,
+            fields=self.get_fields(),
+            extra=0,
+            can_delete=can_delete,
+        )
+
+        return FormSet(
+            **self.get_formset_kwargs(),
+            queryset=self.filterset.qs,
+            form_kwargs=self.get_form_kwargs(),
+        )
+
+    def get_form_kwargs(self):
+        form_kwargs = {
+            "user": self.request.user,
+            "initial": {"product": self.object.id},
+            "filterset": self.filterset,
+        }
+        return form_kwargs
+
+    def get_fields(self):
+        default_fields = ProductGridConfigurationForm.get_fields_name()
+        configuration_fields = self.request.session.get(
+            self.configuration_session_key, default_fields
+        )
+
+        if not configuration_fields:
+            configuration_fields = default_fields
+        else:
+            configuration_fields = [
+                field
+                for field in configuration_fields
+                if field in default_fields  # Discard any non-supported fields
+            ]
+
+        self.grid_configuration_form = ProductGridConfigurationForm(
+            initial={"displayed_fields": configuration_fields}
+        )
+
+        fields = self.base_fields + configuration_fields
+
+        return fields
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "helper": self.helper_class(),
+                "filterset": self.filterset,
+                "product": self.object,
+                "verbose_name_plural": self.object._meta.verbose_name_plural,
+                "related_verbose_name": self.related_model._meta.verbose_name,
+                "grid_configuration_form": self.grid_configuration_form,
+            }
+        )
+        return context_data
+
+
+class ManageComponentGridView(BaseProductManageGridView):
+    related_model = Component
+    relationship_model = ProductComponent
+    permission_required = "product_portfolio.change_productcomponent"
+    can_delete_permission = "product_portfolio.delete_productcomponent"
+    form_class = ProductComponentInlineForm
+    filterset_class = ProductComponentFilterSet
+    configuration_session_key = "component_grid_configuration"
+    base_fields = [
+        "product",
+        "component",
+        "object_display",
+    ]
+
+    def get_relationship_queryset(self):
+        return self.object.productcomponents.catalogs().select_related(
+            "component__dataspace",
+            "component__owner",
+        )
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        can_add_component = user.has_perm("component_catalog.add_component")
+        if can_add_component:
+            component_add_form = ComponentAjaxForm(user=user)
+            context_data["component_add_form"] = component_add_form
+
+        return context_data
+
+
+class ManagePackageGridView(BaseProductManageGridView):
+    related_model = Package
+    relationship_model = ProductPackage
+    permission_required = "product_portfolio.change_productpackage"
+    can_delete_permission = "product_portfolio.delete_productpackage"
+    form_class = ProductPackageInlineForm
+    filterset_class = ProductPackageFilterSet
+    configuration_session_key = "package_grid_configuration"
+    base_fields = [
+        "product",
+        "package",
+        "object_display",
+    ]
+
+    def get_relationship_queryset(self):
+        return self.object.productpackages.select_related(
+            "package__dataspace",
+        )
+
+
+@login_required
+def license_summary_view(request, dataspace, name, version=""):
+    user = request.user
+
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    filterset = LicenseFilterSet(
+        data=request.GET or None,
+        request=request,
+        dataspace=product.dataspace,
+    )
+
+    product_components = product.components.all()
+    product_packages = product.packages.all()
+
+    components_hierarchy = set(product_components)
+    for component in product_components:
+        components_hierarchy.update(component.get_descendants(set_direct_parent=True))
+
+    packages_hierarchy = set(product_packages)
+    for component in components_hierarchy:
+        component_packages = []
+        for package in component.packages.all():
+            package.direct_parent = component
+            component_packages.append(package)
+        packages_hierarchy.update(component_packages)
+
+    all_licenses = set()
+    license_index = defaultdict(list)
+
+    for item in list(components_hierarchy) + list(packages_hierarchy):
+        licenses = item.licenses.all()
+        all_licenses.update(licenses)
+        for license in licenses:
+            if license in filterset.qs:
+                license_index[license].append(item)
+
+    sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
+
+    if request.GET.get("export"):
+        response = HttpResponse(content_type="text/csv")
+        prefix = str(product).replace(" ", "_")
+        response["Content-Disposition"] = f'attachment; filename="{prefix}_license_summary.csv"'
+
+        fieldnames = ["License", "Usage policy", "Items"]
+        writer = csv.writer(response)
+        writer.writerow(fieldnames)
+
+        for license, items in sorted_index:
+            row = [
+                f"{license.name} ({license.key})",
+                license.usage_policy,
+                ", ".join([repr(item) for item in items]),
+            ]
+            writer.writerow(row)
+
+        return response
+
+    return render(
+        request,
+        "product_portfolio/license_summary.html",
+        {
+            "product": product,
+            "license_index": dict(sorted_index),
+            "filterset": filterset,
+        },
+    )
+
+
+@login_required
+def check_package_version_ajax_view(request, dataspace, name, version=""):
+    user = request.user
+    purldb = PurlDB(user)
+
+    purldb_enabled = all(
+        [
+            purldb.is_configured(),
+            user.dataspace.enable_purldb_access,
+        ]
+    )
+    if not purldb_enabled:
+        raise Http404
+
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    purls = []
+    packages = product.packages.all()
+    for package in packages:
+        package_url = package.package_url
+        if package_url:
+            purls.append(package_url)
+
+    # Chunk into several requests to prevent "Request Line is too large" errors
+    max_purls_per_request = 50
+    results = []
+    for purl_batch in chunked(purls, chunk_size=max_purls_per_request):
+        payload = {"purl": purl_batch, "page_size": len(purl_batch)}
+        response = purldb.request_get(payload)
+        results.extend(response["results"])
+
+    def get_latest_version_entry(current_uuid):
+        latest_version_entry = request.session.get(current_uuid)
+        if latest_version_entry:
+            return latest_version_entry
+
+        latest_version_entry = purldb.get_package(f"{current_uuid}/latest_version")
+        request.session[current_uuid] = latest_version_entry
+        return latest_version_entry
+
+    upgrade_available = []
+    for purldb_entry in results:
+        current_uuid = purldb_entry.get("uuid")
+        current_version = purldb_entry.get("version")
+        latest_version_entry = get_latest_version_entry(current_uuid)
+        latest_version = latest_version_entry.get("version")
+        if current_version != latest_version:
+            purldb_entry["latest_version"] = latest_version
+            purldb_entry["latest_version_uuid"] = latest_version_entry.get("uuid")
+            upgrade_available.append(purldb_entry)
+
+    return JsonResponse({"success": "success", "upgrade_available": upgrade_available})
+
+
+class ImportManifestView(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    GetDataspacedObjectMixin,
+    DataspacedModelFormMixin,
+    BaseProductView,
+    FormView,
+):
+    template_name = "product_portfolio/import_manifest_form.html"
+    permission_required = "product_portfolio.change_product"
+    form_class = ImportManifestForm
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="change_product",
+        )
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["object"] = self.object
+        return context
+
+    def get_success_url(self):
+        return f"{self.object.get_absolute_url()}#imports"
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.object,
+            dataspace=self.object.dataspace,
+            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            input_file=form.cleaned_data.get("input_file"),
+            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=form.cleaned_data.get("scan_all_packages"),
+            created_by=self.request.user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.scancodeio_submit_manifest_inspection.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+                user_uuid=self.request.user.uuid,
+            )
+        )
+
+        msg = "Manifest submitted to ScanCode.io for inspection."
+        messages.success(self.request, msg)
+        return super().form_valid(form)
+
+
+@require_POST
+@csrf_exempt
+def import_packages_from_scancodeio_view(request, key):
+    """
+    Import the project scan packages in a Product.
+    Used as a callback from ScanCode.io using a webhook on pipeline completion.
+    """
+    user_uuid = signing.loads(key)
+    if not is_uuid4(user_uuid):
+        raise Http404("Provided key is not a valid UUID.")
+
+    try:
+        json_data = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        raise Http404("Request data is invalid.")
+
+    user = get_object_or_404(DejacodeUser, uuid=user_uuid)
+    project_uuid = json_data["project"]["uuid"]
+    scancode_project = get_object_or_404(ScanCodeProject, project_uuid=project_uuid)
+
+    # Ensure that the user has permission to change the ScanCodeProject related Product.
+    product_qs = Product.objects.get_queryset(user, perms="change_product")
+    get_object_or_404(product_qs, id=scancode_project.product_id)
+
+    transaction.on_commit(
+        lambda: tasks.pull_project_data_from_scancodeio.delay(
+            scancodeproject_uuid=scancode_project.uuid,
+        )
+    )
+
+    return JsonResponse({"message": "Received, packages import started."})
+
+
+@login_required
+def scancodeio_project_status_view(request, scancodeproject_uuid):
+    user = request.user
+    base_qs = ScanCodeProject.objects.scope(user.dataspace)
+    scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
+
+    scancodeio = ScanCodeIO(user)
+    if scancode_project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST:
+        template = "product_portfolio/scancodeio_project_status.html"
+        scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
+        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
+        context = {"scan_data": scan_data}
+
+    elif scancode_project.type == ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO:
+        template = "product_portfolio/scancodeio_pull_data_status.html"
+        context = {"scancode_project": scancode_project}
+
+    else:
+        raise Http404
+
+    return TemplateResponse(request, template, context)
+
+
+@method_decorator(require_POST, name="dispatch")
+class PullProjectDataFromScanCodeIOView(
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    GetDataspacedObjectMixin,
+    DataspacedModelFormMixin,
+    BaseProductView,
+    FormView,
+):
+    permission_required = "product_portfolio.change_product"
+    form_class = PullProjectDataForm
+
+    def get_queryset(self):
+        return self.model.objects.get_queryset(
+            user=self.request.user,
+            perms="change_product",
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        raise Http404
+
+    def get_success_url(self):
+        return f"{self.object.get_absolute_url()}#imports"
+
+    def get_project_data(self, project_name_or_uuid):
+        scancodeio = ScanCodeIO(self.request.user)
+        for field_name in ["name", "uuid"]:
+            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
+            if project_data:
+                return project_data
+
+    def form_valid(self, form):
+        project_name_or_uuid = form.cleaned_data.get("project_name_or_uuid")
+        project_data = self.get_project_data(project_name_or_uuid)
+
+        if not project_data:
+            msg = f'Project "{project_name_or_uuid}" not found on ScanCode.io.'
+            messages.error(self.request, msg)
+            return redirect(self.object.get_absolute_url())
+
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.object,
+            dataspace=self.object.dataspace,
+            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
+            project_uuid=project_data.get("uuid"),
+            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=False,
+            status=ScanCodeProject.Status.SUBMITTED,
+            created_by=self.request.user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.pull_project_data_from_scancodeio.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+            )
+        )
+
+        project_name = project_data.get("name")
+        msg = f'Packages import from ScanCode.io "{project_name}" in progress...'
+        messages.success(self.request, msg)
+        return super().form_valid(form)

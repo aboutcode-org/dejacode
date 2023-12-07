@@ -1,0 +1,25 @@
+about_resource: underscore-1.6.0.tar.gz
+name: underscore
+version: 1.6.0
+download_url: https://github.com/jashkenas/underscore/archive/1.6.0.tar.gz
+description: 'Underscore is a JavaScript library that provides a whole mess of useful functional
+  programming helpers without extending any built-in objects. ItÍs the answer to the question:
+  "If I sit down in front of a blank HTML page, and want to start being productive immediately,
+  what do I need?" ....and the tie to go along with jQuery''s tux and Backbone''s suspenders.'
+homepage_url: http://underscorejs.org/
+package_url: pkg:github/jashkenas/underscore@1.6.0
+license_expression: mit
+copyright: Copyright (c) Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+notice_file: underscore-1.6.0.tar.gz.NOTICE
+notice_url: https://github.com/jashkenas/underscore/blob/master/LICENSE
+attribute: yes
+owner: DocumentCloud
+owner_url: https://www.documentcloud.org/home
+contact: https://www.documentcloud.org/contact
+vcs_repository: git://github.com/documentcloud/underscore.git
+checksum_md5: bc62b91df8123851c248ffa4af07fcba
+checksum_sha1: 164bb4977d638e8ff8610e359f4fc7128acc2dbb
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

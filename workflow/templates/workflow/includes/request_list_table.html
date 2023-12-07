@@ -1,0 +1,153 @@
+{% load i18n humanize %}
+{% load inject_preserved_filters from dje_tags %}
+
+<div class="row mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <div style="font-size: 120%; font-weight: bold;">
+              {% trans "Requests" %}{% if paginator %}: {{ paginator.count|intcomma }} results{% endif %}
+            </div>
+          </div>
+          <div class="col-auto">
+            {% if filter %}
+              <ul class="nav">
+                {{ filter.form.status }}
+                {{ filter.form.priority }}
+                {{ filter.form.request_template }}
+                {{ filter.form.requester }}
+                {{ filter.form.assignee }}
+                {{ filter.form.sort }}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% if not tab_activity %}
+        <div class="card-header">
+          <div class="row">
+            <div class="col-12">
+              <form>
+                <input id="#id_{{ filter.form.q.name }}" name="{{ filter.form.q.name }}" type="search" class="form-control form-control-prepended search" value="{{ filter.form.q.value|default_if_none:"" }}" placeholder="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div class="card-body p-0">
+        <ul class="list-group list-group-lg list-group-flush">
+          {% for req in request_qs %}
+            <li class="list-group-item py-2">
+              {% if not req.is_private or req.requester == user or user.is_staff %}
+                <div class="row align-items-center">
+                  <div class="col">
+                    <strong style="font-size: 115%;">
+                      <a href="{% inject_preserved_filters req.get_absolute_url %}">#{{ req.id }} {{ req.title }}</a>
+                    </strong>
+                    <div>
+                      {% if filter.form.request_template %}
+                        <a href="?{{ filter.form.request_template.name }}={{ req.request_template.uuid }}" class="text-muted-light" title="Form: {{ req.request_template.name }}">{{ req.request_template.name }}</a>
+                      {% else %}
+                        <span class="text-muted-light">{{ req.request_template.name }}</span>
+                      {% endif %}
+                      {% if include_content_object and req.content_object %}
+                        <span class="ms-1">
+                          <a href="{{ req.content_object.get_absolute_url }}" target="_blank"><i class="fas fa-link"></i> {{ req.content_object }}</a>
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div class="text-muted-darker">
+                      {% if req.is_private %}
+                        <span data-bs-toggle="tooltip" title="This request is private.">
+                          <i class="fas fa-lock help_text"></i>
+                        </span>
+                      {% endif %}
+                      Created <span title="{{ req.created_date|date:'N j, Y, f A T' }}">{{ req.created_date|naturaltime }}</span> by
+                      {% if filter.form.requester %}
+                        <a href="?{{ filter.form.requester.name }}={{ req.requester.username }}" class="text-muted-light" title="Requests created by {{ req.requester.username }}">{{ req.requester.username }}</a>
+                      {% else %}
+                        {{ req.requester.username }}
+                      {% endif %}
+                      {% if req.last_modified_by %}
+                        &#8226; Last edited <span title="{{ req.last_modified_date|date:'N j, Y, f A T' }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                      {% endif %}
+                    </div>
+                    {% if not exclude_product_context and req.product_context %}
+                      <div>
+                        Product context: <a href="{{ req.product_context.get_absolute_url }}" target="_blank">{{ req.product_context }}</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-auto text-end">
+                    <a href="{% inject_preserved_filters req.get_absolute_url %}#attachments" title="{% if req.attachments_count %}View{% else %}Add{% endif %} attachments">
+                      {% if req.attachments_count %}
+                        <i class="fas fa-file"></i> {{ req.attachments_count }}
+                      {% else %}
+                        + <i class="far fa-file"></i>
+                      {% endif %}
+                    </a>
+                    <a class="ms-3" href="{% inject_preserved_filters req.get_absolute_url %}#comments" title="{% if req.comments_count %}View{% else %}Add{% endif %} comments">
+                      {% if req.comments_count %}
+                        <i class="fas fa-comments"></i> {{ req.comments_count }}
+                      {% else %}
+                        + <i class="far fa-comments"></i>
+                      {% endif %}
+                    </a>
+                    <div class="text-muted-darker">
+                      {% if req.priority %}
+                        {% if filter.form.priority %}<a href="?{{ filter.form.priority.name }}={{ req.priority.label }}" title="Priority: {{ req.priority }}" class="no-style">{% endif %}
+                          <span class="badge" {% if req.priority.color_code %}style="background-color: {{ req.priority.color_code }}; color: white;"{% endif %}>{{ req.priority }}</span>
+                        {% if filter.form.priority %}</a>{% endif %}
+                      {% endif %}
+                      <strong>
+                        <a href="?{{ filter.form.status.name }}={{ req.status }}" class="text-muted-light" style="color: black!important;">
+                          {% include 'workflow/includes/request_status_icon.html' %}
+                          {{ req.get_status_display }}
+                        </a>
+                      </strong>
+                    </div>
+                    {% if req.assignee %}
+                      <div>Assigned to
+                        {% if filter.form.assignee %}
+                          <a href="?{{ filter.form.assignee.name }}={{ req.assignee.username }}" class="text-muted-light" title="Requests assigned to {{ req.assignee.username }}">{{ req.assignee.username }}</a>
+                        {% else %}
+                          {{ req.assignee.username }}
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <div class="row">
+                  <div class="col">
+                    <strong style="font-size: 115%;" class="help_text" data-bs-toggle="tooltip" title="This request is private.">
+                      #{{ req.id }} <i class="fas fa-lock"></i>
+                    </strong>
+                    <div>
+                      {% if filter.form.request_template %}
+                        <a href="?{{ filter.form.request_template.name }}={{ req.request_template.uuid }}" class="text-muted-light" title="Form: {{ req.request_template.name }}">{{ req.request_template.name }}</a>
+                      {% else %}
+                        <span class="text-muted-light">{{ req.request_template.name }}</span>
+                      {% endif %}
+                    </div>
+                    {% if include_content_object and req.content_object %}
+                      <div>
+                        <a href="{{ req.content_object.get_absolute_url }}" target="_blank"><i class="fas fa-link"></i> {{ req.content_object }}</a>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item">
+              <strong>No results.</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

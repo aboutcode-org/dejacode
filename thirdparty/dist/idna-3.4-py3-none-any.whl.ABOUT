@@ -1,0 +1,18 @@
+about_resource: idna-3.4-py3-none-any.whl
+name: idna
+version: '3.4'
+download_url: https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl
+homepage_url: https://pypi.org/project/idna/3.4/
+package_url: pkg:pypi/idna@3.4
+license_expression: bsd-new
+copyright: Copyright idna project contributors
+attribute: yes
+owner: Kim Davies
+owner_url: https://github.com/kjd
+contact: http://kim.id.au/
+checksum_md5: 7ab9782a3a1180cfa1fef20a1c9c166c
+checksum_sha1: 4460f34853efc88e4b14ea5e0e3fa7959b3f0c29
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

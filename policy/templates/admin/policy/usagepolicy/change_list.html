@@ -1,0 +1,11 @@
+{% extends "admin/change_list_extended.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        {% url opts|admin_urlname:'license_dump' as license_dump %}
+        <a class="grp-state-focus" href="{% add_preserved_filters license_dump %}">{% trans "Download License Policies as YAML" %}</a>
+    </li>
+    {{ block.super }}
+{% endblock %}

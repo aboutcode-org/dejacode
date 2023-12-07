@@ -1,0 +1,22 @@
+<form method="post">{% csrf_token %}
+  <div id="close-request-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Close Request</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-light">
+          <div class="mb-3">
+            <label for="closed_reason" class="form-label"><strong>Reason?*</strong></label>
+            <textarea class="form-control" id="closed_reason" name="closed_reason" rows="5" placeholder="Provide a reason"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Close Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

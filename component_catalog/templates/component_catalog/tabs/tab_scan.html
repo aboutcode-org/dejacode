@@ -1,0 +1,32 @@
+{% load static %}
+
+{% if show_scan_package_btn %}
+  <div class="alert alert-primary m-0" role="alert">
+    <p class="m-0">As package scanning is enabled in your Dataspace, you can submit this package download URL to ScanCode.io for scanning.</p>
+  </div>
+  <div class="container mt-3">
+    <div class="row justify-content-md-center">
+      <div class="col-4 d-grid">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#scan-package-modal">Submit Scan Request</button>
+      </div>
+    </div>
+  </div>
+  {% include 'component_catalog/includes/scan_package_modal.html' %}
+  <script>
+    document.querySelector('a#submit-scan-request').addEventListener('click', function() {
+      NEXB.displayOverlay("Submitting Scan Request...");
+    });
+  </script>
+
+{% else %}
+  {% include 'tabs/tab_content.html' %}
+  {% if object.has_license_matches %}
+    {% include 'component_catalog/includes/scan_matches_modal.html' %}
+  {% endif %}
+  {% if scan_to_package_form %}
+    {% include 'component_catalog/includes/scan_to_package_modal.html' %}
+  {% endif %}
+  {% if scan_summary_to_package_form %}
+    {% include 'component_catalog/includes/scan_summary_to_package_modal.html' %}
+  {% endif %}
+{% endif %}

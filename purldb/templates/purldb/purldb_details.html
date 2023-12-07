@@ -1,0 +1,44 @@
+{% extends 'object_details_base.html' %}
+{% load i18n static %}
+
+{% block page_title %}{% trans "PurlDB" %}: {% include 'purldb/includes/package_identifier.html' with package=purldb_obj only %}{% endblock %}
+
+{% block header_title %}
+  {% include 'purldb/includes/package_identifier.html' with package=purldb_obj only %}
+{% endblock %}
+
+{% block pager-toolbar %}
+  {% if existing_package %}
+    <a class="btn btn-outline-dark" href="{{ existing_package.get_absolute_url }}" target="_blank">
+      <i class="fas fa-external-link-alt"></i> {% trans "View Package" %}
+    </a>
+  {% elif can_add_package %}
+    <a class="btn btn-success" href="{% url 'component_catalog:package_add' %}?purldb_uuid={{ purldb_obj.uuid }}" target="_blank">
+      {% trans "Create Package" %}
+    </a>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block messages-alert %}
+  {{ block.super }}
+  <div class="container pe-0">
+    <div class="alert alert-primary" role="alert">
+      <p class="m-0">
+        You are looking at a software package defined in the PurlDB which was mined and scanned automatically from a public source.<br>
+        You can use this metadata to create a Package in your own dataspace and reference it in one of your products.
+      </p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link href="{% static 'json-viewer/jquery.json-viewer-1.4.0.css' %}" rel="stylesheet" integrity="sha384-DmZAkMO3nwB4hNMUT3hEhJxxO0cuJHi8Av9y1dGpWNklTqw2mco8gSSHpNa5iXjP" crossorigin="anonymous">
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'json-viewer/jquery.json-viewer-1.4.0.js' %}" integrity="sha384-mCd7P/7rxz1zpQAb195/BFZG4pDkLO6GdkRi772EZRiLTGdfnlhC74NrrwtSHvBI" crossorigin="anonymous"></script>
+  {% include 'includes/dependencies-json-viewer.js.html' %}
+{% endblock %}

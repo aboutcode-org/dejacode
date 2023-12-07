@@ -1,0 +1,14 @@
+about_resource: forms.py
+name: ModelFormWithWarnings
+version: 23
+download_url: https://code.djangoproject.com/attachment/ticket/23/form-warnings.2.diff
+package_url: pkg:generic/ModelFormWithWarnings@23?download_url=https://code.djangoproject.com/attachment/ticket/23/form-warnings.2.diff
+license_expression: bsd-new
+copyright: Copyright (c) django project contributors and Alex Gaynor
+attribute: yes
+notes: The class ModelFormWithWarnings is heavily modified from this original
+ unmerged patch.
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: forms.py.LICENSE

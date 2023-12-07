@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n admin_urls %}
+
+{% block title %}
+    {{ block.super }} - {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% include "admin/includes/breadcrumbs.html" with title='Compare' %}
+{% endblock %}
+
+<!-- CONTENT-TITLE -->
+{% block content_title %}
+    <h1>Check the fields that you would like to update from {{ source_object.dataspace.name }} to {{ target_object.dataspace.name }}.</h1>
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+    {% if compare_diff or compare_diff_m2m %}
+        <form method="post">{% csrf_token %}
+            <input type="hidden" name="operation" value="update">
+            <input type="hidden" value="update" name="post">
+            <fieldset>{{ form.as_p }}</fieldset>
+            <table class="grp-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Field Name</th>
+                        <th><strong><a href="{% add_preserved_filters source_object.get_admin_url %}" target="_blank">{{ source_object }}</a></strong> in {{ source_object.dataspace.name }}</th>
+                        <th><strong><a href="{% add_preserved_filters target_object.get_admin_url %}" target="_blank">{{ target_object }}</a></strong> in {{ target_object.dataspace.name }}</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for field, values in compare_diff.items %}
+                    <tr class="grp-row grp-row-{% cycle 'odd' 'even' %}">
+                        <td><strong>{{ field.verbose_name|capfirst }}</strong></td>
+                        <td>{{ values.0 }}</td>
+                        <td>{{ values.1 }}</td>
+                        <td><input type="checkbox" name="checkbox_select" value ="{{ field.name }}"></td>
+                    </tr>
+                {% endfor %}
+                {% for field, values in compare_diff_m2m.items %}
+                    {% if forloop.first %}
+                        <tr class="grp-row grp-row-{% cycle 'odd' 'even' %}">
+                            <td colspan="4" style="color: #888; background-color: #e0e0e0;">Selective update is not available on these fields. You can copy an entire object to update it.</td>
+                        </tr>
+                    {% endif %}
+                    <tr class="grp-row grp-row-{% cycle 'odd' 'even' %}">
+                        <td><strong>{{ field.verbose_name|title }}</strong></td>
+                        <td>{{ values.0|join:"<br>" }}</td>
+                        <td>{{ values.1|join:"<br>" }}</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <footer class="grp-module grp-submit-row grp-fixed-footer">
+                <ul>
+                    <li class="grp-float-left">
+                        {% url opts|admin_urlname:'changelist' as changelist_url %}
+                        <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                    </li>
+                    <li>
+                        <input type="submit" class="grp-button grp-default" value="Apply the update">
+                    </li>
+                </ul>
+            </footer>
+        </form>
+    {% else %}
+         <p>
+            <a href="{% add_preserved_filters source_object.get_admin_url %}" target="_blank">{{ source_object }}</a> in {{ source_object.dataspace.name }}
+            and
+            <a href="{% add_preserved_filters target_object.get_admin_url %}" target="_blank">{{ target_object }}</a> in {{ target_object.dataspace.name }}
+            are identical.
+        </p>
+        <footer class="grp-module grp-submit-row grp-fixed-footer">
+            <ul>
+                <li class="grp-float-left">
+                    {% url opts|admin_urlname:'changelist' as changelist_url %}
+                    <a class="grp-button cancel-link" href="{% add_preserved_filters changelist_url %}">{% trans 'Return to list' %}</a>
+                </li>
+            </ul>
+        </footer>
+    {% endif %}
+{% endblock %}

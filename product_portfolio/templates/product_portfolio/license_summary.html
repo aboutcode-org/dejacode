@@ -1,0 +1,75 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n dje_tags static %}
+
+{% block page_title %}
+  License summary
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% url 'product_portfolio:product_list' %}" title="Return to product list" data-bs-toggle="tooltip" data-bs-placement="bottom">Products</a>
+            >
+            <a href="{{ product.get_absolute_url }}">{{ product }}</a>
+          </div>
+          <h1 class="header-title">
+            License summary
+          </h1>
+        </div>
+        <div class="col-auto">
+          <a class="btn btn-outline-dark" href="?export=csv"><i class="fas fa-file-csv"></i> Export as CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages_alert.html' %}
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th scope="col">Licenses</th>
+        {% if product.dataspace.show_usage_policy_in_user_views %}
+          <th scope="col" style="min-width: 145px;">Usage policy {{ filterset.form.usage_policy }}</th>
+        {% endif %}
+        <th scope="col">Items</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for license, items in license_index.items %}
+        <tr class="{% if 'error' in license.usage_policy.compliance_alert %}table-danger{% elif 'warning' in license.usage_policy.compliance_alert %}table-warning{% endif %}">
+          <td>
+            <strong>
+              <a href="{{ license.details_url }}" target="_blank">{{ license.name }}</a>
+            </strong>
+            {% include 'license_library/includes/license_short_name_and_key.html' with license=license only %}
+          </td>
+          {% if product.dataspace.show_usage_policy_in_user_views %}
+            <td>
+              {% if license.usage_policy %}
+                {{ license.get_usage_policy_display_with_icon }}
+              {% endif %}
+            </td>
+          {% endif %}
+          <td>
+            {% for item in items %}
+              <div class="mb-2">
+                <span data-bs-toggle="tooltip" title="Parent: {% if item.direct_parent %}{{ item.direct_parent }}{% else %}{{ product }}{% endif %}">
+                  <i class="fas fa-sitemap cursor-help me-2"></i>
+                </span>
+                <span>
+                  {% include 'includes/object_icon.html' with object=item only %}
+                </span>
+                <strong><a href="{{ item.get_absolute_url }}" target="_blank">{{ item }}</a></strong>
+                <code class="key ms-1 white-space-normal">{{ item.license_expression }}</code>
+              </div>
+            {% endfor %}
+          </td>
+        </tr>
+     {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

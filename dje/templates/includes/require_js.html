@@ -1,0 +1,13 @@
+{% load static %}
+<script>
+    require(['{% static 'js/requirejs_config.js' %}'], function () {
+
+        {% if debug %}
+            requirejs.config({
+                urlArgs: 'bust=' + (new Date()).getTime()  // Cache buster for development
+            });
+        {% endif %}
+
+        require(['{{ js_file }}']);
+    });
+</script>

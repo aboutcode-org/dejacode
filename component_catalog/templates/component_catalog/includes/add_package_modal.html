@@ -1,0 +1,76 @@
+{% load static %}
+
+<div class="modal" tabindex="-1" role="dialog" id="add-package-modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Package</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="package-add-form" method="post" data-add-url="{% url "component_catalog:package_add_urls" %}">{% csrf_token %}
+        <div class="modal-body bg-light">
+          <div>
+            <label for="download-urls" class="form-label">Download URL(s)</label>
+            <textarea class="form-control" id="download-urls" aria-describedby="download-urls-help" placeholder="https://..."></textarea>
+            <small id="download-urls-help" class="form-text text-muted">
+              Enter the download URL for obtaining the package.<br>
+              You can provide multiple URLs separated by a new-line.<br>
+              A download URL is one that will immediately initiate the download of a software package if you click it on a browser page or paste it into a browser address field.<br><br>
+              Note that this feature is intended only for <strong>publicly available open source packages</strong>, not your private code.<br>
+              DejaCode will automatically collect the <code>filename</code>, <code>sha1</code>, <code>md5</code>, and <code>size</code> and apply them to the package definition.
+            </small>
+            {% if user.dataspace.enable_package_scanning %}
+              <small class="form-text text-muted mt-3">
+                <strong>Package scanning is enabled in your Dataspace</strong>, DejaCode will also submit the package to ScanCode.io and the results will be returned to the "Scan" detail tab of the package when that scan is complete.
+              </small>
+            {% endif %}
+            <div id="package-add-error" class="alert alert-danger mt-3" role="alert" style="display: none;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#add-package-modal').on('shown.bs.modal', function () {
+            $("#download-urls").focus();
+        });
+
+        $('#package-add-form').on('submit', function(e) {
+            e.preventDefault();
+            let add_form = $(this);
+            let download_urls = $("#download-urls").val();
+            if (!download_urls) return;
+
+            NEXB.displayOverlay("Package data collection in progress...");
+            console.log('Submitting URLs:', download_urls);
+            $.ajax({
+                url: add_form.attr('data-add-url'),
+                type: 'POST',
+                headers: {'X-CSRFToken': csrftoken},
+                data: {
+                    'download_urls': download_urls
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.redirect_url) {
+                        location.href = data.redirect_url;
+                    }
+                },
+                error: function(data) {
+                    $('#overlay').remove();
+                    let error_msg = data;
+                    if (data.responseJSON) error_msg = data.responseJSON.error_message;
+                    $('#package-add-error').html('<strong>Error:</strong> ' + error_msg).show();
+                }
+            });
+        });
+    });
+</script>

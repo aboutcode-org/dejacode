@@ -1,0 +1,14 @@
+{% load i18n %}
+<div class="grp-module">
+	<div class="grp-row">
+	    <label>{% blocktrans with title|capfirst as filter_title %}{{ filter_title }}{% endblocktrans %}</label>
+        <div class="grp-autocomplete-wrapper-fk">
+            <input id="id_{{ spec.field.name }}-autocomplete" type="text" class="ui-autocomplete-input" value="{{ spec.lookup_object }}" autocomplete="off" readonly="readonly">
+            <input class="grp-autocomplete-hidden-field" id="id_{{ spec.field.name }}" type="text" value="{{ spec.lookup_val }}" data-lookup-kwarg="{{ spec.lookup_kwarg }}" tabindex="-1" readonly="readonly">
+            {% if spec.lookup_val %}
+                <a class="grp-related-remove" href="{{ spec.removal_href }}"></a>
+            {% endif %}
+            <a href="{{ spec.lookup_url }}?_to_field=id{% if spec.lookup_params %}{{ spec.lookup_params }}{% endif %}" class="related-lookup" id="lookup_id_{{ spec.field.name }}" title="Lookup"></a>
+        </div>
+	</div>
+</div>

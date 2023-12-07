@@ -1,0 +1,12 @@
+{% load i18n admin_urls %}
+<ul class="grp-horizontal-list">
+    <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+    <li><a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a></li>
+    {% url opts|admin_urlname:'changelist' as changelist_url %}
+    <li><a href="{% add_preserved_filters changelist_url %}">{{ opts.verbose_name_plural|capfirst }}</a></li>
+    {% if object %}
+        {% url opts|admin_urlname:'change' object.pk|admin_urlquote as object_url %}
+        <li><a href="{% add_preserved_filters object_url %}">{{ object|truncatewords:"18" }}</a></li>
+    {% endif %}
+    <li>{% trans title %}</li>
+</ul>

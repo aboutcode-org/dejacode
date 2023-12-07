@@ -1,0 +1,59 @@
+[
+  {
+    "display_name": "Django 1.6",
+    "api_url": "http://127.0.0.1:8000/api/v2/components/f3712a82-f5d8-4035-a1b2-5b8384647e3d/",
+    "absolute_url": "http://127.0.0.1:8000/components/nexB/Django/1.6/",
+    "uuid": "f3712a82-f5d8-4035-a1b2-5b8384647e3d",
+    "name": "Django",
+    "version": "1.6",
+    "owner": "http://127.0.0.1:8000/api/v2/owners/86c73dc6-b888-4764-a80d-08faa7ce3c6f/",
+    "owner_name": "Django Software Foundation",
+    "copyright": "Copyright (c) Django Software Foundation and individual contributors.",
+    "license_expression": "bsd-new",
+    "reference_notes": "",
+    "release_date": "2013-11-06",
+    "description": "Django is a high-level Python Web framework that encourages rapid development and clean, pragmatic design.\r\n\r\nDeveloped by a fast-moving online-news operation, Django was designed to handle two challenges: the intensive deadlines of a newsroom and the stringent requirements of the experienced Web developers who wrote it. It lets you build high-performing, elegant Web applications quickly.",
+    "homepage_url": "https://www.djangoproject.com/",
+    "vcs_url": "",
+    "code_view_url": "https://pypi.python.org/packages/source/D/Django/",
+    "bug_tracking_url": "",
+    "primary_language": "Python",
+    "type": null,
+    "notice_text": "Copyright (c) Django Software Foundation and individual contributors.\r\n\r\nRedistribution and use in source and binary forms, with or without modification,\r\nare permitted provided that the following conditions are met:\r\n\r\n    1. Redistributions of source code must retain the above copyright notice, \r\n       this list of conditions and the following disclaimer.\r\n    \r\n    2. Redistributions in binary form must reproduce the above copyright \r\n       notice, this list of conditions and the following disclaimer in the\r\n       documentation and/or other materials provided with the distribution.\r\n\r\n    3. Neither the name of Django nor the names of its contributors may be used\r\n       to endorse or promote products derived from this software without\r\n       specific prior written permission.\r\n\r\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\r\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\r\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\r\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR\r\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\r\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\r\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\r\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\r\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\r\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n",
+    "is_license_notice": true,
+    "is_copyright_notice": true,
+    "is_notice_in_codebase": true,
+    "notice_filename": "LICENSE",
+    "notice_url": "",
+    "dependencies": "",
+    "configuration_status": null,
+    "is_active": true,
+    "usage_policy": null,
+    "curation_level": 50,
+    "completion_level": 84,
+    "guidance": "",
+    "admin_notes": "",
+    "keywords": [],
+    "packages": [
+        "http://127.0.0.1:8000/api/v2/packages/49b9b9f2-74b2-41e1-9b1b-cf1931f5adc5/"
+    ],
+    "external_references": [],
+    "approval_reference": "",
+    "urn": "urn:dje:component:Django:1.6",
+    "licenses": [
+        "http://127.0.0.1:8000/api/v2/licenses/ad058608-8364-4c07-8957-9ad311c90f66/"
+    ],
+    "licenses_summary": [
+        {
+            "key": "bsd-new",
+            "short_name": "BSD-Modified",
+            "name": "BSD-Modified",
+            "category": "Permissive",
+            "type": "Open Source",
+            "is_primary": true
+        }
+    ],
+    "created_date": "2014-02-24T15:43:30.415000",
+    "last_modified_date": "2014-02-24T15:44:17.483000"
+  }
+]

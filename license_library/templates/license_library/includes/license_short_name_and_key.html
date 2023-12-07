@@ -1,0 +1,11 @@
+{% if license.short_name %}
+  <div class="row-fluid">
+    {{ license.short_name|default_if_none:"" }}
+  </div>
+{% endif %}
+<div class="row-fluid">
+  <span data-bs-toggle="tooltip" title="License Key">
+    <i class="fas fa-key fa-sm cursor-help"></i>
+  </span>
+  <code class="key ms-1">{{ license.key }}</code>
+</div>

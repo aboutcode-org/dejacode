@@ -1,0 +1,25 @@
+<script>
+    (function($) {
+        document.addEventListener('DOMContentLoaded', function () {
+            // the `form` is only available if not perms_lacking and not protected
+            var form = $('form[method="post"]');
+            if (form.length) {
+                form.append('<input type="hidden" name="delete_packages">');
+                var delete_packages = $('input[name="delete_packages"]');
+                $('h2').parent().before(
+                    '<div class="grp-group">' +
+                    '<h2>Would you also like to delete Packages associated with {% if plural %}these Components?{% else %}this Component{% endif %} ' +
+                    '<input type="checkbox" name="enable_delete_packages" id="enable_delete_packages">' +
+                    '<label for="enable_delete_packages" class="form-label">Yes</label></h2>' +
+                    '<ul class="grp-nested-list">{% for package in packages %}<li>Package: {{ package }}</li>{% endfor %}</ul>' +
+                    '</div>'
+                );
+                var enable_delete_packages = $('input[name="enable_delete_packages"]');
+                enable_delete_packages.on('click', function() {
+                    if (enable_delete_packages.prop("checked")) delete_packages.prop("value", "yes");
+                    else delete_packages.prop("value", "");
+                });
+            }
+        });
+    })(grp.jQuery);
+</script>

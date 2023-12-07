@@ -1,0 +1,37 @@
+{% extends 'object_list_base.html' %}
+{% load i18n %}
+
+{% block top-right-buttons %}
+  <a href="#license_text_search_modal" data-bs-toggle="modal" class="btn btn-outline-dark">
+    <i class="fas fa-magnifying-glass"></i> {% trans "License text search" %}
+  </a>
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% include "license_library/includes/license_text_search_modal.html" %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    $('span[data-category-pk]').popover({
+      'placement': 'right',
+      'trigger': 'hover',
+      'html': true,
+      'container': 'body',
+      'content': function(){
+        var pk = $(this).data('category-pk');
+        return NEXB.client_data.license_categories[pk];
+      },
+      'title': function(){ return $(this).text(); }
+    });
+
+    $('#license_text_search_modal').on('shown.bs.modal', function () {
+      $('textarea#text_search').focus();
+    });
+  });
+  </script>
+{% endblock %}

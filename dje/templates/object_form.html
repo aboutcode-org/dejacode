@@ -1,0 +1,99 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}
+  {% if form.is_addition %}Add {% trans verbose_name|capfirst %}{% else %}Edit {{ form.instance }}{% endif %}
+{% endblock %}
+
+{% block bodyclass %}object-form{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col-auto me-auto">
+          <div class="header-pretitle">
+            <a class="me-1" href="{{ list_url }}" title="Return to {% trans verbose_name_plural %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans verbose_name_plural %}</a>
+          </div>
+          <h1 class="header-title">
+            {% if form.is_addition %}
+              Add {% trans verbose_name|capfirst %}
+            {% else %}
+              Edit <a href="{{ form.instance.get_absolute_url }}">{{ form.instance }}</a>
+            {% endif %}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/form_errors_alert.html' %}
+
+  <div class="card card-border-color card-border-color-primary">
+    <div class="card-body bg-light p-4">
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  {% if form.fields.license_expression %}
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+  {% endif %}
+  {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
+  {{ form.identifier_fields|json_script:"identifier_fields" }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof(flatpickr) != 'undefined') $('.datepicker').flatpickr();
+
+      {% if form.fields.license_expression and licenses_data_for_builder %}
+        let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
+        NEXB.setup_awesomplete_builder(
+          $('#id_license_expression').get(0), null, 100,licenses_data_for_builder);
+      {% endif %}
+
+      {% if form.fields.keywords %}
+        {% include 'includes/keywords_autocomplete.js.html' %}
+      {% endif %}
+
+      {% if form.save_as and not form.is_addition %}
+        /* "Save as new" button only enabled if one of the identifier fields is modified */
+        let identifier_fields = JSON.parse(document.getElementById("identifier_fields").textContent);
+
+        let field_ids = [];
+        $.each(identifier_fields, function (index, field_name) {
+          field_ids.push(`#id_${field_name}`);
+        });
+
+        let input_fields = $(field_ids.join(","));
+        let save_as_new = $('input[name="save_as_new"]');
+        save_as_new.tooltip({"title": `Update the ${identifier_fields.join(" or ")} first`});
+
+        $.each(input_fields, function (index, field) {
+          $(field).data("initial", $(field).val());
+        });
+
+        let field_has_changed = function(field) {
+          return field.data("initial") !== field.val();
+        };
+
+        input_fields.on("input", function(event) {
+          if (field_has_changed($(this))) {
+            save_as_new.tooltip("disable");
+            save_as_new.removeClass("disabled");
+          }
+          else {
+            save_as_new.tooltip("enable");
+            save_as_new.addClass("disabled");
+          }
+        });
+
+        save_as_new.on("click", function(event) {
+          if ($(this).hasClass("disabled")) event.preventDefault();
+        });
+      {% endif %}
+    });
+  </script>
+{% endblock %}

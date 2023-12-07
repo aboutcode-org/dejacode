@@ -1,0 +1,54 @@
+{% load i18n %}
+{% if relationship %}
+  {% with related=relationship.related_component_or_package %}
+    <ul class="list-unstyled">
+      <li>
+        <strong>
+          {% if related %}
+            <span class="me-1">
+              {% include 'includes/object_icon.html' with object=related only %}
+            </span>
+            {{ related.get_absolute_link }}
+          {% else %}
+            <span data-bs-toggle="tooltip" title="Custom Component">
+              <i class="fa fa-puzzle-piece me-1 text-muted"></i>{{ relationship }}
+            </span>
+          {% endif %}
+        </strong>
+      </li>
+      {% if related.owner %}
+        <li>
+          Owner:
+          {% if related.owner %}
+            {{ related.owner }}
+          {% else %}
+            {{ relationship.owner }}
+          {% endif %}
+        </li>
+      {% endif %}
+      <li>
+        <i>License</i>:
+        {% if user.dataspace.show_usage_policy_in_user_views %}
+          {{ relationship.get_license_expression_linked_with_policy|default_if_none:"" }}
+        {% else %}
+          {{ relationship.license_expression_linked|default_if_none:"" }}
+        {% endif %}
+      </li>
+      <li><i>Review status</i>: {{ relationship.review_status }}</li>
+      {% if relationship.purpose %}
+        <li><i>Purpose</i>: {{ relationship.purpose.label_with_icon }}</li>
+      {% endif %}
+    </ul>
+    {% if diff %}
+      <ul class="list-unstyled {% if is_left %}left-diff{% else %}right-diff{% endif %}">
+        {% for field, values in diff.items %}
+          <li>
+            {% if is_left %}-{% else %}+{% endif %}
+            <strong>{% trans field.verbose_name|title %}</strong>
+            {% if is_left %}{{ values.0 }}{% else %}{{ values.1 }}{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+{% endif %}

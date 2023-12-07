@@ -1,0 +1,67 @@
+{% load i18n %}
+<div id="{% if is_product %}product_{{ instance.pk }}{% elif relation.package_id %}package_{{ relation.pk }}{% elif relation %}component_{{ relation.pk }}{% else %}component_{{ instance.pk }}{% endif %}" class="card bg-light mb-2">
+  <div class="card-body py-1 ps-2 pe-1">
+    <ul class="list-inline float-end mb-0">
+      {% if request.user.is_authenticated and is_user_dataspace and instance.request_count %}
+        <li class="list-inline-item me-1">
+          {# {% if not is_current %} is required to properly trigger the tab switch #}
+          <a href="{% if not is_current %}{{ instance.get_absolute_url }}{% endif %}#activity" data-bs-toggle="tooltip" title="{% trans 'Requests' %}">
+            <span class="badge text-bg-request align-top" style="font-size: 87%">R</span>
+          </a>
+        </li>
+      {% endif %}
+      {% if instance.dataspace.show_usage_policy_in_user_views and instance.usage_policy %}
+        <li class="list-inline-item">
+          <span data-bs-toggle="tooltip" title="{{ instance.usage_policy.label }}">{{ instance.get_usage_policy_as_icon }}</span>
+        </li>
+      {% endif %}
+    </ul>
+
+    <strong>
+      {% include 'includes/object_icon.html' with object=instance only %}
+      {% if is_current %}
+        {{ instance }}
+      {% elif relation.package_id %}
+        <a href="{{ instance.get_absolute_url }}">{{ instance }}</a>
+        {% if has_edit_productpackage %}
+          <span data-bs-toggle="modal" data-bs-target="#edit-productrelation-modal" data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'package' relation.uuid %}" class="ms-1"{% if has_delete_productpackage %} data-can-delete="yes"{% endif %}>
+            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+          </span>
+        {% endif %}
+      {% elif instance.is_active or is_product %}
+        <a href="{{ instance.get_absolute_url }}#hierarchy">{{ instance }}</a>
+        {% if relation.component_id and has_edit_productcomponent %}
+          <span data-bs-toggle="modal" data-bs-target="#edit-productrelation-modal" data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'component' relation.uuid %}" class="ms-1"{% if has_delete_productcomponent %} data-can-delete="yes"{% endif %}>
+            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+          </span>
+        {% endif %}
+      {% elif not instance %}
+        <span data-bs-toggle="tooltip" title="Custom Component">
+          <i class="fa fa-puzzle-piece me-1 text-muted"></i>
+        </span>
+        {% if relation.name %}
+          <strong>{{ relation.name }} {{ relation.version }}</strong>
+        {% else %}
+          <i>(Component data missing)</i>
+        {% endif %}
+        {% if has_edit_productcomponent %}
+          <span data-bs-toggle="modal" data-bs-target="#edit-productrelation-modal" data-edit-url="{% url 'product_portfolio:edit_productrelation_ajax' 'custom-component' relation.uuid %}" class="ms-1"{% if has_delete_productcomponent %} data-can-delete="yes"{% endif %}>
+            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+          </span>
+        {% endif %}
+      {% else %}
+        {{ instance }}
+      {% endif %}
+    </strong>
+
+    <div>
+      {% if subcomponent %}
+        {{ subcomponent.child.license_expression_linked|default_if_none:"" }}
+      {% elif relation %}
+        {{ relation.related_component_or_package.license_expression_linked|default_if_none:"" }}
+      {% else %}
+        {{ instance.license_expression_linked|default_if_none:"" }}
+      {% endif %}
+    </div>
+  </div>
+</div>

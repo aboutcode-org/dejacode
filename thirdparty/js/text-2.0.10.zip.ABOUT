@@ -1,0 +1,25 @@
+about_resource: text-2.0.10.zip
+name: text
+version: 2.0.10
+download_url: https://github.com/requirejs/text/archive/2.0.10.zip
+description: A RequireJS/AMD loader plugin for loading text resources.
+homepage_url: https://github.com/requirejs/text
+package_url: pkg:github/requirejs/text@2.0.10
+license_expression: mit
+copyright: Copyright jQuery Foundation and other contributors, https://jquery.org/
+notice_file: text-2.0.10.zip.NOTICE
+notice_url: https://raw.github.com/jrburke/requirejs/master/LICENSE
+attribute: yes
+owner: Dojo Foundation
+owner_url: http://dojofoundation.org/
+contact: http://dojofoundation.org/contact
+vcs_repository: https://github.com/requirejs/text
+checksum_md5: 174128828bfb038d685b150e4c502e9f
+checksum_sha1: e057a62f2ee67975ca43ad8d7ec3414c81b60c8c
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: cc0-1.0
+    name: Creative Commons CC0 1.0 Universal
+    file: cc0-1.0.LICENSE

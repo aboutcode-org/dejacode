@@ -1,0 +1,17 @@
+about_resource: model_bakery-1.10.1-py2.py3-none-any.whl
+name: model-bakery
+version: 1.10.1
+download_url: https://files.pythonhosted.org/packages/af/c8/4553249a2092b3d07d44a0d0438b06f712c618bb5736fd4642a0b6758fc9/model_bakery-1.10.1-py2.py3-none-any.whl
+homepage_url: https://pypi.org/project/model-bakery/1.10.1/
+package_url: pkg:pypi/model-bakery@1.10.1
+license_expression: apache-2.0
+copyright: Copyright model-bakery project contributors
+attribute: yes
+track_changes: yes
+owner: Vanderson Mota
+checksum_md5: 179a2e8c0d3ee2b8fec93ecccbd50d4a
+checksum_sha1: 59dfa24bdd6d496e8b885c57cec0543ce32d033d
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

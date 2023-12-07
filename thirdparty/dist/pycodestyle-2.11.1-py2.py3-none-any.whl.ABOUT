@@ -1,0 +1,14 @@
+about_resource: pycodestyle-2.11.1-py2.py3-none-any.whl
+name: pycodestyle
+version: 2.11.1
+download_url: https://files.pythonhosted.org/packages/b1/90/a998c550d0ddd07e38605bb5c455d00fcc177a800ff9cc3dafdcb3dd7b56/pycodestyle-2.11.1-py2.py3-none-any.whl
+package_url: pkg:pypi/pycodestyle@2.11.1
+license_expression: mit
+copyright: Copyright pycodestyle project contributors
+attribute: yes
+checksum_md5: d28d25e739d7dccd20965cfc19bc8d9b
+checksum_sha1: db8695ff6e4fbf0e978536419ccaa6a98f8904a1
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

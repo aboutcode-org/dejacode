@@ -1,0 +1,19 @@
+about_resource: click-8.1.3-py3-none-any.whl
+name: click
+version: 8.1.3
+download_url: https://files.pythonhosted.org/packages/c2/f1/df59e28c642d583f7dacffb1e0965d0e00b218e0186d7858ac5233dce840/click-8.1.3-py3-none-any.whl
+homepage_url: https://pypi.org/project/click/8.1.3/
+package_url: pkg:pypi/click@8.1.3
+license_expression: bsd-new
+copyright: Copyright (c) Gregory P. Ward
+notice_file: click-8.1.3-py3-none-any.whl.NOTICE
+attribute: yes
+owner: Armin Ronacher
+owner_url: http://lucumr.pocoo.org/about/
+contact: armin.ronacher@active-4.com
+checksum_md5: 7a8260e7bdac219be27f0bdda48e79ce
+checksum_sha1: 6176609edd5d6dc5258c1aaa32f4dc72b5a008a9
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

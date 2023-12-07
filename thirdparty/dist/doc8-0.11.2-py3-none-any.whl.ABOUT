@@ -1,0 +1,15 @@
+about_resource: doc8-0.11.2-py3-none-any.whl
+name: doc8
+version: 0.11.2
+download_url: https://files.pythonhosted.org/packages/73/c5/cab73b9e5d381a8fb4823ac99952cbf69fc45bb62774b89d772c5c389159/doc8-0.11.2-py3-none-any.whl
+package_url: pkg:pypi/doc8@0.11.2
+license_expression: apache-2.0
+copyright: Copyright doc8 project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: eeab855622b57da5852ee6a23bf17a2d
+checksum_sha1: 6cfbb70d0907bd0081a45568a76ce9456b92be97
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

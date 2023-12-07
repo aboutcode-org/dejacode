@@ -1,0 +1,2 @@
+curation_level,configuration_status,owner,version,license,admin_notes, copyright,name,homepage_url,code_view_url,notice_url,description
+30,New From Collection,Christian KohlschÅtter (boilerpipe),1.1.0,Apache 2.0,,Copyright (c) 2009 Christian KohlschÅtter,boilerpipe,https://code.google.com/p/boilerpipe/,http://repo1.maven.org/maven2/de/l3s/boilerpipe/boilerpipe/1.1.0/boilerpipe-1.1.0.jar,http://www.apache.org/licenses/LICENSE-2.0,Boilerplate Removal and Fulltext Extraction from HTML pages

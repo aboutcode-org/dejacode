@@ -1,0 +1,22 @@
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0"></dt>
+<dd class="col-sm-10">
+  <div class="row align-items-end">
+    <div class="col">
+      <div class="header-pretitle">
+        {{ values.pretitle }}
+        {% if values.help_text %}
+          <span data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true" data-bs-content="{{ values.help_text|linebreaksbr }}">
+            <i class="fas fa-question-circle"></i>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+    {% if values.right_button_data_target %}
+      <div class="col-auto">
+        <a class="btn btn-outline-dark btn-sm" href="#" data-bs-toggle="modal" data-bs-target="{{ values.right_button_data_target }}"><i class="fas fa-arrow-alt-circle-right"></i> Set values to Package</a>
+      </div>
+    {% endif %}
+  </div>
+</dd>
+{% if forloop.last %}</dl>{% endif %}

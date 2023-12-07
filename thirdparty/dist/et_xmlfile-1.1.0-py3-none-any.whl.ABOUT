@@ -1,0 +1,18 @@
+about_resource: et_xmlfile-1.1.0-py3-none-any.whl
+name: et-xmlfile
+version: 1.1.0
+download_url: https://files.pythonhosted.org/packages/96/c2/3dd434b0108730014f1b96fd286040dc3bcb70066346f7e01ec2ac95865f/et_xmlfile-1.1.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/et-xmlfile/1.1.0/
+package_url: pkg:pypi/et-xmlfile@1.1.0
+license_expression: mit
+copyright: Copyright (c) openpyxl
+notice_file: et_xmlfile-1.1.0-py3-none-any.whl.NOTICE
+attribute: yes
+owner: openpyxl Project
+owner_url: https://pypi.org/project/openpyxl/
+checksum_md5: 9a29d8fafcf8ee613d29a2cd0035f088
+checksum_sha1: 85d20d45ef9e8e6246f804f87d2ac87abe4685cf
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

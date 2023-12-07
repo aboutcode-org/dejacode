@@ -1,0 +1,55 @@
+<script>
+  $(document).ready(function () {
+    let add_to_btn = $('#add-to-btn');
+
+    let handle_button_display = function () {
+      let count = $('main input[type="checkbox"]:checked').length;
+      if (count >= 1) {
+        add_to_btn.removeClass('disabled');
+        add_to_btn.parent().attr('data-bs-title', '');
+    }
+      else {
+        add_to_btn.addClass('disabled');
+        add_to_btn.parent().attr('data-bs-title', 'Select objects first');
+      }
+    };
+
+    $('main input[type="checkbox"]').on('change', function() {
+      handle_button_display();
+    });
+
+    // Runs on load to support the "back" button of the browser
+    handle_button_display();
+
+    $('#add-to-product-modal, #add-to-component-modal').on('show.bs.modal', function (event) {
+      let checked = $('main input[type="checkbox"]:checked');
+
+      if (checked.length < 1) {
+        event.preventDefault();
+        return false;
+      }
+
+      let ids_input = $(this).find('#id_ids');
+      let object_repr_list = $(this).find('#object-repe-list');
+
+      if (ids_input) {
+        let selected_ids = [];
+        object_repr_list.html('');
+
+        checked.each(function() {
+          selected_ids.push(this.value);
+          $('<li/>').text($(this).data('object-repr')).appendTo(object_repr_list);
+        });
+
+        ids_input.val(selected_ids);
+
+        let new_component_link = $('#new-component-link');
+        if (new_component_link) {
+            let new_component_url = new_component_link.data('add-url') + '?package_ids=' + selected_ids.join();
+            new_component_link.attr('href', new_component_url);
+        }
+      }
+    });
+
+  });
+  </script>

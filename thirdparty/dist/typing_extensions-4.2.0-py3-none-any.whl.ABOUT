@@ -1,0 +1,20 @@
+about_resource: typing_extensions-4.2.0-py3-none-any.whl
+name: typing-extensions
+version: 4.2.0
+download_url: https://files.pythonhosted.org/packages/75/e1/932e06004039dd670c9d5e1df0cd606bf46e29a28e65d5bb28e894ea29c9/typing_extensions-4.2.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/typing-extensions/4.2.0/
+package_url: pkg:pypi/typing-extensions@4.2.0
+license_expression: python
+copyright: Copyright (c) Python Software Foundation
+notice_file: typing_extensions-4.2.0-py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: Python Software Foundation (PSF)
+owner_url: http://www.python.org/psf/
+contact: http://www.python.org/psf/about/#how-do-i-reach-the-psf
+checksum_md5: 95fc87a08006c5249ae13b8a1c3770b9
+checksum_sha1: ff0849420e94f425818bff5d0f25e3cdfaba8601
+licenses:
+  - key: python
+    name: Python Software Foundation License v2
+    file: python.LICENSE

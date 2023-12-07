@@ -1,0 +1,112 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load admin_urls %}
+{% load static %}
+
+{% block title %}
+    {{ block.super }} - {{ opts.verbose_name_plural|capfirst }}
+{% endblock %}
+
+{# Removes the Grappelli HACK on URLField, see: #}
+{# https://github.com/sehmaschine/django-grappelli/blob/master/grappelli/templates/admin/change_form.html#L82 #}
+{% block js_remove_url %}{% endblock %}
+
+{% block object-tools %}
+    <ul class="grp-object-tools">
+    {% block object-tools-list %}{# DJE: Added this block to support item outside the 'change' context #}
+        <li><a class="grp-state-focus" href="javascript://" onclick="(function($){$('p.grp-help').toggle('fast');$('#long_description').toggle('fast');})(grp.jQuery);">{% trans "Show/Hide help" %}</a></li>
+        {% if change %}
+            {% if not is_popup %}
+                {% block object-tools-items %}
+                    {% if adminform.model_admin.navigation_buttons %}
+                        {% if previous_id %}
+                            {% url opts|admin_urlname:'change' previous_id as previous_url %}
+                            <li><a class="grp-state-focus" href="{% add_preserved_filters previous_url %}">&larr; Previous {% trans opts.object_name %}</a></li>
+                        {% endif %}
+                        {% if next_id %}
+                            {% url opts|admin_urlname:'change' next_id as next_url %}
+                            <li><a class="grp-state-focus" href="{% add_preserved_filters next_url %}">Next {% trans opts.object_name %} &rarr;</a></li>
+                        {% endif %}
+                    {% endif %}
+                    {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                    <li><a href="{% add_preserved_filters history_url %}">{% trans "History" %}</a></li>
+                    {% if has_absolute_url %}
+                        <li><a href="{{ absolute_url }}" class="grp-state-focus" target="_blank">{% trans "View" %}</a></li>
+                    {% endif%}
+                    {% url opts|admin_urlname:'hierarchy' object_id as hierarchy_url %}
+                    {% if hierarchy_url %}
+                        <li><a href="{% add_preserved_filters hierarchy_url %}" class="grp-state-focus">{% trans 'Hierarchy' %}</a></li>
+                    {% endif%}
+                    {% if original.request_count %}
+                        <li><a href="{{ original.get_absolute_url }}#activity" target="_blank" class="grp-state-focus">{% trans 'Requests' %}</a></li>
+                    {% endif %}
+                {% endblock %}
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <div id="short_description">{% trans adminform.model_admin.short_description %}</div>
+    <div id="long_description">{% trans adminform.model_admin.long_description %}</div>
+    {{ block.super }}
+{% endblock %}
+
+{% block after_related_objects %}
+    {% if next_id %}
+        <input type="hidden" name="next_id" id="next_id" value="{{ next_id }}"/>
+    {% endif %}
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    {# Those scripts tag must be placed at the bottom of the page so that their event handlers are bound after Grappelli's. #}
+    {# It will not work otherwise because the event handlers here expect a new inline form to have been added (Grappelli's duty) before they execute. #}
+    <script src="{% static 'js/edit-autocomplete-link.js' %}" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script src="{% static 'js/underscore-min.js' %}" integrity="sha384-vied7n5P66xFsutta/+hVcYu4YamRGsQQt0a3aeD3TotQbxFw7FU/PqURWBKMqOG" crossorigin="anonymous"></script>
+    <script src="{% static 'js/underscore.string.min.js' %}" integrity="sha384-dBBWt7KQ4Is2ZI1CImdIvLjF+VXUIPYNFIvVCgkvTDm4iBwA6Y0QYxYS6IN3vVDA" crossorigin="anonymous"></script>
+    {{ identifier_fields|json_script:"identifier_fields" }}
+    <script type="text/javascript">
+        (function($) {
+            document.addEventListener('DOMContentLoaded', function () {
+                {% if change %}
+                    $('p.grp-help').hide();
+                    $('#long_description').hide();
+                {% else %}
+                    $('#long_description').show();
+                {% endif %}
+            
+                {% if next_id and not show_save == False %}{# 'not show_save == False' handles both True and None #}
+                    var str = '<li><input type="submit" value="{% trans 'Save and go to next' %}" name="_next" /></li>';
+                    $(".grp-submit-row > ul").append(str);
+                {% endif %}
+
+                {% if identifier_fields %}
+                    // Takes the json value from the view context
+                    var identifier_fields = JSON.parse(document.getElementById("identifier_fields").textContent);
+                    var identifier_inputs = $('#id_' + identifier_fields.join(', #id_'));
+                    var serialized_state = identifier_inputs.serialize();
+
+                    // Store the given fields value first, check if same on save!
+                    $(':submit').on('click', function(e) {
+                        var button = $(this);
+                        var button_name = button.prop('name');
+                        // No confirmation needed on "Save as new"
+                        if (button_name == '_saveasnew') return true;
+                        // Check if any of the identifier_fields has changed
+                        if (serialized_state == identifier_inputs.serialize()) return true;
+                        var confirm_msg = 'Are you sure that you want to change the value that uniquely identifies this item?\nClick Yes to proceed with the change, or choose "Save as new" instead to create a copy of this item with the new identifier.';
+                        // Let the event go through unless the user "Cancel".
+                        // This way the values from the used button are kept in the form data.
+                        if (!confirm(confirm_msg)) e.preventDefault();
+                    });
+                {% endif %}
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}

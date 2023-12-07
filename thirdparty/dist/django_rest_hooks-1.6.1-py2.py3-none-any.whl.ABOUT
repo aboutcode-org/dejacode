@@ -1,0 +1,16 @@
+about_resource: django_rest_hooks-1.6.1-py2.py3-none-any.whl
+name: django-rest-hooks
+version: 1.6.1
+download_url: https://github.com/nexB/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl
+homepage_url: https://github.com/nexb/django-rest-hooks/tree/1.6.1
+package_url: pkg:github/nexb/django-rest-hooks@1.6.1?download_url=https://github.com/nexB/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl
+license_expression: bsd-new
+copyright: Copyright django-rest-hooks project contributors
+attribute: yes
+owner: Zapier
+checksum_md5: ab6041ca965e9b7c92388d01f7a2fbb4
+checksum_sha1: 9e62b86c7dcaa742b1a92140ffc8d4448327f6dd
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

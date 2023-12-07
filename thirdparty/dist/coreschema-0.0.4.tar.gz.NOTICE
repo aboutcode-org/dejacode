@@ -1,0 +1,8 @@
+Metadata-Version: 1.1
+Name: coreschema
+Version: 0.0.4
+Summary: Core Schema.
+Home-page: https://github.com/core-api/python-coreschema
+Author: Tom Christie
+Author-email: tom@tomchristie.com
+License: BSD

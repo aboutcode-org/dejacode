@@ -1,0 +1,21 @@
+about_resource: spin.js-1.3.2.zip
+name: spin.js
+version: 1.3.2
+download_url: https://github.com/fgnass/spin.js/archive/1.3.2.zip
+description: Spin.js dynamically creates spinning activity indicators that can be used as resolution-independent
+  replacement for AJAX loading GIFs.
+homepage_url: http://fgnass.github.io/spin.js/
+package_url: pkg:github/fgnass/spin.js@1.3.2
+license_expression: mit
+copyright: Copyright (c) Felix Gnass [fgnass at neteye dot de]
+notice_file: spin.js-1.3.2.zip.NOTICE
+notice_url: https://raw.github.com/fgnass/spin.js/1.3.2/LICENSE.txt
+attribute: yes
+owner: Felix Gnass
+vcs_repository: https://github.com/fgnass/spin.js
+checksum_md5: 51676f55e29fdb9f5008735a1c5a29ac
+checksum_sha1: f68b36040e6c2ee16b6eab4755ac9d1f3335b6e0
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

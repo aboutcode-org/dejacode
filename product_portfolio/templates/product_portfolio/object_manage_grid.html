@@ -1,0 +1,306 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n static humanize %}
+{% load crispy_forms_tags %}
+
+{% block main_class %}container-fluid{% endblock %}
+
+{% block page_title %}{% trans verbose_name_plural|title %}: {{ product }} - Manage {{ related_verbose_name|capfirst }}s{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <style>
+    .helptext, .help-block, .empty-form, small.text-muted, [id$="_helptext"] {display: none;}
+    td.custom-control {display: table-cell;}
+    .table-sm .col-form-label {font-size: 0.825rem;}
+    textarea.licenseexpressionwidget {min-width: 150px !important;}
+    .license-expression-header {width: auto; color: #6c757d; font-size: 87.5%;}
+    .object_display {min-width: 240px; word-break: break-word;}
+    .autocompleteinput {min-width: 200px;}
+    .asteriskField {display: none;}
+    .invalid-feedback {display: block !important;}
+    td div.awesomplete { display: inline-block !important; }
+
+    thead {position: sticky; top: 52px; z-index: 1; font-size: 0.875rem;}
+    select[name$="review_status"] {max-width: 200px !important;}
+    textarea[name$="notes"] {min-width: 230px !important;}
+    th[for$="is_deployed"], th[for$="is_modified"] {font-size: 75% !important; width: 95px;}
+    td[id$="is_deployed"], td[id$="is_modified"] {text-align: center;}
+    th[for$="review_status"] {min-width: 150px !important;}
+    th[for$="purpose"] {min-width: 110px !important;}
+    th[for$="feature"] {min-width: 100px !important;}
+    th[for$="issue_ref"] {min-width: 75px !important;}
+
+    .form-control { /* dup of .form-control-sm */
+      padding: .25rem .5rem !important;
+      font-size: .875rem !important;
+      line-height: 1.5 !important;
+      border-radius: .2rem !important;
+     }
+
+    .form-group textarea.form-control {
+      overflow: hidden;
+      height: 35px; /* Default size */
+      max-height: 100px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% url 'product_portfolio:product_list' %}" title="Return to product list" data-bs-toggle="tooltip" data-bs-placement="bottom">Products</a>
+            >
+            <a href="{{ product.get_absolute_url }}">{{ product }}</a>
+          </div>
+          <h1 class="header-title">
+            Manage {{ related_verbose_name|capfirst }}s
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ formset.media }}
+  <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" type="text/css" media="all" rel="stylesheet">
+  <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
+  <script src="{% static 'js/widget_autocomplete.js' %}" integrity="sha384-Xwh0IgdZ3xDFYieC0irLFU0+f9PHFFfA5k/MHGMBcwVDgovhbrJhXEbXX7s5/Ylz" crossorigin="anonymous"></script>
+
+  {% include 'includes/messages_alert.html' %}
+
+  {% if formset.total_error_count %}
+    <div class="alert alert-danger alert-dismissible" role="alert">
+      Please correct the errors below.
+    </div>
+  {% endif %}
+
+  <div class="row align-items-end">
+    <div class="col">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link py-1 px-2 disabled">{{ filterset.qs|length|intcomma }} results</a>
+        </li>
+        <li class="nav-item">
+          <form class="input-group input-group-sm mb-1" style="width: 350px;">
+            <input id="#id_q" name="q" type="search" class="form-control form-control-prepended search" value="{{ filterset.form.q.value|default_if_none:"" }}" placeholder="Search">
+            {% if filterset.form.q.value %}
+              <a class="btn btn-outline-dark" data-bs-toggle="tooltip" title="Reset search" href="{{ request.path }}?all=true"><i class="fas fa-times-circle"></i></a>
+            {% endif %}
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#grid-configuration">
+        <i class="fas fa-table"></i> Grid configuration
+      </button>
+    </div>
+  </div>
+
+  <div class="my-1">
+    {% include 'includes/filters_breadcrumbs.html' with filterset=filterset only %}
+  </div>
+
+  {% if filterset.is_active and not filterset.qs %}
+    <p class="text-center">
+      <strong>
+        <a href="{{ request.path }}?all=true">No results, click here to reset all search and filters.</a>
+      </strong>
+    </p>
+  {% else %}
+    <form id="grid-formset-form" method="post">
+      {% crispy formset helper %}
+      <div class="mb-3">
+        <input type="button" name="add-related-object" value="Add {{ related_verbose_name|capfirst }} to Product" class="btn btn-primary">
+        <input type="submit" name="save" value="Save" class="btn btn-success float-end ms-2">
+        <input type="submit" name="save-and-continue" value="Save and continue editing" class="btn btn-outline-success float-end ms-2">
+        <a href="{{ product.get_absolute_url }}" class="btn btn-outline-secondary float-end" data-bs-toggle="tooltip" title="Return to Product">Cancel</a>
+      </div>
+    </form>
+  {% endif %}
+
+  <div class="modal" id="grid-configuration" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Grid configuration</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="grid-configuration-form" method="post">
+          <div class="modal-body">
+            {% crispy grid_configuration_form %}
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" name="update-grid-configuration">Save changes</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if component_add_form %}
+    <div class="modal" id="create-component-modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create new Component</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="component-add-form" method="post" data-add-url="{% url 'component_catalog:component_add_ajax' %}">{% csrf_token %}
+            <div class="modal-body bg-light">
+              {% crispy component_add_form %}
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success" name="create-component-submit">Create</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+  <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
+  {% if component_add_form %}
+    <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
+  {% endif %}
+
+  {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let related_verbose_name = '{{ related_verbose_name|capfirst }}';
+
+      $('#grid-formset-form, #grid-configuration-form').dirtyForms();
+
+      // Disable all form elements except the component autocomplete
+      // The elements are enabled back as soon as the component is set
+      // We need to keep the hidden product field enabled.
+      let empty_form = $('.empty-form');
+      empty_form
+        .find('input')
+        .not('input[id$="-object_display"]')
+        .prop('readonly', true);
+      empty_form
+        .find('textarea, select')
+        .prop('disabled', true);
+
+      $('input[name="add-related-object"]').on('click', function() {
+        let total_forms_input = $('#id_form-TOTAL_FORMS');
+        let form_idx = total_forms_input.val();
+        total_forms_input.val(parseInt(form_idx) + 1);
+        let new_row = $('.empty-form').html().replace(/__prefix__/g, form_idx);
+        $('tbody').append('<tr>' + new_row + '</tr>').find('[data-bs-toggle="tooltip"]').tooltip();
+      });
+
+      // Set the class on enabled delete checkbox on page load.
+      // This may happen when the form has an entry mark for deletion but it not valid.
+      $("input[id$='-DELETE']:checked").parents('tr').addClass('table-danger');
+
+      $("input[id$='-DELETE']").on('change', function() {
+        let parent_tr = $(this).parents('tr');
+        if ($(this).is(':checked')) {
+            parent_tr.addClass('table-danger');
+        }
+        else {
+            parent_tr.removeClass('table-danger');
+        }
+      });
+
+      function update_related_object(table_row, object_id, license_expression, object_repr) {
+        table_row.find('input, textarea, select').prop('disabled', false).prop('readonly', false);
+
+        if (object_repr) {
+          let object_display_input = table_row.find('input[id$="-object_display"]');
+          object_display_input.val(object_repr);
+        }
+
+        let object_id_input = table_row.children('input[id$="-component"], input[id$="-package"]');
+        object_id_input.val(object_id);
+
+        let license_expression_td = table_row.children('td[id$=license_expression]');
+        let license_expression_header = license_expression_td.find('div.license-expression-header');
+        let license_expression_textarea = license_expression_td.find('textarea.licenseexpressionwidget');
+
+        license_expression_header.html(related_verbose_name + ' license: <code>' + license_expression + '</code>');
+        license_expression_textarea.val(license_expression);
+      }
+
+      $('body').bind('awesomplete-selectcomplete', function(event){
+        let awesomplete_element = event.target;
+        let api_response = awesomplete_element.apiResponse;
+        let parent_tr = $(awesomplete_element).parents('tr');
+
+        if (api_response) {
+          update_related_object(parent_tr, api_response.id, api_response.license_expression);
+        }
+      });
+
+      {% if component_add_form %}
+        let create_component_modal = $('#create-component-modal');
+        let license_expression_field = create_component_modal.find('.licenseexpressionwidget');
+        let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
+        NEXB.setup_awesomplete_builder(license_expression_field.get(0), null,  100, licenses_data_for_builder);
+
+        $('#component-add-form').on('submit', function(e) {
+          e.preventDefault();
+          let add_form = $(this);
+          let modal_body = $(this).find('.modal-body');
+
+          $.ajax({
+            url: add_form.attr('data-add-url'),
+            type: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+            dataType: 'json',
+            data: add_form.serialize(),
+            success: function(data) {
+              if (data['serialized_data']) {
+                let table_row = create_component_modal.table_row;
+                component = data['serialized_data'];
+                update_related_object(table_row, component.id, component.license_expression, component.object_repr);
+                create_component_modal.modal('hide');
+                add_form.get(0).reset();
+                return false;
+              }
+              modal_body.html(data);
+            },
+            error: function(data) {
+              if (data.responseText) modal_body.html(data.responseText);
+              else modal_body.html('Error.');
+            }
+          });
+        });
+
+        create_component_modal.on('shown.bs.modal', function (event) {
+          let related_target = event.relatedTarget;
+          let table_row = $(related_target).parents('tr');
+          create_component_modal.table_row = table_row;
+        });
+      {% endif %}
+
+      /* Dynamic textarea height based on content */
+      function auto_height(element) {
+        let offset = 6;
+        element.style.height = "5px";
+        element.style.height = element.scrollHeight + offset + "px";
+      }
+
+      // Apply on each visible textarea on load
+      $('textarea:visible').each(function(index, value){
+        auto_height(this);
+      });
+      // Dynamic resize on input change
+      $('textarea').on('input change', function (element) {
+        auto_height(this);
+      });
+
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+
+{% block page_title %}{% trans 'Welcome to DejaCode' %}{% endblock %}
+
+{% block bodyclass %}body-background{% endblock %}
+
+{% block content %}
+  {% include 'includes/header_title.html' with pretitle='Account' title='Welcome to DejaCode' %}
+  <p>
+    Thank you for creating your account for DejaCode.
+    An activation email will be sent shortly to the email address you provided.<br>
+    In order to activate your account you must click on the activation link inside the email you receive.
+  </p>
+  <p>
+    <a href="{% url 'index_dispatch' %}">Back to homepage.</a>
+  </p>
+{% endblock %}

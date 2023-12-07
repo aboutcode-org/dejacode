@@ -1,0 +1,247 @@
+/*
+#
+# Copyright (c) nexB Inc. and others. All rights reserved.
+# DejaCode is a trademark of nexB Inc.
+# SPDX-License-Identifier: AGPL-3.0-only
+# See https://github.com/nexB/dejacode for support or download.
+# See https://aboutcode.org for more information about AboutCode FOSS projects.
+#
+*/
+
+/* Dejacode Admin CSS */
+
+/*
+ Reduce the white space between the header and the content.  Set top to 0 (it is
+ 80 by default) because Annotator uses that value to compute where to position
+ its button.  The default value tricks Annotator into positioning its button
+ below where it should.
+*/
+#grp-content { padding-top: 60px; top: 0; }
+body.grp-popup #grp-content { padding-top: 0; top: 0; }
+.grp-messagelist {padding: 10px 0 5px;}
+#grp-content th {text-align: start !important;}
+
+/* Header nav-global */
+header#grp-header li.nav-header { padding: 4px 10px; color: #808080; }
+.user-options-handler { text-align: end; }
+
+#logout-form {
+  display: inline;
+}
+#logout-form button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+#grp-user-tools>li button {
+    display: block;
+    padding: 10px 10px;
+}
+
+#grp-navigation button {
+    color: #4fb2d3;
+}
+
+/* Icon to edit the object next to a "select" input */
+a.edit-icon, .grp-tools li a.edit-icon-related {height: 16px; width: 16px; margin-left: 5px;}
+a.edit-icon:link, a.edit-icon:visited {background-image:url("../img/icon-trash-list-toggle-handler-hover.png");}
+a.edit-icon:hover, a.edit-icon:active {background-image:url("../img/icon-trash-list-toggle-handler.png");}
+a.edit-icon-autocomplete {display: inline-block; }
+
+/* Workaround since raw_id fields do not have the widget wrapper that adds "add other" interface */
+a.raw-id-add {width: 21px; height: 16px; display: inline-block; top: 0 !important;}
+
+/* Icon for the hierarchy link in changelist */
+a.hierarchy-icon {display: inline-block; height: 14px; width: 16px;}
+a.hierarchy-icon:link, a.hierarchy-icon:visited {background-image:url("../img/icon-hierarchy.png");}
+a.hierarchy-icon:hover, a.hierarchy-icon:active {background-image:url("../img/icon-hierarchy-hover.png");}
+
+/* Grappelli Dashboard */
+#column_1, #column_2 { width: 330px; }
+.grp-link-internal { font-size: 12px; font-weight: bold;}
+
+/* Help texts */
+#short_description {margin-bottom:7px; font-style:italic;}
+#long_description {margin-bottom:7px; font-style:italic; display:none;}
+
+/* Dataspace logo preview */
+p#logo_preview {margin-top: 5px;}
+
+/* Highlight for the error block */
+.grp-delete-confirmation .grp-errors { border-color: #bf3030; }
+
+/* Wider columns for readability */
+#grp-changelist-form .media {overflow: hidden; *overflow: visible; zoom: 1;}
+#grp-changelist-form .media img {float: left; margin-right: 5px; margin-bottom: 3px;}
+#grp-changelist-form .media p {float: left;}
+
+/* date/time column of the history views */
+table#grp-change-history tbody th {width: 210px;}
+
+/* Font color when a filter is active */
+.grp-pulldown-container a.filter-active {color: #C14545;}
+
+/* Large input test for the advance search model in Admin */
+#advanced_search_dialog input[type="text"] { width: 300px; }
+
+/* Fix the content over the 'Recent Actions' box for #6180 */
+.grp-listing-small .grp-row { word-wrap: break-word; }
+
+/* Style for the License Annotation view */
+body.license-annotation #licensetext pre {
+    width:63%; float:right; white-space: pre-wrap; word-wrap: break-word; background-color: #F5F5F5;
+    color: #333333; font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    padding: 5px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 4px 4px 4px 4px;}
+body.license-annotation #tags-list {width:33%; float:left;}
+select#annotator-field-1 {width: 100%;}
+body.license-annotation em.help-text {display: none; font-style: italic; font-size: 11px; color:#9A9A9A;}
+
+/* Larger textarea for all the Tabular Inlines */
+.grp-tabular textarea {width: 500px; !important}
+
+/* Reduce width for description column in changelist */
+table#result_list thead th.column-description { width:35%; }
+
+/* Remove the dotted border for readonly fields */
+div.grp-readonly, p.grp-readonly { border: none; }
+
+/* list with disc for changelist table */
+ul.with-disc { list-style: disc outside none; margin: 0 0 0 10px; font-weight: normal;}
+
+/* Read-only text and guidance in the Inlines */
+.grp-dynamic-form .text {width: 45%; white-space: normal !important;}
+.grp-dynamic-form .guidance {width: 45%; white-space: normal !important;}
+
+/* Clean tab header for the license change form page */
+#license_form .ui-widget-header {background: none; border:none;}
+/* Hide the edit related icon in the assigned tag inline */
+#license_form #licenseassignedtag_set-group a.edit-icon {display: none !important;}
+/* Do not show help for this */
+#license_form #licenseassignedtag_set-group .grp-help {display: none !important;}
+/* groupbox header */
+#license_form .groupbox .grp-tr .grp-td {
+    border-left: none; border-right: none; font-weight: bold; font-size: 13px;
+    background: #a1d4e5;
+    background: -moz-linear-gradient(top, #bcdfeb, #a1d4e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#bcdfeb), to(#a1d4e5));
+    background: -o-linear-gradient(top, #bcdfeb, #a1d4e5);
+}
+/* Force the ui-dialog to be over the content */
+.ui-dialog { z-index: 500; }
+
+/* Fixed size for the License and Component columns in the changelist */
+body.grp-change-list .width200 {width: 200px;}
+body.grp-change-list .width300 {width: 300px;}
+
+/* Used to break URLs value in td for example */
+.word-break { word-break: break-all; }
+
+.pull-right { float: right; }
+.lighter-font { font-weight: lighter; }
+.error-alert, .error-alert a { color: #bf3030; font-weight: bold; }
+
+li.grp-results a.reference-data-link { color: #ff9d2e; border-color: #ff9d2e; }
+
+/* Style for the admin Component Hierarchy view
+----------------------------------------------- */
+.hierarchy_table { width: 100%; margin: 0 auto; }
+.hierarchy_table tbody tr td { border-left: none; }
+/* Put the connector lines behind the content */
+._jsPlumb_connector { z-index: -1; }
+.hierarchy-box {
+    width: 370px;
+    margin-bottom: 5px;
+    padding: 2px;
+    overflow: hidden;
+    background-color:#888888;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+/* No bottom margin when the box is alone or the last */
+.hierarchy-box:last-of-type { margin-bottom: 0; }
+.hierarchy-box-content {
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 14px;
+    line-height: 18px;
+    background-color: #F5F5F5;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+.hierarchy-box-content ul.icons-ul {list-style: none;}
+.small-bold {font-size: 55%; font-weight: bold;}
+
+ul.inline {margin-left:0;list-style:none}
+ul.inline > li {display:inline-block;*display:inline;*zoom:1;padding-left:5px;}
+
+/* Improved usage of free space in ComponentAssignedPackage inlines, both in Component and Package form views */
+#componentassignedpackage_set-group .grp-autocomplete-wrapper-fk {width: 100%; max-width: 100%;}
+#componentassignedpackage_set-group .ui-autocomplete-input {width: 600px;}
+
+/* Permission multi-select in the GroupAdmin */
+#group_form .selector {width: 1100px;}
+#group_form .selector .selector-available, #group_form .selector .selector-chosen {width: 530px;}
+#group_form .selector select[multiple] {height: 350px; max-width: 532px !important; width: 532px !important; padding-right: 5px; overflow: auto;}
+#group_form .selector .selector-chosen select[multiple] {height: 385px !important;}
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select[multiple] {background-image: none;}
+}
+
+/* RelatedLookupListFilter in changelist view */
+.grp-filter .grp-row .grp-autocomplete-wrapper-fk a.related-lookup {margin: -25px 0;}
+.grp-filter .grp-row .grp-autocomplete-wrapper-fk a.grp-related-remove {padding: 0; margin: 0;}
+
+/* vForeignKeyRawIdAdminField in mass_update view */
+body.mass_update .ui-autocomplete-input {width: 570px}
+
+/* Fix the add/edit icons next to FK and autocomplete fields in changeform tabular inlines */
+.grp-tabular ul.grp-related-widget-tools {width: 50px;}
+
+/* Fixed the "Currently:" for AdminURLFieldWidget */
+p.url .vURLField {margin-top: 5px; width: 710px;}
+
+/* Groups details popup in user form */
+#grp-container article.group-details {padding: 20px;}
+
+/* Fix for the filter input in related-widget-wrapper with Firefox */
+fieldset.grp-module p.selector-filter label {display: none;}
+
+/* Fix for the visibility of the awesomplete license expression builder choices */
+fieldset.grp-module div.license_expression,
+fieldset.grp-module div.from_expression,
+fieldset.grp-module div.to_expression,
+fieldset.grp-module div.primary_language,
+fieldset.grp-module div.keywords,
+fieldset.grp-module div.feature {overflow: visible;}
+body.mass_update div.awesomplete {display: block;}
+div.awesomplete > ul {z-index: 1000 !important;}
+
+/* License choices */
+code.license_expression {border: 1px solid #ccc; background-color: #EEE; color: black; padding: 2px 4px; border-radius: 3px;}
+button.submit-inline-button {font-weight: bold; padding: 0 5px; width: auto; background-color: #40A7C9; border: 1px solid #2b8aab;}
+.license-expression-header {line-height: 25px;}
+input#test_expression {width: 300px;}
+
+/* ProductComponent.feature autocomplete */
+.get_feature_datalist {display: none;}
+
+/* Product relationships inlines */
+#productcomponents-group .extra-attribution-text, #productpackages-group .extra-attribution-text {min-width: 130px;}
+#productcomponents-group .license-expression, #productpackages-group .license-expression {min-width: 120px;}
+#productcomponents-group .grp-td, #productpackages-group .grp-td {padding: 5px;}
+#productcomponents-group .grp-th, #productpackages-group .grp-th {padding: 1px 10px;}
+#productcomponents-group .grp-tools, #productpackages-group .grp-tools {left: 225px; float: left; right: auto;}
+
+/* Dataspace tab permissions form */
+.underline-dotted {border-bottom: dotted 1px #cccccc;}
+
+/* Do not display the delete related link */
+.grp-delete-related {display: none !important;}
+
+/* Break Package.download_url in the changelist */
+.grp-changelist-results .field-download_url {word-break: break-all; min-width: 250px;}

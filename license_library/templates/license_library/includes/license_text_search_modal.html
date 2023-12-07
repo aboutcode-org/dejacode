@@ -1,0 +1,32 @@
+<div id="license_text_search_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">License text search</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="get" action="{% url 'license_library:license_list' %}">
+        <div class="modal-body bg-light">
+          <div class="mb-3">
+            <textarea maxlength="1500" rows="8" cols="10" id="text_search" name="text_search" class="form-control" style="width: 100%;">{{ text_search }}</textarea>
+            <small class="form-text text-muted mt-2">
+              The <strong>license text search</strong> provides an efficient way to look for a text
+              string in the DejaCode license texts (in contrast to the main search field,
+              which searches license metadata, the fields that explain a license).
+              <ul class="mt-2">
+                <li>It is not necessary to enclose the entire text string in quotes.</li>
+                <li>For best results, enter (or paste) a text string that seems to be relatively uncommon; for example, <code>general purpose desktop</code>.</li>
+                <li>It is also recommended that you enter a text string that is characteristic of a particular group of licenses; for example, <code>for any purpose and without fee</code>.</li>
+                <li>There is no limit to the amount of search text you can enter, but you may find it best to start with no more than a paragraph of license text.</li>
+              </ul>
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <input type="submit" class="btn btn-primary" value="Search" />
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

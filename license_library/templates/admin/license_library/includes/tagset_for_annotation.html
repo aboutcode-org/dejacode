@@ -1,0 +1,18 @@
+{# License annotation admin view #}
+{% load as_icon_admin from dje_tags %}
+{% for group_name, tag_list in tagset.items %}
+<div class="grp-group">
+    <h2>{{ group_name }}</h2>
+    <ul class="grp-nested-list">
+        {% for label, value, text, _ in tag_list %}
+            {% if value == True or value == False or include_unknown_value %}
+                <li>
+                    {{ value|as_icon_admin }}&nbsp;
+                    <strong>{{ label }}</strong><br />
+                    <em class='help-text'>{{ text }}</em>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}

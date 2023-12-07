@@ -1,0 +1,5727 @@
+[
+  [
+    "4suite-1.1",
+    "4Suite License v1.1",
+    "4Suite 1.1"
+  ],
+  [
+    "abstyles",
+    "Abstyles License",
+    "Abstyles License"
+  ],
+  [
+    "ac3filter",
+    "AC3Filter License",
+    "AC3Filter License"
+  ],
+  [
+    "acdl-1.0",
+    "Apple Common Documentation License v1.0",
+    "ACDL 1.0"
+  ],
+  [
+    "ace-tao",
+    "ACE TAO License",
+    "ACE TAO License"
+  ],
+  [
+    "activestate-community",
+    "ActiveState Community License",
+    "ActiveState Community License"
+  ],
+  [
+    "activestate-komodo-edit",
+    "ActiveState Komodo Edit EULA",
+    "ActiveState Komodo Edit EULA"
+  ],
+  [
+    "actuate-birt-ihub-ftype-sla",
+    "Actuate Corporation BIRT iHub F-Type Software License Agreement",
+    "BIRT iHub F-Type Software License Agreement"
+  ],
+  [
+    "adapt-1.0",
+    "Adaptive Public License",
+    "APL 1.0"
+  ],
+  [
+    "adaptec-downloadable",
+    "Adaptec Downloadable Software License",
+    "Adaptec Downloadable Software License"
+  ],
+  [
+    "adaptec-eula",
+    "Adaptec EULA",
+    "Adaptec EULA"
+  ],
+  [
+    "addthis-mobile-sdk-1.0",
+    "AddThis Mobile Application SDK License 1.0",
+    "AddThis Mobile Application SDK License 1.0"
+  ],
+  [
+    "adobe-acrobat-reader-eula",
+    "Adobe Acrobat Reader EULA",
+    "Adobe Acrobat Reader EULA"
+  ],
+  [
+    "adobe-air-sdk",
+    "Adobe AIR SDK EULA - 2008",
+    "Adobe AIR SDK EULA - 2008"
+  ],
+  [
+    "adobe-air-sdk-2014",
+    "Adobe Air SDK EULA - 2014",
+    "Adobe Air SDK EULA - 2014"
+  ],
+  [
+    "adobe-flash-player-eula-21.0",
+    "Adobe Flash Player EULA 21.0",
+    "Adobe Flash Player EULA 21.0"
+  ],
+  [
+    "adobe-flex-4-sdk",
+    "Adobe Flex 4 SDK Software License Agreement",
+    "Adobe Flex 4 SDK SLA"
+  ],
+  [
+    "adobe-flex-sdk",
+    "Adobe Flex SDK SLA",
+    "Adobe Flex SDK SLA"
+  ],
+  [
+    "adobe-general-tou",
+    "Adobe General Terms of Use",
+    "Adobe General TOU"
+  ],
+  [
+    "adobe-glyph",
+    "Adobe Glyph License",
+    "Adobe Glyph License"
+  ],
+  [
+    "adobe-indesign-sdk",
+    "Adobe SDK License for INDESIGN, INDESIGN SERVER and INCOPY Software",
+    "Adobe InDesign SDK License"
+  ],
+  [
+    "adobe-postscript",
+    "Adobe PostScript License",
+    "Adobe PostScript License"
+  ],
+  [
+    "adobe-scl",
+    "Adobe Systems Incorporated Source Code License Agreement",
+    "Adobe Source Code License 2006"
+  ],
+  [
+    "adsl",
+    "Amazon Digital Services License",
+    "Amazon Digital Services License"
+  ],
+  [
+    "aes-128-3.0",
+    "AES-128 v3.0 License",
+    "AES-128 3.0 License"
+  ],
+  [
+    "afl-1.1",
+    "Academic Free License 1.1",
+    "AFL 1.1"
+  ],
+  [
+    "afl-1.2",
+    "Academic Free License 1.2",
+    "AFL 1.2"
+  ],
+  [
+    "afl-2.0",
+    "Academic Free License 2.0",
+    "AFL 2.0"
+  ],
+  [
+    "afl-2.1",
+    "Academic Free License 2.1",
+    "AFL 2.1"
+  ],
+  [
+    "afl-3.0",
+    "Academic Free License 3.0",
+    "AFL 3.0"
+  ],
+  [
+    "afmparse",
+    "afmparse License",
+    "afmparse License"
+  ],
+  [
+    "afpl-8.0",
+    "Aladdin Free Public License v8",
+    "Aladdin FPL v8"
+  ],
+  [
+    "afpl-9.0",
+    "Aladdin Free Public License v9",
+    "Aladdin FPL v9"
+  ],
+  [
+    "agere-sla",
+    "Agere Systems WinModem EULA",
+    "Agere WindModem EULA"
+  ],
+  [
+    "agg-2.4",
+    "Anti-Grain Geometry Public License v2.4",
+    "AGG Public License 2.4"
+  ],
+  [
+    "agpl-1.0",
+    "Affero General Public License 1.0",
+    "AGPL 1.0"
+  ],
+  [
+    "agpl-2.0",
+    "Affero General Public License 2.0",
+    "AGPL 2.0"
+  ],
+  [
+    "agpl-3.0",
+    "GNU Affero General Public License 3.0",
+    "AGPL 3.0"
+  ],
+  [
+    "aladdin-md5",
+    "Aladdin MD5 License",
+    "Aladdin MD5 License"
+  ],
+  [
+    "alexisisaac-freeware",
+    "Alexisisaac Freeware License",
+    "Alexisisaac Freeware License"
+  ],
+  [
+    "alglib-commercial",
+    "ALGLIB License Agreement",
+    "ALGLIB License Agreement"
+  ],
+  [
+    "allegro-4",
+    "Allegro 4 License",
+    "Allegro 4 License"
+  ],
+  [
+    "altova-eula",
+    "Altova EULA",
+    "Altova EULA"
+  ],
+  [
+    "amazon-sl",
+    "Amazon Software License",
+    "Amazon Software License"
+  ],
+  [
+    "amdplpa",
+    "AMD PLPA License",
+    "AMD PLPA License"
+  ],
+  [
+    "aml",
+    "Apple MIT License",
+    "Apple MIT License"
+  ],
+  [
+    "ampas",
+    "Academy of Motion Picture Arts and Sciences BSD-Style",
+    "AMPAS BSD-Style License"
+  ],
+  [
+    "android-sdk-license",
+    "Android Software Development Kit License Agreement",
+    "Android SDK License"
+  ],
+  [
+    "antlr-pd",
+    "ANTLR Software Rights Notice",
+    "ANTLR-PD"
+  ],
+  [
+    "anu-license",
+    "Australian National University License",
+    "ANU License"
+  ],
+  [
+    "aop-pd",
+    "AOP Public Domain License",
+    "AOP-PD"
+  ],
+  [
+    "apache",
+    "Apache-licensed software (unknown license version)",
+    "Apache"
+  ],
+  [
+    "apache-1.0",
+    "Apache License 1.0",
+    "Apache 1.0"
+  ],
+  [
+    "apache-1.1",
+    "Apache License 1.1",
+    "Apache 1.1"
+  ],
+  [
+    "apache-2.0",
+    "Apache License 2.0",
+    "Apache 2.0"
+  ],
+  [
+    "apache-2.0-linking-exception",
+    "Apache 2.0 with Linking Exception",
+    "Apache 2.0 with Linking Exception"
+  ],
+  [
+    "apache-2.0-runtime-library-exception",
+    "Apache 2.0 with Runtime Library Exception",
+    "Apache 2.0 with Runtime Library Exception"
+  ],
+  [
+    "apache-due-credit",
+    "Apache Due Credit Variant",
+    "Apache Due Credit Variant"
+  ],
+  [
+    "apafml",
+    "Adobe Postscript AFM License",
+    "Adobe Postscript AFM License"
+  ],
+  [
+    "apple-attribution",
+    "Apple Attribution License",
+    "Apple Attribution License"
+  ],
+  [
+    "apple-attribution-1997",
+    "Apple Attribution License 1997",
+    "Apple Attribution 1997"
+  ],
+  [
+    "apple-excl",
+    "Apple Example Code License",
+    "Apple Example Code License"
+  ],
+  [
+    "apple-mpeg-4",
+    "Apple MPEG-4 License",
+    "Apple MPEG-4 License"
+  ],
+  [
+    "apple-sscl",
+    "Apple Sample Source Code License",
+    "Apple Sample Source Code License"
+  ],
+  [
+    "apsl-1.0",
+    "Apple Public Source License 1.0",
+    "APSL 1.0"
+  ],
+  [
+    "apsl-1.1",
+    "Apple Public Source License 1.1",
+    "APSL 1.1"
+  ],
+  [
+    "apsl-1.2",
+    "Apple Public Source License 1.2",
+    "APSL 1.2"
+  ],
+  [
+    "apsl-2.0",
+    "Apple Public Source License 2.0",
+    "APSL 2.0"
+  ],
+  [
+    "aptana-1.0",
+    "Aptana Public License 1.0",
+    "Aptana 1.0"
+  ],
+  [
+    "aravindan-premkumar",
+    "Aravindan Premkumar Licenase",
+    "Aravindan Premkumar Licenase"
+  ],
+  [
+    "argouml",
+    "ArgoUML License",
+    "ArgoUML License"
+  ],
+  [
+    "arm-cortex-mx",
+    "ARM Cortex-Mx Proprietary",
+    "ARM Cortex-Mx Proprietary"
+  ],
+  [
+    "arphic-public",
+    "Arphic Public License",
+    "Arphic Public License"
+  ],
+  [
+    "artistic-1.0",
+    "Artistic License 1.0",
+    "Artistic 1.0"
+  ],
+  [
+    "artistic-1.0-cl8",
+    "Artistic License 1.0 w/clause 8",
+    "Artistic 1.0 w/clause 8"
+  ],
+  [
+    "artistic-2.0",
+    "Artistic License 2.0",
+    "Artistic 2.0"
+  ],
+  [
+    "artistic-clarified",
+    "Clarified Artistic License",
+    "Clarified Artistic License"
+  ],
+  [
+    "artistic-perl-1.0",
+    "Artistic License (Perl) 1.0",
+    "Artistic-Perl-1.0"
+  ],
+  [
+    "aslp",
+    "Artop Software License for Preparatory Development",
+    "Artop ASLP"
+  ],
+  [
+    "aslr",
+    "Artop Software License Based on AUTOSAR Released Material",
+    "Artop ASLR"
+  ],
+  [
+    "asmus",
+    "ASMUS License",
+    "ASMUS License"
+  ],
+  [
+    "asn1",
+    "ASN.1 Object Dumping Code License",
+    "ASN.1 Object Dumping Code License"
+  ],
+  [
+    "ati-eula",
+    "ATI Software End User License Agreement",
+    "ATI Software EULA"
+  ],
+  [
+    "atlassian-customer-agreement",
+    "Atlassian Customer Agreement",
+    "Atlassian Customer Agreement"
+  ],
+  [
+    "atmel-firmware",
+    "Atmel Firmware License",
+    "Atmel Firmware License"
+  ],
+  [
+    "attribution",
+    "Attribution Assurance License",
+    "AAL"
+  ],
+  [
+    "autoit-eula",
+    "Autoit EULA",
+    "Autoit EULA"
+  ],
+  [
+    "baekmuk-fonts",
+    "Baekmuk Fonts License",
+    "Baekmuk Fonts License"
+  ],
+  [
+    "bahyph",
+    "Bahyph License",
+    "Bahyph License"
+  ],
+  [
+    "barr-tex",
+    "Barr TeX License",
+    "Barr TeX License"
+  ],
+  [
+    "bea-2.1",
+    "BEA Public License 2.1",
+    "BEA 2.1"
+  ],
+  [
+    "beal-screamer",
+    "Beal Screamer License",
+    "Beal Screamer License"
+  ],
+  [
+    "beerware",
+    "Beer-Ware License",
+    "Beer-Ware License"
+  ],
+  [
+    "bigdigits",
+    "BigDigits License",
+    "BigDigits License"
+  ],
+  [
+    "bigelow-holmes",
+    "Bigelow & Holmes Lucida Fonts License",
+    "Bigelow & Holmes Lucida Fonts License"
+  ],
+  [
+    "biopython",
+    "Biopython License Agreement",
+    "Biopython License"
+  ],
+  [
+    "bitstream",
+    "Bitstream Vera Font License",
+    "Bitstream Vera Font License"
+  ],
+  [
+    "bittorrent-1.0",
+    "BitTorrent Open Source License 1.0",
+    "BitTorrent 1.0"
+  ],
+  [
+    "bittorrent-1.1",
+    "BitTorrent Open Source License 1.1",
+    "BitTorrent 1.1"
+  ],
+  [
+    "bittorrent-1.2",
+    "BitTorrent Open Source License 1.2",
+    "BitTorrent 1.2"
+  ],
+  [
+    "bittorrent-eula",
+    "BitTorrent End User License Agreement (EULA)",
+    "BitTorrent EULA"
+  ],
+  [
+    "bitzi-pd",
+    "Bitzi Public Domain",
+    "Bitzi-PD"
+  ],
+  [
+    "bloomberg-blpapi",
+    "Bloomberg BLPAPI License",
+    "Bloomberg BLPAPI License"
+  ],
+  [
+    "boost-1.0",
+    "Boost Software License 1.0",
+    "Boost 1.0"
+  ],
+  [
+    "boost-original",
+    "Boost Original",
+    "Boost Original"
+  ],
+  [
+    "borceux",
+    "Borceux License",
+    "Borceux License"
+  ],
+  [
+    "bpmn-io",
+    "bpmn.io License",
+    "bpmn.io License"
+  ],
+  [
+    "brad-martinez-vb-32",
+    "Brad Martinez VB-32 License",
+    "Brad Martinez VB-32 License"
+  ],
+  [
+    "brent-corkum",
+    "Brent Corkum License",
+    "Brent Corkum License"
+  ],
+  [
+    "brian-clapper",
+    "Brian Clapper License",
+    "Brian Clapper License"
+  ],
+  [
+    "brian-gladman",
+    "Brian Gladman License",
+    "Brian Gladman License"
+  ],
+  [
+    "brian-gladman-3-clause",
+    "Brian Gladman 3-Clause License",
+    "Brian Gladman 3-Clause License"
+  ],
+  [
+    "brian-gladman-dual",
+    "Brian Gladman Dual BSD-GPL",
+    "Brian Gladman Dual BSD-GPL"
+  ],
+  [
+    "broadcom-cfe",
+    "Broadcom CFE License",
+    "Broadcom CFE License"
+  ],
+  [
+    "broadcom-commercial",
+    "Broadcom Commercial Notice",
+    "Broadcom Commercial Notice"
+  ],
+  [
+    "broadcom-confidential",
+    "Broadcom Confidential",
+    "Broadcom Confidential"
+  ],
+  [
+    "broadcom-dual",
+    "Broadcom Dual GPL-Commercial",
+    "Broadcom Dual GPL-Commercial"
+  ],
+  [
+    "broadcom-linux-timer",
+    "Broadcom Warranty Disclaimer",
+    "Broadcom Warranty Disclaimer"
+  ],
+  [
+    "broadcom-proprietary",
+    "Broadcom Proprietary License",
+    "Broadcom Proprietary"
+  ],
+  [
+    "broadcom-standard-terms",
+    "Broadcom Standard Terms",
+    "Broadcom Standard Terms"
+  ],
+  [
+    "broadcom-unpublished-source",
+    "Broadcom Unpublished Source License",
+    "Broadcom Unpublished Source License"
+  ],
+  [
+    "brocade-firmware",
+    "Brocade Firmware License",
+    "Brocade Firmware License"
+  ],
+  [
+    "bruno-podetti",
+    "Bruno Podetti License",
+    "Bruno Podetti License"
+  ],
+  [
+    "bsd-1988",
+    "BSD 1988",
+    "BSD 1988"
+  ],
+  [
+    "bsd-2-clause-freebsd",
+    "BSD 2-clause \"FreeBSD\" License",
+    "BSD 2-clause \"FreeBSD\""
+  ],
+  [
+    "bsd-2-clause-netbsd",
+    "BSD 2-clause \"NetBSD\" License",
+    "BSD 2-clause \"NetBSD\""
+  ],
+  [
+    "bsd-2-clause-plus-advertizing",
+    "BSD-2-Clause-plus-advertizing",
+    "BSD-2-Clause-plus-advertizing"
+  ],
+  [
+    "bsd-ack",
+    "BSD Acknowledgment License",
+    "BSD Acknowledgment License"
+  ],
+  [
+    "bsd-ack-carrot2",
+    "BSD Acknowledgment (Carrot2) License",
+    "BSD Acknowledgment (Carrot2) License"
+  ],
+  [
+    "bsd-export",
+    "BSD-Export",
+    "BSD-Export"
+  ],
+  [
+    "bsd-new",
+    "BSD-Modified",
+    "BSD-Modified"
+  ],
+  [
+    "bsd-new-far-manager",
+    "BSD-Modified with Far Manager exception",
+    "BSD-Modified with Far Manager exception"
+  ],
+  [
+    "bsd-no-mod",
+    "Madwifi License Agreement",
+    "Madwifi License"
+  ],
+  [
+    "bsd-original",
+    "BSD-Original",
+    "BSD-Original"
+  ],
+  [
+    "bsd-original-uc",
+    "BSD-Original-UC",
+    "BSD-Original-UC"
+  ],
+  [
+    "bsd-original-uc-1986",
+    "BSD-Original-UC-1986",
+    "BSD-Original-UC-1986"
+  ],
+  [
+    "bsd-original-uc-1990",
+    "BSD-Original-UC-1990",
+    "BSD-Original-UC-1990"
+  ],
+  [
+    "bsd-plus-mod-notice",
+    "BSD plus modification notice",
+    "BSD plus modification notice"
+  ],
+  [
+    "bsd-protection",
+    "BSD Protection License",
+    "BSD Protection License"
+  ],
+  [
+    "bsd-simplified",
+    "BSD-Simplified",
+    "BSD-Simplified"
+  ],
+  [
+    "bsd-simplified-darwin",
+    "BSD Simplified Darwin",
+    "BSD Simplified Darwin"
+  ],
+  [
+    "bsd-source-code",
+    "BSD Source Code Attribution",
+    "BSD Source Code Attribution"
+  ],
+  [
+    "bsd-zero",
+    "BSD Zero Clause License",
+    "BSD Zero Clause License"
+  ],
+  [
+    "bsdi-license",
+    "BSDI License",
+    "BSDI License"
+  ],
+  [
+    "bsl-1.0",
+    "Business Source License 1.0",
+    "Business Source License 1.0"
+  ],
+  [
+    "bsla",
+    "Berkeley Software License Agreement",
+    "BSLA"
+  ],
+  [
+    "bugsense-sdk",
+    "BugSense SDK License",
+    "BugSense SDK License"
+  ],
+  [
+    "bytemark",
+    "BYTEmark License",
+    "BYTEmark License"
+  ],
+  [
+    "bzip2-libbzip-1.0.5",
+    "bzip2 License",
+    "bzip2 License"
+  ],
+  [
+    "bzip2-libbzip-2010",
+    "bzip2 License 2010",
+    "bzip2 License 2010"
+  ],
+  [
+    "ca-tosl-1.1",
+    "Computer Associates Trusted Open Source License 1.1",
+    "CA Trusted Open Source License 1.1"
+  ],
+  [
+    "caldera",
+    "Caldera License",
+    "Caldera License"
+  ],
+  [
+    "carnegie-mellon",
+    "Carnegie Mellon License",
+    "Carnegie Mellon License"
+  ],
+  [
+    "carnegie-mellon-contributors",
+    "Carnegie Mellon Contributors License",
+    "Carnegie Mellon Contributors"
+  ],
+  [
+    "cavium-malloc",
+    "Cavium malloc License",
+    "Cavium malloc License"
+  ],
+  [
+    "cavium-targeted-hardware",
+    "Cavium Targeted Hardware License",
+    "Cavium Targeted Hardware License"
+  ],
+  [
+    "cc-by-1.0",
+    "Creative Commons Attribution License 1.0",
+    "CC-BY-1.0"
+  ],
+  [
+    "cc-by-2.0",
+    "Creative Commons Attribution License 2.0",
+    "CC-BY-2.0"
+  ],
+  [
+    "cc-by-2.0-uk",
+    "Creative Commons Attribution License 2.0 UK",
+    "CC-BY-2.0-UK"
+  ],
+  [
+    "cc-by-2.5",
+    "Creative Commons Attribution License 2.5",
+    "CC-BY-2.5"
+  ],
+  [
+    "cc-by-3.0",
+    "Creative Commons Attribution License 3.0",
+    "CC-BY-3.0"
+  ],
+  [
+    "cc-by-4.0",
+    "Creative Commons Attribution 4.0 International Public License",
+    "CC-BY-4.0"
+  ],
+  [
+    "cc-by-nc-1.0",
+    "Creative Commons Attribution Non-Commercial 1.0",
+    "CC-BY-NC-1.0"
+  ],
+  [
+    "cc-by-nc-2.0",
+    "Creative Commons Attribution Non-Commercial 2.0",
+    "CC-BY-NC-2.0"
+  ],
+  [
+    "cc-by-nc-2.5",
+    "Creative Commons Attribution Non-Commercial 2.5",
+    "CC-BY-NC-2.5"
+  ],
+  [
+    "cc-by-nc-3.0",
+    "Creative Commons Attribution Non-Commercial 3.0",
+    "CC-BY-NC-3.0"
+  ],
+  [
+    "cc-by-nc-4.0",
+    "Creative Commons Attribution-NonCommercial 4.0 International Public License",
+    "CC-BY-NC-4.0"
+  ],
+  [
+    "cc-by-nc-nd-1.0",
+    "Creative Commons Attribution Non-Commercial No Derivatives License 1.0",
+    "CC-BY-NC-ND-1.0"
+  ],
+  [
+    "cc-by-nc-nd-2.0",
+    "Creative Commons Attribution Non-Commercial No Derivatives License 2.0",
+    "CC-BY-NC-ND-2.0"
+  ],
+  [
+    "cc-by-nc-nd-2.5",
+    "Creative Commons Attribution Non-Commercial No Derivatives License 2.5",
+    "CC-BY-NC-ND-2.5"
+  ],
+  [
+    "cc-by-nc-nd-3.0",
+    "Creative Commons Attribution Non-Commercial No Derivatives License 3.0",
+    "CC-BY-NC-ND-3.0"
+  ],
+  [
+    "cc-by-nc-nd-4.0",
+    "Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International Public License",
+    "CC-BY-NC-ND-4.0"
+  ],
+  [
+    "cc-by-nc-sa-1.0",
+    "Creative Commons Attribution Non-Commercial Share Alike License 1.0",
+    "CC-BY-NC-SA-1.0"
+  ],
+  [
+    "cc-by-nc-sa-2.0",
+    "Creative Commons Attribution Non-Commercial Share Alike License 2.0",
+    "CC-BY-NC-SA-2.0"
+  ],
+  [
+    "cc-by-nc-sa-2.5",
+    "Creative Commons Attribution Non-Commercial Share Alike License 2.5",
+    "CC-BY-NC-SA-2.5"
+  ],
+  [
+    "cc-by-nc-sa-3.0",
+    "Creative Commons Attribution Non-Commercial Share Alike License 3.0",
+    "CC-BY-NC-SA-3.0"
+  ],
+  [
+    "cc-by-nc-sa-4.0",
+    "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License",
+    "CC-BY-NC-SA-4.0"
+  ],
+  [
+    "cc-by-nd-1.0",
+    "Creative Commons Attribution No Derivatives License 1.0",
+    "CC-BY-ND-1.0"
+  ],
+  [
+    "cc-by-nd-2.0",
+    "Creative Commons Attribution No Derivatives License 2.0",
+    "CC-BY-ND-2.0"
+  ],
+  [
+    "cc-by-nd-2.5",
+    "Creative Commons Attribution No Derivatives License 2.5",
+    "CC-BY-ND-2.5"
+  ],
+  [
+    "cc-by-nd-3.0",
+    "Creative Commons Attribution No Derivatives License 3.0",
+    "CC-BY-ND-3.0"
+  ],
+  [
+    "cc-by-nd-4.0",
+    "Creative Commons Attribution-NoDerivatives 4.0 International Public License",
+    "CC-BY-ND-4.0"
+  ],
+  [
+    "cc-by-sa-1.0",
+    "Creative Commons Attribution Share Alike License 1.0",
+    "CC-BY-SA-1.0"
+  ],
+  [
+    "cc-by-sa-2.0",
+    "Creative Commons Attribution Share Alike License 2.0",
+    "CC-BY-SA-2.0"
+  ],
+  [
+    "cc-by-sa-2.5",
+    "Creative Commons Attribution Share Alike License 2.5",
+    "CC-BY-SA-2.5"
+  ],
+  [
+    "cc-by-sa-3.0",
+    "Creative Commons Attribution Share Alike License 3.0",
+    "CC-BY-SA-3.0"
+  ],
+  [
+    "cc-by-sa-4.0",
+    "Creative Commons Attribution-ShareAlike 4.0 International Public License",
+    "CC-BY-SA-4.0"
+  ],
+  [
+    "cc-pd",
+    "Creative Commons Public Domain Certification",
+    "CC-PD"
+  ],
+  [
+    "cc0-1.0",
+    "Creative Commons CC0 1.0 Universal",
+    "CC0-1.0"
+  ],
+  [
+    "cddl-1.0",
+    "Common Development and Distribution License 1.0",
+    "CDDL 1.0"
+  ],
+  [
+    "cddl-1.1",
+    "Common Development and Distribution License 1.1",
+    "CDDL 1.1"
+  ],
+  [
+    "cecill-1.0",
+    "CeCILL Free Software License Agreement v1.0",
+    "CeCILL 1.0"
+  ],
+  [
+    "cecill-1.1",
+    "CeCILL Free Software License Agreement v1.1",
+    "CeCILL 1.1 English"
+  ],
+  [
+    "cecill-2.0",
+    "CeCILL Free Software License Agreement v2.0",
+    "CeCILL 2.0"
+  ],
+  [
+    "cecill-2.1",
+    "CeCILL Free Software License Agreement v2.1",
+    "CeCILL 2.1"
+  ],
+  [
+    "cecill-b",
+    "CeCILL-B Free Software License Agreement",
+    "CeCILL-B License"
+  ],
+  [
+    "cecill-c",
+    "CeCILL-C Free Software License Agreement",
+    "CeCILL-C License"
+  ],
+  [
+    "cgic",
+    "CGIC License",
+    "CGIC License"
+  ],
+  [
+    "chartdirector-6.0",
+    "ChartDirector 6.0 License Agreement",
+    "ChartDirector 6.0 License Agreement"
+  ],
+  [
+    "chris-maunder",
+    "Chris Maunder License",
+    "Chris Maunder License"
+  ],
+  [
+    "chris-stoy",
+    "Chris Stoy Attribution License",
+    "Chris Stoy Attribution License"
+  ],
+  [
+    "christopher-velazquez",
+    "Christopher Velazquez License",
+    "Christopher Velazquez License"
+  ],
+  [
+    "classic-vb",
+    "Classic VB License",
+    "Classic VB License"
+  ],
+  [
+    "classworlds",
+    "Classworlds License",
+    "Classworlds License"
+  ],
+  [
+    "clear-bsd",
+    "Clear BSD License",
+    "Clear BSD License"
+  ],
+  [
+    "cloudera-express",
+    "Cloudera Express License",
+    "Cloudera Express License"
+  ],
+  [
+    "cmigemo",
+    "C/Migemo License",
+    "C/Migemo License"
+  ],
+  [
+    "cmr-no",
+    "Christian Michelsen Research AS License",
+    "CMR License"
+  ],
+  [
+    "cmu-computing-services",
+    "CMU Computing Services License",
+    "CMU Computing Services License"
+  ],
+  [
+    "cmu-template",
+    "CMU License",
+    "CMU License"
+  ],
+  [
+    "cmu-uc",
+    "CMU UC Regents License",
+    "CMU UC Regents License"
+  ],
+  [
+    "cnri-jython",
+    "CNRI Jython License",
+    "CNRI Jython License"
+  ],
+  [
+    "cnri-python-1.6",
+    "CNRI Open Source License Agreement for Python 1.6",
+    "CNRI Python 1.6"
+  ],
+  [
+    "cnri-python-1.6.1",
+    "CNRI Open Source License Agreement for Python 1.6.1",
+    "CNRI Python 1.6.1"
+  ],
+  [
+    "codeguru-permissions",
+    "CodeGuru Permissions",
+    "CodeGuru Permissions"
+  ],
+  [
+    "codexia",
+    "Codexia License",
+    "Codexia License"
+  ],
+  [
+    "cognitive-web-osl-1.1",
+    "CognitiveWeb Open Source License 1.1",
+    "CognitiveWeb Open Source License 1.1"
+  ],
+  [
+    "colt",
+    "Colt License Agreement",
+    "Colt License Agreement"
+  ],
+  [
+    "com-oreilly-servlet",
+    "com.oreilly.servlet License",
+    "com.oreilly.servlet License"
+  ],
+  [
+    "commercial-license",
+    "Commercial License",
+    "Commercial License"
+  ],
+  [
+    "commercial-option",
+    "Commercial Option",
+    "Commercial Option"
+  ],
+  [
+    "commonj-timer",
+    "CommonJ Timer and Work Manager License",
+    "CommonJ Timer License"
+  ],
+  [
+    "compass",
+    "Compass License",
+    "Compass License"
+  ],
+  [
+    "componentace-jcraft",
+    "ComponentAce JCraft License",
+    "ComponentAce JCraft License"
+  ],
+  [
+    "condor-1.1",
+    "Condor Public License 1.1",
+    "Condor Public License 1.1"
+  ],
+  [
+    "copyleft-next-0.3.0",
+    "copyleft-next 0.3.0",
+    "copyleft-next 0.3.0"
+  ],
+  [
+    "copyleft-next-0.3.1",
+    "copyleft-next 0.3.1",
+    "copyleft-next 0.3.1"
+  ],
+  [
+    "cosl",
+    "Cougaar Open Source License",
+    "Cougaar Open Source License"
+  ],
+  [
+    "couchbase-community",
+    "Couchbase Community Edition License",
+    "Couchbase Community Edition License"
+  ],
+  [
+    "couchbase-enterprise",
+    "Couchbase Enterprise Edition License",
+    "Couchbase Enterprise Edition License"
+  ],
+  [
+    "cpal-1.0",
+    "Common Public Attribution License 1.0",
+    "CPAL 1.0"
+  ],
+  [
+    "cpl-0.5",
+    "Common Public License 0.5",
+    "CPL 0.5"
+  ],
+  [
+    "cpl-1.0",
+    "Common Public License 1.0",
+    "CPL 1.0"
+  ],
+  [
+    "cpol-1.02",
+    "Code Project Open License (CPOL) 1.02",
+    "CPOL 1.02"
+  ],
+  [
+    "crossword",
+    "Crossword License",
+    "Crossword License"
+  ],
+  [
+    "cryptopp",
+    "Crypto++ License",
+    "Crypto++ License"
+  ],
+  [
+    "crystal-stacker",
+    "Crystal Stacker License",
+    "Crystal Stacker License"
+  ],
+  [
+    "csla",
+    "CSLA .NET License",
+    "CSLA License"
+  ],
+  [
+    "cua-opl-1.0",
+    "CUA Office Public License 1.0",
+    "CUA-OPL-1.0"
+  ],
+  [
+    "cube",
+    "Cube License",
+    "Cube License"
+  ],
+  [
+    "cups",
+    "CUPS License",
+    "CUPS License"
+  ],
+  [
+    "curl",
+    "cURL License",
+    "cURL License"
+  ],
+  [
+    "cximage",
+    "CxImage License",
+    "CxImage License"
+  ],
+  [
+    "cyberneko-1.0",
+    "CyberNeko v1.0",
+    "CyberNeko 1.0"
+  ],
+  [
+    "d-fsl-1.0-de",
+    "Deutsche Freie Software Lizenz",
+    "Deutsche Freie Software Lizenz"
+  ],
+  [
+    "d-fsl-1.0-en",
+    "German Free Software License",
+    "German Free Software License"
+  ],
+  [
+    "d-zlib",
+    "Digital Mars Zlib",
+    "D Zlib"
+  ],
+  [
+    "dalton-maag-eula",
+    "Dalton Maag End User Licence Agreement (EULA)",
+    "Dalton Maag EULA"
+  ],
+  [
+    "damail",
+    "Don't Ask Me About It License",
+    "DAMAIL"
+  ],
+  [
+    "dante-treglia",
+    "Dante Treglia License",
+    "Dante Treglia License"
+  ],
+  [
+    "darwin-file",
+    "Ian Darwin File License",
+    "Ian Darwin File License"
+  ],
+  [
+    "david-cranshaw",
+    "David Cranshaw License",
+    "David Cranshaw License"
+  ],
+  [
+    "day-spec",
+    "Day Specification License",
+    "Day Specification License"
+  ],
+  [
+    "dejacode",
+    "DejaCode Terms and Conditions",
+    "DejaCode License"
+  ],
+  [
+    "dejavu-font",
+    "DejaVu Font License",
+    "DejaVu Font License"
+  ],
+  [
+    "dennis-ferguson",
+    "Dennis Ferguson License",
+    "Dennis Ferguson License"
+  ],
+  [
+    "dhtmlab-public",
+    "Dynamic HTML Lab Public License",
+    "dhtmlab Public License"
+  ],
+  [
+    "diffmark",
+    "diffmark License",
+    "diffmark License"
+  ],
+  [
+    "dinkumware",
+    "Dinkumware notice",
+    "Dinkumware"
+  ],
+  [
+    "divx-open-1.0",
+    "DivX Open License v1.0",
+    "DivX Open License 1.0"
+  ],
+  [
+    "divx-open-2.1",
+    "DivX Open License v2.1",
+    "DivX Open License 2.1"
+  ],
+  [
+    "dmalloc",
+    "dmalloc License",
+    "dmalloc License"
+  ],
+  [
+    "dom4j",
+    "Dom4j License",
+    "Dom4j License"
+  ],
+  [
+    "dotseqn",
+    "Dotseqn License",
+    "Dotseqn License"
+  ],
+  [
+    "doug-lea",
+    "Doug Lea License",
+    "Doug Lea License"
+  ],
+  [
+    "douglas-young",
+    "Douglas Young License",
+    "Douglas Young License"
+  ],
+  [
+    "dpl-1.1",
+    "DSTC Public License (DPL) v1.1",
+    "DPL-1.1"
+  ],
+  [
+    "dr-john-maddock",
+    "Dr John Maddock License",
+    "Dr John Maddock License"
+  ],
+  [
+    "dropbear",
+    "Dropbear License",
+    "Dropbear License"
+  ],
+  [
+    "dropbear-2016",
+    "Dropbear-2016",
+    "Dropbear-2016"
+  ],
+  [
+    "dsdp",
+    "DSDP License",
+    "DSDP License"
+  ],
+  [
+    "dtree",
+    "Dtree License",
+    "Dtree License"
+  ],
+  [
+    "dual-bsd-gpl",
+    "Dual BSD-GPL",
+    "Dual BSD-GPL"
+  ],
+  [
+    "dvipdfm",
+    "dvipdfm License",
+    "dvipdfm License"
+  ],
+  [
+    "dynamic-drive-tou",
+    "Dynamic Drive Terms of Use",
+    "Dynamic Drive TOU"
+  ],
+  [
+    "dynarch-developer",
+    "Dynarch Developer Agreement",
+    "Dynarch Developer Agreement"
+  ],
+  [
+    "dynarch-linkware",
+    "Dynarch Linkware Agreement",
+    "Dynarch Linkware Agreement"
+  ],
+  [
+    "ecl-1.0",
+    "Educational Community License 1.0",
+    "ECL 1.0"
+  ],
+  [
+    "ecl-2.0",
+    "Educational Community License 2.0",
+    "ECL 2.0"
+  ],
+  [
+    "ecos",
+    "GNU General Public License 2.0 with eCos Exception",
+    "GPL 2.0 with eCos Exception"
+  ],
+  [
+    "ecosrh-1.1",
+    "Red Hat eCos Public License 1.1",
+    "Red Hat eCos Public License 1.1"
+  ],
+  [
+    "edl-1.0",
+    "Eclipse Distribution License 1.0",
+    "EDL 1.0"
+  ],
+  [
+    "efl-1.0",
+    "Eiffel Forum License 1.0",
+    "EFL 1.0"
+  ],
+  [
+    "efl-2.0",
+    "Eiffel Forum License 2.0",
+    "EFL 2.0"
+  ],
+  [
+    "egenix-1.1.0",
+    "eGenix Public License 1.1.0",
+    "eGenix Public License 1.1.0"
+  ],
+  [
+    "ej-technologies-eula",
+    "ej-technologies EULA",
+    "ej-technologies EULA"
+  ],
+  [
+    "ekioh",
+    "Ekioh License",
+    "Ekioh License"
+  ],
+  [
+    "elib-gpl",
+    "GNU Elib General Public License",
+    "GPL-Elib"
+  ],
+  [
+    "ellis-lab",
+    "EllisLab License",
+    "EllisLab License"
+  ],
+  [
+    "emx-library",
+    "EMX Library License",
+    "EMX Library License"
+  ],
+  [
+    "energyplus-bsd",
+    "EnergyPlus BSD-Style License",
+    "EnergyPlus BSD-Style License"
+  ],
+  [
+    "enhydra-1.1",
+    "Enhydra Public License 1.1",
+    "Enhydra 1.1"
+  ],
+  [
+    "enlightenment",
+    "Enlightenment (EFL) MIT-Style License",
+    "EFL MIT-Style License"
+  ],
+  [
+    "entessa-1.0",
+    "Entessa Public License v1.0",
+    "Entessa 1.0"
+  ],
+  [
+    "epics",
+    "EPICS Open License",
+    "EPICS Open License"
+  ],
+  [
+    "epl-1.0",
+    "Eclipse Public License 1.0",
+    "EPL 1.0"
+  ],
+  [
+    "epo-osl-2005.1",
+    "EPO Open Source Licence No. 2005/1",
+    "EPO-OSL"
+  ],
+  [
+    "erlangpl-1.1",
+    "Erlang Public License v1.1",
+    "Erlang Public License 1.1"
+  ],
+  [
+    "esri",
+    "Esri License",
+    "Esri License"
+  ],
+  [
+    "esri-devkit",
+    "Esri Developer Kit License",
+    "Esri Developer Kit License"
+  ],
+  [
+    "eu-datagrid",
+    "EU DataGrid Software License",
+    "EU DataGrid Software License"
+  ],
+  [
+    "eupl-1.0",
+    "European Union Public Licence 1.0",
+    "EUPL 1.0"
+  ],
+  [
+    "eupl-1.1",
+    "European Union Public Licence 1.1",
+    "EUPL 1.1"
+  ],
+  [
+    "eurosym",
+    "Eurosym License",
+    "Eurosym License"
+  ],
+  [
+    "examdiff",
+    "ExamDiff License",
+    "ExamDiff License"
+  ],
+  [
+    "excelsior-jet-runtime",
+    "Excelsior JET Runtime License",
+    "Excelsior JET Runtime License"
+  ],
+  [
+    "fabien-tassin",
+    "Fabien Tassin License",
+    "Fabien Tassin License"
+  ],
+  [
+    "facebook-nuclide",
+    "Facebook License Agreement for Nuclide Software",
+    "Facebook Nuclide Software License"
+  ],
+  [
+    "facebook-software-license",
+    "Facebook Software License",
+    "Facebook Software License"
+  ],
+  [
+    "fair",
+    "Fair License",
+    "Fair License"
+  ],
+  [
+    "fancyzoom",
+    "FancyZoom License",
+    "FancyZoom License"
+  ],
+  [
+    "fastcgi-devkit",
+    "FastCGI DevKit",
+    "FastCGI DevKit"
+  ],
+  [
+    "filament-group-mit",
+    "Filament Group MIT License",
+    "Filament Group MIT License"
+  ],
+  [
+    "first-works-appreciative-1.2",
+    "First Works Appreciative License 1.2",
+    "First Works Appreciative License 1.2"
+  ],
+  [
+    "flex-2.5",
+    "Flex License v2.5",
+    "Flex 2.5"
+  ],
+  [
+    "flex2sdk",
+    "Adobe Flex 2.0.1 SDK EULA",
+    "Adobe Flex 2.0.1 SDK EULA"
+  ],
+  [
+    "flowplayer-gpl-3.0",
+    "Flowplayer GPL 3.0",
+    "Flowplayer GPL 3.0"
+  ],
+  [
+    "foobar2000",
+    "foobar2000 License",
+    "foobar2000 License"
+  ],
+  [
+    "fpl",
+    "Freeware Public License (FPL)",
+    "Freeware Public License (FPL)"
+  ],
+  [
+    "fplot",
+    "FPLOT LIcense",
+    "FPLOT LIcense"
+  ],
+  [
+    "frameworx-1.0",
+    "Frameworx Open License v1.0",
+    "Frameworx 1.0"
+  ],
+  [
+    "fraunhofer-fdk-aac-codec",
+    "Fraunhofer FDK AAC Codec Library for Android",
+    "Fraunhofer FDK AAC Codec Library for Android"
+  ],
+  [
+    "fraunhofer-iso-14496-10",
+    "Fraunhofer ISO 14496-10 License",
+    "Fraunhofer ISO 14496-10 License"
+  ],
+  [
+    "free-art-1.3",
+    "Free Art License 1.3",
+    "FAL 1.3"
+  ],
+  [
+    "free-fork",
+    "University of Washington Free-Fork License",
+    "Free-Fork License"
+  ],
+  [
+    "freebsd-boot",
+    "FreeBSD Boot",
+    "FreeBSD Boot"
+  ],
+  [
+    "freeimage-1.0",
+    "FreeImage Public License Version 1.0",
+    "FreeImage Public License 1.0"
+  ],
+  [
+    "freemarker",
+    "FreeMarker License",
+    "FreeMarker License"
+  ],
+  [
+    "freetts",
+    "FreeTTS License",
+    "FreeTTS License"
+  ],
+  [
+    "freetype",
+    "FreeType Project License",
+    "FreeType Project License"
+  ],
+  [
+    "frontier-1.0",
+    "Frontier Artistic License",
+    "Frontier Artistic License"
+  ],
+  [
+    "fsf-ap",
+    "FSF All Permissive License",
+    "FSF All Permissive License"
+  ],
+  [
+    "fsf-free",
+    "Free Software Foundation - Free Software License",
+    "FSF Free Software License"
+  ],
+  [
+    "fsf-mit",
+    "Free Software Foundation - MIT Style License",
+    "FSF-MIT"
+  ],
+  [
+    "fsf-unlimited",
+    "Free Software Foundation - Unlimited License",
+    "FSF-Unlimited"
+  ],
+  [
+    "ftdi",
+    "Future Technology Devices International License",
+    "FTDI License"
+  ],
+  [
+    "ftpbean",
+    "FtpBean License",
+    "FtpBean License"
+  ],
+  [
+    "gareth-mccaughan",
+    "Gareth McCaughan License",
+    "Gareth McCaughan License"
+  ],
+  [
+    "gary-s-brown",
+    "Gary S. Brown License",
+    "Gary S. Brown License"
+  ],
+  [
+    "gdcl",
+    "GDCL License",
+    "GDCL License"
+  ],
+  [
+    "genivia-gsoap",
+    "Genivia gSOAP Commercial Licensing",
+    "Genivia Proprietary"
+  ],
+  [
+    "gfdl-1.1",
+    "GNU Free Documentation License 1.1",
+    "GFDL 1.1"
+  ],
+  [
+    "gfdl-1.2",
+    "GNU Free Documentation License 1.2",
+    "GFDL 1.2"
+  ],
+  [
+    "gfdl-1.3",
+    "GNU Free Documentation License 1.3",
+    "GFDL 1.3"
+  ],
+  [
+    "ghostscript-1988",
+    "Ghostscript General Public License 1988",
+    "Ghostscript General Public License 1988"
+  ],
+  [
+    "gl2ps",
+    "GL2PS License",
+    "GL2PS License"
+  ],
+  [
+    "glide",
+    "3DFX GLIDE Source Code General Public License",
+    "3DFX GLIDE"
+  ],
+  [
+    "glulxe",
+    "Glulxe License",
+    "Glulxe License"
+  ],
+  [
+    "glut",
+    "OpenGL Utility Toolkit (GLUT) License",
+    "GLUT License"
+  ],
+  [
+    "gnuplot",
+    "gnuplot License",
+    "gnuplot License"
+  ],
+  [
+    "google-analytics-tos",
+    "Google Analytics Terms of Service",
+    "Google Analytics Terms of Service"
+  ],
+  [
+    "google-tos-2013",
+    "Google Terms of Service 2013",
+    "Google TOS 2013"
+  ],
+  [
+    "gpl",
+    "GPL, no version",
+    "GPL"
+  ],
+  [
+    "gpl-1.0",
+    "GNU General Public License 1.0",
+    "GPL 1.0"
+  ],
+  [
+    "gpl-1.0-plus",
+    "GNU General Public License 1.0 or later",
+    "GPL 1.0 or later"
+  ],
+  [
+    "gpl-2.0",
+    "GNU General Public License 2.0",
+    "GPL 2.0"
+  ],
+  [
+    "gpl-2.0-autoconf",
+    "GNU General Public License 2.0 with Autoconf exception",
+    "GPL 2.0 with autoconf exception"
+  ],
+  [
+    "gpl-2.0-autoopts",
+    "GNU General Public License 2.0 with AutoOpts exception",
+    "GPL 2.0 with AutoOpts exception"
+  ],
+  [
+    "gpl-2.0-bison",
+    "GNU General Public License 2.0 with Bison exception",
+    "GPL 2.0 with Bison exception"
+  ],
+  [
+    "gpl-2.0-bison-2.2",
+    "GNU General Public License 2.0 with Bison 2.2 exception",
+    "GPL 2.0 with Bison 2.2 exception"
+  ],
+  [
+    "gpl-2.0-broadcom-linking",
+    "GNU General Public License 2.0 with Broadcom Linking Exception",
+    "GPL 2.0 with Broadcom Linking Exception"
+  ],
+  [
+    "gpl-2.0-classpath",
+    "GNU General Public License 2.0 with Classpath exception",
+    "GPL 2.0 with classpath exception"
+  ],
+  [
+    "gpl-2.0-clisp",
+    "GNU General Public License 2.0 with CLISP exception",
+    "GPL 2.0 with CLISP exception"
+  ],
+  [
+    "gpl-2.0-cygwin",
+    "GNU General Public License 2.0 with Cygwin exception",
+    "GPL 2.0 with cygwin exception"
+  ],
+  [
+    "gpl-2.0-djvu",
+    "GNU General Public License 2.0 with DjVu Patent Grant",
+    "GPL 2.0 with DjVu Patent Grant"
+  ],
+  [
+    "gpl-2.0-font",
+    "GNU General Public License 2.0 with Font exception",
+    "GPL 2.0 with font exception"
+  ],
+  [
+    "gpl-2.0-freertos",
+    "GNU General Public License 2.0 with FreeRTOS exception",
+    "GPL 2.0 with FreeRTOS exception"
+  ],
+  [
+    "gpl-2.0-gcc",
+    "GNU General Public License 2.0 with GCC Runtime Library exception",
+    "GPL 2.0 with GCC exception"
+  ],
+  [
+    "gpl-2.0-gcc-compiler-exception",
+    "GNU General Public License 2.0 with GCC compiler exception",
+    "GPL 2.0 with GCC compiler exception"
+  ],
+  [
+    "gpl-2.0-glibc",
+    "GNU General Public License 2.0 with GLIBC exception",
+    "GPL 2.0 with GLIBC exception"
+  ],
+  [
+    "gpl-2.0-guile",
+    "GNU General Public License 2.0 with GUILE exception",
+    "GPL 2.0 with GUILE exception"
+  ],
+  [
+    "gpl-2.0-ice",
+    "GNU General Public License 2.0 with Ice exception",
+    "GPL 2.0 with Ice exception"
+  ],
+  [
+    "gpl-2.0-independent-module-linking",
+    "GPL 2.0 with Independent Module Linking exception",
+    "GPL 2.0 with Independent Module Linking exception"
+  ],
+  [
+    "gpl-2.0-iolib",
+    "GNU General Public License 2.0 with GNU IO Library exception",
+    "GPL 2.0 with GNU IO Library exception"
+  ],
+  [
+    "gpl-2.0-iso-cpp",
+    "GNU General Public License 2.0 with ISO C++ Library exception",
+    "GPL 2.0 with ISO C++ Library exception"
+  ],
+  [
+    "gpl-2.0-javascript",
+    "GNU General Public License 2.0 with Javascript exception",
+    "GPL 2.0 with Javascript exception"
+  ],
+  [
+    "gpl-2.0-kernel",
+    "GPL 2.0 with Kernel exception",
+    "GPL 2.0 with Kernel exception"
+  ],
+  [
+    "gpl-2.0-koterov",
+    "GPL 2.0 with Dmitry Koterov additions",
+    "GPL 2.0 with Dmitry Koterov additions"
+  ],
+  [
+    "gpl-2.0-library",
+    "GNU General Public License 2.0 with Library exception",
+    "GPL 2.0 with Library exception"
+  ],
+  [
+    "gpl-2.0-libtool",
+    "GNU General Public License 2.0 with GNU Libtool exception",
+    "GPL 2.0 with GNU Libtool exception"
+  ],
+  [
+    "gpl-2.0-lmbench",
+    "GPL 2.0 with LMBench exception",
+    "GPL 2.0 with LMBench exception"
+  ],
+  [
+    "gpl-2.0-mysql-connector-odbc",
+    "GNU General Public License 2.0 with MySQL Connector ODBC exception",
+    "GPL 2.0 with MySQL Connector ODBC exception"
+  ],
+  [
+    "gpl-2.0-mysql-floss",
+    "GNU General Public License 2.0 with MySQL FLOSS exception",
+    "GPL 2.0 with MySQL FLOSS exception"
+  ],
+  [
+    "gpl-2.0-openjdk",
+    "GNU General Public License 2.0 with OpenJDK Classpath exception",
+    "GPL 2.0 with OpenJDK classpath exception"
+  ],
+  [
+    "gpl-2.0-openssl",
+    "GNU General Public License 2.0 with OpenSSL exception",
+    "GPL 2.0 with OpenSSL exception"
+  ],
+  [
+    "gpl-2.0-oracle-mysql-foss",
+    "GNU General Public License 2.0 with Oracle MySQL FOSS exception",
+    "GPL 2.0 with Oracle MySQL FOSS exception"
+  ],
+  [
+    "gpl-2.0-oracle-openjdk",
+    "GPL 2.0 with Oracle OpenJDK classpath exception",
+    "GPL 2.0 with Oracle OpenJDK classpath exception"
+  ],
+  [
+    "gpl-2.0-plus",
+    "GNU General Public License 2.0 or later",
+    "GPL 2.0 or later"
+  ],
+  [
+    "gpl-2.0-plus-ada",
+    "GNU General Public License 2.0 or later with Ada exception",
+    "GPL 2.0 or later with Ada exception"
+  ],
+  [
+    "gpl-2.0-plus-ekiga",
+    "GNU General Public License 2.0 or later with Ekiga exception",
+    "GPL 2.0 or later with Ekiga exception"
+  ],
+  [
+    "gpl-2.0-plus-gcc",
+    "GNU General Public License 2.0 or later with GCC Runtime Library exception",
+    "GPL 2.0 or later with GCC exception"
+  ],
+  [
+    "gpl-2.0-plus-geoserver",
+    "GNU General Public License 2.0 or later with GeoServer exception",
+    "GPL 2.0 or later with GeoServer exception"
+  ],
+  [
+    "gpl-2.0-plus-linking",
+    "GNU General Public License 2.0 with Linking exception",
+    "GPL 2.0 or later with Linking exception"
+  ],
+  [
+    "gpl-2.0-plus-nant",
+    "GNU General Public License 2.0 or later with NAnt exception",
+    "GPL 2.0 or later with NAnt exception"
+  ],
+  [
+    "gpl-2.0-plus-openmotif",
+    "GPL 2.0 or later with Open Motif exception",
+    "GPL 2.0 or later with Open Motif exception"
+  ],
+  [
+    "gpl-2.0-plus-subcommander",
+    "GNU General Public License 2.0 or later with Subcommander exception",
+    "GPL 2.0 or later with Subcommander exception"
+  ],
+  [
+    "gpl-2.0-plus-syntext",
+    "GNU General Public License 2.0 or later with Syntext exception",
+    "GPL 2.0 or later with Syntext exception"
+  ],
+  [
+    "gpl-2.0-plus-upx",
+    "GNU General Public License 2.0 or later with UPX exception",
+    "GPL 2.0 or later with UPX exception"
+  ],
+  [
+    "gpl-2.0-proguard",
+    "GNU General Public License 2.0 with ProGuard exception",
+    "GPL 2.0 with ProGuard exception"
+  ],
+  [
+    "gpl-2.0-qt-qca",
+    "GNU General Public License 2.0 with Qt-QCA exception",
+    "GPL 2.0 with Qt-QCA exception"
+  ],
+  [
+    "gpl-2.0-redhat",
+    "GNU General Public License 2.0 with Fedora Red Hat Exception",
+    "GPL 2.0 with Fedora Red Hat exception"
+  ],
+  [
+    "gpl-2.0-rrdtool-floss",
+    "GPL 2.0 with RRDtool FLOSS License Exception",
+    "GPL 2.0 with RRDtool FLOSS Exception"
+  ],
+  [
+    "gpl-2.0-uboot",
+    "GNU General Public License 2.0 with U-Boot exception",
+    "GPL 2.0 with U-Boot exception"
+  ],
+  [
+    "gpl-3.0",
+    "GNU General Public License 3.0",
+    "GPL 3.0"
+  ],
+  [
+    "gpl-3.0-aptana",
+    "GNU General Public License 3.0 with Aptana exception",
+    "GPL 3.0 with Aptana exception"
+  ],
+  [
+    "gpl-3.0-autoconf",
+    "GNU General Public License 3.0 with Autoconf exception",
+    "GPL 3.0 with autoconf exception"
+  ],
+  [
+    "gpl-3.0-bison",
+    "GNU General Public License 3.0 or later with Bison exception",
+    "GPL 3.0 or later with Bison exception"
+  ],
+  [
+    "gpl-3.0-cygwin",
+    "GNU General Public License 3.0 or later with Cygwin exception",
+    "GPL 3.0 or later with cygwin exception"
+  ],
+  [
+    "gpl-3.0-font",
+    "GNU General Public License 3.0 or later with Font exception",
+    "GPL 3.0 or later with Font exception"
+  ],
+  [
+    "gpl-3.0-gcc",
+    "GCC Runtime Library Exception Version 3.1",
+    "GCC Runtime Library Exception 3.1"
+  ],
+  [
+    "gpl-3.0-plus",
+    "GNU General Public License 3.0 or later",
+    "GPL 3.0 or later"
+  ],
+  [
+    "gpl-3.0-plus-openssl",
+    "GPL 3.0 or later with OpenSSL exception",
+    "GPL 3.0 or later with OpenSSL exception"
+  ],
+  [
+    "graphics-gems",
+    "Graphics Gems License",
+    "Graphics Gems License"
+  ],
+  [
+    "greg-roelofs",
+    "Greg Roelofs License",
+    "Greg Roelofs License"
+  ],
+  [
+    "gregory-pietsch",
+    "Gregory Pietsch Liberal License",
+    "Gregory Pietsch Liberal License"
+  ],
+  [
+    "gsoap-1.3a",
+    "gSOAP Public License v1.3a",
+    "gSOAP Public License v1.3a"
+  ],
+  [
+    "gsoap-1.3b",
+    "gSOAP Public License v1.3b",
+    "gSOAP Public License v1.3b"
+  ],
+  [
+    "gust-font-1.0",
+    "GUST Font License 1.0",
+    "GUST Font License 1.0"
+  ],
+  [
+    "gust-font-2006-09-30",
+    "GUST Font License 2006-09-30",
+    "GUST Font License 2006-09-30"
+  ],
+  [
+    "hacos-1.2",
+    "Health Administration Corporation Open Source License 1.2",
+    "HACOS 1.2"
+  ],
+  [
+    "halpern-wight",
+    "Halpern Wight Software License",
+    "Halpern Wight Software License"
+  ],
+  [
+    "haskell-report",
+    "Haskell Language Report License",
+    "Haskell Report License"
+  ],
+  [
+    "hauppauge-firmware-eula",
+    "Hauppauge Firmware EULA",
+    "Hauppauge Firmware EULA"
+  ],
+  [
+    "hauppauge-firmware-oem",
+    "Hauppauge Firmware OEM License",
+    "Hauppauge Firmware OEM License"
+  ],
+  [
+    "hdparm",
+    "HDPARM License",
+    "HDPARM License"
+  ],
+  [
+    "helios-eula",
+    "Helios EULA",
+    "Helios"
+  ],
+  [
+    "helix",
+    "Helix DNA Technology Binary Research Use License",
+    "Helix DNA License"
+  ],
+  [
+    "henry-spencer-1999",
+    "Henry Spencer License 1999",
+    "Henry Spencer License 1999"
+  ],
+  [
+    "hidapi",
+    "HIDAPI License",
+    "HIDAPI License"
+  ],
+  [
+    "highsoft-standard-license-agreement-4.0",
+    "Highsoft Standard License Agreement 4.0",
+    "Highsoft Standard License Agreement 4.0"
+  ],
+  [
+    "historical",
+    "Historical Permission Notice and Disclaimer",
+    "Historical Permission Notice and Disclaimer"
+  ],
+  [
+    "hp",
+    "HP Non-Commercial License",
+    "HP Non-Commercial License"
+  ],
+  [
+    "hp-enterprise-eula",
+    "HP Enterprise EULA",
+    "HP Enterprise EULA"
+  ],
+  [
+    "hp-netperf",
+    "HP Netperf License",
+    "HP Netperf License"
+  ],
+  [
+    "hp-proliant-essentials",
+    "hp-proliant-essentials EULA",
+    "hp-proliant-essentials"
+  ],
+  [
+    "hp-software-eula",
+    "HP Software EULA",
+    "HP Software EULA"
+  ],
+  [
+    "hp-ux-java",
+    "HP-UX 11i Java Technology Software",
+    "HP-UX 11i Java Technology Software"
+  ],
+  [
+    "hp-ux-jre",
+    "Hewlett Packard JRE License",
+    "HP JRE License"
+  ],
+  [
+    "hs-regexp",
+    "Henry Spencer Regexp License",
+    "Henry Spencer Regexp License"
+  ],
+  [
+    "hxd",
+    "HxD License",
+    "HxD License"
+  ],
+  [
+    "ian-kaplan",
+    "Ian Kaplan License",
+    "Ian Kaplan License"
+  ],
+  [
+    "ian-piumarta",
+    "Ian Piumarta License",
+    "Ian Piumarta License"
+  ],
+  [
+    "ibm-as-is",
+    "IBM AS-IS License",
+    "IBM AS-IS License"
+  ],
+  [
+    "ibm-developerworks-community-download",
+    "IBM developerWorks Community Download of Content Agreement",
+    "IBM developerWorks Community Download Agreement"
+  ],
+  [
+    "ibm-dhcp",
+    "IBM DHCP License",
+    "IBM DHCP License"
+  ],
+  [
+    "ibm-icu",
+    "ICU Composite License",
+    "ICU Composite License"
+  ],
+  [
+    "ibm-jre",
+    "IBM Java Runtime Environment License",
+    "IBM JRE License"
+  ],
+  [
+    "ibm-nwsc",
+    "IBM International License Agreement for Non-Warranted Sample Code",
+    "IBM Non-Warranted Sample Code License"
+  ],
+  [
+    "ibm-pibs",
+    "IBM PowerPC Initialization and Boot Software",
+    "IBM PowerPC Software"
+  ],
+  [
+    "ibm-sample",
+    "IBM Sample Program License",
+    "IBM Sample License"
+  ],
+  [
+    "ibmpl-1.0",
+    "IBM Public License",
+    "IPL 1.0"
+  ],
+  [
+    "ibpp",
+    "IBPP License",
+    "IBPP License"
+  ],
+  [
+    "idt-notice",
+    "IDT License Notice",
+    "IDT License Notice"
+  ],
+  [
+    "ietf",
+    "Internet Engineering Task Force License",
+    "IETF License"
+  ],
+  [
+    "ietf-trust",
+    "IETF Trust License",
+    "IETF Trust License"
+  ],
+  [
+    "ijg",
+    "Independent JPEG Group License",
+    "JPEG License"
+  ],
+  [
+    "ilmid",
+    "ilmid License",
+    "ilmid License"
+  ],
+  [
+    "imagemagick",
+    "ImageMagick License",
+    "ImageMagick License"
+  ],
+  [
+    "imagen",
+    "IMAGEN License",
+    "IMAGEN License"
+  ],
+  [
+    "imlib2",
+    "Imlib2 License",
+    "Imlib2 License"
+  ],
+  [
+    "indiana-extreme",
+    "Indiana University Extreme! Lab Software License Version 1.1.1",
+    "Indiana Extreme License 1.1.1"
+  ],
+  [
+    "indiana-extreme-1.2",
+    "Indiana University Extreme! Lab Software License Version 1.2",
+    "Indiana Extreme License 1.2"
+  ],
+  [
+    "infineon-free",
+    "Infineon Free Software License",
+    "Infineon Free Software License"
+  ],
+  [
+    "info-zip",
+    "Info-Zip License",
+    "Info-Zip License"
+  ],
+  [
+    "infonode-1.1",
+    "InfoNode Software License Version 1.1",
+    "InfoNode Software License 1.1"
+  ],
+  [
+    "initial-developer-public",
+    "Initial Developer Public License",
+    "Initial Developer Public License"
+  ],
+  [
+    "inner-net-2.0",
+    "Inner Net License 2.0",
+    "Inner Net 2.0"
+  ],
+  [
+    "inno-setup",
+    "Inno Setup License",
+    "Inno Setup License"
+  ],
+  [
+    "installsite",
+    "InstallSite License Agreement",
+    "InstallSite License Agreement"
+  ],
+  [
+    "intel",
+    "Intel Limited Patent License",
+    "Intel Limited Patent License"
+  ],
+  [
+    "intel-acpi",
+    "Intel ACPI Software License Agreement",
+    "Intel ACPI SLA"
+  ],
+  [
+    "intel-bcl",
+    "Intel Binary Code License",
+    "Intel BCL"
+  ],
+  [
+    "intel-bsd-export-control",
+    "Intel BSD - Export Control",
+    "Intel BSD - Export Control"
+  ],
+  [
+    "intel-bsd-special",
+    "Intel BSD - Special Disclaimer",
+    "Intel BSD - Special Disclaimer"
+  ],
+  [
+    "intel-code-samples",
+    "Intel Code Samples License",
+    "Intel Code Samples License"
+  ],
+  [
+    "intel-confidential",
+    "Intel Confidential",
+    "Intel Confidential"
+  ],
+  [
+    "intel-firmware",
+    "Intel Firmware License",
+    "Intel Firmware License"
+  ],
+  [
+    "intel-master-eula-sw-dev-2016",
+    "Intel Master EULA for SW Development Products March 2016",
+    "Intel Master EULA for SW Dev 2016"
+  ],
+  [
+    "intel-material",
+    "Intel Material License",
+    "Intel Material License"
+  ],
+  [
+    "intel-osl-1989",
+    "Intel Open Source License 1989",
+    "Intel OSL 1989"
+  ],
+  [
+    "intel-royalty-free",
+    "Intel Royalty Free License",
+    "Intel Royalty Free License"
+  ],
+  [
+    "intel-scl",
+    "Intel Source Code License Agreement",
+    "Intel Source Code License Agreement"
+  ],
+  [
+    "interbase-1.0",
+    "Interbase Public License 1.0",
+    "Interbase Public License 1.0"
+  ],
+  [
+    "iozone",
+    "IOzone License",
+    "IOzone License"
+  ],
+  [
+    "ipa-font",
+    "IPA Font License Agreement v1.0",
+    "IPA Font License 1.0"
+  ],
+  [
+    "irfanview-eula",
+    "IrfanView EULA",
+    "IrfanView EULA"
+  ],
+  [
+    "isc",
+    "ISC License",
+    "ISC License"
+  ],
+  [
+    "iso-14496-10",
+    "ISO 14496-10",
+    "ISO 14496-10"
+  ],
+  [
+    "iso-8879",
+    "ISO 8879",
+    "ISO 8879"
+  ],
+  [
+    "iso-recorder",
+    "ISO Recorder License",
+    "ISO Recorder License"
+  ],
+  [
+    "isotope-cla",
+    "Isotope Commercial License Agreement",
+    "Isotope Commercial License Agreement"
+  ],
+  [
+    "itc-eula",
+    "ITC End User License Agreement",
+    "ITC EULA"
+  ],
+  [
+    "itu",
+    "ITU License",
+    "ITU License"
+  ],
+  [
+    "itu-t",
+    "ITU-T License",
+    "ITU-T License"
+  ],
+  [
+    "itunes",
+    "Apple iTunes License",
+    "Apple iTunes License"
+  ],
+  [
+    "jahia-1.3.1",
+    "Jahia Collaborative Source License v1.3.1",
+    "JCSL 1.3.1"
+  ],
+  [
+    "jam",
+    "Jam License",
+    "Jam License"
+  ],
+  [
+    "jamon",
+    "JAMon License",
+    "JAMon License"
+  ],
+  [
+    "jason-mayes",
+    "Jason Mayes License",
+    "Jason Mayes License"
+  ],
+  [
+    "jasper-1.0",
+    "Jasper Reports License 1.0",
+    "Jasper 1.0"
+  ],
+  [
+    "jasper-2.0",
+    "JasPer License 2.0",
+    "JasPer 2.0"
+  ],
+  [
+    "java-app-stub",
+    "Java Application Stub Binary Module License",
+    "Java App Stub License"
+  ],
+  [
+    "java-research-1.5",
+    "Java Research License Version 1.5",
+    "Java Research License 1.5"
+  ],
+  [
+    "jboss-eula",
+    "JBoss EULA",
+    "JBoss EULA"
+  ],
+  [
+    "jdom",
+    "JDOM License",
+    "JDOM License"
+  ],
+  [
+    "jetbrains-purchase-terms",
+    "JetBrains Purchase Terms",
+    "JetBrains Purchase Terms"
+  ],
+  [
+    "jetbrains-toolbox-open-source-3",
+    "Toolbox Subscription License Agreement For Open Source Projects Version 3",
+    "JetBrains Toolbox Open Source License v3"
+  ],
+  [
+    "jetty",
+    "Jetty License",
+    "Jetty License"
+  ],
+  [
+    "jgraph",
+    "JGraph License",
+    "JGraph License"
+  ],
+  [
+    "jgraph-general",
+    "JGraph General License",
+    "JGraph General License"
+  ],
+  [
+    "jide-sla",
+    "JIDE SLA",
+    "JIDE SLA"
+  ],
+  [
+    "jj2000",
+    "JJ2000 License",
+    "JJ2000 License"
+  ],
+  [
+    "jmagnetic",
+    "JMagnetic License",
+    "JMagnetic License"
+  ],
+  [
+    "josl-1.0",
+    "Jabber Open Source License 1.0",
+    "Jabber 1.0"
+  ],
+  [
+    "jpython-1.1",
+    "JPython License 1.1",
+    "JPython 1.1"
+  ],
+  [
+    "jquery-pd",
+    "jQuery Tools Public Domain License",
+    "jQuery-Tools-PD"
+  ],
+  [
+    "jrunner",
+    "JRunner Software License",
+    "JRunner License"
+  ],
+  [
+    "jsfromhell",
+    "JSFromHell License",
+    "JSFromHell License"
+  ],
+  [
+    "json",
+    "JSON License",
+    "JSON License"
+  ],
+  [
+    "json-js-pd",
+    "JSON-js Public Domain Notice",
+    "JSON-js-PD"
+  ],
+  [
+    "json-pd",
+    "JSON Public Domain Notice",
+    "JSON-PD"
+  ],
+  [
+    "jsr-107-jcache-spec",
+    "JSR-107 JCache Specification License",
+    "JSR-107 JCache Specification License"
+  ],
+  [
+    "jython",
+    "Jython License",
+    "Jython License"
+  ],
+  [
+    "kalle-kaukonen",
+    "Kalle Kaukonen License",
+    "Kalle Kaukonen License"
+  ],
+  [
+    "karl-peterson",
+    "Karl Peterson License",
+    "Karl Peterson License"
+  ],
+  [
+    "keith-rule",
+    "Keith Rule License",
+    "Keith Rule License"
+  ],
+  [
+    "kerberos",
+    "Kerberos License",
+    "Kerberos License"
+  ],
+  [
+    "kevlin-henney",
+    "Kevlin Henney License",
+    "Kevlin Henney License"
+  ],
+  [
+    "khronos",
+    "Khronos License",
+    "Khronos License"
+  ],
+  [
+    "lal-1.2",
+    "Licence Art Libre 1.2",
+    "Licence Art Libre 1.2"
+  ],
+  [
+    "lal-1.3",
+    "Licence Art Libre 1.3",
+    "Licence Art Libre 1.3"
+  ],
+  [
+    "larabie",
+    "Larabie Fonts EULA",
+    "Larabie Fonts EULA"
+  ],
+  [
+    "latex2e",
+    "Latex2e License",
+    "Latex2e License"
+  ],
+  [
+    "laurikari",
+    "GNU All-Permissive License",
+    "GNU All-Permissive License"
+  ],
+  [
+    "lavantech",
+    "LavanTech License",
+    "LavanTech License"
+  ],
+  [
+    "lbnl-bsd",
+    "Lawrence Berkeley National Labs BSD variant license",
+    "LBNL BSD Variant"
+  ],
+  [
+    "lcs-telegraphics",
+    "LCS-Telegraphics License",
+    "LCS-Telegraphics License"
+  ],
+  [
+    "ldap-sdk-free-use",
+    "UnboundID LDAP SDK Free Use License",
+    "UnboundID LDAP SDK Free Use License"
+  ],
+  [
+    "leptonica",
+    "Leptonica License",
+    "Leptonica License"
+  ],
+  [
+    "lgpl",
+    "LGPL, no version",
+    "LGPL"
+  ],
+  [
+    "lgpl-2.0",
+    "GNU Library General Public License 2.0",
+    "LGPL 2.0"
+  ],
+  [
+    "lgpl-2.0-fltk",
+    "GNU Library General Public License 2.0 with FLTK exception",
+    "LGPL 2.0 with FLTK exception"
+  ],
+  [
+    "lgpl-2.0-plus",
+    "GNU Library General Public License 2.0 or later",
+    "LGPL 2.0 or later"
+  ],
+  [
+    "lgpl-2.0-plus-gcc",
+    "GNU Library General Public License 2.0 or later with GCC Runtime Library exception",
+    "LGPL 2.0 or later with GCC exception"
+  ],
+  [
+    "lgpl-2.1",
+    "GNU Lesser General Public License 2.1",
+    "LGPL 2.1"
+  ],
+  [
+    "lgpl-2.1-digia-qt",
+    "Digia Qt LGPL Exception version 1.1",
+    "LGPL 2.1 with Digia Qt Exception"
+  ],
+  [
+    "lgpl-2.1-nokia-qt",
+    "Nokia Qt LGPL Exception version 1.1",
+    "LGPL 2.1 with Nokia Qt Exception"
+  ],
+  [
+    "lgpl-2.1-plus",
+    "GNU Lesser General Public License 2.1 or later",
+    "LGPL 2.1 or later"
+  ],
+  [
+    "lgpl-2.1-plus-linking",
+    "LGPL 2.1 or later with Linking exception",
+    "LGPL 2.1 or later with linking exception"
+  ],
+  [
+    "lgpl-2.1-plus-unlimited-linking",
+    "LGPL 2.1 or later with unlimited linking exception",
+    "LGPL 2.1 or later with unlimited linking exception"
+  ],
+  [
+    "lgpl-2.1-qt-company",
+    "Qt Company Qt LGPL Exception version 1.1",
+    "LGPL 2.1 with Qt Company Exception"
+  ],
+  [
+    "lgpl-2.1-rxtx",
+    "GNU Lesser General Public License 2.1 with RXTX exception",
+    "LGPL 2.1 with RXTX exception"
+  ],
+  [
+    "lgpl-3-plus-linking",
+    "LGPL 3.0 or later with static or dynamic linking exception",
+    "LGPL 3.0 or later with linking exception"
+  ],
+  [
+    "lgpl-3.0",
+    "GNU Lesser General Public License 3.0",
+    "LGPL 3.0"
+  ],
+  [
+    "lgpl-3.0-cygwin",
+    "GNU Lesser General Public License 3.0 or later with Cygwin exception",
+    "LGPL 3.0 or later with cygwin exception"
+  ],
+  [
+    "lgpl-3.0-plus",
+    "GNU Lesser General Public License 3.0 or later",
+    "LGPL 3.0 or later"
+  ],
+  [
+    "lgpl-3.0-plus-openssl",
+    "LGPL 3.0 or later with OpenSSL exception",
+    "LGPL 3.0 or later with OpenSSL exception"
+  ],
+  [
+    "lgpl-3.0-zeromq",
+    "GNU Lesser General Public License 3.0 with zeromq exception",
+    "LGPL 3.0 with zeromq exception"
+  ],
+  [
+    "lgpllr",
+    "Lesser General Public License For Linguistic Resources",
+    "LGPLLR"
+  ],
+  [
+    "libgeotiff",
+    "libgeoTiff License",
+    "libgeoTiff License"
+  ],
+  [
+    "libmib",
+    "LibMib License",
+    "LibMib License"
+  ],
+  [
+    "libpbm",
+    "PBM Library License",
+    "PBM Library License"
+  ],
+  [
+    "libpng",
+    "Libpng License",
+    "Libpng License"
+  ],
+  [
+    "libselinux-pd",
+    "libselinux License",
+    "libselinux License"
+  ],
+  [
+    "libzip",
+    "NiH libzip License",
+    "libzip License"
+  ],
+  [
+    "liliq-p-1.1",
+    "Licence Libre du Qu\u00e9bec \u2013 Permissive version 1.1",
+    "LiLiQ-P-1.1"
+  ],
+  [
+    "liliq-r-1.1",
+    "Licence Libre du Qu\u00e9bec \u2013 R\u00e9ciprocit\u00e9 version 1.",
+    "LiLiQ-R-1.1"
+  ],
+  [
+    "liliq-rplus-1.1",
+    "Licence Libre du Qu\u00e9bec \u2013 R\u00e9ciprocit\u00e9 forte version 1.1",
+    "LiLiQ-Rplus-1.1"
+  ],
+  [
+    "lilo",
+    "LILO License",
+    "LILO License"
+  ],
+  [
+    "linotype-eula",
+    "Linotype EULA",
+    "Linotype EULA"
+  ],
+  [
+    "linum",
+    "Linum Software License",
+    "Linum Software License"
+  ],
+  [
+    "linux-device-drivers",
+    "Linux Device Drivers License",
+    "Linux Device Drivers"
+  ],
+  [
+    "linuxbios",
+    "LinuxBIOS License",
+    "LinuxBIOS License"
+  ],
+  [
+    "linuxhowtos",
+    "linuxhowtos License",
+    "linuxhowtos License"
+  ],
+  [
+    "llgpl",
+    "Lisp Lesser General Public License (LLPGL)",
+    "LLGPL"
+  ],
+  [
+    "logica-1.0",
+    "Logica Open Source License v1.0",
+    "Logica OSL 1.0"
+  ],
+  [
+    "lppl-1.0",
+    "LaTeX Project Public License v1.0",
+    "LPPL 1.0"
+  ],
+  [
+    "lppl-1.1",
+    "LaTeX Project Public License v1.1",
+    "LPPL 1.1"
+  ],
+  [
+    "lppl-1.2",
+    "LaTeX Project Public License v1.2",
+    "LPPL 1.2"
+  ],
+  [
+    "lppl-1.3a",
+    "LaTeX Project Public License v1.3a",
+    "LPPL 1.3a"
+  ],
+  [
+    "lppl-1.3c",
+    "LaTeX Project Public License v1.3c",
+    "LPPL 1.3c"
+  ],
+  [
+    "lsi-proprietary-eula",
+    "LSI Proprietary EULA",
+    "LSI Proprietary EULA"
+  ],
+  [
+    "lucent-pl-1.0",
+    "Lucent Public License 1.0",
+    "Lucent Public License 1.0"
+  ],
+  [
+    "lucent-pl-1.02",
+    "Lucent Public License 1.02",
+    "Lucent Public License 1.02"
+  ],
+  [
+    "luxi",
+    "Bigelow & Holmes Luxi fonts license",
+    "Bigelow & Holmes Luxi fonts license"
+  ],
+  [
+    "lyubinskiy-dropdown",
+    "Lyubinskiy dropdown License",
+    "Lyubinskiy dropdown License"
+  ],
+  [
+    "lyubinskiy-popup-window",
+    "Lyubinskiy popup-window License",
+    "Lyubinskiy popup-window License"
+  ],
+  [
+    "lzma-cpl-exception",
+    "CPL 1.0 with special exception for LZMA compression module",
+    "CPL 1.0 with LZMA exception"
+  ],
+  [
+    "lzma-sdk-2006",
+    "LZMA SDK 2006",
+    "LZMA SDK 2006"
+  ],
+  [
+    "lzma-sdk-2008",
+    "LZMA SDK 2008",
+    "LZMA SDK 2008"
+  ],
+  [
+    "lzma-sdk-original",
+    "LZMA SDK Original",
+    "LZMA SDK Original"
+  ],
+  [
+    "lzma-sdk-pd",
+    "LZMA SDK Public Domain",
+    "LZMA SDK Public Domain"
+  ],
+  [
+    "makeindex",
+    "MakeIndex Distribution Notice",
+    "MakeIndex Distribution Notice"
+  ],
+  [
+    "martin-birgmeier",
+    "Martin Bergmeier License",
+    "Martin Bergmeier License"
+  ],
+  [
+    "marvell-firmware",
+    "Marvell Firmware License",
+    "Marvell Firmware License"
+  ],
+  [
+    "matt-gallagher-attribution",
+    "Matt Gallagher Attribution License",
+    "Matt Gallagher Attribution License"
+  ],
+  [
+    "matthew-kwan",
+    "Matthew Kwan License",
+    "Matthew Kwan License"
+  ],
+  [
+    "mattkruse",
+    "Matt Kruse License",
+    "Matt Kruse License"
+  ],
+  [
+    "mcafee-tou",
+    "McAfee Software royalty-Free License",
+    "McAfee Free License"
+  ],
+  [
+    "mediainfo-lib",
+    "MediaInfo(Lib) License",
+    "MediaInfo(Lib) License"
+  ],
+  [
+    "melange",
+    "Melange Chat Server/Client Public License",
+    "Melange Public License"
+  ],
+  [
+    "mentalis",
+    "Mentalis Source Code License",
+    "Mentalis License"
+  ],
+  [
+    "metrolink-1.0",
+    "Metro Link Public License 1.0",
+    "Metrolink 1.0"
+  ],
+  [
+    "mgopen-font-license",
+    "MgOpen Font License",
+    "MgOpen Font License"
+  ],
+  [
+    "michael-barr",
+    "Michael Barr License",
+    "Michael Barr License"
+  ],
+  [
+    "michigan-disclaimer",
+    "University of Michigan Open Source License",
+    "University of Michigan OSL"
+  ],
+  [
+    "microsoft-enterprise-library-eula",
+    "Microsoft Enterprise Library EULA",
+    "MS Enterprise Library EULA"
+  ],
+  [
+    "microsoft-windows-rally-devkit",
+    "Microsoft Windows Rally Development Kit License",
+    "MS Windows Rally Development Kit License"
+  ],
+  [
+    "mike95",
+    "Mike95 License",
+    "Mike95 License"
+  ],
+  [
+    "mini-xml",
+    "Mini-XML License (LGPL 2.0 with Exception)",
+    "LGPL 2.0 with Mini-XML exception"
+  ],
+  [
+    "minpack",
+    "Minpack Copyright Notice",
+    "Minpack Copyright Notice"
+  ],
+  [
+    "mir-os",
+    "MirOS License",
+    "MirOS License"
+  ],
+  [
+    "mit",
+    "MIT License",
+    "MIT License"
+  ],
+  [
+    "mit-ack",
+    "MIT Acknowledgment License",
+    "MIT Acknowledgment License"
+  ],
+  [
+    "mit-addition",
+    "MIT Addition License",
+    "MIT Addition License"
+  ],
+  [
+    "mit-export-control",
+    "MIT with Export Control",
+    "MIT with Export Control"
+  ],
+  [
+    "mit-license-1998",
+    "MIT License 1998",
+    "MIT License 1998"
+  ],
+  [
+    "mit-modern",
+    "MIT Modern Variant",
+    "MIT Modern Variant"
+  ],
+  [
+    "mit-no-false-attribs",
+    "MIT with no false attribution License",
+    "MIT no false attribution License"
+  ],
+  [
+    "mit-old-style",
+    "MIT Old Style",
+    "MIT Old Style"
+  ],
+  [
+    "mit-old-style-legal-2",
+    "MIT Old Style with legal disclaimer 2",
+    "MIT Old Style with legal disclaimer 2"
+  ],
+  [
+    "mit-old-style-no-advert",
+    "MIT Old Style no advertising",
+    "MIT Old Style no advertising"
+  ],
+  [
+    "mit-open-group",
+    "MIT Open Group",
+    "MIT Open Group"
+  ],
+  [
+    "mit-specification-disclaimer",
+    "MIT with Specification Disclaimer",
+    "MIT with Specification Disclaimer"
+  ],
+  [
+    "mit-style",
+    "MIT-Style",
+    "MIT-Style"
+  ],
+  [
+    "mit-taylor-variant",
+    "MIT Taylor Variant",
+    "MIT Taylor Variant"
+  ],
+  [
+    "mit-with-modification-obligations",
+    "MIT With Modification Obligations",
+    "MIT With Modification Obligations"
+  ],
+  [
+    "mod-dav-1.0",
+    "mod_dav License Agreement v1",
+    "mod_dav License 1.0"
+  ],
+  [
+    "monetdb-1.1",
+    "MonetDB Public License Version 1.1",
+    "MonetDB 1.1"
+  ],
+  [
+    "monotype-tou",
+    "Monotype Terms of Use",
+    "Monotype Terms of Use"
+  ],
+  [
+    "motorola",
+    "Motorola Microprocessor & Memory Technology Group License",
+    "Motorola Microprocessor License"
+  ],
+  [
+    "motosoto-0.9.1",
+    "Motosoto Open Source License v0.9.1",
+    "Motosoto 0.9.1"
+  ],
+  [
+    "mozilla-gc",
+    "Mozilla GC License",
+    "Mozilla GC License"
+  ],
+  [
+    "mozilla-ospl-1.0",
+    "Mozilla Open Software Patent License Agreement v1",
+    "Mozilla Open Software Patent License 1.0"
+  ],
+  [
+    "mpeg-7",
+    "MPEG-7 License",
+    "MPEG-7 License"
+  ],
+  [
+    "mpeg-iso",
+    "MPEG-2 NBC MPEG-4 Audio ISO License",
+    "MPEG-2 NBC MPEG-4 Audio ISO"
+  ],
+  [
+    "mpeg-ssg",
+    "MPEG SSG License",
+    "MPEG SSG License"
+  ],
+  [
+    "mpich",
+    "MPICH License",
+    "MPICH License"
+  ],
+  [
+    "mpl",
+    "Mozilla Public License",
+    "MPL"
+  ],
+  [
+    "mpl-1.0",
+    "Mozilla Public License 1.0",
+    "MPL 1.0"
+  ],
+  [
+    "mpl-1.1",
+    "Mozilla Public License 1.1",
+    "MPL 1.1"
+  ],
+  [
+    "mpl-2.0",
+    "Mozilla Public License 2.0",
+    "MPL 2.0"
+  ],
+  [
+    "mpl-2.0-no-copyleft-exception",
+    "Mozilla Public License 2.0 (no copyleft exception)",
+    "MPL 2.0 with no copyleft exception"
+  ],
+  [
+    "ms-asp-net-ajax-supplemental-terms",
+    "Microsoft Software Supplemental License - ASP.NET 2.0 AJAX EXTENSIONS",
+    "MS Supplemental License - ASP.NET 2.0 AJAX EXT"
+  ],
+  [
+    "ms-asp-net-mvc3",
+    "Microsoft ASP.NET MVC 3 License",
+    "MS ASP.NET MVC3"
+  ],
+  [
+    "ms-asp-net-mvc4",
+    "Microsoft ASP.NET MVC 4 License",
+    "MS ASP.NET MVC4"
+  ],
+  [
+    "ms-asp-net-mvc4-extensions",
+    "Microsoft ASP.NET MVC 4 Extensions License",
+    "MS ASP.NET MVC 4 Extensions"
+  ],
+  [
+    "ms-asp-net-software",
+    "Microsoft ASP.NET Software License",
+    "MS ASP.NET Software License"
+  ],
+  [
+    "ms-asp-net-tools-pre-release",
+    "Microsoft ASP.NET Tools Pre-Release License",
+    "MS ASP.NET Tools Pre-Release License"
+  ],
+  [
+    "ms-asp-net-web-optimization-framework",
+    "Microsoft ASP.NET Web Optimization Framework",
+    "MS ASP.NET Web Optimization Framework"
+  ],
+  [
+    "ms-asp-net-web-pages-2",
+    "Microsoft ASP.NET Web Pages 2 License",
+    "MS ASP.NET Web Pages 2 License"
+  ],
+  [
+    "ms-capicom",
+    "Microsoft CAPICOM License",
+    "Microsoft CAPICOM License"
+  ],
+  [
+    "ms-cl",
+    "Microsoft Shared Source Community License",
+    "MS-CL"
+  ],
+  [
+    "ms-control-spy-2.0",
+    "Microsoft Control Spy 2.0",
+    "MS Control Spy 2.0"
+  ],
+  [
+    "ms-developer-services-agreement",
+    "Microsoft Developer Services Agreement",
+    "MS Developer Services Agreement"
+  ],
+  [
+    "ms-device-emulator-3.0",
+    "Microsoft Device Emulator 3.0",
+    "MS Device Emulator 3.0"
+  ],
+  [
+    "ms-directx-sdk-eula",
+    "Microsoft DirectX SDK EULA",
+    "MS DirectX SDK EULA"
+  ],
+  [
+    "ms-entity-framework-4.1",
+    "Microsoft Entity Framework 4.1 License",
+    "MS Entity Framework 4.1 License"
+  ],
+  [
+    "ms-entity-framework-5",
+    "MS Entity Framework 5 License",
+    "MS Entity Framework 5 License"
+  ],
+  [
+    "ms-eula-notice",
+    "Microsoft EULA Notice",
+    "MS EULA Notice"
+  ],
+  [
+    "ms-eula-win-script-host",
+    "Microsoft EULA for Windows Script Host",
+    "MS EULA for Windows Script Host"
+  ],
+  [
+    "ms-exchange-server-2010-sp2-sdk",
+    "Microsoft Exchange Server 2010 SP2 Web Services SDK",
+    "MS Exchange Server 2010 SP2 Web Services SDK"
+  ],
+  [
+    "ms-ilmerge",
+    "MS ILMerge License",
+    "MS ILMerge License"
+  ],
+  [
+    "ms-invisible-eula-1.0",
+    "Microsoft Invisible Computing EULA 1.0",
+    "MS Invisible Computing EULA 1.0"
+  ],
+  [
+    "ms-jdbc-driver-40-sql-server",
+    "Microsoft JDBC Driver 4.0 for SQL Server",
+    "MS JDBC Driver 4.0 for SQL Server"
+  ],
+  [
+    "ms-jdbc-driver-41-sql-server",
+    "Microsoft JDBC Driver 4.1 for SQL Server",
+    "MS JDBC Driver 4.1 for SQL Server"
+  ],
+  [
+    "ms-jdbc-driver-60-sql-server",
+    "Microsoft JDBC Driver 6.0 for SQL Server",
+    "MS JDBC Driver 6.0 for SQL Server"
+  ],
+  [
+    "ms-limited-public",
+    "Microsoft Limited Public License",
+    "MS Limited Public License"
+  ],
+  [
+    "ms-lpl",
+    "Microsoft Limited Permissive License (MS-LPL)",
+    "MS-LPL"
+  ],
+  [
+    "ms-msn-webgrease",
+    "Microsoft MSN WebGrease License",
+    "MS MSN WebGrease License"
+  ],
+  [
+    "ms-net-framework-4-supplemental-terms",
+    "Microsoft Software Supplemental License - .NET Framework 4",
+    "MS Supplemental License - .NET Framework 4"
+  ],
+  [
+    "ms-net-framework-deployment",
+    "Microsoft .NET Framework Redistributable EULA",
+    "MS .NET Framework Redistributable EULA"
+  ],
+  [
+    "ms-net-library",
+    "Microsoft .NET Library License",
+    "MS .NET Library License"
+  ],
+  [
+    "ms-nt-resource-kit",
+    "Microsoft NT Resource Kit License",
+    "MS NT Resource Kit License"
+  ],
+  [
+    "ms-nuget-package-manager",
+    "Microsoft NuGet-Based Package Manager License",
+    "MS NuGet-Based Package Manager License"
+  ],
+  [
+    "ms-office-system-programs-eula",
+    "Microsoft Office System Programs Software EULA",
+    "MS Office System Programs Software EULA"
+  ],
+  [
+    "ms-patent-promise",
+    "Microsoft Patent Promise for .NET Libraries and Runtime Components",
+    "MS Patent Promise for .NET"
+  ],
+  [
+    "ms-pl",
+    "Microsoft Public License",
+    "MS-PL"
+  ],
+  [
+    "ms-platform-sdk",
+    "Microsoft Platform SDK License",
+    "MS Platform SDK License"
+  ],
+  [
+    "ms-reactive-extensions-eula",
+    "Microsoft Reactive Extensions EULA",
+    "MS Reactive Extensions EULA"
+  ],
+  [
+    "ms-remote-ndis-usb-kit",
+    "Microsoft Remote NDIS USB Kit EULA",
+    "MS Remote NDIS USB Kit EULA"
+  ],
+  [
+    "ms-research-shared-source",
+    "Microsoft Research Shared Source License",
+    "MS Research Shared Source License"
+  ],
+  [
+    "ms-rl",
+    "Microsoft Reciprocal License",
+    "MS-RL"
+  ],
+  [
+    "ms-rsl",
+    "Microsoft Reference Source License",
+    "MS Reference Source License"
+  ],
+  [
+    "ms-silverlight-3",
+    "Microsoft Silverlight 3 License",
+    "MS Silverlight 3 License"
+  ],
+  [
+    "ms-sql-server-compact-4.0",
+    "Microsoft SQL Server Compact 4.0 License",
+    "MS SQL Server Compact 4.0 License"
+  ],
+  [
+    "ms-sql-server-data-tools",
+    "Microsoft SQL Server Data Tools License",
+    "MS SQL Server Data Tools License"
+  ],
+  [
+    "ms-ttf-eula",
+    "Microsoft TrueType Fonts EULA",
+    "MS TrueType Fonts EULA"
+  ],
+  [
+    "ms-visual-2008-runtime",
+    "Microsoft Visual C++ 2008 Runtime Libraries License",
+    "MS Visual C++ 2008 Runtime Libraries License"
+  ],
+  [
+    "ms-visual-2010-runtime",
+    "Microsoft Visual C++ 2010 Runtime Libraries License",
+    "MS Visual C++ 2010 Runtime Libraries License"
+  ],
+  [
+    "ms-visual-studio-code",
+    "Microsoft Visual Studio Code License",
+    "MS Visual Studio Code License"
+  ],
+  [
+    "ms-web-developer-tools-1.0",
+    "Microsoft Web Developer Tools 1.0",
+    "MS Web Developer Tools 1.0"
+  ],
+  [
+    "ms-windows-driver-kit",
+    "Microsoft Windows Driver Kit License",
+    "MS Windows Driver Kit License"
+  ],
+  [
+    "ms-windows-identity-foundation",
+    "Microsoft Windows Identity Foundation License",
+    "MS Windows Identity Foundation License"
+  ],
+  [
+    "ms-windows-sdk-server-2008-net-3.5",
+    "Microsoft Windows SDK for Windows Server 2008 and .NET Framework 3.5",
+    "MS Windows SDK Server 2008 .NET Framework 3.5"
+  ],
+  [
+    "ms-windows-sdk-win7-net-4",
+    "Microsoft Windows SDK for Windows 7 and .NET Framework 4",
+    "MS Windows SDK Windows7 .NET Framework 4"
+  ],
+  [
+    "ms-windows-server-2003-ddk",
+    "Microsoft Windows Server 2003 DDK License",
+    "MS Windows Server 2003 DDK License"
+  ],
+  [
+    "ms-windows-server-2003-sdk",
+    "Microsoft Windows Server 2003 SP1 Platform SDK License",
+    "MS Windows Server 2003 SP1 Platform SDK License"
+  ],
+  [
+    "ms-ws-routing-spec",
+    "Microsoft WS Routing Specifications License",
+    "MS WS Routing Specifications License"
+  ],
+  [
+    "ms-xml-core-4.0",
+    "Microsoft XML Core Services (MSXML) 4.0 EULA",
+    "MSXML 4.0 EULA"
+  ],
+  [
+    "msj-sample-code",
+    "Microsoft Systems Journal Sample Code License",
+    "MS Systems Journal Sample Code License"
+  ],
+  [
+    "msntp",
+    "MSNTP software license",
+    "MSNTP License"
+  ],
+  [
+    "msppl",
+    "Microsoft patterns & practices License",
+    "MSPPL"
+  ],
+  [
+    "mtll",
+    "Matrix Template Library License",
+    "Matrix Template Library License"
+  ],
+  [
+    "mulle-kybernetik",
+    "Mulle Kybernetik License",
+    "Mulle Kybernetik License"
+  ],
+  [
+    "multics",
+    "Multics License",
+    "Multics License"
+  ],
+  [
+    "mup",
+    "Mup License",
+    "Mup License"
+  ],
+  [
+    "mx4j",
+    "MX4J License 1.0",
+    "MX4J License 1.0"
+  ],
+  [
+    "nasa-1.3",
+    "NASA Open Source License v1.3",
+    "NASA 1.3"
+  ],
+  [
+    "naughter",
+    "Naughter Software License",
+    "Naughter Software License"
+  ],
+  [
+    "naumen",
+    "NAUMEN Public License",
+    "NAUMEN Public License"
+  ],
+  [
+    "nbpl-1.0",
+    "Net Boolean Public License 1.0",
+    "NBPL-1.0"
+  ],
+  [
+    "nero-eula",
+    "Nero EULA",
+    "Nero EULA"
+  ],
+  [
+    "net-snmp",
+    "Net SNMP License",
+    "Net SNMP License"
+  ],
+  [
+    "netcat",
+    "Netcat License",
+    "Netcat License"
+  ],
+  [
+    "netcdf",
+    "NetCDF License",
+    "NetCDF License"
+  ],
+  [
+    "netcomponents",
+    "NetComponents License",
+    "NetComponents License"
+  ],
+  [
+    "netron",
+    "Netron Project License",
+    "Netron Project License"
+  ],
+  [
+    "network-time-protocol",
+    "Network Time Protocol License",
+    "Network Time Protocol License"
+  ],
+  [
+    "new-relic",
+    "New Relic License",
+    "New Relic License"
+  ],
+  [
+    "newran",
+    "Newran License",
+    "Newran License"
+  ],
+  [
+    "newsletr",
+    "Newsletr License",
+    "Newsletr License"
+  ],
+  [
+    "nexb-djc-2010",
+    "DejaCode Software Licensing",
+    "DejaCode-2010"
+  ],
+  [
+    "ngpl",
+    "Nethack General Public License",
+    "Nethack General Public License"
+  ],
+  [
+    "nicta-psl",
+    "NICTA Public Software Licence 1.0",
+    "NICTA Public Software Licence 1.0"
+  ],
+  [
+    "niels-ferguson",
+    "Niels Ferguson License",
+    "Niels Ferguson License"
+  ],
+  [
+    "nist-pd",
+    "NIST Public Domain Notice",
+    "NIST Public Domain Notice"
+  ],
+  [
+    "nlod-1.0",
+    "Norwegian Licence for Open Government Data",
+    "NLOD-1.0"
+  ],
+  [
+    "nlpl",
+    "No Limit Public License",
+    "NLPL"
+  ],
+  [
+    "node-js",
+    "Node License",
+    "Node License"
+  ],
+  [
+    "nokos-1.0a",
+    "Nokia Open Source License 1.0a",
+    "NOKOS License 1.0a"
+  ],
+  [
+    "non-commercial",
+    "Non Commercial",
+    "Non Commercial"
+  ],
+  [
+    "nonexclusive",
+    "Nonexclusive License",
+    "Nonexclusive License"
+  ],
+  [
+    "nortel-dasa",
+    "Nortel DASA License",
+    "Nortel DASA License"
+  ],
+  [
+    "nosl-1.0",
+    "Netizen Open Source License 1.0",
+    "NOSL 1.0"
+  ],
+  [
+    "nosl-3.0",
+    "Non-Profit Open Software License 3.0",
+    "Non-Profit OSL 3.0"
+  ],
+  [
+    "not-a-license",
+    "Not a license",
+    "Not a license"
+  ],
+  [
+    "notre-dame",
+    "University of Notre Dame License",
+    "Notre Dame License"
+  ],
+  [
+    "noweb",
+    "Noweb License",
+    "Noweb License"
+  ],
+  [
+    "npl-1.0",
+    "Netscape Public License 1.0",
+    "NPL 1.0"
+  ],
+  [
+    "npl-1.1",
+    "Netscape Public License 1.1",
+    "NPL 1.1"
+  ],
+  [
+    "nrl",
+    "NRL License",
+    "NRL License"
+  ],
+  [
+    "ntlm",
+    "NTLM License",
+    "NTLM License"
+  ],
+  [
+    "ntpl",
+    "NTP License",
+    "NTP License"
+  ],
+  [
+    "nunit-v2",
+    "NUnit v2 License",
+    "NUnit v2 License"
+  ],
+  [
+    "nvidia",
+    "NVIDIA License",
+    "NVIDIA License"
+  ],
+  [
+    "nvidia-cuda",
+    "NVIDA CUDA Samples License",
+    "NVIDA CUDA Samples License"
+  ],
+  [
+    "nvidia-gov",
+    "NVIDIA License with Government Qualifications",
+    "NVIDIA License with Government Qualifications"
+  ],
+  [
+    "o-young-jong",
+    "O Young Jong License",
+    "O Young Jong License"
+  ],
+  [
+    "oasis-ws-security-spec",
+    "Oasis WS Security Specification License",
+    "Oasis WS Security Specification License"
+  ],
+  [
+    "occt-pl",
+    "Open CASCADE Technology Public License",
+    "OCCT-PL"
+  ],
+  [
+    "oclc-1.0",
+    "OCLC Research Public License 1.0",
+    "OCLC Research Public License 1.0"
+  ],
+  [
+    "oclc-2.0",
+    "OCLC Research Public License 2.0",
+    "OCLC Research Public License 2.0"
+  ],
+  [
+    "odbl-1.0",
+    "ODC Open Database License v1.0",
+    "ODbL 1.0"
+  ],
+  [
+    "odl",
+    "Open Directory License",
+    "Open Directory License"
+  ],
+  [
+    "ofl-1.0",
+    "Open Font License 1.0",
+    "OFL 1.0"
+  ],
+  [
+    "ofl-1.1",
+    "Open Font License 1.1",
+    "OFL 1.1"
+  ],
+  [
+    "ogc",
+    "OGC Software Notice",
+    "OGC Software Notice"
+  ],
+  [
+    "open-diameter",
+    "Open Diameter License",
+    "Open Diameter License"
+  ],
+  [
+    "open-group",
+    "Open Group Public License",
+    "Open Group Public License"
+  ],
+  [
+    "open-public",
+    "Open Public License v1.0",
+    "Open Public License 1.0"
+  ],
+  [
+    "opengroup",
+    "Open Group Test Suite License",
+    "Open Group Test Suite License"
+  ],
+  [
+    "openldap-1.1",
+    "OpenLDAP Public License 1.1",
+    "OpenLDAP Public License 1.1"
+  ],
+  [
+    "openldap-1.2",
+    "OpenLDAP Public License 1.2",
+    "OpenLDAP Public License 1.2"
+  ],
+  [
+    "openldap-1.3",
+    "OpenLDAP Public License 1.3",
+    "OpenLDAP Public License 1.3"
+  ],
+  [
+    "openldap-1.4",
+    "OpenLDAP Public License 1.4",
+    "OpenLDAP Public License 1.4"
+  ],
+  [
+    "openldap-2.0",
+    "OpenLDAP Public License 2.0",
+    "OpenLDAP Public License 2.0"
+  ],
+  [
+    "openldap-2.0.1",
+    "OpenLDAP Public License 2.0.1",
+    "OpenLDAP Public License 2.0.1"
+  ],
+  [
+    "openldap-2.1",
+    "OpenLDAP Public License 2.1",
+    "OpenLDAP Public License 2.1"
+  ],
+  [
+    "openldap-2.2",
+    "OpenLDAP Public License 2.2",
+    "OpenLDAP Public License 2.2"
+  ],
+  [
+    "openldap-2.2.1",
+    "OpenLDAP Public License 2.2.1",
+    "OpenLDAP Public License 2.2.1"
+  ],
+  [
+    "openldap-2.2.2",
+    "OpenLDAP Public License 2.2.2",
+    "OpenLDAP Public License 2.2.2"
+  ],
+  [
+    "openldap-2.3",
+    "OpenLDAP Public License 2.3",
+    "OpenLDAP Public License 2.3"
+  ],
+  [
+    "openldap-2.4",
+    "OpenLDAP Public License 2.4",
+    "OpenLDAP Public License 2.4"
+  ],
+  [
+    "openldap-2.5",
+    "OpenLDAP Public License 2.5",
+    "OpenLDAP Public License 2.5"
+  ],
+  [
+    "openldap-2.6",
+    "OpenLDAP Public License 2.6",
+    "OpenLDAP Public License 2.6"
+  ],
+  [
+    "openldap-2.7",
+    "OpenLDAP Public License 2.7",
+    "OpenLDAP Public License 2.7"
+  ],
+  [
+    "openldap-2.8",
+    "OpenLDAP Public License 2.8",
+    "OpenLDAP Public License 2.8"
+  ],
+  [
+    "openmarket-fastcgi",
+    "FastCGI License for Spec Implementation",
+    "FastCGI License for Spec Implementation"
+  ],
+  [
+    "opennetcf-shared-source",
+    "OpenNETCF Shared Source License",
+    "OpenNETCF Shared Source License"
+  ],
+  [
+    "openorb-1.0",
+    "OpenORB Community Software License Version 1.0",
+    "OpenORB Community License 1.0"
+  ],
+  [
+    "openpbs-2.3",
+    "OpenPBS Software License v2.3",
+    "OpenPBS 2.3"
+  ],
+  [
+    "openpub",
+    "Open Publication License v1.0",
+    "Open Publication License 1.0"
+  ],
+  [
+    "opensaml-1.0",
+    "OpenSAML License Version 1",
+    "OpenSAML License v1"
+  ],
+  [
+    "openssh",
+    "OpenSSH License",
+    "OpenSSH License"
+  ],
+  [
+    "openssl",
+    "OpenSSL License",
+    "OpenSSL License"
+  ],
+  [
+    "openssl-ssleay",
+    "OpenSSL/SSLeay License",
+    "OpenSSL/SSLeay License"
+  ],
+  [
+    "openvpn-as-eula",
+    "OpenVPN Access Server EULA",
+    "OpenVPN-AS EULA"
+  ],
+  [
+    "opera-widget-1.0",
+    "Opera Widget License v1.0",
+    "Opera Widget License 1.0"
+  ],
+  [
+    "opl-1.0",
+    "OpenContent Public License v1.0",
+    "OpenContent License 1.0"
+  ],
+  [
+    "oracle-bcl-javaee",
+    "Oracle BCL for Java EE Technologies",
+    "Oracle BCL for Java EE Technologies"
+  ],
+  [
+    "oracle-bcl-javase-javafx-2012",
+    "Oracle BCL for Java SE Platform Products and JavaFX 2012",
+    "Oracle BCL for JavaSE and JavaFX 2012"
+  ],
+  [
+    "oracle-bcl-javase-javafx-2013",
+    "Oracle BCL for Java SE and JavaFX Technologies 2013",
+    "Oracle BCL for Java SE and JavaFX 2013"
+  ],
+  [
+    "oracle-bcl-javase-platform-javafx-2013",
+    "Oracle BCL for Java SE Platform Products and JavaFX 2013 Restricted",
+    "Oracle BCL for Java SE and JavaFX 2013 Restricted"
+  ],
+  [
+    "oracle-bcl-jsse-1.0.3",
+    "Oracle BCL for JSSE 1.0.3 for CDC 1.0.2",
+    "Oracle BCL for JSSE 1.0.3 for CDC 1.0.2"
+  ],
+  [
+    "oracle-code-samples-bsd",
+    "Oracle Code Samples BSD-Style License",
+    "Oracle Code Samples BSD-Style License"
+  ],
+  [
+    "oracle-commercial-database-11g2",
+    "Oracle Commercial Database License 11g Release 2 (11.2)",
+    "Oracle Commercial Database License 11g2"
+  ],
+  [
+    "oracle-devtools-vsnet-dev",
+    "Oracle Developer Tools for Visual Studio .NET Development License",
+    "Oracle DevTools for Visual Studio .NET Development"
+  ],
+  [
+    "oracle-entitlement-05-15",
+    "Oracle Entitlement 5 plus 15",
+    "Oracle Entitlement 5 plus 15"
+  ],
+  [
+    "oracle-java-ee-sdk-2010",
+    "OTN Developer License for JAVA EE SDK",
+    "OTN Developer License for JAVA EE SDK"
+  ],
+  [
+    "oracle-master-agreement",
+    "Oracle Master Agreement (OMA)",
+    "Oracle Master Agreement (OMA)"
+  ],
+  [
+    "oracle-sql-developer",
+    "Oracle SQL Developer License Terms",
+    "Oracle SQL Developer License Terms"
+  ],
+  [
+    "oracle-web-sites-tou",
+    "Oracle Web Sites Terms of Use",
+    "Oracle Web Sites TOU"
+  ],
+  [
+    "oreilly-notice",
+    "O'Reilly Code Sample Notice",
+    "O'Reilly Code Sample Notice"
+  ],
+  [
+    "oset-pl-2.1",
+    "OSET Public License version 2.1",
+    "OSET-PL-2.1"
+  ],
+  [
+    "osf-1990",
+    "OSF 1990 License",
+    "OSF 1990 License"
+  ],
+  [
+    "osgi-spec-2.0",
+    "OSGi Specification License Version 2.0",
+    "OSGi Specification License 2.0"
+  ],
+  [
+    "osl-1.0",
+    "Open Software License 1.0",
+    "OSL 1.0"
+  ],
+  [
+    "osl-1.1",
+    "Open Software License 1.1",
+    "OSL 1.1"
+  ],
+  [
+    "osl-2.0",
+    "Open Software License 2.0",
+    "OSL 2.0"
+  ],
+  [
+    "osl-2.1",
+    "Open Software License 2.1",
+    "OSL 2.1"
+  ],
+  [
+    "osl-3.0",
+    "Open Software License 3.0",
+    "OSL 3.0"
+  ],
+  [
+    "oswego-concurrent",
+    "Oswego Concurrent License",
+    "Oswego Concurrent License"
+  ],
+  [
+    "other-copyleft",
+    "Other Copyleft Licenses",
+    "Other Copyleft Licenses"
+  ],
+  [
+    "other-permissive",
+    "Other Permissive Licenses",
+    "Other Permissive Licenses"
+  ],
+  [
+    "otn-dev-dist",
+    "Oracle Technology Network Development and Distribution License Terms",
+    "OTN License"
+  ],
+  [
+    "otn-dev-dist-2016",
+    "Oracle Technology Network License Agreement 2016",
+    "OTN License 2016"
+  ],
+  [
+    "otn-early-adopter-development",
+    "OTN Early Adopter Development License Agreement",
+    "OTN Early Adopter Development License"
+  ],
+  [
+    "owal-1.0",
+    "Opera Web Applications License v1.0",
+    "Opera Web Applications License 1.0"
+  ],
+  [
+    "owfa-1.0",
+    "Open Web Foundation Final Specification Agreement (OWFa 1.0)",
+    "OWFa 1.0"
+  ],
+  [
+    "owtchart",
+    "OWTChart License",
+    "OWTChart License"
+  ],
+  [
+    "ozplb-1.0",
+    "Australian Public Licence B Version 1.0",
+    "OZPLB 1.0"
+  ],
+  [
+    "ozplb-1.1",
+    "Australian Public Licence B Version 1.1",
+    "OZPLB 1.1"
+  ],
+  [
+    "paint-net",
+    "Paint.NET License",
+    "Paint.NET License"
+  ],
+  [
+    "paolo-messina-2000",
+    "Paolo Messina 2000",
+    "Paolo Messina 2000"
+  ],
+  [
+    "paraview-1.2",
+    "ParaView License 1.2",
+    "ParaView License 1.2"
+  ],
+  [
+    "paul-hsieh-exposition",
+    "Paul Hsieh Exposition License",
+    "Paul Hsieh Exposition License"
+  ],
+  [
+    "paul-mackerras",
+    "Paul Mackerras License",
+    "Paul Mackerras License"
+  ],
+  [
+    "paulo-soares",
+    "Paulo Soares License",
+    "Paulo Soares License"
+  ],
+  [
+    "pcre",
+    "PCRE License",
+    "PCRE License"
+  ],
+  [
+    "pd-programming",
+    "PD'Programming License",
+    "PD'Programming License"
+  ],
+  [
+    "pddl-1.0",
+    "Public Domain Dedication & Licence (PDDL)",
+    "PDDL 1.0"
+  ],
+  [
+    "perl-1.0",
+    "Perl 1.0",
+    "Perl 1.0"
+  ],
+  [
+    "peter-deutsch-document",
+    "Peter Deutsch Document License",
+    "Peter Deutsch Document License"
+  ],
+  [
+    "pftijah-1.1",
+    "PfTijah Public License v1.1",
+    "PfTijah Public License 1.1"
+  ],
+  [
+    "phil-bunce",
+    "Phil Bunce License",
+    "Phil Bunce License"
+  ],
+  [
+    "philippe-de-muyter",
+    "Philippe De Muyter License",
+    "Philippe De Muyter License"
+  ],
+  [
+    "phorum-2.0",
+    "Phorum License 2.0",
+    "Phorum License 2.0"
+  ],
+  [
+    "php-3.0",
+    "PHP License 3.0",
+    "PHP License 3.0"
+  ],
+  [
+    "php-3.01",
+    "PHP License 3.01",
+    "PHP License 3.01"
+  ],
+  [
+    "pine",
+    "Pine License",
+    "Pine License"
+  ],
+  [
+    "pivotal-tou",
+    "Pivotal Software Terms of Use",
+    "Pivotal Software Terms of Use"
+  ],
+  [
+    "planet-source-code",
+    "Planet Source Code License",
+    "Planet Source Code License"
+  ],
+  [
+    "pngsuite",
+    "PngSuite License",
+    "PngSuite License"
+  ],
+  [
+    "politepix-pl-1.0",
+    "Politepix Public License 1.0",
+    "Politepix Public License 1.0"
+  ],
+  [
+    "postgresql",
+    "PostgreSQL License",
+    "PostgreSQL License"
+  ],
+  [
+    "ppp",
+    "ppp License",
+    "ppp License"
+  ],
+  [
+    "proprietary",
+    "Free Proprietary license",
+    "Free Proprietary"
+  ],
+  [
+    "protobuf",
+    "Protobuf License",
+    "Protobuf License"
+  ],
+  [
+    "psfrag",
+    "psfrag License",
+    "psfrag License"
+  ],
+  [
+    "psutils",
+    "PS Utilities License",
+    "PS Utilities License"
+  ],
+  [
+    "psytec-freesoft",
+    "Psytec Free Software License",
+    "Psytec Free Software License"
+  ],
+  [
+    "public-domain",
+    "Public Domain",
+    "Public Domain"
+  ],
+  [
+    "purdue-bsd",
+    "Purdue BSD-Style License",
+    "Purdue BSD-Style License"
+  ],
+  [
+    "pycrypto",
+    "PyCrypto License",
+    "PyCrypto License"
+  ],
+  [
+    "pygres-2.2",
+    "PyGres License v2.2",
+    "PyGres License 2.2"
+  ],
+  [
+    "python",
+    "Python Software Foundation License v2",
+    "Python License 2.0"
+  ],
+  [
+    "qaplug",
+    "QAPlug License",
+    "QAPlug License"
+  ],
+  [
+    "qca-technology",
+    "Qualcomm Atheros Technology License",
+    "QCA Technology License"
+  ],
+  [
+    "qhull",
+    "Qhull License",
+    "Qhull License"
+  ],
+  [
+    "qlogic-firmware",
+    "QLogic Firmware License",
+    "QLogic Firmware License"
+  ],
+  [
+    "qpl-1.0",
+    "Q Public License Version 1.0",
+    "QPL 1.0"
+  ],
+  [
+    "qpopper",
+    "Qpopper License",
+    "Qpopper License"
+  ],
+  [
+    "qt-commercial-1.1",
+    "Qt for Application Development License Agreement v1.1",
+    "Qt Commercial License v1.1"
+  ],
+  [
+    "qualcomm-iso",
+    "Qualcomm ISO/IEC MPEG-B DASH License",
+    "Qualcomm ISO/IEC MPEG-B DASH License"
+  ],
+  [
+    "qualcomm-turing",
+    "Qualcomm Turing License",
+    "Qualcomm Turing License"
+  ],
+  [
+    "quicktime",
+    "Apple Quicktime License",
+    "Apple Quicktime License"
+  ],
+  [
+    "quin-street",
+    "QuinStreet License",
+    "QuinStreet License"
+  ],
+  [
+    "quirksmode",
+    "Quirksmode Copyright Notice",
+    "Quirksmode Copyright Notice"
+  ],
+  [
+    "qwt-1.0",
+    "Qwt License 1.0",
+    "Qwt License 1.0"
+  ],
+  [
+    "rackspace",
+    "Rackspace License",
+    "Rackspace License"
+  ],
+  [
+    "radvd",
+    "radvd License",
+    "radvd License"
+  ],
+  [
+    "ralf-corsepius",
+    "Ralf Corsepius License",
+    "Ralf Corsepius License"
+  ],
+  [
+    "ralink-firmware",
+    "Ralink Firmware License",
+    "Ralink Firmware License"
+  ],
+  [
+    "rar-winrar-eula",
+    "RAR and WinRAR EULA",
+    "RAR and WinRAR EULA"
+  ],
+  [
+    "rcsl-2.0",
+    "RealNetworks Community Source License v2.0",
+    "RCSL R&D 2.0"
+  ],
+  [
+    "rcsl-3.0",
+    "RealNetworks Community Source License v3.0",
+    "RCSL R&D 3.0"
+  ],
+  [
+    "rdisc",
+    "Rdisc License",
+    "Rdisc License"
+  ],
+  [
+    "red-hat-attribution",
+    "Red Hat Attribution License",
+    "Red Hat Attribution License"
+  ],
+  [
+    "red-hat-bsd-simplified",
+    "Red Hat BSD-Simplified",
+    "Red Hat BSD-Simplified"
+  ],
+  [
+    "red-hat-logos",
+    "Red Hat Logos License",
+    "Red Hat Logos License"
+  ],
+  [
+    "red-hat-trademarks",
+    "Red Hat Trademarks License",
+    "Red Hat Trademarks License"
+  ],
+  [
+    "regexp",
+    "Regexp License",
+    "Regexp License"
+  ],
+  [
+    "reportbug",
+    "Debian reportbug License",
+    "Debian reportbug License"
+  ],
+  [
+    "repoze",
+    "Repoze License",
+    "Repoze License"
+  ],
+  [
+    "rh-eula",
+    "Red Hat EULA for Enterprise Linux and Applications",
+    "Red Hat EULA"
+  ],
+  [
+    "ricoh-1.0",
+    "Ricoh Source Code Public License v1.0",
+    "Ricoh Source Code Public License 1.0"
+  ],
+  [
+    "riverbank-sip",
+    "Riverbank SIP License",
+    "Riverbank SIP License"
+  ],
+  [
+    "robert-hubley",
+    "Robert Hubley License",
+    "Robert Hubley License"
+  ],
+  [
+    "rogue-wave",
+    "Rogue Wave Software License",
+    "Rogue Wave Software License"
+  ],
+  [
+    "rpl-1.1",
+    "Reciprocal Public License 1.1",
+    "RPL 1.1"
+  ],
+  [
+    "rpl-1.5",
+    "Reciprocal Public License 1.5",
+    "RPL 1.5"
+  ],
+  [
+    "rpsl-1.0",
+    "RealNetworks Public Source License v1.0",
+    "RealNetworks Public Source License 1.0"
+  ],
+  [
+    "rsa-1990",
+    "RSA Data Security Notice 1990",
+    "RSA 1990"
+  ],
+  [
+    "rsa-cryptoki",
+    "RSA Cryptoki License",
+    "RSA Cryptoki License"
+  ],
+  [
+    "rsa-demo",
+    "RSA Demo License",
+    "RSA Demo License"
+  ],
+  [
+    "rsa-md2",
+    "RSA Data Security MD2",
+    "RSA-MD2 License"
+  ],
+  [
+    "rsa-md4",
+    "RSA Data Security MD4",
+    "RSA-MD4 License"
+  ],
+  [
+    "rsa-md5",
+    "RSA Data Security MD5",
+    "RSA-MD5 License"
+  ],
+  [
+    "rsa-proprietary",
+    "RSA Proprietary Shrinkwrap License",
+    "RSA Proprietary"
+  ],
+  [
+    "rtools-util",
+    "RTools.Util License",
+    "RTools.Util License"
+  ],
+  [
+    "ruby",
+    "Ruby License",
+    "Ruby License"
+  ],
+  [
+    "ruby-2011",
+    "Ruby-2011",
+    "Ruby (2011)"
+  ],
+  [
+    "rute",
+    "Rute Users Tutorial and Exposition License v0.8.0",
+    "Rute Users Tutorial and Exposition License 0.8.0"
+  ],
+  [
+    "ryszard-szopa",
+    "Ryszard Szopa License",
+    "Ryszard Szopa License"
+  ],
+  [
+    "saas-mit",
+    "SaaS MIT License",
+    "SaaS MIT License"
+  ],
+  [
+    "saf",
+    "Service Availability Forum License",
+    "Service Availability Forum License"
+  ],
+  [
+    "safecopy-eula",
+    "SafeCopy EULA",
+    "SafeCopy EULA"
+  ],
+  [
+    "sandeep",
+    "Sandeep License",
+    "Sandeep License"
+  ],
+  [
+    "sash",
+    "Sash Notice",
+    "Sash Notice"
+  ],
+  [
+    "sax-pd",
+    "SAX Public Domain Notice",
+    "SAX-PD"
+  ],
+  [
+    "saxpath",
+    "Saxpath License",
+    "Saxpath License"
+  ],
+  [
+    "scanlogd-license",
+    "scanlogd License",
+    "scanlogd License"
+  ],
+  [
+    "scansoft-1.2",
+    "ScanSoft Public License v1.2",
+    "ScanSoft Public License 1.2"
+  ],
+  [
+    "scea-1.0",
+    "SCEA Shared Source License 1.0",
+    "SCEA Shared Source License 1.0"
+  ],
+  [
+    "scilab",
+    "Scilab License",
+    "Scilab License"
+  ],
+  [
+    "scribbles",
+    "Scribbles Demos Recognizer Notice",
+    "Scribbles Demos Recognizer Notice"
+  ],
+  [
+    "script-asylum",
+    "Script Asylum License",
+    "Script Asylum License"
+  ],
+  [
+    "script-nikhilk",
+    "Script# License",
+    "Script# License"
+  ],
+  [
+    "scrub",
+    "SCRUB License",
+    "SCRUB License"
+  ],
+  [
+    "scsl-3.0",
+    "Sun Community Source License 3.0",
+    "Sun Community Source License 3.0"
+  ],
+  [
+    "sencha-commercial",
+    "Sencha Commercial License v1.1",
+    "Sencha Commercial License 1.1"
+  ],
+  [
+    "sendmail",
+    "Sendmail License",
+    "Sendmail License"
+  ],
+  [
+    "sfl-license",
+    "SFL License Agreement",
+    "SFL License Agreement"
+  ],
+  [
+    "sgi-cid-1.0",
+    "SGI CID Font Code Public License v1.0",
+    "SGI CID Font Code Public License 1.0"
+  ],
+  [
+    "sgi-freeb-1.1",
+    "SGI Free Software License B v1.1",
+    "SGI Free Software License B 1.1"
+  ],
+  [
+    "sgi-freeb-2.0",
+    "SGI Free Software License B v2.0",
+    "SGI Free Software License B 2.0"
+  ],
+  [
+    "sgi-fslb-1.0",
+    "SGI Free Software License B v1.0",
+    "SGI Free Software License B 1.0"
+  ],
+  [
+    "sgi-glx-1.0",
+    "SGI GLX Public License v1.0",
+    "SGI GLX Public License 1.0"
+  ],
+  [
+    "sglib",
+    "Sglib License",
+    "Sglib License"
+  ],
+  [
+    "shavlik-eula",
+    "Shavlik Technologies EULA",
+    "Shavlik Technologies EULA"
+  ],
+  [
+    "shital-shah",
+    "Shital Shah License",
+    "Shital Shah License"
+  ],
+  [
+    "simpl-1.1",
+    "Simple Public License Version 1.1",
+    "SimPL 1.1"
+  ],
+  [
+    "simpl-2.0",
+    "Simple Public License Version 2.0",
+    "SimPL 2.0"
+  ],
+  [
+    "sleepycat",
+    "Sleepycat License (Berkeley Database License)",
+    "Sleepycat License"
+  ],
+  [
+    "slf4j-2005",
+    "SLF4J License 2005",
+    "SLF4J License 2005"
+  ],
+  [
+    "slf4j-2008",
+    "SLF4J License 2008",
+    "SLF4J License 2008"
+  ],
+  [
+    "slysoft-eula",
+    "SlySoft EULA",
+    "SlySoft EULA"
+  ],
+  [
+    "smartlabs-freeware",
+    "SmartLabs Freeware License",
+    "SmartLabs Freeware License"
+  ],
+  [
+    "smppl",
+    "Secure Messaging Protocol Public License",
+    "SMPPL"
+  ],
+  [
+    "snia",
+    "SNIA Public License 1.1",
+    "SNIA Public License 1.1"
+  ],
+  [
+    "snprintf",
+    "snprintf License",
+    "snprintf License"
+  ],
+  [
+    "softerra-ldap-browser-eula",
+    "Softerra LDAP Browser EULA",
+    "Softerra LDAP Browser EULA"
+  ],
+  [
+    "softsurfer",
+    "softSurfer License",
+    "softSurfer License"
+  ],
+  [
+    "sparky",
+    "Sparky License",
+    "Sparky License"
+  ],
+  [
+    "speechworks-1.1",
+    "SpeechWorks Public License v1.1",
+    "SpeechWorks Public License 1.1"
+  ],
+  [
+    "spl-1.0",
+    "Sun Public License 1.0",
+    "SPL 1.0"
+  ],
+  [
+    "squeak",
+    "Apple Squeak License",
+    "Apple Squeak License"
+  ],
+  [
+    "srgb",
+    "sRGB Profile Licensing Agreement",
+    "sRGB Profile Licensing Agreement"
+  ],
+  [
+    "ssleay",
+    "Original SSLeay License",
+    "Original SSLeay License"
+  ],
+  [
+    "ssleay-windows",
+    "Original SSLeay License with Windows exception",
+    "Original SSLeay License with Windows exception"
+  ],
+  [
+    "standard-ml-nj",
+    "Standard ML of New Jersey",
+    "Standard ML of New Jersey"
+  ],
+  [
+    "stanford-mrouted",
+    "Stanford mrouted License",
+    "Stanford mrouted License"
+  ],
+  [
+    "stanford-pvrg",
+    "Stanford PVRG License",
+    "Stanford PVRG License"
+  ],
+  [
+    "stax",
+    "Stax License",
+    "Stax License"
+  ],
+  [
+    "stlport-2000",
+    "STLport License 2000",
+    "STLport License 2000"
+  ],
+  [
+    "stlport-4.5",
+    "STLport License v4.5",
+    "STLport License 4.5"
+  ],
+  [
+    "stu-nicholls",
+    "Stu Nicholls License",
+    "Stu Nicholls License"
+  ],
+  [
+    "sugarcrm-1.1.3",
+    "SugarCRM Public License v1.1.3",
+    "SugarCRM Public License 1.1.3"
+  ],
+  [
+    "sun-bcl-11-06",
+    "Sun BCL 11 plus 6",
+    "Sun BCL 11 plus 6"
+  ],
+  [
+    "sun-bcl-11-07",
+    "Sun BCL 11 plus 7",
+    "Sun BCL 11 plus 7"
+  ],
+  [
+    "sun-bcl-11-08",
+    "Sun BCL 11 plus 8",
+    "Sun BCL 11 plus 8"
+  ],
+  [
+    "sun-bcl-j2re-1.2.x",
+    "Sun BCL J2RE 1.2.X",
+    "Sun BCL J2RE 1.2.X"
+  ],
+  [
+    "sun-bcl-j2re-1.4.2",
+    "Sun BCL J2RE 1.4.2",
+    "Sun BCL J2RE 1.4.2"
+  ],
+  [
+    "sun-bcl-j2re-1.4.x",
+    "Sun BCL J2RE 1.4.X",
+    "Sun BCL J2RE 1.4.X"
+  ],
+  [
+    "sun-bcl-j2re-5.0",
+    "Sun BCL J2RE 5.0",
+    "Sun BCL J2RE 5.0"
+  ],
+  [
+    "sun-bcl-java-servlet-imp-2.1.1",
+    "Sun BCL Java Servlet Implementation Classes 2.1.1",
+    "Sun BCL Java Servlet Implementation 2.1.1"
+  ],
+  [
+    "sun-bcl-javahelp",
+    "Sun BCL JavaHelp",
+    "Sun BCL JavaHelp"
+  ],
+  [
+    "sun-bcl-jimi-sdk",
+    "Sun BCL JIMI SDK",
+    "Sun BCL JIMI SDK"
+  ],
+  [
+    "sun-bcl-jre6",
+    "Sun BCL JRE 6",
+    "Sun BCL JRE 6"
+  ],
+  [
+    "sun-bcl-jsmq",
+    "Sun BCL JSMQ",
+    "Sun BCL JSMQ"
+  ],
+  [
+    "sun-bcl-opendmk",
+    "Sun BCL OpenDMK",
+    "Sun BCL OpenDMK"
+  ],
+  [
+    "sun-bcl-sdk-1.3",
+    "Sun BCL SDK 1.3",
+    "Sun BCL SDK 1.3"
+  ],
+  [
+    "sun-bcl-sdk-1.4.2",
+    "Sun BCL SDK 1.4.2",
+    "Sun BCL SDK 1.4.2"
+  ],
+  [
+    "sun-bcl-sdk-5.0",
+    "Sun BCL SDK 5.0",
+    "Sun BCL SDK 5.0"
+  ],
+  [
+    "sun-bcl-sdk-6.0",
+    "Sun BCL SDK 6.0",
+    "Sun BCL SDK 6.0"
+  ],
+  [
+    "sun-bcl-web-start",
+    "Sun BCL Web Start",
+    "Sun BCL Web Start"
+  ],
+  [
+    "sun-bsd-extra",
+    "Sun BSD-Style with Additional Restrictions",
+    "Sun BSD-Style with Additional Restrictions"
+  ],
+  [
+    "sun-bsd-no-nuclear",
+    "Sun BSD-Style with Nuclear Restrictions",
+    "Sun BSD-Style with Nuclear Restrictions"
+  ],
+  [
+    "sun-communications-api",
+    "Sun Communications API",
+    "Sun Communications API"
+  ],
+  [
+    "sun-ejb-spec-2.1",
+    "Sun EJB Specification 2.1",
+    "Sun EJB Specification 2.1"
+  ],
+  [
+    "sun-ejb-spec-3.0",
+    "Sun EJB Specification 3.0",
+    "Sun EJB Specification 3.0"
+  ],
+  [
+    "sun-entitlement-03-15",
+    "Sun Entitlement 3 plus 15",
+    "Sun Entitlement 3 plus 15"
+  ],
+  [
+    "sun-entitlement-jaf",
+    "Sun Entitlement JAF",
+    "Sun Entitlement JAF"
+  ],
+  [
+    "sun-glassfish",
+    "Sun GlassFish License",
+    "Sun GlassFish License"
+  ],
+  [
+    "sun-iiop",
+    "Sun IIOP License",
+    "Sun IIOP License"
+  ],
+  [
+    "sun-java-web-services-dev-pack-1.6",
+    "Sun Java Web Services Developer Pack 1.6",
+    "Sun Java Web Services Developer Pack 1.6"
+  ],
+  [
+    "sun-javamail",
+    "Sun JavaMail",
+    "Sun JavaMail"
+  ],
+  [
+    "sun-jta-spec-1.0.1",
+    "Sun JTA Specification License v1.0.1",
+    "Sun JTA Specification License 1.0.1"
+  ],
+  [
+    "sun-project-x",
+    "Sun Project X",
+    "Sun Project X"
+  ],
+  [
+    "sun-prop-non-commercial",
+    "Sun Proprietary Non-Commercial License",
+    "Sun Proprietary Non-Commercial License"
+  ],
+  [
+    "sun-proprietary-jdk",
+    "Sun proprietary notice for Java sources",
+    "Sun proprietary notice for Java sources"
+  ],
+  [
+    "sun-rpc",
+    "Sun RPC License",
+    "Sun RPC License"
+  ],
+  [
+    "sun-sdk-spec-1.1",
+    "Sun SDK Specification 1.1",
+    "Sun SDK Specification 1.1"
+  ],
+  [
+    "sun-sissl-1.0",
+    "Sun Industry Standards Source License 1.0",
+    "Sun Industry Standards Source License 1.0"
+  ],
+  [
+    "sun-sissl-1.1",
+    "Sun Industry Standards Source License 1.1",
+    "Sun Industry Standards Source License 1.1"
+  ],
+  [
+    "sun-sissl-1.2",
+    "Sun Industry Standards Source License 1.2",
+    "Sun Industry Standards Source License 1.2"
+  ],
+  [
+    "sun-ssscfr-1.1",
+    "Sun Solaris Source Code (Foundation Release) License 1.1",
+    "Sun Solaris Source Code License 1.1"
+  ],
+  [
+    "sunpro",
+    "SunPro Attribution License",
+    "SunPro Attribution License"
+  ],
+  [
+    "supervisor",
+    "Supervisor License",
+    "Supervisor License"
+  ],
+  [
+    "svndiff",
+    "svndiff License",
+    "svndiff License"
+  ],
+  [
+    "swig",
+    "SWIG Library License",
+    "SWIG Library License"
+  ],
+  [
+    "swl",
+    "Scheme Widget Library (SWL) Software License Agreement",
+    "Scheme Widget Library (SWL) Software License"
+  ],
+  [
+    "sybase",
+    "Sybase Open Watcom Public License v1.0",
+    "Open Watcom 1.0"
+  ],
+  [
+    "synopsys-attribution",
+    "Synopsys Attribution License",
+    "Synopsys Attribution License"
+  ],
+  [
+    "takao-abe",
+    "Takao Abe License",
+    "Takao Abe License"
+  ],
+  [
+    "takuya-ooura",
+    "Takuya OOURA License",
+    "Takuya OOURA License"
+  ],
+  [
+    "tanuki-community-sla-1.0",
+    "Tanuki Community Software License Agreement 1.0",
+    "Tanuki Community SLA 1.0"
+  ],
+  [
+    "tanuki-community-sla-1.1",
+    "Tanuki Community Software License Agreement 1.1",
+    "Tanuki Community SLA 1.1"
+  ],
+  [
+    "tanuki-community-sla-1.2",
+    "Tanuki Community Software License Agreement 1.2",
+    "Tanuki Community SLA 1.2"
+  ],
+  [
+    "tanuki-community-sla-1.3",
+    "Tanuki Community Software License Agreement 1.3",
+    "Tanuki Community SLA 1.3"
+  ],
+  [
+    "tatu-ylonen",
+    "Tatu Ylonen License",
+    "Tatu Ylonen License"
+  ],
+  [
+    "tcl",
+    "TCL/TK License",
+    "TCL/TK License"
+  ],
+  [
+    "tcp-wrappers",
+    "TCP Wrappers License",
+    "TCP Wrappers License"
+  ],
+  [
+    "teamdev-services",
+    "TeamDev Services License",
+    "TeamDev Services License"
+  ],
+  [
+    "telerik-eula",
+    "Telerik EULA",
+    "Telerik EULA"
+  ],
+  [
+    "term-readkey",
+    "Term Readkey License",
+    "Term Readkey License"
+  ],
+  [
+    "tested-software",
+    "Tested Software License",
+    "Tested Software License"
+  ],
+  [
+    "tex-live",
+    "TeX Live License",
+    "TeX Live License"
+  ],
+  [
+    "tgppl-1.0",
+    "Transitive Grace Period Public Licence 1.0",
+    "TGGPL 1.0"
+  ],
+  [
+    "thomas-bandt",
+    "Thomas Bandt License",
+    "Thomas Bandt License"
+  ],
+  [
+    "ti-broadband-apps",
+    "Texas Instruments Broadband Applications License",
+    "TI Broadband Applications License"
+  ],
+  [
+    "ti-restricted",
+    "Texas Instruments Restricted Use License",
+    "TI Restricted Use License"
+  ],
+  [
+    "tidy",
+    "Tidy License",
+    "Tidy License"
+  ],
+  [
+    "tiger-crypto",
+    "Tiger Cryptography License",
+    "Tiger Cryptography License"
+  ],
+  [
+    "tigra-calendar-3.2",
+    "Tigra Calendar v3.2 License",
+    "Tigra Calendar 3.2 License"
+  ],
+  [
+    "tigra-calendar-4.0",
+    "Tigra Calendar v4.0 License",
+    "Tigra Calendar 4.0 License"
+  ],
+  [
+    "timestamp-picker",
+    "Timestamp Picker License",
+    "Timestamp Picker License"
+  ],
+  [
+    "tizen-sdk",
+    "Tizen SDK License",
+    "Tizen SDK License"
+  ],
+  [
+    "tmate",
+    "TMate Open Source License",
+    "TMate Open Source License"
+  ],
+  [
+    "torque-1.1",
+    "TORQUE v2.5+ Software License v1.1",
+    "TORQUE 1.1"
+  ],
+  [
+    "tosl",
+    "Trusster Open Source License 1.0a",
+    "TOSL 1.0a"
+  ],
+  [
+    "tpl-1.0",
+    "Terracotta Public License 1.0",
+    "TPL 1.0"
+  ],
+  [
+    "treeview-developer",
+    "TreeView Developer License",
+    "TreeView Developer License"
+  ],
+  [
+    "treeview-distributor",
+    "TreeView Distributor License",
+    "TreeView Distributor License"
+  ],
+  [
+    "triptracker",
+    "TripTracker Slideshow License",
+    "TripTracker License"
+  ],
+  [
+    "truecrypt-3.1",
+    "TrueCrypt License 3.1",
+    "TrueCrypt License 3.1"
+  ],
+  [
+    "ttf2pt1",
+    "TTF2PT1 Project License",
+    "TTF2PT1 Project License"
+  ],
+  [
+    "tu-berlin",
+    "Technische Universitaet Berlin Attribution License",
+    "TU Berlin License"
+  ],
+  [
+    "twisted-snmp",
+    "TwistedSNMP License",
+    "TwistedSNMP License"
+  ],
+  [
+    "txl-10.5",
+    "TXL 10.5 License",
+    "TXL 10.5 License"
+  ],
+  [
+    "ubc",
+    "University of British Columbia License",
+    "University of British Columbia License"
+  ],
+  [
+    "unbuntu-font-1.0",
+    "Ubuntu Font Licence v1.0",
+    "Ubuntu Font 1.0"
+  ],
+  [
+    "unicode",
+    "Unicode Inc License Agreement",
+    "Unicode Inc License Agreement"
+  ],
+  [
+    "unicode-mappings",
+    "Unicode Mappings License",
+    "Unicode Mappings License"
+  ],
+  [
+    "unicode-tou",
+    "Unicode Terms of Use",
+    "Unicode Terms of Use"
+  ],
+  [
+    "unlicense",
+    "Unlicense",
+    "Unlicense"
+  ],
+  [
+    "unpbook",
+    "UNIX Network Programming Book License",
+    "UNIX Network Programming Book License"
+  ],
+  [
+    "unrar",
+    "UnRar License",
+    "UnRar License"
+  ],
+  [
+    "uofu-rfpl",
+    "University of Utah Research Foundation Public License",
+    "UURF Public License"
+  ],
+  [
+    "uoi-ncsa",
+    "University of Illinois/NCSA Open Source License",
+    "NCSA Open Source License"
+  ],
+  [
+    "upl-1.0",
+    "Universal Permissive License (UPL) v1.0",
+    "UPL 1.0"
+  ],
+  [
+    "vbAccelerator",
+    "vbAccelerator Distribution Notice",
+    "vbAccelerator Distribution Notice"
+  ],
+  [
+    "vcalendar",
+    "VCalendar License",
+    "VCalendar License"
+  ],
+  [
+    "verisign",
+    "VeriSign License",
+    "VeriSign License"
+  ],
+  [
+    "vic-metcalfe-pd",
+    "Vic Metcalfe Public Domain Notice",
+    "Vic Metcalfe Public Domain"
+  ],
+  [
+    "vicomsoft-software",
+    "Vicomsoft Software License",
+    "Vicomsoft Software License"
+  ],
+  [
+    "vim",
+    "VIM License",
+    "VIM License"
+  ],
+  [
+    "visual-numerics",
+    "Visual Numerics License",
+    "Visual Numerics License"
+  ],
+  [
+    "vitesse-prop",
+    "Vitesse Proprietary Notice",
+    "Vitesse Proprietary Notice"
+  ],
+  [
+    "vixie-cron",
+    "Vixie Cron License",
+    "Vixie Cron License"
+  ],
+  [
+    "vnc-viewer-ios",
+    "VNCViewer for iOS EULA",
+    "VNCViewer iOS EULA"
+  ],
+  [
+    "vostrom",
+    "VOSTROM Public License for Open Source",
+    "VOSTROM Public License"
+  ],
+  [
+    "vs10x-code-map",
+    "VS10x Code Map",
+    "VS10x Code Map"
+  ],
+  [
+    "vsl-1.0",
+    "Vovida Software License v. 1.0",
+    "Vovida Software License 1.0"
+  ],
+  [
+    "vuforia-2013-07-29",
+    "Vuforia SDK License Agreement 2013-07-29",
+    "Vuforia 2013-07-29"
+  ],
+  [
+    "w3c",
+    "W3C Software Notice and License",
+    "W3C Software Notice and License"
+  ],
+  [
+    "w3c-docs-19990405",
+    "W3C Document Notice and License (1999-04-05)",
+    "W3C-DOCS-19990405"
+  ],
+  [
+    "w3c-docs-20021231",
+    "W3C Document License (2002-12-31)",
+    "W3C-DOCS-20021231"
+  ],
+  [
+    "w3c-documentation",
+    "W3C Documentation License",
+    "W3C Documentation License"
+  ],
+  [
+    "w3c-software-19980720",
+    "W3C Software Notice and License (1998-07-20)",
+    "W3C-SOFTWARE-19980720"
+  ],
+  [
+    "waterfall-feed-parser",
+    "Waterfall Feed Parser License",
+    "Waterfall Feed Parser License"
+  ],
+  [
+    "webtoolkit",
+    "webtoolkit License",
+    "webtoolkit License"
+  ],
+  [
+    "westhawk",
+    "Westhawk License",
+    "Westhawk License"
+  ],
+  [
+    "whistle",
+    "Whistle Communications License",
+    "Whistle Communications License"
+  ],
+  [
+    "wide-license",
+    "WIDE License",
+    "WIDE License"
+  ],
+  [
+    "william-alexander",
+    "William Alexander License",
+    "William Alexander License"
+  ],
+  [
+    "wince-50-shared-source",
+    "Microsoft Windows CE 5.0 Shared Source License Agreement",
+    "MS Windows CE 5.0 Shared Source License"
+  ],
+  [
+    "windriver-commercial",
+    "Wind River License",
+    "Wind River License"
+  ],
+  [
+    "wingo",
+    "wingo License",
+    "wingo License"
+  ],
+  [
+    "wink",
+    "Wink License",
+    "Wink License"
+  ],
+  [
+    "winzip-eula",
+    "WinZip EULA",
+    "WinZip EULA"
+  ],
+  [
+    "winzip-self-extractor",
+    "WinZip Self-Extractor License",
+    "WinZip Self-Extractor License"
+  ],
+  [
+    "wrox",
+    "Wrox Press License",
+    "Wrox Press License"
+  ],
+  [
+    "wrox-download",
+    "Wrox Download Terms and Conditions",
+    "Wrox Download Terms and Conditions"
+  ],
+  [
+    "ws-addressing-spec",
+    "WS Addressing Specification License",
+    "WS Addressing Specification License"
+  ],
+  [
+    "wsuipa",
+    "Wsuipa License",
+    "Wsuipa License"
+  ],
+  [
+    "wtfnmfpl-1.0",
+    "WTFNMFPL-1.0",
+    "WTFNMFPL-1.0"
+  ],
+  [
+    "wtfpl-1.0",
+    "WTFPL 1.0",
+    "WTFPL 1.0"
+  ],
+  [
+    "wtfpl-2.0",
+    "WTFPL 2.0",
+    "WTFPL 2.0"
+  ],
+  [
+    "wxwidgets",
+    "wxWidgets Licence",
+    "wxWidgets Licence"
+  ],
+  [
+    "wxwindows",
+    "wxWindows Library Licence 3.1",
+    "wxWindows Library Licence 3.1"
+  ],
+  [
+    "wxwindows-r-3.0",
+    "wxWindows Restricted Licence 3.0",
+    "wxWindows Restricted Licence 3.0"
+  ],
+  [
+    "wxwindows-u-3.0",
+    "wxWindows Unrestricted Licence 3.0",
+    "wxWindows Unrestricted Licence 3.0"
+  ],
+  [
+    "x11",
+    "X11 License",
+    "X11 License"
+  ],
+  [
+    "x11-adobe",
+    "X11-Style (Adobe)",
+    "X11-Style (Adobe)"
+  ],
+  [
+    "x11-adobe-dec",
+    "X11-Style (Adobe-DEC)",
+    "X11-Style (Adobe-DEC)"
+  ],
+  [
+    "x11-bitstream",
+    "X11-Style (Bitstream Charter)",
+    "X11-Style (Bitstream Charter)"
+  ],
+  [
+    "x11-dec1",
+    "X11-Style (DEC 1)",
+    "X11-Style (DEC 1)"
+  ],
+  [
+    "x11-dec2",
+    "X11-Style (DEC 2)",
+    "X11-Style (DEC 2)"
+  ],
+  [
+    "x11-doc",
+    "X11 Documentation License",
+    "X11 Documentation License"
+  ],
+  [
+    "x11-dsc",
+    "X11-Style (DSC Technologies)",
+    "X11-Style (DSC Technologies)"
+  ],
+  [
+    "x11-fsf",
+    "X11-Style (FSF)",
+    "X11-Style (FSF)"
+  ],
+  [
+    "x11-hanson",
+    "X11-Style (David R. Hanson)",
+    "X11-Style (David R. Hanson)"
+  ],
+  [
+    "x11-ibm",
+    "IBM Derivative Works License",
+    "IBM Derivative Works License"
+  ],
+  [
+    "x11-keith-packard",
+    "X11-Style (Keith Packard)",
+    "X11-Style (Keith Packard)"
+  ],
+  [
+    "x11-lucent",
+    "X11-Style (Lucent)",
+    "X11-Style (Lucent)"
+  ],
+  [
+    "x11-oar",
+    "X11-Style (OAR)",
+    "X11-Style (OAR)"
+  ],
+  [
+    "x11-opengl",
+    "X11-Style (OpenGL)",
+    "X11-Style (OpenGL)"
+  ],
+  [
+    "x11-opengroup",
+    "X11-Style (Open Group)",
+    "X11-Style (Open Group)"
+  ],
+  [
+    "x11-quarterdeck",
+    "X11-Style (Quarterdeck)",
+    "X11-Style (Quarterdeck)"
+  ],
+  [
+    "x11-realmode",
+    "X11-Style (Realmode)",
+    "X11-Style (Realmode)"
+  ],
+  [
+    "x11-sg",
+    "X11-Style (Silicon Graphics)",
+    "X11-Style (Silicon Graphics)"
+  ],
+  [
+    "x11-tektronix",
+    "X11-Style (Tektronix)",
+    "X11-Style (Tektronix)"
+  ],
+  [
+    "x11-tiff",
+    "X11-Style (Tiff)",
+    "X11-Style (Tiff)"
+  ],
+  [
+    "x11-x11r5",
+    "X11-R5",
+    "X11-R5"
+  ],
+  [
+    "x11-xconsortium",
+    "X11-Style (X Consortium)",
+    "X11-Style (X Consortium)"
+  ],
+  [
+    "x11r5-authors",
+    "X11-R5 Authors",
+    "X11-R5 Authors"
+  ],
+  [
+    "xfree86-1.0",
+    "XFree86 License 1.0",
+    "XFree86 License 1.0"
+  ],
+  [
+    "xfree86-1.1",
+    "XFree86 License 1.1",
+    "XFree86 License 1.1"
+  ],
+  [
+    "xinetd",
+    "xinetd License",
+    "xinetd License"
+  ],
+  [
+    "xming",
+    "Xming License",
+    "Xming License"
+  ],
+  [
+    "xmldb-1.0",
+    "XML:DB Initiative Software License 1.0",
+    "XML:DB Initiative Software License 1.0"
+  ],
+  [
+    "xnet",
+    "Altera License",
+    "Altera License"
+  ],
+  [
+    "xskat",
+    "XSkat License",
+    "XSkat License"
+  ],
+  [
+    "xxd",
+    "xxd License",
+    "xxd License"
+  ],
+  [
+    "yahoo-browserplus-eula",
+    "Yahoo BrowserPlus End User License",
+    "Yahoo BrowserPlus EULA"
+  ],
+  [
+    "yahoo-messenger-eula",
+    "Yahoo Messenger EULA",
+    "Yahoo Messenger EULA"
+  ],
+  [
+    "yensdesign",
+    "Yensdesign License",
+    "Yensdesign License"
+  ],
+  [
+    "ypl-1.0",
+    "Yahoo! Public License v1.0",
+    "YPL 1.0"
+  ],
+  [
+    "ypl-1.1",
+    "Yahoo! Public License v1.1",
+    "YPL 1.1"
+  ],
+  [
+    "zapatec-calendar",
+    "Zapatec DHTML Javascript Calendar License Agreement",
+    "Zapatec Calendar License"
+  ],
+  [
+    "zed",
+    "Zed License",
+    "Zed License"
+  ],
+  [
+    "zend-2.0",
+    "Zend Engine License 2.0",
+    "Zend Engine License 2.0"
+  ],
+  [
+    "zhorn-stickies",
+    "Zhorn Stickies License",
+    "Zhorn Stickies License"
+  ],
+  [
+    "zimbra-1.3",
+    "Zimbra Public License v1.3",
+    "ZPL 1.3"
+  ],
+  [
+    "zimbra-1.4",
+    "Zimbra Public License v1.4",
+    "ZPL 1.4"
+  ],
+  [
+    "zipeg",
+    "Zipeg License",
+    "Zipeg License"
+  ],
+  [
+    "zlib",
+    "ZLIB License",
+    "ZLIB License"
+  ],
+  [
+    "zlib-acknowledgement",
+    "ZLIB License with Acknowledgment",
+    "ZLIB License with Acknowledgment"
+  ],
+  [
+    "zpl-1.1",
+    "Zope Public License 1.1",
+    "ZPL 1.1"
+  ],
+  [
+    "zpl-2.0",
+    "Zope Public License 2.0",
+    "ZPL 2.0"
+  ],
+  [
+    "zpl-2.1",
+    "Zope Public License 2.1",
+    "ZPL 2.1"
+  ],
+  [
+    "zuora-software",
+    "Zuora Software License",
+    "Zuora Software License"
+  ],
+  [
+    "zveno-research",
+    "Zveno Research License",
+    "Zveno Research License"
+  ]
+]

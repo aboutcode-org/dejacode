@@ -1,0 +1,19 @@
+about_resource: platformdirs-2.5.2-py3-none-any.whl
+name: platformdirs
+version: 2.5.2
+download_url: https://files.pythonhosted.org/packages/ed/22/967181c94c3a4063fe64e15331b4cb366bdd7dfbf46fcb8ad89650026fec/platformdirs-2.5.2-py3-none-any.whl
+homepage_url: https://pypi.org/project/platformdirs/2.5.2/
+package_url: pkg:pypi/platformdirs@2.5.2
+license_expression: mit
+copyright: Copyright (c) ActiveState Software Inc.
+notice_file: platformdirs-2.5.2-py3-none-any.whl.NOTICE
+attribute: yes
+owner: ActiveState Software, Inc.
+owner_url: http://www.activestate.com/
+contact: http://www.activestate.com/company/contact-us
+checksum_md5: ec4a15c8949db31f9e1518e250ef59c8
+checksum_sha1: 11f8f1a5b5666691b44d87072198b068a1c11362
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,8 @@
+Metadata-Version: 2.0
+Name: coreapi
+Version: 2.3.3
+Summary: Python client library for Core API.
+Home-page: https://github.com/core-api/python-client
+Author: Tom Christie
+Author-email: tom@tomchristie.com
+License: BSD

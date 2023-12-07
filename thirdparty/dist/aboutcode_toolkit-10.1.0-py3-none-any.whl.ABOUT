@@ -1,0 +1,15 @@
+about_resource: aboutcode_toolkit-10.1.0-py3-none-any.whl
+name: aboutcode-toolkit
+version: 10.1.0
+download_url: https://files.pythonhosted.org/packages/11/af/0c2752a690be6df573cd5e373762ffb6fbe5b382f49ab56c9b88604b5b7c/aboutcode_toolkit-10.1.0-py3-none-any.whl
+package_url: pkg:pypi/aboutcode-toolkit@10.1.0
+license_expression: apache-2.0
+copyright: Copyright aboutcode-toolkit project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 8f57d3f216cfe4d12a1ee9d5badc2c4a
+checksum_sha1: 63db25b4f574a3975a54eeeaae140d1720cd2605
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

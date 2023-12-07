@@ -1,0 +1,21 @@
+about_resource: jquery.dirtyforms-2.0.0.zip
+name: jquery.dirtyforms
+version: 2.0.0
+download_url: https://github.com/snikch/jquery.dirtyforms/archive/2.0.0.zip
+description: A jQuery Plugin that monitors forms for change and alerts the user before leaving
+  the page.
+homepage_url: https://github.com/snikch/jquery.dirtyforms
+package_url: pkg:github/snikch/jquery.dirtyforms@2.0.0
+license_expression: mit
+copyright: Copyright (c) 2010-2015 Mal Curtis
+notice_file: jquery.dirtyforms-2.0.0.zip.NOTICE
+notice_url: https://github.com/snikch/jquery.dirtyforms/blob/master/LICENSE
+attribute: yes
+owner: Mal Curtis
+vcs_repository: https://github.com/snikch/jquery.dirtyforms.git
+checksum_md5: f7d86e33b2247152a4f809a30e11cf63
+checksum_sha1: e8767163da4d7f438c2727b6f34ad09db494104f
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

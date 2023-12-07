@@ -1,0 +1,19 @@
+about_resource: python3_openid-3.2.0-py3-none-any.whl
+name: python3-openid
+version: 3.2.0
+download_url: https://files.pythonhosted.org/packages/e0/a5/c6ba13860bdf5525f1ab01e01cc667578d6f1efc8a1dba355700fb04c29b/python3_openid-3.2.0-py3-none-any.whl
+homepage_url: https://pypi.org/project/python3-openid/3.2.0/
+package_url: pkg:pypi/python3-openid@3.2.0
+license_expression: apache-2.0
+copyright: Copyright (c) JanRain, Inc., Rami Chowdhury
+notice_file: python3_openid-3.2.0-py3-none-any.whl.NOTICE
+attribute: yes
+track_changes: yes
+owner: necaris
+owner_url: https://github.com/necaris
+checksum_md5: e5c3644b8569a20fdfe0348f451da704
+checksum_sha1: df107ccec150b9df801252656f81efc5b2259ecc
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

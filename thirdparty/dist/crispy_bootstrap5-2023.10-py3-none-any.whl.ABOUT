@@ -1,0 +1,14 @@
+about_resource: crispy_bootstrap5-2023.10-py3-none-any.whl
+name: crispy-bootstrap5
+version: '2023.10'
+download_url: https://files.pythonhosted.org/packages/f4/8d/f08d7079599469f32a05528423887106ee2eec16efd35856285e667692bc/crispy_bootstrap5-2023.10-py3-none-any.whl
+package_url: pkg:pypi/crispy-bootstrap5@2023.10
+license_expression: mit
+copyright: Copyright crispy-bootstrap5 project contributors
+attribute: yes
+checksum_md5: 3970bc3108f09c82db622e0cf2452d98
+checksum_sha1: 92b1565d7964e908713cf7968e303246014bdbbb
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

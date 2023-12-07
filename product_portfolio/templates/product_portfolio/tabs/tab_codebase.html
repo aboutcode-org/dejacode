@@ -1,0 +1,117 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% load urlize_target_blank from dje_tags %}
+{% load humanize %}
+
+{% spaceless %}
+<div class="row align-items-end">
+  <div class="col mb-3">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <form id="tab-codebase-search-form" class="mt-md-0 me-sm-2">
+          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-codebase-search-input" name="codebase-q" placeholder="Search resources path" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+        </form>
+      </li>
+      <li class="nav-item">
+        <div class="h6 mt-2 mb-0 smaller">{{ paginator.count|intcomma }} results</div>
+      </li>
+    </ul>
+  </div>
+  <div class="col-auto">
+    {% include 'pagination/object_list_pagination.html' %}
+  </div>
+</div>
+
+<table class="table table-bordered table-hover table-md">
+  <thead>
+    <tr>
+      <th>
+        {% trans 'Path' %}
+        <button class="btn btn-xs btn-outline-dark ms-1 toggle-details" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
+      </th>
+      <th style="width: 125px;">
+        {% trans 'Deployment' %}
+        {{ filter_codebaseresource.form.is_deployment_path }}
+      </th>
+      {% if has_product_component or has_product_package %}
+        <th style="min-width: 270px;">
+          {% if has_product_component %}
+            {% trans 'Component' %}
+            {{ filter_codebaseresource.form.product_component }}
+          {% endif %}
+          {% if has_product_package %}
+            {% if has_product_component %}<span class="px-2">/</span>{% endif %}{% trans 'Package' %}
+            {{ filter_codebaseresource.form.product_package }}
+          {% endif %}
+        </th>
+      {% endif %}
+      {% if has_deployed_paths %}
+        <th style="min-width: 350px;">
+          {% trans 'Deployed from' %} <i class="fas fa-arrow-circle-left me-1"></i> {{ filter_codebaseresource.form.related_deployed_from }}
+          <div class="float-end">{% trans 'Deployed to' %} <i class="fas fa-arrow-circle-right me-1"></i> {{ filter_codebaseresource.form.related_deployed_to }}</div>
+        </th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody class="break-word">
+    {% for codebase_resource in codebase_resources %}
+      <tr class="{% cycle 'odd' '' %}">
+        <td>
+          <strong>{{ codebase_resource.path }}</strong>
+          <ul class="extra-details mb-0 smaller text-muted-darker ps-3" style="display: none">
+            {% for key, value in codebase_resource.additional_details.items %}
+              <li><i><strong>{{ key }}</strong></i>: {{ value|linebreaksbr }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+        <td class="text-center">{{ codebase_resource.is_deployment_path|as_icon }}</td>
+        {% if has_product_component or has_product_package %}
+          <td class="break-all">
+            {% if codebase_resource.product_component %}
+              <div>
+                {% include 'product_portfolio/includes/productrelation_element.html' with relation=codebase_resource.product_component %}
+              </div>
+            {% endif %}
+            {% if codebase_resource.product_package %}
+              <div>
+                {% include 'product_portfolio/includes/productrelation_element.html' with relation=codebase_resource.product_package %}
+              </div>
+            {% endif %}
+          </td>
+        {% endif %}
+        {% if has_deployed_paths %}
+          <td>
+            <ul class="list-unstyled m-0">
+              {% for path in codebase_resource.deployed_from_paths %}
+                <li><i class="fas fa-arrow-circle-left"></i> {{ path }}</li>
+              {% endfor %}
+            </ul>
+            <ul class="list-unstyled m-0">
+              {% for path in codebase_resource.deployed_to_paths %}
+               <li><i class="fas fa-arrow-circle-right"></i> {{ path }}</li>
+              {% endfor %}
+            </ul>
+          </td>
+      {% endif %}
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="10">
+          No results.
+          {% if filter_codebaseresource.is_active %}
+            <a href="?all=true#codebase">Clear search and filters</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endspaceless %}
+
+<script>
+   $('.toggle-details')
+      .tooltip({container: 'body', placement: 'top'})
+      .on('click', function() {
+          $('.extra-details').toggle();
+      });
+</script>

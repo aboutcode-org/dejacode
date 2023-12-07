@@ -1,0 +1,27 @@
+{% extends "admin/change_form_extended.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if change %}{# Do not display the following on ADDITION #}
+        {# The `original` value may not be available, during a "Save as" with errors for example #}
+        {% url 'component_catalog:package_about_files' user.dataspace original.uuid as package_about_files %}
+        {% if package_about_files %}
+            <li>
+                <a href="{{ package_about_files }}" target="_blank" class="grp-state-focus">{% trans 'Download AboutCode files' %}</a>
+            </li>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script type="text/javascript">
+    (function($) {
+      document.addEventListener('DOMContentLoaded', function () {
+        {% include 'includes/keywords_autocomplete.js.html' %}
+      });
+    }(grp.jQuery));
+  </script>
+{% endblock %}

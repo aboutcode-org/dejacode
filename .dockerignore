@@ -1,0 +1,35 @@
+**/.git
+**/.gitignore
+**/.github
+**/.vscode
+**/.idea
+**/coverage
+**/.aws
+**/.ssh
+**/.DS_Store
+**/.aof
+**/venv
+**/env
+**/bin
+# **/docs we want to keep dje/templates/rest_framework/docs/
+docs/
+# **/dist we want to keep ./thirdparty/dist/
+# **/etc we need to keep ./etc/
+**/lib
+**/include
+**/share
+**/var
+**/*.egg-info
+**/*.log
+**/__pycache__
+*.pyc
+.dockerignore
+.readthedocs.yaml
+docker.env
+.env
+Makefile
+Dockerfile
+README.rst
+docker-compose.yml
+fabfile.py
+pyvenv.cfg

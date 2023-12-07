@@ -1,0 +1,22 @@
+about_resource: jquery-3.7.1.js
+name: jquery-3.7.1.js
+version: 3.7.1
+download_url: https://code.jquery.com/jquery-3.7.1.js
+description: jQuery is a fast, small, and feature-rich JavaScript library. It makes things like
+  HTML document traversal and manipulation, event handling, animation, and Ajax much simpler
+  with an easy-to-use API that works across a multitude of browsers.
+homepage_url: https://jquery.com/
+package_url: pkg:generic/jquery-3.7.1.js?download_url=https://code.jquery.com/jquery-3.7.1.js
+license_expression: mit
+copyright: Copyright JS Foundation and other contributors
+notice_file: jquery-3.7.1.js.NOTICE
+attribute: yes
+owner: jQuery Project
+owner_url: http://jquery.org/
+contact: http://docs.jquery.com/Discussion
+checksum_md5: 23c7c5d2d1317508e807a6c7f777d6ed
+checksum_sha1: ad16c4a132ad2a03b4951185fed46d55397b5e88
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

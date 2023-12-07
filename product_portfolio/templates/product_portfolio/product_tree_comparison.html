@@ -1,0 +1,85 @@
+{% extends 'bootstrap_base.html' %}
+{% load i18n crispy_forms_tags %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block bodyclass %}product-comparison{% endblock %}
+
+{% block page_title %}{% trans "Products comparison" %}{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% inject_preserved_filters 'product_portfolio:product_list' %}">{% trans "Products" %}</a>
+          </div>
+          <h1 class="header-title">
+            Comparison: {{ left_product }} <i class="fas fa-exchange-alt"></i> {{ right_product }}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-2">
+    <div class="card-body p-2">
+      {% crispy exclude_fields_form %}
+    </div>
+  </div>
+
+  <div id="show-only-box" class="card bg-light mb-3">
+    <div class="card-body p-2">
+      <strong>Show:</strong>
+      <div class="form-check form-check-inline">
+        {% for filter in action_filters %}
+          <label class="form-label form-check-inline mb-0">
+            <input type="checkbox" class="form-check-input" value="{{ filter.value }}"{% if filter.checked %} checked="checked"{% endif %}> {{ filter.value|title }} ({{ filter.count }})
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-bordered table-striped table-md">
+    <thead>
+      <tr>
+        <th style="width: 20%">Changes</th>
+        <th style="width: 40%">
+          {{ left_product.get_absolute_link }}
+          {% url 'product_portfolio:product_tree_comparison' left_uuid=right_product.uuid right_uuid=left_product.uuid as reversed_url %}
+          <a title="Swap Products order" data-bs-toggle="tooltip" data-bs-placement="bottom" class="float-end" href="{% inject_preserved_filters reversed_url %}">
+            <i class="fas fa-exchange-alt fa-lg"></i>
+          </a>
+        </th>
+        <th style="width: 40%">{{ right_product.get_absolute_link }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for action, left, right, diff in rows %}
+        <tr class="{{ action }}">
+          <td>{{ action|title }}</td>
+          <td>
+            {% include 'product_portfolio/includes/productrelationship_cell.html' with relationship=left is_left=True %}
+          </td>
+          <td>
+            {% include 'product_portfolio/includes/productrelationship_cell.html' with relationship=right %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $("#show-only-box input:checkbox").change(function (e) {
+        var class_value = "." + $(this).val();
+        if ($(this).is(":checked")) $(class_value).show();
+        else $(class_value).hide();
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,31 @@
+about_resource: PyYAML-6.0.tar.gz
+name: pyyaml
+version: '6.0'
+download_url: https://files.pythonhosted.org/packages/36/2b/61d51a2c4f25ef062ae3f74576b01638bebad5e045f747ff12643df63844/PyYAML-6.0.tar.gz
+description: |
+  YAML parser and emitter for Python
+  YAML is a data serialization format designed for human readability
+  and interaction with scripting languages.  PyYAML is a YAML parser
+  and emitter for Python.
+
+  PyYAML features a complete YAML 1.1 parser, Unicode support, pickle
+  support, capable extension API, and sensible error messages.  PyYAML
+  supports standard YAML tags and provides Python-specific tags that
+  allow to represent an arbitrary Python object.
+
+  PyYAML is applicable for a broad range of tasks from complex
+  configuration files to object serialization and persistence.
+homepage_url: https://pyyaml.org/
+package_url: pkg:pypi/pyyaml@6.0
+license_expression: mit
+copyright: Copyright (c) Ingy döt Net, Kirill Simonov
+notice_file: PyYAML-6.0.tar.gz.NOTICE
+attribute: yes
+owner: Kirill Simonov
+owner_url: http://www.yaml.org/
+checksum_md5: 1d19c798f25e58e3e582f0f8c977dbb8
+checksum_sha1: a8c40a3ae9d4c159382a58db3153d83e5521c51e
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

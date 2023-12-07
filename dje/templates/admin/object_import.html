@@ -1,0 +1,309 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n dje_tags static %}
+
+{% block page_title %}
+    {{ block.super }} Administration - {{ importer.verbose_name|title }} Import
+{% endblock %}
+
+{% block main_class %}container{% endblock %}
+
+{% block content %}
+  <div class="header container">
+    <div class="header-body py-0" style="border-bottom: 0;">
+      <div class="row align-items-end">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="../" title="Return to {% trans verbose_name %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans importer.verbose_name|title %}S</a>
+          </div>
+          <h1 class="header-title">
+            Import
+            <small>Step {% if importer.results %}3: Review{% elif importer.formset and not importer.fatal_errors %}2: Validation{% else %}1: Upload{% endif %}</small>
+          </h1>
+        </div>
+        <div class="col-auto">
+          <a href="?get_template=1" target="_blank" class="btn btn-outline-dark">{% trans 'Download import template' %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not importer.results %}
+    <div class="alert alert-info container">
+      <h5>Help for {{ importer.verbose_name|title }} Import:</h5>
+      <ul class="mb-0">
+        {% if importer.formset and not importer.fatal_errors %}
+          <li><span class="badge text-bg-secondary">M</span> The {{ importer.verbose_name|title }} matches an already existing {{ importer.verbose_name|title }}. Nothing will be done for the row.</li>
+          <li><span class="badge text-bg-success">A</span> The {{ importer.verbose_name|title }} will be added based on the input data</li>
+          <li><span class="badge text-bg-danger">E</span> The row contains at least one error</li>
+          <li><span class="badge text-bg-warning">W</span> The row is valid but should be manually reviewed</li>
+          <li>Empty rows and un-supported columns are skipped</li>
+          <li>All errors need to be fixed to proceed with the import</li>
+        {% else %}
+          <li>Only comma-separated value (.csv) files are supported. An Excel file (.xls or.xlsx) must be converted into a .csv file before the file can be uploaded.</li>
+          <li>The character encoding of the input file needs to be "UTF-8"</li>
+          <li>The column order does not matter.</li>
+          <li>The column names are case sensitive.</li>
+          <li>Required column{{ importer.required_fields|pluralize }}: <strong>{{ importer.required_fields|join:", " }}</strong></li>
+          <li>Supported values for boolean fields:<br>
+            <strong>Yes:</strong> True, T, Yes, Y<br>
+            <strong>No:</strong> False, F, No, N
+          </li>
+        {% endif %}
+      </ul>
+        <div class="text-center">
+          <strong>
+            <a href="#" class="extended_help_link">Show/hide Supported Columns</a>
+          </strong>
+        </div>
+    </div>
+    <table id="extended_help" class="table table-striped table-bordered" style="display: none; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th>Supported columns</th>
+          <th style="width: 55%;">Description</th>
+          <th>Supported values</th>
+        </tr>
+      </thead>
+      {% for name, field in importer.get_key_sorted_fields %}
+        <tr>
+          <td><strong>{{ name }}</strong></td>
+          <td>{{ field.help_text }}</td>
+          <td>
+            <ul class="list-unstyled">
+              {% for value, description in field.supported_values %}
+                <li><strong>{{ value }}</strong>{% if description %}: {{ description }}{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+    {% if importer.results %}
+      <div class="container">
+        {% with importer.get_added_instance_ids as added_instance_ids %}
+          {% if added_instance_ids %}
+            <div class="alert alert-success">
+              {{ added_instance_ids|length }} {{ importer.verbose_name }} were added.
+              Use <strong><a href ="{{ importer.get_admin_changelist_url }}?id__in={{ added_instance_ids|join:"," }}" target="_blank">this link</a></strong> to view those new objects in a changelist.
+            </div>
+          {% endif %}
+        {% endwith %}
+        {% for action, objects in importer.results.items %}
+          {% if objects %}
+            <strong>{{ objects|length }} {{ action|title }} {{ importer.verbose_name|title }}s:</strong>
+            <ul>
+              {% for object in objects %}
+                <li>
+                  {% if add_to_product_form %}
+                    <input name="checkbox-for-selection" value="{{ object.id }}" type="checkbox" checked>
+                  {% endif %}
+                  {% with object.get_absolute_link as absolute_link %}
+                    {% if absolute_link %}
+                      {{ absolute_link }}
+                      <a href="{{ object.get_admin_url }}" data-bs-toggle="tooltip" title="Edit" target="_blank"><i class="far fa-edit"></i></a>
+                    {% else %}
+                      {{ object.get_admin_link }}
+                    {% endif %}
+                  {% endwith %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endfor %}
+        <div class="card">
+          <div class="card-body">
+            {% if add_to_product_form %}
+              <div class="btn-group">
+                <span data-bs-toggle="modal" data-bs-target="#add-to-product-modal">
+                  <button type="button" id="add-to-product-button" class="btn btn-outline-dark" data-bs-toggle="tooltip" >
+                    <i class="fas fa-plus-circle"></i> Add to Product
+                  </button>
+                </span>
+              </div>
+            {% endif %}
+            <a href="./" class="btn btn-outline-primary">New Import</a>
+          </div>
+        </div>
+      </div>
+    {% elif importer.formset and not importer.fatal_errors %}
+      {# The "novalidate" attribute is essential on this form as the client validation errors #}
+      {# cannot be displayed as the form is hidden. See #42 #}
+      <form id="import-form" method="post" novalidate>{% csrf_token %}
+        <div class="card mb-2">
+          <div class="card-header">
+            <h4 class="mb-0">Import preview</h4>
+          </div>
+          {% if importer.ignored_columns %}
+            <div class="card-body">
+              <p><span class="badge text-bg-warning">warning</span> The following columns are not supported and were ignored: {{ importer.ignored_columns|join:", " }}</p>
+             </div>
+          {% endif %}
+        </div>
+
+        {# Insert the formset but hidden in the interface #}
+        <input type="hidden" name="this_is_the_formset" value="1"/>
+        <div style="display:none;">
+          {{ importer.formset.management_form }}
+          {# Iterates on the forms of the formset to display only the fields essential values #}
+          {% for form in importer.formset %}
+            {% for field in form %}
+              {{ field }}
+            {% endfor %}
+          {% endfor %}
+        </div>
+
+        <table class="table table-bordered table-md">
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              {% for header in importer.headers %}
+                <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for form in importer.formset %}
+              <tr>
+                <td>
+                  {% if form.errors %}
+                    <a href="#"
+                       class="badge text-bg-danger"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover"
+                       data-bs-content="{{ form.errors|force_escape }}"
+                    >E</a>
+                  {% elif form.warnings %}
+                    <a href="#"
+                       class="badge text-bg-warning"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover"
+                       data-bs-content="{{ form.warnings|force_escape }}"
+                    >W</a>
+                    {% if form.instance.id %}
+                      <span class="badge text-bg-secondary">M</span>
+                    {% else %}
+                      <span class="badge text-bg-success">A</span>
+                    {% endif %}
+                  {% elif not form.instance.id %}
+                    <span class="badge text-bg-success">A</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary">M</span>
+                  {% endif %}
+                </td>
+                {% for field_name in importer.headers %}
+                  {% with field=form|get_item:field_name %}
+                    <td class="{% if field.errors %}error{% elif field.warnings %}warning{% endif %}">
+                      {# field.data contains the original given given values #}
+                      {% if field.field.value_for_display %}
+                        {{ field.field.value_for_display|safe }}
+                      {% elif field.value|length > 70 %}
+                        <span title="{{ field.value }}">{{ field.value|linebreaksbr|truncatechars:70 }}</span>
+                      {% elif field.value != None %}
+                        {{ field.value|linebreaksbr }}
+                      {% endif %}
+                      {% if field.errors %}
+                        <br>{{ field.errors|linebreaksbr }}
+                      {% elif field.warnings %}
+                        <br>{{ field.warnings|linebreaksbr }}
+                      {% endif %}
+                    </td>
+                  {% endwith %}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% with formset_is_valid=importer.formset.is_valid formset_warnings=importer.formset.warnings %}
+        <div class="card">
+          <div class="card-body">
+            <button class="float-end btn {% if not formset_is_valid %}btn-primary disabled{% elif formset_warnings %}btn-warning{% else %}btn-primary{% endif %}" type="{% if not formset_is_valid %}button{% else %}submit{% endif %}"><i class="{% if not formset_is_valid %}fas fa-ban{% elif formset_warnings %}fas fa-exclamation-triangle{% else %}fas fa-upload{% endif %}"></i> Import</button>
+            <a href="./" class="btn btn-danger">Cancel and start over</a>
+          </div>
+        </div>
+        {# Modal for Warnings #}
+        <div id="warnings-modal" class="modal" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Warnings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>The import validation contains warnings, you should review those manually.</p>
+              </div>
+              <div class="modal-footer">
+                <button class="warnings-modal-submit btn btn-warning" type="button"><i class="fas fa-exclamation-triangle"></i> Import anyway</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close and review</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endwith %}
+      </form>
+    {% else %}
+      <div class="card container">
+        <div class="card-body">
+          <h3>Step 1: Select your file</h3>
+          <p>
+            {% if file_form.header %}
+              {{ file_form.header|safe }}
+            {% else %}
+              Select a <strong>CSV (.csv)</strong> file
+            {% endif %}
+          </p>
+          {% if importer.fatal_errors or file_form.file.errors %}
+            <div class="alert alert-danger mt-3">
+              <strong>Errors:</strong>
+              <ul class="m-0">
+                {% for message in file_form.file.errors %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                {% for message in importer.fatal_errors %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          <form enctype="multipart/form-data" method="post">{% csrf_token %}
+            <p><input type="file" id="id_file" name="file"></p>
+            <input class="btn btn-primary" type="submit" value="Upload" />
+          </form>
+        </div>
+      </div>
+    {% endif %}
+    {% if add_to_product_form %}
+      {% include 'component_catalog/includes/add_to_modal.html' with form=add_to_product_form modal_dialog_class='modal-lg' %}
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Enable toggle for the extended help
+      $('.extended_help_link').on('click', function(e) {
+        $('#extended_help').toggle();
+      });
+      // Modal in case of warnings
+      $('button.btn-warning').click(function(event){
+        event.preventDefault(); //stop default browser behaviour
+        $('#warnings-modal').modal('show');
+      });
+      // Attaching the 'submit' action in the warnings modal
+      $('.warnings-modal-submit').click(function(event){
+        $('#import-form').submit();
+      });
+      $('#import-form').on('submit', function(e) {
+        // Prevent from re-submitting the form by mistake
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Import in progress...");
+      });
+    });
+  </script>
+
+  {% if add_to_product_form %}
+    {% include 'component_catalog/includes/add_to.js.html' %}
+  {% endif %}
+{% endblock %}

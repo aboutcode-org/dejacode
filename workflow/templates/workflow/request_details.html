@@ -1,0 +1,194 @@
+{% extends "bootstrap_base.html" %}
+{% load naturaltime from humanize %}
+{% load inject_preserved_filters from dje_tags %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}
+  {{ request_instance.title }} &#8226; {% trans "Requests" %} {{ request_instance }}
+{% endblock %}
+
+{% block bodyclass %}requests-details{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col-auto me-auto">
+          <div class="header-pretitle">
+            {% url 'workflow:request_list' as list_url %}
+            <a class="me-1" href="{% inject_preserved_filters list_url %}" title="Return to {% trans "Requests" %} list" data-bs-toggle="tooltip" data-bs-placement="bottom">{% trans "Requests" %}</a>
+          </div>
+          <h1 class="header-title">
+            {{ request_instance }} {{ request_instance.title }}
+          </h1>
+        </div>
+        <div class="col-auto">
+          <a href="{{ request_instance.request_template.get_absolute_url }}" class="btn btn-success" data-bs-toggle="tooltip" title="Add a new Request of the same type">
+            New Request
+          </a>
+          {% if has_edit_permission or has_change_permission %}
+            {% url 'workflow:request_edit' request_instance.uuid as request_edit_url %}
+            <a href="{{ request_edit_url }}" title="Edit" class="btn btn-outline-dark" role="button">
+              <i class="far fa-edit"></i> Edit
+            </a>
+          {% endif %}
+          {% if has_close_permission %}
+            <a href="#close-request-modal" role="button" data-bs-toggle="modal" class="btn btn btn-outline-danger">
+              <i class="fas fa-times-circle"></i> Close this Request
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages_alert.html' %}
+
+  <div class="mb-2" style="font-size: 110%;">
+    {% if request_instance.priority %}
+      <span class="badge" {% if request_instance.priority.color_code %}style="background-color: {{ request_instance.priority.color_code }}; color: white;"{% endif %}>{{ request_instance.priority }}</span>
+    {% endif %}
+    <strong>{% include 'workflow/includes/request_status_icon.html' with req=request_instance %} {{ request_instance.get_status_display }}</strong>
+    {% with attachments|length as attachments_length %}
+      &#8226;
+      <a href="#attachments" title="{% if attachments_length %}View{% else %}Add{% endif %} attachments" data-scroll-to="#attachments_section">
+        <i class="{% if attachments_length %}fas fa-file{% else %}far fa-file{% endif %}"></i>
+        {{ attachments_length }} attachment{{ attachments_length|pluralize }}
+      </a>
+    {% endwith %}
+    {% with request_instance.comments.all|length as comments_length %}
+      &#8226;
+      <a href="#comments" title="{% if comments_length %}View{% else %}Add{% endif %} comments" data-scroll-to="#comments_section">
+        <i class="{% if comments_length %}fas fa-comments{% else %}far fa-comments{% endif %}"></i>
+        {{ comments_length }} comment{{ comments_length|pluralize }}
+      </a>
+    {% endwith %}
+  </div>
+
+  {% if request_instance.content_object %}
+    <div class="mb-2" style="font-size: 110%;">
+      <strong><i class="fas fa-link"></i> Applies to:</strong>
+      <a href="{{ request_instance.content_object.get_absolute_url }}" target="_blank">{{ request_instance.content_object }}</a>
+    </div>
+  {% endif %}
+
+  <p class="mb-2 text-muted-light">
+    Created <span title="{{ request_instance.created_date|date:'N j, Y, f A T' }}">{{ request_instance.created_date|naturaltime }}</span> by <strong>{{ request_instance.requester.username }}</strong>
+    {% if request_instance.assignee %}
+      &#8226; Assigned to <strong>{{ request_instance.assignee.username }}</strong>
+    {% endif %}
+    {% if request_instance.last_modified_by %}
+      &#8226; Last edited <span title="{{ request_instance.last_modified_date|date:'N j, Y, f A T' }}">{{ request_instance.last_modified_date|naturaltime }}</span> by <strong>{{ request_instance.last_modified_by.username }}</strong>
+    {% endif %}
+  </p>
+
+  <hr>
+
+  {% if request_instance.product_context %}
+    <p style="font-size: 110%;" class="mb-2">
+      <strong><i class="fa fa-briefcase"></i> Product context:</strong>
+      {% with product_absolute_url=request_instance.product_context.get_absolute_url %}
+        <strong>
+          <a href="{{ product_absolute_url }}" target="_blank">{{ request_instance.product_context }}</a>
+        </strong>
+        &#8226;
+        <a href="{{ product_absolute_url }}#inventory" target="_blank">{% trans "View Inventory" %}</a>
+      {% endwith %}
+    </p>
+  {% endif %}
+
+  {% if status_summary %}
+    <p style="font-size: 110%;" class="mb-2">
+      <strong><i class="fa fa-briefcase"></i> Product summary:</strong>
+    </p>
+    {% for object_type, links in status_summary.items %}
+      {% if links %}
+        {% if object_type == 'custom' %}Custom Components{% else %}{{ object_type|title }}s{% endif %}:
+        <ul>
+          {% for link in links %}
+            <li>{{ link|safe }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if request_instance.notes %}
+    <strong class="bigger">Notes:</strong>
+    <pre>{{ request_instance.notes|linebreaksbr }}</pre>
+  {% endif %}
+
+  <div class="card card-border-color card-border-color-primary">
+    <div class="card-header card-header-divider m-0 p-3">
+      <h2 class="h4">{{ request_instance.request_template.name }}</h2>
+      <span class="card-subtitle">{{ request_instance.request_template.description }}</span>
+    </div>
+    <div class="card-body">
+      {% for question in request_instance.get_serialized_data_as_list %}
+        <div class="mb-3">
+          <label for="{{ question.label }}" class="form-label fw-bold mb-1">{{ question.label }}</label>
+            <div class="clipboard">
+              {% if question.value and question.input_type != 'BooleanField' %}
+                <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+              {% endif %}
+              <pre id="{{ question.label }}" class="pre-bg-light">{% if question.input_type == 'BooleanField' %}{% if question.value == '1' or question.value == 1 %}Yes{% else %}No{% endif %}{% else %}{{ question.value|default_if_none:"&nbsp;"|default:"&nbsp;" }}{% endif %}</pre>
+            </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-10">
+      {% include 'workflow/includes/attachments_section.html' %}
+      {% include 'workflow/includes/comments_section.html' %}
+    </div>
+  </div>
+
+  {% if has_close_permission %}
+    {% include 'workflow/includes/request_close_modal.html' %}
+  {% endif %}
+  {% include 'workflow/includes/delete_attachment_modal.html' %}
+  {% include 'workflow/includes/delete_comment_modal.html' %}
+{% endblock %}
+
+{% block javascripts %}
+  {{ block.super }}
+  <script src="{% static 'js/scroll_to.js' %}" integrity="sha384-4gCm4SPCq9O/y66P13LOCfjqfgMtrLt+7DzjdZfHi00UBDkeqn7oAf9Ywdi1HeXN" crossorigin="anonymous"></script>
+  <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
+  <script src="{% static 'js/clipboard-2.0.0.min.js' %}" integrity="sha384-5tfO0soa+FisnuBhaHP2VmPXQG/JZ8dLcRL43IkJFzbsXTXT6zIX8q8sIT0VSe2G" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $('.delete_attachment_link').click(function() {
+        var uuid = $(this).data('uuid');
+        var filename = $(this).data('filename');
+        $('#delete_attachment_uuid').attr('value', uuid);
+        $('#delete_attachment_filename').html(filename);
+      });
+
+      $('.delete_comment_link').click(function() {
+        var uuid = $(this).data('uuid');
+        $('#delete_comment_uuid').attr('value', uuid);
+      });
+
+      $('form#add-comment').dirtyForms();
+
+      // clipboard.js
+      var clip = new ClipboardJS(".btn-clipboard", {
+        target: function(trigger){
+          return trigger.nextElementSibling
+        }
+      });
+      clip.on("success", function(clip){
+        $(clip.trigger)
+          .attr("title", "Copied!")
+          .tooltip("_fixTitle")
+          .tooltip("show")
+          .attr("title","Copy to clipboard")
+          .tooltip("_fixTitle");
+        clip.clearSelection()
+      });
+    });
+  </script>
+{% endblock %}

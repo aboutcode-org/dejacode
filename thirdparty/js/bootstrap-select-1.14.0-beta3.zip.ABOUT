@@ -1,0 +1,17 @@
+about_resource: bootstrap-select-1.14.0-beta3.zip
+name: bootstrap-select
+version: 1.14.0-beta3
+download_url: https://github.com/snapappointments/bootstrap-select/archive/refs/tags/v1.14.0-beta3.zip
+description: The jQuery plugin that brings select elements into the 21st century with intuitive
+  multiselection, searching, and much more. Now with Bootstrap 4 support.
+homepage_url: https://developer.snapappointments.com/bootstrap-select
+package_url: pkg:github/snapappointments/bootstrap-select@1.14.0-beta3?version_prefix=v
+license_expression: mit
+copyright: Copyright SnapAppointments, LLC
+attribute: yes
+checksum_md5: c0c482f7a41fa28dad42908bfabbc5a3
+checksum_sha1: 4d7652b8b8b5ba63ee17a34bc8d7688c22f310ce
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

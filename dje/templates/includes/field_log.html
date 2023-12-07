@@ -1,0 +1,4 @@
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0">{{ label }}</dt>
+<dd class="col-sm-10"><pre class="log p-2">{{ values|default_if_none:"&nbsp;"|default:"&nbsp;" }}</pre></dd>
+{% if forloop.last %}</dl>{% endif %}

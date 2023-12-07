@@ -1,0 +1,63 @@
+{% extends 'component_catalog/base_component_package_details.html' %}
+{% load i18n static %}
+
+{% block pager-toolbar %}
+  {% if form or add_to_component_form %}
+    <div class="btn-group">
+      <div class="dropdown">
+        <button id="add-to-btn" class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-plus-circle"></i> Add to
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          {% if form %}
+            <button type="button" class="btn btn-link dropdown-item" data-bs-toggle="modal" data-bs-target="#add-to-product-modal">Product</button>
+          {% endif %}
+          {% if add_to_component_form and opts.model_name == 'package' %}
+            <button type="button" class="btn btn-link dropdown-item" data-bs-toggle="modal" data-bs-target="#add-to-component-modal">Component</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% if user.is_authenticated %}
+    <div class="btn-group">
+      <div class="dropdown">
+        <button id="share-btn" class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-share-alt"></i> Share
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          <div class="dropdown-header">Download</div>
+          <a href="{{ object.get_about_files_url }}" class="dropdown-item" target="_blank">
+            <i class="fas fa-download"></i> AboutCode files
+          </a>
+          <a href="{{ object.get_export_spdx_url }}" class="dropdown-item" target="_blank">
+            <i class="fas fa-download"></i> SPDX document
+          </a>
+          <a href="{{ object.get_export_cyclonedx_url }}" class="dropdown-item" target="_blank">
+            <i class="fas fa-download"></i> CycloneDX SBOM
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  {% if has_add_package_permission %}
+    <div class="btn-group">
+      <button type="button" class="btn btn-success pe-2" data-bs-toggle="tooltip" title="{% trans 'Add another Package' %}">
+        <span data-bs-toggle="modal" data-bs-target="#add-package-modal">Add Package</span>
+      </button>
+      <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Actions dropdown"></button>
+      <div class="dropdown-menu dropdown-menu-end" style="">
+        <a href="{% url 'component_catalog:package_add' %}" class="dropdown-item">Add Package form</a>
+        <a href="{% url 'admin:component_catalog_package_import' %}" class="dropdown-item">Import packages</a>
+      </div>
+    </div>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  {% if has_add_package_permission %}
+    {% include 'component_catalog/includes/add_package_modal.html' %}
+  {% endif %}
+{% endblock %}

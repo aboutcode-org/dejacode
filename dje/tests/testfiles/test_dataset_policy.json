@@ -1,0 +1,57 @@
+[
+{
+  "model": "policy.usagepolicy",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "07f3bded-9fd5-411e-a2f6-ea6f8b0d1dd5",
+    "icon": "icon-ok-circle",
+    "color_code": "#008000",
+    "label": "Approved License",
+    "guidelines": "These are business-friendly open licenses that generally only require attribution.  Some of these licenses also require change logs and documentation of any modifications. Refer to the specific license requirements for details.",
+    "content_type": [
+      "license_library",
+      "license"
+    ],
+    "compliance_alert": "",
+    "associated_product_relation_status": null
+  }
+},
+{
+  "model": "policy.usagepolicy",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "03e1aa00-6295-45a3-94c9-7d2dcb94323a",
+    "icon": "icon-ok-circle",
+    "color_code": "#008000",
+    "label": "Approved Component",
+    "guidelines": "These components are approved for general usage, because they have business-friendly open licenses that generally only require attribution.  Some of these licenses also require change logs and documentation of any modifications. Refer to the specific license requirements for details.",
+    "content_type": [
+      "component_catalog",
+      "component"
+    ],
+    "compliance_alert": "",
+    "associated_product_relation_status": null
+  }
+},
+{
+  "model": "policy.associatedpolicy",
+  "fields": {
+    "dataspace": [
+      "nexB"
+    ],
+    "uuid": "ba42a308-132c-4f9c-97b3-fb1ea4f83506",
+    "from_policy": [
+      "nexB",
+      "07f3bded-9fd5-411e-a2f6-ea6f8b0d1dd5"
+    ],
+    "to_policy": [
+      "nexB",
+      "03e1aa00-6295-45a3-94c9-7d2dcb94323a"
+    ]
+  }
+}
+]
