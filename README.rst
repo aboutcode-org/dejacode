@@ -27,7 +27,7 @@ the industry-leading code scanner.
 Getting started
 ---------------
 
-The DejaCode documentation is available here: https://dejacode.readthedocs.org/
+The DejaCode documentation is available here: https://dejacode.readthedocs.io/
 
 If you have questions please ask them in
 `Discussions <https://github.com/nexB/dejacode/discussions>`_.
