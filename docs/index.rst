@@ -39,7 +39,6 @@ Welcome to the very start of your DejaCode journey!
    :maxdepth: 1
    :caption: Miscellaneous
 
-   license
    contributing
    changelog
    doc_maintenance

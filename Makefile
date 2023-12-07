@@ -137,7 +137,7 @@ test:
 docs:
 	@echo "-> Builds the installation_and_sysadmin docs"
 	rm -rf ${DOCS_LOCATION}/_build/
-	@${ACTIVATE} pip install Sphinx sphinx_rtd_theme furo
+	@${ACTIVATE} pip install -r docs/requirements.txt
 	@${ACTIVATE} sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
 	@${ACTIVATE} sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
