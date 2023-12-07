@@ -44,8 +44,8 @@ create the Docker images and to manage the services (database, cache, webserver)
 
         git config --global core.autocrlf false
 
-Clone the private DejaCode repo
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Clone the DejaCode repository
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Open your terminal and clone the `DejaCode repo <https://github.com/nexB/dejacode>`_
 with the following command::
