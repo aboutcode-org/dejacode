@@ -89,7 +89,10 @@ TIME_ZONE = env.str("TIME_ZONE", default="US/Pacific")
 
 SITE_ID = env.int("SITE_ID", default=1)
 SITE_URL = env.str("SITE_URL", default="")
+
 ENABLE_SELF_REGISTRATION = env.bool("ENABLE_SELF_REGISTRATION", default=False)
+HCAPTCHA_SITEKEY = env.str("HCAPTCHA_SITEKEY", default="")
+HCAPTCHA_SECRET = env.str("HCAPTCHA_SECRET", default="")
 
 # This instructs the browser to only send these cookies over HTTPS connections.
 # Note that this will mean that sessions will not work over HTTP, and the CSRF
