@@ -39,6 +39,10 @@ class ScanCodeIO(BaseService):
         detail_url = self.get_scan_detail_url(project_uuid)
         return f"{detail_url}results/"
 
+    def get_scan_summary_url(self, project_uuid):
+        detail_url = self.get_scan_detail_url(project_uuid)
+        return f"{detail_url}summary/"
+
     def get_project_packages_url(self, project_uuid):
         return f"{self.project_api_url}{project_uuid}/packages/"
 

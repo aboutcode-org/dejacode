@@ -2888,8 +2888,10 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(delete_url)
         self.assertEqual(404, response.status_code)
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.stream_scan_data")
-    def test_send_scan_data_as_file_view(self, mock_stream_scan_data):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    def test_send_scan_data_as_file_view(self, mock_fetch_scan_data):
+        mock_fetch_scan_data.return_value = {}
+
         project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
         url = reverse(
             "component_catalog:scan_data_as_file", args=[project_uuid, self.package1.filename]
@@ -2906,9 +2908,9 @@ class PackageUserViewsTestCase(TestCase):
         self.dataspace.save()
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response["content-type"])
+        self.assertEqual("application/zip", response["content-type"])
         self.assertEqual(
-            'attachment; filename="package1_scan.json"', response["content-disposition"]
+            'attachment; filename="package1_scan.zip"', response["content-disposition"]
         )
 
     @mock.patch("requests.head")

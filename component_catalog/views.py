@@ -6,7 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import io
 import json
+import zipfile
 from collections import Counter
 from operator import itemgetter
 from urllib.parse import quote_plus
@@ -1651,10 +1653,18 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
     scancodeio = ScanCodeIO(request.user)
     scan_results_url = scancodeio.get_scan_results_url(project_uuid)
-    data_stream = scancodeio.stream_scan_data(scan_results_url)
+    scan_results = scancodeio.fetch_scan_data(scan_results_url)
+    scan_summary_url = scancodeio.get_scan_summary_url(project_uuid)
+    scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
 
-    response = FileResponse(data_stream.iter_lines(), content_type="application/json")
-    response["Content-Disposition"] = f'attachment; filename="{filename}_scan.json"'
+    in_memory_zip = io.BytesIO()
+    with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
+        zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
+        zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
+
+    in_memory_zip.seek(0)
+    response = FileResponse(in_memory_zip, content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{filename}_scan.zip"'
     return response
 
 
