@@ -14,6 +14,7 @@ from collections import namedtuple
 from operator import attrgetter
 from urllib.parse import unquote_plus
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -64,6 +65,7 @@ from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
 from dje.utils import get_object_compare_diff
+from dje.utils import group_by_simple
 from dje.utils import is_uuid4
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedDeleteView
@@ -418,17 +420,57 @@ class ProductDetailsView(
         return {"fields": [(None, context, None, template)]}
 
     def tab_inventory(self):
-        productcomponent_qs = self.filter_productcomponent.qs.order_by(
-            "feature", "component", "name", "version"
-        ).group_by("feature")
-
-        productpackage_qs = self.filter_productpackage.qs.order_by(
-            "feature", "package__type", "package__namespace", "package__name"
-        ).group_by("feature")
-
         user = self.request.user
         dataspace = user.dataspace
 
+        productcomponent_qs = self.filter_productcomponent.qs.order_by(
+            "feature",
+            "component",
+            "component__name",
+            "component__version",
+            "name",
+            "version",
+        )
+
+        productpackage_qs = self.filter_productpackage.qs.order_by(
+            "feature",
+            "package__type",
+            "package__namespace",
+            "package__name",
+            "package__version",
+            "package__filename",
+        )
+
+        # 1. Combine components and packages into a single list of object
+        all_inventory_items = list(productcomponent_qs) + list(productpackage_qs)
+
+        display_tab = any(
+            [
+                all_inventory_items,
+                self.filter_productcomponent.is_active(),
+                self.filter_productpackage.is_active(),
+            ]
+        )
+        if not display_tab:
+            return
+
+        # 2. Paginate the inventory list
+        page_number = self.request.GET.get("inventory-page", 2)
+        paginator = Paginator(all_inventory_items, settings.TAB_PAGINATE_BY)
+        object_list = paginator.page(page_number).object_list
+
+        # 3. Group objects by features
+        objects_by_feature = defaultdict(list)
+        for feature, items in group_by_simple(object_list, "feature").items():
+            objects_by_feature[feature].extend(items)
+
+        count = len(all_inventory_items)
+        label = f'Inventory <span class="badge badge-primary">{count}</span>'
+        tab_context = {
+            "inventory_items": dict(objects_by_feature.items()),
+        }
+
+        # 4. Inject the Scan data when activated
         scancodeio = ScanCodeIO(user)
         display_scan_features = all(
             [
@@ -437,44 +479,16 @@ class ProductDetailsView(
                 productpackage_qs,
             ]
         )
-
         if display_scan_features:
             self.display_scan_features = True
-            injected_feature_grouped = self.inject_scan_data(
-                scancodeio, productpackage_qs, dataspace.uuid
-            )
-            # Do not override the original data if ScanCode.io couldn't be reach
-            if injected_feature_grouped:
-                productpackage_qs = injected_feature_grouped
+            self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
 
-        inventory_items = defaultdict(list)
-        for relation_qs in [productcomponent_qs, productpackage_qs]:
-            for feature, relation in relation_qs.items():
-                inventory_items[feature].extend(relation)
-
-        display_tab = any(
-            [
-                inventory_items,
-                self.filter_productcomponent.is_active(),
-                self.filter_productpackage.is_active(),
-            ]
-        )
-
-        if not display_tab:
-            return
-
-        count = sum((len(items) for items in inventory_items.values()))
-        label = f'Inventory <span class="badge text-bg-primary">{count}</span>'
-        inventory_items = dict(sorted(inventory_items.items()))
-        tab_context = {
-            "inventory_items": inventory_items,
-        }
-
+        # 5. Display the compliance alert based on license policies
         if self.show_licenses_policy:
             compliance_alerts = set(
-                inventory_item.inventory_item_compliance_alert
-                for inventory_group in inventory_items.values()
-                for inventory_item in inventory_group
+                alert
+                for inventory_item in all_inventory_items
+                for alert in inventory_item.compliance_alerts
             )
 
             if "error" in compliance_alerts:
@@ -484,6 +498,7 @@ class ProductDetailsView(
                     f'   title="Compliance errors"></i> {label}'
                 )
 
+        # 6. Add vulnerability data
         vulnerablecode = VulnerableCode(user)
         enable_vulnerabilities = all(
             [
@@ -491,13 +506,11 @@ class ProductDetailsView(
                 vulnerablecode.is_configured(),
             ]
         )
-
         if enable_vulnerabilities:
             # Re-use the inventory mapping to prevent duplicated queries
             packages = [
                 inventory_item.package
-                for inventory_group in inventory_items.values()
-                for inventory_item in inventory_group
+                for inventory_item in object_list
                 if isinstance(inventory_item, ProductPackage)
             ]
 
@@ -516,6 +529,7 @@ class ProductDetailsView(
             product_package.package.download_url
             for product_packages in feature_grouped.values()
             for product_package in product_packages
+            if isinstance(product_package, ProductPackage)
         ]
 
         # WARNING: Do not trigger a Request for an empty list of download_urls
