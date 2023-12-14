@@ -205,4 +205,89 @@
       });
     </script>
   {% endif %}
+
+  {% if purldb_enabled %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('check-package-versions').addEventListener('click', function (event) {
+          event.preventDefault();
+          let checkPackageLink = this;
+          checkPackageLink.classList.add("disabled");
+
+          document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+            row.style.display = 'none';
+          });
+
+          let newVersionRow = document.createElement('tr');
+          newVersionRow.className = 'spinner new-version';
+          newVersionRow.innerHTML = '<td colspan="100">' +
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' +
+            'Checking new Package versions...' +
+            '</td>';
+
+          document.querySelector("#tab_inventory tbody").insertBefore(newVersionRow, document.querySelector("#tab_inventory tbody").firstChild);
+          document.querySelector('button[data-bs-target="#tab_inventory"]').click();
+
+          let spinnerTd = document.querySelector("tr.spinner > td");
+
+          function handleSuccess(data) {
+            if (data['success']) {
+              spinnerTd.innerHTML =
+                'Version check completed. ' +
+                '<a id="show-all-items" href="#">Show All Items</a> / ' +
+                '<a id="show-new-version" href="#">Show New Version Alerts</a>';
+
+              document.getElementById('show-all-items').addEventListener('click', function () {
+                document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+                  if (!row.classList.contains("extra-details")) {
+                    row.style.display = '';
+                  }
+                });
+                return false;
+              });
+
+              document.getElementById('show-new-version').addEventListener('click', function () {
+                document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
+                  if (!row.classList.contains("new-version")) {
+                    row.style.display = 'none';
+                  }
+                });
+                return false;
+              });
+
+              let upgradeAvailable = data['upgrade_available'];
+              upgradeAvailable.forEach(function (value) {
+                let td = document.querySelector(`[data-purl="${value.purl}"]`);
+                if (td) {
+                  td.insertAdjacentHTML('beforeend', `
+                    <div>
+                      <a class="text-success" href="/purldb/${value.latest_version_uuid}/" target="_blank">
+                        <i class="fas fa-arrow-alt-circle-up"></i> Version ${value.latest_version} available
+                      </a>
+                    </div>
+                  `);
+                  td.parentElement.classList.add('new-version');
+                  td.parentElement.style.display = '';
+                }
+              });
+            }
+          }
+
+          fetch("{{ product.get_check_package_version_url }}", { method: 'GET' })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => handleSuccess(data))
+            .catch(error => {
+              console.error('Error fetching data:', error);
+              spinnerTd.innerHTML = 'Error.';
+            });
+
+        })
+      });
+    </script>
+  {% endif %}
 {% endblock %}
