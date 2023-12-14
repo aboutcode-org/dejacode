@@ -421,9 +421,10 @@ class ProductDetailsView(
         productcomponent_qs = self.filter_productcomponent.qs.order_by(
             "feature", "component", "name", "version"
         ).group_by("feature")
-        productpackage_qs = self.filter_productpackage.qs.order_by("feature", "package").group_by(
-            "feature"
-        )
+
+        productpackage_qs = self.filter_productpackage.qs.order_by(
+            "feature", "package__type", "package__namespace", "package__name"
+        ).group_by("feature")
 
         user = self.request.user
         dataspace = user.dataspace

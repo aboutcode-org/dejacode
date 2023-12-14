@@ -126,6 +126,7 @@ postgresdb:
 	@dropdb ${DB_NAME} || true
 	@echo "-> Create ${DB_NAME} database"
 	@createdb --owner=${DB_USERNAME} ${POSTGRES_INITDB_ARGS} ${DB_NAME}
+	@gunzip < ${DB_INIT_FILE} | psql --username=${DB_USERNAME} ${DB_NAME}
 
 run:
 	${MANAGE} runserver 8000
