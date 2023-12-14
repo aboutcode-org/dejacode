@@ -1,7 +1,15 @@
 {% load i18n %}
 {% load as_icon from dje_tags %}
 {% load urlize_target_blank from dje_tags %}
+{% load humanize %}
+
 {% spaceless %}
+<div class="row align-items-end">
+  <div class="col-auto">
+    {% include 'pagination/object_list_pagination.html' with page_obj=values.page_obj previous_url=values.previous_url next_url=values.next_url %}
+  </div>
+</div>
+
 <table class="table table-bordered table-md">
   <thead>
     <tr>

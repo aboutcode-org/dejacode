@@ -204,6 +204,7 @@ class ProductListView(
 class ProductDetailsView(
     LoginRequiredMixin,
     BaseProductView,
+    PreviousNextPaginationMixin,
     ObjectDetailsView,
 ):
     template_name = "product_portfolio/product_details.html"
@@ -455,20 +456,23 @@ class ProductDetailsView(
             return
 
         # 2. Paginate the inventory list
-        page_number = self.request.GET.get("inventory-page", 2)
         paginator = Paginator(all_inventory_items, settings.TAB_PAGINATE_BY)
-        object_list = paginator.page(page_number).object_list
+        page_obj = paginator.get_page(number=self.request.GET.get("inventory-page", 2))
+        object_list = page_obj.object_list
+
+        self.query_dict_page_param = "inventory-page"
+        previous_url, next_url = self.get_previous_next(page_obj)
+        tab_context = {
+            "page_obj": page_obj,
+            "previous_url": previous_url,
+            "next_url": next_url,
+        }
 
         # 3. Group objects by features
         objects_by_feature = defaultdict(list)
         for feature, items in group_by_simple(object_list, "feature").items():
             objects_by_feature[feature].extend(items)
-
-        count = len(all_inventory_items)
-        label = f'Inventory <span class="badge badge-primary">{count}</span>'
-        tab_context = {
-            "inventory_items": dict(objects_by_feature.items()),
-        }
+        tab_context["inventory_items"] = dict(objects_by_feature.items())
 
         # 4. Inject the Scan data when activated
         scancodeio = ScanCodeIO(user)
@@ -516,6 +520,7 @@ class ProductDetailsView(
 
             tab_context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
+        label = f'Inventory <span class="badge text-bg-primary">{paginator.count}</span>'
         return {
             "label": format_html(label),
             "fields": [
