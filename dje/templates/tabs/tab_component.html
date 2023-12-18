@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load urlize_target_blank from dje_tags %}
 {% spaceless %}
-<table class="table table-bordered table-hover table-md">
+<table class="table table-bordered table-hover table-md text-break">
     <thead>
         <tr>
             <th>{% trans 'Name' %}</th>
@@ -25,7 +25,7 @@
                     </strong>
                 </td>
                 <td>{{ component.version }}</td>
-                <td class="break-word" style="max-width: 250px;">
+                <td class="text-break" style="max-width: 250px;">
                     {% if show_licenses_policy %}
                         {{ component.get_license_expression_linked_with_policy|default_if_none:'' }}
                     {% else %}

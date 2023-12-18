@@ -1,7 +1,7 @@
 {% load i18n %}
 {% spaceless %}
 {% for licenses_table in extra_context.licenses_tables %}
-  <table class="table table-bordered table-md col-count-{{ licenses_table|length }}">
+  <table class="table table-bordered table-md col-count-{{ licenses_table|length }} text-break">
     <tr>
       <th>
         {% trans 'License' %}

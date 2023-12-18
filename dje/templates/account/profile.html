@@ -31,7 +31,7 @@
         <div>
           <label for="api_key" class="form-label">API Key</label>
           <div class="input-group mb-3">
-            <input type="text" class="form-control transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
+            <input type="text" class="form-control bg-transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
             <button class="btn btn-secondary" type="button" id="show_api_key" data-bs-toggle="tooltip" title="Display/Hide API key" aria-label="Display/Hide API key">
               <i id="eye_icon" class="far fa-eye-slash"></i>
             </button>

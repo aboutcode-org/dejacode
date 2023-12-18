@@ -244,7 +244,7 @@ class PurlDBViewsTestCase(TestCase):
             <a class="me-1" href="/purldb/" title="Return to  list" data-bs-toggle="tooltip"
                data-bs-placement="bottom">Purldb</a>
           </div>
-          <h1 class="header-title break-word">
+          <h1 class="header-title text-break">
             pkg:maven/abbot/abbot@1.4.0
           </h1>
         </div>
@@ -297,7 +297,7 @@ class PurlDBViewsTestCase(TestCase):
         self.assertContains(response, expected, html=True)
 
         expected = """
-        <table class="table table-bordered table-striped table-md">
+        <table class="table table-bordered table-striped table-md text-break">
         <thead>
           <tr>
             <th>Identifier</th>

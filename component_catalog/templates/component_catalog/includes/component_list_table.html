@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load inject_preserved_filters from dje_tags %}
 {% load naturaltime_short from dje_tags %}
-<table id="object-list-table" class="table table-bordered table-striped table-md components-table">
+<table id="object-list-table" class="table table-bordered table-striped table-md text-break components-table">
   {% if form %}
     {% include 'includes/object_list_table_header.html' with include_checkbox=True checkbox_select_all=True %}
   {% else %}
@@ -54,7 +54,7 @@
                         <div class="smaller text-muted-darker" title="{{ object.last_modified_date|date:'N j, Y, f A' }}">Modified {{ object.last_modified_date|naturaltime_short }}</div>
                     {% endif %}
                 </td>
-                <td class="break-all">
+                <td>
                     {{ object.version }}
                 </td>
                 {% if dataspace.show_usage_policy_in_user_views %}
@@ -64,7 +64,7 @@
                         {% endif %}
                     </td>
                 {% endif %}
-                <td class="break-word">
+                <td class="text-break">
                     {% if dataspace.show_usage_policy_in_user_views %}
                         {{ object.get_license_expression_linked_with_policy|default_if_none:"" }}
                     {% else %}

@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load inject_preserved_filters from dje_tags %}
-<table id="object-list-table" class="table table-bordered table-striped table-md products-table">
+<table id="object-list-table" class="table table-bordered table-striped table-md text-break products-table">
   {% include 'includes/object_list_table_header.html' with include_checkbox=True %}
   <tbody>
     {% for name_version_group in name_version_groups %}

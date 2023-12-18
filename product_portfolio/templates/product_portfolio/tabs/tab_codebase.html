@@ -22,7 +22,7 @@
   </div>
 </div>
 
-<table class="table table-bordered table-hover table-md">
+<table class="table table-bordered table-hover table-md text-break">
   <thead>
     <tr>
       <th>
@@ -53,7 +53,7 @@
       {% endif %}
     </tr>
   </thead>
-  <tbody class="break-word">
+  <tbody class="text-break">
     {% for codebase_resource in codebase_resources %}
       <tr class="{% cycle 'odd' '' %}">
         <td>
@@ -66,7 +66,7 @@
         </td>
         <td class="text-center">{{ codebase_resource.is_deployment_path|as_icon }}</td>
         {% if has_product_component or has_product_package %}
-          <td class="break-all">
+          <td>
             {% if codebase_resource.product_component %}
               <div>
                 {% include 'product_portfolio/includes/productrelation_element.html' with relation=codebase_resource.product_component %}
