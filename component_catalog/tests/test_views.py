@@ -4289,7 +4289,7 @@ class ComponentListViewTestCase(TestCase):
 
         response = self.client.get(component_list_url)
         expected = (
-            f'<td class="break-word"><span class="license-expression">'
+            f'<td class="text-break"><span class="license-expression">'
             f'<a href="{l1.get_absolute_url()}" title="{l1.short_name}">{l1.key}</a>'
             f"</span></td>"
         )

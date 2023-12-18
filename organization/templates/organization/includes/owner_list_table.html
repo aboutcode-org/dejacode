@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load inject_preserved_filters from dje_tags %}
 {% load urlize_target_blank from dje_tags %}
-<table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout owners-table">
+<table id="object-list-table" class="table table-bordered table-striped table-md text-break table-fixed-layout owners-table">
     {% include 'includes/object_list_table_header.html' %}
     <tbody>
     {% for object in object_list %}
@@ -16,7 +16,7 @@
                     {% endfor %}
                 </ul>
             </td>
-            <td class="break-word">
+            <td class="text-break">
                 {% with licenses=object.license_set.all %}
                     <ul class="fa-ul ms-4 mb-0">
                         {% for license in licenses|slice:":8" %}

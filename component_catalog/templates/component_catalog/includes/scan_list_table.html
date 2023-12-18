@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load humanize %}
-<table class="table table-bordered table-hover">
+<table class="table table-bordered table-hover text-break">
   <thead>
     <tr>
       <th style="background-color: #f9f9f9; padding: .75rem 1.25rem;">
@@ -17,7 +17,7 @@
     <tr>
       <td style="padding: .5rem 1.25rem;">
         <div class="row align-items-center">
-          <div class="col" style="word-break: break-all;">
+          <div class="col">
             {% if scan.package %}
               <i class="fas fa-archive"></i>
               <strong style="font-size: 115%;">

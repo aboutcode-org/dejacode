@@ -25,9 +25,6 @@ body {
 body.body-background, .bg-light {
   background-color: #f9fbfd;
 }
-.white-background {
-  background-color: #fff;
-}
 a {
   color: #2e73d0;
   text-decoration: none;
@@ -71,9 +68,6 @@ a.dropdown-item:hover {
   margin-bottom: 0;
   font-size: 1.625rem;
 }
-.transparent  {
-  color: transparent;
-}
 .smaller {
   font-size: 90%;
 }
@@ -86,6 +80,10 @@ code {
   justify-content: center;
   height: 1rem;
   width: 1rem;
+}
+.text-break-initial {
+  word-wrap: initial!important;
+  word-break: initial!important;
 }
 
 /* -- Navbar -- */
@@ -351,13 +349,13 @@ textarea.licenseexpressionwidget {
 
 /* -- PurlDB List -- */
 table.purldb-table .column-type {
-  min-width: 70px;
+  min-width: 75px;
 }
 table.purldb-table .column-name {
   min-width: 75px;
 }
 table.purldb-table .column-version {
-  min-width: 90px;
+  min-width: 95px;
 }
 table.purldb-table .column-license_expression {
   max-width: 250px;
@@ -539,7 +537,6 @@ td.sub-header {
 }
 .table-fixed-layout {
   table-layout: fixed;
-  word-break: break-all;
 }
 .table thead tr th {
   vertical-align: middle;
@@ -727,9 +724,6 @@ code.key {
   border-radius: 0.1875rem;
   white-space: nowrap;
 }
-.white-space-normal {
-  white-space: normal !important;
-}
 .dropdown-item.active,
 .dropdown-item:active {
   background-color: #4b70aa;
@@ -762,12 +756,6 @@ pre.json-document {
 }
 .jumbotron-heading {
   font-weight: 300;
-}
-.break-word {
-  word-break: break-word;
-}
-.break-all {
-  word-break: break-all;
 }
 h4.feature-title {
   color: #95aac9;

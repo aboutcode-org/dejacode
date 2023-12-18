@@ -2,7 +2,7 @@
 {% load inject_preserved_filters from dje_tags %}
 {% load urlize_target_blank from dje_tags %}
 {% load naturaltime_short from dje_tags %}
-<table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout packages-table">
+<table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout text-break packages-table">
   {% if form or add_to_component_form %}
     {% include 'includes/object_list_table_header.html' with include_checkbox=True checkbox_select_all=True %}
   {% else %}
@@ -46,7 +46,7 @@
           {% endif %}
         </td>
       {% endif %}
-      <td class="break-word">
+      <td class="text-break">
         {% if dataspace.show_usage_policy_in_user_views %}
           {{ object.get_license_expression_linked_with_policy|default_if_none:"" }}
         {% else %}

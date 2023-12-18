@@ -22,7 +22,7 @@
   </div>
 </div>
 
-<table class="table table-bordered table-md">
+<table class="table table-bordered table-md text-break">
   <thead>
     <tr>
       <th style="min-width: 300px;">
@@ -61,7 +61,7 @@
       {% for relation in relationships %}
         {% cycle 'table-odd' '' as rowcolors silent %}
         <tr class="{{ rowcolors }}{% if show_licenses_policy and relation.inventory_item_compliance_alert %} {{ relation.compliance_table_class }}{% endif %}">
-          <td class="break-all"{% if relation.package %} data-purl="{{ relation.package.package_url }}"{% endif %}>
+          <td{% if relation.package %} data-purl="{{ relation.package.package_url }}"{% endif %}>
             <ul class="list-inline float-end mb-0">
               {% if request.user.is_authenticated and is_user_dataspace and relation.related_component_or_package.request_count %}
                 <li class="list-inline-item me-1">

@@ -5,7 +5,7 @@
 
 {% block page_title %}{% trans verbose_name_plural|title %}: {{ object }}{% endblock %}
 
-{% block main_class %}white-background{% endblock %}
+{% block main_class %}bg-white{% endblock %}
 
 {% block content %}
   <div class="header container">
@@ -21,7 +21,7 @@
               {% include 'includes/reference_data_label.html' %}
             {% endif %}
           </div>
-          <h1 class="header-title break-word">
+          <h1 class="header-title text-break">
             {% block header_title %}
               {{ object }}
               <small class="ms-1" style="font-size: 70%">

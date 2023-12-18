@@ -1815,9 +1815,12 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
     max_purls_per_request = 50
     results = []
     for purl_batch in chunked(purls, chunk_size=max_purls_per_request):
-        payload = {"purl": purl_batch, "page_size": len(purl_batch)}
-        response = purldb.request_get(payload)
-        results.extend(response["results"])
+        response = purldb.get_package_list(
+            page_size=max_purls_per_request,
+            extra_payload={"purl": purl_batch},
+        )
+        if response and response.get("results"):
+            results.extend(response["results"])
 
     def get_latest_version_entry(current_uuid):
         latest_version_entry = request.session.get(current_uuid)
@@ -1825,19 +1828,20 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
             return latest_version_entry
 
         latest_version_entry = purldb.get_package(f"{current_uuid}/latest_version")
-        request.session[current_uuid] = latest_version_entry
-        return latest_version_entry
+        if latest_version_entry:
+            request.session[current_uuid] = latest_version_entry
+            return latest_version_entry
 
     upgrade_available = []
     for purldb_entry in results:
         current_uuid = purldb_entry.get("uuid")
         current_version = purldb_entry.get("version")
-        latest_version_entry = get_latest_version_entry(current_uuid)
-        latest_version = latest_version_entry.get("version")
-        if current_version != latest_version:
-            purldb_entry["latest_version"] = latest_version
-            purldb_entry["latest_version_uuid"] = latest_version_entry.get("uuid")
-            upgrade_available.append(purldb_entry)
+        if latest_version_entry := get_latest_version_entry(current_uuid):
+            latest_version = latest_version_entry.get("version")
+            if current_version != latest_version:
+                purldb_entry["latest_version"] = latest_version
+                purldb_entry["latest_version_uuid"] = latest_version_entry.get("uuid")
+                upgrade_available.append(purldb_entry)
 
     return JsonResponse({"success": "success", "upgrade_available": upgrade_available})
 

@@ -1,12 +1,12 @@
 {% load i18n %}
 {% load inject_preserved_filters from dje_tags %}
 {% load urlize_target_blank from dje_tags %}
-<table class="table table-bordered table-striped table-md purldb-table">
+<table class="table table-bordered table-striped table-md text-break purldb-table">
   {% include 'includes/object_list_table_header.html' %}
   <tbody>
   {% for object in object_list %}
     <tr>
-      <td class="break-all">
+      <td>
         <strong>
           <a href="{% url 'purldb:purldb_details' object.uuid %}">
             {% include 'purldb/includes/package_identifier.html' with package=object only %}
@@ -15,7 +15,7 @@
       </td>
       <td>{{ object.type|default_if_none:"" }}</td>
       <td>{{ object.name|default_if_none:"" }}</td>
-      <td class="break-all">{{ object.version|default_if_none:"" }}</td>
+      <td>{{ object.version|default_if_none:"" }}</td>
       <td class="license-expression">
         {{ object.license_expression_formatted|default_if_none:"" }}
       </td>
