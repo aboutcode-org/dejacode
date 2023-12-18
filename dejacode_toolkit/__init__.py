@@ -120,7 +120,7 @@ class BaseService:
             response.raise_for_status()
             return response.json()
         except (requests.RequestException, ValueError, TypeError) as exception:
-            logger.debug(f"{self.label} [Exception] {exception}")
+            logger.error(f"{self.label} [Exception] {exception}")
 
     def request_post(self, url, **kwargs):
         """
@@ -135,4 +135,4 @@ class BaseService:
             response.raise_for_status()
             return response.json()
         except (requests.RequestException, ValueError, TypeError) as exception:
-            logger.debug(f"{self.label} [Exception] {exception}")
+            logger.error(f"{self.label} [Exception] {exception}")
