@@ -651,6 +651,9 @@ class ProductTabInventoryView(
         for feature, items in group_by_simple(object_list, "feature").items():
             objects_by_feature[feature].extend(items)
 
+        # Sort the dictionary by features, so "no-features" items are first
+        objects_by_feature = dict(sorted(objects_by_feature.items()))
+
         # 4. Inject the Scan data when activated
         scancodeio = ScanCodeIO(user)
         display_scan_features = all(
