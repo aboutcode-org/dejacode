@@ -662,19 +662,15 @@ class ProductTabInventoryView(
             self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
 
         # 5. Display the compliance alert based on license policies
-        # if self.show_licenses_policy:
-        #     compliance_alerts = set(
-        #         alert
-        #         for inventory_item in filtered_inventory_items
-        #         for alert in inventory_item.compliance_alerts
-        #     )
-        #
-        #     if "error" in compliance_alerts:
-        #         label = (
-        #             f'<i class="fas fa-exclamation-circle text-danger" '
-        #             f'   data-bs-toggle="tooltip" '
-        #             f'   title="Compliance errors"></i> {label}'
-        #         )
+        if self.show_licenses_policy:
+            context["show_licenses_policy"] = True
+            compliance_alerts = set(
+                alert
+                for inventory_item in filtered_inventory_items
+                for alert in inventory_item.compliance_alerts
+            )
+            if "error" in compliance_alerts:
+                context["compliance_errors"] = True
 
         # 6. Add vulnerability data
         vulnerablecode = VulnerableCode(user)

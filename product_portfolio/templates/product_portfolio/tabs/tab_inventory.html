@@ -232,3 +232,18 @@
   {% include 'pagination/object_list_pagination.html' %}
 </div>
 {% endspaceless %}
+
+{% if compliance_errors %}
+  <script>
+    const tabInventoryLabel = document.getElementById('tab_inventory-tab');
+    if (tabInventoryLabel) {
+      var iconElement = document.createElement('i');
+      iconElement.className = 'fas fa-exclamation-circle text-danger';
+      iconElement.setAttribute('data-bs-toggle', 'tooltip');
+      iconElement.setAttribute('title', 'Compliance errors');
+      tabInventoryLabel.insertBefore(iconElement, tabInventoryLabel.firstChild);
+      // Initialize the tooltip
+      new bootstrap.Tooltip(iconElement, { container: 'body' });
+    }
+  </script>
+{% endif %}
