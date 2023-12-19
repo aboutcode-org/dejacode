@@ -500,12 +500,6 @@ class ProductDetailsView(
 
         context = super().get_context_data(**kwargs)
 
-        context["has_change_productcomponent_permission"] = user.has_perm(
-            "product_portfolio.change_productcomponent"
-        )
-        context["has_change_productpackage_permission"] = user.has_perm(
-            "product_portfolio.change_productpackage"
-        )
         context["has_change_codebaseresource_permission"] = user.has_perm(
             "product_portfolio.change_codebaseresource"
         )
@@ -521,7 +515,7 @@ class ProductDetailsView(
 
         context["has_edit_productpackage"] = all(
             [
-                context["has_change_productpackage_permission"],
+                user.has_perm("product_portfolio.change_productpackage"),
                 context["has_change_permission"],
             ]
         )
@@ -537,7 +531,7 @@ class ProductDetailsView(
         )
         context["has_edit_productcomponent"] = all(
             [
-                context["has_change_productcomponent_permission"],
+                user.has_perm("product_portfolio.change_productcomponent"),
                 context["has_change_permission"],
             ]
         )
@@ -588,7 +582,7 @@ class ProductTabInventoryView(
     tab_id = "inventory"
 
     def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         user = self.request.user
         dataspace = user.dataspace
@@ -698,9 +692,9 @@ class ProductTabInventoryView(
                 if isinstance(inventory_item, ProductPackage)
             ]
 
-            context_data["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
+            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
-        context_data.update(
+        context.update(
             {
                 "filter_productcomponent": filter_productcomponent,
                 "inventory_items": dict(objects_by_feature.items()),
@@ -709,16 +703,31 @@ class ProductTabInventoryView(
             }
         )
 
+        perms = guardian_get_perms(user, self.object)
+        has_product_change_permission = "change_product" in perms
+        context["has_edit_productcomponent"] = all(
+            [
+                has_product_change_permission,
+                user.has_perm("product_portfolio.change_productcomponent"),
+            ]
+        )
+        context["has_edit_productpackage"] = all(
+            [
+                has_product_change_permission,
+                user.has_perm("product_portfolio.change_productpackage"),
+            ]
+        )
+
         if page_obj:
             previous_url, next_url = self.get_previous_next(page_obj)
-            context_data.update(
+            context.update(
                 {
                     "previous_url": (previous_url or "") + f"#{self.tab_id}",
                     "next_url": (next_url or "") + f"#{self.tab_id}",
                 }
             )
 
-        return context_data
+        return context
 
     @staticmethod
     def inject_scan_data(scancodeio, feature_grouped, dataspace_uuid):
