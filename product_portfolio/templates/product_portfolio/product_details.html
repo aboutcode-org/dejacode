@@ -218,6 +218,10 @@
             row.style.display = 'none';
           });
 
+          document.querySelectorAll(".tab-content .pagination").forEach(function(element) {
+              element.parentNode.removeChild(element);
+          });
+
           let newVersionRow = document.createElement('tr');
           newVersionRow.className = 'spinner new-version';
           newVersionRow.innerHTML = '<td colspan="100">' +
