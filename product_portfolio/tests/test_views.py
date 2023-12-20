@@ -212,7 +212,6 @@ class ProductPortfolioViewsTestCase(TestCase):
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")
-        url = self.product1.get_absolute_url()
 
         pc_valid = ProductComponent.objects.create(
             product=self.product1,
@@ -227,11 +226,12 @@ class ProductPortfolioViewsTestCase(TestCase):
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
 
-        response = self.client.get(url)
+        response = self.client.get(self.product1.get_absolute_url())
         self.assertContains(response, 'id="tab_inventory"')
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+
+        url = self.product1.get_url("tab_inventory")
+        response = self.client.get(url)
+        pc_filterset = response.context["inventory_items"][""]
 
         expected = """
         <div class="dropdown-menu" id="id_inventory-object_type">
@@ -253,45 +253,35 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertContains(response, expected, html=True)
 
         response = self.client.get(url + "?inventory-object_type=catalog")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertIn(pc_valid, pc_filterset)
         self.assertNotIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
 
         response = self.client.get(url + "?inventory-object_type=custom")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
 
         response = self.client.get(url + "?inventory-object_type=package")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertNotIn(pc2_custom, pc_filterset)
         self.assertIn(pp1, pc_filterset)
 
         response = self.client.get(url + "?inventory-object_type=ANYTHINGELSE")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]
-        self.assertEqual({"inventory_items": {}}, pc_filterset)
+        pc_filterset = response.context["inventory_items"]
+        self.assertEqual({}, pc_filterset)
 
         response = self.client.get(url + "?inventory-is_deployed=no")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertIn(pc_valid, pc_filterset)
         self.assertNotIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
 
         response = self.client.get(url + "?inventory-is_modified=yes")
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
@@ -360,16 +350,14 @@ class ProductPortfolioViewsTestCase(TestCase):
             product=self.product1, package=package2, is_modified=False, dataspace=self.dataspace
         )
 
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
         self.assertContains(response, self.package1.filename)
         self.assertContains(response, package2.filename)
 
         data = {"inventory-is_modified": "yes"}
         response = self.client.get(url, data=data)
-        pp_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pp_filterset = response.context["inventory_items"][""]
         self.assertIn(pp1, pp_filterset)
         self.assertNotIn(pp2, pp_filterset)
 
@@ -405,18 +393,9 @@ class ProductPortfolioViewsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
-        # This is driven by the ProductComponent.component usage_policy, not from its
-        # licenses
-        self.assertNotContains(response, 'title="Compliance errors"')
-        self.assertNotContains(response, "table-danger")
-
-        self.component1.usage_policy = component_policy
-        self.component1.save()
-        url = self.product1.get_absolute_url()
-        response = self.client.get(url)
-        self.assertContains(response, 'title="Compliance errors"')
+        self.assertContains(response, "Compliance errors")
         self.assertContains(response, "table-danger")
 
     def test_product_portfolio_detail_view_inventory_tab_purpose_icon(self):
@@ -510,7 +489,7 @@ class ProductPortfolioViewsTestCase(TestCase):
 
     def test_product_portfolio_detail_view_feature_field_grouping_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         self.client.get(url)
 
         pc_valid = ProductComponent.objects.create(
@@ -532,9 +511,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         )
 
         response = self.client.get(url)
-        feature_grouped = response.context["tabsets"]["Inventory"]["fields"][0][1][
-            "inventory_items"
-        ]
+        feature_grouped = response.context["inventory_items"]
         expected = {
             "f1": [pc2_custom, pp1],
             "f2": [pc_valid],
