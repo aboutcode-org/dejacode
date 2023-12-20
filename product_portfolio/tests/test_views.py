@@ -386,13 +386,18 @@ class ProductPortfolioViewsTestCase(TestCase):
             owner=Owner.objects.create(name="Owner1", dataspace=self.dataspace),
             dataspace=self.dataspace,
         )
-        ProductComponent.objects.create(
+        pc = ProductComponent.objects.create(
             product=self.product1,
             component=self.component1,
             license_expression=license1.key,
             dataspace=self.dataspace,
         )
 
+        self.component1.usage_policy = component_policy
+        self.component1.save()
+        self.assertEqual("error", pc.inventory_item_compliance_alert)
+
+        self.assertTrue(self.super_user.dataspace.show_usage_policy_in_user_views)
         url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
         self.assertContains(response, "Compliance errors")
@@ -481,7 +486,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         mock_vulnerable_purls.return_value = [purl]
 
         self.client.login(username=self.super_user.username, password="secret")
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
 
         expected = '<i class="fas fa-bug vulnerability"></i></a>'
