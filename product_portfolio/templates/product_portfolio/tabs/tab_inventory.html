@@ -235,6 +235,12 @@
 
 {% if compliance_errors %}
   <script>
+    $('.toggle-details')
+      .tooltip({container: 'body', placement: 'top'})
+      .on('click', function() {
+          $('.extra-details').toggle();
+      });
+
     const tabInventoryLabel = document.getElementById('tab_inventory-tab');
     if (tabInventoryLabel) {
       var iconElement = document.createElement('i');

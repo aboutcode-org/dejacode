@@ -556,6 +556,7 @@ class ProductDetailsView(
 
         if include_scancodeio_features:
             context["pull_project_data_form"] = PullProjectDataForm()
+            context["display_scan_features"] = True
 
         context["purldb_enabled"] = all(
             [
@@ -564,8 +565,6 @@ class ProductDetailsView(
                 context["is_user_dataspace"],
             ]
         )
-
-        context["display_scan_features"] = getattr(self, "display_scan_features", False)
 
         return context
 
@@ -658,7 +657,7 @@ class ProductTabInventoryView(
             ]
         )
         if display_scan_features:
-            self.display_scan_features = True
+            context["display_scan_features"] = True
             self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
 
         # 5. Display the compliance alert based on license policies

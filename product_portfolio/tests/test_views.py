@@ -321,7 +321,7 @@ class ProductPortfolioViewsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
 
         self.assertContains(response, self.component1.name)
@@ -344,9 +344,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertContains(response, expected2)
 
         response = self.client.get(url, data={"inventory-review_status": status1.label})
-        pc_filterset = response.context["tabsets"]["Inventory"]["fields"][0][1]["inventory_items"][
-            ""
-        ]
+        pc_filterset = response.context["inventory_items"][""]
         self.assertIn(pc1, pc_filterset)
         self.assertNotIn(pc2, pc_filterset)
         self.assertIn(pp1, pc_filterset)
@@ -438,7 +436,7 @@ class ProductPortfolioViewsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
         expected = (
             '<div class="text-nowrap">'
@@ -458,7 +456,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertFalse(self.super_user.dataspace.enable_package_scanning)
         mock_fetch_scan_list.return_value = None
 
-        url = self.product1.get_absolute_url()
+        url = self.product1.get_url("tab_inventory")
         expected1 = "#scan-package-modal"
         expected2 = "Submit Scan Request"
         response = self.client.get(url)
@@ -472,8 +470,10 @@ class ProductPortfolioViewsTestCase(TestCase):
         response = self.client.get(url)
         mock_fetch_scan_list.assert_not_called()
         self.assertNotContains(response, expected1)
-        self.assertContains(response, expected2)  # Since enable_package_scanning=True
+        self.assertNotContains(response, expected2)
 
+        self.package1.download_url = "https://download_url.value"
+        self.package1.save()
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
