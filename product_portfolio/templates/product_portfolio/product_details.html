@@ -214,12 +214,24 @@
           let checkPackageLink = this;
           checkPackageLink.classList.add("disabled");
 
+          const tabContentPaginations = document.querySelectorAll(".tab-content .pagination");
+
+          function hidePagination(data) {
+            tabContentPaginations.forEach(function(element) {
+              element.style.display = 'none'; }
+            );
+          }
+
+          function showPagination(data) {
+            tabContentPaginations.forEach(function(element) {
+              element.style.display = ''; }
+            );
+          }
+
+          hidePagination();
+
           document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
             row.style.display = 'none';
-          });
-
-          document.querySelectorAll(".tab-content .pagination").forEach(function(element) {
-              element.parentNode.removeChild(element);
           });
 
           let newVersionRow = document.createElement('tr');
@@ -246,6 +258,7 @@
                   if (!row.classList.contains("extra-details")) {
                     row.style.display = '';
                   }
+                  showPagination();
                 });
                 return false;
               });
@@ -255,6 +268,7 @@
                   if (!row.classList.contains("new-version")) {
                     row.style.display = 'none';
                   }
+                  hidePagination();
                 });
                 return false;
               });
