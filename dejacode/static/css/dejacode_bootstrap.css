@@ -22,8 +22,12 @@ body {
   color: #12263f;
   background-color: #fff;
 }
+[data-bs-theme=dark] body {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+}
 body.body-background, .bg-light {
-  background-color: #f9fbfd;
+  background-color: var(--bs-tertiary-bg);
 }
 a {
   color: #2e73d0;
@@ -187,8 +191,6 @@ dd.reduced pre {
 
 /* -- Footer -- */
 .footer {
-  font-size: 95%;
-  background-color: #fff;
   border-top: 0.0625rem solid #dae1e9;
 }
 .footer a, .footer a:hover,
@@ -272,7 +274,7 @@ table.owners-table .column-type {
 
 /* -- Components List -- */
 table.components-table .column-name {
-  min-width: 150px;
+  min-width: 155px;
 }
 table.components-table .column-version {
   min-width: 85px;
@@ -295,7 +297,7 @@ table.components-table .column-keywords {
   min-width: 110px;
 }
 table.components-table .column-owner {
-  min-width: 57px;
+  min-width: 80px;
 }
 table.components-table .column-primary_language {
   min-width: 130px;
@@ -434,9 +436,6 @@ table.purldb-table .column-license_expression {
 .requests-details #comments_section .card-body :last-child {
   margin-bottom: 0;
 }
-.requests-details #comments_section .bg-light {
-  background-color: #fcfcfc !important;
-}
 .requests-details #comments_section .border-highlight {
     border-color: #5872AA;
 }
@@ -513,6 +512,9 @@ body.product-comparison #div_id_exclude {
 }
 
 /* -- Tables -- */
+:not([data-bs-theme="dark"]) .table {
+  --bs-table-striped-bg: #f9fbfd;
+}
 td.version_grouping {
   text-align: center;
 }
@@ -532,9 +534,6 @@ td.sub-header {
 .table-hover tbody tr:hover {
   background-color: #f9fbfd;
 }
-.table-striped>tbody>tr:nth-of-type(odd)>* {
-  --bs-table-bg-type: #f9fbfd;
-}
 .table-fixed-layout {
   table-layout: fixed;
 }
@@ -553,16 +552,12 @@ td.sub-header {
 .table thead tr th a.sort.active {
   color: black;
 }
-.table {
-  background-color: white;
-}
 
 /* -- Better looks for the popover fake links -- */
 .tag_popover,
 a[data-category-pk],
 .help_text {
   cursor: help;
-  color: #333333;
   border-bottom: dotted 0.0625rem #cccccc;
 }
 .tag_popover:hover,
@@ -697,7 +692,7 @@ mark {
   padding: .15em;
 }
 .bg-light {
-  background-color: #f9fbfd!important;
+  background-color: var(--bs-tertiary-bg) !important;
 }
 .annotation_link,
 .reverse_annotation_link {
@@ -748,7 +743,7 @@ pre.pre-bg-light,
   border: 0.0625rem solid #dee2e6;
   border-radius: .25rem;
   padding: 0.5rem;
-  background-color: #f9fbfd;
+  background-color: var(--bs-tertiary-bg);
   box-shadow: inset 0 .15rem .125rem 0 rgba(222,226,230,0.5);
 }
 pre.json-document {
