@@ -586,6 +586,10 @@ class ProductTabInventoryView(
         user = self.request.user
         dataspace = user.dataspace
 
+        productcomponents_count = self.object.productcomponents.count()
+        productpackages_count = self.object.productpackages.count()
+        context["inventory_count"] = productcomponents_count + productpackages_count
+
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
             queryset=self.object.productpackages,
