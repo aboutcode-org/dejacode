@@ -7,8 +7,8 @@
 #
 
 import cgi
-import os
 import socket
+from pathlib import Path
 from urllib.parse import urlparse
 
 from django.template.defaultfilters import filesizeformat
@@ -29,7 +29,7 @@ class DataCollectionException(Exception):
 
 def collect_package_data(url):
     try:
-        response = requests.get(url, timeout=10, stream=True)
+        response = requests.get(url, timeout=5, stream=True)
     except (requests.RequestException, socket.timeout) as e:
         raise DataCollectionException(e)
 
@@ -54,8 +54,11 @@ def collect_package_data(url):
         )
 
     content_disposition = response.headers.get("content-disposition", "")
-    value, params = cgi.parse_header(content_disposition)
-    filename = params.get("filename") or os.path.basename(urlparse(url).path)
+    _, params = cgi.parse_header(content_disposition)
+
+    # Using ``response.url`` in place of provided ``url`` arg since the former
+    # will be more accurate in case of HTTP redirect.
+    filename = params.get("filename") or Path(urlparse(response.url).path).name
 
     package_data = {
         "download_url": url,

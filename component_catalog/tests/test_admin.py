@@ -2465,7 +2465,10 @@ class PackageDataCollectionTestCase(TransactionTestCase):
         }
 
         mock_get.return_value = mock.Mock(
-            content=b"\x00", headers={"content-length": 1}, status_code=200
+            content=b"\x00",
+            headers={"content-length": 1},
+            status_code=200,
+            url="http://domain.com/a.zip",
         )
 
         response = self.client.post(add_url, data, follow=True)
