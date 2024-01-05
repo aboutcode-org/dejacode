@@ -1,0 +1,12 @@
+about_resource: packageurl_python-0.13.3-py3-none-any.whl
+name: packageurl-python
+version: 0.13.3
+download_url: https://files.pythonhosted.org/packages/0a/dc/277ac895f0ff345263a7677750ede90ec7c3d8c414143272aa7ceaa83071/packageurl_python-0.13.3-py3-none-any.whl
+package_url: pkg:pypi/packageurl-python@0.13.3
+license_expression: mit
+copyright: Copyright packageurl-python project contributors
+attribute: yes
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
