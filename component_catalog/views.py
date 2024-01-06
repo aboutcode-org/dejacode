@@ -287,6 +287,7 @@ class TabVulnerabilityMixin:
     @staticmethod
     def get_vulnerability_fields(vulnerability, dataspace):
         include_fixed_packages = "fixed_packages" in vulnerability.keys()
+        vulnerability_url = vulnerability.get("url")
         summary = vulnerability.get("summary")
         references = vulnerability.get("references", [])
 
@@ -307,6 +308,7 @@ class TabVulnerabilityMixin:
         reference_ids_joined = "\n".join(reference_ids)
 
         tab_fields = [
+            (_("Vulnerability URL"), vulnerability_url, "The URL of the vulnerability"),
             (_("Summary"), summary, "Summary of the vulnerability"),
         ]
 
