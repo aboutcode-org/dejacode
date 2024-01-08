@@ -50,6 +50,7 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
@@ -3189,13 +3190,12 @@ class PackageUserViewsTestCase(TestCase):
         self.package1.set_package_url("pkg:nginx/nginx@1.11.1")
         self.package1.save()
         copy_object(self.package1, Dataspace.objects.create(name="Other"), self.basic_user)
-
         get_vulnerability_fields = PackageDetailsView.get_vulnerability_fields
         fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
-        self.assertEqual(fields[0], ("Summary", None, "Summary of the vulnerability"))
-
+        self.assertEqual(fields[0], ('Vulnerability URL', None, 'The URL of the Vulnerability'))
+        self.assertEqual(fields[1], ("Summary", None, "Summary of the vulnerability"))
         vulnerability = {
-            "vulnerability_id": "42d0a7c4-99e9-4506-b0c6-338ec2993147",
+            "vulnerability_id": "VCID-a1md-ney4-aaac",
             "summary": "SQL Injection",
             "references": [
                 {
@@ -3214,13 +3214,18 @@ class PackageUserViewsTestCase(TestCase):
                 {"purl": "pkg:nginx/nginx@1.10.1"},
             ],
         }
+        self.dataspace.configuration = DataspaceConfiguration(vulnerablecode_url="https://public.vulnerablecode.io/")
         fields = get_vulnerability_fields(
             vulnerability=vulnerability,
             dataspace=self.dataspace,
         )
-        self.assertEqual(fields[0], ("Summary", "SQL Injection", "Summary of the vulnerability"))
-        self.assertEqual(fields[1][0], "Fixed packages")
-        fixed_package_values = fields[1][1]
+        self.assertEqual(fields[0], ('Vulnerability URL',
+        '<a href="https://public.vulnerablecode.io/vulnerabilities/VCID-a1md-ney4-aaac"'
+        ' target="_blank">VCID-a1md-ney4-aaac</a>',
+                                     'The URL of the Vulnerability'))
+        self.assertEqual(fields[1], ("Summary", "SQL Injection", "Summary of the vulnerability"))
+        self.assertEqual(fields[2][0], "Fixed packages")
+        fixed_package_values = fields[2][1]
         self.assertIn("nginx/nginx@1.10.1", fixed_package_values)
         self.assertIn(
             '<a href="/packages/add/?package_url=pkg:nginx/nginx@1.10.1"',
@@ -3231,7 +3236,7 @@ class PackageUserViewsTestCase(TestCase):
             fixed_package_values,
         )
         self.assertEqual(
-            fields[2][0:2],
+            fields[3][0:2],
             (
                 "Reference IDs",
                 '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
@@ -3240,7 +3245,7 @@ class PackageUserViewsTestCase(TestCase):
             ),
         )
         self.assertEqual(
-            fields[3][0:2],
+            fields[4][0:2],
             (
                 "Reference URLs",
                 '<a target="_blank" href="http://www.openwall.com/lists/oss-security/2022/01/18/4" '
