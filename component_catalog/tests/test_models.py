@@ -2213,7 +2213,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         with self.assertRaisesMessage(DataCollectionException, expected_message):
             collect_package_data("ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2")
 
-        download_url = "http://domain.com/a.zip;<params>?<query>#<fragment>"
+        download_url = "http://domain.com/a%20b.zip;<params>?<query>#<fragment>"
 
         default_max_length = download.CONTENT_MAX_LENGTH
         download.CONTENT_MAX_LENGTH = 0
@@ -2233,8 +2233,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             url=download_url,
         )
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
-            "filename": "a.zip",
+            "download_url": download_url,
+            "filename": "a b.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
@@ -2264,7 +2264,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
         mock_get.return_value = mock.Mock(content=b"\x00", headers=headers, status_code=200)
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
+            "download_url": download_url,
             "filename": "another_name.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",

@@ -9,6 +9,7 @@
 import cgi
 import socket
 from pathlib import Path
+from urllib.parse import unquote
 from urllib.parse import urlparse
 
 from django.template.defaultfilters import filesizeformat
@@ -56,9 +57,11 @@ def collect_package_data(url):
     content_disposition = response.headers.get("content-disposition", "")
     _, params = cgi.parse_header(content_disposition)
 
-    # Using ``response.url`` in place of provided ``url`` arg since the former
-    # will be more accurate in case of HTTP redirect.
-    filename = params.get("filename") or Path(urlparse(response.url).path).name
+    filename = params.get("filename")
+    if not filename:
+        # Using ``response.url`` in place of provided ``url`` arg since the former
+        # will be more accurate in case of HTTP redirect.
+        filename = unquote(Path(urlparse(response.url).path).name)
 
     package_data = {
         "download_url": url,
