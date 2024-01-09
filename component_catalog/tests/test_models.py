@@ -2213,7 +2213,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         with self.assertRaisesMessage(DataCollectionException, expected_message):
             collect_package_data("ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2")
 
-        package_url = "http://domain.com/a.zip;<params>?<query>#<fragment>"
+        download_url = "http://domain.com/a%20b.zip;<params>?<query>#<fragment>"
 
         default_max_length = download.CONTENT_MAX_LENGTH
         download.CONTENT_MAX_LENGTH = 0
@@ -2223,15 +2223,18 @@ class ComponentCatalogModelsTestCase(TestCase):
             content=b"\x00", headers={"content-length": 300000000}, status_code=200
         )
         with self.assertRaisesMessage(DataCollectionException, expected_message):
-            collect_package_data(package_url)
+            collect_package_data(download_url)
 
         download.CONTENT_MAX_LENGTH = default_max_length
         mock_get.return_value = mock.Mock(
-            content=b"\x00", headers={"content-length": 1}, status_code=200
+            content=b"\x00",
+            headers={"content-length": 1},
+            status_code=200,
+            url=download_url,
         )
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
-            "filename": "a.zip",
+            "download_url": download_url,
+            "filename": "a b.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
@@ -2241,7 +2244,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                 "4a802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee"
             ),
         }
-        self.assertEqual(expected_data, collect_package_data(package_url))
+        self.assertEqual(expected_data, collect_package_data(download_url))
 
         expected_message = (
             "Exception Value: HTTPConnectionPool"
@@ -2253,7 +2256,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         mock_get.return_value = response
         with self.assertRaisesMessage(DataCollectionException, expected_message):
-            collect_package_data(package_url)
+            collect_package_data(download_url)
 
         headers = {
             "content-length": 1,
@@ -2261,7 +2264,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
         mock_get.return_value = mock.Mock(content=b"\x00", headers=headers, status_code=200)
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
+            "download_url": download_url,
             "filename": "another_name.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
@@ -2272,7 +2275,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                 "4a802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee"
             ),
         }
-        self.assertEqual(expected_data, collect_package_data(package_url))
+        self.assertEqual(expected_data, collect_package_data(download_url))
 
     def test_package_create_save_set_usage_policy_from_license(self):
         from policy.models import AssociatedPolicy
