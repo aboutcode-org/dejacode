@@ -2823,7 +2823,11 @@ class PackageUserViewsTestCase(TestCase):
                     "input_sources": [
                         {
                             "filename": self.package1.filename,
-                            "source": self.package1.download_url,
+                            "download_url": self.package1.download_url,
+                            "is_uploaded": False,
+                            "tag": "",
+                            "exists": True,
+                            "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
                         }
                     ],
                     "runs": [
@@ -3406,9 +3410,18 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
@@ -3441,9 +3454,18 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",

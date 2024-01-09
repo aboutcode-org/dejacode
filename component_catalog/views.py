@@ -1772,7 +1772,10 @@ def send_scan_notification(request, key):
 
     project = json_data.get("project")
     input_sources = project.get("input_sources")
-    download_url = list(input_sources.values())[0]
+    if not input_sources:
+        raise Http404("Missing `input_sources` entry in provided data.")
+    download_url = input_sources[0].get("download_url")
+
     package = get_object_or_404(Package, download_url=download_url, dataspace=user.dataspace)
     description = package.download_url
 

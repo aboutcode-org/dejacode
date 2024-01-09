@@ -41,7 +41,7 @@ class BaseService:
     settings_prefix = None
     url_field_name = None
     api_key_field_name = None
-    default_timeout = 3
+    default_timeout = 5
 
     def __init__(self, user):
         if not user:

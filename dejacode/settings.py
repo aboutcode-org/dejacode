@@ -489,7 +489,7 @@ LOGGING = {
         "dejacode_toolkit": {
             "handlers": ["null"] if IS_TESTS else ["console"],
             "propagate": False,
-            "level": DEJACODE_LOG_LEVEL,
+            "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
         },
         "django_auth_ldap": {
             "handlers": ["null"] if IS_TESTS else ["console"],
