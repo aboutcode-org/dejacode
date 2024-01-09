@@ -3192,7 +3192,7 @@ class PackageUserViewsTestCase(TestCase):
         copy_object(self.package1, Dataspace.objects.create(name="Other"), self.basic_user)
         get_vulnerability_fields = PackageDetailsView.get_vulnerability_fields
         fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
-        self.assertEqual(fields[0], ('Vulnerability URL', None, 'The URL of the Vulnerability'))
+        self.assertEqual(fields[0], ("Vulnerability URL", None, "The URL of the Vulnerability"))
         self.assertEqual(fields[1], ("Summary", None, "Summary of the vulnerability"))
         vulnerability = {
             "vulnerability_id": "VCID-a1md-ney4-aaac",
@@ -3214,15 +3214,22 @@ class PackageUserViewsTestCase(TestCase):
                 {"purl": "pkg:nginx/nginx@1.10.1"},
             ],
         }
-        self.dataspace.configuration = DataspaceConfiguration(vulnerablecode_url="https://public.vulnerablecode.io/")
+        self.dataspace.configuration = DataspaceConfiguration(
+            vulnerablecode_url="https://public.vulnerablecode.io/"
+        )
         fields = get_vulnerability_fields(
             vulnerability=vulnerability,
             dataspace=self.dataspace,
         )
-        self.assertEqual(fields[0], ('Vulnerability URL',
-        '<a href="https://public.vulnerablecode.io/vulnerabilities/VCID-a1md-ney4-aaac"'
-        ' target="_blank">VCID-a1md-ney4-aaac</a>',
-                                     'The URL of the Vulnerability'))
+        self.assertEqual(
+            fields[0],
+            (
+                "Vulnerability URL",
+                '<a href="https://public.vulnerablecode.io/vulnerabilities/VCID-a1md-ney4-aaac"'
+                ' target="_blank">VCID-a1md-ney4-aaac</a>',
+                "The URL of the Vulnerability",
+            ),
+        )
         self.assertEqual(fields[1], ("Summary", "SQL Injection", "Summary of the vulnerability"))
         self.assertEqual(fields[2][0], "Fixed packages")
         fixed_package_values = fields[2][1]
