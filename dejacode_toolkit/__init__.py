@@ -127,14 +127,10 @@ class BaseService:
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.default_timeout
 
+        # Do not `raise_for_status` as the response may contain valuable data
+        # even on non 200 status code.
         try:
             response = self.session.post(url, **kwargs)
-            response.raise_for_status()
-        except requests.HTTPError as error:
-            logger.error(f"{self.label} [HTTPError] {error}")
-
-        # The response may contain valuable data even on non 200 status code.
-        try:
             return response.json()
         except (requests.RequestException, ValueError, TypeError) as exception:
             logger.error(f"{self.label} [Exception] {exception}")
