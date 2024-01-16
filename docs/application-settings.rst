@@ -208,7 +208,7 @@ integrations **globally accessible across all Dataspaces** within your DejaCode
 instance.
 
 Alternatively, if you wish to tailor the availability of these features to a specific
-Dataspace, you can define and set those values directly within the Dataspace
+Dataspace, you can define and set those values directly within the :ref:`dataspace`
 configuration. This can be done through the Dataspace admin UI, allowing you to scope
 the availability of these integrations exclusively to the designated Dataspace.
 
@@ -225,6 +225,10 @@ instance.
     SCANCODEIO_URL=https://your_scancodeio.url/
     SCANCODEIO_API_KEY=insert_your_api_key_here
 
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_scancodeio`.
+
 .. _dejacode_settings_purldb:
 
 PURLDB
@@ -236,6 +240,10 @@ Provide the URL and API key of your `PurlDB <https://github.com/nexB/purldb>`_ i
 
     PURLDB_URL=https://your-purldb.url/
     PURLDB_API_KEY=insert_your_api_key_here
+
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_purldb`.
 
 .. _dejacode_settings_vulnerablecode:
 
@@ -252,6 +260,10 @@ or connect to the public one https://public.vulnerablecode.io/.
 
     VULNERABLECODE_URL=https://public.vulnerablecode.io/
     VULNERABLECODE_API_KEY=insert_your_api_key_here
+
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_vulnerablecode`.
 
 LDAP Integration
 ================

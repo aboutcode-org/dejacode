@@ -107,17 +107,32 @@ Use these credentials to access the application.
     For example, with Docker configured for 8 CPUs, allocate a minimum of 8 GB of
     memory.
 
-5. Setup AboutCode integrations
--------------------------------
+5. Dataspace setup and AboutCode integrations
+---------------------------------------------
 
-You can enable DejaCode integrations with other applications in the AboutCode stack.
+Upon the initialization of the DejaCode application, the ``nexB`` reference
+:ref:`dataspace` is created with a **default set of data**, including license and
+organization libraries.
 
-- **ScanCode.io**: Enable package scanning.
+Additionally, **AboutCode integrations are pre-configured** to connect to
+**public instances** of the following AboutCode applications:
+
+- **ScanCode.io**: Facilitates package scanning.
   Refer to :ref:`dejacode_dataspace_scancodeio`.
-- **PurlDB**: Access a database of scanned packages.
+- **PurlDB**: Provides access to a database of scanned packages.
   Refer to :ref:`dejacode_dataspace_purldb`.
-- **VulnerableCodeDB**: Access a database of package vulnerabilities.
+- **VulnerableCodeDB**: Enables access to a database containing information on package
+  vulnerabilities.
   Refer to :ref:`dejacode_dataspace_vulnerablecode`.
+
+.. warning::
+    In the scenario of **deploying DejaCode as an enterprise service** within your
+    organization, it is **strongly recommended to review these configurations**.
+    Consideration should be given to **running your own instances** of these
+    applications  to ensure that **sensitive or private data** is not inadvertently
+    submitted to public services. This strategic approach helps to safeguard
+    organizational data and privacy during package scanning and vulnerability
+    assessments.
 
 Hardware requirements
 =====================

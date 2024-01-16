@@ -1,6 +1,38 @@
+.. _dataspace:
+
 =========
 Dataspace
 =========
+
+The Dataspace serves as a pivotal mechanism within DejaCode, facilitating the
+segregation of data for each organization while maintaining a unified storage
+structure in the same database, schema, or table.
+Within a given installation, multiple "Dataspace" organizations can be defined,
+but there exists only one reference.
+
+This concept is a crucial element employed across DejaCode to effectively separate
+**reference data provided by nexB** from the data utilized in a specific DJE
+installation.
+Essentially, it introduces the notion of a "tenant" within a DJE installation,
+enabling the isolation of organization-specific and/or private records.
+This segregation supports both multi-tenancy and the coexistence of nexB-provided
+reference data and organization-specific or customized data.
+
+The key purposes of this separation include:
+
+1. **Orderly and Simplified Data Updates**: Facilitates smooth and streamlined updates
+   from nexB reference data, ensuring efficient data synchronization and exchange
+   across Dataspaces.
+2. **Dataspace-Specific Customizations**: Allows for customization of Dataspace-specific
+   data, such as configurations for license tags or specific preferences, tailoring
+   the installation to the unique needs of each organization.
+3. **Support for Multi-Tenancy**: Enables the sharing of the same DJE instance among
+   different organizations, each operating within its distinct Dataspace,
+   promoting multi-tenancy while maintaining data segregation.
+
+In summary, the Dataspace concept in DejaCode plays a pivotal role in maintaining data
+integrity, enabling efficient updates, accommodating customization, and supporting
+multi-tenancy for a diverse range of organizations within a DJE installation.
 
 Setting up your License Library
 ===============================
@@ -121,7 +153,7 @@ you do not need.
 Assigning Usage Policies to licenses
 ====================================
 
-There are more than **1,300 Licenses** in your License list from Reference Data, so
+There are more than **2,000 Licenses** in your License list from Reference Data, so
 you will want to develop a strategy that works for your business requirements to
 assign Usage Policies efficiently. The two basic techniques are:
 
@@ -130,7 +162,7 @@ assign Usage Policies efficiently. The two basic techniques are:
 2. Mass update: Select a group of licenses on the **Browse License** form and use Mass
    Update to assign a Usage Policy to that group of licenses.
 
-As an example of the first technique, locate and select the license with the Key
+As an example of the first technique, locate and select the license with the key
 of **apache-2.0** in your list. Your organization probably already has a policy
 regarding this very common license; you may simply allow engineering to use
 components under that license or you may require additional review of how they
@@ -323,25 +355,15 @@ You can:
    DejaCode instance:
    https://scancodeio.readthedocs.io/en/latest/command-line-interface.html#scanpipe-create-user-username
 
-4. Set the ScanCode.io server URL and the API key in your local DejaCode settings file
-   ``.env``.
+4. Set the ScanCode.io Server URL and API key in your Dataspace Configuration:
 
-  .. code-block:: python
-
-      SCANCODEIO_URL=https://<your_scancodeio.url>/
-      SCANCODEIO_API_KEY=<api_key>
-
-  **Restarting the services is required following any changes to .env:**
-
-  .. code-block:: bash
-
-      docker compose restart web worker
-
-5. Enable package scanning on your Dataspace from the **Administration dashboard**.
-
-   Select **Dataspaces** and open your Dataspace definition.
-   In the **Application Process Settings** section, check the
-   **Enable package scanning** option and save.
+ - Access your DejaCode web application **Administration dashboard**.
+ - Navigate to the **Dataspaces** section and select your Dataspace name.
+ - Within the **Application Process Settings** section, enable the
+   **Enable package scanning** option.
+ - Update the values for the **ScanCode.io URL** and **ScanCode.io API key** fields
+   located in the **Configuration** panel at the bottom of the form.
+ - Click the **Save** button.
 
 You can now access the **Scans** section from the **Tools** menu and request package
 scans from this view.
@@ -363,7 +385,7 @@ and perform an asynchronous query of the PurlDB to find relevant data.
 
 You can:
 
-* Browse and search from a list of over **14 millions Packages**.
+* Browse and search from a list of over **21 millions Packages**.
 * Get extra information on your local Packages from the **"PurlDB" tab**.
 * Create local Packages automatically from entries found in the PurlDB.
 * Enhance the **Global search** results with Packages from the PurlDB.
@@ -371,28 +393,15 @@ You can:
 
 1. Get in touch with nexB to request your credentials for the **PurlDB** service.
 
-2. Set those credentials in your local DejaCode configuration file ``.env``.
+2. Set the PurlDB Server URL and API key in your Dataspace Configuration:
 
-   See :doc:`/application-settings` for more details on the configuration system.
-
-.. code-block:: python
-
-    PURLDB_URL=https://purldb.url/
-    PURLDB_USER=PROVIDED_BY_NEXB
-    PURLDB_PASSWORD=PROVIDED_BY_NEXB
-
-
-**Restarting the services is required following any changes to .env:**
-
-.. code-block:: bash
-
-    docker compose restart web worker
-
-3. Enable **PurlDB access** on your Dataspace from the **Administration dashboard**.
-
-   Select **Dataspaces** and open your Dataspace definition.
-   In the **Application Process Settings** section, check the **Enable PurlDB access**
-   option and save.
+ - Access your DejaCode web application **Administration dashboard**.
+ - Navigate to the **Dataspaces** section and select your Dataspace name.
+ - Within the **Application Process Settings** section, enable the
+   **Enable PurlDB access** option.
+ - Update the values for the **PurlDB URL** and **PurlDB API key** fields
+   located in the **Configuration** panel at the bottom of the form.
+ - Click the **Save** button.
 
 You can now access the **PurlDB** section from the **Tools** menu and browse package
 from this view.
@@ -423,28 +432,15 @@ You can:
 1. Get in touch with nexB to request your credentials for the **VulnerableCodeDB**
    service.
 
-2. Set those credentials in your local DejaCode configuration file ``.env``.
+2. Set the VulnerableCodeDB Server URL and API key in your Dataspace Configuration:
 
-   See :doc:`/application-settings` for more details on the configuration system.
-
-.. code-block:: python
-
-    VULNERABLECODE_URL=https://vulnerablecodedb.url/
-    VULNERABLECODE_API_KEY=PROVIDED_BY_NEXB
-
-**Restarting the services is required following any changes to .env:**
-
-.. code-block:: bash
-
-    docker compose restart web worker
-
-
-3. Enable **VulnerableCodeDB access** on your Dataspace from the
-   **Administration dashboard**.
-
-   Select **Dataspaces** and open your Dataspace definition.
-   In the **Application Process Settings** section,
-   check the **Enable VulnerableCodeDB access** option and save.
+ - Access your DejaCode web application **Administration dashboard**.
+ - Navigate to the **Dataspaces** section and select your Dataspace name.
+ - Within the **Application Process Settings** section, enable the
+   **Enable VulnerableCodeDB access** option.
+ - Update the values for the **VulnerableCode URL** and **VulnerableCode API key**
+   fields located in the **Configuration** panel at the bottom of the form.
+ - Click the **Save** button.
 
 You can now see Vulnerabilities in the Packages user view.
 The availability of the services can be checked by clicking on your user name in the

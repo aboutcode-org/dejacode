@@ -9,8 +9,8 @@ Welcome to the very start of your DejaCode journey!
     :caption: Getting Started
 
     installation
-    application-settings
     dataspace
+    application-settings
 
 .. toctree::
     :maxdepth: 1
