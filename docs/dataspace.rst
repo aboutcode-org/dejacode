@@ -278,6 +278,8 @@ The basic techniques to use in your own Dataspace are:
    **Set usage policy from licenses** option in the dropdown list in the lower
    right hand corner of the form and follow the prompts to complete that action.
 
+.. _dejacode_dataspace_scancodeio:
+
 Enable package scanning with your ScanCode.io server
 ====================================================
 
@@ -344,6 +346,8 @@ You can:
 You can now access the **Scans** section from the **Tools** menu and request package
 scans from this view.
 
+.. _dejacode_dataspace_purldb:
+
 Enable PurlDB service
 =====================
 
@@ -392,6 +396,8 @@ You can:
 
 You can now access the **PurlDB** section from the **Tools** menu and browse package
 from this view.
+
+.. _dejacode_dataspace_vulnerablecode:
 
 Enable VulnerableCodeDB service
 ===============================

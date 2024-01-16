@@ -33,7 +33,7 @@ Refer to Docker's documentation for the best installation path for your system:
 
    <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
 
-2. Build the Image
+2. Build the image
 ------------------
 
 DejaCode comes with the necessary ``Dockerfile`` and ``docker-compose.yml`` files to
@@ -60,7 +60,7 @@ Create an **environment file**, and **build the Docker image** with::
     cd dejacode && make envfile
     docker compose build
 
-3. Run the App
+3. Run the app
 --------------
 
 To **run the DejaCode images as containers**, use the following command::
@@ -107,23 +107,35 @@ Use these credentials to access the application.
     For example, with Docker configured for 8 CPUs, allocate a minimum of 8 GB of
     memory.
 
+5. Setup AboutCode integrations
+-------------------------------
+
+You can enable DejaCode integrations with other applications in the AboutCode stack.
+
+- **ScanCode.io**: Enable package scanning.
+  Refer to :ref:`dejacode_dataspace_scancodeio`.
+- **PurlDB**: Access a database of scanned packages.
+  Refer to :ref:`dejacode_dataspace_purldb`.
+- **VulnerableCodeDB**: Access a database of package vulnerabilities.
+  Refer to :ref:`dejacode_dataspace_vulnerablecode`.
+
 Hardware requirements
 =====================
 
 The minimum hardware/system requirements for running DejaCode as an enterprise
 server are:
 
-+-----------+----------------------------------------------------------------+
-| Item      | Minimum                                                        |
-+===========+================================================================+
-| Processor | Modern X86 64 bits Intel Quad Core or better, or equivalent    |
-+-----------+----------------------------------------------------------------+
-| Memory    | 64 GB or more (ECC preferred)                                  |
-+-----------+----------------------------------------------------------------+
-| Disk      | 2 * 500GB SDD in RAID mirror setup (enterprise disk preferred) |
-+-----------+----------------------------------------------------------------+
-| OS        | Ubuntu 22.04 LTS 64-bit server clean installation              |
-+-----------+----------------------------------------------------------------+
++-----------+------------------------------------------------------------------+
+| Item      | Minimum                                                          |
++===========+==================================================================+
+| Processor | Modern X86 64 bit Multi Core, with at least **4 physical cores** |
++-----------+------------------------------------------------------------------+
+| Memory    | **64 GB** or more (ECC preferred)                                |
++-----------+------------------------------------------------------------------+
+| Disk      | 2 * 500GB SDD in RAID mirror setup (enterprise disk preferred)   |
++-----------+------------------------------------------------------------------+
+| OS        | **Ubuntu 22.04 LTS 64-bit** server clean installation            |
++-----------+------------------------------------------------------------------+
 
 .. _local_development_installation:
 
