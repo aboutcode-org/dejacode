@@ -63,34 +63,6 @@ responsible to provide your own validation of the Host header.
 
     ALLOWED_HOSTS=*
 
-.. _dejacode_settings_purldb:
-
-PURLDB
-------
-
-Provide the URL and API key of your `PurlDB <https://github.com/nexB/purldb/>`_
-instance.
-
-::
-
-    PURLDB_URL=https://your-purldb-domain/
-    PURLDB_API_KEY=apikeyexample
-
-.. _dejacode_settings_vulnerablecode:
-
-VULNERABLECODE
---------------
-
-You can either run your own instance of
-`VulnerableCode <https://github.com/nexB/vulnerablecode/>`_
-or connect to the public one.
-
-Authentication is provided using an API key that you can obtain by registering at
-https://public.vulnerablecode.io/account/request_api_key/ ::
-
-    VULNERABLECODE_URL=https://public.vulnerablecode.io/
-    VULNERABLECODE_API_KEY=apikeyexample
-
 EMAIL
 -----
 
@@ -187,11 +159,11 @@ to provide some progress about pipeline run execution.
 
 Default: ``INFO``
 
-The ``DEBUG`` value can be provided to this setting to see all ScanCode.io debug
+The ``DEBUG`` value can be provided to this setting to see all DejaCode debug
 messages to help track down configuration issues for example.
 This mode can be enabled globally through the ``.env`` file::
 
-    SCANCODEIO_LOG_LEVEL=DEBUG
+    DEJACODE_LOG_LEVEL=DEBUG
 
 .. _clamd-settings:
 
@@ -221,6 +193,77 @@ default the ``US/Pacific`` time zone is used::
 .. note::
     You can view a detailed list of time zones `here.
     <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_
+
+.. _dejacode_settings_aboutcode_integrations:
+
+AboutCode integrations
+======================
+
+To **integrate DejaCode with other applications within the AboutCode stack**,
+you have the flexibility to configure and set up integrations using the following
+application settings.
+
+It's important to understand that employing application settings will make these
+integrations **globally accessible across all Dataspaces** within your DejaCode
+instance.
+
+Alternatively, if you wish to tailor the availability of these features to a specific
+Dataspace, you can define and set those values directly within the :ref:`dataspace`
+configuration. This can be done through the Dataspace admin UI, allowing you to scope
+the availability of these integrations exclusively to the designated Dataspace.
+
+.. _dejacode_settings_scancodeio:
+
+SCANCODEIO
+----------
+
+Provide the URL and API key of your `ScanCode.io <https://github.com/nexB/scancode.io>`_
+instance.
+
+.. code-block:: python
+
+    SCANCODEIO_URL=https://your_scancodeio.url/
+    SCANCODEIO_API_KEY=insert_your_api_key_here
+
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_scancodeio`.
+
+.. _dejacode_settings_purldb:
+
+PURLDB
+------
+
+Provide the URL and API key of your `PurlDB <https://github.com/nexB/purldb>`_ instance.
+
+.. code-block:: python
+
+    PURLDB_URL=https://your-purldb.url/
+    PURLDB_API_KEY=insert_your_api_key_here
+
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_purldb`.
+
+.. _dejacode_settings_vulnerablecode:
+
+VULNERABLECODE
+--------------
+
+You can either run your own instance of
+`VulnerableCode <https://github.com/nexB/vulnerablecode>`_
+or connect to the public one https://public.vulnerablecode.io/.
+
+.. note:: Providing an API key is optional when using the public VulnerableCode instance.
+
+.. code-block:: python
+
+    VULNERABLECODE_URL=https://public.vulnerablecode.io/
+    VULNERABLECODE_API_KEY=insert_your_api_key_here
+
+.. note::
+    You have the option to define and set those settings directly on your Dataspace.
+    For detailed instructions, refer to :ref:`dejacode_dataspace_vulnerablecode`.
 
 LDAP Integration
 ================
