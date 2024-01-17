@@ -329,9 +329,16 @@ You can:
 * Download the scan results to a JSON-formatted file to integrate with other
   analysis and reporting tools.
 
+Install and configure ScanCode.io
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. warning::
-    The ScanCode.io server **should not be installed on the same server** (virtual or
-    physical) as the DejaCode one.
+    If you plan to run ScanCode.io **on the same server** (virtual or  physical) as
+    the DejaCode instance, **ensure that the host machine has sufficient resources**
+    to handle both applications.
+    Also, you will have to provide custom network ports for the ScanCode.io application
+    as the ports 80 and 443 will be already used by the DejaCode application.
+    See https://scancodeio.readthedocs.io/en/latest/installation.html#use-alternative-http-ports
 
 1. Install a ScanCode.io server following instructions at
    https://scancodeio.readthedocs.io/en/latest/installation.html
@@ -387,13 +394,21 @@ You can:
 
 * Browse and search from a list of over **21 millions Packages**.
 * Get extra information on your local Packages from the **"PurlDB" tab**.
-* Create local Packages automatically from entries found in the PurlDB.
+* **Create local Packages automatically** from entries found in the PurlDB.
 * Enhance the **Global search** results with Packages from the PurlDB.
 * Check for **new Package versions** from your Products inventory
 
-1. Get in touch with nexB to request your credentials for the **PurlDB** service.
+PurlDB service
+^^^^^^^^^^^^^^
 
-2. Set the PurlDB Server URL and API key in your Dataspace Configuration:
+A public instance of **PurlDB** is available at
+https://public.purldb.io/api/packages/
+
+Alternatively, you have the option to run your instance of PurlDB by
+following the documentation provided at https://purldb.readthedocs.io/
+
+Set the PurlDB Server URL and API key in your Dataspace Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  - Access your DejaCode web application **Administration dashboard**.
  - Navigate to the **Dataspaces** section and select your Dataspace name.
@@ -412,9 +427,9 @@ Enable VulnerableCodeDB service
 ===============================
 
 DejaCode integration with the **VulnerableCodeDB** service authorizes DejaCode to access
-the VulnerableCodeDB using a Package URL (purl) to determine if there are any reported
-vulnerabilities for a specific Package and return the Vulnerability ID and related URLs
-to a Vulnerabilities tab in the Package details user view.
+the VulnerableCodeDB using a Package URL (purl) to determine if there are any
+**reported vulnerabilities for a specific Package** and return the Vulnerability ID
+and related URLs to a **Vulnerabilities tab** in the **Package details** user view.
 
 DejaCode displays a Vulnerability icon next to the Package identifier in the user view
 list, and also in any Product Inventory list using that Package.
@@ -429,10 +444,17 @@ You can:
 * Review and edit your Product Package assignments to record your analysis, the actions
   you have taken, and the current status of your usage of that Package.
 
-1. Get in touch with nexB to request your credentials for the **VulnerableCodeDB**
-   service.
+VulnerableCodeDB service
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-2. Set the VulnerableCodeDB Server URL and API key in your Dataspace Configuration:
+A public instance of **VulnerableCodeDB** is available at
+https://public.vulnerablecode.io/api/
+
+Alternatively, you have the option to run your instance of VulnerableCodeDB by
+following the documentation provided at https://vulnerablecode.readthedocs.io/
+
+Set the VulnerableCodeDB Server URL and API key in your Dataspace Configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  - Access your DejaCode web application **Administration dashboard**.
  - Navigate to the **Dataspaces** section and select your Dataspace name.
