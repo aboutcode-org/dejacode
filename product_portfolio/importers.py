@@ -461,13 +461,13 @@ class ImportFromScan:
     def validate_pipeline_runs(runs):
         """Raise a ValidationError if at least one of the supported pipeline was not run."""
         valid_pipelines = (
-            "docker",
-            "docker_windows",
-            "inspect_manifest",
-            "load_inventory",
-            "root_filesystems",
+            "analyze_docker_image",
+            "analyze_root_filesystem_or_vm_image",
+            "analyze_windows_docker_image",
+            "inspect_packages",
+            "map_deploy_to_develop",
             "scan_codebase",
-            "scan_package",
+            "scan_single_package",
         )
 
         has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in valid_pipelines]

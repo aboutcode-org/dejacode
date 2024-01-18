@@ -3425,7 +3425,7 @@ class PackageUserViewsTestCase(TestCase):
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }
@@ -3469,7 +3469,7 @@ class PackageUserViewsTestCase(TestCase):
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }

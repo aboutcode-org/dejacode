@@ -66,7 +66,7 @@ class ScanCodeIO(BaseService):
         data = {
             "name": get_project_name(uri, user_uuid, dataspace_uuid),
             "input_urls": uri,
-            "pipeline": "scan_package",
+            "pipeline": "scan_single_package",
             "execute_now": True,
         }
 
@@ -79,7 +79,7 @@ class ScanCodeIO(BaseService):
     def submit_manifest_inspection(self, project_name, file_location, user_uuid, execute_now=False):
         data = {
             "name": project_name,
-            "pipeline": "inspect_manifest",
+            "pipeline": "inspect_packages",
             "execute_now": execute_now,
         }
         files = {
