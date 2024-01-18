@@ -1,6 +1,8 @@
 Release notes
 =============
 
+### Version 5.0.2-dev
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
