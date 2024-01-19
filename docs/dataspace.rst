@@ -356,7 +356,7 @@ Install and configure ScanCode.io
    +-----------+---------------------------------------------------------------------+
 
 2. Enable the ScanCode.io authentication system following:
-   https://scancodeio.readthedocs.io/en/latest/scancodeio-settings.html#scancodeio-require-authentication
+   https://scancodeio.readthedocs.io/en/latest/application-settings.html#scancodeio-require-authentication
 
 3. Create a user in ScanCode.io and get its API key for authentication by your
    DejaCode instance:
