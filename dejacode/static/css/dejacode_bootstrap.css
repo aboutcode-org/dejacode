@@ -85,7 +85,8 @@ code {
   height: 1rem;
   width: 1rem;
 }
-.text-break-initial {
+.text-break-initial,
+table.text-break thead {
   word-wrap: initial!important;
   word-break: initial!important;
 }
