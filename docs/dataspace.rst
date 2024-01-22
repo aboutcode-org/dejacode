@@ -336,9 +336,14 @@ Install and configure ScanCode.io
     If you plan to run ScanCode.io **on the same server** (virtual or  physical) as
     the DejaCode instance, **ensure that the host machine has sufficient resources**
     to handle both applications.
-    Also, you will have to provide custom network ports for the ScanCode.io application
-    as the ports 80 and 443 will be already used by the DejaCode application.
+
+    Also, you will have to **provide custom network ports for the ScanCode.io**
+    application as the ports 80 and 443 will be already used by the DejaCode
+    application.
+
     See https://scancodeio.readthedocs.io/en/latest/installation.html#use-alternative-http-ports
+    Finally, it's essential to specify ``http://host.docker.internal:[port]`` as the
+    **ScanCode.io URL** instead of using ``http://localhost:[port]``.
 
 1. Install a ScanCode.io server following instructions at
    https://scancodeio.readthedocs.io/en/latest/installation.html
@@ -355,25 +360,54 @@ Install and configure ScanCode.io
    | Disk      | **2x500GB SDD** in RAID mirror setup (enterprise disk preferred).   |
    +-----------+---------------------------------------------------------------------+
 
-2. Enable the ScanCode.io authentication system following:
-   https://scancodeio.readthedocs.io/en/latest/scancodeio-settings.html#scancodeio-require-authentication
+2. Set the ScanCode.io Server URL in your Dataspace Configuration:
 
-3. Create a user in ScanCode.io and get its API key for authentication by your
-   DejaCode instance:
-   https://scancodeio.readthedocs.io/en/latest/command-line-interface.html#scanpipe-create-user-username
+- Access your DejaCode web application **Administration dashboard**.
+- Navigate to the **Dataspaces** section and select your Dataspace name.
+- Within the **Application Process Settings** section, enable the
+  **Enable package scanning** option.
+- Update the values for the **ScanCode.io URL** field located in the **Configuration**
+  panel at the bottom of the form.
 
-4. Set the ScanCode.io Server URL and API key in your Dataspace Configuration:
+  .. warning:: If running ScanCode.io on the same docker host as DejaCode, you will have
+    to use ``http://host.docker.internal:[port]`` as the **ScanCode.io URL**.
+- Click the **Save** button.
 
- - Access your DejaCode web application **Administration dashboard**.
- - Navigate to the **Dataspaces** section and select your Dataspace name.
- - Within the **Application Process Settings** section, enable the
-   **Enable package scanning** option.
- - Update the values for the **ScanCode.io URL** and **ScanCode.io API key** fields
-   located in the **Configuration** panel at the bottom of the form.
- - Click the **Save** button.
-
-You can now access the **Scans** section from the **Tools** menu and request package
+You can now access the **Scans** section from the **Tools** menu and initiate package
 scans from this view.
+
+.. tip:: To validate the setup of the integration, navigate to the top right menu
+  dropdown in the DejaCode header, and select **Integrations Status**.
+
+Secure ScanCode.io enforcing Authentication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the context of deploying ScanCode.io as an enterprise solution, enforcing
+**authentication** measures is **critical**. This section provides guidance on
+**activating ScanCode.io authentication** and **generating an API key**.
+This key is essential for enabling **secure interactions** between DejaCode and ScanCode.io.
+
+1. Follow the instructions at `Scancode.io Application Settings <https://scancodeio.readthedocs.io/en/latest/application-settings.html#scancodeio-settings-require-authentication>`_
+   to enable the ScanCode.io authentication system.
+
+2. After making the settings change, restart the ScanCode.io services using the
+   following commands:
+
+.. code-block:: bash
+
+    docker compose restart web worker
+
+3. Generate an API key for authentication by your DejaCode instance.
+   `Refer to CLI Create User <https://scancodeio.readthedocs.io/en/latest/command-line-interface.html#cli-create-user>`_
+   for detailed instructions.
+
+4. Set the ScanCode.io API key in your Dataspace Configuration:
+
+- Access your DejaCode web application **Administration dashboard**.
+- Navigate to the **Dataspaces** section and select your Dataspace name.
+- Update the value for the **ScanCode.io API key** field located in the
+  **Configuration** panel at the bottom of the form.
+- Click the **Save** button.
 
 .. _dejacode_dataspace_purldb:
 
