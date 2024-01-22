@@ -2294,6 +2294,7 @@ class IntegrationsStatusView(
 
         if self.request.user.is_superuser:
             status["service_url"] = integration.service_url
+            status["has_api_key"] = bool(integration.service_api_key)
 
         return status
 
