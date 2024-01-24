@@ -663,12 +663,12 @@ def home_view(request):
     """Dataspace homepage."""
     documentation_urls = {}
     rtd_url = "https://dejacode.readthedocs.io/en/latest"
-    tutorials_label = format_html('Tutorials <span class="badge text-bg-success">New</span>')
 
     documentation_urls = {
-        tutorials_label: f"{rtd_url}/tutorial-1.html",
-        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
+        "Documentation": "https://dejacode.readthedocs.io/en/latest/",
+        "Tutorials": f"{rtd_url}/tutorial-1.html",
         "API documentation": reverse("api-docs:docs-index"),
+        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
     }
 
     support_urls = {
