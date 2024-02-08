@@ -342,8 +342,11 @@ Install and configure ScanCode.io
     application.
 
     See https://scancodeio.readthedocs.io/en/latest/installation.html#use-alternative-http-ports
-    Finally, it's essential to specify ``http://host.docker.internal:[port]`` as the
-    **ScanCode.io URL** instead of using ``http://localhost:[port]``.
+    Finally, it's essential to specify the following **ScanCode.io URL** instead of
+    using ``http://localhost:[port]``:
+
+    - On **macOS and Windows**: ``http://host.docker.internal:[port]``
+    - On **Linux**: ``http://172.17.0.1:[port]``
 
 1. Install a ScanCode.io server following instructions at
    https://scancodeio.readthedocs.io/en/latest/installation.html
