@@ -31,15 +31,15 @@ class PurlDBFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
 
     class Meta:
         model = Package
-        fields = {
-            "type": ["iexact"],
-            "namespace": ["iexact"],
-            "name": ["iexact"],
-            "version": ["iexact"],
-            "download_url": ["iexact"],
-            "filename": ["iexact"],
-            "sha1": ["exact"],
-            "md5": ["exact"],
-            "size": ["exact"],
-            "release_date": ["exact"],
-        }
+        fields = [
+            "type",
+            "namespace",
+            "name",
+            "version",
+            "download_url",
+            "filename",
+            "sha1",
+            "md5",
+            "size",
+            "release_date",
+        ]
