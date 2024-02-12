@@ -190,24 +190,20 @@ dd.reduced pre {
 }
 
 /* -- Footer -- */
-.footer {
-  border-top: 0.0625rem solid #dae1e9;
-}
-.footer a, .footer a:hover,
-.footer a:focus {
+.footer a {
+  color: var(--bs-body-color);
   font-weight: 500;
-  color: #4e5c6e;
+}
+.footer a:hover,
+.footer a:focus {
+    color: var(--bs-link-hover-color);
+    text-decoration: underline;
 }
 .footer li {
   display: inline-block;
 }
 .footer li + li {
   margin-left: 1rem;
-}
-@media (min-width: 576px) {
-  .footer {
-    text-align: left;
-  }
 }
 
 /* -- Homepage card layout -- */
@@ -513,7 +509,7 @@ body.product-comparison #div_id_exclude {
 
 /* -- Tables -- */
 :not([data-bs-theme="dark"]) .table {
-  --bs-table-striped-bg: #f9fbfd;
+  --bs-table-striped-bg: var(--bs-tertiary-bg);
 }
 td.version_grouping {
   text-align: center;
@@ -528,11 +524,11 @@ tr.extra-details {
 }
 td.sub-header {
   color: #95aac9;
-  background-color: #f9fbfd;
+  background-color: var(--bs-tertiary-bg);
   text-align: center;
 }
 .table-hover tbody tr:hover {
-  background-color: #f9fbfd;
+  background-color: var(--bs-tertiary-bg);
 }
 .table-fixed-layout {
   table-layout: fixed;
