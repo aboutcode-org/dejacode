@@ -54,6 +54,11 @@ class PurlDB(BaseService):
         """Get a Package details entry providing its `uuid`."""
         return self.request_get(url=f"{self.package_api_url}{uuid}/")
 
+    def get_package_by_purl(self, package_url):
+        """Get a Package details entry providing its `package_url`."""
+        if results := self.find_packages({"purl": package_url}):
+            return results[0]
+
     def find_packages(self, payload, timeout=None):
         """Get Packages details using provided `payload` filters on the PurlDB package list."""
         response = self.request_get(self.package_api_url, params=payload, timeout=timeout)

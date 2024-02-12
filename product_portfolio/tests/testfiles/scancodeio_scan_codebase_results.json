@@ -7,10 +7,14 @@
   "uuid": "35ee6b2b-88b3-4baf-9d40-5bd7e56c9741",
   "created_date": "2023-02-23T00:58:29.226Z",
   "input_sources": [
-    {
-      "filename": "package.tar.xz",
-      "source": "uploaded"
-    }
+      {
+          "filename": "package.tar.xz",
+          "download_url": "",
+          "is_uploaded": true,
+          "tag": "",
+          "exists": true,
+          "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c"
+      }
   ],
   "runs": [
     {

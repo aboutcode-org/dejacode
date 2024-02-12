@@ -41,7 +41,7 @@ class BaseService:
     settings_prefix = None
     url_field_name = None
     api_key_field_name = None
-    default_timeout = 3
+    default_timeout = 5
 
     def __init__(self, user):
         if not user:
@@ -123,16 +123,14 @@ class BaseService:
             logger.error(f"{self.label} [Exception] {exception}")
 
     def request_post(self, url, **kwargs):
-        """
-        Return the response from calling URL using current session.
-        Return `None` in case of Exception.
-        """
+        """Return the response from a HTTP POST request on the provided `url` ."""
         if "timeout" not in kwargs:
             kwargs["timeout"] = self.default_timeout
 
+        # Do not `raise_for_status` as the response may contain valuable data
+        # even on non 200 status code.
         try:
             response = self.session.post(url, **kwargs)
-            response.raise_for_status()
             return response.json()
         except (requests.RequestException, ValueError, TypeError) as exception:
             logger.error(f"{self.label} [Exception] {exception}")

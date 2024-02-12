@@ -2823,7 +2823,11 @@ class PackageUserViewsTestCase(TestCase):
                     "input_sources": [
                         {
                             "filename": self.package1.filename,
-                            "source": self.package1.download_url,
+                            "download_url": self.package1.download_url,
+                            "is_uploaded": False,
+                            "tag": "",
+                            "exists": True,
+                            "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
                         }
                     ],
                     "runs": [
@@ -3406,13 +3410,22 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }
@@ -3441,13 +3454,22 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }
@@ -3631,6 +3653,53 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, package.license_expression)
         expected = "Package &quot;name.zip&quot; was successfully created."
         self.assertContains(response, expected)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_component_catalog_package_add_view_initial_data(
+        self, mock_is_configured, mock_request_get
+    ):
+        self.client.login(username=self.super_user.username, password="secret")
+        add_url = reverse("component_catalog:package_add")
+
+        mock_is_configured.return_value = True
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+
+        puyrldb_entry = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "qualifiers": "",
+            "subpath": "",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        mock_request_get.return_value = {
+            "count": 1,
+            "results": [puyrldb_entry],
+        }
+
+        response = self.client.get(add_url)
+        self.assertEqual({}, response.context["form"].initial)
+
+        response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
+        expected = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        self.assertEqual(expected, response.context["form"].initial)
 
     @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")

@@ -11,7 +11,7 @@ import sys
 
 from dejacode.celery import app as celery_app
 
-VERSION = "5.0.1-dev"
+VERSION = "5.0.2-dev"
 __version__ = VERSION
 __all__ = ["celery_app"]
 
