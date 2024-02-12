@@ -46,6 +46,7 @@ from crispy_forms.utils import render_crispy_form
 from natsort import natsorted
 from notifications.signals import notify
 from packageurl import PackageURL
+from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
 
 from component_catalog.filters import ComponentFilterSet
@@ -1897,11 +1898,6 @@ class PackageAddView(
         """Pre-fill the form with initial data from a PurlDB entry or a `package_url`."""
         initial = super().get_initial()
 
-        if package_url := self.request.GET.get("package_url", None):
-            purl = PackageURL.from_string(package_url)
-            package_url_dict = purl.to_dict(encode=True, empty="")
-            initial.update(package_url_dict)
-
         if purldb_entry := self.get_entry_from_purldb():
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
             model_fields = [
@@ -1916,6 +1912,13 @@ class PackageAddView(
                 if value not in EMPTY_VALUES and field_name in model_fields
             }
             initial.update(initial_from_purldb_entry)
+
+        elif package_url := self.request.GET.get("package_url", None):
+            purl = PackageURL.from_string(package_url)
+            package_url_dict = purl.to_dict(encode=True, empty="")
+            initial.update(package_url_dict)
+            if download_url := purl2url.get_download_url(package_url):
+                initial.update({"download_url": download_url})
 
         return initial
 
