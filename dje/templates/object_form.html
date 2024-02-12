@@ -28,7 +28,10 @@
     </div>
   </div>
 
-  {% include 'includes/form_errors_alert.html' %}
+  {% block messages-alert %}
+    {% include 'includes/form_errors_alert.html' %}
+    {% include 'includes/messages_alert.html' with wrapper_classes='container p-0' %}
+  {% endblock %}
 
   <div class="card card-border-color card-border-color-primary">
     <div class="card-body bg-light p-4">

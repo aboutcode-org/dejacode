@@ -1912,6 +1912,7 @@ class PackageAddView(
                 if value not in EMPTY_VALUES and field_name in model_fields
             }
             initial.update(initial_from_purldb_entry)
+            messages.info(self.request, "Initial data fetched from PurlDB.")
 
         elif package_url := self.request.GET.get("package_url", None):
             purl = PackageURL.from_string(package_url)
