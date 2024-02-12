@@ -20,6 +20,7 @@ from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
+from django.core.validators import EMPTY_VALUES
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -1896,25 +1897,48 @@ class PackageAddView(
         """Pre-fill the form with initial data from a PurlDB entry or a `package_url`."""
         initial = super().get_initial()
 
-        purldb_uuid = self.request.GET.get("purldb_uuid", None)
-        if purldb_uuid:
-            purldb_entry = PurlDB(self.request.user).get_package(purldb_uuid)
-            purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
-            model_fields = [field.name for field in Package._meta.get_fields()]
-            initial_from_purldb_entry = {
-                field_name: value
-                for field_name, value in purldb_entry.items()
-                if value and field_name in model_fields
-            }
-            initial.update(initial_from_purldb_entry)
-
-        package_url = self.request.GET.get("package_url", None)
-        if package_url:
+        if package_url := self.request.GET.get("package_url", None):
             purl = PackageURL.from_string(package_url)
             package_url_dict = purl.to_dict(encode=True, empty="")
             initial.update(package_url_dict)
 
+        if purldb_entry := self.get_entry_from_purldb():
+            purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
+            model_fields = [
+                field.name
+                for field in Package._meta.get_fields()
+                # Generic keywords are not supported because of validation
+                if field.name != "keywords"
+            ]
+            initial_from_purldb_entry = {
+                field_name: value
+                for field_name, value in purldb_entry.items()
+                if value not in EMPTY_VALUES and field_name in model_fields
+            }
+            initial.update(initial_from_purldb_entry)
+
         return initial
+
+    def get_entry_from_purldb(self):
+        user = self.request.user
+        purldb = PurlDB(user)
+        is_purldb_enabled = all(
+            [
+                purldb.is_configured(),
+                user.dataspace.enable_purldb_access,
+            ]
+        )
+
+        if not is_purldb_enabled:
+            return
+
+        purldb_uuid = self.request.GET.get("purldb_uuid", None)
+        package_url = self.request.GET.get("package_url", None)
+
+        if purldb_uuid:
+            return purldb.get_package(purldb_uuid)
+        elif package_url:
+            return purldb.get_package_by_purl(package_url)
 
     def get_success_message(self, cleaned_data):
         success_message = super().get_success_message(cleaned_data)
