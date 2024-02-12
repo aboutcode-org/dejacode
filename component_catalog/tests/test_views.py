@@ -3654,6 +3654,53 @@ class PackageUserViewsTestCase(TestCase):
         expected = "Package &quot;name.zip&quot; was successfully created."
         self.assertContains(response, expected)
 
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_component_catalog_package_add_view_initial_data(
+        self, mock_is_configured, mock_request_get
+    ):
+        self.client.login(username=self.super_user.username, password="secret")
+        add_url = reverse("component_catalog:package_add")
+
+        mock_is_configured.return_value = True
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+
+        puyrldb_entry = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "qualifiers": "",
+            "subpath": "",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        mock_request_get.return_value = {
+            "count": 1,
+            "results": [puyrldb_entry],
+        }
+
+        response = self.client.get(add_url)
+        self.assertEqual({}, response.context["form"].initial)
+
+        response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
+        expected = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        self.assertEqual(expected, response.context["form"].initial)
+
     @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
     def test_component_catalog_package_add_view_create_with_submit_scan(
