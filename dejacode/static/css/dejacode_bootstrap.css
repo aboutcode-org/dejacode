@@ -8,6 +8,14 @@
 #
 */
 
+/* -- Vars -- */
+:root,[data-bs-theme=light] {
+  --bs-djc-blue-bg: #4b70aa;
+}
+[data-bs-theme=dark] {
+  --bs-djc-blue-bg: #4b70aa;
+}
+
 /* -- Main -- */
 main {
   height: 100%;
@@ -98,12 +106,16 @@ nav.navbar {
 }
 nav.navbar #search-input {
   width: 220px;
+  background-color: rgba(0,0,0,0.25);
+}
+nav.navbar #search-input::placeholder {
+  color: var(--bs-gray-300);
 }
 nav.navbar.fixed-top {
-  background-color: #4b70aa;
+  background-color: var(--bs-djc-blue-bg);
 }
 .navbar-dark .navbar-nav .nav-link {
-  color: #fff;
+  color: var(--bs-white);
 }
 .navbar .notification-active {
   position: absolute;
@@ -118,7 +130,7 @@ nav.navbar.fixed-top {
 .navbar-dark .navbar-nav .nav-link.active,
 .navbar-dark .navbar-nav .nav-link.show,
 .navbar-dark .navbar-nav .show>.nav-link {
-    color: #fff;
+    color: var(--bs-white);
     text-decoration: underline;
     text-underline-position: under;
 }
@@ -128,7 +140,7 @@ nav.navbar.fixed-top {
 
 /* -- Pagination -- */
 nav ul.pagination .disabled {
-  --bs-pagination-disabled-bg: white;
+  --bs-pagination-disabled-bg: var(--bs-pagination-disabled-bg);
 }
 
 /* -- Back to Top link -- */
@@ -179,7 +191,7 @@ dd .btn-expend {
 }
 .btn-clipboard:hover,
 .btn-expend:hover {
-  color: #4b70aa;
+  color: var(--bs-djc-blue-bg);
 }
 dd.reduced pre {
   max-height: 110px;
@@ -570,7 +582,7 @@ a[data-category-pk]:focus,
 
 /* -- Sign Up/In Forms -- */
 body.signup-form {
-  background-color: #4b70aa;
+  background-color: var(--bs-djc-blue-bg);
 }
 body.signup-form label {
   display: none;
@@ -661,7 +673,7 @@ pre.log {
 }
 .nav-pills .nav-link.active,
 .nav-pills .show>.nav-link {
-  background-color: #4b70aa;
+  background-color: var(--bs-djc-blue-bg);
 }
 .card,
 .table {
@@ -718,7 +730,7 @@ code.key {
 }
 .dropdown-item.active,
 .dropdown-item:active {
-  background-color: #4b70aa;
+  background-color: var(--bs-djc-blue-bg);
 }
 table thead .dropdown-toggle::after {
   margin-left: 0;
@@ -737,7 +749,7 @@ pre {
 }
 pre.pre-bg-light,
 .requests-details #comments_section pre {
-  border: 0.0625rem solid #dee2e6;
+  border: 0.0625rem solid var(--bs-gray-300);
   border-radius: .25rem;
   padding: 0.5rem;
   background-color: var(--bs-tertiary-bg);
@@ -828,7 +840,7 @@ select.bootstrap-select-filter {
   opacity: .5;
 }
 .bootstrap-select li.selected a {
-  background-color: #4b70aa;
+  background-color: var(--bs-djc-blue-bg);
   color: #fff;
   text-decoration:none;
   outline:0;
@@ -874,7 +886,7 @@ select.bootstrap-select-filter {
     z-index: 1;
 }
 .timeline:before {
-    background: #dee2e6;
+    background: var(--bs-gray-300);
     left: 9px;
     width: 2px;
     height: 100%;
