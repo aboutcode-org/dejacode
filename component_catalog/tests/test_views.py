@@ -614,10 +614,12 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, child_owner.name)
 
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id),
         )
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id),
         )
         self.assertContains(
             response, f"{{source: 'owner_{child_owner.id}', target: 'owner_{self.owner1.id}'}}"
@@ -1025,7 +1027,9 @@ class ComponentUserViewsTestCase(TestCase):
 
         response = self.client.get(details_url)
         expected = (
-            '<pre class="pre-bg-body-tertiary mb-1 field-acceptable-linkages">linkage1 linkage2</pre>'
+            '<pre class="pre-bg-body-tertiary mb-1 field-acceptable-linkages">'
+            "  linkage1 linkage2"
+            "</pre>"
         )
         self.assertContains(response, expected, html=True)
 
@@ -2041,7 +2045,9 @@ class PackageUserViewsTestCase(TestCase):
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-created-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-created-date">
+            June 21, 2018, 12:32 PM UTC
+          </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
         <dd class="col-sm-10 clipboard">

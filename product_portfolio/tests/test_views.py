@@ -1112,7 +1112,7 @@ class ProductPortfolioViewsTestCase(TestCase):
             right_uuid=self.product2.uuid,
         )
         response = self.client.get(url)
-        expected = f'{self.product1} <i class="fas fa-exchange-alt"></i> {self.product2}'
+        expected = f'{self.product1} <i class="fas fa-exchange-alt mx-2"></i> {self.product2}'
         self.assertContains(response, expected)
 
         purpose = ProductItemPurpose.objects.create(
