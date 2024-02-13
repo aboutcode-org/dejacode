@@ -561,7 +561,7 @@ td.sub-header {
   margin-left: 0.0625rem;
 }
 .table thead tr th a.sort.active {
-  color: black;
+  color: var(--bs-body-color);
 }
 
 /* -- Better looks for the popover fake links -- */
@@ -724,9 +724,9 @@ a.no-style:hover {
 }
 code.key {
   background-color: transparent;
-  color: black;
+  color: var(--bs-body-color);
   padding: 0.125rem 0.25rem;
-  border: 0.0625rem solid #e1e1e8;
+  border: 0.0625rem solid var(--bs-gray-400);
   border-radius: 0.1875rem;
   white-space: nowrap;
 }
