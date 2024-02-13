@@ -14,21 +14,21 @@
   --bs-body-font-family: Cerebri Sans,sans-serif;
   --bs-djc-blue-bg: #4b70aa;
 }
+[data-bs-theme=light] {
+  --bs-link-color: #2e73d0;
+  --bs-link-color-rgb: 46, 115, 208;
+  --bs-link-hover-color: #0056b3;
+  --bs-link-hover-color-rgb: 0, 86, 179;
+}
 
 /* -- Main -- */
-main {
-  height: 100%;
-  min-height: 36em;
-}
 body {
   padding-top: 4rem;
 }
 a {
-  color: #2e73d0;
   text-decoration: none;
 }
 a:hover {
-  color: #0056b3;
   text-decoration: underline;
 }
 a.btn:hover,

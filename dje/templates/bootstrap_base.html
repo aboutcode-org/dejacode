@@ -1,6 +1,6 @@
 {% load i18n static %}
 <!doctype html>
-<html lang="en" data-bs-theme="auto">
+<html lang="en" class="h-100" data-bs-theme="auto">
   <head>
     <title>{% block page_title %}{{ SITE_TITLE }}{% endblock %}</title>
     <meta charset="utf-8">
@@ -14,10 +14,12 @@
     <script src="{% static 'js/jquery-3.7.1.min.js' %}" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous"></script>
     {% if FAVICON_HREF %}<link rel="icon" href="{{ FAVICON_HREF }}">{% endif %}
   </head>
-  <body class="{% block bodyclass %}{% endblock %}">
-    {% block header %}
-      {% include HEADER_TEMPLATE %}
-    {% endblock %}
+  <body class="d-flex flex-column h-100 {% block bodyclass %}{% endblock %}">
+    <header>
+      {% block header %}
+        {% include HEADER_TEMPLATE %}
+      {% endblock %}
+    </header>
     <main class="{% block main_class %}container{% endblock %} pb-5">
       {% block content %}{% endblock %}
     </main>
