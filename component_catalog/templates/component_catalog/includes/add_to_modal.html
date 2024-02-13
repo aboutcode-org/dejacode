@@ -11,7 +11,7 @@
           {# Only displayed on list views #}
           {% if request.resolver_match.url_name|default:""|slice:"-4:" == "list" %}
             <h6>Selected objects:</h6>
-            <ul id="object-repe-list"></ul>
+            <ul id="object-repe-list" style="word-break: break-word;"></ul>
             <hr>
           {% endif %}
           {% crispy form %}

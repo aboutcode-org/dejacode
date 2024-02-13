@@ -480,6 +480,10 @@ div.awesomplete {
   max-height: 50vh;
   overflow-y: auto;
 }
+[data-bs-theme=dark] .awesomplete > ul {
+  background: var(--bs-black);
+}
+
 #div_id_component .awesomplete {
   display: inline-block !important;
 }

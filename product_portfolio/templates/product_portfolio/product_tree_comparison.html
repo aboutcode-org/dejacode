@@ -15,7 +15,7 @@
             <a href="{% inject_preserved_filters 'product_portfolio:product_list' %}">{% trans "Products" %}</a>
           </div>
           <h1 class="header-title">
-            Comparison: {{ left_product }} <i class="fas fa-exchange-alt"></i> {{ right_product }}
+            Comparison: {{ left_product }} <i class="fas fa-exchange-alt mx-2"></i> {{ right_product }}
           </h1>
         </div>
       </div>
@@ -31,7 +31,7 @@
   <div id="show-only-box" class="card bg-body-tertiary mb-3">
     <div class="card-body p-2">
       <strong>Show:</strong>
-      <div class="form-check form-check-inline">
+      <div class="form-check-inline">
         {% for filter in action_filters %}
           <label class="form-label form-check-inline mb-0">
             <input type="checkbox" class="form-check-input" value="{{ filter.value }}"{% if filter.checked %} checked="checked"{% endif %}> {{ filter.value|title }} ({{ filter.count }})
