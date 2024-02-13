@@ -35,9 +35,6 @@ a.btn:hover,
 a.dropdown-item:hover {
   text-decoration: none;
 }
-.badge-light {
-  background-color: #ddd;
-}
 .fs-85pct {
   font-size: 85%;
 }
@@ -155,7 +152,7 @@ nav ul.pagination .disabled {
 }
 #back-to-top:hover i {
   position: relative;
-  color: #fff;
+  color: var(--bs-black);
   top: -.4375rem;
 }
 
@@ -423,13 +420,13 @@ table.purldb-table .column-license_expression {
 
 /* -- Requests form -- */
 #workflow-request-form fieldset.right-side label {
-  color: #495057;
+  color: var(--bs-card-color);
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: .25rem;
 }
 #workflow-request-form fieldset.right-side .small-label {
-  color: #495057;
+  color: var(--bs-card-color);
   font-size: 0.875rem;
 }
 
@@ -547,9 +544,6 @@ td.sub-header {
 .table thead tr th {
   vertical-align: middle;
 }
-.table thead tr th a {
-  color: #000000;
-}
 .table thead tr th a.sort,
 .table thead tr th a.sort:hover {
   color: #ccc;
@@ -611,7 +605,7 @@ body.signup-form form#registration p.eula {
 body.signup-form h1 {
   text-align: center;
   margin: 25px 0;
-  color: white;
+  color: var(--bs-white);
   font-size: 30px;
   font-weight: normal;
 }
@@ -801,7 +795,6 @@ select.bootstrap-select-filter {
 }
 .bs-searchbox {
   padding: 0.5rem;
-  background-color: #f7f7f7;
   border-bottom: 0.0625rem solid #ebebeb;
 }
 .bs-searchbox input {
@@ -819,7 +812,6 @@ select.bootstrap-select-filter {
   padding: 0.5rem 0.75rem;
   margin-bottom: 0;
   font-size: 1rem;
-  background-color: #f7f7f7;
   border-bottom: 1px solid #ebebeb;
   border-top-left-radius: calc(0.3rem - 1px);
   border-top-right-radius: calc(0.3rem - 1px);
@@ -832,7 +824,6 @@ select.bootstrap-select-filter {
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
-  color: #000;
   text-shadow: 0 1px 0 #fff;
   opacity: .5;
 }
@@ -856,6 +847,9 @@ select.bootstrap-select-filter {
   border-bottom: 0.0625rem solid #ebebeb;
   white-space: normal;
   font-size: 14px;
+}
+.bootstrap-select .no-results {
+    background: var(--bs-popover-header-bg);
 }
 /* Custom filters dropdown menu sizes */
 .column-license_expression .dropdown-menu {
