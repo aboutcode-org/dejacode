@@ -711,27 +711,27 @@ class ComponentUserViewsTestCase(TestCase):
         expected = f"""
         <div class="my-1">
             <a href="{href1}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Type: "not_a_valid_entry" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href2}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 License: "license1" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href3}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 License: "license2" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href4}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Search: "a" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href5}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Sort: "name" <i class="fas fa-times-circle"></i>
                 </span>
             </a>

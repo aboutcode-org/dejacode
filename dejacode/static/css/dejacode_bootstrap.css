@@ -14,8 +14,6 @@
   --bs-body-font-family: Cerebri Sans,sans-serif;
   --bs-djc-blue-bg: #4b70aa;
 }
-[data-bs-theme=dark] {
-}
 
 /* -- Main -- */
 main {
@@ -85,6 +83,23 @@ code {
 table.text-break thead {
   word-wrap: initial!important;
   word-break: initial!important;
+}
+/* -- Dark there fixes -- */
+[data-bs-theme=dark] .btn-outline-dark {
+  --bs-btn-color: var(--bs-tertiary-color);
+  --bs-btn-border-color: var(--bs-tertiary-color);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--bs-tertiary-color);
+  --bs-btn-hover-border-color: var(--bs-tertiary-color);
+  --bs-btn-focus-shadow-rgb: 108, 117, 125;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--bs-tertiary-color);
+  --bs-btn-active-border-color: var(--bs-tertiary-color);
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: var(--bs-tertiary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--bs-tertiary-color);
+  --bs-gradient: none;
 }
 
 /* -- Navbar -- */
@@ -164,9 +179,8 @@ nav ul.pagination .disabled {
   background-color: transparent;
   border: 0;
 }
-/* <dd> has a 15px right-padding that need to be added */
 dd .btn-clipboard {
-  right: 1.7rem;
+  right: 1rem;
 }
 dd .btn-expend {
   right: 3.1rem;
