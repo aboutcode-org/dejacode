@@ -442,8 +442,8 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertEqual(["ArchLinux", "Component2"], [x.parent.name for x in parents])
         self.assertEqual(["Apache", "Component3"], [x.child.name for x in children])
 
-        expected1 = f'<div id="component_{self.component1.id}" class="card bg-light mb-2">'
-        expected2 = f'<div id="component_{self.component2.id}" class="card bg-light mb-2">'
+        expected1 = f'<div id="component_{self.component1.id}" class="card bg-body-tertiary mb-2">'
+        expected2 = f'<div id="component_{self.component2.id}" class="card bg-body-tertiary mb-2">'
         expected3 = f"source: 'component_{self.component1.id}'"
         expected4 = f"target: 'component_{self.component2.id}'"
 
@@ -476,7 +476,7 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertEqual(1, product1.productcomponents.count())
         response = self.client.get(url)
-        expected = f'<div id="product_{product1.id}" class="card bg-light mb-2">'
+        expected = f'<div id="product_{product1.id}" class="card bg-body-tertiary mb-2">'
         self.assertContains(response, expected)
         self.assertContains(response, f"target: 'product_{product1.id}'")
 
@@ -614,10 +614,10 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, child_owner.name)
 
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(self.owner1.id)
+            response, '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id)
         )
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(child_owner.id)
+            response, '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id)
         )
         self.assertContains(
             response, f"{{source: 'owner_{child_owner.id}', target: 'owner_{self.owner1.id}'}}"
@@ -1006,7 +1006,7 @@ class ComponentUserViewsTestCase(TestCase):
     def test_component_catalog_details_view_hide_empty_fields(self):
         self.client.login(username="nexb_user", password="t3st")
         details_url = self.component1.get_absolute_url()
-        expected = '<pre class="pre-bg-light mb-1 field-description">&nbsp;</pre>'
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-description">&nbsp;</pre>'
 
         self.assertFalse(self.nexb_dataspace.hide_empty_fields_in_component_details_view)
         response = self.client.get(details_url)
@@ -1025,7 +1025,7 @@ class ComponentUserViewsTestCase(TestCase):
 
         response = self.client.get(details_url)
         expected = (
-            '<pre class="pre-bg-light mb-1 field-acceptable-linkages">linkage1 linkage2</pre>'
+            '<pre class="pre-bg-body-tertiary mb-1 field-acceptable-linkages">linkage1 linkage2</pre>'
         )
         self.assertContains(response, expected, html=True)
 
@@ -2035,29 +2035,29 @@ class PackageUserViewsTestCase(TestCase):
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-status">Scan running</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Created date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-created-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-created-date">June 21, 2018, 12:32 PM UTC</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
         <dd class="col-sm-10 clipboard">
-          <pre class="pre-bg-light mb-1 field-end-date">&nbsp;</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-end-date">&nbsp;</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">ScanCode.io version</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-scancodeio-version">31.0.0</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>
         </dd>
         </dl>
         """
@@ -2305,7 +2305,7 @@ class PackageUserViewsTestCase(TestCase):
           <td class="text-center"><span class="badge text-bg-success fs-85pct">+10</span></td>
           <td class="text-center"><span class="badge text-bg-danger fs-85pct">-10</span></td>
           <td class="text-center"></td>
-          <td class="text-center bg-light">
+          <td class="text-center bg-body-tertiary">
             <span class="badge text-bg-primary fs-85pct">90</span>
           </td>
         </tr>
@@ -3576,22 +3576,22 @@ class PackageUserViewsTestCase(TestCase):
         self.assertTrue(self.super_user.dataspace.enable_purldb_access)
         response = self.client.get(self.package1.get_absolute_url())
         self.assertContains(response, expected)
-        self.assertContains(response, '<pre class="pre-bg-light mb-1 field-download-url">')
+        self.assertContains(response, '<pre class="pre-bg-body-tertiary mb-1 field-download-url">')
 
         response = self.client.get(self.package1.get_url("tab_purldb"))
         self.assertContains(
             response,
-            '<pre class="pre-bg-light mb-1 field-sha1">'
+            '<pre class="pre-bg-body-tertiary mb-1 field-sha1">'
             "a2363646a9dd05955633b450010b59a21af8a423"
             "</pre>",
         )
         self.assertContains(
-            response, '<pre class="pre-bg-light mb-1 field-release-date">2015-09-22</pre>'
+            response, '<pre class="pre-bg-body-tertiary mb-1 field-release-date">2015-09-22</pre>'
         )
         self.assertContains(
-            response, '<pre class="pre-bg-light mb-1 field-primary-language">Java</pre>'
+            response, '<pre class="pre-bg-body-tertiary mb-1 field-primary-language">Java</pre>'
         )
-        self.assertContains(response, '<pre class="pre-bg-light mb-1 field-homepage-url">')
+        self.assertContains(response, '<pre class="pre-bg-body-tertiary mb-1 field-homepage-url">')
 
     def test_component_catalog_package_add_view_permission_access(self):
         add_url = reverse("component_catalog:package_add")

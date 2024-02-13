@@ -132,7 +132,7 @@
               {% if question.value and question.input_type != 'BooleanField' %}
                 <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
               {% endif %}
-              <pre id="{{ question.label }}" class="pre-bg-light">{% if question.input_type == 'BooleanField' %}{% if question.value == '1' or question.value == 1 %}Yes{% else %}No{% endif %}{% else %}{{ question.value|default_if_none:"&nbsp;"|default:"&nbsp;" }}{% endif %}</pre>
+              <pre id="{{ question.label }}" class="pre-bg-body-tertiary">{% if question.input_type == 'BooleanField' %}{% if question.value == '1' or question.value == 1 %}Yes{% else %}No{% endif %}{% else %}{{ question.value|default_if_none:"&nbsp;"|default:"&nbsp;" }}{% endif %}</pre>
             </div>
         </div>
       {% endfor %}

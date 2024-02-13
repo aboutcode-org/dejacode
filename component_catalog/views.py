@@ -2139,8 +2139,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 value = f'<span class="badge {badge_color} fs-85pct">{weight}</span>'
 
             elif field == "score":
-                td_class += " bg-light"
-                th_class = "bg-light"
+                td_class += " bg-body-tertiary"
+                th_class = "bg-body-tertiary"
                 badge_color = "text-bg-primary"
                 value = f'<span class="badge {badge_color} fs-85pct">{field_value}</span>'
 
@@ -2163,7 +2163,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
     @staticmethod
     def get_key_file_summary(key_file_data):
         dt = '<dt class="col-sm-2 text-end pt-2 pe-0">{}</dt>'
-        dd = '<dd class="col-sm-10"><pre class="pre-bg-light mb-1">{}</pre></dd>'
+        dd = '<dd class="col-sm-10"><pre class="pre-bg-body-tertiary mb-1">{}</pre></dd>'
         summary = ""
 
         for label, field, value_key in ScanCodeIO.KEY_FILE_DETECTION_FIELDS:

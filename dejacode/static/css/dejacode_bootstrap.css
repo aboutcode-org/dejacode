@@ -10,10 +10,11 @@
 
 /* -- Vars -- */
 :root,[data-bs-theme=light] {
+  --bs-body-font-size: .9375rem;
+  --bs-body-font-family: Cerebri Sans,sans-serif;
   --bs-djc-blue-bg: #4b70aa;
 }
 [data-bs-theme=dark] {
-  --bs-djc-blue-bg: #4b70aa;
 }
 
 /* -- Main -- */
@@ -23,19 +24,6 @@ main {
 }
 body {
   padding-top: 4rem;
-  font-family: Cerebri Sans,sans-serif;
-  font-size: .9375rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #12263f;
-  background-color: #fff;
-}
-[data-bs-theme=dark] body {
-  color: var(--bs-body-color);
-  background-color: var(--bs-body-bg);
-}
-body.body-background, .bg-light {
-  background-color: var(--bs-tertiary-bg);
 }
 a {
   color: #2e73d0;
@@ -700,7 +688,7 @@ mark {
   background-color: rgba(255, 193, 7, 0.3);
   padding: .15em;
 }
-.bg-light {
+.bg-body-tertiary {
   background-color: var(--bs-tertiary-bg) !important;
 }
 .annotation_link,
@@ -747,7 +735,7 @@ table thead .dropdown-toggle::after {
 pre {
   background-color: white;
 }
-pre.pre-bg-light,
+pre.pre-bg-body-tertiary,
 .requests-details #comments_section pre {
   border: 0.0625rem solid var(--bs-gray-300);
   border-radius: .25rem;

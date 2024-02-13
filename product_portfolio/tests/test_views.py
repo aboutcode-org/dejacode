@@ -712,9 +712,9 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected, feature_grouped)
 
         expected_in_response = [
-            f'<div id="product_{self.product1.id}" class="card bg-light mb-2">',
-            f'<div id="component_{pc1.id}" class="card bg-light mb-2">',
-            f'<div id="package_{pp1.id}" class="card bg-light mb-2">',
+            f'<div id="product_{self.product1.id}" class="card bg-body-tertiary mb-2">',
+            f'<div id="component_{pc1.id}" class="card bg-body-tertiary mb-2">',
+            f'<div id="package_{pp1.id}" class="card bg-body-tertiary mb-2">',
             f"target: 'product_{self.product1.id}'",
             f"source: 'component_{pc1.id}'",
             f"source: 'package_{pp1.id}'",

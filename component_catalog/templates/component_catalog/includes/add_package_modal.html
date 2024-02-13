@@ -8,7 +8,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form id="package-add-form" method="post" data-add-url="{% url "component_catalog:package_add_urls" %}">{% csrf_token %}
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           <div>
             <label for="download-urls" class="form-label">Download URL(s)</label>
             <textarea class="form-control" id="download-urls" aria-describedby="download-urls-help" placeholder="https://..."></textarea>

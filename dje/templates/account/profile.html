@@ -5,7 +5,7 @@
 
 {% block page_title %}{% trans 'Profile settings' %}{% endblock %}
 
-{% block bodyclass %}body-background{% endblock %}
+{% block bodyclass %}bg-body-tertiary{% endblock %}
 
 {% block content %}
   {% include 'includes/header_title.html' with pretitle='Account' title='Profile settings' %}
@@ -50,7 +50,7 @@
           <h5 class="modal-title">Regenerate API key</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           You are about to regenerate your API key.<br><br>
           <strong>Your old key will be unusable once the new one is generated.</strong><br><br>
         </div>

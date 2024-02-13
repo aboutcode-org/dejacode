@@ -333,7 +333,7 @@ class RequestUserViewsTestCase(TestCase):
               <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
                 <i class="fas fa-clipboard"></i>
               </button>
-              <pre id="Organization" class="pre-bg-light">char</pre>
+              <pre id="Organization" class="pre-bg-body-tertiary">char</pre>
             </div>
         </div>
         """
@@ -1026,7 +1026,7 @@ class RequestUserViewsTestCase(TestCase):
         self.assertIsNone(request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">Yes</pre>', html=True)
+        self.assertContains(response, '<pre id="Bool" class="pre-bg-body-tertiary">Yes</pre>', html=True)
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
         expected = '<option value="1" selected="selected">Yes</option>'
@@ -1044,7 +1044,7 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(self.basic_user, request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">No</pre>', html=True)
+        self.assertContains(response, '<pre id="Bool" class="pre-bg-body-tertiary">No</pre>', html=True)
 
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
