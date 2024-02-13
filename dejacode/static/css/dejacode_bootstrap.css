@@ -58,10 +58,6 @@ a.dropdown-item:hover {
   font-weight: 500;
   line-height: 1.2;
 }
-.header-pretitle a {
-  text-decoration: none;
-  color: #22589f;
-}
 .header-title {
   margin-bottom: 0;
   font-size: 1.625rem;
@@ -746,9 +742,6 @@ table thead .dropdown-toggle::after {
 .fa-stack.fa-small {
   font-size: 0.6em;
 }
-pre {
-  background-color: white;
-}
 pre.pre-bg-body-tertiary,
 .requests-details #comments_section pre {
   border: 0.0625rem solid var(--bs-gray-300);
@@ -794,7 +787,9 @@ pre .clearfix {
 #key-files-modal dt {
   font-size: 0.85rem;
 }
-
+#key-file-source {
+  background-color: var(--bs-tertiary-bg);
+}
 /* -- bootstrap-select DejaCode compatibility -- */
 select.bootstrap-select-filter {
   display: none;
