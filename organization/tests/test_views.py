@@ -121,7 +121,9 @@ class OwnerUserViewsTestCase(TestCase):
         self.owner1.name = "Gómez"
         self.owner1.save()
         response = self.client.get(self.owner1.get_absolute_url())
-        self.assertContains(response, '<pre class="pre-bg-light mb-1 field-name">Gómez</pre>')
+        self.assertContains(
+            response, '<pre class="pre-bg-body-tertiary mb-1 field-name">Gómez</pre>'
+        )
         self.assertContains(response, "<strong>Gómez</strong>")
         expected_urn = '<a href="/urn/urn:dje:owner:G%25C3%25B3mez/">urn:dje:owner:G%C3%B3mez</a>'
         self.assertContains(response, expected_urn)

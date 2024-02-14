@@ -333,7 +333,7 @@ class RequestUserViewsTestCase(TestCase):
               <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
                 <i class="fas fa-clipboard"></i>
               </button>
-              <pre id="Organization" class="pre-bg-light">char</pre>
+              <pre id="Organization" class="pre-bg-body-tertiary">char</pre>
             </div>
         </div>
         """
@@ -355,9 +355,7 @@ class RequestUserViewsTestCase(TestCase):
             'class="textarea form-control" required id="id_field_1">',
             html=True,
         )
-        expected = (
-            '<select name="priority" class="form-control-sm select form-select" id="id_priority">'
-        )
+        expected = '<select name="priority" class="select form-select" id="id_priority">'
         self.assertContains(response, expected)
         expected = f'<option value="{self.priority1.id}">{self.priority1.label}</option>'
         self.assertContains(response, expected, html=True)
@@ -483,8 +481,7 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.get(url)
         expected_html = (
-            '<select name="product_context" class="form-control-sm select form-select" '
-            'id="id_product_context">'
+            '<select name="product_context" class="select form-select" ' 'id="id_product_context">'
         )
         self.assertContains(response, expected_html)
 
@@ -942,7 +939,7 @@ class RequestUserViewsTestCase(TestCase):
         <input type="text" name="applies_to" value="{self.component1}"
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
-               class="form-control-sm autocompleteinput form-control"
+               class="autocompleteinput form-control"
                id="id_applies_to"
         >
         """
@@ -1026,7 +1023,9 @@ class RequestUserViewsTestCase(TestCase):
         self.assertIsNone(request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">Yes</pre>', html=True)
+        self.assertContains(
+            response, '<pre id="Bool" class="pre-bg-body-tertiary">Yes</pre>', html=True
+        )
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
         expected = '<option value="1" selected="selected">Yes</option>'
@@ -1044,7 +1043,9 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(self.basic_user, request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">No</pre>', html=True)
+        self.assertContains(
+            response, '<pre id="Bool" class="pre-bg-body-tertiary">No</pre>', html=True
+        )
 
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
@@ -1163,7 +1164,7 @@ class RequestUserViewsTestCase(TestCase):
         <input type="text" name="applies_to" value="{component2}"
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
-               class="form-control-sm autocompleteinput form-control"
+               class="autocompleteinput form-control"
                id="id_applies_to" />
         """
         self.assertContains(response, expected, html=True)

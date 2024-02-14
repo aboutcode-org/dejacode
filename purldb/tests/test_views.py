@@ -210,7 +210,7 @@ class PurlDBViewsTestCase(TestCase):
         )
         self.assertContains(
             response,
-            '<span class="badge text-bg-dark rounded-pill">Type: "pypi" '
+            '<span class="badge text-bg-secondary rounded-pill">Type: "pypi" '
             '  <i class="fas fa-times-circle"></i>'
             "</span>",
             html=True,

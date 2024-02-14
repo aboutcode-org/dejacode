@@ -7,11 +7,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form autocomplete="off" method="{{ form.helper.form_method }}" action="{{ form.helper.form_action }}" id="{{ form.helper.form_id }}" class="{{ form.helper.form_class }}">
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           {# Only displayed on list views #}
           {% if request.resolver_match.url_name|default:""|slice:"-4:" == "list" %}
             <h6>Selected objects:</h6>
-            <ul id="object-repe-list"></ul>
+            <ul id="object-repe-list" style="word-break: break-word;"></ul>
             <hr>
           {% endif %}
           {% crispy form %}

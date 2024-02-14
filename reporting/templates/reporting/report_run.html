@@ -43,23 +43,31 @@
     </p>
   {% endif %}
 
-  <div class="card bg-light mb-4">
+  <div class="card bg-body-tertiary mb-4">
     <form class="card-body p-2">
       <fieldset>
-        <label for="id_format" class="form-label mb-0">Choose format for export:</label>
-        <select id="id_format" name="format">
-          <option value="doc">doc</option>
-          <option value="html">html</option>
-          <option value="json">json</option>
-          <option value="xls">xls</option>
-          <option value="xlsx" selected="selected">xlsx</option>
-          <option value="yaml">yaml</option>
-        </select>
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <label for="id_format" class="col-form-label mb-0">Choose format for export:</label>
+          </div>
+          <div class="col-auto">
+            <select id="id_format" class="form-select form-select-sm" name="format">
+              <option value="doc">doc</option>
+              <option value="html">html</option>
+              <option value="json">json</option>
+              <option value="xls">xls</option>
+              <option value="xlsx" selected="selected">xlsx</option>
+              <option value="yaml">yaml</option>
+            </select>
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-outline-dark btn-sm">Export</button>
+          </div>
+        </div>
         {# Put the query string parameters into the form so that the export will respect the runtime parameters #}
         {% for key, value in query_string_params %}
           <input type="hidden" name="{{ key }}" value="{{ value }}">
         {% endfor %}
-        <button type="submit" class="btn btn-outline-dark btn-sm ms-2">Export</button>
       </fieldset>
     </form>
   </div>

@@ -152,7 +152,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="component-add-form" method="post" data-add-url="{% url 'component_catalog:component_add_ajax' %}">{% csrf_token %}
-            <div class="modal-body bg-light">
+            <div class="modal-body bg-body-tertiary">
               {% crispy component_add_form %}
             </div>
             <div class="modal-footer">

@@ -1,5 +1,5 @@
 {% load i18n %}
-<div id="{% if is_product %}product_{{ instance.pk }}{% elif relation.package_id %}package_{{ relation.pk }}{% elif relation %}component_{{ relation.pk }}{% else %}component_{{ instance.pk }}{% endif %}" class="card bg-light mb-2">
+<div id="{% if is_product %}product_{{ instance.pk }}{% elif relation.package_id %}package_{{ relation.pk }}{% elif relation %}component_{{ relation.pk }}{% else %}component_{{ instance.pk }}{% endif %}" class="card bg-body-tertiary mb-2">
   <div class="card-body py-1 ps-2 pe-1">
     <ul class="list-inline float-end mb-0">
       {% if request.user.is_authenticated and is_user_dataspace and instance.request_count %}

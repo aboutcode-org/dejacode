@@ -102,7 +102,7 @@
                         {% if filter.form.priority %}</a>{% endif %}
                       {% endif %}
                       <strong>
-                        <a href="?{{ filter.form.status.name }}={{ req.status }}" class="text-muted-light" style="color: black!important;">
+                        <a href="?{{ filter.form.status.name }}={{ req.status }}">
                           {% include 'workflow/includes/request_status_icon.html' %}
                           {{ req.get_status_display }}
                         </a>

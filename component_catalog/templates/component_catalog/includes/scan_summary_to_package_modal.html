@@ -7,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form autocomplete="off" method="{{ scan_summary_to_package_form.helper.form_method }}" action="{{ scan_summary_to_package_form.helper.form_action }}" id="{{ scan_summary_to_package_form.helper.form_id }}" class="{{ scan_summary_to_package_form.helper.form_class }}">
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           {% crispy scan_summary_to_package_form %}
         </div>
         <div class="modal-footer">

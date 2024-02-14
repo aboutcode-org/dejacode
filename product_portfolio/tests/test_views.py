@@ -712,9 +712,9 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected, feature_grouped)
 
         expected_in_response = [
-            f'<div id="product_{self.product1.id}" class="card bg-light mb-2">',
-            f'<div id="component_{pc1.id}" class="card bg-light mb-2">',
-            f'<div id="package_{pp1.id}" class="card bg-light mb-2">',
+            f'<div id="product_{self.product1.id}" class="card bg-body-tertiary mb-2">',
+            f'<div id="component_{pc1.id}" class="card bg-body-tertiary mb-2">',
+            f'<div id="package_{pp1.id}" class="card bg-body-tertiary mb-2">',
             f"target: 'product_{self.product1.id}'",
             f"source: 'component_{pc1.id}'",
             f"source: 'package_{pp1.id}'",
@@ -1112,7 +1112,7 @@ class ProductPortfolioViewsTestCase(TestCase):
             right_uuid=self.product2.uuid,
         )
         response = self.client.get(url)
-        expected = f'{self.product1} <i class="fas fa-exchange-alt"></i> {self.product2}'
+        expected = f'{self.product1} <i class="fas fa-exchange-alt mx-2"></i> {self.product2}'
         self.assertContains(response, expected)
 
         purpose = ProductItemPurpose.objects.create(

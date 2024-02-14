@@ -179,7 +179,13 @@
     $('.toggle-details')
       .tooltip({container: 'body', placement: 'top'})
       .on('click', function() {
-          $('.extra-details').toggle();
+        if ($(this).data('enabled')) {
+          $('.extra-details').css("display", "none");
+          $(this).data('enabled', false);
+        } else {
+          $('.extra-details').css("display", "table-row");
+          $(this).data('enabled', true);
+        }
       });
 
     // clipboard.js

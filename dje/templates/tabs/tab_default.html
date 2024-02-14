@@ -9,6 +9,6 @@
   {% if values %}
     <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
   {% endif %}
-  <pre class="pre-bg-light mb-1 field-{{ label|slugify }}"{% if label.lower == 'dependencies' %} data-value="{{ values }}"{% endif %}>{{ values|default_if_none:"&nbsp;"|default:"&nbsp;" }}</pre>
+  <pre class="pre-bg-body-tertiary mb-1 field-{{ label|slugify }}"{% if label.lower == 'dependencies' %} data-value="{{ values }}"{% endif %}>{{ values|default_if_none:"&nbsp;"|default:"&nbsp;" }}</pre>
 </dd>
 {% if forloop.last %}</dl>{% endif %}
