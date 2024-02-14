@@ -13,6 +13,8 @@
   --bs-body-font-size: .9375rem;
   --bs-body-font-family: Cerebri Sans,sans-serif;
   --bs-djc-blue-bg: #4b70aa;
+  --bs-djc-request-bg: #6b15a1;
+  --bs-djc-request-active-bg: #4d0f74;
 }
 [data-bs-theme=light] {
   --bs-link-color: #2e73d0;
@@ -49,7 +51,7 @@ a.dropdown-item:hover {
 .header-pretitle {
   letter-spacing: .08rem;
   text-transform: uppercase;
-  color: #4f5763;
+  color: var(--bs-light-text-emphasis);
   font-size: 0.625rem;
   margin-bottom: 0.5rem;
   font-weight: 500;
@@ -71,6 +73,10 @@ code {
   justify-content: center;
   height: 1rem;
   width: 1rem;
+}
+.btn.badge .fa, .btn.badge .fas, .btn.badge .far {
+  height: initial;
+  width: inherit;
 }
 .text-break-initial,
 table.text-break thead {
@@ -168,7 +174,7 @@ nav ul.pagination .disabled {
   top: .375rem;
   right: 0;
   z-index: 10;
-  color: #818a91;
+  color: var(--bs-body-color);
   cursor: pointer;
   background-color: transparent;
   border: 0;
@@ -370,36 +376,36 @@ table.purldb-table .column-license_expression {
 
 /* -- Request button -- */
 .btn-request {
-  color: #fff;
-  background-color: #6b15a1;
-  border-color: #6b15a1;
+  color: var(--bs-white);
+  background-color: var(--bs-djc-request-bg);
+  border-color: var(--bs-djc-request-bg);
 }
 .btn-request:hover,
 .btn-request:active,
 .btn.show.btn-request {
-  color: #fff;
-  background-color: #4d0f74;
-  border-color: #4d0f74;
+  color: var(--bs-white);
+  background-color: var(--bs-djc-request-active-bg);
+  border-color: var(--bs-djc-request-active-bg);
 }
 .btn-request:focus {
   box-shadow: 0 0 0 0.2rem rgba(107,21,161,.25);
 }
 .btn-outline-request {
-    color: #6b15a1;
-    border-color: #6b15a1;
+    color: var(--bs-djc-request-bg);
+    border-color: var(--bs-djc-request-bg);
 }
 .btn-outline-request:hover {
     color: #fff;
-    background-color: #6b15a1;
-    border-color: #6b15a1;
+    background-color: var(--bs-djc-request-bg);
+    border-color: var(--bs-djc-request-bg);
 }
 .btn-outline-request:focus {
   box-shadow: 0 0 0 0.2rem rgba(107,21,161,.25);
 }
 .btn-outline-request:not(:disabled):not(.disabled):active {
     color: #fff;
-    background-color: #4d0f74;
-    border-color: #4d0f74;
+    background-color: var(--bs-djc-request-active-bg);
+    border-color: var(--bs-djc-request-active-bg);
 }
 
 /* -- Requests list -- */
@@ -414,7 +420,7 @@ table.purldb-table .column-license_expression {
   text-decoration: none;
 }
 .text-bg-request {
-  background-color: #6b15a1;
+  background-color: var(--bs-djc-request-bg);
   color: white;
   vertical-align: middle;
 }
