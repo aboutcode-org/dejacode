@@ -9,6 +9,9 @@ Release notes
   data is fetched from the PurlDB to initialize the form.
   https://github.com/nexB/dejacode/issues/47
 
+- Add dark theme support in UI.
+  https://github.com/nexB/dejacode/issues/25
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
