@@ -30,15 +30,19 @@
       <div class="col-6">
         <div>
           <label for="api_key" class="form-label">API Key</label>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control bg-transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
+          <div class="input-group">
+            <input type="password" class="form-control bg-transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
             <button class="btn btn-secondary" type="button" id="show_api_key" data-bs-toggle="tooltip" title="Display/Hide API key" aria-label="Display/Hide API key">
               <i id="eye_icon" class="far fa-eye-slash"></i>
             </button>
           </div>
+          <div class="form-text fw-bold">
+            An API key is like a password and should be treated with the same care.
+          </div>
         </div>
-        <strong class="form-text text-muted">An API key is like a password and should be treated with the same care.</strong>
-        <a href="#" class="btn btn-outline-dark mt-3" data-bs-toggle="modal" data-bs-target="#regen-api-key">Regenerate API key</a>
+        <div>
+          <a href="#" class="btn btn-outline-dark mt-3" data-bs-toggle="modal" data-bs-target="#regen-api-key">Regenerate API key</a>
+        </div>
       </div>
     </div>
   </form>
@@ -67,18 +71,23 @@
 {% endblock %}
 
 {% block javascripts %}
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      $("#show_api_key").on("click", function() {
-        let api_key_field = $("#api_key");
-        if (api_key_field.hasClass('transparent')) {
-          api_key_field.removeClass('transparent');
-          $("#eye_icon").attr('class', 'far fa-eye');
-        } else {
-           api_key_field.addClass('transparent');
-           $("#eye_icon").attr('class', 'far fa-eye-slash');
-        }
-      });
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var showApiKey = document.getElementById('show_api_key');
+    var apiKeyField = document.getElementById('api_key');
+    var eyeIcon = document.getElementById('eye_icon');
+
+    showApiKey.addEventListener('click', function() {
+      if (apiKeyField.type === 'password') {
+        apiKeyField.type = 'text';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+      } else {
+        apiKeyField.type = 'password';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+      }
     });
-  </script>
+  });
+</script>
 {% endblock %}
