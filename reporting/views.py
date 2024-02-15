@@ -26,6 +26,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
 import pyaml
+import xlsxwriter
 
 from dje.utils import get_preserved_filters
 from dje.views import AdminLinksDropDownMixin
@@ -192,6 +193,12 @@ class ReportDetailsView(
         model_class = report.column_template.get_model_class()
         # Only available in the UI since the link is relative to the current URL
         include_view_link = hasattr(model_class, "get_absolute_url") and not self.format
+        interpolated_report_context = self.get_interpolated_report_context(request, report)
+        output = report.get_output(
+            queryset=context["object_list"],
+            user=request.user,
+            include_view_link=include_view_link,
+        )
 
         context.update(
             {
@@ -200,16 +207,9 @@ class ReportDetailsView(
                 "headers": report.column_template.as_headers(include_view_link=include_view_link),
                 "runtime_filter_formset": self.runtime_filter_formset,
                 "query_string_params": self.get_query_string_params(),
-                "interpolated_report_context": self.get_interpolated_report_context(
-                    request, report
-                ),
+                "interpolated_report_context": interpolated_report_context,
                 "errors": getattr(self, "errors", []),
-                "include_view_link": include_view_link,
-                "output": report.get_output(
-                    queryset=context["object_list"],
-                    user=request.user,
-                    include_view_link=include_view_link,
-                ),
+                "output": output,
             }
         )
 
@@ -240,8 +240,6 @@ class ReportDetailsView(
 
     def get_xlsx_response(self, **response_kwargs):
         """Return the results as `xlsx` format."""
-        import xlsxwriter
-
         context = self.get_context_data(**self.kwargs)
         report_data = [context["headers"]] + context["output"]
 
