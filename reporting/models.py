@@ -754,16 +754,18 @@ class Report(HistoryFieldsMixin, DataspacedModel):
 
         icon = format_html('<i class="fas fa-external-link-alt"></i>')
         rows = []
+
         for instance in queryset:
-            cells = [
-                field.get_value_for_instance(instance, user=user)
-                for field in self.column_template.fields.all()
-            ]
+            cells = []
             if include_view_link:
-                cells.insert(
-                    0, instance.get_absolute_link(value=icon, title="View", target="_blank")
-                )
+                view_link = instance.get_absolute_link(value=icon, title="View", target="_blank")
+                cells.append(view_link)
+
+            for field in self.column_template.fields.all():
+                cells.append(field.get_value_for_instance(instance, user=user))
+
             rows.append(cells)
+
         return rows
 
 

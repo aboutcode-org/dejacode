@@ -12,9 +12,8 @@
         {% for item in list %}
           {% if format == 'xls' %}
             <td class="text">{{ item|linebreaksbr }}</td>
-          {% elif format == 'html' or not format %}
-            <td>{{ item|default:'&nbsp;'|urlize|linebreaksbr }}</td>
           {% else %}
+            {# WARNING: Using |urlize breaks the "view_link" #}
             <td>{{ item|default:'&nbsp;'|linebreaksbr }}</td>
           {% endif %}
         {% endfor %}

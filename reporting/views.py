@@ -191,7 +191,7 @@ class ReportDetailsView(
         report = self.object
         model_class = report.column_template.get_model_class()
         # Only available in the UI since the link is relative to the current URL
-        include_view_link = hasattr(model_class, "get_absolute_url") and not self.format
+        include_view_link = not self.format and hasattr(model_class, "get_absolute_url")
         interpolated_report_context = self.get_interpolated_report_context(request, report)
         output = report.get_output(
             queryset=context["object_list"],
@@ -203,7 +203,7 @@ class ReportDetailsView(
             {
                 "opts": self.model._meta,
                 "preserved_filters": get_preserved_filters(request, self.model),
-                "headers": report.column_template.as_headers(include_view_link=include_view_link),
+                "headers": report.column_template.as_headers(include_view_link),
                 "runtime_filter_formset": self.runtime_filter_formset,
                 "query_string_params": self.get_query_string_params(),
                 "interpolated_report_context": interpolated_report_context,
