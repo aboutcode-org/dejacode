@@ -9,7 +9,6 @@
 import datetime
 import io
 import json
-from collections import OrderedDict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import FieldDoesNotExist
@@ -25,7 +24,7 @@ from django.views.generic import TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
-import pyaml
+import saneyaml
 import xlsxwriter
 
 from dje.utils import get_preserved_filters
@@ -216,13 +215,9 @@ class ReportDetailsView(
         return context
 
     def get_dump(self, dumper, **dumper_kwargs):
-        """
-        Return the data dump using provided kwargs.
-        The columns order form the ColumnTemplateAssignedField sequence is respected
-        using an OrderedDict.
-        """
+        """Return the data dump using provided kwargs."""
         context = self.get_context_data(**self.kwargs)
-        data = [OrderedDict(zip(context["headers"], values)) for values in context["output"]]
+        data = [dict(zip(context["headers"], values)) for values in context["output"]]
         return dumper(data, **dumper_kwargs)
 
     def get_json_response(self, **response_kwargs):
@@ -231,11 +226,8 @@ class ReportDetailsView(
         return HttpResponse(dump, **response_kwargs)
 
     def get_yaml_response(self, **response_kwargs):
-        """
-        Return serialized results as yaml content response.
-        Using pretty-yaml (pyaml) on top of PyYAML for the OrderDict support with safe_dump.
-        """
-        dump = self.get_dump(pyaml.dump, safe=True)
+        """Return serialized results as yaml content response."""
+        dump = self.get_dump(saneyaml.dump)
         return HttpResponse(dump, **response_kwargs)
 
     def get_xlsx_response(self, **response_kwargs):
