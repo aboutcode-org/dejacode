@@ -68,7 +68,7 @@ CT_LIMIT = (
 
 LICENSE_TAG_PREFIX = "tag: "
 
-MULTIVALUE_SEPARATOR = ", "
+MULTIVALUE_SEPARATOR = "\n"
 
 ERROR_STR = "Error"
 
@@ -674,7 +674,12 @@ class ColumnTemplateAssignedField(DataspacedModel):
         for field_name in self.field_name.split("__"):
             objects = self._get_objects_for_field_name(objects, field_name, user)
 
-        return [str(val) for val in objects if not (len(objects) < 2 and val is None)]
+        return [
+            # The .strip() ensure the SafeString types are casted to regular str
+            str(val).strip()
+            for val in objects
+            if not (len(objects) < 2 and val is None)
+        ]
 
 
 class ReportQuerySet(DataspacedQuerySet):
@@ -746,7 +751,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
     def get_absolute_url(self):
         return reverse("reporting:report_details", args=[self.uuid])
 
-    def get_output(self, queryset=None, user=None, include_view_link=False):
+    def get_output(self, queryset=None, user=None, include_view_link=False, multi_as_list=False):
         # Checking if the parameter is given rather than the boolean value of the QuerySet
         if queryset is None:
             queryset = self.query.get_qs(user=user)
@@ -762,7 +767,15 @@ class Report(HistoryFieldsMixin, DataspacedModel):
 
             for field in self.column_template.fields.all():
                 value = field.get_value_for_instance(instance, user=user)
-                cells.append(MULTIVALUE_SEPARATOR.join(value))
+                if not multi_as_list:
+                    cells.append(MULTIVALUE_SEPARATOR.join(value))
+                else:
+                    if value == []:
+                        cells.append("")
+                    elif len(value) > 1:
+                        cells.append(value)
+                    else:
+                        cells.append(value[0])
 
             rows.append(cells)
 

@@ -193,10 +193,12 @@ class ReportDetailsView(
         # Only available in the UI since the link is relative to the current URL
         include_view_link = not self.format and hasattr(model_class, "get_absolute_url")
         interpolated_report_context = self.get_interpolated_report_context(request, report)
+        multi_as_list = True if self.format in ["json", "yaml"] else False
         output = report.get_output(
             queryset=context["object_list"],
             user=request.user,
             include_view_link=include_view_link,
+            multi_as_list=multi_as_list,
         )
 
         context.update(
