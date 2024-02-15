@@ -674,8 +674,7 @@ class ColumnTemplateAssignedField(DataspacedModel):
         for field_name in self.field_name.split("__"):
             objects = self._get_objects_for_field_name(objects, field_name, user)
 
-        results = [str(val) for val in objects if not (len(objects) < 2 and val is None)]
-        return MULTIVALUE_SEPARATOR.join(results)
+        return [str(val) for val in objects if not (len(objects) < 2 and val is None)]
 
 
 class ReportQuerySet(DataspacedQuerySet):
@@ -762,7 +761,8 @@ class Report(HistoryFieldsMixin, DataspacedModel):
                 cells.append(view_link)
 
             for field in self.column_template.fields.all():
-                cells.append(field.get_value_for_instance(instance, user=user))
+                value = field.get_value_for_instance(instance, user=user)
+                cells.append(MULTIVALUE_SEPARATOR.join(value))
 
             rows.append(cells)
 
