@@ -662,10 +662,12 @@ class ColumnTemplateAssignedField(DataspacedModel):
             result.extend(value if isinstance(value, list) else [value])
         return result
 
-    def get_value_for_instance(self, instance, user=None):
+    def get_value_for_instance(self, instance, user=None, multi_as_list=False):
         """
         Return the value to be display in the row, given an instance
         and the current self.field_name value of this assigned field.
+        When `multi_as_list` is enabled, return the results as a list instead of
+        joining on `MULTIVALUE_SEPARATOR`.
         """
         if self.get_model_class() != instance.__class__:
             raise AssertionError("content types do not match")
@@ -674,12 +676,17 @@ class ColumnTemplateAssignedField(DataspacedModel):
         for field_name in self.field_name.split("__"):
             objects = self._get_objects_for_field_name(objects, field_name, user)
 
-        return [
+        results = [
             # The .strip() ensure the SafeString types are casted to regular str
             str(val).strip()
             for val in objects
             if not (len(objects) < 2 and val is None)
         ]
+
+        if multi_as_list:
+            return results
+        else:
+            return MULTIVALUE_SEPARATOR.join(results)
 
 
 class ReportQuerySet(DataspacedQuerySet):
@@ -766,16 +773,19 @@ class Report(HistoryFieldsMixin, DataspacedModel):
                 cells.append(view_link)
 
             for field in self.column_template.fields.all():
-                value = field.get_value_for_instance(instance, user=user)
-                if not multi_as_list:
-                    cells.append(MULTIVALUE_SEPARATOR.join(value))
-                else:
+                value = field.get_value_for_instance(instance, user, multi_as_list)
+
+                if type(value) is list:
                     if value == []:
-                        cells.append("")
+                        cell_value = ""
                     elif len(value) > 1:
-                        cells.append(value)
+                        cell_value = value
                     else:
-                        cells.append(value[0])
+                        cell_value = value[0]
+                else:
+                    cell_value = value
+
+                cells.append(cell_value)
 
             rows.append(cells)
 

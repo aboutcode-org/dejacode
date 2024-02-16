@@ -1196,12 +1196,12 @@ class ColumnTemplateTestCase(TestCase):
             ("owner__children__children", ""),
             ("owner__children__children__name", ""),
             # Many2Many
-            ("tags", "{}, {}".format(self.license_tag, license_tag2)),
-            ("tags__id", "{}, {}".format(self.license_tag.id, license_tag2.id)),
-            ("tags__show_in_license_list_view", "False, False"),
-            ("tags__default_value", "None, True"),
-            ("tags__label", "Network Redistribution, Tag2"),
-            ("tags__uuid", "{}, {}".format(self.license_tag.uuid, license_tag2.uuid)),
+            ("tags", "{}\n{}".format(self.license_tag, license_tag2)),
+            ("tags__id", "{}\n{}".format(self.license_tag.id, license_tag2.id)),
+            ("tags__show_in_license_list_view", "False\nFalse"),
+            ("tags__default_value", "None\nTrue"),
+            ("tags__label", "Network Redistribution\nTag2"),
+            ("tags__uuid", "{}\n{}".format(self.license_tag.uuid, license_tag2.uuid)),
             # Special tag property
             ("{}{}".format(LICENSE_TAG_PREFIX, self.license_tag.label), "True"),
             # Related
@@ -1342,7 +1342,7 @@ class ColumnTemplateTestCase(TestCase):
             ("code_view_url", ""),
             ("bug_tracking_url", ""),
             ("primary_language", ""),
-            ("keywords", "Keyword1, Keyword2"),
+            ("keywords", "Keyword1\nKeyword2"),
             ("guidance", ""),
             ("admin_notes", ""),
             ("is_active", "True"),
@@ -1694,9 +1694,9 @@ class ColumnTemplateTestCase(TestCase):
             component=self.component, license=license2, dataspace=self.dataspace
         )
 
-        expected = "True, False"
+        expected = "True\nFalse"
         self.assertEqual(expected, self.field1.get_value_for_instance(self.component))
-        expected = "License1, License2"
+        expected = "License1\nLicense2"
         self.assertEqual(expected, field2.get_value_for_instance(self.component))
 
     def test_get_value_for_instance_multi_value_ordering(self):
@@ -1735,9 +1735,9 @@ class ColumnTemplateTestCase(TestCase):
 
         expected = [license_a.key, license_b.name]
         self.assertEqual(expected, list(self.component.licenses.values_list("key", flat=True)))
-        expected = ", ".join([license_a.key, license_b.name])
+        expected = "\n".join([license_a.key, license_b.name])
         self.assertEqual(expected, field2.get_value_for_instance(self.component))
-        expected = ", ".join([str(assigned_tag_a.value), str(assigned_tag_b.value)])
+        expected = "\n".join([str(assigned_tag_a.value), str(assigned_tag_b.value)])
         self.assertEqual(expected, self.field1.get_value_for_instance(self.component))
 
     def test_column_template_with_fields_copy(self):
