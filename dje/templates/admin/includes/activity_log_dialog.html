@@ -1,5 +1,6 @@
+{% load admin_urls %}
 <div id="activity_log_dialog" title="Activity Log" style="display:none;">
-    <form action="activity_log" target="_blank">
+    <form action="{% url cl.opts|admin_urlname:'activity_log' %}" target="_blank">
         <fieldset class="grp-module">
             <div class="grp-row grp-cells-1">
                 <div class="g-d-4">
