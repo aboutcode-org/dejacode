@@ -101,7 +101,7 @@
     {{ block.super }}
     {# Adds support for raw_id_fields #}
     <script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
-    <script type="text/javascript" charset="utf-8">
+    <script type="text/javascript">
         (function($) {
             document.addEventListener('DOMContentLoaded', function () {
                 {% include 'includes/keywords_autocomplete.js.html' %}
