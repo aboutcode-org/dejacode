@@ -1224,6 +1224,12 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertContains(response, "Added (2)")
         self.assertContains(response, "Removed (1)")
 
+        response = self.client.get(url, data={"download_xlsx": True})
+        expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        self.assertEqual(expected_type, response.headers.get("Content-Type"))
+        expected_disposition = "attachment; filename=product_comparison.xlsx"
+        self.assertEqual(expected_disposition, response.headers.get("Content-Disposition"))
+
     def test_product_portfolio_product_tree_comparison_view_secured_access(self):
         self.client.login(username=self.basic_user.username, password="secret")
         url = resolve_url(

@@ -9,6 +9,12 @@ Release notes
   data is fetched from the PurlDB to initialize the form.
   https://github.com/nexB/dejacode/issues/47
 
+- If you select two versions of the same Product in the Product list, or two different
+  Products, and click the Compare button, you can now download the results of the
+  comparison to a .xlsx file, making it easy to share the information with your
+  colleagues.
+  https://github.com/nexB/dejacode/issues/7
+
 - Add dark theme support in UI.
   https://github.com/nexB/dejacode/issues/25
 

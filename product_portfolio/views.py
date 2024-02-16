@@ -978,7 +978,7 @@ class ProductDeleteView(BaseProductView, DataspacedDeleteView):
         )
 
 
-def xlsx_download(request, rows, left_product, right_product):
+def comparison_download_xlsx(request, rows, left_product, right_product):
     wb = Workbook()
     ws = wb.active
     ws.title = "Product comparison"
@@ -1133,7 +1133,7 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
     rows.sort(key=sort_by_name_version)
 
     if request.GET.get("download_xlsx"):
-        return xlsx_download(request, rows, left_product, right_product)
+        return comparison_download_xlsx(request, rows, left_product, right_product)
 
     action_filters = [
         {"value": "added", "count": len(added), "checked": True},
