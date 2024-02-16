@@ -9,7 +9,6 @@
 import datetime
 import io
 import json
-from collections import OrderedDict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import FieldDoesNotExist
@@ -25,7 +24,8 @@ from django.views.generic import TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
-import pyaml
+import saneyaml
+import xlsxwriter
 
 from dje.utils import get_preserved_filters
 from dje.views import AdminLinksDropDownMixin
@@ -191,38 +191,35 @@ class ReportDetailsView(
         report = self.object
         model_class = report.column_template.get_model_class()
         # Only available in the UI since the link is relative to the current URL
-        include_view_link = hasattr(model_class, "get_absolute_url") and not self.format
+        include_view_link = not self.format and hasattr(model_class, "get_absolute_url")
+        interpolated_report_context = self.get_interpolated_report_context(request, report)
+        multi_as_list = True if self.format in ["json", "yaml"] else False
+        output = report.get_output(
+            queryset=context["object_list"],
+            user=request.user,
+            include_view_link=include_view_link,
+            multi_as_list=multi_as_list,
+        )
 
         context.update(
             {
                 "opts": self.model._meta,
                 "preserved_filters": get_preserved_filters(request, self.model),
-                "headers": report.column_template.as_headers(include_view_link=include_view_link),
+                "headers": report.column_template.as_headers(include_view_link),
                 "runtime_filter_formset": self.runtime_filter_formset,
                 "query_string_params": self.get_query_string_params(),
-                "interpolated_report_context": self.get_interpolated_report_context(
-                    request, report
-                ),
+                "interpolated_report_context": interpolated_report_context,
                 "errors": getattr(self, "errors", []),
-                "include_view_link": include_view_link,
-                "output": report.get_output(
-                    queryset=context["object_list"],
-                    user=request.user,
-                    include_view_link=include_view_link,
-                ),
+                "output": output,
             }
         )
 
         return context
 
     def get_dump(self, dumper, **dumper_kwargs):
-        """
-        Return the data dump using provided kwargs.
-        The columns order form the ColumnTemplateAssignedField sequence is respected
-        using an OrderedDict.
-        """
+        """Return the data dump using provided kwargs."""
         context = self.get_context_data(**self.kwargs)
-        data = [OrderedDict(zip(context["headers"], values)) for values in context["output"]]
+        data = [dict(zip(context["headers"], values)) for values in context["output"]]
         return dumper(data, **dumper_kwargs)
 
     def get_json_response(self, **response_kwargs):
@@ -231,17 +228,12 @@ class ReportDetailsView(
         return HttpResponse(dump, **response_kwargs)
 
     def get_yaml_response(self, **response_kwargs):
-        """
-        Return serialized results as yaml content response.
-        Using pretty-yaml (pyaml) on top of PyYAML for the OrderDict support with safe_dump.
-        """
-        dump = self.get_dump(pyaml.dump, safe=True)
+        """Return serialized results as yaml content response."""
+        dump = self.get_dump(saneyaml.dump)
         return HttpResponse(dump, **response_kwargs)
 
     def get_xlsx_response(self, **response_kwargs):
         """Return the results as `xlsx` format."""
-        import xlsxwriter
-
         context = self.get_context_data(**self.kwargs)
         report_data = [context["headers"]] + context["output"]
 

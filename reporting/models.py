@@ -68,7 +68,7 @@ CT_LIMIT = (
 
 LICENSE_TAG_PREFIX = "tag: "
 
-MULTIVALUE_SEPARATOR = ", "
+MULTIVALUE_SEPARATOR = "\n"
 
 ERROR_STR = "Error"
 
@@ -662,10 +662,12 @@ class ColumnTemplateAssignedField(DataspacedModel):
             result.extend(value if isinstance(value, list) else [value])
         return result
 
-    def get_value_for_instance(self, instance, user=None):
+    def get_value_for_instance(self, instance, user=None, multi_as_list=False):
         """
         Return the value to be display in the row, given an instance
         and the current self.field_name value of this assigned field.
+        When `multi_as_list` is enabled, return the results as a list instead of
+        joining on `MULTIVALUE_SEPARATOR`.
         """
         if self.get_model_class() != instance.__class__:
             raise AssertionError("content types do not match")
@@ -674,8 +676,17 @@ class ColumnTemplateAssignedField(DataspacedModel):
         for field_name in self.field_name.split("__"):
             objects = self._get_objects_for_field_name(objects, field_name, user)
 
-        results = [str(val) for val in objects if not (len(objects) < 2 and val is None)]
-        return MULTIVALUE_SEPARATOR.join(results)
+        results = [
+            # The .strip() ensure the SafeString types are casted to regular str
+            str(val).strip()
+            for val in objects
+            if not (len(objects) < 2 and val is None)
+        ]
+
+        if multi_as_list:
+            return results
+        else:
+            return MULTIVALUE_SEPARATOR.join(results)
 
 
 class ReportQuerySet(DataspacedQuerySet):
@@ -747,23 +758,37 @@ class Report(HistoryFieldsMixin, DataspacedModel):
     def get_absolute_url(self):
         return reverse("reporting:report_details", args=[self.uuid])
 
-    def get_output(self, queryset=None, user=None, include_view_link=False):
+    def get_output(self, queryset=None, user=None, include_view_link=False, multi_as_list=False):
         # Checking if the parameter is given rather than the boolean value of the QuerySet
         if queryset is None:
             queryset = self.query.get_qs(user=user)
 
         icon = format_html('<i class="fas fa-external-link-alt"></i>')
         rows = []
+
         for instance in queryset:
-            cells = [
-                field.get_value_for_instance(instance, user=user)
-                for field in self.column_template.fields.all()
-            ]
+            cells = []
             if include_view_link:
-                cells.insert(
-                    0, instance.get_absolute_link(value=icon, title="View", target="_blank")
-                )
+                view_link = instance.get_absolute_link(value=icon, title="View", target="_blank")
+                cells.append(view_link)
+
+            for field in self.column_template.fields.all():
+                value = field.get_value_for_instance(instance, user, multi_as_list)
+
+                if type(value) is list:
+                    if value == []:
+                        cell_value = ""
+                    elif len(value) > 1:
+                        cell_value = value
+                    else:
+                        cell_value = value[0]
+                else:
+                    cell_value = value
+
+                cells.append(cell_value)
+
             rows.append(cells)
+
         return rows
 
 
