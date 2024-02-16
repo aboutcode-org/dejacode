@@ -43,6 +43,12 @@ from django.views.generic import FormView
 
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
+from openpyxl import Workbook
+from openpyxl.styles import Alignment
+from openpyxl.styles import Border
+from openpyxl.styles import Font
+from openpyxl.styles import NamedStyle
+from openpyxl.styles import Side
 
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
@@ -972,6 +978,75 @@ class ProductDeleteView(BaseProductView, DataspacedDeleteView):
         )
 
 
+def comparison_download_xlsx(request, rows, left_product, right_product):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Product comparison"
+    header = ["Changes", str(left_product), str(right_product)]
+    compare_data = [header]
+
+    def get_relation_data(relation, diff, is_left):
+        if not relation:
+            return ""
+
+        data = [
+            str(relation),
+            "",
+            f"Review status: {relation.review_status or ''}",
+            f"License: {relation.license_expression or ''}",
+        ]
+        if relation.purpose:
+            data.append(f"Purpose: {relation.purpose or ''}")
+
+        if diff:
+            data.append("")
+            for field, values in diff.items():
+                diff_line = (
+                    f"{'-' if is_left else '+'} {field.verbose_name.title()}: "
+                    f"{values[0] if is_left else values[1]}"
+                )
+                data.append(diff_line)
+
+        return "\n".join(data)
+
+    # Iterate over each row and populate the Excel worksheet
+    for action, left, right, diff in rows:
+        compare_data.append(
+            [
+                action,
+                get_relation_data(left, diff, is_left=True),
+                get_relation_data(right, diff, is_left=False),
+            ]
+        )
+
+    for row in compare_data:
+        ws.append(row)
+
+    # Styling
+    header = NamedStyle(name="header")
+    header.font = Font(bold=True)
+    header.border = Border(bottom=Side(border_style="thin"))
+    header.alignment = Alignment(horizontal="center", vertical="center")
+    header_row = ws[1]
+    for cell in header_row:
+        cell.style = header
+
+    # Freeze first header row
+    ws.freeze_panes = "A2"
+
+    # Columns width
+    ws.column_dimensions["B"].width = 40
+    ws.column_dimensions["C"].width = 40
+
+    # Prepare response
+    xlsx_content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    response = HttpResponse(content_type=xlsx_content_type)
+    response["Content-Disposition"] = "attachment; filename=product_comparison.xlsx"
+    wb.save(response)
+
+    return response
+
+
 @login_required
 def product_tree_comparison_view(request, left_uuid, right_uuid):
     guarded_qs = Product.objects.get_queryset(request.user)
@@ -1056,6 +1131,9 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
         return relationship.name.lower(), relationship.version
 
     rows.sort(key=sort_by_name_version)
+
+    if request.GET.get("download_xlsx"):
+        return comparison_download_xlsx(request, rows, left_product, right_product)
 
     action_filters = [
         {"value": "added", "count": len(added), "checked": True},
