@@ -43,7 +43,7 @@
 {% block javascripts %}
   {{ block.super }}
   {% if form.fields.license_expression %}
-    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-oTqsk3bKZbt7gvIiSLAxv/f/1zUBuzofCLQcVe+9J9s7zHhGnWfebQu3miHGT1Vc" crossorigin="anonymous"></script>
   {% endif %}
   {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
   {{ form.identifier_fields|json_script:"identifier_fields" }}
@@ -53,8 +53,7 @@
 
       {% if form.fields.license_expression and licenses_data_for_builder %}
         let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
-        NEXB.setup_awesomplete_builder(
-          $('#id_license_expression').get(0), null, 100,licenses_data_for_builder);
+        setup_awesomplete_builder($('#id_license_expression').get(0), null, 100,licenses_data_for_builder);
       {% endif %}
 
       {% if form.fields.keywords %}

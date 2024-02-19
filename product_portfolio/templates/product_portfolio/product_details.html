@@ -137,7 +137,7 @@
 
   {% if has_edit_productpackage or has_edit_productcomponent or has_add_productcomponent %}
     <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
-    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-oTqsk3bKZbt7gvIiSLAxv/f/1zUBuzofCLQcVe+9J9s7zHhGnWfebQu3miHGT1Vc" crossorigin="anonymous"></script>
     <script>
       $(document).ready(function () {
         let edit_modal = $('#edit-productrelation-modal');
@@ -171,7 +171,7 @@
               modal_body.html(data);
               let license_expression_input = $('#id_license_expression');
               let licenses_data = license_expression_input.data('licenses');
-              NEXB.setup_awesomplete_builder(license_expression_input.get(0), null,  100, licenses_data);
+              setup_awesomplete_builder(license_expression_input.get(0), null,  100, licenses_data);
             },
             error: function() {
               modal_body.html('Error.');

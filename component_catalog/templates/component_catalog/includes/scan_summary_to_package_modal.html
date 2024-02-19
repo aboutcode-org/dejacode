@@ -21,7 +21,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  NEXB.setup_awesomplete_builder($('#id_scan-summary-to-package-license_expression').get(0));
+  setup_awesomplete_builder($('#id_scan-summary-to-package-license_expression').get(0));
 
   $('#scan-summary-to-package-modal').on('show.bs.modal', function () {
     let checkbox_and_radio = $("#tab_scan").find("input[type='checkbox']:checked, input[type='radio']:checked");
