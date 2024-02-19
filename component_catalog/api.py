@@ -1025,3 +1025,37 @@ class SubcomponentViewSet(CreateRetrieveUpdateListViewSet):
                 "child",
             )
         )
+
+
+class KeywordSerializer(DataspacedSerializer):
+    class Meta:
+        model = ComponentKeyword
+        fields = (
+            "api_url",
+            "uuid",
+            "label",
+            "description",
+        )
+        extra_kwargs = {
+            "api_url": {
+                "view_name": "api_v2:componentkeyword-detail",
+                "lookup_field": "uuid",
+            },
+        }
+
+
+class KeywordViewSet(CreateRetrieveUpdateListViewSet):
+    queryset = ComponentKeyword.objects.all()
+    serializer_class = KeywordSerializer
+    lookup_field = "uuid"
+    search_fields = (
+        "label",
+        "description",
+    )
+    search_fields_autocomplete = ("label",)
+    ordering_fields = (
+        "label",
+        "created_date",
+        "last_modified_date",
+    )
+    allow_reference_access = True
