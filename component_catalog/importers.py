@@ -5,6 +5,7 @@
 # See https://github.com/nexB/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
+
 import json
 import os
 from urllib.parse import urlparse
@@ -29,7 +30,7 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
-from dje.forms import JSONListChoiceField
+from dje.forms import JSONListField
 from dje.importers import BaseImporter
 from dje.importers import BaseImportModelForm
 from dje.importers import ComponentRelatedFieldImportMixin
@@ -157,7 +158,7 @@ class ComponentImportForm(
         identifier_field="label",
     )
 
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
     )
 
@@ -237,7 +238,7 @@ class PackageImportForm(
         identifier_field="label",
     )
 
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
     )
 
