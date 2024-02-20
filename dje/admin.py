@@ -300,7 +300,7 @@ class HistoryAdminMixin:
         history_entry = History.log_addition(request.user, object)
 
         if ADDITION in getattr(self, "email_notification_on", []):
-            send_notification_email(request.user, object, ADDITION)
+            send_notification_email(request, object, ADDITION)
 
         return history_entry
 
@@ -319,7 +319,7 @@ class HistoryAdminMixin:
             # Expending the base message with details
             changes_details = getattr(request, "changes_details", {})
             message += construct_changes_details_message(changes_details)
-            send_notification_email(request.user, object, CHANGE, message)
+            send_notification_email(request, object, CHANGE, message)
 
         return history_entry
 
@@ -764,14 +764,14 @@ class DataspacedAdmin(
         History.log_deletion(request.user, obj)
         super().delete_model(request, obj)
         if DELETION in self.email_notification_on:
-            send_notification_email(request.user, obj, DELETION)
+            send_notification_email(request, obj, DELETION)
 
     def delete_queryset(self, request, queryset):
         """
         Add the email notification on bulk deletion through the default django
         'delete_selected' action.
         """
-        send_notification_email_on_queryset(request.user, queryset, DELETION)
+        send_notification_email_on_queryset(request, queryset, DELETION)
         super().delete_queryset(request, queryset)
 
     def get_urls(self):

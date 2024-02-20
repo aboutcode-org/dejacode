@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import RequestFactory
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
@@ -38,6 +39,7 @@ from organization.models import Subowner
 )
 class EmailNotificationTest(TestCase):
     def setUp(self):
+        self.factory = RequestFactory()
         self.dataspace = Dataspace.objects.create(name="Dataspace")
         self.user = get_user_model().objects.create_superuser(
             "test", "test@test.com", "t3st", self.dataspace, data_email_notification=True
@@ -72,65 +74,71 @@ class EmailNotificationTest(TestCase):
         )
 
     def test_send_notification_email(self):
+        request = self.factory.get("")
+        request.user = self.user
+
         # No recipient, no mail
         self.user.data_email_notification = False
         self.user.save()
-        send_notification_email(self.user, self.owner, notification.ADDITION)
+        send_notification_email(request, self.owner, notification.ADDITION)
         self.assertEqual(len(mail.outbox), 0)
 
         # Proper object and user, notification is sent
         self.user.data_email_notification = True
         self.user.save()
-        send_notification_email(self.user, self.owner, notification.ADDITION)
+        send_notification_email(request, self.owner, notification.ADDITION)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Added Owner: "{self.owner}"')
 
         # Sending a notification on a empty string object
         # Nothing is sent as it's not dataspace related
-        send_notification_email(self.user, "", notification.ADDITION)
+        send_notification_email(request, "", notification.ADDITION)
         self.assertEqual(len(mail.outbox), 1)
 
         # Sending a change notification with the 'No fields changed.' message
         # Nothing is sent
-        send_notification_email(self.user, self.owner, notification.CHANGE, "No fields changed.")
+        send_notification_email(request, self.owner, notification.CHANGE, "No fields changed.")
         self.assertEqual(len(mail.outbox), 1)
 
         # Sending a change notification with a change message
-        send_notification_email(self.user, self.owner, notification.CHANGE, "Some changes...")
+        send_notification_email(request, self.owner, notification.CHANGE, "Some changes...")
 
         self.assertEqual(len(mail.outbox), 2)
 
     def test_send_notification_email_on_queryset(self):
+        request = self.factory.get("")
+        request.user = self.user
+
         self.assertEqual(len(mail.outbox), 0)
         queryset = Owner.objects.all()
 
         # No recipient, no mail
         self.user.data_email_notification = False
         self.user.save()
-        send_notification_email_on_queryset(self.user, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
         self.assertEqual(len(mail.outbox), 0)
 
         # Proper object and user, notification is sent
         self.user.data_email_notification = True
         self.user.save()
-        send_notification_email_on_queryset(self.user, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(len(queryset), 1)
         self.assertEqual(mail.outbox[0].subject, f'Updated Owner: "{self.owner}"')
 
         # Using an empty queryset, nothing is sent
-        send_notification_email_on_queryset(self.user, [], notification.CHANGE)
+        send_notification_email_on_queryset(request, [], notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
 
         # Using a queryset of non-dataspace related object (empty strings)
-        send_notification_email_on_queryset(self.user, ["", ""], notification.CHANGE)
+        send_notification_email_on_queryset(request, ["", ""], notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
 
         Owner.objects.create(name="Organization2", dataspace=self.dataspace)
         queryset = Owner.objects.all()
 
         self.assertEqual(len(queryset), 2)
-        send_notification_email_on_queryset(self.user, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
         self.assertEqual(mail.outbox[1].subject, "Multiple Owners updated")
         self.assertIn(str(self.owner), mail.outbox[1].body)
 
@@ -140,10 +148,13 @@ class EmailNotificationTest(TestCase):
         Owner.objects.create(name="Test2 Organization", dataspace=self.dataspace)
         queryset = Owner.objects.all()
 
+        request = self.factory.get("")
+        request.user = self.user
+
         # Proper object and user, notification is sent
         self.user.data_email_notification = True
         self.user.save()
-        send_notification_email_on_queryset(self.user, queryset, notification.CHANGE, line)
+        send_notification_email_on_queryset(request, queryset, notification.CHANGE, line)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(len(queryset), 2)
@@ -164,7 +175,10 @@ class EmailNotificationTest(TestCase):
         instance._meta.verbose_name = multiline_name
         instance.dataspace = self.dataspace
 
-        send_notification_email(self.user, instance, notification.DELETION)
+        request = self.factory.get("")
+        request.user = self.user
+
+        send_notification_email(request, instance, notification.DELETION)
         self.assertEqual(len(mail.outbox), 1)
         subject = mail.outbox[0].subject
         self.assertTrue("zstream.h" in multiline_name)

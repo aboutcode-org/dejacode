@@ -176,7 +176,7 @@ class CreateRetrieveUpdateListViewSet(
 
         History.log_addition(user, serializer.instance)
         if History.ADDITION in self.email_notification_on:
-            send_notification_email(user, serializer.instance, History.ADDITION)
+            send_notification_email(self.request, serializer.instance, History.ADDITION)
 
     def perform_update(self, serializer):
         """Add the CHANGE History."""
@@ -213,7 +213,9 @@ class CreateRetrieveUpdateListViewSet(
             change_message += construct_changes_details_message(
                 {serializer.instance: changes_details}
             )
-            send_notification_email(user, serializer.instance, History.CHANGE, change_message)
+            send_notification_email(
+                self.request, serializer.instance, History.CHANGE, change_message
+            )
 
 
 class ExtraPermissionsViewSetMixin:
