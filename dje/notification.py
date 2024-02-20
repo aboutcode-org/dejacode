@@ -70,7 +70,7 @@ def send_notification_email(user, instance, action, message=""):
             return
         body += f"\n\n{message}"
 
-    if action is not History.DELETION and settings.SITE_URL:
+    if action is not History.DELETION:
         site_url = settings.SITE_URL.rstrip("/")
         body += f"\n\n{site_url}{instance.get_admin_url()}"
 
@@ -107,7 +107,7 @@ def send_notification_email_on_queryset(user, queryset, action, message=""):
     for instance in queryset:
         body += f"\n- {instance}"
 
-        if action is not History.DELETION and settings.SITE_URL:
+        if action is not History.DELETIONL:
             site_url = settings.SITE_URL.rstrip("/")
             body += f" {site_url}{instance.get_admin_url()}"
 
@@ -178,9 +178,9 @@ def notify_on_user_locked_out(request, username, **kwargs):
     Webhook defined in the reference Dataspace when the `user_locked_out`
     signal is triggered.
     """
-    site_url = settings.SITE_URL.rstrip("/")
     access_attempt_url = reverse("admin:axes_accessattempt_changelist")
-    access_attempt_link = f"{site_url}{access_attempt_url}?q={username}"
+    access_attempt_absolute_url = request.build_absolute_uri(location=access_attempt_url)
+    access_attempt_link = f"{access_attempt_absolute_url}?q={username}"
     user = DejacodeUser.objects.get_or_none(username=username)
 
     subject = "[DejaCode] Login attempt on locked account requires review!"
@@ -198,7 +198,8 @@ def notify_on_user_locked_out(request, username, **kwargs):
 
     if user:
         user_list_url = reverse("admin:dje_dejacodeuser_changelist")
-        user_list_link = f"{site_url}{user_list_url}?q={username}"
+        user_list_absolute_url = request.build_absolute_uri(location=user_list_url)
+        user_list_link = f"{user_list_absolute_url}?q={username}"
         message += (
             f'"{username}" is an existing DejaCode user in Dataspace '
             f'"{user.dataspace.name}": {user_list_link}\n'
