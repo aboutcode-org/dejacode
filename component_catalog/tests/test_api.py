@@ -53,7 +53,6 @@ from policy.models import UsagePolicy
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class ComponentAPITestCase(TestCase):
     def setUp(self):
@@ -315,6 +314,8 @@ class ComponentAPITestCase(TestCase):
         self.assertContains(response, self.component1_detail_url)
         self.assertEqual(str(self.component1), response.data["display_name"])
         self.assertIn(self.component1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.component1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.component1.uuid), response.data["uuid"])
         self.assertEqual(self.component1.name, response.data["name"])
         self.assertEqual(self.component1.type, response.data["type"])
@@ -923,7 +924,6 @@ class ComponentAPITestCase(TestCase):
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class PackageAPITestCase(MaxQueryMixin, TestCase):
     def setUp(self):
@@ -1069,6 +1069,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, self.package1_detail_url)
         self.assertIn(self.package1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.package1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.package1.uuid), response.data["uuid"])
         self.assertEqual(self.package1.filename, response.data["filename"])
         self.assertEqual(self.package1.size, response.data["size"])

@@ -10,7 +10,6 @@ import uuid
 from contextlib import suppress
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ObjectDoesNotExist
@@ -177,7 +176,7 @@ class CreateRetrieveUpdateListViewSet(
 
         History.log_addition(user, serializer.instance)
         if History.ADDITION in self.email_notification_on:
-            send_notification_email(user, serializer.instance, History.ADDITION)
+            send_notification_email(self.request, serializer.instance, History.ADDITION)
 
     def perform_update(self, serializer):
         """Add the CHANGE History."""
@@ -214,7 +213,9 @@ class CreateRetrieveUpdateListViewSet(
             change_message += construct_changes_details_message(
                 {serializer.instance: changes_details}
             )
-            send_notification_email(user, serializer.instance, History.CHANGE, change_message)
+            send_notification_email(
+                self.request, serializer.instance, History.CHANGE, change_message
+            )
 
 
 class ExtraPermissionsViewSetMixin:
@@ -317,14 +318,17 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_absolute_url(self, obj):
         """
-        Return a fully qualified URL (includes the schema and domains) of the object.
-        Combining the settings site URL and the get_absolute_url() method of the object.
+        Return the object fully qualified URL including the schema and domain.
 
         Usage:
             absolute_url = serializers.SerializerMethodField()
         """
-        site = settings.SITE_URL.rstrip("/")
-        return f"{site}{obj.get_absolute_url()}"
+        absolute_url = obj.get_absolute_url()
+
+        if request := self.context.get("request", None):
+            return request.build_absolute_uri(location=absolute_url)
+
+        return absolute_url
 
     def apply_tabs_permission(self, fields, user):
         model_tabset = get_tabset_for_model(self.Meta.model)

@@ -43,7 +43,6 @@ Product = apps.get_model("product_portfolio", "Product")
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class RequestAPITestCase(TestCase):
     def setUp(self):
@@ -273,6 +272,8 @@ class RequestAPITestCase(TestCase):
 
         self.assertContains(response, self.request1_detail_url)
         self.assertIn(self.request1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.request1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(self.request1.status, response.data["status"])
         self.assertEqual(str(self.request1.uuid), response.data["uuid"])
         self.assertEqual(self.request1.title, response.data["title"])
