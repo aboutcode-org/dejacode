@@ -316,7 +316,7 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_absolute_url(self, obj):
         """
-        Return the object fully qualified URL (includes the schema and domains).
+        Return the object fully qualified URL including the schema and domain.
 
         Usage:
             absolute_url = serializers.SerializerMethodField()
