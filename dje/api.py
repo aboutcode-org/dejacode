@@ -10,7 +10,6 @@ import uuid
 from contextlib import suppress
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ObjectDoesNotExist
@@ -317,14 +316,17 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_absolute_url(self, obj):
         """
-        Return a fully qualified URL (includes the schema and domains) of the object.
-        Combining the settings site URL and the get_absolute_url() method of the object.
+        Return the object fully qualified URL (includes the schema and domains).
 
         Usage:
             absolute_url = serializers.SerializerMethodField()
         """
-        site = settings.SITE_URL.rstrip("/")
-        return f"{site}{obj.get_absolute_url()}"
+        absolute_url = obj.get_absolute_url()
+
+        if request := self.context.get("request", None):
+            return request.build_absolute_uri(location=absolute_url)
+
+        return absolute_url
 
     def apply_tabs_permission(self, fields, user):
         model_tabset = get_tabset_for_model(self.Meta.model)
