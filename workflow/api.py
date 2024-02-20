@@ -391,11 +391,11 @@ class RequestViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewS
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
-        send_request_notification(serializer.instance, created=True)
+        send_request_notification(self.request, serializer.instance, created=True)
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
-        send_request_notification(serializer.instance, created=False)
+        send_request_notification(self.request, serializer.instance, created=False)
         serializer.instance.events.create(
             user=self.request.user,
             text="Request edited.",

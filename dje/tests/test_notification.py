@@ -89,6 +89,7 @@ class EmailNotificationTest(TestCase):
         send_notification_email(request, self.owner, notification.ADDITION)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f'Added Owner: "{self.owner}"')
+        self.assertIn(f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
 
         # Sending a notification on a empty string object
         # Nothing is sent as it's not dataspace related
@@ -125,6 +126,7 @@ class EmailNotificationTest(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(len(queryset), 1)
         self.assertEqual(mail.outbox[0].subject, f'Updated Owner: "{self.owner}"')
+        self.assertIn(f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
 
         # Using an empty queryset, nothing is sent
         send_notification_email_on_queryset(request, [], notification.CHANGE)

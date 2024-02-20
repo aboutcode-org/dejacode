@@ -108,7 +108,7 @@ def request_add_view(request, template_uuid):
         if instance.is_draft:
             msg = "Your request was saved as a draft and self-assigned to you."
         else:
-            send_request_notification(instance, created=True)
+            send_request_notification(request, instance, created=True)
             msg = (
                 f"Your request was successfully submitted as {instance} with an "
                 f"email notification to the assignee, and a copy to you.\n"
@@ -171,7 +171,7 @@ def request_edit_view(request, request_uuid):
                 f"an email notification to the requester and the assignee."
             )
             extra = {"description": f"Updated: {updated_labels}."}
-            send_request_notification(instance, created=False, extra=extra)
+            send_request_notification(request, instance, created=False, extra=extra)
 
         request_instance.events.create(
             user=request.user,
@@ -253,7 +253,7 @@ def request_details_view(request, request_uuid):
             event_type=RequestEvent.CLOSED,
             dataspace=request_instance.dataspace,
         )
-        send_request_comment_notification(event_instance, closed=True)
+        send_request_comment_notification(request, event_instance, closed=True)
         messages.success(request, f"Request {request_instance} closed")
         return redirect("workflow:request_list")
 
@@ -276,7 +276,7 @@ def request_details_view(request, request_uuid):
             text=comment_content,
             dataspace=request_instance.dataspace,
         )
-        send_request_comment_notification(comment)
+        send_request_comment_notification(request, comment)
         messages.success(request, f"Comment for Request {request_instance} added.")
         return redirect(request_instance)
 
