@@ -282,7 +282,6 @@ class LicenseAnnotationAPITestCase(TestCase):
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class LicenseAPITestCase(MaxQueryMixin, TestCase):
     def setUp(self):
@@ -435,6 +434,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, self.license1_detail_url)
         self.assertEqual(str(self.license1), response.data["display_name"])
         self.assertIn(self.license1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.license1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.license1.uuid), response.data["uuid"])
         self.assertEqual(self.license1.name, response.data["name"])
         self.assertEqual(self.license1.key, response.data["key"])

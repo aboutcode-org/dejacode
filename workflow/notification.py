@@ -27,7 +27,7 @@ def get_recipient_emails(recipients, cc_emails):
     return list(emails)
 
 
-def send_request_notification(req, created, extra=None):
+def send_request_notification(http_request, req, created, extra=None):
     """
     Send an email notification following a Request creation or edition.
     An email is sent to the users involved in the Request, based on their
@@ -41,7 +41,7 @@ def send_request_notification(req, created, extra=None):
         "content_object_verbose": content_object_verbose,
         "action": "submitted" if created else "updated",
         "action_user": action_user,
-        "site_url": settings.SITE_URL.rstrip("/"),
+        "site_url": http_request.build_absolute_uri(location="/").rstrip("/"),
     }
 
     subject = (
@@ -68,7 +68,7 @@ def send_request_notification(req, created, extra=None):
     )
 
 
-def send_request_comment_notification(comment, closed=False):
+def send_request_comment_notification(http_request, comment, closed=False):
     """
     Send an email notification following the addition of a comment on a Request.
     An email is sent to the users involved in the Request except for the
@@ -85,7 +85,7 @@ def send_request_comment_notification(comment, closed=False):
         "req": req,
         "action": "closed" if closed else "commented",
         "content_object_verbose": content_object_verbose,
-        "site_url": settings.SITE_URL.rstrip("/"),
+        "site_url": http_request.build_absolute_uri(location="/").rstrip("/"),
     }
 
     subject = (

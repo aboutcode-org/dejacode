@@ -35,7 +35,6 @@ from organization.models import Owner
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class OwnerAPITestCase(MaxQueryMixin, TestCase):
     def setUp(self):
@@ -174,6 +173,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, self.owner1_detail_url)
         self.assertIn(self.owner1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.owner1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.owner1.uuid), response.data["uuid"])
         self.assertEqual(self.owner1.name, response.data["name"])
         self.assertEqual(self.owner1.type, response.data["type"])
