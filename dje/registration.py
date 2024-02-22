@@ -143,7 +143,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
         eula = HTML(
             '<p class="eula">By clicking on "Create account" below, you are agreeing '
-            'to our <a href="/eula/">EULA</a>.</p>'
+            'to our <a href="https://nexb.com/eula/">EULA</a>.</p>'
         )
 
         helper.layout = Layout(
