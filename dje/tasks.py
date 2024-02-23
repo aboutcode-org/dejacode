@@ -28,18 +28,6 @@ from dje.utils import is_available
 logger = logging.getLogger(__name__)
 
 
-if sys.platform == "darwin" and settings.DEBUG:
-    # Workaround an issue with urllib (used by requests) on macOS.
-    # The proxy_bypass_macosx_sysconf breaks in the context of the task worker.
-    # Alternatively, the env variable NO_PROXY can be provided while running the worker:
-    # $ NO_PROXY=* ./manage.py rqworker
-    # See also https://github.com/psf/requests/issues/6086
-    # and https://github.com/psf/requests/issues/2406
-    import requests
-
-    requests.sessions.get_environ_proxies = lambda *args, **kwargs: {}
-
-
 @job
 def send_mail_task(subject, message, from_email, recipient_list, fail_silently=True):
     """
