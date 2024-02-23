@@ -724,8 +724,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(expected, pp1.as_spdx().as_dict())
 
     def test_product_model_as_cyclonedx(self):
-        expected_repr = "<Component group=None, name=Product1, version=, type=application>"
-        self.assertEqual(expected_repr, repr(self.product1.as_cyclonedx()))
+        expected = "<Component group=None, name=Product1, version=, type=ComponentType.APPLICATION>"
+        self.assertEqual(expected, repr(self.product1.as_cyclonedx()))
 
     def test_product_portfolio_scancode_project_model_can_start_import(self):
         scancode_project = ScanCodeProject.objects.create(

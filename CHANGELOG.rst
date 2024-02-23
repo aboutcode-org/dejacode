@@ -3,6 +3,9 @@ Release notes
 
 ### Version 5.1.0-dev
 
+- Upgrade Python version to 3.12
+  https://github.com/nexB/dejacode/issues/50
+
 - Replace Celery by RQ for async job queue and worker.
   https://github.com/nexB/dejacode/issues/6
 

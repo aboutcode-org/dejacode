@@ -2126,7 +2126,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.homepage_url = "https://homepage.url"
         self.component1.notice_text = "Notice"
         cyclonedx_data = self.component1.as_cyclonedx()
-        expected_repr = "<Component group=None, name=a, version=1.0, type=library>"
+        expected_repr = "<Component group=None, name=a, version=1.0, type=ComponentType.LIBRARY>"
         self.assertEqual(expected_repr, repr(cyclonedx_data))
         expected = {
             "aboutcode:homepage_url": "https://homepage.url",
@@ -2150,8 +2150,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         cyclonedx_data = package.as_cyclonedx()
-        expected_repr = "<Component group=None, name=curl, version=7.50.3-1, type=library>"
-        self.assertEqual(expected_repr, repr(cyclonedx_data))
+        expected = "<Component group=None, name=curl, version=7.50.3-1, type=ComponentType.LIBRARY>"
+        self.assertEqual(expected, repr(cyclonedx_data))
         expected = {
             "aboutcode:download_url": "https://download.url",
             "aboutcode:filename": "package.zip",
