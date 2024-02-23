@@ -308,7 +308,7 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual(expected, results["attachments"])
 
     @patch("requests.Session.post", autospec=True)
-    def test_notification_task_deliver_hook_wrapper_extra_payload(self, method_mock):
+    def test_notification_task_deliver_hook_task_extra_payload(self, method_mock):
         method_mock.return_value = None
 
         target = "https://localhost"

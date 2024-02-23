@@ -312,6 +312,7 @@ PREREQ_APPS = [
     "django.contrib.admin",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_rq",
     "crispy_forms",
     "crispy_bootstrap5",
     "guardian",
@@ -415,6 +416,21 @@ CACHES = {
         "KEY_PREFIX": "vuln",
     },
 }
+
+# Job Queue
+RQ_QUEUES = {
+    "default": {
+        "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
+        "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
+        "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_REDIS_DEFAULT_TIMEOUT", default=360),
+    },
+}
+
+DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
+if not DEJACODE_ASYNC:
+    for queue_config in RQ_QUEUES.values():
+        queue_config["ASYNC"] = False
 
 # https://docs.djangoproject.com/en/dev/topics/logging/#configuring-logging
 LOGGING = {
@@ -597,10 +613,6 @@ AXES_RESET_ON_SUCCESS = True
 # authentication.
 AXES_DISABLE_ACCESS_LOG = True
 
-# Celery
-CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://")
-CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
-
 # 2FA with django-otp
 OTP_TOTP_ISSUER = "DejaCode"
 
@@ -618,8 +630,6 @@ if DEBUG and DEBUG_TOOLBAR:
     INTERNAL_IPS = ["127.0.0.1"]
 
 if IS_TESTS:
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
     # Set a faster hashing algorithm for running the tests

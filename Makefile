@@ -130,6 +130,9 @@ postgresdb:
 run:
 	${MANAGE} runserver 8000
 
+worker:
+	${MANAGE} rqworker
+
 test:
 	@echo "-> Run the test suite"
 	${MANAGE} test --noinput --parallel auto

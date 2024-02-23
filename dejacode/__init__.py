@@ -9,11 +9,8 @@
 import os
 import sys
 
-from dejacode.celery import app as celery_app
-
 VERSION = "5.0.2-dev"
 __version__ = VERSION
-__all__ = ["celery_app"]
 
 
 def command_line():
