@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-PYTHON_EXE=python3.10
+PYTHON_EXE=python3.12
 MANAGE=bin/python manage.py
 ACTIVATE?=. bin/activate;
 PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
