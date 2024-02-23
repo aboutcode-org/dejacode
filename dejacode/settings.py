@@ -401,8 +401,7 @@ REDIS_URL = env.str("REDIS_URL", default="redis://127.0.0.1:6379")
 
 # Default setup for the cache
 # See https://docs.djangoproject.com/en/dev/topics/cache/
-# Set CACHE_BACKEND="django.core.cache.backends.locmem.LocMemCache" in dev mode
-CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.redis.RedisCache")
+CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache")
 CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
@@ -450,7 +449,7 @@ def enable_rq_eager_mode():
     django_rq.queues.get_redis_connection = get_fake_redis_connection
 
 
-DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=True)
+DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
 if not DEJACODE_ASYNC or IS_TESTS:
     enable_rq_eager_mode()
 
