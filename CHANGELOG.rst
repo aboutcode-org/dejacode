@@ -1,7 +1,10 @@
 Release notes
 =============
 
-### Version 5.0.2-dev
+### Version 5.1.0-dev
+
+- Replace Celery by RQ for async job queue and worker.
+  https://github.com/nexB/dejacode/issues/6
 
 - Lookup in PurlDB by purl in Add Package form.
   When a Package URL is available in the context of the "Add Package" form,
