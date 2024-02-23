@@ -32,9 +32,9 @@ from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
+from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
 from dje.tasks import scancodeio_submit_manifest_inspection
-from dje.tasks import tasks_logger
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user

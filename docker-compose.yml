@@ -53,7 +53,7 @@ services:
     build: .
     # Ensure that potential db migrations run first by waiting until "web" is up
     command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
-        celery worker --app=dejacode --concurrency=2 --time-limit=300 --loglevel=INFO"
+        ./manage.py rqworker --verbosity 1"
     env_file:
       - docker.env
     volumes:

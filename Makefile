@@ -128,7 +128,10 @@ postgresdb:
 	@createdb --owner=${DB_USERNAME} ${POSTGRES_INITDB_ARGS} ${DB_NAME}
 
 run:
-	${MANAGE} runserver 8000
+	${MANAGE} runserver 8000 --insecure
+
+worker:
+	${MANAGE} rqworker
 
 test:
 	@echo "-> Run the test suite"

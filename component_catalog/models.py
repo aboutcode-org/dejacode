@@ -62,7 +62,7 @@ from dje.models import HistoryFieldsMixin
 from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
-from dje.tasks import tasks_logger
+from dje.tasks import logger as tasks_logger
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment

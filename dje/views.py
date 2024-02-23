@@ -1583,7 +1583,7 @@ def object_compare_view(request):
 
 @login_required
 def clone_dataset_view(request, pk):
-    """Call the clonedataset management command as a celery task."""
+    """Call the clonedataset management command as a an async task."""
     changelist_url = reverse("admin:dje_dataspace_changelist")
     user = request.user
     template_dataspace = settings.TEMPLATE_DATASPACE
