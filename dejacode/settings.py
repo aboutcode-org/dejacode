@@ -427,10 +427,33 @@ RQ_QUEUES = {
     },
 }
 
-DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
-if not DEJACODE_ASYNC:
+
+def enable_rq_eager_mode():
+    """
+    Enable the eager mode for the RQ tasks system.
+    Meaning the tasks will run directly sychroniously without the need of a worker.
+    Setting ASYNC to False in RQ_QUEUES will run jobs synchronously, but a running
+    Redis server is still needed to store job data.
+    This function patch the django_rq.get_redis_connection to always return a fake
+    redis connection using the `fakeredis` library.
+    """
+    import django_rq.queues
+    from fakeredis import FakeRedis
+    from fakeredis import FakeStrictRedis
+
     for queue_config in RQ_QUEUES.values():
         queue_config["ASYNC"] = False
+
+    def get_fake_redis_connection(config, use_strict_redis):
+        return FakeStrictRedis() if use_strict_redis else FakeRedis()
+
+    django_rq.queues.get_redis_connection = get_fake_redis_connection
+
+
+DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=True)
+if not DEJACODE_ASYNC or IS_TESTS:
+    enable_rq_eager_mode()
+
 
 # https://docs.djangoproject.com/en/dev/topics/logging/#configuring-logging
 LOGGING = {
