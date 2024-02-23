@@ -13,7 +13,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core import signing
 from django.urls import reverse
-from django.utils.crypto import md5
+# from django.utils.crypto import md5
 
 import requests
 from license_expression import Licensing

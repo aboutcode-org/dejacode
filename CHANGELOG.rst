@@ -3,7 +3,7 @@ Release notes
 
 ### Version 5.1.0-dev
 
-- Upgrade Python version to 3.12
+- Upgrade Python version to 3.12 and Django to 5.0.x
   https://github.com/nexB/dejacode/issues/50
 
 - Replace Celery by RQ for async job queue and worker.
