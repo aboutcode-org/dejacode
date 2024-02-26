@@ -13,14 +13,13 @@ from django.apps import apps
 from django.conf import settings
 from django.core import signing
 from django.urls import reverse
-# from django.utils.crypto import md5
 
 import requests
 from license_expression import Licensing
 
 from dejacode_toolkit import BaseService
 from dejacode_toolkit import logger
-
+from dejacode_toolkit.utils import md5
 
 class ScanCodeIO(BaseService):
     label = "ScanCode.io"
