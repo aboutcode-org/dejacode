@@ -9,6 +9,7 @@
 # Common Django settings for all deployments of DejaCode
 
 import sys
+import tempfile
 from pathlib import Path
 
 import environ
@@ -654,6 +655,8 @@ if DEBUG and DEBUG_TOOLBAR:
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
+    # Do not pollute the MEDIA_ROOT location while running the tests.
+    MEDIA_ROOT = tempfile.TemporaryDirectory()
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [
