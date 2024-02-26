@@ -495,7 +495,7 @@ class ComponentAdminViewsTestCase(TestCase):
     def test_component_admin_changelist_list_display_as_popup(self):
         self.client.login(username="test", password="secret")
         url = reverse("admin:component_catalog_component_changelist")
-        expect1 = '<input type="checkbox" id="action-toggle">'
+        expect1 = '<input type="checkbox" id="action-toggle"'
         expect2 = "get_hierarchy_link"
         expect3 = "<span>View</span>"
         expect4 = '<td class="action-checkbox">'

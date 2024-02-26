@@ -1732,10 +1732,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected)
         self.assertIsNotNone(response.context_data["form"])
 
-        expected_status_select = (
-            '<select name="review_status" class="select form-select" disabled'
-            ' id="id_review_status">'
-        )
+        expected_status_select = '<select name="review_status" class="select form-select" disabled'
         self.assertContains(response, expected_status_select)
         self.assertContains(response, f'<option value="{purpose1.pk}">Core</option>')
 

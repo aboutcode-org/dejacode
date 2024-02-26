@@ -53,7 +53,8 @@ class DropDownWidget(LinkWidget):
         output.append("</div>")
         menu = format_html("\n".join(output))
 
-        return self.dropdown_template.format(
+        return format_html(
+            self.dropdown_template,
             menu=menu,
             active="active" if value else "",
             label=self.label if self.label else name.title(),

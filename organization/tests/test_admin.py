@@ -451,8 +451,8 @@ class OwnerAdminViewsTestCase(TestCase):
 
         response = self.client.get(new_owner.get_admin_url())
         expected = (
-            f'<input type="text" name="name" value="{name}" '
-            f'class="vTextField" maxlength="70" required id="id_name" />'
+            f'<input type="text" name="name" value="{name}" class="vTextField" '
+            'maxlength="70" required aria-describedby="id_name_helptext" id="id_name">'
         )
         self.assertContains(response, expected, html=True)
 

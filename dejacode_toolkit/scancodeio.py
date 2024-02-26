@@ -7,6 +7,7 @@
 #
 
 import json
+from hashlib import md5
 from urllib.parse import quote_plus
 
 from django.apps import apps
@@ -19,7 +20,6 @@ from license_expression import Licensing
 
 from dejacode_toolkit import BaseService
 from dejacode_toolkit import logger
-from dejacode_toolkit.utils import md5
 
 
 class ScanCodeIO(BaseService):
