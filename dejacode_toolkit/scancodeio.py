@@ -21,6 +21,7 @@ from dejacode_toolkit import BaseService
 from dejacode_toolkit import logger
 from dejacode_toolkit.utils import md5
 
+
 class ScanCodeIO(BaseService):
     label = "ScanCode.io"
     settings_prefix = "SCANCODEIO"

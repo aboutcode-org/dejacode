@@ -563,9 +563,9 @@ class CodebaseResourceImporterTestCase(TestCase):
             product=self.product1,
             dataspace=self.dataspace,
         )
-        formset_data[
-            "form-0-product_component"
-        ] = f"{product_component.name}:{product_component.version}"
+        formset_data["form-0-product_component"] = (
+            f"{product_component.name}:{product_component.version}"
+        )
         importer = CodebaseResourceImporter(self.super_user, formset_data=formset_data)
         importer.save_all()
         self.assertTrue(importer.formset.is_valid())
@@ -575,9 +575,9 @@ class CodebaseResourceImporterTestCase(TestCase):
         product_component.name = self.c1.name
         product_component.version = self.c1.version
         product_component.save()
-        formset_data[
-            "form-0-product_component"
-        ] = f"{product_component.name}:{product_component.version}"
+        formset_data["form-0-product_component"] = (
+            f"{product_component.name}:{product_component.version}"
+        )
         importer = CodebaseResourceImporter(self.super_user, formset_data=formset_data)
         importer.save_all()
         self.assertTrue(importer.formset.is_valid())
