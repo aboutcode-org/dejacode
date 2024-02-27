@@ -1509,8 +1509,9 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, 'value="1.0"')
         self.assertContains(
             response,
-            '<input type="url" name="homepage_url" maxlength="1024"'
-            ' class="urlinput form-control" id="id_homepage_url">',
+            '<input type="url" name="homepage_url" maxlength="1024" '
+            'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
+            'id="id_homepage_url">',
         )
 
     def test_package_list_view_usage_policy_availability(self):
