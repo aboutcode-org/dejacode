@@ -601,7 +601,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         # Deleting c1 should delete the c1 object and the Subcomponent, but c2
         # is not impacted
         self.c1.delete()
-        self.assertFalse(Subcomponent.objects.filter(parent=self.c1, child=self.c2))
+        self.assertFalse(Subcomponent.objects.filter(parent__id=self.c1.id, child=self.c2))
         self.assertFalse(Component.objects.filter(id=self.c1.id))
         self.assertTrue(Component.objects.filter(id=self.c2.id))
 

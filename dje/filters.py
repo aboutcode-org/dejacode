@@ -467,7 +467,7 @@ class DataspaceFilter(ChoicesOnlyListFilterMixin, BaseDataspaceLookupsFilter):
     """
 
     title = _("dataspace")
-    parameter_name = "dataspace__id__exact"
+    parameter_name = "dataspace__id"
 
     def lookups(self, request, model_admin):
         """Set the lookup value for the current user dataspace choice to None."""

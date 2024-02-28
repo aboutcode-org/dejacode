@@ -927,7 +927,9 @@ class AttributionGenerationTest(TestCase):
 
         expected = (
             '<input type="checkbox" name="include_packages" '
-            'class="checkboxinput form-check-input" id="id_include_packages" checked>'
+            'class="checkboxinput form-check-input" '
+            'aria-describedby="id_include_packages_helptext" id="id_include_packages" '
+            'checked>'
         )
         response = self.client.get(url)
         self.assertContains(response, expected)
@@ -935,7 +937,8 @@ class AttributionGenerationTest(TestCase):
         self.pp1.delete()
         expected = (
             '<input type="checkbox" name="include_packages" '
-            'class="checkboxinput form-check-input" id="id_include_packages">'
+            'class="checkboxinput form-check-input" '
+            'aria-describedby="id_include_packages_helptext" id="id_include_packages">'
         )
         response = self.client.get(url)
         self.assertContains(response, expected)
