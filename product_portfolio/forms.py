@@ -561,9 +561,9 @@ class ImportFromScanForm(forms.Form):
         return helper
 
 
-class ImportManifestForm(forms.Form):
+class LoadSBOMsForm(forms.Form):
     input_file = SmartFileField(
-        label=_("Manifest file"),
+        label=_("SBOM file or zip archive"),
         required=True,
     )
     update_existing_packages = forms.BooleanField(
@@ -594,7 +594,7 @@ class ImportManifestForm(forms.Form):
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(Submit("submit", "Import Packages"))
+        helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
         return helper
 
 

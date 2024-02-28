@@ -731,7 +731,7 @@ class ProductPortfolioModelsTestCase(TestCase):
         scancode_project = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
         )
         self.assertTrue(scancode_project.can_start_import)
 

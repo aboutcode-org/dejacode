@@ -19,10 +19,10 @@ you can refer to :ref:`data_model_product` for details about each fields.
 
 .. note:: You are ready to assign Inventory objects to your Product!
 
-Import a Software Bill of Materials (SBOM) to your Product
-==========================================================
+Load a Software Bill of Materials (SBOM) to your Product
+========================================================
 
-You have the flexibility to employ either your CycloneDX or SPDX
+You have the flexibility to employ either your CycloneDX, SPDX, or AboutFile
 Software Bill of Materials (SBOMs).
 
 Alternatively, you can conveniently download one of the provided examples from
@@ -30,12 +30,12 @@ the following
 `GitHub repository <https://github.com/nexB/dejacode/tree/main/docs/sboms/>`_.
 
 On the Product details page, from the :guilabel:`Scan` dropdown, select
-:guilabel:`Import Packages from manifest`:
+:guilabel:`Load Packages from SBOMs`:
 
-* Click the :guilabel:`Choose file/Browse` button on the **Manifest file** field.
+* Click the :guilabel:`Choose File` button on the **SBOM file or zip archive** field.
 * Select your SBOM (.cdx.json or .spdx.json) and click the :guilabel:`Open` button.
 * Check the :guilabel:`Update existing packages with discovered packages data` option.
-* Click the :guilabel:`Import Packages` button.
+* Click the :guilabel:`Load Packages` button.
 
 DejaCode presents the :guilabel:`Imports` tab. Refresh your screen from the browser
 to see the status of your import.
