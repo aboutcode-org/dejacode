@@ -184,8 +184,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("", response.data["homepage_url"])
         self.assertEqual("", response.data["notes"])
         self.assertEqual("nexB", response.data["dataspace"])
-        self.assertEqual(26, len(response.data["created_date"]))
-        self.assertEqual(26, len(response.data["last_modified_date"]))
+        self.assertEqual(32, len(response.data["created_date"]))
+        self.assertEqual(32, len(response.data["last_modified_date"]))
         self.assertIn(
             reverse("api_v2:license-detail", args=[self.license.uuid]), response.data["licenses"][0]
         )

@@ -901,8 +901,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertEqual(self.user, pc.created_by)
         self.assertEqual(self.user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         self.assertFalse(History.objects.get_for_object(pc).exists())
         self.assertEqual(self.user, pc.created_by)
@@ -956,8 +956,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, pp.license_expression)
         self.assertEqual(self.user, pp.created_by)
         self.assertEqual(self.user, pp.last_modified_by)
-        self.assertEqual(26, len(str(pp.created_date)))
-        self.assertEqual(26, len(str(pp.last_modified_date)))
+        self.assertEqual(32, len(str(pp.created_date)))
+        self.assertEqual(32, len(str(pp.last_modified_date)))
 
         self.assertFalse(History.objects.get_for_object(pp).exists())
         self.assertEqual(self.user, pp.created_by)

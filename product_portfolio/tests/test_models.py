@@ -266,8 +266,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(status1, pc.review_status)
         self.assertEqual(self.super_user, pc.created_by)
         self.assertEqual(self.super_user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         self.product1.refresh_from_db()
         history_entries = History.objects.get_for_object(self.product1)
