@@ -11,7 +11,10 @@ from django.core.exceptions import ValidationError
 import django_filters
 from rest_framework import permissions
 from rest_framework import serializers
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
+from rest_framework.response import Response
 
 from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
@@ -31,6 +34,7 @@ from dje.filters import MultipleUUIDFilter
 from dje.filters import NameVersionFilter
 from dje.permissions import assign_all_object_permissions
 from product_portfolio.filters import ComponentCompletenessAPIFilter
+from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -191,6 +195,25 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         )
 
 
+class LoadSBOMsFormSerializer(serializers.Serializer):
+    """Serializer equivalent of LoadSBOMsForm, used for API documentation."""
+
+    input_file = serializers.FileField(
+        required=True,
+        help_text=LoadSBOMsForm.base_fields["input_file"].label,
+    )
+    update_existing_packages = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=LoadSBOMsForm.base_fields["update_existing_packages"].help_text,
+    )
+    scan_all_packages = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=LoadSBOMsForm.base_fields["scan_all_packages"].help_text,
+    )
+
+
 class ProductViewSet(CreateRetrieveUpdateListViewSet):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
@@ -239,6 +262,28 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
         """Add view/change/delete Object permissions to the Product creator."""
         super().perform_create(serializer)
         assign_all_object_permissions(self.request.user, serializer.instance)
+
+    @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
+    def load_sboms(self, request, *args, **kwargs):
+        """
+        Load Packages from SBOMs.
+
+        DejaCode supports the following SBOM formats:
+        * CycloneDX BOM as JSON bom.json and .cdx.json,
+        * SPDX document as JSON .spdx.json,
+        * AboutCode .ABOUT files,
+
+        Multiple SBOMs: You can provide multiple SBOMs by packaging them into a zip
+        archive. DejaCode will handle and process them accordingly.
+        """
+        product = self.get_object()
+
+        form = LoadSBOMsForm(data=request.POST, files=request.FILES)
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        form.submit(product=product, user=request.user)
+        return Response({"status": "SBOM file submitted to ScanCode.io for inspection."})
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):

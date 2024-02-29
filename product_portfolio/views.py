@@ -1882,24 +1882,7 @@ class LoadSBOMsView(
 
     def form_valid(self, form):
         self.object = self.get_object()
-
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.object,
-            dataspace=self.object.dataspace,
-            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-            input_file=form.cleaned_data.get("input_file"),
-            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
-            scan_all_packages=form.cleaned_data.get("scan_all_packages"),
-            created_by=self.request.user,
-        )
-
-        transaction.on_commit(
-            lambda: tasks.scancodeio_submit_load_sbom.delay(
-                scancodeproject_uuid=scancode_project.uuid,
-                user_uuid=self.request.user.uuid,
-            )
-        )
-
+        form.submit(product=self.object, user=self.request.user)
         msg = "SBOM file submitted to ScanCode.io for inspection."
         messages.success(self.request, msg)
         return super().form_valid(form)

@@ -7,6 +7,7 @@
 #
 
 from django import forms
+from django.db import transaction
 from django.forms import BaseModelFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.urls import reverse_lazy
@@ -28,6 +29,7 @@ from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
 from component_catalog.models import Component
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from dje import tasks
 from dje.fields import SmartFileField
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
@@ -47,6 +49,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ScanCodeProject
 
 
 class NameVersionValidationFormMixin:
@@ -596,6 +599,24 @@ class LoadSBOMsForm(forms.Form):
         helper.attrs = {"autocomplete": "off"}
         helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
         return helper
+
+    def submit(self, product, user):
+        scancode_project = ScanCodeProject.objects.create(
+            product=product,
+            dataspace=product.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            input_file=self.cleaned_data.get("input_file"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=self.cleaned_data.get("scan_all_packages"),
+            created_by=user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.scancodeio_submit_load_sbom.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+                user_uuid=user.uuid,
+            )
+        )
 
 
 class StrongTextWidget(forms.Widget):
