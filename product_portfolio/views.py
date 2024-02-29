@@ -109,7 +109,6 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
-from product_portfolio.importers import ImportFromScan
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -1483,22 +1482,11 @@ def import_from_scan_view(request, dataspace, name, version=""):
             files=request.FILES,
         )
         if form.is_valid():
-            sid = transaction.savepoint()
-            importer = ImportFromScan(
-                product,
-                user,
-                upload_file=form.cleaned_data.get("upload_file"),
-                create_codebase_resources=form.cleaned_data.get("create_codebase_resources"),
-                stop_on_error=form.cleaned_data.get("stop_on_error"),
-            )
             try:
-                warnings, created_counts = importer.save()
+                warnings, created_counts = form.save(product=product)
             except ValidationError as error:
-                transaction.savepoint_rollback(sid)
                 messages.error(request, " ".join(error.messages))
                 return redirect(request.path)
-
-            transaction.savepoint_commit(sid)
 
             if not created_counts:
                 messages.warning(request, "Nothing imported.")

@@ -7,6 +7,7 @@
 #
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import BaseModelFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
@@ -562,6 +563,27 @@ class ImportFromScanForm(forms.Form):
         helper = FormHelper()
         helper.add_input(Submit("import", "Import"))
         return helper
+
+    def save(self, product):
+        from product_portfolio.importers import ImportFromScan
+
+        sid = transaction.savepoint()
+        importer = ImportFromScan(
+            product,
+            self.user,
+            upload_file=self.cleaned_data.get("upload_file"),
+            create_codebase_resources=self.cleaned_data.get("create_codebase_resources"),
+            stop_on_error=self.cleaned_data.get("stop_on_error"),
+        )
+
+        try:
+            warnings, created_counts = importer.save()
+        except ValidationError:
+            transaction.savepoint_rollback(sid)
+            raise
+
+        transaction.savepoint_commit(sid)
+        return warnings, created_counts
 
 
 class LoadSBOMsForm(forms.Form):

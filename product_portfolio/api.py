@@ -34,6 +34,7 @@ from dje.filters import MultipleUUIDFilter
 from dje.filters import NameVersionFilter
 from dje.permissions import assign_all_object_permissions
 from product_portfolio.filters import ComponentCompletenessAPIFilter
+from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
@@ -214,6 +215,24 @@ class LoadSBOMsFormSerializer(serializers.Serializer):
     )
 
 
+class ImportFromScanSerializer(serializers.Serializer):
+    """Serializer equivalent of ImportFromScanForm, used for API documentation."""
+
+    upload_file = serializers.FileField(
+        required=True,
+    )
+    create_codebase_resources = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportFromScanForm.base_fields["create_codebase_resources"].help_text,
+    )
+    stop_on_error = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportFromScanForm.base_fields["stop_on_error"].help_text,
+    )
+
+
 class ProductViewSet(CreateRetrieveUpdateListViewSet):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
@@ -284,6 +303,31 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
 
         form.submit(product=product, user=request.user)
         return Response({"status": "SBOM file submitted to ScanCode.io for inspection."})
+
+    @action(detail=True, methods=["post"], serializer_class=ImportFromScanSerializer)
+    def import_from_scan(self, request, *args, **kwargs):
+        """
+        Import the scan results in the Product.
+
+        Upload a ScanCode.io or ScanCode-toolkit JSON output file.
+        """
+        product = self.get_object()
+
+        form = ImportFromScanForm(user=request.user, data=request.POST, files=request.FILES)
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            warnings, created_counts = form.save(product=product)
+        except ValidationError as error:
+            return Response(error.messages, status=status.HTTP_400_BAD_REQUEST)
+
+        if not created_counts:
+            msg = "Nothing imported."
+        else:
+            msg = "Imported from Scan: "
+            msg += ", ".join([f"{value} {key}" for key, value in created_counts.items()])
+        return Response({"status": msg})
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
