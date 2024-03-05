@@ -7,7 +7,9 @@
 #
 
 import json
+import uuid
 from pathlib import Path
+from unittest import mock
 
 from django.core import mail
 from django.core.files.base import ContentFile
@@ -352,6 +354,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         url = reverse("api_v2:product-load-sboms", args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -379,6 +383,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -415,6 +421,41 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, self.product1.productpackages.count())
         self.assertEqual(1, self.product1.packages.count())
         self.assertEqual(3, self.product1.codebaseresources.count())
+
+    @mock.patch("product_portfolio.forms.PullProjectDataForm.get_project_data")
+    def test_api_product_endpoint_pull_scancodeio_project_data_action(self, mock_get_project_data):
+        url = reverse("api_v2:product-pull-scancodeio-project-data", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"project_name_or_uuid": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        mock_get_project_data.return_value = None
+        data = {
+            "project_name_or_uuid": "project_name",
+            "update_existing_packages": False,
+        }
+        response = self.client.post(url, data)
+        expected = ['Project "project_name" not found on ScanCode.io.']
+        self.assertEqual(expected, response.data)
+
+        mock_get_project_data.return_value = {"uuid": uuid.uuid4()}
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status": "Packages import from ScanCode.io in progress..."}
+        self.assertEqual(expected, response.data)
+        self.assertEqual(1, ScanCodeProject.objects.count())
 
 
 class ProductRelatedAPITestCase(TestCase):

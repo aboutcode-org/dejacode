@@ -36,6 +36,7 @@ from dje.permissions import assign_all_object_permissions
 from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -233,6 +234,20 @@ class ImportFromScanSerializer(serializers.Serializer):
     )
 
 
+class PullProjectDataSerializer(serializers.Serializer):
+    """Serializer equivalent of PullProjectDataForm, used for API documentation."""
+
+    project_name_or_uuid = serializers.CharField(
+        required=True,
+        help_text=PullProjectDataForm.base_fields["project_name_or_uuid"].label,
+    )
+    update_existing_packages = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=PullProjectDataForm.base_fields["update_existing_packages"].help_text,
+    )
+
+
 class ProductViewSet(CreateRetrieveUpdateListViewSet):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
@@ -328,6 +343,25 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
             msg = "Imported from Scan: "
             msg += ", ".join([f"{value} {key}" for key, value in created_counts.items()])
         return Response({"status": msg})
+
+    @action(detail=True, methods=["post"], serializer_class=PullProjectDataSerializer)
+    def pull_scancodeio_project_data(self, request, *args, **kwargs):
+        """
+        Pull data from a ScanCode.io Project to import all its Discovered Packages.
+        Imported Packages will be assigned to this Product.
+        """
+        product = self.get_object()
+
+        form = PullProjectDataForm(data=request.POST)
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form.submit(product=product, user=request.user)
+        except ValidationError as error:
+            return Response(error.messages, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "Packages import from ScanCode.io in progress..."})
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):

@@ -30,6 +30,7 @@ from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
 from component_catalog.models import Component
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import tasks
 from dje.fields import SmartFileField
 from dje.forms import ColorCodeFormMixin
@@ -890,3 +891,35 @@ class PullProjectDataForm(forms.Form):
         helper.form_id = "pull-project-data-form"
         helper.attrs = {"autocomplete": "off"}
         return helper
+
+    def get_project_data(self, project_name_or_uuid, user):
+        scancodeio = ScanCodeIO(user)
+        for field_name in ["name", "uuid"]:
+            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
+            if project_data:
+                return project_data
+
+    def submit(self, product, user):
+        project_name_or_uuid = self.cleaned_data.get("project_name_or_uuid")
+        project_data = self.get_project_data(project_name_or_uuid, user)
+
+        if not project_data:
+            msg = f'Project "{project_name_or_uuid}" not found on ScanCode.io.'
+            raise ValidationError(msg)
+
+        scancode_project = ScanCodeProject.objects.create(
+            product=product,
+            dataspace=product.dataspace,
+            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
+            project_uuid=project_data.get("uuid"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=False,
+            status=ScanCodeProject.Status.SUBMITTED,
+            created_by=user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.pull_project_data_from_scancodeio.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+            )
+        )
