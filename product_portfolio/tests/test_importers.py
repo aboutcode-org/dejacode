@@ -26,6 +26,7 @@ from license_library.models import License
 from license_library.models import LicenseChoice
 from organization.models import Owner
 from product_portfolio.importers import CodebaseResourceImporter
+from product_portfolio.importers import ImportFromScan
 from product_portfolio.importers import ImportPackageFromScanCodeIO
 from product_portfolio.importers import ProductComponentImporter
 from product_portfolio.importers import ProductPackageImporter
@@ -35,7 +36,6 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
-from product_portfolio.views import ImportFromScan
 
 
 class ProductRelationImporterTestCase(TestCase):
