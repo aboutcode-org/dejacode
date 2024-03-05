@@ -115,15 +115,12 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 
 
 @job
-def scancodeio_submit_manifest_inspection(scancodeproject_uuid, user_uuid):
-    """
-    Submit the provided `uris` to ScanCode.io as an asynchronous task.
-    Only publicly available URLs are sent to ScanCode.io.
-    """
+def scancodeio_submit_load_sbom(scancodeproject_uuid, user_uuid):
+    """Submit the provided SBOM file to ScanCode.io as an asynchronous task."""
     from dje.models import DejacodeUser
 
     logger.info(
-        f"Entering scancodeio_submit_manifest_inspection task with "
+        f"Entering scancodeio_submit_load_sbom task with "
         f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid}"
     )
 
@@ -140,7 +137,7 @@ def scancodeio_submit_manifest_inspection(scancodeproject_uuid, user_uuid):
     # Create a Project instance on ScanCode.io without immediate execution of the
     # pipeline. This allows to get instant feedback from ScanCode.io about the Project
     # creation status and its related data, even in SYNC mode.
-    response = scancodeio.submit_manifest_inspection(
+    response = scancodeio.submit_load_sbom(
         project_name=scancodeproject_uuid,
         file_location=scancode_project.input_file.path,
         user_uuid=user_uuid,
@@ -148,16 +145,16 @@ def scancodeio_submit_manifest_inspection(scancodeproject_uuid, user_uuid):
     )
 
     if not response:
-        logger.info("Error submitting the manifest to ScanCode.io server")
+        logger.info("Error submitting the SBOM file to ScanCode.io server")
         scancode_project.status = ScanCodeProject.Status.FAILURE
-        msg = "- Error: Manifest could not be submitted to ScanCode.io"
+        msg = "- Error: SBOM could not be submitted to ScanCode.io"
         scancode_project.append_to_log(msg, save=True)
         return
 
     logger.info("Update the ScanCodeProject instance")
     scancode_project.status = ScanCodeProject.Status.SUBMITTED
     scancode_project.project_uuid = response.get("uuid")
-    msg = "- Manifest submitted to ScanCode.io for inspection"
+    msg = "- SBOM file submitted to ScanCode.io for inspection"
     scancode_project.append_to_log(msg, save=True)
 
     # Delay the execution of the pipeline after the ScancodeProject instance was
@@ -192,8 +189,8 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
         status=ScanCodeProject.Status.IMPORT_STARTED
     )
 
-    if scancode_project.type == scancode_project.ProjectType.IMPORT_FROM_MANIFEST:
-        notification_verb = "Import packages from manifest"
+    if scancode_project.type == scancode_project.ProjectType.LOAD_SBOMS:
+        notification_verb = "Load Packages from SBOMs"
     else:
         notification_verb = "Import packages from ScanCode.io"
 

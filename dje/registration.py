@@ -141,9 +141,11 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
         helper.form_action = "django_registration_register"
         helper.attrs = {"autocomplete": "off"}
 
-        eula = HTML(
-            '<p class="eula">By clicking on "Create account" below, you are agreeing '
-            'to our <a href="https://nexb.com/eula/">EULA</a>.</p>'
+        tos = HTML(
+            '<p class="fw-bolder mb-2">'
+            '  By clicking on "Create account" below, you are agreeing to our '
+            '  <a href="https://nexb.com/dejacode-com-tos/" target="blank">Terms of Service</a>.'
+            "</p>"
         )
 
         helper.layout = Layout(
@@ -167,7 +169,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                     css_class="alert alert-primary px-2",
                 ),
                 "hcaptcha",
-                eula,
+                tos,
                 Div(
                     StrictSubmit(
                         "submit",

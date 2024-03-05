@@ -34,7 +34,7 @@ from dje.models import Dataspace
 from dje.models import History
 from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
-from dje.tasks import scancodeio_submit_manifest_inspection
+from dje.tasks import scancodeio_submit_load_sbom
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -174,7 +174,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
         )
 
         response = self.client.get(url)
@@ -191,7 +191,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         project = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
             status=ScanCodeProject.Status.SUBMITTED,
         )
 
@@ -200,13 +200,13 @@ class ProductPortfolioViewsTestCase(TestCase):
         htmx_refresh = 'hx-trigger="load delay:10s" hx-swap="outerHTML"'
         self.assertContains(response, htmx_refresh)
         self.assertContains(response, "Imports are currently in progress.")
-        self.assertContains(response, "Import from Manifest")
+        self.assertContains(response, "Load SBOMs")
 
         project.status = ScanCodeProject.Status.SUCCESS
         project.save()
         response = self.client.get(url)
         self.assertFalse(response.context["has_projects_in_progress"])
-        self.assertContains(response, "Import from Manifest")
+        self.assertContains(response, "Load SBOMs")
         self.assertNotContains(response, "hx-trigger")
         self.assertNotContains(response, "Imports are currently in progress.")
 
@@ -2693,24 +2693,24 @@ class ProductPortfolioViewsTestCase(TestCase):
 
         self.assertEqual(expected, content)
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_manifest_inspection")
-    def test_scancodeio_submit_manifest_inspection_task(self, mock_submit_manifest):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_load_sbom")
+    def test_scancodeio_submit_load_sbom_task(self, mock_submit_sbom):
         scancodeproject = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
             input_file=ContentFile("Data", name="data.json"),
         )
 
-        mock_submit_manifest.return_value = None
-        scancodeio_submit_manifest_inspection(
+        mock_submit_sbom.return_value = None
+        scancodeio_submit_load_sbom(
             scancodeproject_uuid=scancodeproject.uuid,
             user_uuid=self.super_user.uuid,
         )
         scancodeproject.refresh_from_db()
         self.assertEqual("failure", scancodeproject.status)
         self.assertIsNone(scancodeproject.project_uuid)
-        expected = ["- Error: Manifest could not be submitted to ScanCode.io"]
+        expected = ["- Error: SBOM could not be submitted to ScanCode.io"]
         self.assertEqual(expected, scancodeproject.import_log)
 
         # Reset the instance values
@@ -2719,8 +2719,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancodeproject.save()
 
         project_uuid = uuid.uuid4()
-        mock_submit_manifest.return_value = {"uuid": project_uuid}
-        scancodeio_submit_manifest_inspection(
+        mock_submit_sbom.return_value = {"uuid": project_uuid}
+        scancodeio_submit_load_sbom(
             scancodeproject_uuid=scancodeproject.uuid,
             user_uuid=self.super_user.uuid,
         )
@@ -2728,21 +2728,21 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancodeproject.refresh_from_db()
         self.assertEqual("submitted", scancodeproject.status)
         self.assertEqual(project_uuid, scancodeproject.project_uuid)
-        expected = ["- Manifest submitted to ScanCode.io for inspection"]
+        expected = ["- SBOM file submitted to ScanCode.io for inspection"]
         self.assertEqual(expected, scancodeproject.import_log)
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_manifest_inspection")
-    def test_product_portfolio_import_manifest_view(self, mock_submit):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_load_sbom")
+    def test_product_portfolio_load_sbom_view(self, mock_submit):
         mock_submit.return_value = None
         self.client.login(username=self.super_user.username, password="secret")
-        url = self.product1.get_import_manifest_url()
+        url = self.product1.get_load_sboms_url()
         response = self.client.get(url)
-        expected = "Import and create Packages from a package manifest"
+        expected = "Load Packages from SBOMs"
         self.assertContains(response, expected)
 
         data = {"input_file": ContentFile("Data")}
         response = self.client.post(url, data=data, follow=True)
-        expected = "Manifest submitted to ScanCode.io for inspection."
+        expected = "SBOM file submitted to ScanCode.io for inspection."
         self.assertContains(response, expected)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
@@ -2767,7 +2767,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancodeproject = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
             input_file=ContentFile("Data", name="data.json"),
             created_by=self.super_user,
         )
@@ -2809,7 +2809,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         notif = Notification.objects.get()
         self.assertTrue(notif.unread)
         self.assertEqual(self.super_user, notif.actor)
-        self.assertEqual("Import packages from manifest", notif.verb)
+        self.assertEqual("Load Packages from SBOMs", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
         self.assertEqual("- Imported 1 package.", notif.description)

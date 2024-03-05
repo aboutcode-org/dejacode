@@ -24,6 +24,13 @@ Release notes
 - Add dark theme support in UI.
   https://github.com/nexB/dejacode/issues/25
 
+- Add "Load Packages from SBOMs", "Import scan results", and
+  "Pull ScanCode.io project data" feature as Product action in the REST API.
+  https://github.com/nexB/dejacode/issues/59
+
+- Refactor the "Import manifest" feature as "Load SBOMs".
+  https://github.com/nexB/dejacode/issues/61
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

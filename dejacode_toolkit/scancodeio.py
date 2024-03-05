@@ -76,10 +76,10 @@ class ScanCodeIO(BaseService):
         logger.debug(f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
         return self.request_post(url=self.project_api_url, json=data)
 
-    def submit_manifest_inspection(self, project_name, file_location, user_uuid, execute_now=False):
+    def submit_load_sbom(self, project_name, file_location, user_uuid, execute_now=False):
         data = {
             "name": project_name,
-            "pipeline": "inspect_packages",
+            "pipeline": "load_sbom",
             "execute_now": execute_now,
         }
         files = {
@@ -92,7 +92,7 @@ class ScanCodeIO(BaseService):
         data["webhook_url"] = webhook_url
 
         logger.debug(
-            f"{self.label}: submit manifest inspection "
+            f"{self.label}: submit load sbom "
             f'project_name="{project_name}" webhook_url="{webhook_url}"'
         )
         return self.request_post(url=self.project_api_url, data=data, files=files)

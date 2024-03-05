@@ -1,3 +1,7 @@
+<ul class="list-unstyled">
+  <li><strong>Package count:</strong> {{ scan_data.package_count }}</li>
+  <li><strong>Resource count:</strong> {{ scan_data.resource_count }}</li>
+</ul>
 {% for run in scan_data.runs %}
   <ul class="list-unstyled mb-1">
     <li><strong>Pipeline name:</strong> {{ run.pipeline_name }}</li>

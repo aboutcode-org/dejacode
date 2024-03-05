@@ -99,7 +99,7 @@ from product_portfolio.forms import AttributionConfigurationForm
 from product_portfolio.forms import BaseProductRelationshipInlineFormSet
 from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
-from product_portfolio.forms import ImportManifestForm
+from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
 from product_portfolio.forms import ProductCustomComponentForm
@@ -109,7 +109,6 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
-from product_portfolio.importers import ImportFromScan
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -781,7 +780,7 @@ class ProductTabImportsView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         scancode_projects = self.object.scancodeprojects.all()
-        submitted_projects = self.get_submitted_import_manifest_projects(scancode_projects)
+        submitted_projects = self.get_submitted_load_sboms_projects(scancode_projects)
 
         # Check the status of the "submitted" projects on ScanCode.io and update the
         # local ScanCodeProject instances accordingly.
@@ -800,12 +799,12 @@ class ProductTabImportsView(
         return context_data
 
     @staticmethod
-    def get_submitted_import_manifest_projects(scancode_projects):
+    def get_submitted_load_sboms_projects(scancode_projects):
         return [
             project
             for project in scancode_projects
             if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
+            and project.type == ScanCodeProject.ProjectType.LOAD_SBOMS
         ]
 
     def synchronize(self, scancodeio, project):
@@ -1483,22 +1482,11 @@ def import_from_scan_view(request, dataspace, name, version=""):
             files=request.FILES,
         )
         if form.is_valid():
-            sid = transaction.savepoint()
-            importer = ImportFromScan(
-                product,
-                user,
-                upload_file=form.cleaned_data.get("upload_file"),
-                create_codebase_resources=form.cleaned_data.get("create_codebase_resources"),
-                stop_on_error=form.cleaned_data.get("stop_on_error"),
-            )
             try:
-                warnings, created_counts = importer.save()
+                warnings, created_counts = form.save(product=product)
             except ValidationError as error:
-                transaction.savepoint_rollback(sid)
                 messages.error(request, " ".join(error.messages))
                 return redirect(request.path)
-
-            transaction.savepoint_commit(sid)
 
             if not created_counts:
                 messages.warning(request, "Nothing imported.")
@@ -1846,7 +1834,7 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
     return JsonResponse({"success": "success", "upgrade_available": upgrade_available})
 
 
-class ImportManifestView(
+class LoadSBOMsView(
     LoginRequiredMixin,
     PermissionRequiredMixin,
     GetDataspacedObjectMixin,
@@ -1854,9 +1842,9 @@ class ImportManifestView(
     BaseProductView,
     FormView,
 ):
-    template_name = "product_portfolio/import_manifest_form.html"
+    template_name = "product_portfolio/load_sboms_form.html"
     permission_required = "product_portfolio.change_product"
-    form_class = ImportManifestForm
+    form_class = LoadSBOMsForm
 
     def get_queryset(self):
         return self.model.objects.get_queryset(
@@ -1882,25 +1870,8 @@ class ImportManifestView(
 
     def form_valid(self, form):
         self.object = self.get_object()
-
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.object,
-            dataspace=self.object.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
-            input_file=form.cleaned_data.get("input_file"),
-            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
-            scan_all_packages=form.cleaned_data.get("scan_all_packages"),
-            created_by=self.request.user,
-        )
-
-        transaction.on_commit(
-            lambda: tasks.scancodeio_submit_manifest_inspection.delay(
-                scancodeproject_uuid=scancode_project.uuid,
-                user_uuid=self.request.user.uuid,
-            )
-        )
-
-        msg = "Manifest submitted to ScanCode.io for inspection."
+        form.submit(product=self.object, user=self.request.user)
+        msg = "SBOM file submitted to ScanCode.io for inspection."
         messages.success(self.request, msg)
         return super().form_valid(form)
 
@@ -1943,15 +1914,16 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     user = request.user
     base_qs = ScanCodeProject.objects.scope(user.dataspace)
     scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
+    project_types = ScanCodeProject.ProjectType
 
     scancodeio = ScanCodeIO(user)
-    if scancode_project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST:
+    if scancode_project.type in [project_types.LOAD_SBOMS, project_types.IMPORT_FROM_MANIFEST]:
         template = "product_portfolio/scancodeio_project_status.html"
         scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
         scan_data = scancodeio.fetch_scan_data(scan_detail_url)
         context = {"scan_data": scan_data}
 
-    elif scancode_project.type == ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO:
+    elif scancode_project.type == project_types.PULL_FROM_SCANCODEIO:
         template = "product_portfolio/scancodeio_pull_data_status.html"
         context = {"scancode_project": scancode_project}
 
@@ -1989,40 +1961,15 @@ class PullProjectDataFromScanCodeIOView(
     def get_success_url(self):
         return f"{self.object.get_absolute_url()}#imports"
 
-    def get_project_data(self, project_name_or_uuid):
-        scancodeio = ScanCodeIO(self.request.user)
-        for field_name in ["name", "uuid"]:
-            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
-            if project_data:
-                return project_data
-
     def form_valid(self, form):
-        project_name_or_uuid = form.cleaned_data.get("project_name_or_uuid")
-        project_data = self.get_project_data(project_name_or_uuid)
+        self.object = self.get_object()
 
-        if not project_data:
-            msg = f'Project "{project_name_or_uuid}" not found on ScanCode.io.'
-            messages.error(self.request, msg)
+        try:
+            form.submit(product=self.object, user=self.request.user)
+        except ValidationError as error:
+            messages.error(self.request, error)
             return redirect(self.object.get_absolute_url())
 
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.object,
-            dataspace=self.object.dataspace,
-            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
-            project_uuid=project_data.get("uuid"),
-            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
-            scan_all_packages=False,
-            status=ScanCodeProject.Status.SUBMITTED,
-            created_by=self.request.user,
-        )
-
-        transaction.on_commit(
-            lambda: tasks.pull_project_data_from_scancodeio.delay(
-                scancodeproject_uuid=scancode_project.uuid,
-            )
-        )
-
-        project_name = project_data.get("name")
-        msg = f'Packages import from ScanCode.io "{project_name}" in progress...'
+        msg = "Packages import from ScanCode.io in progress..."
         messages.success(self.request, msg)
         return super().form_valid(form)
