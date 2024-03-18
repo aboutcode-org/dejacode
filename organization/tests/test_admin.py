@@ -294,7 +294,7 @@ class OwnerAdminViewsTestCase(TestCase):
         response = self.client.post(url)
         self.assertFalse(response.context["cl"].has_filters_activated)
 
-        params = "?created_date__gte=2017-01-25+00%3A00%3A00"
+        params = "?created_date__gte=2017-01-25+00%3A00%3A00Z"
         response = self.client.get(url + params)
         self.assertTrue(response.context["cl"].has_filters_activated)
         response = self.client.post(url + params)
@@ -451,8 +451,8 @@ class OwnerAdminViewsTestCase(TestCase):
 
         response = self.client.get(new_owner.get_admin_url())
         expected = (
-            f'<input type="text" name="name" value="{name}" '
-            f'class="vTextField" maxlength="70" required id="id_name" />'
+            f'<input type="text" name="name" value="{name}" class="vTextField" '
+            'maxlength="70" required aria-describedby="id_name_helptext" id="id_name">'
         )
         self.assertContains(response, expected, html=True)
 

@@ -1243,9 +1243,9 @@ class AttributionView(
                 notice_text=None,
                 is_displayed=True,
                 homepage_url=relationship.homepage_url if self.include_homepage_url else "",
-                standard_notice=relationship.standard_notice
-                if self.include_standard_notice
-                else "",
+                standard_notice=(
+                    relationship.standard_notice if self.include_standard_notice else ""
+                ),
             )
 
         copyright_ = ""

@@ -203,9 +203,9 @@ class BaseImportModelForm(ModelFormWithWarnings):
                 continue
 
             choices = [str(getattr(choice, identifier_field, "")) for choice in form_field.queryset]
-            form_field.error_messages[
-                "invalid_choice"
-            ] = 'That choice is not one of the available choices: "{}"'.format(", ".join(choices))
+            form_field.error_messages["invalid_choice"] = (
+                'That choice is not one of the available choices: "{}"'.format(", ".join(choices))
+            )
 
         for field_name, field in self.fields.items():
             # Using `type()` comparison in place if `isinstance` since we do not want

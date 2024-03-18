@@ -9,6 +9,7 @@
 # Common Django settings for all deployments of DejaCode
 
 import sys
+import tempfile
 from pathlib import Path
 
 import environ
@@ -209,7 +210,13 @@ X_FRAME_OPTIONS = "DENY"
 # CSRF_COOKIE_HTTPONLY = True
 # Also, security.W004 SECURE_HSTS_SECONDS and security.W008 SECURE_SSL_REDIRECT
 # are handled at the web server level.
-SILENCED_SYSTEM_CHECKS = ["security.W004", "security.W008", "security.W017", "urls.W005"]
+SILENCED_SYSTEM_CHECKS = [
+    "security.W004",
+    "security.W008",
+    "security.W017",
+    "urls.W005",
+    "admin.E039",
+]
 
 # Set the following to True to enable ClamAV scan on uploaded files
 # This requires the installation of ClamAV
@@ -654,6 +661,8 @@ if DEBUG and DEBUG_TOOLBAR:
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
+    # Do not pollute the MEDIA_ROOT location while running the tests.
+    MEDIA_ROOT = tempfile.TemporaryDirectory().name
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [

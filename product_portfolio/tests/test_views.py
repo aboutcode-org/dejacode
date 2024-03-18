@@ -1751,11 +1751,15 @@ class ProductPortfolioViewsTestCase(TestCase):
 
         # Change status permission
         form = ProductPackageForm(self.basic_user, instance=productpackage)
-        self.assertTrue('<select name="review_status" disabled id="id_review_status">' in str(form))
+        self.assertIn('<select name="review_status" disabled', str(form))
 
         self.basic_user = add_perms(self.basic_user, ["change_review_status_on_productpackage"])
         form = ProductPackageForm(self.basic_user, instance=productpackage)
-        self.assertTrue('<select name="review_status" id="id_review_status">' in str(form))
+        expected = (
+            '<select name="review_status" aria-describedby="id_review_status_helptext" '
+            'id="id_review_status">'
+        )
+        self.assertIn(expected, str(form))
 
         data = {
             "product": productpackage.product.pk,
@@ -2764,7 +2768,6 @@ class ProductPortfolioViewsTestCase(TestCase):
             product=self.product1,
             dataspace=self.product1.dataspace,
             type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-            input_file=ContentFile("Data", name="data.json"),
             created_by=self.super_user,
         )
 

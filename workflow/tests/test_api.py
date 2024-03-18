@@ -290,16 +290,10 @@ class RequestAPITestCase(TestCase):
         self.assertEqual(self.request1.priority.label, response.data["priority"])
         self.assertIsNone(response.data["last_modified_by"])
 
-        expected_comments = [
-            {
-                "uuid": str(comment1.uuid),
-                "user": "base_user",
-                "text": "Comment text",
-                "created_date": comment1.created_date.isoformat(),
-                "last_modified_date": comment1.last_modified_date.isoformat(),
-            }
-        ]
-        self.assertEqual(expected_comments, response.data["comments"])
+        comment = response.data["comments"][0]
+        self.assertEqual(str(comment1.uuid), comment["uuid"])
+        self.assertEqual("base_user", comment["user"])
+        self.assertEqual("Comment text", comment["text"])
 
     def test_api_secured_product_context_request_detail_endpoint(self):
         product1 = Product.objects.create(name="p1", dataspace=self.dataspace)

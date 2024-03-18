@@ -126,9 +126,9 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
         self.fields["hcaptcha"].label = ""
 
-        self.fields[
-            "updates_email_notification"
-        ].label = "Receive updates on DejaCode features and news"
+        self.fields["updates_email_notification"].label = (
+            "Receive updates on DejaCode features and news"
+        )
 
         for field in self.fields.values():
             field.help_text = None
