@@ -864,7 +864,6 @@ class ComponentAdminViewsTestCase(TestCase):
             "dje-externalreference-content_type-object_id-INITIAL_FORMS": 0,
         }
         response = self.client.post(url, data)
-        # print response.context_data['adminform'].form.errors
         self.assertEqual(302, response.status_code)
 
         new_component = Component.objects.get(name=new_name, dataspace=self.dataspace1)

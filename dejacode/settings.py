@@ -662,7 +662,7 @@ if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
     # Do not pollute the MEDIA_ROOT location while running the tests.
-    MEDIA_ROOT = tempfile.TemporaryDirectory()
+    MEDIA_ROOT = tempfile.TemporaryDirectory().name
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [

@@ -343,7 +343,6 @@ class RequestUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.request_template1.get_absolute_url()
         response = self.client.get(url)
-        print(response.content.decode())
         self.assertContains(
             response,
             '<textarea name="field_0" cols="40" rows="2" '
