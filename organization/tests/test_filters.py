@@ -115,7 +115,7 @@ class HistoryCreatedActionTimeListFilterTestCase(
     class_under_test = HistoryCreatedActionTimeListFilter
 
     def get_lookup_params(self):
-        return {"created_date": "past_7_days"}
+        return {"created_date": ["past_7_days"]}
 
     def test_get_history_objects(self):
         with patch("dje.filters.timezone") as mock_timezone:
@@ -194,7 +194,7 @@ class HistoryModifiedActionTimeListFilterTestCase(
     class_under_test = HistoryModifiedActionTimeListFilter
 
     def get_lookup_params(self):
-        return {"modified_date": "past_7_days"}
+        return {"modified_date": ["past_7_days"]}
 
     def test_get_history_objects(self):
         with patch("dje.filters.timezone") as mock_timezone:
@@ -414,7 +414,9 @@ class CreatedByListFilterTestCase(TestCase):
         request.GET = {}
         request.user = self.nexb_user
         model_admin = Mock()
-        filter = CreatedByListFilter(request, {"created_by": self.nexb_user.pk}, Owner, model_admin)
+        filter = CreatedByListFilter(
+            request, {"created_by": [self.nexb_user.pk]}, Owner, model_admin
+        )
         qs = Owner.objects.scope(self.nexb_dataspace)
 
         expected = [self.owner1, self.owner4]
@@ -427,7 +429,7 @@ class CreatedByListFilterTestCase(TestCase):
         request.user = self.other_user
         model_admin = Mock()
         filter = CreatedByListFilter(
-            request, {"created_by": self.other_user.pk}, Owner, model_admin
+            request, {"created_by": [self.other_user.pk]}, Owner, model_admin
         )
         qs = Owner.objects.scope(self.nexb_dataspace)
 

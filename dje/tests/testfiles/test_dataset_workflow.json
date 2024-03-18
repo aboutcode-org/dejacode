@@ -6,8 +6,8 @@
       "nexB"
     ],
     "uuid": "04f6d1e1-a619-4e42-975d-34c04e41ca17",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "name": "Add New License to the License Library",
     "description": "The purpose of this form is to request the application data administrators to add a new License to the License Library.",
     "content_type": [

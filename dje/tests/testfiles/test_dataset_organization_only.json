@@ -6,8 +6,8 @@
       "nexB"
     ],
     "uuid": "0b9931db-db6e-49d1-b3f1-218cb302b20c",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "name": "Linus Torvalds",
     "homepage_url": "http://en.wikipedia.org/wiki/Linus_Torvalds",
     "contact_info": "",
@@ -23,8 +23,8 @@
       "nexB"
     ],
     "uuid": "1711f308-8072-4357-b72d-29afd075816a",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "name": "Test Organization",
     "homepage_url": "",
     "contact_info": "",

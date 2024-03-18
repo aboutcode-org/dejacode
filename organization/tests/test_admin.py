@@ -294,7 +294,7 @@ class OwnerAdminViewsTestCase(TestCase):
         response = self.client.post(url)
         self.assertFalse(response.context["cl"].has_filters_activated)
 
-        params = "?created_date__gte=2017-01-25+00%3A00%3A00"
+        params = "?created_date__gte=2017-01-25+00%3A00%3A00Z"
         response = self.client.get(url + params)
         self.assertTrue(response.context["cl"].has_filters_activated)
         response = self.client.post(url + params)

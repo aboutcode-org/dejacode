@@ -6,8 +6,8 @@
       "nexB"
     ],
     "uuid": "b91a9a06-b709-45a4-ac8e-a57bde0c8f38",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "reference_notes": "",
     "usage_policy": null,
     "type": "",
@@ -69,8 +69,8 @@
       "nexB"
     ],
     "uuid": "565737ed-ab23-46eb-bbcf-185da2da50dc",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "keywords": [
       "Framework"
     ],
@@ -132,8 +132,8 @@
       "nexB"
     ],
     "uuid": "dc39ab30-d521-4dd4-a281-8742a5f83770",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "reference_notes": "",
     "notes": "",
     "is_deployed": true,
@@ -172,8 +172,8 @@
       "nexB"
     ],
     "uuid": "7204dec9-63d7-40c0-b745-b48776afe189",
-    "created_date": "2011-08-24T09:20:01",
-    "last_modified_date": "2011-08-24T09:20:01",
+    "created_date": "2011-08-24T09:20:01Z",
+    "last_modified_date": "2011-08-24T09:20:01Z",
     "reference_notes": "",
     "notes": "",
     "is_deployed": true,
@@ -259,8 +259,8 @@
       "nexB"
     ],
     "uuid": "4ec1aba0-04cb-434c-8d3d-864281d7d9f1",
-    "created_date": "2018-01-30T08:26:43.832",
-    "last_modified_date": "2018-01-30T11:28:46.029",
+    "created_date": "2018-01-30T08:26:43.832Z",
+    "last_modified_date": "2018-01-30T11:28:46.029Z",
     "product": [
       "nexB",
       "565737ed-ab23-46eb-bbcf-185da2da50dc"
@@ -280,8 +280,8 @@
       "nexB"
     ],
     "uuid": "34311f4e-51c5-4443-86d9-2e1b218ebb3b",
-    "created_date": "2018-01-30T08:23:57.960",
-    "last_modified_date": "2018-01-30T11:35:38.631",
+    "created_date": "2018-01-30T08:23:57.960Z",
+    "last_modified_date": "2018-01-30T11:35:38.631Z",
     "product": [
       "nexB",
       "565737ed-ab23-46eb-bbcf-185da2da50dc"
@@ -301,8 +301,8 @@
       "nexB"
     ],
     "uuid": "3b997a71-02b6-4fe7-9a26-1da5257c52d5",
-    "created_date": "2018-01-30T11:31:04.965",
-    "last_modified_date": "2018-01-30T11:31:04.965",
+    "created_date": "2018-01-30T11:31:04.965Z",
+    "last_modified_date": "2018-01-30T11:31:04.965Z",
     "deployed_from": [
       "nexB",
       "34311f4e-51c5-4443-86d9-2e1b218ebb3b"
