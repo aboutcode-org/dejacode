@@ -929,7 +929,7 @@ class AttributionGenerationTest(TestCase):
             '<input type="checkbox" name="include_packages" '
             'class="checkboxinput form-check-input" '
             'aria-describedby="id_include_packages_helptext" id="id_include_packages" '
-            'checked>'
+            "checked>"
         )
         response = self.client.get(url)
         self.assertContains(response, expected)

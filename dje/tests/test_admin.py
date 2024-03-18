@@ -140,7 +140,8 @@ class DataspacedModelAdminTestCase(TestCase):
         response = self.client.get(dataspace_change_url)
         expected = (
             f'<input type="text" name="name" value="{self.other_dataspace.name}" '
-            f'class="vTextField" maxlength="20" required id="id_name" />'
+            f'class="vTextField" maxlength="20" required aria-describedby="id_name_helptext" '
+            f'id="id_name">'
         )
         self.assertContains(response, expected, html=True)
 

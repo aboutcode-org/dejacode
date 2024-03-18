@@ -210,7 +210,13 @@ X_FRAME_OPTIONS = "DENY"
 # CSRF_COOKIE_HTTPONLY = True
 # Also, security.W004 SECURE_HSTS_SECONDS and security.W008 SECURE_SSL_REDIRECT
 # are handled at the web server level.
-SILENCED_SYSTEM_CHECKS = ["security.W004", "security.W008", "security.W017", "urls.W005"]
+SILENCED_SYSTEM_CHECKS = [
+    "security.W004",
+    "security.W008",
+    "security.W017",
+    "urls.W005",
+    "admin.E039",
+]
 
 # Set the following to True to enable ClamAV scan on uploaded files
 # This requires the installation of ClamAV

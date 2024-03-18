@@ -2768,7 +2768,6 @@ class ProductPortfolioViewsTestCase(TestCase):
             product=self.product1,
             dataspace=self.product1.dataspace,
             type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-            input_file=ContentFile("Data", name="data.json"),
             created_by=self.super_user,
         )
 
