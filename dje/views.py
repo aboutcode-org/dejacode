@@ -51,6 +51,7 @@ from django.test import RequestFactory
 from django.urls import NoReverseMatch
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.text import capfirst
@@ -1935,7 +1936,8 @@ class ActivityLog(
         """
         user_dataspace_id = self.request.user.dataspace_id
         content_type = ContentType.objects.get_for_model(self.model)
-        start = datetime.datetime.now() - datetime.timedelta(days=days)
+
+        start = timezone.now() - datetime.timedelta(days=days)
 
         history_entries = History.objects.filter(
             object_dataspace_id=user_dataspace_id,
@@ -2008,7 +2010,7 @@ class ActivityLog(
                 "objects": self.get_objects(days),
                 "verbose_name": self.model._meta.verbose_name,
                 "dataspace": self.request.user.dataspace,
-                "now": datetime.datetime.now(),
+                "now": timezone.now(),
             }
         )
         return context
