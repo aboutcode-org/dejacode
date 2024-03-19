@@ -254,6 +254,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_load_sboms_url(self):
         return self.get_url("load_sboms")
 
+    def get_import_manifests_url(self):
+        return self.get_url("import_manifests")
+
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
 
