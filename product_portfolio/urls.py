@@ -9,6 +9,7 @@
 from django.urls import path
 
 from product_portfolio.views import AttributionView
+from product_portfolio.views import ImportManifestsView
 from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView
 from product_portfolio.views import ManagePackageGridView
@@ -88,7 +89,7 @@ urlpatterns = [
     *product_path("license_summary", license_summary_view),
     *product_path("check_package_version", check_package_version_ajax_view),
     *product_path("load_sboms", LoadSBOMsView.as_view()),
-    *product_path("import_manifests", LoadSBOMsView.as_view()),
+    *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),
