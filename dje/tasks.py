@@ -121,7 +121,8 @@ def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
 
     logger.info(
         f"Entering scancodeio_submit_project task with "
-        f"scancodeproject_uuid= {scancodeproject_uuid} user_uuid={user_uuid}"
+        f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid} "
+        f"pipeline_name={pipeline_name}"
     )
 
     ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")

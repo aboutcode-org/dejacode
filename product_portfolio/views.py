@@ -1870,39 +1870,38 @@ class BaseProductImportFormView(
 
     def form_valid(self, form):
         self.object = self.get_object()
-        form.submit(product=self.object, user=self.request.user)
-        if self.success_msg:
-            messages.success(self.request, self.success_msg)
-        return super().form_valid(form)
 
-
-class LoadSBOMsView(BaseProductImportFormView):
-    template_name = "product_portfolio/load_sboms_form.html"
-    form_class = LoadSBOMsForm
-
-
-class ImportManifestsView(BaseProductImportFormView):
-    template_name = "product_portfolio/import_manifests_form.html"
-    form_class = ImportManifestsForm
-
-
-@method_decorator(require_POST, name="dispatch")
-class PullProjectDataFromScanCodeIOView(BaseProductImportFormView):
-    form_class = PullProjectDataForm
-
-    def form_invalid(self, form):
-        raise Http404
-
-    def form_valid(self, form):
         try:
             form.submit(product=self.object, user=self.request.user)
         except ValidationError as error:
             messages.error(self.request, error)
             return redirect(self.object.get_absolute_url())
 
-        msg = "Packages import from ScanCode.io in progress..."
-        messages.success(self.request, msg)
+        if self.success_msg:
+            messages.success(self.request, self.success_msg)
+
         return super().form_valid(form)
+
+
+class LoadSBOMsView(BaseProductImportFormView):
+    template_name = "product_portfolio/load_sboms_form.html"
+    form_class = LoadSBOMsForm
+    success_msg = "SBOM file submitted to ScanCode.io for inspection."
+
+
+class ImportManifestsView(BaseProductImportFormView):
+    template_name = "product_portfolio/import_manifests_form.html"
+    form_class = ImportManifestsForm
+    success_msg = "Manifest file submitted to ScanCode.io for inspection."
+
+
+@method_decorator(require_POST, name="dispatch")
+class PullProjectDataFromScanCodeIOView(BaseProductImportFormView):
+    form_class = PullProjectDataForm
+    success_msg = "Packages import from ScanCode.io in progress..."
+
+    def form_invalid(self, form):
+        raise Http404
 
 
 @require_POST
