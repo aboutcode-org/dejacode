@@ -34,7 +34,7 @@ from dje.models import Dataspace
 from dje.models import History
 from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
-from dje.tasks import scancodeio_submit_load_sbom
+from dje.tasks import scancodeio_submit_project
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -2693,8 +2693,8 @@ class ProductPortfolioViewsTestCase(TestCase):
 
         self.assertEqual(expected, content)
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_load_sbom")
-    def test_scancodeio_submit_load_sbom_task(self, mock_submit_sbom):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
+    def test_scancodeio_submit_project_task(self, mock_submit_project):
         scancodeproject = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
@@ -2702,8 +2702,8 @@ class ProductPortfolioViewsTestCase(TestCase):
             input_file=ContentFile("Data", name="data.json"),
         )
 
-        mock_submit_sbom.return_value = None
-        scancodeio_submit_load_sbom(
+        mock_submit_project.return_value = None
+        scancodeio_submit_project(
             scancodeproject_uuid=scancodeproject.uuid,
             user_uuid=self.super_user.uuid,
         )
@@ -2719,8 +2719,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancodeproject.save()
 
         project_uuid = uuid.uuid4()
-        mock_submit_sbom.return_value = {"uuid": project_uuid}
-        scancodeio_submit_load_sbom(
+        mock_submit_project.return_value = {"uuid": project_uuid}
+        scancodeio_submit_project(
             scancodeproject_uuid=scancodeproject.uuid,
             user_uuid=self.super_user.uuid,
         )

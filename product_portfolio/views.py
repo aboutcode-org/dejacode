@@ -99,6 +99,7 @@ from product_portfolio.forms import AttributionConfigurationForm
 from product_portfolio.forms import BaseProductRelationshipInlineFormSet
 from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
+from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
@@ -1881,8 +1882,8 @@ class LoadSBOMsView(BaseProductImportFormView):
 
 
 class ImportManifestsView(BaseProductImportFormView):
-    template_name = "product_portfolio/load_sboms_form.html"
-    form_class = LoadSBOMsForm
+    template_name = "product_portfolio/import_manifests_form.html"
+    form_class = ImportManifestsForm
 
 
 @method_decorator(require_POST, name="dispatch")

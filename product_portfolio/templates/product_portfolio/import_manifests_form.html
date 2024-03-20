@@ -1,0 +1,78 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n static crispy_forms_tags %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block page_title %}{% trans "Import Packages from manifests" %}{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% inject_preserved_filters 'product_portfolio:product_list' %}">{% trans "Products" %}</a>
+            / {{ object.get_absolute_link }}
+          </div>
+          <h1 class="header-title">
+            {% trans "Import Packages from manifests" %}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages_alert.html' %}
+
+  <div class="alert alert-success">
+    <div>
+      The list of supported package manifests and dependency lockfiles is available at
+      <a href="https://scancode-toolkit.readthedocs.io/en/stable/reference/available_package_parsers.html">
+        https://scancode-toolkit.readthedocs.io/en/stable/reference/available_package_parsers.html
+      </a>
+    </div>
+    <br>
+    <strong>Multiple Manifests:</strong>
+    You can provide multiple Manifests by packaging them into a <strong>zip archive</strong>.
+    DejaCode will handle and process them accordingly.
+  </div>
+
+  <div class="alert alert-primary" role="alert">
+    When you upload your <strong>Manifest file to DejaCode</strong>,
+    the following process will occur:
+    <ul class="mb-0 mt-2">
+      <li>
+        <strong>Submission to ScanCode.io</strong>
+        Your Manifest file will be submitted to ScanCode.io for thorough scan inspection.
+      </li>
+      <li>
+        <strong>Package Discovery</strong>
+        ScanCode.io will identify and discover packages within your Manifest.
+      </li>
+      <li>
+        <strong>Package Importation</strong>
+        DejaCode will retrieve the discovered packages from ScanCode.io and import them into its system.
+      </li>
+      <li>
+        <strong>Package Assignment</strong>
+        The imported packages will be assigned to the corresponding product within DejaCode.
+      </li>
+    </ul>
+  </div>
+
+  <div class="row">
+    <div class="col-8">
+      {{ form.errors }}
+      {% crispy form %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script>
+    $(document).ready(function () {
+      $('form#import-manifest-form').on('submit', function () {
+        NEXB.displayOverlay("Load Packages from Manifest...");
+      })
+    });
+  </script>
+{% endblock %}

@@ -587,11 +587,15 @@ class ImportFromScanForm(forms.Form):
         return warnings, created_counts
 
 
-class LoadSBOMsForm(forms.Form):
+class BaseProductImportFormView(forms.Form):
+    project_type = None
+    input_label = ""
+
     input_file = SmartFileField(
-        label=_("SBOM file or zip archive"),
+        label=_("file or zip archive"),
         required=True,
     )
+
     update_existing_packages = forms.BooleanField(
         label=_("Update existing packages with discovered packages data"),
         required=False,
@@ -614,6 +618,10 @@ class LoadSBOMsForm(forms.Form):
         ),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["input_file"].label = _(f"{self.input_label} file or zip archive")
+
     @property
     def helper(self):
         helper = FormHelper()
@@ -627,7 +635,7 @@ class LoadSBOMsForm(forms.Form):
         scancode_project = ScanCodeProject.objects.create(
             product=product,
             dataspace=product.dataspace,
-            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            type=self.project_type,
             input_file=self.cleaned_data.get("input_file"),
             update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=self.cleaned_data.get("scan_all_packages"),
@@ -635,11 +643,24 @@ class LoadSBOMsForm(forms.Form):
         )
 
         transaction.on_commit(
-            lambda: tasks.scancodeio_submit_load_sbom.delay(
+            lambda: tasks.scancodeio_submit_project.delay(
                 scancodeproject_uuid=scancode_project.uuid,
                 user_uuid=user.uuid,
+                pipeline_name=self.pipeline_name,
             )
         )
+
+
+class LoadSBOMsForm(BaseProductImportFormView):
+    project_type = ScanCodeProject.ProjectType.LOAD_SBOMS
+    input_label = "SBOM"
+    pipeline_name = "load_sbom"
+
+
+class ImportManifestsForm(BaseProductImportFormView):
+    project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
+    input_label = "Manifest"
+    pipeline_name = "resolve_dependencies"
 
 
 class StrongTextWidget(forms.Widget):
