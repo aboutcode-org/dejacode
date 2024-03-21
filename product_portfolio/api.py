@@ -35,6 +35,7 @@ from dje.filters import NameVersionFilter
 from dje.permissions import assign_all_object_permissions
 from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
+from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.models import CodebaseResource
@@ -216,6 +217,25 @@ class LoadSBOMsFormSerializer(serializers.Serializer):
     )
 
 
+class ImportManifestsFormSerializer(serializers.Serializer):
+    """Serializer equivalent of ImportManifestsForm, used for API documentation."""
+
+    input_file = serializers.FileField(
+        required=True,
+        help_text=ImportManifestsForm.base_fields["input_file"].label,
+    )
+    update_existing_packages = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportManifestsForm.base_fields["update_existing_packages"].help_text,
+    )
+    scan_all_packages = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportManifestsForm.base_fields["scan_all_packages"].help_text,
+    )
+
+
 class ImportFromScanSerializer(serializers.Serializer):
     """Serializer equivalent of ImportFromScanForm, used for API documentation."""
 
@@ -318,6 +338,23 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
 
         form.submit(product=product, user=request.user)
         return Response({"status": "SBOM file submitted to ScanCode.io for inspection."})
+
+    @action(detail=True, methods=["post"], serializer_class=ImportManifestsFormSerializer)
+    def import_manifests(self, request, *args, **kwargs):
+        """
+        Import Packages from Manifests.
+
+        Multiple Manifests: You can provide multiple files by packaging them into a zip
+        archive. DejaCode will handle and process them accordingly.
+        """
+        product = self.get_object()
+
+        form = ImportManifestsForm(data=request.POST, files=request.FILES)
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        form.submit(product=product, user=request.user)
+        return Response({"status": "Manifest file submitted to ScanCode.io for inspection."})
 
     @action(detail=True, methods=["post"], serializer_class=ImportFromScanSerializer)
     def import_from_scan(self, request, *args, **kwargs):

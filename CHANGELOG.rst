@@ -31,6 +31,9 @@ Release notes
 - Refactor the "Import manifest" feature as "Load SBOMs".
   https://github.com/nexB/dejacode/issues/61
 
+- Add support to import packages from manifest.
+  https://github.com/nexB/dejacode/issues/65
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
