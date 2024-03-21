@@ -781,7 +781,7 @@ class ProductTabImportsView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         scancode_projects = self.object.scancodeprojects.all()
-        submitted_projects = self.get_submitted_load_sboms_projects(scancode_projects)
+        submitted_projects = self.get_submitted_projects(scancode_projects)
 
         # Check the status of the "submitted" projects on ScanCode.io and update the
         # local ScanCodeProject instances accordingly.
@@ -800,12 +800,16 @@ class ProductTabImportsView(
         return context_data
 
     @staticmethod
-    def get_submitted_load_sboms_projects(scancode_projects):
+    def get_submitted_projects(scancode_projects):
+        submitted_types = [
+            ScanCodeProject.ProjectType.LOAD_SBOMS,
+            ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+        ]
         return [
             project
             for project in scancode_projects
             if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type == ScanCodeProject.ProjectType.LOAD_SBOMS
+            and project.type in submitted_types
         ]
 
     def synchronize(self, scancodeio, project):
