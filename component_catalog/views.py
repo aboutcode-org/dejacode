@@ -312,6 +312,14 @@ class TabVulnerabilityMixin:
             (_("Summary"), summary, "Summary of the vulnerability"),
         ]
 
+        if vulnerability_url := vulnerability.get("resource_url"):
+            vulnerability_url_help = "Link to the VulnerableCode app."
+            url_as_link = format_html(
+                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
+                vulnerability_url=vulnerability_url,
+            )
+            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
+
         if include_fixed_packages:
             fixed_packages = vulnerability.get("fixed_packages", [])
             fixed_packages_sorted = natsorted(fixed_packages, key=itemgetter("purl"))
