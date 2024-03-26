@@ -1943,23 +1943,18 @@ def import_packages_from_scancodeio_view(request, key):
 
 @login_required
 def scancodeio_project_status_view(request, scancodeproject_uuid):
+    template = "product_portfolio/scancodeio_project_status.html"
     user = request.user
     base_qs = ScanCodeProject.objects.scope(user.dataspace)
     scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
-    project_types = ScanCodeProject.ProjectType
 
     scancodeio = ScanCodeIO(user)
-    if scancode_project.type in [project_types.LOAD_SBOMS, project_types.IMPORT_FROM_MANIFEST]:
-        template = "product_portfolio/scancodeio_project_status.html"
-        scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
-        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
-        context = {"scan_data": scan_data}
+    scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
+    scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 
-    elif scancode_project.type == project_types.PULL_FROM_SCANCODEIO:
-        template = "product_portfolio/scancodeio_pull_data_status.html"
-        context = {"scancode_project": scancode_project}
-
-    else:
-        raise Http404
+    context = {
+        "scancode_project": scancode_project,
+        "scan_data": scan_data,
+    }
 
     return TemplateResponse(request, template, context)

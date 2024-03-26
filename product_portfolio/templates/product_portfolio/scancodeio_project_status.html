@@ -1,6 +1,37 @@
+{% load humanize %}
+
+{% if scancode_project.results.errors %}
+  <h5 class="text-danger">{{ scancode_project.results.errors|length }} errors:</h5>
+  <ul class="mb-1">
+    {% for error in scancode_project.results.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  <hr>
+{% endif %}
+{% if scancode_project.results.created %}
+  <h5>{{ scancode_project.results.created|length }} packages created:</h5>
+  <ul class="mb-1">
+    {% for package in scancode_project.results.created %}
+      <li>{{ package }}</li>
+    {% endfor %}
+  </ul>
+  <hr>
+{% endif %}
+{% if scancode_project.results.existing %}
+  <h5>{{ scancode_project.results.existing|length }} packages updated/existing:</h5>
+  <ul class="mb-1">
+    {% for package in scancode_project.results.existing %}
+      <li>{{ package }}</li>
+    {% endfor %}
+  </ul>
+  <hr>
+{% endif %}
+
 <ul class="list-unstyled">
-  <li><strong>Package count:</strong> {{ scan_data.package_count }}</li>
-  <li><strong>Resource count:</strong> {{ scan_data.resource_count }}</li>
+  <li><strong>Package count:</strong> {{ scan_data.package_count|intcomma }}</li>
+  <li><strong>Dependency count:</strong> {{ scan_data.dependency_count|intcomma }}</li>
+  <li><strong>Resource count:</strong> {{ scan_data.resource_count|intcomma }}</li>
 </ul>
 {% for run in scan_data.runs %}
   <ul class="list-unstyled mb-1">
