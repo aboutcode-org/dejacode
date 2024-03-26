@@ -683,8 +683,9 @@ class ImportPackageFromScanCodeIO:
         if not package:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
-            except ValidationError as e:
-                self.errors.append(e)
+            except ValidationError as errors:
+                errors = self.simplify_errors(errors)
+                self.errors.append(errors)
                 return
             self.created.append(package)
 
@@ -698,3 +699,11 @@ class ImportPackageFromScanCodeIO:
                 "created_by": self.user,
             },
         )
+
+    @staticmethod
+    def simplify_errors(errors):
+        error_dict = getattr(errors, "error_dict", None)
+        if error_dict:
+            if len(error_dict.get("error", [])) == 1 and len(error_dict.get("copy_url", [])):
+                errors = error_dict["error"][0]
+        return errors
