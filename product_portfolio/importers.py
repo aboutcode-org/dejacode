@@ -13,6 +13,7 @@ from django import forms
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
+from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import ObjectDoesNotExist
 from django.db.models import Q
@@ -26,11 +27,13 @@ from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import Package
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dje.copier import copy_object
 from dje.importers import BaseImporter
 from dje.importers import BaseImportModelForm
 from dje.importers import BaseImportModelFormSet
 from dje.importers import ComponentRelatedFieldImportMixin
 from dje.importers import ModelChoiceFieldForImport
+from dje.models import Dataspace
 from dje.utils import get_help_text
 from dje.utils import is_uuid4
 from product_portfolio.forms import ProductComponentLicenseExpressionFormMixin
@@ -667,11 +670,25 @@ class ImportPackageFromScanCodeIO:
             if (value := package_data.get(field))
         }
 
+        # Check if the Package already exists in the local Dataspace
         try:
             package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
             self.existing.append(package)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             package = None
+
+        # Check if the Package already exists in the reference Dataspace
+        reference_dataspace = Dataspace.objects.get_reference()
+        user_dataspace = self.user.dataspace
+        if not package and user_dataspace != reference_dataspace:
+            qs = Package.objects.scope(reference_dataspace).filter(**unique_together_lookups)
+            if qs.exists():
+                reference_object = qs.first()
+                try:
+                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
+                    self.created.append(package)
+                except IntegrityError as error:
+                    self.errors.append(error)
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -684,7 +701,6 @@ class ImportPackageFromScanCodeIO:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
             except ValidationError as errors:
-                errors = self.simplify_errors(errors)
                 self.errors.append(errors)
                 return
             self.created.append(package)
@@ -699,11 +715,3 @@ class ImportPackageFromScanCodeIO:
                 "created_by": self.user,
             },
         )
-
-    @staticmethod
-    def simplify_errors(errors):
-        error_dict = getattr(errors, "error_dict", None)
-        if error_dict:
-            if len(error_dict.get("error", [])) == 1 and len(error_dict.get("copy_url", [])):
-                errors = error_dict["error"][0]
-        return errors
