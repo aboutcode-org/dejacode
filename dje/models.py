@@ -745,9 +745,6 @@ class DataspacedModel(models.Model):
         )
 
         if validate:
-            # Run a pre-clean with `from_api=True` to get simplified messages,
-            # Note that the clean() is run again in the full_clean call.
-            # instance.clean(from_api=True)
             instance.full_clean()
         instance.save()
 
