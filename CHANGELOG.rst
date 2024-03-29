@@ -31,6 +31,9 @@ Release notes
 - Refactor the "Import manifest" feature as "Load SBOMs".
   https://github.com/nexB/dejacode/issues/61
 
+- Add support to import packages from manifest.
+  https://github.com/nexB/dejacode/issues/65
+
 - Add a vulnerability link to the VulnerableCode app in the Vulnerability tab.
   https://github.com/nexB/dejacode/issues/4
 

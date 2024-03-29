@@ -76,10 +76,12 @@ class ScanCodeIO(BaseService):
         logger.debug(f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
         return self.request_post(url=self.project_api_url, json=data)
 
-    def submit_load_sbom(self, project_name, file_location, user_uuid, execute_now=False):
+    def submit_project(
+        self, project_name, pipeline_name, file_location, user_uuid, execute_now=False
+    ):
         data = {
             "name": project_name,
-            "pipeline": "load_sbom",
+            "pipeline": pipeline_name,
             "execute_now": execute_now,
         }
         files = {
@@ -92,7 +94,7 @@ class ScanCodeIO(BaseService):
         data["webhook_url"] = webhook_url
 
         logger.debug(
-            f"{self.label}: submit load sbom "
+            f"{self.label}: submit pipeline={pipeline_name} "
             f'project_name="{project_name}" webhook_url="{webhook_url}"'
         )
         return self.request_post(url=self.project_api_url, data=data, files=files)

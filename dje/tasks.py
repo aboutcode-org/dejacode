@@ -115,13 +115,14 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 
 
 @job
-def scancodeio_submit_load_sbom(scancodeproject_uuid, user_uuid):
+def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
     """Submit the provided SBOM file to ScanCode.io as an asynchronous task."""
     from dje.models import DejacodeUser
 
     logger.info(
-        f"Entering scancodeio_submit_load_sbom task with "
-        f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid}"
+        f"Entering scancodeio_submit_project task with "
+        f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid} "
+        f"pipeline_name={pipeline_name}"
     )
 
     ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")
@@ -137,24 +138,25 @@ def scancodeio_submit_load_sbom(scancodeproject_uuid, user_uuid):
     # Create a Project instance on ScanCode.io without immediate execution of the
     # pipeline. This allows to get instant feedback from ScanCode.io about the Project
     # creation status and its related data, even in SYNC mode.
-    response = scancodeio.submit_load_sbom(
+    response = scancodeio.submit_project(
         project_name=scancodeproject_uuid,
+        pipeline_name=pipeline_name,
         file_location=scancode_project.input_file.path,
         user_uuid=user_uuid,
         execute_now=False,
     )
 
     if not response:
-        logger.info("Error submitting the SBOM file to ScanCode.io server")
+        logger.info("Error submitting the file to ScanCode.io server")
         scancode_project.status = ScanCodeProject.Status.FAILURE
-        msg = "- Error: SBOM could not be submitted to ScanCode.io"
+        msg = "- Error: File could not be submitted to ScanCode.io"
         scancode_project.append_to_log(msg, save=True)
         return
 
     logger.info("Update the ScanCodeProject instance")
     scancode_project.status = ScanCodeProject.Status.SUBMITTED
     scancode_project.project_uuid = response.get("uuid")
-    msg = "- SBOM file submitted to ScanCode.io for inspection"
+    msg = "- File submitted to ScanCode.io for inspection"
     scancode_project.append_to_log(msg, save=True)
 
     # Delay the execution of the pipeline after the ScancodeProject instance was
@@ -164,7 +166,7 @@ def scancodeio_submit_load_sbom(scancodeproject_uuid, user_uuid):
         transaction.on_commit(lambda: scancodeio.start_pipeline(run_url=runs[0]["url"]))
 
 
-@job
+@job("default", timeout=1200)
 def pull_project_data_from_scancodeio(scancodeproject_uuid):
     """
     Pull Project data from ScanCode.io as an asynchronous task for the provided

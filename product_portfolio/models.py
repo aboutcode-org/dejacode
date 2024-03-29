@@ -254,6 +254,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_load_sboms_url(self):
         return self.get_url("load_sboms")
 
+    def get_import_manifests_url(self):
+        return self.get_url("import_manifests")
+
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
 
@@ -1119,7 +1122,6 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     """Wrap a ScanCode.io Project."""
 
     class ProjectType(models.TextChoices):
-        # This type was replaced by LOAD_SBOMS but is kept for backward compatibility
         IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
         LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
         PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")

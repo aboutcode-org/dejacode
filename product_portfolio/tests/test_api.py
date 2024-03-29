@@ -379,6 +379,35 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+    def test_api_product_endpoint_import_manifests_action(self):
+        url = reverse("api_v2:product-import-manifests", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"input_file": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        data = {
+            "input_file": ContentFile("Content", name="requirements.txt"),
+            "update_existing_packages": False,
+            "scan_all_packages": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status": "Manifest file submitted to ScanCode.io for inspection."}
+        self.assertEqual(expected, response.data)
+        self.assertEqual(1, ScanCodeProject.objects.count())
+
     def test_api_product_endpoint_import_from_scan_action(self):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
 
