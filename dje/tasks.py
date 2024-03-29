@@ -166,7 +166,7 @@ def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
         transaction.on_commit(lambda: scancodeio.start_pipeline(run_url=runs[0]["url"]))
 
 
-@job
+@job("default", timeout=1200)
 def pull_project_data_from_scancodeio(scancodeproject_uuid):
     """
     Pull Project data from ScanCode.io as an asynchronous task for the provided
