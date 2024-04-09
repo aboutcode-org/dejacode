@@ -13,11 +13,13 @@ from product_portfolio.views import ImportManifestsView
 from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView
 from product_portfolio.views import ManagePackageGridView
+from product_portfolio.views import PackageVEXUpdateView
 from product_portfolio.views import ProductAddView
 from product_portfolio.views import ProductDeleteView
 from product_portfolio.views import ProductDetailsView
 from product_portfolio.views import ProductExportCycloneDXBOMView
 from product_portfolio.views import ProductExportSPDXDocumentView
+from product_portfolio.views import ProductExportVEXView
 from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
@@ -80,6 +82,7 @@ urlpatterns = [
     *product_path("about_files", ProductSendAboutFilesView.as_view()),
     *product_path("export_spdx", ProductExportSPDXDocumentView.as_view()),
     *product_path("export_cyclonedx", ProductExportCycloneDXBOMView.as_view()),
+    *product_path("export_vex", ProductExportVEXView.as_view()),
     *product_path("attribution", AttributionView.as_view()),
     *product_path("change", ProductUpdateView.as_view()),
     *product_path("delete", ProductDeleteView.as_view()),
@@ -112,5 +115,15 @@ urlpatterns = [
         "",
         ProductListView.as_view(),
         name="product_list",
+    ),
+    path(
+        "<str:dataspace>/productpackage/<int:productpackage_id>/<str:vulnerability_id>/vex_change",
+        PackageVEXUpdateView.as_view(),
+        name="package_vex_change",
+    ),
+    path(
+        "",
+        ProductListView.as_view(),
+        name="productpackagevex_list",
     ),
 ]

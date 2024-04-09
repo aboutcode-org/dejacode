@@ -10,6 +10,7 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
@@ -1247,3 +1248,93 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             recipient=self.created_by,
             description=description,
         )
+
+
+class ProductPackageVEX(DataspacedModel):
+    """
+    Vulnerability Exploitability eXchange for
+    Single Product, Single Version, Single/* Vulnerability, Single Status
+    ( every Vulnerability and package should have a VEX )
+    """
+
+    productpackage = models.ForeignKey(ProductPackage, on_delete=models.CASCADE)
+    vulnerability_id = models.CharField(
+        help_text="VCID-xxxx-xxxx-xxxx", max_length=50, null=False, blank=False
+    )
+
+    STATE_VEX_CHOICES = [
+        ("R", "RESOLVED"),
+        ("RWP", "RESOLVED_WITH_PEDIGREE"),
+        ("E", "EXPLOITABLE"),
+        ("IT", "IN_TRIAGE"),
+        ("FP", "FALSE_POSITIVE"),
+        ("NA", "NOT_AFFECTED"),
+    ]
+
+    state = models.CharField(
+        max_length=3,
+        help_text="The rationale of why the impact analysis state was asserted.",
+        choices=STATE_VEX_CHOICES,
+    )
+
+    RESPONSES_VEX_CHOICES = [
+        ("CNF", "CAN_NOT_FIX"),
+        ("RB", "ROLLBACK"),
+        ("U", "UPDATE"),
+        ("WNF", "WILL_NOT_FIX"),
+        ("WA", "WORKAROUND_AVAILABLE"),
+    ]
+
+    responses = ArrayField(
+        models.CharField(
+            max_length=3,
+            choices=RESPONSES_VEX_CHOICES,
+            blank=True,
+        ),
+        help_text="A response to the vulnerability by the manufacturer, "
+        "supplier, or project responsible for the affected component or service",
+        null=True,
+        max_length=20,
+    )
+
+    JUSTIFICATION_VEX_CHOICES = [
+        ("CNP", "CODE_NOT_PRESENT"),
+        ("CNR", "CODE_NOT_REACHABLE"),
+        ("PP", "PROTECTED_AT_PERIMITER"),
+        ("PR", "PROTECTED_AT_RUNTIME"),
+        ("PC", "PROTECTED_BY_COMPILER"),
+        ("PMC", "PROTECTED_BY_MITIGATING_CONTROL"),
+        ("RC", "REQUIRES_CONFIGURATION"),
+        ("RD", "REQUIRES_DEPENDENCY"),
+        ("RE", "REQUIRES_ENVIRONMENT"),
+    ]
+
+    justification = models.CharField(
+        max_length=3,
+        choices=JUSTIFICATION_VEX_CHOICES,
+        help_text="The rationale of why the impact analysis state was asserted.",
+    )
+
+    detail = models.CharField(help_text="Additional notes to explain the VEX.")
+    ignored = models.BooleanField(help_text="Ignore VEX for this vulnerability", default=False)
+
+    class Meta:
+        unique_together = ("productpackage", "vulnerability_id", "dataspace")
+
+    @property
+    def get_responses_choices(self):
+        labels = []
+        for choice_code, choice_label in self.RESPONSES_VEX_CHOICES:
+            if choice_code in self.responses:
+                labels.append(choice_label)
+        return labels
+
+    @property
+    def vulnerability_url(self):
+        return (
+            f"{self.dataspace.configuration.vulnerablecode_url}"
+            f"vulnerabilities/{self.vulnerability_id}"
+        )
+
+    def __str__(self):
+        return f"{str(self.productpackage)} / {str(self.vulnerability_id)}"

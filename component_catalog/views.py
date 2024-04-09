@@ -75,6 +75,7 @@ from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
+from dejacode_toolkit.vex import create_auto_vex
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
@@ -857,7 +858,6 @@ class ComponentDetailsView(
             vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
             fields.extend(vulnerability_fields)
             vulnerabilities_count += 1
-
         return fields, vulnerabilities_count
 
     def get_context_data(self, **kwargs):
@@ -1451,6 +1451,8 @@ class PackageDetailsView(
         dataspace = self.object.dataspace
         fields = []
         vulnerabilities_count = 0
+
+        create_auto_vex(self.object, vulnerabilities)
 
         for entry in vulnerabilities:
             unresolved = entry.get("affected_by_vulnerabilities", [])

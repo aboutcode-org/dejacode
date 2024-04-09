@@ -51,6 +51,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPackageVEX
 from product_portfolio.models import ScanCodeProject
 
 
@@ -944,3 +945,30 @@ class PullProjectDataForm(forms.Form):
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )
+
+
+class PackageVEXForm(DataspacedModelForm):
+    class Meta:
+        model = ProductPackageVEX
+        fields = ["state", "responses", "justification", "detail", "ignored"]
+        widgets = {
+            "detail": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    RESPONSES_VEX_CHOICES = [
+        ("CNF", "CAN_NOT_FIX"),
+        ("RB", "ROLLBACK"),
+        ("U", "UPDATE"),
+        ("WNF", "WILL_NOT_FIX"),
+        ("WA", "WORKAROUND_AVAILABLE"),
+    ]
+
+    responses = forms.MultipleChoiceField(
+        label="Response:",
+        choices=RESPONSES_VEX_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    helper = FormHelper()
+    helper.add_input(Submit("submit", "Submit", css_class="btn-success"))

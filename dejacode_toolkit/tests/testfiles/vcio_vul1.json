@@ -1,0 +1,147 @@
+{
+  "url": "http://public.vulnerablecode.io/api/vulnerabilities/121332",
+  "vulnerability_id": "VCID-111c-u9bh-aaac",
+  "summary": "Mahara 1.8 before 1.8.6 and 1.9 before 1.9.4 and 1.10 before 1.10.1 and 15.04 before 15.04.0 are vulnerable to old sessions not being invalidated after a password change.",
+  "aliases": [
+    {
+      "alias": "CVE-2017-1000136"
+    }
+  ],
+  "fixed_packages": [],
+  "affected_packages": [],
+  "references": [
+    {
+      "reference_url": "https://bugs.launchpad.net/mahara/+bug/1363873",
+      "reference_id": "",
+      "scores": [],
+      "url": "https://bugs.launchpad.net/mahara/+bug/1363873"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.10.0:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.10.0:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.10.0:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.10:rc1:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.10:rc1:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.10:rc1:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:15.04:rc1:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:15.04:rc1:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:15.04:rc1:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:15.04:rc2:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:15.04:rc2:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:15.04:rc2:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.0:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.0:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.0:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.1:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.1:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.1:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.2:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.2:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.2:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.3:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.3:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.3:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.4:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.4:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.4:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.5:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8.5:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8.5:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8:rc1:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8:rc1:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8:rc1:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8:rc2:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.8:rc2:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.8:rc2:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.0:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.9.0:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.0:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.1:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.9.1:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.1:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.2:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.9.2:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.2:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.3:*:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.9.3:*:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9.3:*:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9:rc1:*:*:*:*:*:*",
+      "reference_id": "cpe:2.3:a:mahara:mahara:1.9:rc1:*:*:*:*:*:*",
+      "scores": [],
+      "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:mahara:mahara:1.9:rc1:*:*:*:*:*:*"
+    },
+    {
+      "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2017-1000136",
+      "reference_id": "CVE-2017-1000136",
+      "scores": [
+        {
+          "value": "4.3",
+          "scoring_system": "cvssv2",
+          "scoring_elements": "AV:N/AC:M/Au:N/C:N/I:P/A:N"
+        },
+        {
+          "value": "6.5",
+          "scoring_system": "cvssv3",
+          "scoring_elements": "CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N"
+        }
+      ],
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-1000136"
+    }
+  ],
+  "weaknesses": [
+    {
+      "cwe_id": 613,
+      "name": "Insufficient Session Expiration",
+      "description": "According to WASC, Insufficient Session Expiration is when a web site permits an attacker to reuse old session credentials or session IDs for authorization."
+    }
+  ],
+  "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-111c-u9bh-aaac"
+}

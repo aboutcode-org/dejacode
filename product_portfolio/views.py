@@ -79,6 +79,7 @@ from dje.views import DataspacedUpdateView
 from dje.views import DataspaceScopeMixin
 from dje.views import ExportCycloneDXBOMView
 from dje.views import ExportSPDXDocumentView
+from dje.views import ExportVEXView
 from dje.views import GetDataspacedObjectMixin
 from dje.views import Header
 from dje.views import LicenseDataForBuilderMixin
@@ -101,6 +102,7 @@ from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import PackageVEXForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
 from product_portfolio.forms import ProductCustomComponentForm
@@ -114,6 +116,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPackageVEX
 from product_portfolio.models import ScanCodeProject
 
 
@@ -279,6 +282,16 @@ class ProductDetailsView(
                 "created_by",
                 "last_modified_date",
                 "last_modified_by",
+            ],
+        },
+        "vex": {
+            "fields": [
+                "productpackage",
+                "vulnerability_id",
+                "state",
+                "responses",
+                "justification",
+                "detail",
             ],
         },
     }
@@ -512,6 +525,22 @@ class ProductDetailsView(
             "label": format_html(label),
             "fields": [
                 (None, tab_context, None, "product_portfolio/tabs/tab_inventory.html"),
+            ],
+        }
+
+    def tab_vex(self):
+        productpackage_qs = self.filter_productpackage.qs.order_by("feature", "package")
+        vex_items = ProductPackageVEX.objects.filter(productpackage__in=productpackage_qs)
+        label = f'VEX List <span class="badge text-bg-primary">{vex_items.count()}</span>'
+
+        tab_context = {
+            "vex_items": vex_items,
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [
+                (None, tab_context, None, "product_portfolio/tabs/tab_vex.html"),
             ],
         }
 
@@ -1431,6 +1460,10 @@ class ProductExportCycloneDXBOMView(BaseProductView, ExportCycloneDXBOMView):
     pass
 
 
+class ProductExportVEXView(BaseProductView, ExportVEXView):
+    pass
+
+
 @login_required
 def scan_all_packages_view(request, dataspace, name, version=""):
     user = request.user
@@ -1958,3 +1991,35 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     }
 
     return TemplateResponse(request, template, context)
+
+
+class PackageVEXUpdateView(
+    DataspacedUpdateView,
+):
+    model = ProductPackageVEX
+    form_class = PackageVEXForm
+    permission_required = "component_catalog.change_package"
+    template_name = "component_catalog/package_vex_form.html"
+    slug_url_kwarg = ("vulnerability_id", "productpackage_id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        opts = self.model._meta
+        context.update(
+            {
+                "verbose_name": opts.verbose_name,
+                "verbose_name_plural": opts.verbose_name_plural,
+                "list_url": reverse(f"{opts.app_label}:{opts.model_name}_list"),
+            }
+        )
+        return context
+
+    def get_success_url(self):
+        return reverse(
+            "product_portfolio:package_vex_change",
+            kwargs={
+                "dataspace": self.kwargs["dataspace"],
+                "productpackage_id": self.kwargs["productpackage_id"],
+                "vulnerability_id": self.kwargs["vulnerability_id"],
+            },
+        )

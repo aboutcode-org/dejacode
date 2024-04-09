@@ -745,6 +745,9 @@ def component_mixin_factory(verbose_name):
         def get_export_cyclonedx_url(self):
             return self.get_url("export_cyclonedx")
 
+        def get_export_vex_url(self):
+            return self.get_url("export_vex")
+
         def get_about_files(self):
             """
             Return the list of all AboutCode files from all the Packages

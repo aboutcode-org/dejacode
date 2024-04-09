@@ -1,0 +1,1015 @@
+{
+  "url": "http://public.vulnerablecode.io/api/vulnerabilities/457133?format=json",
+  "vulnerability_id": "VCID-111c-u9bh-aaac",
+  "summary": "Flask vulnerable to possible disclosure of permanent session cookie due to missing Vary: Cookie header",
+  "aliases": [
+    {
+      "alias": "CVE-2023-30861"
+    },
+    {
+      "alias": "GHSA-m2qf-hxjv-5gpq"
+    },
+    {
+      "alias": "PYSEC-2023-62"
+    }
+  ],
+  "fixed_packages": [
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/625069?format=json",
+      "purl": "pkg:deb/debian/flask@1.0.2-3?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.0.2-3%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/625070?format=json",
+      "purl": "pkg:deb/debian/flask@1.0.2-3%2Bdeb10u1?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.0.2-3%252Bdeb10u1%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/625067?format=json",
+      "purl": "pkg:deb/debian/flask@1.1.2-2?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.1.2-2%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/728786?format=json",
+      "purl": "pkg:deb/debian/flask@1.1.2-2%2Bdeb11u1",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.1.2-2%252Bdeb11u1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/625068?format=json",
+      "purl": "pkg:deb/debian/flask@1.1.2-2%2Bdeb11u1?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.1.2-2%252Bdeb11u1%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/597957?format=json",
+      "purl": "pkg:deb/debian/flask@2.2.2-3?distro=sid",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@2.2.2-3%3Fdistro=sid"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/625066?format=json",
+      "purl": "pkg:deb/debian/flask@2.2.2-3?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@2.2.2-3%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/639141?format=json",
+      "purl": "pkg:deb/debian/flask@2.2.5-1?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@2.2.5-1%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/808362?format=json",
+      "purl": "pkg:deb/debian/flask@3.0.2-1?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@3.0.2-1%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/815308?format=json",
+      "purl": "pkg:deb/debian/flask@3.0.3-1?distro=trixie",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@3.0.3-1%3Fdistro=trixie"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/642099?format=json",
+      "purl": "pkg:pypi/flask@2.2.5",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.5"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606889?format=json",
+      "purl": "pkg:pypi/flask@2.3.2",
+      "is_vulnerable": false,
+      "affected_by_vulnerabilities": [],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.3.2"
+    }
+  ],
+  "affected_packages": [
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/591807?format=json",
+      "purl": "pkg:deb/debian/flask@1.0.2-3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.0.2-3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/366672?format=json",
+      "purl": "pkg:deb/debian/flask@1.0.2-3?distro=sid",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.0.2-3%3Fdistro=sid"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/728785?format=json",
+      "purl": "pkg:deb/debian/flask@1.1.2-2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.1.2-2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/366671?format=json",
+      "purl": "pkg:deb/debian/flask@1.1.2-2?distro=sid",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@1.1.2-2%3Fdistro=sid"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/559244?format=json",
+      "purl": "pkg:deb/debian/flask@2.2.2-2?distro=sid",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:deb/debian/flask@2.2.2-2%3Fdistro=sid"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110820?format=json",
+      "purl": "pkg:pypi/flask@0.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110836?format=json",
+      "purl": "pkg:pypi/flask@0.10",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.10"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110837?format=json",
+      "purl": "pkg:pypi/flask@0.10.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.10.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110838?format=json",
+      "purl": "pkg:pypi/flask@0.11",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.11"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110839?format=json",
+      "purl": "pkg:pypi/flask@0.11.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.11.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110840?format=json",
+      "purl": "pkg:pypi/flask@0.12",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110841?format=json",
+      "purl": "pkg:pypi/flask@0.12.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110842?format=json",
+      "purl": "pkg:pypi/flask@0.12.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110843?format=json",
+      "purl": "pkg:pypi/flask@0.12.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/112303?format=json",
+      "purl": "pkg:pypi/flask@0.12.4",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12.4"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/112304?format=json",
+      "purl": "pkg:pypi/flask@0.12.5",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.12.5"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110821?format=json",
+      "purl": "pkg:pypi/flask@0.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110822?format=json",
+      "purl": "pkg:pypi/flask@0.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110823?format=json",
+      "purl": "pkg:pypi/flask@0.3.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.3.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110824?format=json",
+      "purl": "pkg:pypi/flask@0.4",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.4"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110825?format=json",
+      "purl": "pkg:pypi/flask@0.5",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.5"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110826?format=json",
+      "purl": "pkg:pypi/flask@0.5.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.5.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110827?format=json",
+      "purl": "pkg:pypi/flask@0.5.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.5.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110828?format=json",
+      "purl": "pkg:pypi/flask@0.6",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-a1md-ney4-aaac"
+        },
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.6"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110829?format=json",
+      "purl": "pkg:pypi/flask@0.6.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.6.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110830?format=json",
+      "purl": "pkg:pypi/flask@0.7",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.7"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110831?format=json",
+      "purl": "pkg:pypi/flask@0.7.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.7.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110832?format=json",
+      "purl": "pkg:pypi/flask@0.7.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.7.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110833?format=json",
+      "purl": "pkg:pypi/flask@0.8",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.8"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110834?format=json",
+      "purl": "pkg:pypi/flask@0.8.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.8.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/110835?format=json",
+      "purl": "pkg:pypi/flask@0.9",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-es3g-2k93-aaaf"
+        },
+        {
+          "vulnerability": "VCID-w41d-hjxu-aaas"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@0.9"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/112305?format=json",
+      "purl": "pkg:pypi/flask@1.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606890?format=json",
+      "purl": "pkg:pypi/flask@1.0.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.0.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606891?format=json",
+      "purl": "pkg:pypi/flask@1.0.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.0.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606892?format=json",
+      "purl": "pkg:pypi/flask@1.0.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.0.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606893?format=json",
+      "purl": "pkg:pypi/flask@1.0.4",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.0.4"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606894?format=json",
+      "purl": "pkg:pypi/flask@1.1.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.1.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606895?format=json",
+      "purl": "pkg:pypi/flask@1.1.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.1.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606896?format=json",
+      "purl": "pkg:pypi/flask@1.1.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.1.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606897?format=json",
+      "purl": "pkg:pypi/flask@1.1.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.1.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606898?format=json",
+      "purl": "pkg:pypi/flask@1.1.4",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@1.1.4"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606901?format=json",
+      "purl": "pkg:pypi/flask@2.0.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606899?format=json",
+      "purl": "pkg:pypi/flask@2.0.0rc1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.0rc1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606900?format=json",
+      "purl": "pkg:pypi/flask@2.0.0rc2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.0rc2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606902?format=json",
+      "purl": "pkg:pypi/flask@2.0.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606903?format=json",
+      "purl": "pkg:pypi/flask@2.0.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606904?format=json",
+      "purl": "pkg:pypi/flask@2.0.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.0.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606905?format=json",
+      "purl": "pkg:pypi/flask@2.1.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.1.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606906?format=json",
+      "purl": "pkg:pypi/flask@2.1.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.1.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606907?format=json",
+      "purl": "pkg:pypi/flask@2.1.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.1.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606908?format=json",
+      "purl": "pkg:pypi/flask@2.1.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.1.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606909?format=json",
+      "purl": "pkg:pypi/flask@2.2.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606910?format=json",
+      "purl": "pkg:pypi/flask@2.2.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606911?format=json",
+      "purl": "pkg:pypi/flask@2.2.2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.2"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606912?format=json",
+      "purl": "pkg:pypi/flask@2.2.3",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.3"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606913?format=json",
+      "purl": "pkg:pypi/flask@2.2.4",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.2.4"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606887?format=json",
+      "purl": "pkg:pypi/flask@2.3.0",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.3.0"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/606888?format=json",
+      "purl": "pkg:pypi/flask@2.3.1",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/flask@2.3.1"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686987?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@1:0.10.1-7?arch=el7_9",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@1:0.10.1-7%3Farch=el7_9"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686989?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@1:1.0.2-8?arch=el8ost",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@1:1.0.2-8%3Farch=el8ost"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686988?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@1:1.1.2-6?arch=el8",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@1:1.1.2-6%3Farch=el8"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686990?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@1:1.1.2-6?arch=el9ost",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@1:1.1.2-6%3Farch=el9ost"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686985?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@1:2.0.1-3?arch=el9",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@1:2.0.1-3%3Farch=el9"
+    },
+    {
+      "url": "http://public.vulnerablecode.io/api/packages/686986?format=json",
+      "purl": "pkg:rpm/redhat/python-flask@2:2.0.1-4.el9?arch=2",
+      "is_vulnerable": true,
+      "affected_by_vulnerabilities": [
+        {
+          "vulnerability": "VCID-ccmw-8ht8-aaaq"
+        },
+        {
+          "vulnerability": "VCID-kuxv-41y8-aaaj"
+        },
+        {
+          "vulnerability": "VCID-z6fe-2j8a-aaak"
+        }
+      ],
+      "resource_url": "http://public.vulnerablecode.io/packages/pkg:rpm/redhat/python-flask@2:2.0.1-4.el9%3Farch=2"
+    }
+  ],
+  "references": [
+    {
+      "reference_url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2023-30861.json",
+      "reference_id": "",
+      "scores": [
+        {
+          "value": "7.5",
+          "scoring_system": "cvssv3",
+          "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2023-30861.json"
+    }
+  ],
+  "weaknesses": [
+    {
+      "cwe_id": 539,
+      "name": "Use of Persistent Cookies Containing Sensitive Information",
+      "description": "The web application uses persistent cookies, but the cookies contain sensitive information."
+    },
+    {
+      "cwe_id": 488,
+      "name": "Exposure of Data Element to Wrong Session",
+      "description": "The product does not sufficiently enforce boundaries between the states of different sessions, causing data to be provided to, or used by, the wrong session."
+    }
+  ],
+  "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-z6fe-2j8a-aaak"
+}

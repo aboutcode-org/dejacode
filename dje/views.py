@@ -75,6 +75,7 @@ from notifications import views as notifications_views
 from component_catalog.license_expression_dje import get_license_objects
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.vex import VEXCycloneDX
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import outputs
 from dje.copier import COPY_DEFAULT_EXCLUDE
@@ -116,6 +117,7 @@ from dje.utils import group_by_simple
 from dje.utils import has_permission
 from dje.utils import queryset_to_changelist_href
 from dje.utils import str_to_id_list
+from product_portfolio.models import ProductPackageVEX
 
 License = apps.get_model("license_library", "License")
 Request = apps.get_model("workflow", "Request")
@@ -2364,3 +2366,44 @@ class ExportCycloneDXBOMView(
             filename=outputs.get_cyclonedx_filename(instance),
             content_type="application/json",
         )
+
+
+class ExportVEXView(
+    LoginRequiredMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    def get(self, request, *args, **kwargs):
+        product = self.get_object()
+        filename = f"dejacode_{product.dataspace.name}_{product._meta.model_name}_vex.json"
+        vulnerablecode = VulnerableCode(self.request.user)
+
+        if not vulnerablecode.is_configured():
+            raise Http404
+
+        vexs = ProductPackageVEX.objects.filter(
+            productpackage__product=product, dataspace=product.dataspace, ignored=False
+        )
+
+        vulnerabilities = []
+        for vex in vexs:
+            url = f"{vulnerablecode.api_url}vulnerabilities/"
+            vulnerability = vulnerablecode.get_vulnerabilities(
+                url, field_name="vulnerability_id", field_value=vex.vulnerability_id
+            )
+            vulnerabilities.append(vulnerability[0])
+
+        if not vulnerabilities:
+            raise Http404
+
+        spec_version = self.request.GET.get("spec_version")
+        vex = VEXCycloneDX(specVersion=spec_version)
+        vex_json = vex.export(vulnerabilities, vexs)
+        response = FileResponse(
+            vex_json,
+            filename=filename,
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response

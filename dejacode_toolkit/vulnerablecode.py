@@ -5,7 +5,6 @@
 # See https://github.com/nexB/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
-
 from django.core.cache import caches
 
 from dejacode_toolkit import BaseService
