@@ -164,4 +164,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuse
+.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
