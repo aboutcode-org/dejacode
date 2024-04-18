@@ -2397,13 +2397,16 @@ class ExportCycloneDXBOMView(
     GetDataspacedObjectMixin,
     BaseDetailView,
 ):
+    default_spec_version = "1.6"
+
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
         filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
+        spec_version = self.request.GET.get("spec_version", self.default_spec_version)
 
         response = FileResponse(
-            self.get_cyclonedx_bom_json(instance),
+            self.get_cyclonedx_bom_json(instance, spec_version),
             filename=filename,
             content_type="application/json",
         )
@@ -2411,12 +2414,12 @@ class ExportCycloneDXBOMView(
 
         return response
 
-    def get_cyclonedx_bom_json(self, instance, version="1.6"):
+    def get_cyclonedx_bom_json(self, instance, spec_version):
         """
         Generate JSON output for the provided ``instance`` in CycloneDX BOM format.
         """
         cyclonedx_bom = self.get_cyclonedx_bom(instance=instance, user=self.request.user)
-        schema_version = SchemaVersion.from_version(version)
+        schema_version = SchemaVersion.from_version(spec_version)
 
         json_outputter = cyclonedx_output.make_outputter(
             bom=cyclonedx_bom,
