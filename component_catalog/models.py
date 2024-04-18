@@ -34,6 +34,8 @@ from django.utils.translation import gettext_lazy as _
 from attributecode.model import About
 from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
+from cyclonedx.model import contact as cyclonedx_contact
+from cyclonedx.model import license as cyclonedx_license
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
@@ -758,7 +760,7 @@ def component_mixin_factory(verbose_name):
             """Return this Component/Product as an CycloneDX Component entry."""
             supplier = None
             if self.owner:
-                supplier = cyclonedx_model.OrganizationalEntity(
+                supplier = cyclonedx_contact.OrganizationalEntity(
                     name=self.owner.name,
                     urls=[self.owner.homepage_url],
                 )
@@ -766,9 +768,9 @@ def component_mixin_factory(verbose_name):
             expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
             licenses = []
             if expression_spdx:
-                licenses = [
-                    cyclonedx_model.LicenseChoice(license_expression=expression_spdx),
-                ]
+                # Using the LicenseExpression directly as the make_with_expression method
+                # does not support the "LicenseRef-" keys.
+                licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
 
             if self.__class__.__name__ == "Product":
                 component_type = cyclonedx_component.ComponentType.APPLICATION
@@ -777,12 +779,12 @@ def component_mixin_factory(verbose_name):
 
             return cyclonedx_component.Component(
                 name=self.name,
-                component_type=component_type,
+                type=component_type,
                 version=self.version,
                 bom_ref=str(self.uuid),
                 supplier=supplier,
                 licenses=licenses,
-                copyright_=self.copyright,
+                copyright=self.copyright,
                 description=self.description,
                 cpe=getattr(self, "cpe", None),
                 properties=get_cyclonedx_properties(self),
@@ -2222,9 +2224,9 @@ class Package(
 
         licenses = []
         if expression_spdx:
-            licenses = [
-                cyclonedx_model.LicenseChoice(license_expression=expression_spdx),
-            ]
+            # Using the LicenseExpression directly as the make_with_expression method
+            # does not support the "LicenseRef-" keys.
+            licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
 
         hash_fields = {
             "md5": cyclonedx_model.HashAlgorithm.MD5,
@@ -2233,19 +2235,19 @@ class Package(
             "sha512": cyclonedx_model.HashAlgorithm.SHA_512,
         }
         hashes = [
-            cyclonedx_model.HashType(algorithm=algorithm, hash_value=hash_value)
+            cyclonedx_model.HashType(alg=algorithm, content=hash_value)
             for field_name, algorithm in hash_fields.items()
             if (hash_value := getattr(self, field_name))
         ]
 
-        purl = self.package_url
+        package_url = self.get_package_url()
         return cyclonedx_component.Component(
             name=self.name,
             version=self.version,
-            bom_ref=purl or str(self.uuid),
-            purl=purl,
+            bom_ref=str(package_url) or str(self.uuid),
+            purl=package_url,
             licenses=licenses,
-            copyright_=self.copyright,
+            copyright=self.copyright,
             description=self.description,
             cpe=self.cpe,
             author=self.author,

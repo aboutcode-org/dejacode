@@ -69,6 +69,7 @@ from django.views.generic.edit import DeleteView
 import django_otp
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
+from cyclonedx.schema import SchemaVersion
 from django_filters.views import FilterView
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
@@ -2396,6 +2397,7 @@ class ExportCycloneDXBOMView(
 ):
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
+        spec_version = "1.6"
         cyclonedx_bom = self.get_cyclonedx_bom(instance, self.request.user)
         base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
         filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
@@ -2403,11 +2405,12 @@ class ExportCycloneDXBOMView(
         if not cyclonedx_bom:
             raise Http404
 
-        outputter = cyclonedx_output.get_instance(
+        json_outputter = cyclonedx_output.make_outputter(
             bom=cyclonedx_bom,
             output_format=cyclonedx_output.OutputFormat.JSON,
+            schema_version=SchemaVersion.from_version(spec_version),
         )
-        bom_json = outputter.output_as_string()
+        bom_json = json_outputter.output_as_string()
 
         response = FileResponse(
             bom_json,
@@ -2421,20 +2424,11 @@ class ExportCycloneDXBOMView(
     @staticmethod
     def get_cyclonedx_bom(instance, user):
         """https://cyclonedx.org/use-cases/#dependency-graph"""
-        cyclonedx_components = []
+        root_component = instance.as_cyclonedx()
 
-        if hasattr(instance, "get_cyclonedx_components"):
-            cyclonedx_components = [
-                component.as_cyclonedx() for component in instance.get_cyclonedx_components()
-            ]
-
-        bom = cyclonedx_bom.Bom(components=cyclonedx_components)
-
-        cdx_component = instance.as_cyclonedx()
-        cdx_component.dependencies.update([component.bom_ref for component in cyclonedx_components])
-
+        bom = cyclonedx_bom.Bom()
         bom.metadata = cyclonedx_bom.BomMetaData(
-            component=cdx_component,
+            component=root_component,
             tools=[
                 cyclonedx_bom.Tool(
                     vendor="nexB",
@@ -2448,5 +2442,15 @@ class ExportCycloneDXBOMView(
                 )
             ],
         )
+
+        cyclonedx_components = []
+        if hasattr(instance, "get_cyclonedx_components"):
+            cyclonedx_components = [
+                component.as_cyclonedx() for component in instance.get_cyclonedx_components()
+            ]
+
+        for component in cyclonedx_components:
+            bom.components.add(component)
+            bom.register_dependency(root_component, [component])
 
         return bom

@@ -2625,70 +2625,64 @@ class ProductPortfolioViewsTestCase(TestCase):
         del content["metadata"]["tools"][0]["version"]
 
         expected = {
-            "$schema": "http://cyclonedx.org/schema/bom-1.4.schema.json",
+            "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
             "bomFormat": "CycloneDX",
-            "specVersion": "1.4",
-            "version": 1,
-            "metadata": {
-                "tools": [
-                    {"vendor": "nexB", "name": "DejaCode"},
-                ],
-                "authors": [
-                    {"name": " "},
-                ],
-                "component": {
-                    "type": "application",
-                    "bom-ref": str(self.product1.uuid),
-                    "name": "Product1 With Space",
-                    "version": "1.0",
-                },
-            },
             "components": [
                 {
-                    "type": "library",
                     "bom-ref": str(self.component1.uuid),
+                    "copyright": "",
+                    "cpe": "",
+                    "description": "",
+                    "licenses": [{"expression": "LicenseRef-dejacode-l1"}],
                     "name": "Component1",
+                    "type": "library",
                     "version": "1.0",
-                    "licenses": [
-                        {"expression": "LicenseRef-dejacode-l1"},
-                    ],
                 },
                 {
-                    "type": "library",
+                    "author": "",
                     "bom-ref": "pkg:deb/debian/curl@7.50.3-1",
-                    "name": "curl",
-                    "version": "7.50.3-1",
+                    "copyright": "",
+                    "cpe": "",
+                    "description": "",
                     "hashes": [
                         {"alg": "MD5", "content": "md5"},
                         {"alg": "SHA-1", "content": "sha1"},
                         {"alg": "SHA-256", "content": "sha256"},
                         {"alg": "SHA-512", "content": "sha512"},
                     ],
-                    "purl": "pkg:deb/debian/curl@7.50.3-1",
+                    "name": "curl",
                     "properties": [
                         {"name": "aboutcode:download_url", "value": "https://download.url"},
                         {"name": "aboutcode:filename", "value": "package.zip"},
                         {"name": "aboutcode:primary_language", "value": "Python"},
                     ],
+                    "purl": "pkg:deb/debian/curl@7.50.3-1",
+                    "type": "library",
+                    "version": "7.50.3-1",
                 },
             ],
             "dependencies": [
+                {"ref": str(self.component1.uuid)},
                 {
+                    "dependsOn": [str(self.component1.uuid), "pkg:deb/debian/curl@7.50.3-1"],
                     "ref": str(self.product1.uuid),
-                    "dependsOn": [
-                        str(self.component1.uuid),
-                        package.package_url,
-                    ],
                 },
-                {
-                    "ref": str(self.component1.uuid),
-                    "dependsOn": [],
-                },
-                {
-                    "ref": "pkg:deb/debian/curl@7.50.3-1",
-                    "dependsOn": [],
-                },
+                {"ref": "pkg:deb/debian/curl@7.50.3-1"},
             ],
+            "metadata": {
+                "authors": [{"name": " "}],
+                "component": {
+                    "bom-ref": str(self.product1.uuid),
+                    "copyright": "",
+                    "description": "",
+                    "name": "Product1 With Space",
+                    "type": "application",
+                    "version": "1.0",
+                },
+                "tools": [{"name": "DejaCode", "vendor": "nexB"}],
+            },
+            "specVersion": "1.6",
+            "version": 1,
         }
 
         self.assertEqual(expected, content)

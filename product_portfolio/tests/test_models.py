@@ -724,8 +724,11 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(expected, pp1.as_spdx().as_dict())
 
     def test_product_model_as_cyclonedx(self):
-        expected = "<Component group=None, name=Product1, version=, type=ComponentType.APPLICATION>"
-        self.assertEqual(expected, repr(self.product1.as_cyclonedx()))
+        cyclonedx_data = self.product1.as_cyclonedx()
+        self.assertEqual("application", cyclonedx_data.type)
+        self.assertEqual(self.product1.name, cyclonedx_data.name)
+        self.assertEqual(self.product1.version, cyclonedx_data.version)
+        self.assertEqual(str(self.product1.uuid), str(cyclonedx_data.bom_ref))
 
     def test_product_portfolio_scancode_project_model_can_start_import(self):
         scancode_project = ScanCodeProject.objects.create(
