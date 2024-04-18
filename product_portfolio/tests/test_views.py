@@ -2611,8 +2611,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         )
 
         self.client.login(username=self.super_user.username, password="secret")
-        export_spdx_url = self.product1.get_export_cyclonedx_url()
-        response = self.client.get(export_spdx_url)
+        export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
+        response = self.client.get(export_cyclonedx_url)
         self.assertEqual(
             "dejacode_nexb_product_product1_with_space_1.0.cdx.json", response.filename
         )
@@ -2627,6 +2627,20 @@ class ProductPortfolioViewsTestCase(TestCase):
         expected = {
             "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
             "bomFormat": "CycloneDX",
+            "specVersion": "1.6",
+            "version": 1,
+            "metadata": {
+                "authors": [{"name": " "}],
+                "component": {
+                    "bom-ref": str(self.product1.uuid),
+                    "copyright": "",
+                    "description": "",
+                    "name": "Product1 With Space",
+                    "type": "application",
+                    "version": "1.0",
+                },
+                "tools": [{"name": "DejaCode", "vendor": "nexB"}],
+            },
             "components": [
                 {
                     "bom-ref": str(self.component1.uuid),
@@ -2664,28 +2678,17 @@ class ProductPortfolioViewsTestCase(TestCase):
             "dependencies": [
                 {"ref": str(self.component1.uuid)},
                 {
-                    "dependsOn": [str(self.component1.uuid), "pkg:deb/debian/curl@7.50.3-1"],
+                    "dependsOn": [
+                        str(self.component1.uuid),
+                        "pkg:deb/debian/curl@7.50.3-1",
+                    ],
                     "ref": str(self.product1.uuid),
                 },
                 {"ref": "pkg:deb/debian/curl@7.50.3-1"},
             ],
-            "metadata": {
-                "authors": [{"name": " "}],
-                "component": {
-                    "bom-ref": str(self.product1.uuid),
-                    "copyright": "",
-                    "description": "",
-                    "name": "Product1 With Space",
-                    "type": "application",
-                    "version": "1.0",
-                },
-                "tools": [{"name": "DejaCode", "vendor": "nexB"}],
-            },
-            "specVersion": "1.6",
-            "version": 1,
-        }
 
-        self.assertEqual(expected, content)
+        }
+        self.assertDictEqual(expected, content)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_scancodeio_submit_project_task(self, mock_submit_project):

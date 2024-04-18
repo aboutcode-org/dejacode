@@ -8,6 +8,7 @@
 
 import copy
 import datetime
+import json
 import logging
 import operator
 import os
@@ -70,6 +71,7 @@ import django_otp
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
 from cyclonedx.schema import SchemaVersion
+from cyclonedx.validation.json import JsonStrictValidator
 from django_filters.views import FilterView
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
@@ -2397,29 +2399,55 @@ class ExportCycloneDXBOMView(
 ):
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        spec_version = "1.6"
-        cyclonedx_bom = self.get_cyclonedx_bom(instance, self.request.user)
         base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
         filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
 
-        if not cyclonedx_bom:
-            raise Http404
-
-        json_outputter = cyclonedx_output.make_outputter(
-            bom=cyclonedx_bom,
-            output_format=cyclonedx_output.OutputFormat.JSON,
-            schema_version=SchemaVersion.from_version(spec_version),
-        )
-        bom_json = json_outputter.output_as_string()
-
         response = FileResponse(
-            bom_json,
+            self.get_cyclonedx_bom_json(instance),
             filename=filename,
             content_type="application/json",
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         return response
+
+    def get_cyclonedx_bom_json(self, instance, version="1.6"):
+        """
+        Generate JSON output for the provided ``instance`` in CycloneDX BOM format.
+        """
+        cyclonedx_bom = self.get_cyclonedx_bom(instance=instance, user=self.request.user)
+        schema_version = SchemaVersion.from_version(version)
+
+        json_outputter = cyclonedx_output.make_outputter(
+            bom=cyclonedx_bom,
+            output_format=cyclonedx_output.OutputFormat.JSON,
+            schema_version=schema_version,
+        )
+
+        # Using the internal API in place of the output_as_string() method to avoid
+        # a round of deserialization/serialization while fixing the field ordering.
+        json_outputter.generate()
+        bom_as_dict = json_outputter._bom_json
+
+        # The default order out of the outputter is not great, the following sorts the
+        # bom using the order from the schema.
+        sorted_json = self.sort_bom_with_schema_ordering(bom_as_dict, schema_version)
+
+        return sorted_json
+
+    @staticmethod
+    def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
+        """Sort the ``bom_as_dict`` using the ordering from the ``schema_version``."""
+        schema_file = JsonStrictValidator(schema_version)._schema_file
+        with open(schema_file) as sf:
+            schema_dict = json.loads(sf.read())
+
+        order_from_schema = list(schema_dict.get("properties", {}).keys())
+        ordered_dict = {
+            key: bom_as_dict.get(key) for key in order_from_schema if key in bom_as_dict
+        }
+
+        return json.dumps(ordered_dict, indent=2)
 
     @staticmethod
     def get_cyclonedx_bom(instance, user):
