@@ -15,6 +15,7 @@ def dejacode_context(request):
     """Return all the DejaCode specific context variables."""
     return {
         "DEJACODE_VERSION": DEJACODE_VERSION,
+        "DEJACODE_SUPPORT_EMAIL": settings.DEJACODE_SUPPORT_EMAIL,
         "FAVICON_HREF": settings.FAVICON_HREF,
         "SITE_TITLE": settings.SITE_TITLE,
         "HEADER_TEMPLATE": settings.HEADER_TEMPLATE,
