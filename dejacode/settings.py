@@ -370,6 +370,9 @@ EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 
+# An email address displayed in UI for users to reach the support team.
+DEJACODE_SUPPORT_EMAIL = env.str("DEJACODE_SUPPORT_EMAIL", default="")
+
 # Enable this setting to display a "Tools" section in the navbar including
 # links to the "Requests" and "Reporting" views.
 SHOW_TOOLS_IN_NAV = env.bool("SHOW_TOOLS_IN_NAV", default=True)

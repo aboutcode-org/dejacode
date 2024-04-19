@@ -37,6 +37,9 @@ Release notes
 - Add a vulnerability link to the VulnerableCode app in the Vulnerability tab.
   https://github.com/nexB/dejacode/issues/4
 
+- Add a DEJACODE_SUPPORT_EMAIL setting for support email address customization.
+  https://github.com/nexB/dejacode/issues/76
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
