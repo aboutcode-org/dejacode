@@ -2415,9 +2415,7 @@ class ExportCycloneDXBOMView(
         return response
 
     def get_cyclonedx_bom_json(self, instance, spec_version):
-        """
-        Generate JSON output for the provided ``instance`` in CycloneDX BOM format.
-        """
+        """Generate JSON output for the provided instance in CycloneDX BOM format."""
         cyclonedx_bom = self.get_cyclonedx_bom(instance=instance, user=self.request.user)
         schema_version = SchemaVersion.from_version(spec_version)
 
