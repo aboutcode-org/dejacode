@@ -2565,6 +2565,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected, extracted_licenses_as_dict)
 
     def test_product_portfolio_product_export_cyclonedx_view(self):
+        self.maxDiff = None
+
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1",
