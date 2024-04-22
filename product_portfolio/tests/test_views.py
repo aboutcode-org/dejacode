@@ -2686,7 +2686,6 @@ class ProductPortfolioViewsTestCase(TestCase):
                 },
                 {"ref": "pkg:deb/debian/curl@7.50.3-1"},
             ],
-
         }
         self.assertDictEqual(expected, content)
 
