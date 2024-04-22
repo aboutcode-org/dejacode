@@ -10,7 +10,10 @@
   {% include 'includes/header_title.html' with pretitle='Account' title='Error during your account activation' %}
   <p>
     {{ activation_error.message }}
-    <br><br>
-    If the problem persists, send us an email at <a href="mailto:support@dejacode.com">support@dejacode.com</a>
   </p>
+  {% if DEJACODE_SUPPORT_EMAIL %}
+    <p>
+      If the problem persists, send us an email at <a href="mailto:{{ DEJACODE_SUPPORT_EMAIL }}">{{ DEJACODE_SUPPORT_EMAIL }}</a>
+    </p>
+  {% endif %}
 {% endblock %}
