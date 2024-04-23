@@ -7,6 +7,8 @@
 #
 
 from django.core.exceptions import ValidationError
+from django.http import FileResponse
+from django.http import Http404
 
 import django_filters
 from rest_framework import permissions
@@ -20,6 +22,7 @@ from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
 from component_catalog.api import ValidateLicenseExpressionMixin
 from component_catalog.license_expression_dje import clean_related_expression
+from dje import outputs
 from dje.api import CreateRetrieveUpdateListViewSet
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedHyperlinkedRelatedField
@@ -33,6 +36,7 @@ from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
 from dje.filters import NameVersionFilter
 from dje.permissions import assign_all_object_permissions
+from dje.views import SendAboutFilesMixin
 from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
@@ -268,7 +272,7 @@ class PullProjectDataSerializer(serializers.Serializer):
     )
 
 
-class ProductViewSet(CreateRetrieveUpdateListViewSet):
+class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
     filterset_class = ProductFilterSet
@@ -399,6 +403,33 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
             return Response(error.messages, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"status": "Packages import from ScanCode.io in progress..."})
+
+    @action(detail=True)
+    def about_files(self, request, uuid):
+        instance = self.get_object()
+        about_files = instance.get_about_files()
+        filename = self.get_filename(instance)
+        return self.get_zipped_response(about_files, filename)
+
+    @action(detail=True)
+    def spdx_document(self, request, uuid):
+        spdx_document = outputs.get_spdx_document(
+            instance=self.get_object(),
+            user=self.request.user,
+        )
+
+        if not spdx_document:
+            raise Http404
+
+        filename = outputs.get_spdx_filename(spdx_document)
+        response = FileResponse(
+            spdx_document.as_json(),
+            filename=filename,
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return response
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
