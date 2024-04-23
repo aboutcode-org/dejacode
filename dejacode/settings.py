@@ -88,7 +88,6 @@ TEMPLATE_DATASPACE = env.str("TEMPLATE_DATASPACE", default=None)
 # timezone as the operating system.
 TIME_ZONE = env.str("TIME_ZONE", default="US/Pacific")
 
-SITE_ID = env.int("SITE_ID", default=1)
 SITE_URL = env.str("SITE_URL", default="")
 
 ENABLE_SELF_REGISTRATION = env.bool("ENABLE_SELF_REGISTRATION", default=False)
@@ -304,14 +303,15 @@ TEMPLATES = [
 # On the other hand, the management commands will override each others if the
 # app is declared after another in the list.
 PREREQ_APPS = [
+    # Must come before Third-party apps for proper templates override
     "dje",
+    # Django built-in
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sitemaps",
-    "django.contrib.sites",
+    # Third-party apps
     "django.contrib.humanize",
     "django.contrib.postgres",
     "grappelli.dashboard",
