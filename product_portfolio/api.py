@@ -20,6 +20,7 @@ from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
 from component_catalog.api import ValidateLicenseExpressionMixin
 from component_catalog.license_expression_dje import clean_related_expression
+from dje import outputs
 from dje.api import CreateRetrieveUpdateListViewSet
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedHyperlinkedRelatedField
@@ -33,6 +34,7 @@ from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
 from dje.filters import NameVersionFilter
 from dje.permissions import assign_all_object_permissions
+from dje.views import SendAboutFilesMixin
 from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
@@ -268,7 +270,7 @@ class PullProjectDataSerializer(serializers.Serializer):
     )
 
 
-class ProductViewSet(CreateRetrieveUpdateListViewSet):
+class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
     filterset_class = ProductFilterSet
@@ -399,6 +401,36 @@ class ProductViewSet(CreateRetrieveUpdateListViewSet):
             return Response(error.messages, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"status": "Packages import from ScanCode.io in progress..."})
+
+    @action(detail=True, name="Download AboutCode files")
+    def aboutcode_files(self, request, uuid):
+        instance = self.get_object()
+        about_files = instance.get_about_files()
+        filename = self.get_filename(instance)
+        return self.get_zipped_response(about_files, filename)
+
+    @action(detail=True, name="Download SPDX document")
+    def spdx_document(self, request, uuid):
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document_json = spdx_document.as_json()
+
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
+            content_type="application/json",
+        )
+
+    @action(detail=True, name="Download CycloneDX SBOM")
+    def cyclonedx_sbom(self, request, uuid):
+        instance = self.get_object()
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom)
+
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
+            content_type="application/json",
+        )
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
