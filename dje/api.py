@@ -36,6 +36,7 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.relations import ManyRelatedField
 from rest_framework.response import Response
 
+from dje import outputs
 from dje.api_custom import TabPermission
 from dje.copier import copy_object
 from dje.fields import ExtendedNullBooleanSelect
@@ -581,4 +582,47 @@ class ExternalReferenceViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdat
             .scope(self.request.user.dataspace)
             .select_related("content_type")
             .prefetch_related("content_object")
+        )
+
+
+class AboutCodeFilesActionMixin:
+    @action(detail=True, name="Download AboutCode files")
+    def aboutcode_files(self, request, uuid):
+        instance = self.get_object()
+        about_files = instance.get_about_files()
+        filename = self.get_filename(instance)
+        return self.get_zipped_response(about_files, filename)
+
+
+class SPDXDocumentActionMixin:
+    @action(detail=True, name="Download SPDX document")
+    def spdx_document(self, request, uuid):
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+
+        spdx_document_json = spdx_document.as_json()
+
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
+            content_type="application/json",
+        )
+
+
+class CycloneDXSOMActionMixin:
+    @action(detail=True, name="Download CycloneDX SBOM")
+    def cyclonedx_sbom(self, request, uuid):
+        instance = self.get_object()
+        spec_version = request.query_params.get("spec_version")
+
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        try:
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+        except ValueError:
+            error = f"Spec version {spec_version} not supported"
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
+            content_type="application/json",
         )
