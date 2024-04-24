@@ -35,13 +35,16 @@ from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import tasks
+from dje.api import AboutCodeFilesActionMixin
 from dje.api import CreateRetrieveUpdateListViewSet
+from dje.api import CycloneDXSOMActionMixin
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import DataspacedSlugRelatedField
 from dje.api import ExternalReferenceSerializer
 from dje.api import NameVersionHyperlinkedRelatedField
+from dje.api import SPDXDocumentActionMixin
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
@@ -447,7 +450,9 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
         )
 
 
-class ComponentViewSet(CreateRetrieveUpdateListViewSet):
+class ComponentViewSet(
+    SPDXDocumentActionMixin, CycloneDXSOMActionMixin, CreateRetrieveUpdateListViewSet
+):
     queryset = Component.objects.all()
     serializer_class = ComponentSerializer
     filterset_class = ComponentFilterSet
@@ -820,7 +825,13 @@ def collect_create_scan(download_url, user):
     return package
 
 
-class PackageViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
+class PackageViewSet(
+    SendAboutFilesMixin,
+    AboutCodeFilesActionMixin,
+    SPDXDocumentActionMixin,
+    CycloneDXSOMActionMixin,
+    CreateRetrieveUpdateListViewSet,
+):
     queryset = Package.objects.all()
     serializer_class = PackageSerializer
     filterset_class = PackageAPIFilterSet
@@ -867,13 +878,6 @@ class PackageViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
     def about(self, request, uuid):
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
-
-    @action(detail=True)
-    def about_files(self, request, uuid):
-        package = self.get_object()
-        about_files = package.get_about_files()
-        filename = self.get_filename(package)
-        return self.get_zipped_response(about_files, filename)
 
     download_url_description = (
         "A single, or list of, Download URL(s).<br><br>"

@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
 import re
 
 from django.http import FileResponse
@@ -13,9 +14,13 @@ from django.http import Http404
 
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
+from cyclonedx.schema import SchemaVersion
+from cyclonedx.validation.json import JsonStrictValidator
 
 from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import spdx
+
+CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
 
 
 def safe_filename(filename):
@@ -92,20 +97,11 @@ def get_spdx_filename(spdx_document):
 
 def get_cyclonedx_bom(instance, user):
     """https://cyclonedx.org/use-cases/#dependency-graph"""
-    cyclonedx_components = []
+    root_component = instance.as_cyclonedx()
 
-    if hasattr(instance, "get_cyclonedx_components"):
-        cyclonedx_components = [
-            component.as_cyclonedx() for component in instance.get_cyclonedx_components()
-        ]
-
-    bom = cyclonedx_bom.Bom(components=cyclonedx_components)
-
-    cdx_component = instance.as_cyclonedx()
-    cdx_component.dependencies.update([component.bom_ref for component in cyclonedx_components])
-
+    bom = cyclonedx_bom.Bom()
     bom.metadata = cyclonedx_bom.BomMetaData(
-        component=cdx_component,
+        component=root_component,
         tools=[
             cyclonedx_bom.Tool(
                 vendor="nexB",
@@ -120,15 +116,53 @@ def get_cyclonedx_bom(instance, user):
         ],
     )
 
+    cyclonedx_components = []
+    if hasattr(instance, "get_cyclonedx_components"):
+        cyclonedx_components = [
+            component.as_cyclonedx() for component in instance.get_cyclonedx_components()
+        ]
+
+    for component in cyclonedx_components:
+        bom.components.add(component)
+        bom.register_dependency(root_component, [component])
+
     return bom
 
 
-def get_cyclonedx_bom_json(cyclonedx_bom):
-    outputter = cyclonedx_output.get_instance(
+def get_cyclonedx_bom_json(cyclonedx_bom, spec_version=None):
+    """Generate JSON output for the provided instance in CycloneDX BOM format."""
+    if not spec_version:
+        spec_version = CYCLONEDX_DEFAULT_SPEC_VERSION
+    schema_version = SchemaVersion.from_version(spec_version)
+
+    json_outputter = cyclonedx_output.make_outputter(
         bom=cyclonedx_bom,
         output_format=cyclonedx_output.OutputFormat.JSON,
+        schema_version=schema_version,
     )
-    return outputter.output_as_string()
+
+    # Using the internal API in place of the output_as_string() method to avoid
+    # a round of deserialization/serialization while fixing the field ordering.
+    json_outputter.generate()
+    bom_as_dict = json_outputter._bom_json
+
+    # The default order out of the outputter is not great, the following sorts the
+    # bom using the order from the schema.
+    sorted_json = sort_bom_with_schema_ordering(bom_as_dict, schema_version)
+
+    return sorted_json
+
+
+def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
+    """Sort the ``bom_as_dict`` using the ordering from the ``schema_version``."""
+    schema_file = JsonStrictValidator(schema_version)._schema_file
+    with open(schema_file) as sf:
+        schema_dict = json.loads(sf.read())
+
+    order_from_schema = list(schema_dict.get("properties", {}).keys())
+    ordered_dict = {key: bom_as_dict.get(key) for key in order_from_schema if key in bom_as_dict}
+
+    return json.dumps(ordered_dict, indent=2)
 
 
 def get_cyclonedx_filename(instance):

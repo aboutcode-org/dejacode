@@ -9,6 +9,11 @@ Release notes
 - Replace Celery by RQ for async job queue and worker.
   https://github.com/nexB/dejacode/issues/6
 
+- Add support for CycloneDX spec version "1.6".
+  In the UI and API, older spe version such as "1.4" and "1.5" are also available as
+  download.
+  https://github.com/nexB/dejacode/pull/79
+
 - Lookup in PurlDB by purl in Add Package form.
   When a Package URL is available in the context of the "Add Package" form,
   for example when using a link from the Vulnerabilities tab,

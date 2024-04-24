@@ -1419,8 +1419,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         }
         self.assertEqual(expected, response.json())
 
-    def test_api_package_viewset_about_files_action(self):
-        about_url = reverse("api_v2:package-about-files", args=[self.package1.uuid])
+    def test_api_package_viewset_aboutcode_files_action(self):
+        about_url = reverse("api_v2:package-aboutcode-files", args=[self.package1.uuid])
 
         response = self.client.get(about_url)
         self.assertEqual(403, response.status_code)

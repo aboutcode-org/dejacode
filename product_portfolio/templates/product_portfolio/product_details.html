@@ -67,9 +67,12 @@
           <a href="{{ object.get_export_spdx_url }}" class="dropdown-item" target="_blank">
             <i class="fas fa-download"></i> SPDX document
           </a>
-          <a href="{{ object.get_export_cyclonedx_url }}" class="dropdown-item" target="_blank">
+          <div class="dropdown-item">
             <i class="fas fa-download"></i> CycloneDX SBOM
-          </a>
+            <a class="badge text-bg-primary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.6">1.6</a>
+            <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5">1.5</a>
+            <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4">1.4</a>
+          </div>
         </div>
       </div>
     </div>

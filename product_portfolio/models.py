@@ -327,7 +327,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
 
     def get_cyclonedx_components(self):
-        return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
+        return [
+            *list(self.productcomponents.catalogs().order_by("id")),
+            *list(self.productpackages.all().order_by("id")),
+        ]
 
     def assign_objects(self, related_objects, user):
         """
