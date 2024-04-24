@@ -2541,6 +2541,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected, extracted_licenses_as_dict)
 
     def test_product_portfolio_product_export_cyclonedx_view(self):
+        self.maxDiff = None
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1",
@@ -2595,11 +2596,11 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual("application/json", response.headers["Content-Type"])
 
         content = io.BytesIO(b"".join(response.streaming_content))
-        content = json.loads(content.read().decode("utf-8"))
-        del content["serialNumber"]
-        del content["dependencies"]  # unstable ordering
-        del content["metadata"]["timestamp"]
-        del content["metadata"]["tools"][0]["version"]
+        bom_as_dict = json.loads(content.read().decode("utf-8"))
+        del bom_as_dict["serialNumber"]
+        del bom_as_dict["dependencies"]  # unstable ordering
+        del bom_as_dict["metadata"]["timestamp"]
+        del bom_as_dict["metadata"]["tools"][0]["version"]
 
         expected = {
             "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
@@ -2653,7 +2654,7 @@ class ProductPortfolioViewsTestCase(TestCase):
                 },
             ],
         }
-        self.assertDictEqual(expected, content)
+        self.assertDictEqual(expected, bom_as_dict)
 
         # Old spec version
         response = self.client.get(export_cyclonedx_url, data={"spec_version": "1.5"})
