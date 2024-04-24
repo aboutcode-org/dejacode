@@ -76,7 +76,7 @@ class OutputsTestCase(TestCase):
     def test_outputs_get_cyclonedx_bom_json(self):
         bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
         bom_json = outputs.get_cyclonedx_bom_json(bom)
-        self.assertTrue(bom_json.startswith('{"$schema":'))
+        self.assertIn('"bomFormat": "CycloneDX"', bom_json)
 
     def test_outputs_get_cyclonedx_filename(self):
         self.assertEqual(
