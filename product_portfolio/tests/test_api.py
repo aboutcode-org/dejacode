@@ -486,6 +486,57 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+    def test_api_product_endpoint_aboutcode_files_action(self):
+        url = reverse("api_v2:product-aboutcode-files", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="p1_about.zip"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/zip", response["Content-Type"])
+
+    def test_api_product_endpoint_spdx_document_action(self):
+        url = reverse("api_v2:product-spdx-document", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="dejacode_nexb_product_p1.spdx.json"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/json", response["Content-Type"])
+
+    def test_api_product_endpoint_cyclonedx_sbom_action(self):
+        url = reverse("api_v2:product-cyclonedx-sbom", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="dejacode_nexb_product_p1.cdx.json"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/json", response["Content-Type"])
+
 
 class ProductRelatedAPITestCase(TestCase):
     def setUp(self):

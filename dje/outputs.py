@@ -23,14 +23,14 @@ def safe_filename(filename):
     return re.sub("[^A-Za-z0-9.-]+", "_", filename).lower()
 
 
-def get_attachment_response(file_content, filename):
+def get_attachment_response(file_content, filename, content_type):
     if not file_content or not filename:
         raise Http404
 
     response = FileResponse(
         file_content,
         filename=filename,
-        content_type="application/json",
+        content_type=content_type,
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 

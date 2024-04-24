@@ -8,6 +8,8 @@
 
 from django.test import TestCase
 
+from cyclonedx.model import bom as cyclonedx_bom
+
 from dejacode import __version__ as dejacode_version
 from dje import outputs
 from dje.models import Dataspace
@@ -25,6 +27,17 @@ class OutputsTestCase(TestCase):
         self.product1 = Product.objects.create(
             name="Product1 With Space", version="1.0", dataspace=self.dataspace
         )
+
+    def test_outputs_safe_filename(self):
+        self.assertEqual("low_-_up_", outputs.safe_filename("low -_UP*&//"))
+
+    def test_outputs_get_attachment_response(self):
+        response = outputs.get_attachment_response(
+            file_content="AAA", filename="file.txt", content_type="application/json"
+        )
+        expected = 'attachment; filename="file.txt"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/json", response["Content-Type"])
 
     def test_outputs_get_spdx_document(self):
         document = outputs.get_spdx_document(self.product1, self.super_user)
@@ -48,3 +61,25 @@ class OutputsTestCase(TestCase):
             "documentDescribes": [],
         }
         self.assertEqual(expected, document.as_dict())
+
+    def test_outputs_get_spdx_filename(self):
+        document = outputs.get_spdx_document(self.product1, self.super_user)
+        self.assertEqual(
+            "dejacode_nexb_product_product1_with_space_1.0.spdx.json",
+            outputs.get_spdx_filename(document),
+        )
+
+    def test_outputs_get_cyclonedx_bom(self):
+        bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
+        self.assertIsInstance(bom, cyclonedx_bom.Bom)
+
+    def test_outputs_get_cyclonedx_bom_json(self):
+        bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
+        bom_json = outputs.get_cyclonedx_bom_json(bom)
+        self.assertTrue(bom_json.startswith('{"$schema":'))
+
+    def test_outputs_get_cyclonedx_filename(self):
+        self.assertEqual(
+            "dejacode_nexb_product_product1_with_space_1.0.cdx.json",
+            outputs.get_cyclonedx_filename(instance=self.product1),
+        )

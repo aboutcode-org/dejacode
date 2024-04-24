@@ -2325,6 +2325,7 @@ class ExportSPDXDocumentView(
         return outputs.get_attachment_response(
             file_content=spdx_document_json,
             filename=outputs.get_spdx_filename(spdx_document),
+            content_type="application/json",
         )
 
 
@@ -2342,4 +2343,5 @@ class ExportCycloneDXBOMView(
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,
             filename=outputs.get_cyclonedx_filename(instance),
+            content_type="application/json",
         )

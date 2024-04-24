@@ -417,6 +417,7 @@ class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
         return outputs.get_attachment_response(
             file_content=spdx_document_json,
             filename=outputs.get_spdx_filename(spdx_document),
+            content_type="application/json",
         )
 
     @action(detail=True, name="Download CycloneDX SBOM")
@@ -428,6 +429,7 @@ class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,
             filename=outputs.get_cyclonedx_filename(instance),
+            content_type="application/json",
         )
 
 

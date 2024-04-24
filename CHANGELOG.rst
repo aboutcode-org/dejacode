@@ -28,6 +28,9 @@ Release notes
   "Pull ScanCode.io project data" feature as Product action in the REST API.
   https://github.com/nexB/dejacode/issues/59
 
+- Add REST API endpoints to download SBOMs as CycloneDX and SPDX.
+  https://github.com/nexB/dejacode/issues/60
+
 - Refactor the "Import manifest" feature as "Load SBOMs".
   https://github.com/nexB/dejacode/issues/61
 
