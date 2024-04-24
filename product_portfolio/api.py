@@ -7,8 +7,6 @@
 #
 
 from django.core.exceptions import ValidationError
-from django.http import FileResponse
-from django.http import Http404
 
 import django_filters
 from rest_framework import permissions
@@ -404,32 +402,33 @@ class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
 
         return Response({"status": "Packages import from ScanCode.io in progress..."})
 
-    @action(detail=True)
-    def about_files(self, request, uuid):
+    @action(detail=True, name="Download AboutCode files")
+    def aboutcode_files(self, request, uuid):
         instance = self.get_object()
         about_files = instance.get_about_files()
         filename = self.get_filename(instance)
         return self.get_zipped_response(about_files, filename)
 
-    @action(detail=True)
+    @action(detail=True, name="Download SPDX document")
     def spdx_document(self, request, uuid):
-        spdx_document = outputs.get_spdx_document(
-            instance=self.get_object(),
-            user=self.request.user,
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document_json = spdx_document.as_json()
+
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
         )
 
-        if not spdx_document:
-            raise Http404
+    @action(detail=True, name="Download CycloneDX SBOM")
+    def cyclonedx_sbom(self, request, uuid):
+        instance = self.get_object()
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom)
 
-        filename = outputs.get_spdx_filename(spdx_document)
-        response = FileResponse(
-            spdx_document.as_json(),
-            filename=filename,
-            content_type="application/json",
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
 
 
 class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):

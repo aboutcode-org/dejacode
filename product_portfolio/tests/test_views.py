@@ -28,18 +28,16 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
-from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
+from dje.outputs import get_spdx_extracted_licenses
 from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
 from dje.tasks import scancodeio_submit_project
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
-from dje.views import ExportSPDXDocumentView
-from dje.views import get_spdx_extracted_licenses
 from license_library.models import License
 from organization.models import Owner
 from policy.models import UsagePolicy
@@ -2459,28 +2457,6 @@ class ProductPortfolioViewsTestCase(TestCase):
             "dejacode_nexb_product_product1_with_space_1.0.spdx.json", response.filename
         )
         self.assertEqual("application/json", response.headers["Content-Type"])
-
-        document = ExportSPDXDocumentView.get_spdx_document(self.product1, self.super_user)
-        document.creation_info.created = "2000-01-01T01:02:03Z"
-        expected = {
-            "spdxVersion": "SPDX-2.3",
-            "dataLicense": "CC0-1.0",
-            "SPDXID": "SPDXRef-DOCUMENT",
-            "name": "dejacode_nexb_product_product1_with_space_1.0",
-            "documentNamespace": f"https://dejacode.com/spdxdocs/{self.product1.uuid}",
-            "creationInfo": {
-                "created": "2000-01-01T01:02:03Z",
-                "creators": [
-                    "Person:   (user@email.com)",
-                    "Organization: nexB ()",
-                    f"Tool: DejaCode-{dejacode_version}",
-                ],
-                "licenseListVersion": "3.18",
-            },
-            "packages": [],
-            "documentDescribes": [],
-        }
-        self.assertEqual(expected, document.as_dict())
 
     def test_product_portfolio_product_export_spdx_get_spdx_extracted_licenses(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)

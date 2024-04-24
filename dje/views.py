@@ -67,15 +67,12 @@ from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import DeleteView
 
 import django_otp
-from cyclonedx import output as cyclonedx_output
-from cyclonedx.model import bom as cyclonedx_bom
 from django_filters.views import FilterView
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
 from component_catalog.license_expression_dje import get_license_objects
-from dejacode import __version__ as dejacode_version
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -118,7 +115,6 @@ from dje.utils import group_by_name_version
 from dje.utils import group_by_simple
 from dje.utils import has_permission
 from dje.utils import queryset_to_changelist_href
-from dje.utils import safe_filename
 from dje.utils import str_to_id_list
 
 License = apps.get_model("license_library", "License")
@@ -2324,19 +2320,12 @@ class ExportSPDXDocumentView(
 ):
     def get(self, request, *args, **kwargs):
         spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document_json = spdx_document.as_json()
 
-        if not spdx_document:
-            raise Http404
-
-        filename = outputs.get_spdx_filename(spdx_document)
-        response = FileResponse(
-            spdx_document.as_json(),
-            filename=filename,
-            content_type="application/json",
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
 
 
 class ExportCycloneDXBOMView(
@@ -2347,57 +2336,10 @@ class ExportCycloneDXBOMView(
 ):
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        cyclonedx_bom = self.get_cyclonedx_bom(instance, self.request.user)
-        base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
-        filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom)
 
-        if not cyclonedx_bom:
-            raise Http404
-
-        outputter = cyclonedx_output.get_instance(
-            bom=cyclonedx_bom,
-            output_format=cyclonedx_output.OutputFormat.JSON,
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
         )
-        bom_json = outputter.output_as_string()
-
-        response = FileResponse(
-            bom_json,
-            filename=filename,
-            content_type="application/json",
-        )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
-
-    @staticmethod
-    def get_cyclonedx_bom(instance, user):
-        """https://cyclonedx.org/use-cases/#dependency-graph"""
-        cyclonedx_components = []
-
-        if hasattr(instance, "get_cyclonedx_components"):
-            cyclonedx_components = [
-                component.as_cyclonedx() for component in instance.get_cyclonedx_components()
-            ]
-
-        bom = cyclonedx_bom.Bom(components=cyclonedx_components)
-
-        cdx_component = instance.as_cyclonedx()
-        cdx_component.dependencies.update([component.bom_ref for component in cyclonedx_components])
-
-        bom.metadata = cyclonedx_bom.BomMetaData(
-            component=cdx_component,
-            tools=[
-                cyclonedx_bom.Tool(
-                    vendor="nexB",
-                    name="DejaCode",
-                    version=dejacode_version,
-                )
-            ],
-            authors=[
-                cyclonedx_bom.OrganizationalContact(
-                    name=f"{user.first_name} {user.last_name}",
-                )
-            ],
-        )
-
-        return bom
