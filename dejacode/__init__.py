@@ -8,9 +8,13 @@
 
 import os
 import sys
+import warnings
 
 VERSION = "5.1.0-dev"
 __version__ = VERSION
+
+# Turn off the warnings for the following modules.
+warnings.filterwarnings("ignore", module="cyclonedx")
 
 
 def command_line():

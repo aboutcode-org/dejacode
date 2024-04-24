@@ -8,7 +8,6 @@
 
 import copy
 import datetime
-import json
 import logging
 import operator
 import os
@@ -68,21 +67,16 @@ from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import DeleteView
 
 import django_otp
-from cyclonedx import output as cyclonedx_output
-from cyclonedx.model import bom as cyclonedx_bom
-from cyclonedx.schema import SchemaVersion
-from cyclonedx.validation.json import JsonStrictValidator
 from django_filters.views import FilterView
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
 from component_catalog.license_expression_dje import get_license_objects
-from dejacode import __version__ as dejacode_version
-from dejacode_toolkit import spdx
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import outputs
 from dje.copier import COPY_DEFAULT_EXCLUDE
 from dje.copier import SKIP
 from dje.copier import get_object_in
@@ -121,7 +115,6 @@ from dje.utils import group_by_name_version
 from dje.utils import group_by_simple
 from dje.utils import has_permission
 from dje.utils import queryset_to_changelist_href
-from dje.utils import safe_filename
 from dje.utils import str_to_id_list
 
 License = apps.get_model("license_library", "License")
@@ -2319,32 +2312,6 @@ class IntegrationsStatusView(
         return context
 
 
-def get_spdx_extracted_licenses(spdx_packages):
-    """
-    Return all the licenses to be included in the SPDX extracted_licenses.
-    Those include the `LicenseRef-` licenses, ie: licenses not available in the
-    SPDX list.
-
-    In the case of Product relationships, ProductComponent and ProductPackage,
-    the set of licenses of the related object, Component or Package, is used
-    as the licenses of the relationship is always a subset of the ones of the
-    related object.
-    This ensures that we have all the license required for a valid SPDX document.
-    """
-    from product_portfolio.models import ProductRelationshipMixin
-
-    all_licenses = set()
-    for entry in spdx_packages:
-        if isinstance(entry, ProductRelationshipMixin):
-            all_licenses.update(entry.related_component_or_package.licenses.all())
-        else:
-            all_licenses.update(entry.licenses.all())
-
-    return [
-        license.as_spdx() for license in all_licenses if license.spdx_id.startswith("LicenseRef")
-    ]
-
-
 class ExportSPDXDocumentView(
     LoginRequiredMixin,
     DataspaceScopeMixin,
@@ -2352,43 +2319,14 @@ class ExportSPDXDocumentView(
     BaseDetailView,
 ):
     def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        spdx_document = self.get_spdx_document(instance, self.request.user)
-        document_name = spdx_document.as_dict()["name"]
-        filename = f"{document_name}.spdx.json"
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document_json = spdx_document.as_json()
 
-        if not spdx_document:
-            raise Http404
-
-        response = FileResponse(
-            spdx_document.as_json(),
-            filename=filename,
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
             content_type="application/json",
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
-
-    @staticmethod
-    def get_spdx_document(instance, user):
-        spdx_packages = instance.get_spdx_packages()
-
-        creation_info = spdx.CreationInfo(
-            person_name=f"{user.first_name} {user.last_name}",
-            person_email=user.email,
-            organization_name=user.dataspace.name,
-            tool=f"DejaCode-{dejacode_version}",
-        )
-
-        document = spdx.Document(
-            name=f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}_{instance}",
-            namespace=f"https://dejacode.com/spdxdocs/{instance.uuid}",
-            creation_info=creation_info,
-            packages=[package.as_spdx() for package in spdx_packages],
-            extracted_licenses=get_spdx_extracted_licenses(spdx_packages),
-        )
-
-        return document
 
 
 class ExportCycloneDXBOMView(
@@ -2401,85 +2339,13 @@ class ExportCycloneDXBOMView(
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
-        filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
         spec_version = self.request.GET.get("spec_version", self.default_spec_version)
 
-        response = FileResponse(
-            self.get_cyclonedx_bom_json(instance, spec_version),
-            filename=filename,
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
             content_type="application/json",
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
-
-    def get_cyclonedx_bom_json(self, instance, spec_version):
-        """Generate JSON output for the provided instance in CycloneDX BOM format."""
-        cyclonedx_bom = self.get_cyclonedx_bom(instance=instance, user=self.request.user)
-        schema_version = SchemaVersion.from_version(spec_version)
-
-        json_outputter = cyclonedx_output.make_outputter(
-            bom=cyclonedx_bom,
-            output_format=cyclonedx_output.OutputFormat.JSON,
-            schema_version=schema_version,
-        )
-
-        # Using the internal API in place of the output_as_string() method to avoid
-        # a round of deserialization/serialization while fixing the field ordering.
-        json_outputter.generate()
-        bom_as_dict = json_outputter._bom_json
-
-        # The default order out of the outputter is not great, the following sorts the
-        # bom using the order from the schema.
-        sorted_json = self.sort_bom_with_schema_ordering(bom_as_dict, schema_version)
-
-        return sorted_json
-
-    @staticmethod
-    def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
-        """Sort the ``bom_as_dict`` using the ordering from the ``schema_version``."""
-        schema_file = JsonStrictValidator(schema_version)._schema_file
-        with open(schema_file) as sf:
-            schema_dict = json.loads(sf.read())
-
-        order_from_schema = list(schema_dict.get("properties", {}).keys())
-        ordered_dict = {
-            key: bom_as_dict.get(key) for key in order_from_schema if key in bom_as_dict
-        }
-
-        return json.dumps(ordered_dict, indent=2)
-
-    @staticmethod
-    def get_cyclonedx_bom(instance, user):
-        """https://cyclonedx.org/use-cases/#dependency-graph"""
-        root_component = instance.as_cyclonedx()
-
-        bom = cyclonedx_bom.Bom()
-        bom.metadata = cyclonedx_bom.BomMetaData(
-            component=root_component,
-            tools=[
-                cyclonedx_bom.Tool(
-                    vendor="nexB",
-                    name="DejaCode",
-                    version=dejacode_version,
-                )
-            ],
-            authors=[
-                cyclonedx_bom.OrganizationalContact(
-                    name=f"{user.first_name} {user.last_name}",
-                )
-            ],
-        )
-
-        cyclonedx_components = []
-        if hasattr(instance, "get_cyclonedx_components"):
-            cyclonedx_components = [
-                component.as_cyclonedx() for component in instance.get_cyclonedx_components()
-            ]
-
-        for component in cyclonedx_components:
-            bom.components.add(component)
-            bom.register_dependency(root_component, [component])
-
-        return bom
