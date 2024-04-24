@@ -423,8 +423,14 @@ class ProductViewSet(SendAboutFilesMixin, CreateRetrieveUpdateListViewSet):
     @action(detail=True, name="Download CycloneDX SBOM")
     def cyclonedx_sbom(self, request, uuid):
         instance = self.get_object()
+        spec_version = request.query_params.get("spec_version")
+
         cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
-        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom)
+        try:
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+        except ValueError:
+            error = f"Spec version {spec_version} not supported"
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,

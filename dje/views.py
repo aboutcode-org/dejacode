@@ -2335,14 +2335,16 @@ class ExportCycloneDXBOMView(
     GetDataspacedObjectMixin,
     BaseDetailView,
 ):
-    default_spec_version = "1.6"
-
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        spec_version = self.request.GET.get("spec_version", self.default_spec_version)
+        spec_version = self.request.GET.get("spec_version")
 
         cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
-        cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+
+        try:
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+        except ValueError:
+            raise Http404(f"Spec version {spec_version} not supported")
 
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,

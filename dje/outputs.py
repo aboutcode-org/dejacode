@@ -20,6 +20,8 @@ from cyclonedx.validation.json import JsonStrictValidator
 from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import spdx
 
+CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
+
 
 def safe_filename(filename):
     """Convert the provided `filename` to a safe filename."""
@@ -127,8 +129,10 @@ def get_cyclonedx_bom(instance, user):
     return bom
 
 
-def get_cyclonedx_bom_json(cyclonedx_bom, spec_version="1.6"):
+def get_cyclonedx_bom_json(cyclonedx_bom, spec_version=None):
     """Generate JSON output for the provided instance in CycloneDX BOM format."""
+    if not spec_version:
+        spec_version = CYCLONEDX_DEFAULT_SPEC_VERSION
     schema_version = SchemaVersion.from_version(spec_version)
 
     json_outputter = cyclonedx_output.make_outputter(

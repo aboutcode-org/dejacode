@@ -2655,6 +2655,13 @@ class ProductPortfolioViewsTestCase(TestCase):
         }
         self.assertDictEqual(expected, content)
 
+        # Old spec version
+        response = self.client.get(export_cyclonedx_url, data={"spec_version": "1.5"})
+        self.assertIn('"specVersion": "1.5"', str(response.getvalue()))
+
+        response = self.client.get(export_cyclonedx_url, data={"spec_version": "10.10"})
+        self.assertEqual(404, response.status_code)
+
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_scancodeio_submit_project_task(self, mock_submit_project):
         scancodeproject = ScanCodeProject.objects.create(
