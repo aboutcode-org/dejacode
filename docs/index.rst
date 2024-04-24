@@ -11,6 +11,7 @@ Welcome to the very start of your DejaCode journey!
     installation
     dataspace
     application-settings
+    faq
 
 .. toctree::
     :maxdepth: 1
@@ -26,6 +27,7 @@ Welcome to the very start of your DejaCode journey!
 
     howto-1
     howto-2
+    howto-3
 
 .. toctree::
     :maxdepth: 1
