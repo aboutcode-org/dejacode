@@ -1027,6 +1027,7 @@ class TabSetMixin:
         tab_fields.extend(
             [
                 (_("Package URL"), package.package_url, package.package_url_help(), None),
+                ("", package, None, "component_catalog/tabs/field_package_url_fields.html"),
                 TabField("filename", package, condition=essential_else_bool),
                 TabField(
                     "usage_policy",

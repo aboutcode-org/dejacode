@@ -48,6 +48,9 @@ Release notes
 - Add a DEJACODE_SUPPORT_EMAIL setting for support email address customization.
   https://github.com/nexB/dejacode/issues/76
 
+- Show the individual PURL fields in the Package details view.
+  https://github.com/nexB/dejacode/issues/83
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
