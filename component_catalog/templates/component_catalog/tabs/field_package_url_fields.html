@@ -5,33 +5,44 @@
   <div class="container px-0">
     <div class="row align-items-start">
       <div class="col">
-        <span class="fw-semibold">Type</span>
-        <pre class="pre-bg-body-tertiary mb-2">{{ values.type|default:"&nbsp;" }}</pre>
+        <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.type }}">
+          Type
+        </span>
+        <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.type|default:"&nbsp;" }}</pre>
       </div>
       <div class="col">
-        <span class="fw-semibold">Namespace</span>
-        <pre class="pre-bg-body-tertiary mb-2">{{ values.namespace|default:"&nbsp;" }}</pre>
+        <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.namespace }}">
+          Namespace
+        </span>
+        <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.namespace|default:"&nbsp;" }}</pre>
       </div>
       <div class="col">
-        <span class="fw-semibold">Name</span>
-        <pre class="pre-bg-body-tertiary mb-2">{{ values.name|default:"&nbsp;" }}</pre>
+        <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.name }}">
+          Name
+        </span>
+        <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.name|default:"&nbsp;" }}</pre>
       </div>
       <div class="col">
-        <span class="fw-semibold">Version</span>
-        <pre class="pre-bg-body-tertiary mb-2">{{ values.version|default:"&nbsp;" }}</pre>
+        <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.version }}">
+          Version
+        </span>
+        <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.version|default:"&nbsp;" }}</pre>
       </div>
-    </div>
   </div>
   {% if package.qualifiers or package.subpath %}
     <div class="container px-0">
       <div class="row align-items-start">
         <div class="col">
-          <span class="fw-semibold">Qualifiers</span>
-          <pre class="pre-bg-body-tertiary mb-2">{{ values.qualifiers|default:"&nbsp;" }}</pre>
+          <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.qualifiers }}">
+            Qualifiers
+          </span>
+          <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.qualifiers|default:"&nbsp;" }}</pre>
         </div>
-        <div class="col">
-          <span class="fw-semibold">Subpath</span>
-          <pre class="pre-bg-body-tertiary mb-2">{{ values.subpath|default:"&nbsp;" }}</pre>
+          <div class="col">
+          <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.subpath }}">
+            Subpath
+          </span>
+          <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.subpath|default:"&nbsp;" }}</pre>
         </div>
       </div>
     </div>
