@@ -28,9 +28,8 @@
         </span>
         <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.version|default:"&nbsp;" }}</pre>
       </div>
-  </div>
-  {% if package.qualifiers or package.subpath %}
-    <div class="container px-0">
+    </div>
+    {% if package.qualifiers or package.subpath %}
       <div class="row align-items-start">
         <div class="col">
           <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.qualifiers }}">
@@ -38,13 +37,13 @@
           </span>
           <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.qualifiers|default:"&nbsp;" }}</pre>
         </div>
-          <div class="col">
+        <div class="col">
           <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="{{ values.help_texts.subpath }}">
             Subpath
           </span>
           <pre class="pre-bg-body-tertiary mt-1 mb-2">{{ values.package.subpath|default:"&nbsp;" }}</pre>
         </div>
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 </dd>
