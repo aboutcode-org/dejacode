@@ -1004,6 +1004,8 @@ class TabSetMixin:
         }
 
     def get_package_fields(self, package, essential_tab=False):
+        from component_catalog.models import PACKAGE_URL_FIELDS
+
         # Always displayed in the Package "Essentials" tab context but only
         # displayed if a value is available in the Component "Packages" tab.
         essential_else_bool = None if essential_tab else bool
@@ -1024,9 +1026,20 @@ class TabSetMixin:
                 (_("Identifier"), package.get_absolute_link(), package.identifier_help(), None)
             )
 
+        package_url_fields_context = {
+            "package": package,
+            "help_texts": {field: ght(package._meta, field) for field in PACKAGE_URL_FIELDS},
+        }
+
         tab_fields.extend(
             [
                 (_("Package URL"), package.package_url, package.package_url_help(), None),
+                (
+                    "",
+                    package_url_fields_context,
+                    None,
+                    "component_catalog/tabs/field_package_url_fields.html",
+                ),
                 TabField("filename", package, condition=essential_else_bool),
                 TabField(
                     "usage_policy",
