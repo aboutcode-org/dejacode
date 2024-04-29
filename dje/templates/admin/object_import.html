@@ -30,7 +30,15 @@
       <h5>Help for {{ importer.verbose_name|title }} Import:</h5>
       <ul class="mb-0">
         {% if importer.formset and not importer.fatal_errors %}
-          <li><span class="badge text-bg-secondary">M</span> The {{ importer.verbose_name|title }} matches an already existing {{ importer.verbose_name|title }}. Nothing will be done for the row.</li>
+          <li>
+            <span class="badge text-bg-secondary">M</span>
+            The {{ importer.verbose_name|title }} matches an already existing {{ importer.verbose_name|title }}.
+            {% if importer.update_existing %}
+              Empty fields will be updated with import data.
+            {% else %}
+              Nothing will be done for the row.
+            {% endif %}
+          </li>
           <li><span class="badge text-bg-success">A</span> The {{ importer.verbose_name|title }} will be added based on the input data</li>
           <li><span class="badge text-bg-danger">E</span> The row contains at least one error</li>
           <li><span class="badge text-bg-warning">W</span> The row is valid but should be manually reviewed</li>

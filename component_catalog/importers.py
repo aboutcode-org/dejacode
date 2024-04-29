@@ -298,6 +298,7 @@ class PackageImporter(BaseImporter):
     model_form = PackageImportForm
     add_to_product_perm = "product_portfolio.add_productpackage"
     relation_model = ProductPackage
+    update_existing = True
 
     def prepare_data_json(self, data):
         """

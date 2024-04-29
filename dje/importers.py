@@ -154,7 +154,7 @@ class BaseImportModelForm(ModelFormWithWarnings):
             identifier_fields = model_class.get_identifier_fields()
             # Crafting the list of unique filters to match the instance
             for field_name in identifier_fields:
-                value = data.get(prefix + field_name, None)
+                value = data.get(prefix + field_name, "")
                 if value:
                     value = value.strip()
                 filters.update({field_name: value})
@@ -310,6 +310,7 @@ class BaseImporter:
     model_form = None
     formset_class = BaseImportModelFormSet
     add_to_product = False
+    update_existing = False
 
     def __init__(self, user, file_location=None, formset_data=None):
         if not self.model_form and not isinstance(self.model_form, BaseImportModelForm):
@@ -564,7 +565,7 @@ class BaseImporter:
         """
         model_form_instance = self.model_form(dataspace=self.dataspace, user=self.user)
 
-        for _, field in model_form_instance.fields.items():
+        for field in model_form_instance.fields.values():
             field.supported_values = self.get_supported_values(field)
 
         return sorted(model_form_instance.fields.items())
@@ -582,14 +583,31 @@ class BaseImporter:
         if not self.formset.is_valid():  # Just in case...
             return
 
-        self.results = {"added": [], "unmodified": []}
+        self.results = {"added": [], "modified": [], "unmodified": []}
         for form in self.formset:
-            if not form.instance.pk:  # Save only addition for now
-                saved_instance = form.save()
-                self.results["added"].append(saved_instance)
-                History.log_addition(self.user, saved_instance)
-            else:
-                self.results["unmodified"].append(form.instance)
+            self.save_form(form)
+
+    def save_form(self, form):
+        instance = form.instance
+
+        if not instance.pk:  # Save only addition for now
+            saved_instance = form.save()
+            self.results["added"].append(saved_instance)
+            History.log_addition(self.user, saved_instance)
+            return
+
+        elif self.update_existing:
+            # We need to refresh the instance from the db because form.instance has
+            # the unsaved form.cleaned_data modification at that stage.
+            instance.refresh_from_db()
+            updated_fields = instance.update_from_data(self.user, form.cleaned_data, override=False)
+            if updated_fields:
+                self.results["modified"].append(instance)
+                msg = f'Updated {", ".join(updated_fields)} from import'
+                History.log_change(self.user, instance, message=msg)
+                return
+
+        self.results["unmodified"].append(instance)
 
     def get_added_instance_ids(self):
         """Return the list of added instance ids."""
@@ -631,6 +649,11 @@ class ImportableUploadFileForm(forms.Form):
 
 class PackageImportableUploadFileForm(forms.Form):
     file = SmartFileField(extensions=["csv", "json"])
+    update_existing_packages = forms.BooleanField(
+        label="Update existing packages with import data",
+        required=False,
+        initial=True,
+    )
 
     @property
     def header(self):
