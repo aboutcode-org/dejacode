@@ -54,6 +54,9 @@ Release notes
 - Fix the logout link of the admin app.
   https://github.com/nexB/dejacode/issues/89
 
+- Display full commit in the version displayed in the UI
+  https://github.com/nexB/dejacode/issues/88
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
