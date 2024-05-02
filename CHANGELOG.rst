@@ -51,6 +51,9 @@ Release notes
 - Show the individual PURL fields in the Package details view.
   https://github.com/nexB/dejacode/issues/83
 
+- Fix the logout link of the admin app.
+  https://github.com/nexB/dejacode/issues/89
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
