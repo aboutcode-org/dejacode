@@ -126,7 +126,7 @@
                 </a>
               {% endif %}
               <div class="dropdown-divider"></div>
-              <div class="dropdown-header">{{ DEJACODE_VERSION }}</div>
+              <div class="dropdown-header">v{{ DEJACODE_VERSION }}</div>
               <div class="dropdown-divider"></div>
               <form id="logout-form" method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
