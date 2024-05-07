@@ -162,8 +162,7 @@ MAX_UPLOAD_SIZE = env.int("MAX_UPLOAD_SIZE", default=31457280)  # 30M
 FILE_UPLOAD_PERMISSIONS = 0o644  # -rw-rw-r--
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#data-upload-max-number-fields
-# Set to 10 times the default value (1,000)
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
 
 # hCaptcha script location for registration form
 HCAPTCHA_JS_API_URL = env.str("HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
