@@ -86,7 +86,7 @@ class UsagePolicy(ColoredIconMixin, DataspacedModel):
         to="product_portfolio.ProductRelationStatus",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         help_text=_(
             "An associated product relation status enables you to specify the product "
             "relation status to use automatically when a component or package with an "
