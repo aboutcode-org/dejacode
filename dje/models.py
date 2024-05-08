@@ -1512,7 +1512,7 @@ class DejacodeUser(AbstractUser):
         null=True,
         blank=True,
         related_name="+",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         serialize=False,
         help_text=_(
             "Select a Card layout that provides the query results on the "
