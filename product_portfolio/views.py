@@ -1084,29 +1084,42 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
     left_dict = get_productrelationship_dict(left_product)
     right_dict = get_productrelationship_dict(right_product)
 
-    left_keys = set(left_dict.keys())
-    right_keys = set(right_dict.keys())
+    left_relationships = set(left_dict.keys())
+    right_relationships = set(right_dict.keys())
 
-    removed = list(left_keys.difference(right_keys))
-    added = list(right_keys.difference(left_keys))
+    removed = list(left_relationships.difference(right_relationships))
+    added = list(right_relationships.difference(left_relationships))
 
-    def get_name(relationship):
+    def get_related_object_unique_identifier(relationship):
+        """
+        Return a value suitable for identifying object as the same regardless of the
+        version.
+        - For Component and CustomComponent: using the ``name``.
+        - For Package: using the ``type`` + ``namespace`` + ``name`` combination
+          from the PackageURL when defined, or the ``filename`` as an alternative.
+        """
         related = relationship.related_component_or_package
         if related:
-            # Use filename for Package without a purl
-            return related.name or related.filename
+            if isinstance(related, Package):
+                if related.type and related.name:
+                    return f"{related.type}/{related.namespace}/{related.name}"
+                return related.filename  # Use filename for Package without a purl
+            return related.name
+
         return relationship.name  # custom component
 
-    removed_names = [get_name(left_dict[k]) for k in removed]
-    added_names = [get_name(right_dict[k]) for k in added]
+    removed_names = [
+        get_related_object_unique_identifier(left_dict[instance]) for instance in removed
+    ]
+    added_names = [get_related_object_unique_identifier(right_dict[instance]) for instance in added]
 
-    updated = [
+    upgraded = [
         (removed[removed_names.index(name)], added[added_names.index(name)])
         for name in removed_names
         if added_names.count(name) == 1 and removed_names.count(name) == 1
     ]
 
-    for k, l in updated:
+    for k, l in upgraded:
         del removed[removed.index(k)]
         del added[added.index(l)]
 
@@ -1114,14 +1127,14 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
     diffs = {}
     excluded = ["product", "uuid"] + request.GET.getlist("exclude")
 
-    for k in left_keys.intersection(right_keys):
+    for k in left_relationships.intersection(right_relationships):
         diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
         changed.append(k) if diff else unchanged.append(k)
         diffs[k] = OrderedDict(sorted(diff.items()))
 
     rows = [("added", None, right_dict[k], None) for k in added]
     rows.extend(("removed", left_dict[k], None, None) for k in removed)
-    rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+    rows.extend(("upgraded", left_dict[k], right_dict[l], None) for k, l in upgraded)
     rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
     rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
 
@@ -1142,7 +1155,7 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
     action_filters = [
         {"value": "added", "count": len(added), "checked": True},
         {"value": "changed", "count": len(changed), "checked": True},
-        {"value": "updated", "count": len(updated), "checked": True},
+        {"value": "upgraded", "count": len(upgraded), "checked": True},
         {"value": "removed", "count": len(removed), "checked": True},
         {"value": "unchanged", "count": len(unchanged), "checked": False},
     ]

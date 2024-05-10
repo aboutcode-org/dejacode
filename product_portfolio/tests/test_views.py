@@ -1228,6 +1228,33 @@ class ProductPortfolioViewsTestCase(TestCase):
         expected_disposition = "attachment; filename=product_comparison.xlsx"
         self.assertEqual(expected_disposition, response.headers.get("Content-Disposition"))
 
+    def test_product_portfolio_product_tree_comparison_view_package_identifier(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = resolve_url(
+            "product_portfolio:product_tree_comparison",
+            left_uuid=self.product1.uuid,
+            right_uuid=self.product2.uuid,
+        )
+
+        p1 = Package(dataspace=self.dataspace)
+        p1.set_package_url("pkg:bar/baz/pypdf@4.1.0")
+        p1.save()
+        pp1 = ProductPackage.objects.create(
+            product=self.product1, package=p1, dataspace=self.dataspace
+        )
+
+        # Same name different type and namespace
+        p2 = Package(dataspace=self.dataspace)
+        p2.set_package_url("pkg:github/py-pdf/pypdf@4.2.0")
+        p2.save()
+        pp2 = ProductPackage.objects.create(
+            product=self.product2, package=p2, dataspace=self.dataspace
+        )
+
+        response = self.client.get(url)
+        expected = [("removed", pp1, None, None), ("added", None, pp2, None)]
+        self.assertEqual(expected, response.context["rows"])
+
     def test_product_portfolio_product_tree_comparison_view_secured_access(self):
         self.client.login(username=self.basic_user.username, password="secret")
         url = resolve_url(
