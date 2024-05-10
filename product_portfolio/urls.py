@@ -22,6 +22,7 @@ from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
 from product_portfolio.views import ProductTabImportsView
+from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
 from product_portfolio.views import add_customcomponent_ajax_view
@@ -30,7 +31,6 @@ from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import license_summary_view
-from product_portfolio.views import product_tree_comparison_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_status_view
 
@@ -67,7 +67,7 @@ urlpatterns = [
     ),
     path(
         "compare/<uuid:left_uuid>/<uuid:right_uuid>/",
-        product_tree_comparison_view,
+        ProductTreeComparisonView.as_view(),
         name="product_tree_comparison",
     ),
     path(

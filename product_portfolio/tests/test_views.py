@@ -1255,6 +1255,28 @@ class ProductPortfolioViewsTestCase(TestCase):
         expected = [("removed", pp1, None, None), ("added", None, pp2, None)]
         self.assertEqual(expected, response.context["rows"])
 
+        # Same type, namespace, name combo
+        p2.set_package_url("pkg:bar/baz/pypdf@4.2.0")
+        p2.save()
+        response = self.client.get(url)
+        expected = [("updated", pp1, pp2, None)]
+        self.assertEqual(expected, response.context["rows"])
+
+        # More than 2 packages with same unique identifier
+        p3 = Package(dataspace=self.dataspace)
+        p3.set_package_url("pkg:bar/baz/pypdf@4.3.0")
+        p3.save()
+        pp3 = ProductPackage.objects.create(
+            product=self.product2, package=p3, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = [
+            ("removed", pp1, None, None),
+            ("added", None, pp2, None),
+            ("added", None, pp3, None),
+        ]
+        self.assertEqual(expected, response.context["rows"])
+
     def test_product_portfolio_product_tree_comparison_view_secured_access(self):
         self.client.login(username=self.basic_user.username, password="secret")
         url = resolve_url(
