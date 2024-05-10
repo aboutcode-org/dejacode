@@ -1,7 +1,7 @@
 {
   "affects": [
     {
-      "ref": "urn:cdx:serialNumber/version#bom-ref",
+      "ref": "pkg:pypi/flask@2.3.2",
       "versions": [
         {
           "status": "affected",
@@ -124,6 +124,14 @@
           "version": "1.0.2-3"
         },
         {
+          "status": "unaffected",
+          "version": "1.0.2-3"
+        },
+        {
+          "status": "unaffected",
+          "version": "1.0.2-3+deb10u1"
+        },
+        {
           "status": "affected",
           "version": "1.0.3"
         },
@@ -146,6 +154,14 @@
         {
           "status": "affected",
           "version": "1.1.2-2"
+        },
+        {
+          "status": "unaffected",
+          "version": "1.1.2-2"
+        },
+        {
+          "status": "unaffected",
+          "version": "1.1.2-2+deb11u1"
         },
         {
           "status": "affected",
@@ -228,12 +244,24 @@
           "version": "2.2.2-2"
         },
         {
+          "status": "unaffected",
+          "version": "2.2.2-3"
+        },
+        {
           "status": "affected",
           "version": "2.2.3"
         },
         {
           "status": "affected",
           "version": "2.2.4"
+        },
+        {
+          "status": "unaffected",
+          "version": "2.2.5"
+        },
+        {
+          "status": "unaffected",
+          "version": "2.2.5-1"
         },
         {
           "status": "affected",
@@ -244,8 +272,20 @@
           "version": "2.3.1"
         },
         {
+          "status": "unaffected",
+          "version": "2.3.2"
+        },
+        {
           "status": "affected",
           "version": "2:2.0.1-4.el9"
+        },
+        {
+          "status": "unaffected",
+          "version": "3.0.2-1"
+        },
+        {
+          "status": "unaffected",
+          "version": "3.0.3-1"
         }
       ]
     }

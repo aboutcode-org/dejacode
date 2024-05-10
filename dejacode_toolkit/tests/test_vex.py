@@ -17,9 +17,10 @@ from cyclonedx.output.json import SchemaVersion1Dot4
 from serializable import _SerializableJsonEncoder
 
 from component_catalog.models import Package
-from dejacode_toolkit import vex
-from dejacode_toolkit.vex import VEXCycloneDX
-from dejacode_toolkit.vex import vulnerability_format_vcic_to_cyclonedx
+from dejacode_toolkit.vex import create_auto_vex
+from dejacode_toolkit.vex import get_references_and_rating
+from dejacode_toolkit.vex import get_vex_document
+from dejacode_toolkit.vex import vulnerability_format_vcio_to_cyclonedx
 from dje.models import Dataspace
 from dje.tests import create_user
 from product_portfolio.models import Product
@@ -40,6 +41,10 @@ class VEXTestCase(TestCase):
             name="Product1 With Space", version="1.0", dataspace=self.nexb_dataspace
         )
         self.package1 = Package.objects.create(filename="package1", dataspace=self.nexb_dataspace)
+        self.package1.type = "pypi"
+        self.package1.namespace = ""
+        self.package1.name = "flask"
+        self.package1.version = "2.3.2"
 
         self.productpacakge1 = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.nexb_dataspace
@@ -55,6 +60,13 @@ class VEXTestCase(TestCase):
                 "code review indicates that the vulnerable code is not reachable,"
                 " either directly or indirectly."
             ),
+        )
+        self.vex2 = ProductPackageVEX.objects.create(
+            dataspace=self.productpacakge1.dataspace,
+            productpackage=self.productpacakge1,
+            vulnerability_id="VCID-z6fe-2j8a-aaak",
+            state="R",  # resolved
+            detail="This version of Product DEF has been fixed.",
         )
 
     def test_create_auto_vex1(self):
@@ -76,13 +88,13 @@ class VEXTestCase(TestCase):
                 ]
             },
         ]
-        assert ProductPackageVEX.objects.count() == 1
-        vex.create_auto_vex(self.package1, vulnerabilities)
         assert ProductPackageVEX.objects.count() == 2
+        create_auto_vex(self.package1, vulnerabilities)
+        assert ProductPackageVEX.objects.count() == 3
 
         # run create_auto_vex agian and make sure that the databse ignore errors
-        vex.create_auto_vex(self.package1, vulnerabilities)
-        assert ProductPackageVEX.objects.count() == 2
+        create_auto_vex(self.package1, vulnerabilities)
+        assert ProductPackageVEX.objects.count() == 3
 
     def test_create_auto_vex2(self):
         # duplicated vulnerability
@@ -104,9 +116,9 @@ class VEXTestCase(TestCase):
                 ]
             },
         ]
-        assert ProductPackageVEX.objects.count() == 1
-        vex.create_auto_vex(self.package1, vulnerabilities)
-        assert ProductPackageVEX.objects.count() == 1
+        assert ProductPackageVEX.objects.count() == 2
+        create_auto_vex(self.package1, vulnerabilities)
+        assert ProductPackageVEX.objects.count() == 2
 
     def test_get_references_and_rating(self):
         references = [
@@ -128,7 +140,7 @@ class VEXTestCase(TestCase):
                 "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-1000136",
             }
         ]
-        ref, rate = vex.get_references_and_rating(references)
+        ref, rate = get_references_and_rating(references)
 
         assert json.dumps(
             ref,
@@ -169,7 +181,7 @@ class VEXTestCase(TestCase):
         with open(vul_data_path) as f:
             vcio_vulnerability = json.load(f)
 
-        vulnerability = vulnerability_format_vcic_to_cyclonedx(vcio_vulnerability, self.vex1)
+        vulnerability = vulnerability_format_vcio_to_cyclonedx(vcio_vulnerability, self.vex1)
 
         cyclonedx_vul_data_path = os.path.join(
             os.path.dirname(__file__), "testfiles", "cyclonedx_vul1.json"
@@ -188,7 +200,7 @@ class VEXTestCase(TestCase):
         with open(vul_data_path) as f:
             vcio_vulnerability = json.load(f)
 
-        vulnerability = vulnerability_format_vcic_to_cyclonedx(vcio_vulnerability, self.vex1)
+        vulnerability = vulnerability_format_vcio_to_cyclonedx(vcio_vulnerability, self.vex1)
 
         cyclonedx_vul_data_path = os.path.join(
             os.path.dirname(__file__), "testfiles", "cyclonedx_vul2.json"
@@ -202,7 +214,7 @@ class VEXTestCase(TestCase):
             view_=SchemaVersion1Dot4,
         ) == json.dumps(cyclonedx_vul)
 
-    def test_vex_cyclonedx_export(self):
+    def test_get_vex_document1(self):
         vul_data_path = os.path.join(os.path.dirname(__file__), "testfiles", "vcio_vul1.json")
         with open(vul_data_path) as f:
             vcio_vulnerability = json.load(f)
@@ -211,4 +223,17 @@ class VEXTestCase(TestCase):
         with open(vex_data_path) as f:
             vex_data = json.load(f)
 
-        assert VEXCycloneDX().export([vcio_vulnerability], [self.vex1]) == json.dumps(vex_data)
+        assert get_vex_document([vcio_vulnerability], [self.vex1]) == json.dumps(vex_data)
+
+    def test_get_vex_document2(self):
+        vul_data_path = os.path.join(os.path.dirname(__file__), "testfiles", "vcio_vul2.json")
+        with open(vul_data_path) as f:
+            vcio_vulnerability = json.load(f)
+
+        vex_data_path = os.path.join(os.path.dirname(__file__), "testfiles", "vex2.json")
+        with open(vex_data_path) as f:
+            vex_data = json.load(f)
+
+        assert get_vex_document(
+            [vcio_vulnerability], [self.vex2], spec_version="1.5"
+        ) == json.dumps(vex_data)

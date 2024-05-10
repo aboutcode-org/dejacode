@@ -75,7 +75,7 @@ from notifications import views as notifications_views
 from component_catalog.license_expression_dje import get_license_objects
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.vex import VEXCycloneDX
+from dejacode_toolkit.vex import get_vex_document
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import outputs
 from dje.copier import COPY_DEFAULT_EXCLUDE
@@ -2398,8 +2398,7 @@ class ExportVEXView(
             raise Http404
 
         spec_version = self.request.GET.get("spec_version")
-        vex = VEXCycloneDX(specVersion=spec_version)
-        vex_json = vex.export(vulnerabilities, vexs)
+        vex_json = get_vex_document(vulnerabilities, vexs, spec_version=spec_version)
         response = FileResponse(
             vex_json,
             filename=filename,

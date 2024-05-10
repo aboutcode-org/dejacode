@@ -1,0 +1,331 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "vulnerabilities": [
+    {
+      "affects": [
+        {
+          "ref": "pkg:pypi/flask@2.3.2",
+          "versions": [
+            {
+              "status": "affected",
+              "version": "0.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.10"
+            },
+            {
+              "status": "affected",
+              "version": "0.10.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.11"
+            },
+            {
+              "status": "affected",
+              "version": "0.11.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.12"
+            },
+            {
+              "status": "affected",
+              "version": "0.12.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.12.2"
+            },
+            {
+              "status": "affected",
+              "version": "0.12.3"
+            },
+            {
+              "status": "affected",
+              "version": "0.12.4"
+            },
+            {
+              "status": "affected",
+              "version": "0.12.5"
+            },
+            {
+              "status": "affected",
+              "version": "0.2"
+            },
+            {
+              "status": "affected",
+              "version": "0.3"
+            },
+            {
+              "status": "affected",
+              "version": "0.3.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.4"
+            },
+            {
+              "status": "affected",
+              "version": "0.5"
+            },
+            {
+              "status": "affected",
+              "version": "0.5.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.5.2"
+            },
+            {
+              "status": "affected",
+              "version": "0.6"
+            },
+            {
+              "status": "affected",
+              "version": "0.6.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.7"
+            },
+            {
+              "status": "affected",
+              "version": "0.7.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.7.2"
+            },
+            {
+              "status": "affected",
+              "version": "0.8"
+            },
+            {
+              "status": "affected",
+              "version": "0.8.1"
+            },
+            {
+              "status": "affected",
+              "version": "0.9"
+            },
+            {
+              "status": "affected",
+              "version": "1.0"
+            },
+            {
+              "status": "affected",
+              "version": "1.0.1"
+            },
+            {
+              "status": "affected",
+              "version": "1.0.2"
+            },
+            {
+              "status": "affected",
+              "version": "1.0.2-3"
+            },
+            {
+              "status": "unaffected",
+              "version": "1.0.2-3"
+            },
+            {
+              "status": "unaffected",
+              "version": "1.0.2-3+deb10u1"
+            },
+            {
+              "status": "affected",
+              "version": "1.0.3"
+            },
+            {
+              "status": "affected",
+              "version": "1.0.4"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.0"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.1"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.2"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.2-2"
+            },
+            {
+              "status": "unaffected",
+              "version": "1.1.2-2"
+            },
+            {
+              "status": "unaffected",
+              "version": "1.1.2-2+deb11u1"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.3"
+            },
+            {
+              "status": "affected",
+              "version": "1.1.4"
+            },
+            {
+              "status": "affected",
+              "version": "1:0.10.1-7"
+            },
+            {
+              "status": "affected",
+              "version": "1:1.0.2-8"
+            },
+            {
+              "status": "affected",
+              "version": "1:1.1.2-6"
+            },
+            {
+              "status": "affected",
+              "version": "1:2.0.1-3"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.0"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.0rc1"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.0rc2"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.1"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.2"
+            },
+            {
+              "status": "affected",
+              "version": "2.0.3"
+            },
+            {
+              "status": "affected",
+              "version": "2.1.0"
+            },
+            {
+              "status": "affected",
+              "version": "2.1.1"
+            },
+            {
+              "status": "affected",
+              "version": "2.1.2"
+            },
+            {
+              "status": "affected",
+              "version": "2.1.3"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.0"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.1"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.2"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.2-2"
+            },
+            {
+              "status": "unaffected",
+              "version": "2.2.2-3"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.3"
+            },
+            {
+              "status": "affected",
+              "version": "2.2.4"
+            },
+            {
+              "status": "unaffected",
+              "version": "2.2.5"
+            },
+            {
+              "status": "unaffected",
+              "version": "2.2.5-1"
+            },
+            {
+              "status": "affected",
+              "version": "2.3.0"
+            },
+            {
+              "status": "affected",
+              "version": "2.3.1"
+            },
+            {
+              "status": "unaffected",
+              "version": "2.3.2"
+            },
+            {
+              "status": "affected",
+              "version": "2:2.0.1-4.el9"
+            },
+            {
+              "status": "unaffected",
+              "version": "3.0.2-1"
+            },
+            {
+              "status": "unaffected",
+              "version": "3.0.3-1"
+            }
+          ]
+        }
+      ],
+      "analysis": {
+        "detail": "This version of Product DEF has been fixed.",
+        "state": "resolved"
+      },
+      "cwes": [
+        488,
+        539
+      ],
+      "description": "Flask vulnerable to possible disclosure of permanent session cookie due to missing Vary: Cookie header",
+      "id": "VCID-111c-u9bh-aaac",
+      "ratings": [
+        {
+          "method": "CVSSv3",
+          "score": "7.5",
+          "source": {
+            "url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2023-30861.json"
+          },
+          "vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "references": [
+        {
+          "id": "",
+          "source": {
+            "url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2023-30861.json"
+          }
+        }
+      ],
+      "source": {
+        "url": "http://public.vulnerablecode.io/api/vulnerabilities/457133?format=json"
+      }
+    }
+  ]
+}
