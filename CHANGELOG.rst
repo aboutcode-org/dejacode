@@ -57,6 +57,11 @@ Release notes
 - Display full commit in the version displayed in the UI
   https://github.com/nexB/dejacode/issues/88
 
+- Refine the Product comparison logic for Packages.
+  The type and namespace fields are now used along the name field to match similar
+  Packages (excluding the version).
+  https://github.com/nexB/dejacode/issues/113
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

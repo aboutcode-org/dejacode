@@ -40,6 +40,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
+from django.views.generic import TemplateView
 
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
@@ -982,82 +983,90 @@ class ProductDeleteView(BaseProductView, DataspacedDeleteView):
         )
 
 
-def comparison_download_xlsx(request, rows, left_product, right_product):
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Product comparison"
-    header = ["Changes", str(left_product), str(right_product)]
-    compare_data = [header]
+class ProductTreeComparisonView(
+    LoginRequiredMixin,
+    TemplateView,
+):
+    template_name = "product_portfolio/product_tree_comparison.html"
 
-    def get_relation_data(relation, diff, is_left):
-        if not relation:
-            return ""
+    def get(self, request, *args, **kwargs):
+        guarded_qs = Product.objects.get_queryset(self.request.user)
+        self.left_product = get_object_or_404(guarded_qs, uuid=self.kwargs["left_uuid"])
+        self.right_product = get_object_or_404(guarded_qs, uuid=self.kwargs["right_uuid"])
 
-        data = [
-            str(relation),
-            "",
-            f"Review status: {relation.review_status or ''}",
-            f"License: {relation.license_expression or ''}",
+        if self.request.GET.get("download_xlsx"):
+            context = self.get_context_data(**kwargs)
+            return self.comparison_download_xlsx(rows=context["rows"])
+
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        left_dict = self.get_productrelationship_dict(self.left_product)
+        right_dict = self.get_productrelationship_dict(self.right_product)
+
+        left_relationships = set(left_dict.keys())
+        right_relationships = set(right_dict.keys())
+
+        removed = list(left_relationships.difference(right_relationships))
+        added = list(right_relationships.difference(left_relationships))
+
+        removed_identifiers = [
+            self.get_related_object_unique_identifier(left_dict[instance]) for instance in removed
         ]
-        if relation.purpose:
-            data.append(f"Purpose: {relation.purpose or ''}")
+        added_identifiers = [
+            self.get_related_object_unique_identifier(right_dict[instance]) for instance in added
+        ]
 
-        if diff:
-            data.append("")
-            for field, values in diff.items():
-                diff_line = (
-                    f"{'-' if is_left else '+'} {field.verbose_name.title()}: "
-                    f"{values[0] if is_left else values[1]}"
-                )
-                data.append(diff_line)
+        # The "update" status is only possible when no more than 2 packages (1 on each side)
+        # have the same unique identifier.
+        updated = [
+            (removed[removed_identifiers.index(name)], added[added_identifiers.index(name)])
+            for name in removed_identifiers
+            if added_identifiers.count(name) == 1 and removed_identifiers.count(name) == 1
+        ]
+        for k, l in updated:
+            del removed[removed.index(k)]
+            del added[added.index(l)]
 
-        return "\n".join(data)
+        unchanged, changed = [], []
+        diffs = {}
+        excluded = ["product", "uuid"] + self.request.GET.getlist("exclude")
 
-    # Iterate over each row and populate the Excel worksheet
-    for action, left, right, diff in rows:
-        compare_data.append(
-            [
-                action,
-                get_relation_data(left, diff, is_left=True),
-                get_relation_data(right, diff, is_left=False),
-            ]
+        for k in left_relationships.intersection(right_relationships):
+            diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
+            changed.append(k) if diff else unchanged.append(k)
+            diffs[k] = OrderedDict(sorted(diff.items()))
+
+        rows = [("added", None, right_dict[k], None) for k in added]
+        rows.extend(("removed", left_dict[k], None, None) for k in removed)
+        rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+        rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
+        rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
+        rows.sort(key=self.sort_by_name_version)
+
+        action_filters = [
+            {"value": "added", "count": len(added), "checked": True},
+            {"value": "changed", "count": len(changed), "checked": True},
+            {"value": "updated", "count": len(updated), "checked": True},
+            {"value": "removed", "count": len(removed), "checked": True},
+            {"value": "unchanged", "count": len(unchanged), "checked": False},
+        ]
+
+        context.update(
+            {
+                "left_product": self.left_product,
+                "right_product": self.right_product,
+                "action_filters": action_filters,
+                "rows": rows,
+                "exclude_fields_form": ComparisonExcludeFieldsForm(self.request.GET),
+            }
         )
 
-    for row in compare_data:
-        ws.append(row)
+        return context
 
-    # Styling
-    header = NamedStyle(name="header")
-    header.font = Font(bold=True)
-    header.border = Border(bottom=Side(border_style="thin"))
-    header.alignment = Alignment(horizontal="center", vertical="center")
-    header_row = ws[1]
-    for cell in header_row:
-        cell.style = header
-
-    # Freeze first header row
-    ws.freeze_panes = "A2"
-
-    # Columns width
-    ws.column_dimensions["B"].width = 40
-    ws.column_dimensions["C"].width = 40
-
-    # Prepare response
-    xlsx_content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    response = HttpResponse(content_type=xlsx_content_type)
-    response["Content-Disposition"] = "attachment; filename=product_comparison.xlsx"
-    wb.save(response)
-
-    return response
-
-
-@login_required
-def product_tree_comparison_view(request, left_uuid, right_uuid):
-    guarded_qs = Product.objects.get_queryset(request.user)
-
-    left_product = get_object_or_404(guarded_qs, uuid=left_uuid)
-    right_product = get_object_or_404(guarded_qs, uuid=right_uuid)
-
+    @staticmethod
     def get_productrelationship_dict(instance):
         component_qs = instance.productcomponents.select_related(
             "review_status",
@@ -1081,50 +1090,26 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
 
         return relationship_dict
 
-    left_dict = get_productrelationship_dict(left_product)
-    right_dict = get_productrelationship_dict(right_product)
-
-    left_keys = set(left_dict.keys())
-    right_keys = set(right_dict.keys())
-
-    removed = list(left_keys.difference(right_keys))
-    added = list(right_keys.difference(left_keys))
-
-    def get_name(relationship):
+    @staticmethod
+    def get_related_object_unique_identifier(relationship):
+        """
+        Return a value suitable for identifying object as the same regardless of the
+        version.
+        - For Component and CustomComponent: using the ``name``.
+        - For Package: using the ``type`` + ``namespace`` + ``name`` combination
+          from the PackageURL when defined, or the ``filename`` as an alternative.
+        """
         related = relationship.related_component_or_package
         if related:
-            # Use filename for Package without a purl
-            return related.name or related.filename
+            if isinstance(related, Package):
+                if related.type and related.name:
+                    return f"{related.type}/{related.namespace}/{related.name}"
+                return related.filename  # Use filename for Package without a purl
+            return related.name
+
         return relationship.name  # custom component
 
-    removed_names = [get_name(left_dict[k]) for k in removed]
-    added_names = [get_name(right_dict[k]) for k in added]
-
-    updated = [
-        (removed[removed_names.index(name)], added[added_names.index(name)])
-        for name in removed_names
-        if added_names.count(name) == 1 and removed_names.count(name) == 1
-    ]
-
-    for k, l in updated:
-        del removed[removed.index(k)]
-        del added[added.index(l)]
-
-    unchanged, changed = [], []
-    diffs = {}
-    excluded = ["product", "uuid"] + request.GET.getlist("exclude")
-
-    for k in left_keys.intersection(right_keys):
-        diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
-        changed.append(k) if diff else unchanged.append(k)
-        diffs[k] = OrderedDict(sorted(diff.items()))
-
-    rows = [("added", None, right_dict[k], None) for k in added]
-    rows.extend(("removed", left_dict[k], None, None) for k in removed)
-    rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
-    rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
-    rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
-
+    @staticmethod
     def sort_by_name_version(row):
         index = 1 if row[1] else 2
         relationship = row[index]
@@ -1134,28 +1119,73 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
             return name.lower(), related.version
         return relationship.name.lower(), relationship.version
 
-    rows.sort(key=sort_by_name_version)
+    def comparison_download_xlsx(self, rows):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Product comparison"
+        header = ["Changes", str(self.left_product), str(self.right_product)]
+        compare_data = [header]
 
-    if request.GET.get("download_xlsx"):
-        return comparison_download_xlsx(request, rows, left_product, right_product)
+        def get_relation_data(relation, diff, is_left):
+            if not relation:
+                return ""
 
-    action_filters = [
-        {"value": "added", "count": len(added), "checked": True},
-        {"value": "changed", "count": len(changed), "checked": True},
-        {"value": "updated", "count": len(updated), "checked": True},
-        {"value": "removed", "count": len(removed), "checked": True},
-        {"value": "unchanged", "count": len(unchanged), "checked": False},
-    ]
+            data = [
+                str(relation),
+                "",
+                f"Review status: {relation.review_status or ''}",
+                f"License: {relation.license_expression or ''}",
+            ]
+            if relation.purpose:
+                data.append(f"Purpose: {relation.purpose or ''}")
 
-    context = {
-        "left_product": left_product,
-        "right_product": right_product,
-        "action_filters": action_filters,
-        "rows": rows,
-        "exclude_fields_form": ComparisonExcludeFieldsForm(request.GET),
-    }
+            if diff:
+                data.append("")
+                for field, values in diff.items():
+                    diff_line = (
+                        f"{'-' if is_left else '+'} {field.verbose_name.title()}: "
+                        f"{values[0] if is_left else values[1]}"
+                    )
+                    data.append(diff_line)
 
-    return render(request, "product_portfolio/product_tree_comparison.html", context)
+            return "\n".join(data)
+
+        # Iterate over each row and populate the Excel worksheet
+        for action, left, right, diff in rows:
+            compare_data.append(
+                [
+                    action,
+                    get_relation_data(left, diff, is_left=True),
+                    get_relation_data(right, diff, is_left=False),
+                ]
+            )
+
+        for row in compare_data:
+            ws.append(row)
+
+        # Styling
+        header = NamedStyle(name="header")
+        header.font = Font(bold=True)
+        header.border = Border(bottom=Side(border_style="thin"))
+        header.alignment = Alignment(horizontal="center", vertical="center")
+        header_row = ws[1]
+        for cell in header_row:
+            cell.style = header
+
+        # Freeze first header row
+        ws.freeze_panes = "A2"
+
+        # Columns width
+        ws.column_dimensions["B"].width = 40
+        ws.column_dimensions["C"].width = 40
+
+        # Prepare response
+        xlsx_content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        response = HttpResponse(content_type=xlsx_content_type)
+        response["Content-Disposition"] = "attachment; filename=product_comparison.xlsx"
+        wb.save(response)
+
+        return response
 
 
 AttributionNode = namedtuple(
