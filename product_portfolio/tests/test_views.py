@@ -1723,8 +1723,6 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertIn(status, form.fields["configuration_status"].queryset)
         self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
 
-        self.assertEqual([(keyword.label, keyword.label)], form.fields["keywords"].choices)
-
         # NameVersionValidationFormMixin
         data = {
             "name": self.product1.name,

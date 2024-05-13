@@ -4641,8 +4641,6 @@ class ComponentListViewTestCase(TestCase):
         self.assertIn(status, form.fields["configuration_status"].queryset)
         self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
 
-        self.assertEqual([(keyword.label, keyword.label)], form.fields["keywords"].choices)
-
         # NameVersionValidationFormMixin
         data = {
             "name": self.component1.name,
@@ -4688,7 +4686,7 @@ class ComponentListViewTestCase(TestCase):
             "copyright": "Copyright",
             "notice_text": "Notice",
             "description": "Description",
-            "keywords": [keyword.label],
+            "keywords": [keyword.label, "Another keyword"],
             "primary_language": "Python",
             "homepage_url": "https://nexb.com",
             "configuration_status": status.pk,
@@ -4701,6 +4699,7 @@ class ComponentListViewTestCase(TestCase):
         self.assertEqual(owner, component.owner)
         self.assertEqual(status, component.configuration_status)
         self.assertEqual(license1.key, component.license_expression)
+        self.assertEqual(["Key1", "Another keyword"], component.keywords)
 
     def test_component_catalog_component_form_assigned_packages(self):
         data = {

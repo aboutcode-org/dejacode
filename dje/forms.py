@@ -837,7 +837,11 @@ class JSONListField(forms.CharField):
         return super().prepare_value(value)
 
     def to_python(self, value):
-        if isinstance(value, str):
+        if not value:
+            return []
+        if isinstance(value, list):
+            return value
+        elif isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
         return super().to_python(value)
 
