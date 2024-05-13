@@ -41,6 +41,12 @@ from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 
+keywords_help = (
+    get_help_text(Component, "keywords") +
+    " You can add multiple keywords by separating them with commas, like this: "
+    "keyword1, keyword2."
+)
+
 
 class OwnerChoiceField(ModelChoiceFieldForImport):
     def get_suggestions(self, value, limit=5):
@@ -160,6 +166,7 @@ class ComponentImportForm(
 
     keywords = JSONListField(
         required=False,
+        help_text=keywords_help,
     )
 
     acceptable_linkages = ImportMultipleChoiceField(
@@ -173,6 +180,7 @@ class ComponentImportForm(
             "children",
             "packages",
             "completion_level",
+            "request_count",
             # JSONField not supported
             "dependencies",
         )
@@ -240,6 +248,7 @@ class PackageImportForm(
 
     keywords = JSONListField(
         required=False,
+        help_text=keywords_help,
     )
 
     class Meta:
@@ -249,6 +258,7 @@ class PackageImportForm(
             # JSONField not supported
             "dependencies",
             "file_references",
+            "request_count",
             "parties",
         ]
 

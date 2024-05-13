@@ -62,6 +62,10 @@ Release notes
   Packages (excluding the version).
   https://github.com/nexB/dejacode/issues/113
 
+- Refactor the implementation of Keywords on forms to allow more flexibilty.
+  Existing Keywords are suggested for consistency but any values is now allowed.
+  https://github.com/nexB/dejacode/issues/48
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
