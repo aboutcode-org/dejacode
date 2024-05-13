@@ -42,8 +42,8 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 
 keywords_help = (
-    get_help_text(Component, "keywords") +
-    " You can add multiple keywords by separating them with commas, like this: "
+    get_help_text(Component, "keywords")
+    + " You can add multiple keywords by separating them with commas, like this: "
     "keyword1, keyword2."
 )
 
