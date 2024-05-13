@@ -601,7 +601,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         # Deleting c1 should delete the c1 object and the Subcomponent, but c2
         # is not impacted
         self.c1.delete()
-        self.assertFalse(Subcomponent.objects.filter(parent=self.c1, child=self.c2))
+        self.assertFalse(Subcomponent.objects.filter(parent__id=self.c1.id, child=self.c2))
         self.assertFalse(Component.objects.filter(id=self.c1.id))
         self.assertTrue(Component.objects.filter(id=self.c2.id))
 
@@ -2126,8 +2126,11 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.homepage_url = "https://homepage.url"
         self.component1.notice_text = "Notice"
         cyclonedx_data = self.component1.as_cyclonedx()
-        expected_repr = "<Component group=None, name=a, version=1.0, type=library>"
-        self.assertEqual(expected_repr, repr(cyclonedx_data))
+        self.assertEqual("library", cyclonedx_data.type)
+        self.assertEqual(self.component1.name, cyclonedx_data.name)
+        self.assertEqual(self.component1.version, cyclonedx_data.version)
+        self.assertEqual(str(self.component1.uuid), str(cyclonedx_data.bom_ref))
+
         expected = {
             "aboutcode:homepage_url": "https://homepage.url",
             "aboutcode:notice_text": "Notice",
@@ -2150,8 +2153,14 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         cyclonedx_data = package.as_cyclonedx()
-        expected_repr = "<Component group=None, name=curl, version=7.50.3-1, type=library>"
-        self.assertEqual(expected_repr, repr(cyclonedx_data))
+
+        self.assertEqual("library", cyclonedx_data.type)
+        self.assertEqual(package.name, cyclonedx_data.name)
+        self.assertEqual(package.version, cyclonedx_data.version)
+        self.assertEqual("pkg:deb/debian/curl@7.50.3-1", str(cyclonedx_data.bom_ref))
+        package_url = package.get_package_url()
+        self.assertEqual(package_url, cyclonedx_data.purl)
+
         expected = {
             "aboutcode:download_url": "https://download.url",
             "aboutcode:filename": "package.zip",

@@ -257,8 +257,6 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual(str(comment.uuid), data["uuid"])
         self.assertEqual("nexb_user", data["user"])
         self.assertEqual("A comment content", data["text"])
-        self.assertEqual(comment.created_date.isoformat(), data["created_date"])
-        self.assertEqual(comment.last_modified_date.isoformat(), data["last_modified_date"])
 
     @patch("requests.Session.post", autospec=True)
     def test_notification_task_on_workflow_request_add_comment_slack_url(self, method_mock):
@@ -308,7 +306,7 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual(expected, results["attachments"])
 
     @patch("requests.Session.post", autospec=True)
-    def test_notification_task_deliver_hook_wrapper_extra_payload(self, method_mock):
+    def test_notification_task_deliver_hook_task_extra_payload(self, method_mock):
         method_mock.return_value = None
 
         target = "https://localhost"

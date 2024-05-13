@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-PYTHON_EXE=python3.10
+PYTHON_EXE=python3.12
 MANAGE=bin/python manage.py
 ACTIVATE?=. bin/activate;
 PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
@@ -128,7 +128,10 @@ postgresdb:
 	@createdb --owner=${DB_USERNAME} ${POSTGRES_INITDB_ARGS} ${DB_NAME}
 
 run:
-	${MANAGE} runserver 8000
+	${MANAGE} runserver 8000 --insecure
+
+worker:
+	${MANAGE} rqworker
 
 test:
 	@echo "-> Run the test suite"
@@ -161,4 +164,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuse
+.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser

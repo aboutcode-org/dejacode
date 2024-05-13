@@ -38,7 +38,8 @@
           {% if has_change_permission %}
             <a class="dropdown-item" href="{{ object.get_import_from_scan_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import data from Scan' %}</a>
             {% if request.user.dataspace.enable_package_scanning %}
-              <a class="dropdown-item" href="{{ object.get_import_manifest_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import Packages from manifest' %}</a>
+              <a class="dropdown-item" href="{{ object.get_load_sboms_url }}"><i class="fas fa-file-upload"></i> {% trans 'Load Packages from SBOMs' %}</a>
+              <a class="dropdown-item" href="{{ object.get_import_manifests_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import Packages from manifests' %}</a>
             {% endif %}
             {% if pull_project_data_form %}
               <a class="dropdown-item" style="margin-left: -3px;" href="#" data-bs-toggle="modal" data-bs-target="#pull-project-data-modal"><i class="fas fa-cloud-download-alt"></i> {% trans 'Pull ScanCode.io Project data' %}</a>
@@ -66,9 +67,12 @@
           <a href="{{ object.get_export_spdx_url }}" class="dropdown-item" target="_blank">
             <i class="fas fa-download"></i> SPDX document
           </a>
-          <a href="{{ object.get_export_cyclonedx_url }}" class="dropdown-item" target="_blank">
+          <div class="dropdown-item">
             <i class="fas fa-download"></i> CycloneDX SBOM
-          </a>
+            <a class="badge text-bg-primary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.6">1.6</a>
+            <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5">1.5</a>
+            <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4">1.4</a>
+          </div>
         </div>
       </div>
     </div>

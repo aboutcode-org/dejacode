@@ -7,8 +7,12 @@
 #
 
 import json
+import uuid
+from pathlib import Path
+from unittest import mock
 
 from django.core import mail
+from django.core.files.base import ContentFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -41,9 +45,12 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
+from product_portfolio.models import ScanCodeProject
 
 
 class ProductAPITestCase(MaxQueryMixin, TestCase):
+    testfiles_path = Path(__file__).parent / "testfiles"
+
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
@@ -342,6 +349,202 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         product1 = Product.unsecured_objects.get(pk=self.product1.pk)
         self.assertEqual("Updated Name", product1.name)
+
+    def test_api_product_endpoint_load_sboms_action(self):
+        url = reverse("api_v2:product-load-sboms", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"input_file": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        data = {
+            "input_file": ContentFile("Content", name="sbom.json"),
+            "update_existing_packages": False,
+            "scan_all_packages": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status": "SBOM file submitted to ScanCode.io for inspection."}
+        self.assertEqual(expected, response.data)
+        self.assertEqual(1, ScanCodeProject.objects.count())
+
+    def test_api_product_endpoint_import_manifests_action(self):
+        url = reverse("api_v2:product-import-manifests", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"input_file": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        data = {
+            "input_file": ContentFile("Content", name="requirements.txt"),
+            "update_existing_packages": False,
+            "scan_all_packages": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status": "Manifest file submitted to ScanCode.io for inspection."}
+        self.assertEqual(expected, response.data)
+        self.assertEqual(1, ScanCodeProject.objects.count())
+
+    def test_api_product_endpoint_import_from_scan_action(self):
+        url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"upload_file": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        data = {
+            "upload_file": ContentFile("Content", name="scan_results.json"),
+            "create_codebase_resources": False,
+            "stop_on_error": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = ["The file content is not proper JSON."]
+        self.assertEqual(expected, response.data)
+
+        scan_input_location = self.testfiles_path / "import_from_scan.json"
+        data = {
+            "upload_file": scan_input_location.open(),
+            "create_codebase_resources": True,
+            "stop_on_error": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {
+            "status": "Imported from Scan: 1 Packages, 1 Product Packages, 3 Codebase Resources"
+        }
+        self.assertEqual(1, self.product1.productpackages.count())
+        self.assertEqual(1, self.product1.packages.count())
+        self.assertEqual(3, self.product1.codebaseresources.count())
+
+    @mock.patch("product_portfolio.forms.PullProjectDataForm.get_project_data")
+    def test_api_product_endpoint_pull_scancodeio_project_data_action(self, mock_get_project_data):
+        url = reverse("api_v2:product-pull-scancodeio-project-data", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"project_name_or_uuid": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        mock_get_project_data.return_value = None
+        data = {
+            "project_name_or_uuid": "project_name",
+            "update_existing_packages": False,
+        }
+        response = self.client.post(url, data)
+        expected = ['Project "project_name" not found on ScanCode.io.']
+        self.assertEqual(expected, response.data)
+
+        mock_get_project_data.return_value = {"uuid": uuid.uuid4()}
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status": "Packages import from ScanCode.io in progress..."}
+        self.assertEqual(expected, response.data)
+        self.assertEqual(1, ScanCodeProject.objects.count())
+
+    def test_api_product_endpoint_aboutcode_files_action(self):
+        url = reverse("api_v2:product-aboutcode-files", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="p1_about.zip"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/zip", response["Content-Type"])
+
+    def test_api_product_endpoint_spdx_document_action(self):
+        url = reverse("api_v2:product-spdx-document", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="dejacode_nexb_product_p1.spdx.json"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/json", response["Content-Type"])
+
+    def test_api_product_endpoint_cyclonedx_sbom_action(self):
+        url = reverse("api_v2:product-cyclonedx-sbom", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = 'attachment; filename="dejacode_nexb_product_p1.cdx.json"'
+        self.assertEqual(expected, response["Content-Disposition"])
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertIn('"specVersion": "1.6"', str(response.getvalue()))
+
+        # Old spec version
+        response = self.client.get(url, data={"spec_version": "1.5"})
+        self.assertIn('"specVersion": "1.5"', str(response.getvalue()))
+
+        response = self.client.get(url, data={"spec_version": "10.10"})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual("Spec version 10.10 not supported", response.data)
 
 
 class ProductRelatedAPITestCase(TestCase):

@@ -610,18 +610,12 @@ form[id^="2fa"] .alert ul {
   padding: 0;
   list-style: none;
 }
-body.signup-form form#registration p.eula {
-  margin-bottom: 0.3125rem;
-}
 body.signup-form h1 {
   text-align: center;
   margin: 25px 0;
   color: var(--bs-white);
   font-size: 30px;
   font-weight: normal;
-}
-body.signup-form p.eula {
-  font-weight: bold;
 }
 body.signup-form .asteriskField {
   display: none;

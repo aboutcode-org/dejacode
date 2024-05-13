@@ -495,7 +495,7 @@ class ComponentAdminViewsTestCase(TestCase):
     def test_component_admin_changelist_list_display_as_popup(self):
         self.client.login(username="test", password="secret")
         url = reverse("admin:component_catalog_component_changelist")
-        expect1 = '<input type="checkbox" id="action-toggle">'
+        expect1 = '<input type="checkbox" id="action-toggle"'
         expect2 = "get_hierarchy_link"
         expect3 = "<span>View</span>"
         expect4 = '<td class="action-checkbox">'
@@ -864,7 +864,6 @@ class ComponentAdminViewsTestCase(TestCase):
             "dje-externalreference-content_type-object_id-INITIAL_FORMS": 0,
         }
         response = self.client.post(url, data)
-        # print response.context_data['adminform'].form.errors
         self.assertEqual(302, response.status_code)
 
         new_component = Component.objects.get(name=new_name, dataspace=self.dataspace1)
@@ -901,8 +900,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertEqual(self.user, pc.created_by)
         self.assertEqual(self.user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         self.assertFalse(History.objects.get_for_object(pc).exists())
         self.assertEqual(self.user, pc.created_by)
@@ -956,8 +955,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, pp.license_expression)
         self.assertEqual(self.user, pp.created_by)
         self.assertEqual(self.user, pp.last_modified_by)
-        self.assertEqual(26, len(str(pp.created_date)))
-        self.assertEqual(26, len(str(pp.last_modified_date)))
+        self.assertEqual(32, len(str(pp.created_date)))
+        self.assertEqual(32, len(str(pp.last_modified_date)))
 
         self.assertFalse(History.objects.get_for_object(pp).exists())
         self.assertEqual(self.user, pp.created_by)

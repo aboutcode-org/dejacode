@@ -895,7 +895,10 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1, html=True, count=4)
 
         expected_template = """
-        <select name="form-0-{0}" id="id_form-0-{0}">
+        <select name="form-0-{field_name}"
+                aria-describedby="id_form-0-{field_name}_helptext"
+                id="id_form-0-{field_name}"
+        >
           <option value="unknown">Unknown</option>
           <option value="true">Yes</option>
           <option value="false" selected>No</option>
@@ -909,7 +912,8 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
             "indemnification",
         ]
         for field_name in fields:
-            self.assertContains(response, expected_template.format(field_name), html=True)
+            expected = expected_template.format(field_name=field_name)
+            self.assertContains(response, expected, html=True)
 
         # Results
         formset_data = {
@@ -926,10 +930,10 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.client.post(url, formset_data)
         component = Component.objects.latest("id")
         self.assertEqual(formset_data["form-0-name"], component.name)
-        self.assertTrue(component.sublicense_allowed is False)
-        self.assertTrue(component.express_patent_grant is False)
-        self.assertTrue(component.covenant_not_to_assert is False)
-        self.assertTrue(component.indemnification is False)
+        self.assertFalse(component.sublicense_allowed)
+        self.assertFalse(component.express_patent_grant)
+        self.assertFalse(component.covenant_not_to_assert)
+        self.assertFalse(component.indemnification)
 
     def test_component_import_acceptable_linkages(self):
         formset_data = {

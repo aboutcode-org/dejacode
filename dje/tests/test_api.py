@@ -497,8 +497,8 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.ext_ref1.content_type.model, response.data["content_type"])
         self.assertEqual(self.ext_ref1.external_url, response.data["external_url"])
         self.assertEqual(self.ext_ref1.external_id, response.data["external_id"])
-        self.assertEqual(26, len(response.data["created_date"]))
-        self.assertEqual(26, len(response.data["last_modified_date"]))
+        self.assertEqual(32, len(response.data["created_date"]))
+        self.assertEqual(32, len(response.data["last_modified_date"]))
 
     def test_api_external_reference_endpoint_create(self):
         self.client.login(username="super_user", password="secret")

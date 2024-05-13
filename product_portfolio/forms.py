@@ -7,6 +7,8 @@
 #
 
 from django import forms
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.forms import BaseModelFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.urls import reverse_lazy
@@ -29,6 +31,8 @@ from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
 from component_catalog.models import Component
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from dejacode_toolkit.scancodeio import ScanCodeIO
+from dje import tasks
 from dje.fields import SmartFileField
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
@@ -48,6 +52,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ScanCodeProject
 
 
 class NameVersionValidationFormMixin:
@@ -557,12 +562,37 @@ class ImportFromScanForm(forms.Form):
         helper.add_input(Submit("import", "Import"))
         return helper
 
+    def save(self, product):
+        from product_portfolio.importers import ImportFromScan
 
-class ImportManifestForm(forms.Form):
+        sid = transaction.savepoint()
+        importer = ImportFromScan(
+            product,
+            self.user,
+            upload_file=self.cleaned_data.get("upload_file"),
+            create_codebase_resources=self.cleaned_data.get("create_codebase_resources"),
+            stop_on_error=self.cleaned_data.get("stop_on_error"),
+        )
+
+        try:
+            warnings, created_counts = importer.save()
+        except ValidationError:
+            transaction.savepoint_rollback(sid)
+            raise
+
+        transaction.savepoint_commit(sid)
+        return warnings, created_counts
+
+
+class BaseProductImportFormView(forms.Form):
+    project_type = None
+    input_label = ""
+
     input_file = SmartFileField(
-        label=_("Manifest file"),
+        label=_("file or zip archive"),
         required=True,
     )
+
     update_existing_packages = forms.BooleanField(
         label=_("Update existing packages with discovered packages data"),
         required=False,
@@ -585,14 +615,49 @@ class ImportManifestForm(forms.Form):
         ),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["input_file"].label = _(f"{self.input_label} file or zip archive")
+
     @property
     def helper(self):
         helper = FormHelper()
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(Submit("submit", "Import Packages"))
+        helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
         return helper
+
+    def submit(self, product, user):
+        scancode_project = ScanCodeProject.objects.create(
+            product=product,
+            dataspace=product.dataspace,
+            type=self.project_type,
+            input_file=self.cleaned_data.get("input_file"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=self.cleaned_data.get("scan_all_packages"),
+            created_by=user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.scancodeio_submit_project.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+                user_uuid=user.uuid,
+                pipeline_name=self.pipeline_name,
+            )
+        )
+
+
+class LoadSBOMsForm(BaseProductImportFormView):
+    project_type = ScanCodeProject.ProjectType.LOAD_SBOMS
+    input_label = "SBOM"
+    pipeline_name = "load_sbom"
+
+
+class ImportManifestsForm(BaseProductImportFormView):
+    project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
+    input_label = "Manifest"
+    pipeline_name = "resolve_dependencies"
 
 
 class StrongTextWidget(forms.Widget):
@@ -844,3 +909,35 @@ class PullProjectDataForm(forms.Form):
         helper.form_id = "pull-project-data-form"
         helper.attrs = {"autocomplete": "off"}
         return helper
+
+    def get_project_data(self, project_name_or_uuid, user):
+        scancodeio = ScanCodeIO(user)
+        for field_name in ["name", "uuid"]:
+            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
+            if project_data:
+                return project_data
+
+    def submit(self, product, user):
+        project_name_or_uuid = self.cleaned_data.get("project_name_or_uuid")
+        project_data = self.get_project_data(project_name_or_uuid, user)
+
+        if not project_data:
+            msg = f'Project "{project_name_or_uuid}" not found on ScanCode.io.'
+            raise ValidationError(msg)
+
+        scancode_project = ScanCodeProject.objects.create(
+            product=product,
+            dataspace=product.dataspace,
+            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
+            project_uuid=project_data.get("uuid"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
+            scan_all_packages=False,
+            status=ScanCodeProject.Status.SUBMITTED,
+            created_by=user,
+        )
+
+        transaction.on_commit(
+            lambda: tasks.pull_project_data_from_scancodeio.delay(
+                scancodeproject_uuid=scancode_project.uuid,
+            )
+        )

@@ -98,6 +98,17 @@ notifications.
 
     SITE_URL=http://www.yourdomain.com/
 
+DEJACODE_SUPPORT_EMAIL
+----------------------
+
+An optional email address to reach the support team of this instance.
+When defined, it will be displayed in various views and emails related to account
+registration, activation, and password reset.
+
+.. code-block:: python
+
+    DEJACODE_SUPPORT_EMAIL=support@dejacode.com
+
 ANONYMOUS_USERS_DATASPACE
 -------------------------
 

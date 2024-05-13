@@ -96,7 +96,7 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
         response = self.client.post(url, {"post": "yes"})
         expected = "would require deleting the following protected related objects"
         self.assertContains(response, expected)
-        self.assertNotContains(response, 'type="submit"')
+        self.assertNotContains(response, "Yes, I’m sure")
 
     def test_usage_policy_changeform_update_content_type_once_assigned(self):
         self.client.login(username="test", password="secret")
@@ -137,7 +137,10 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
     def test_usage_policy_changeform_color_code_as_color_input(self):
         self.client.login(username="test", password="secret")
         response = self.client.get(self.component_policy.get_admin_url())
-        expected = '<input id="id_color_code" maxlength="7" name="color_code" type="color" />'
+        expected = (
+            '<input type="color" name="color_code" maxlength="7" '
+            'aria-describedby="id_color_code_helptext" id="id_color_code">'
+        )
         self.assertContains(response, expected, html=True)
 
     def test_usage_policy_changeform_clean_color_code(self):

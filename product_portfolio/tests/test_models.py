@@ -266,8 +266,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(status1, pc.review_status)
         self.assertEqual(self.super_user, pc.created_by)
         self.assertEqual(self.super_user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         self.product1.refresh_from_db()
         history_entries = History.objects.get_for_object(self.product1)
@@ -724,14 +724,17 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(expected, pp1.as_spdx().as_dict())
 
     def test_product_model_as_cyclonedx(self):
-        expected_repr = "<Component group=None, name=Product1, version=, type=application>"
-        self.assertEqual(expected_repr, repr(self.product1.as_cyclonedx()))
+        cyclonedx_data = self.product1.as_cyclonedx()
+        self.assertEqual("application", cyclonedx_data.type)
+        self.assertEqual(self.product1.name, cyclonedx_data.name)
+        self.assertEqual(self.product1.version, cyclonedx_data.version)
+        self.assertEqual(str(self.product1.uuid), str(cyclonedx_data.bom_ref))
 
     def test_product_portfolio_scancode_project_model_can_start_import(self):
         scancode_project = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
         )
         self.assertTrue(scancode_project.can_start_import)
 

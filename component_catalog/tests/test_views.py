@@ -1509,8 +1509,9 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, 'value="1.0"')
         self.assertContains(
             response,
-            '<input type="url" name="homepage_url" maxlength="1024"'
-            ' class="urlinput form-control" id="id_homepage_url">',
+            '<input type="url" name="homepage_url" maxlength="1024" '
+            'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
+            'id="id_homepage_url">',
         )
 
     def test_package_list_view_usage_policy_availability(self):
@@ -1732,10 +1733,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected)
         self.assertIsNotNone(response.context_data["form"])
 
-        expected_status_select = (
-            '<select name="review_status" class="select form-select" disabled'
-            ' id="id_review_status">'
-        )
+        expected_status_select = '<select name="review_status" class="select form-select" disabled'
         self.assertContains(response, expected_status_select)
         self.assertContains(response, f'<option value="{purpose1.pk}">Core</option>')
 
@@ -3204,9 +3202,11 @@ class PackageUserViewsTestCase(TestCase):
         fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
         self.assertEqual(fields[0], ("Summary", None, "Summary of the vulnerability"))
 
+        vulnerability_url = "http://public.vulnerablecode.io/vulnerabilities/VCID-pk3r-ga7k-aaap"
         vulnerability = {
-            "vulnerability_id": "42d0a7c4-99e9-4506-b0c6-338ec2993147",
+            "vulnerability_id": "VCID-pk3r-ga7k-aaap",
             "summary": "SQL Injection",
+            "resource_url": vulnerability_url,
             "references": [
                 {
                     "reference_id": "",
@@ -3229,8 +3229,11 @@ class PackageUserViewsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         self.assertEqual(fields[0], ("Summary", "SQL Injection", "Summary of the vulnerability"))
-        self.assertEqual(fields[1][0], "Fixed packages")
-        fixed_package_values = fields[1][1]
+        self.assertEqual(fields[1][0], "VulnerableCode URL")
+        url_as_link = f'<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>'
+        self.assertEqual(fields[1][1], url_as_link)
+        self.assertEqual(fields[2][0], "Fixed packages")
+        fixed_package_values = fields[2][1]
         self.assertIn("nginx/nginx@1.10.1", fixed_package_values)
         self.assertIn(
             '<a href="/packages/add/?package_url=pkg:nginx/nginx@1.10.1"',
@@ -3241,7 +3244,7 @@ class PackageUserViewsTestCase(TestCase):
             fixed_package_values,
         )
         self.assertEqual(
-            fields[2][0:2],
+            fields[3][0:2],
             (
                 "Reference IDs",
                 '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
@@ -3250,7 +3253,7 @@ class PackageUserViewsTestCase(TestCase):
             ),
         )
         self.assertEqual(
-            fields[3][0:2],
+            fields[4][0:2],
             (
                 "Reference URLs",
                 '<a target="_blank" href="http://www.openwall.com/lists/oss-security/2022/01/18/4" '

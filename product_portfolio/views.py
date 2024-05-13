@@ -40,6 +40,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
+from django.views.generic import TemplateView
 
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
@@ -99,7 +100,8 @@ from product_portfolio.forms import AttributionConfigurationForm
 from product_portfolio.forms import BaseProductRelationshipInlineFormSet
 from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
-from product_portfolio.forms import ImportManifestForm
+from product_portfolio.forms import ImportManifestsForm
+from product_portfolio.forms import LoadSBOMsForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
 from product_portfolio.forms import ProductCustomComponentForm
@@ -109,7 +111,6 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
-from product_portfolio.importers import ImportFromScan
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -781,7 +782,7 @@ class ProductTabImportsView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         scancode_projects = self.object.scancodeprojects.all()
-        submitted_projects = self.get_submitted_import_manifest_projects(scancode_projects)
+        submitted_projects = self.get_submitted_projects(scancode_projects)
 
         # Check the status of the "submitted" projects on ScanCode.io and update the
         # local ScanCodeProject instances accordingly.
@@ -800,12 +801,16 @@ class ProductTabImportsView(
         return context_data
 
     @staticmethod
-    def get_submitted_import_manifest_projects(scancode_projects):
+    def get_submitted_projects(scancode_projects):
+        submitted_types = [
+            ScanCodeProject.ProjectType.LOAD_SBOMS,
+            ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+        ]
         return [
             project
             for project in scancode_projects
             if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
+            and project.type in submitted_types
         ]
 
     def synchronize(self, scancodeio, project):
@@ -978,82 +983,90 @@ class ProductDeleteView(BaseProductView, DataspacedDeleteView):
         )
 
 
-def comparison_download_xlsx(request, rows, left_product, right_product):
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Product comparison"
-    header = ["Changes", str(left_product), str(right_product)]
-    compare_data = [header]
+class ProductTreeComparisonView(
+    LoginRequiredMixin,
+    TemplateView,
+):
+    template_name = "product_portfolio/product_tree_comparison.html"
 
-    def get_relation_data(relation, diff, is_left):
-        if not relation:
-            return ""
+    def get(self, request, *args, **kwargs):
+        guarded_qs = Product.objects.get_queryset(self.request.user)
+        self.left_product = get_object_or_404(guarded_qs, uuid=self.kwargs["left_uuid"])
+        self.right_product = get_object_or_404(guarded_qs, uuid=self.kwargs["right_uuid"])
 
-        data = [
-            str(relation),
-            "",
-            f"Review status: {relation.review_status or ''}",
-            f"License: {relation.license_expression or ''}",
+        if self.request.GET.get("download_xlsx"):
+            context = self.get_context_data(**kwargs)
+            return self.comparison_download_xlsx(rows=context["rows"])
+
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        left_dict = self.get_productrelationship_dict(self.left_product)
+        right_dict = self.get_productrelationship_dict(self.right_product)
+
+        left_relationships = set(left_dict.keys())
+        right_relationships = set(right_dict.keys())
+
+        removed = list(left_relationships.difference(right_relationships))
+        added = list(right_relationships.difference(left_relationships))
+
+        removed_identifiers = [
+            self.get_related_object_unique_identifier(left_dict[instance]) for instance in removed
         ]
-        if relation.purpose:
-            data.append(f"Purpose: {relation.purpose or ''}")
+        added_identifiers = [
+            self.get_related_object_unique_identifier(right_dict[instance]) for instance in added
+        ]
 
-        if diff:
-            data.append("")
-            for field, values in diff.items():
-                diff_line = (
-                    f"{'-' if is_left else '+'} {field.verbose_name.title()}: "
-                    f"{values[0] if is_left else values[1]}"
-                )
-                data.append(diff_line)
+        # The "update" status is only possible when no more than 2 packages (1 on each side)
+        # have the same unique identifier.
+        updated = [
+            (removed[removed_identifiers.index(name)], added[added_identifiers.index(name)])
+            for name in removed_identifiers
+            if added_identifiers.count(name) == 1 and removed_identifiers.count(name) == 1
+        ]
+        for k, l in updated:
+            del removed[removed.index(k)]
+            del added[added.index(l)]
 
-        return "\n".join(data)
+        unchanged, changed = [], []
+        diffs = {}
+        excluded = ["product", "uuid"] + self.request.GET.getlist("exclude")
 
-    # Iterate over each row and populate the Excel worksheet
-    for action, left, right, diff in rows:
-        compare_data.append(
-            [
-                action,
-                get_relation_data(left, diff, is_left=True),
-                get_relation_data(right, diff, is_left=False),
-            ]
+        for k in left_relationships.intersection(right_relationships):
+            diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
+            changed.append(k) if diff else unchanged.append(k)
+            diffs[k] = OrderedDict(sorted(diff.items()))
+
+        rows = [("added", None, right_dict[k], None) for k in added]
+        rows.extend(("removed", left_dict[k], None, None) for k in removed)
+        rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+        rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
+        rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
+        rows.sort(key=self.sort_by_name_version)
+
+        action_filters = [
+            {"value": "added", "count": len(added), "checked": True},
+            {"value": "changed", "count": len(changed), "checked": True},
+            {"value": "updated", "count": len(updated), "checked": True},
+            {"value": "removed", "count": len(removed), "checked": True},
+            {"value": "unchanged", "count": len(unchanged), "checked": False},
+        ]
+
+        context.update(
+            {
+                "left_product": self.left_product,
+                "right_product": self.right_product,
+                "action_filters": action_filters,
+                "rows": rows,
+                "exclude_fields_form": ComparisonExcludeFieldsForm(self.request.GET),
+            }
         )
 
-    for row in compare_data:
-        ws.append(row)
+        return context
 
-    # Styling
-    header = NamedStyle(name="header")
-    header.font = Font(bold=True)
-    header.border = Border(bottom=Side(border_style="thin"))
-    header.alignment = Alignment(horizontal="center", vertical="center")
-    header_row = ws[1]
-    for cell in header_row:
-        cell.style = header
-
-    # Freeze first header row
-    ws.freeze_panes = "A2"
-
-    # Columns width
-    ws.column_dimensions["B"].width = 40
-    ws.column_dimensions["C"].width = 40
-
-    # Prepare response
-    xlsx_content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    response = HttpResponse(content_type=xlsx_content_type)
-    response["Content-Disposition"] = "attachment; filename=product_comparison.xlsx"
-    wb.save(response)
-
-    return response
-
-
-@login_required
-def product_tree_comparison_view(request, left_uuid, right_uuid):
-    guarded_qs = Product.objects.get_queryset(request.user)
-
-    left_product = get_object_or_404(guarded_qs, uuid=left_uuid)
-    right_product = get_object_or_404(guarded_qs, uuid=right_uuid)
-
+    @staticmethod
     def get_productrelationship_dict(instance):
         component_qs = instance.productcomponents.select_related(
             "review_status",
@@ -1077,50 +1090,26 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
 
         return relationship_dict
 
-    left_dict = get_productrelationship_dict(left_product)
-    right_dict = get_productrelationship_dict(right_product)
-
-    left_keys = set(left_dict.keys())
-    right_keys = set(right_dict.keys())
-
-    removed = list(left_keys.difference(right_keys))
-    added = list(right_keys.difference(left_keys))
-
-    def get_name(relationship):
+    @staticmethod
+    def get_related_object_unique_identifier(relationship):
+        """
+        Return a value suitable for identifying object as the same regardless of the
+        version.
+        - For Component and CustomComponent: using the ``name``.
+        - For Package: using the ``type`` + ``namespace`` + ``name`` combination
+          from the PackageURL when defined, or the ``filename`` as an alternative.
+        """
         related = relationship.related_component_or_package
         if related:
-            # Use filename for Package without a purl
-            return related.name or related.filename
+            if isinstance(related, Package):
+                if related.type and related.name:
+                    return f"{related.type}/{related.namespace}/{related.name}"
+                return related.filename  # Use filename for Package without a purl
+            return related.name
+
         return relationship.name  # custom component
 
-    removed_names = [get_name(left_dict[k]) for k in removed]
-    added_names = [get_name(right_dict[k]) for k in added]
-
-    updated = [
-        (removed[removed_names.index(name)], added[added_names.index(name)])
-        for name in removed_names
-        if added_names.count(name) == 1 and removed_names.count(name) == 1
-    ]
-
-    for k, l in updated:
-        del removed[removed.index(k)]
-        del added[added.index(l)]
-
-    unchanged, changed = [], []
-    diffs = {}
-    excluded = ["product", "uuid"] + request.GET.getlist("exclude")
-
-    for k in left_keys.intersection(right_keys):
-        diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
-        changed.append(k) if diff else unchanged.append(k)
-        diffs[k] = OrderedDict(sorted(diff.items()))
-
-    rows = [("added", None, right_dict[k], None) for k in added]
-    rows.extend(("removed", left_dict[k], None, None) for k in removed)
-    rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
-    rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
-    rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
-
+    @staticmethod
     def sort_by_name_version(row):
         index = 1 if row[1] else 2
         relationship = row[index]
@@ -1130,28 +1119,73 @@ def product_tree_comparison_view(request, left_uuid, right_uuid):
             return name.lower(), related.version
         return relationship.name.lower(), relationship.version
 
-    rows.sort(key=sort_by_name_version)
+    def comparison_download_xlsx(self, rows):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Product comparison"
+        header = ["Changes", str(self.left_product), str(self.right_product)]
+        compare_data = [header]
 
-    if request.GET.get("download_xlsx"):
-        return comparison_download_xlsx(request, rows, left_product, right_product)
+        def get_relation_data(relation, diff, is_left):
+            if not relation:
+                return ""
 
-    action_filters = [
-        {"value": "added", "count": len(added), "checked": True},
-        {"value": "changed", "count": len(changed), "checked": True},
-        {"value": "updated", "count": len(updated), "checked": True},
-        {"value": "removed", "count": len(removed), "checked": True},
-        {"value": "unchanged", "count": len(unchanged), "checked": False},
-    ]
+            data = [
+                str(relation),
+                "",
+                f"Review status: {relation.review_status or ''}",
+                f"License: {relation.license_expression or ''}",
+            ]
+            if relation.purpose:
+                data.append(f"Purpose: {relation.purpose or ''}")
 
-    context = {
-        "left_product": left_product,
-        "right_product": right_product,
-        "action_filters": action_filters,
-        "rows": rows,
-        "exclude_fields_form": ComparisonExcludeFieldsForm(request.GET),
-    }
+            if diff:
+                data.append("")
+                for field, values in diff.items():
+                    diff_line = (
+                        f"{'-' if is_left else '+'} {field.verbose_name.title()}: "
+                        f"{values[0] if is_left else values[1]}"
+                    )
+                    data.append(diff_line)
 
-    return render(request, "product_portfolio/product_tree_comparison.html", context)
+            return "\n".join(data)
+
+        # Iterate over each row and populate the Excel worksheet
+        for action, left, right, diff in rows:
+            compare_data.append(
+                [
+                    action,
+                    get_relation_data(left, diff, is_left=True),
+                    get_relation_data(right, diff, is_left=False),
+                ]
+            )
+
+        for row in compare_data:
+            ws.append(row)
+
+        # Styling
+        header = NamedStyle(name="header")
+        header.font = Font(bold=True)
+        header.border = Border(bottom=Side(border_style="thin"))
+        header.alignment = Alignment(horizontal="center", vertical="center")
+        header_row = ws[1]
+        for cell in header_row:
+            cell.style = header
+
+        # Freeze first header row
+        ws.freeze_panes = "A2"
+
+        # Columns width
+        ws.column_dimensions["B"].width = 40
+        ws.column_dimensions["C"].width = 40
+
+        # Prepare response
+        xlsx_content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        response = HttpResponse(content_type=xlsx_content_type)
+        response["Content-Disposition"] = "attachment; filename=product_comparison.xlsx"
+        wb.save(response)
+
+        return response
 
 
 AttributionNode = namedtuple(
@@ -1244,9 +1278,9 @@ class AttributionView(
                 notice_text=None,
                 is_displayed=True,
                 homepage_url=relationship.homepage_url if self.include_homepage_url else "",
-                standard_notice=relationship.standard_notice
-                if self.include_standard_notice
-                else "",
+                standard_notice=(
+                    relationship.standard_notice if self.include_standard_notice else ""
+                ),
             )
 
         copyright_ = ""
@@ -1483,22 +1517,11 @@ def import_from_scan_view(request, dataspace, name, version=""):
             files=request.FILES,
         )
         if form.is_valid():
-            sid = transaction.savepoint()
-            importer = ImportFromScan(
-                product,
-                user,
-                upload_file=form.cleaned_data.get("upload_file"),
-                create_codebase_resources=form.cleaned_data.get("create_codebase_resources"),
-                stop_on_error=form.cleaned_data.get("stop_on_error"),
-            )
             try:
-                warnings, created_counts = importer.save()
+                warnings, created_counts = form.save(product=product)
             except ValidationError as error:
-                transaction.savepoint_rollback(sid)
                 messages.error(request, " ".join(error.messages))
                 return redirect(request.path)
-
-            transaction.savepoint_commit(sid)
 
             if not created_counts:
                 messages.warning(request, "Nothing imported.")
@@ -1846,7 +1869,7 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
     return JsonResponse({"success": "success", "upgrade_available": upgrade_available})
 
 
-class ImportManifestView(
+class BaseProductImportFormView(
     LoginRequiredMixin,
     PermissionRequiredMixin,
     GetDataspacedObjectMixin,
@@ -1854,9 +1877,8 @@ class ImportManifestView(
     BaseProductView,
     FormView,
 ):
-    template_name = "product_portfolio/import_manifest_form.html"
     permission_required = "product_portfolio.change_product"
-    form_class = ImportManifestForm
+    success_msg = ""
 
     def get_queryset(self):
         return self.model.objects.get_queryset(
@@ -1883,26 +1905,37 @@ class ImportManifestView(
     def form_valid(self, form):
         self.object = self.get_object()
 
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.object,
-            dataspace=self.object.dataspace,
-            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
-            input_file=form.cleaned_data.get("input_file"),
-            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
-            scan_all_packages=form.cleaned_data.get("scan_all_packages"),
-            created_by=self.request.user,
-        )
+        try:
+            form.submit(product=self.object, user=self.request.user)
+        except ValidationError as error:
+            messages.error(self.request, error)
+            return redirect(self.object.get_absolute_url())
 
-        transaction.on_commit(
-            lambda: tasks.scancodeio_submit_manifest_inspection.delay(
-                scancodeproject_uuid=scancode_project.uuid,
-                user_uuid=self.request.user.uuid,
-            )
-        )
+        if self.success_msg:
+            messages.success(self.request, self.success_msg)
 
-        msg = "Manifest submitted to ScanCode.io for inspection."
-        messages.success(self.request, msg)
         return super().form_valid(form)
+
+
+class LoadSBOMsView(BaseProductImportFormView):
+    template_name = "product_portfolio/load_sboms_form.html"
+    form_class = LoadSBOMsForm
+    success_msg = "SBOM file submitted to ScanCode.io for inspection."
+
+
+class ImportManifestsView(BaseProductImportFormView):
+    template_name = "product_portfolio/import_manifests_form.html"
+    form_class = ImportManifestsForm
+    success_msg = "Manifest file submitted to ScanCode.io for inspection."
+
+
+@method_decorator(require_POST, name="dispatch")
+class PullProjectDataFromScanCodeIOView(BaseProductImportFormView):
+    form_class = PullProjectDataForm
+    success_msg = "Packages import from ScanCode.io in progress..."
+
+    def form_invalid(self, form):
+        raise Http404
 
 
 @require_POST
@@ -1940,89 +1973,18 @@ def import_packages_from_scancodeio_view(request, key):
 
 @login_required
 def scancodeio_project_status_view(request, scancodeproject_uuid):
+    template = "product_portfolio/scancodeio_project_status.html"
     user = request.user
     base_qs = ScanCodeProject.objects.scope(user.dataspace)
     scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
 
     scancodeio = ScanCodeIO(user)
-    if scancode_project.type == ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST:
-        template = "product_portfolio/scancodeio_project_status.html"
-        scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
-        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
-        context = {"scan_data": scan_data}
+    scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
+    scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 
-    elif scancode_project.type == ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO:
-        template = "product_portfolio/scancodeio_pull_data_status.html"
-        context = {"scancode_project": scancode_project}
-
-    else:
-        raise Http404
+    context = {
+        "scancode_project": scancode_project,
+        "scan_data": scan_data,
+    }
 
     return TemplateResponse(request, template, context)
-
-
-@method_decorator(require_POST, name="dispatch")
-class PullProjectDataFromScanCodeIOView(
-    LoginRequiredMixin,
-    PermissionRequiredMixin,
-    GetDataspacedObjectMixin,
-    DataspacedModelFormMixin,
-    BaseProductView,
-    FormView,
-):
-    permission_required = "product_portfolio.change_product"
-    form_class = PullProjectDataForm
-
-    def get_queryset(self):
-        return self.model.objects.get_queryset(
-            user=self.request.user,
-            perms="change_product",
-        )
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().post(request, *args, **kwargs)
-
-    def form_invalid(self, form):
-        raise Http404
-
-    def get_success_url(self):
-        return f"{self.object.get_absolute_url()}#imports"
-
-    def get_project_data(self, project_name_or_uuid):
-        scancodeio = ScanCodeIO(self.request.user)
-        for field_name in ["name", "uuid"]:
-            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
-            if project_data:
-                return project_data
-
-    def form_valid(self, form):
-        project_name_or_uuid = form.cleaned_data.get("project_name_or_uuid")
-        project_data = self.get_project_data(project_name_or_uuid)
-
-        if not project_data:
-            msg = f'Project "{project_name_or_uuid}" not found on ScanCode.io.'
-            messages.error(self.request, msg)
-            return redirect(self.object.get_absolute_url())
-
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.object,
-            dataspace=self.object.dataspace,
-            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
-            project_uuid=project_data.get("uuid"),
-            update_existing_packages=form.cleaned_data.get("update_existing_packages"),
-            scan_all_packages=False,
-            status=ScanCodeProject.Status.SUBMITTED,
-            created_by=self.request.user,
-        )
-
-        transaction.on_commit(
-            lambda: tasks.pull_project_data_from_scancodeio.delay(
-                scancodeproject_uuid=scancode_project.uuid,
-            )
-        )
-
-        project_name = project_data.get("name")
-        msg = f'Packages import from ScanCode.io "{project_name}" in progress...'
-        messages.success(self.request, msg)
-        return super().form_valid(form)

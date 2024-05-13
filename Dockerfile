@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 LABEL org.opencontainers.image.source="https://github.com/nexB/dejacode"
 LABEL org.opencontainers.image.description="DejaCode"
@@ -31,6 +31,7 @@ RUN apt-get update \
       libldap2-dev \
       libsasl2-dev \
       libpq5 \
+      git \
       wait-for-it \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

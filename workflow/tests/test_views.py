@@ -346,16 +346,21 @@ class RequestUserViewsTestCase(TestCase):
         self.assertContains(
             response,
             '<textarea name="field_0" cols="40" rows="2" '
-            'class="textarea form-control" id="id_field_0">',
+            'class="textarea form-control" '
+            'aria-describedby="id_field_0_helptext" id="id_field_0">',
             html=True,
         )
         self.assertContains(
             response,
             '<textarea name="field_1" cols="40" rows="2" '
-            'class="textarea form-control" required id="id_field_1">',
+            'class="textarea form-control" required '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">',
             html=True,
         )
-        expected = '<select name="priority" class="select form-select" id="id_priority">'
+        expected = (
+            '<select name="priority" class="select form-select" '
+            'aria-describedby="id_priority_helptext" id="id_priority">'
+        )
         self.assertContains(response, expected)
         expected = f'<option value="{self.priority1.id}">{self.priority1.label}</option>'
         self.assertContains(response, expected, html=True)
@@ -436,8 +441,8 @@ class RequestUserViewsTestCase(TestCase):
 
         self.assertEqual(self.nexb_user, pc.created_by)
         self.assertEqual(self.nexb_user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         product1.refresh_from_db()
         history_entries = History.objects.get_for_object(product1)
@@ -481,7 +486,8 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.get(url)
         expected_html = (
-            '<select name="product_context" class="select form-select" ' 'id="id_product_context">'
+            '<select name="product_context" class="select form-select" '
+            'aria-describedby="id_product_context_helptext" id="id_product_context">'
         )
         self.assertContains(response, expected_html)
 
@@ -940,6 +946,7 @@ class RequestUserViewsTestCase(TestCase):
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
                class="autocompleteinput form-control"
+               aria-describedby="id_applies_to_helptext"
                id="id_applies_to"
         >
         """
@@ -997,7 +1004,10 @@ class RequestUserViewsTestCase(TestCase):
         self.question2.save()
 
         response = self.client.get(url)
-        expected = '<select name="field_1" class="select form-select" id="id_field_1">'
+        expected = (
+            '<select name="field_1" class="select form-select" '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">'
+        )
         self.assertContains(response, expected)
 
         data = {
@@ -1083,7 +1093,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = (
             '<input type="text" name="field_1" placeholder="YYYY-MM-DD" '
-            'class="datepicker form-control" id="id_field_1">'
+            'class="datepicker form-control" aria-describedby="id_field_1_helptext" '
+            'id="id_field_1">'
         )
         self.assertContains(response, expected, html=True)
 
@@ -1098,7 +1109,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = (
             '<input type="text" name="field_1" value="2015-11-11" '
-            'placeholder="YYYY-MM-DD" class="datepicker form-control" id="id_field_1">'
+            'placeholder="YYYY-MM-DD" class="datepicker form-control" '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">'
         )
         self.assertContains(response, expected, html=True)
 
@@ -1165,6 +1177,7 @@ class RequestUserViewsTestCase(TestCase):
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
                class="autocompleteinput form-control"
+               aria-describedby="id_applies_to_helptext"
                id="id_applies_to" />
         """
         self.assertContains(response, expected, html=True)

@@ -251,8 +251,11 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
 
-    def get_import_manifest_url(self):
-        return self.get_url("import_manifest")
+    def get_load_sboms_url(self):
+        return self.get_url("load_sboms")
+
+    def get_import_manifests_url(self):
+        return self.get_url("import_manifests")
 
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
@@ -324,7 +327,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
 
     def get_cyclonedx_components(self):
-        return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
+        return [
+            *list(self.productcomponents.catalogs().order_by("id")),
+            *list(self.productpackages.all().order_by("id")),
+        ]
 
     def assign_objects(self, related_objects, user):
         """
@@ -1120,6 +1126,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
 
     class ProjectType(models.TextChoices):
         IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
+        LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
         PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
 
     class Status(models.TextChoices):

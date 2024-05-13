@@ -30,7 +30,7 @@
   "model": "dje.dejacodeuser",
   "fields": {
     "password": "sha1$e7042$dfcb7d3a5962b60e6009ea66a3b688c26827d1c0",
-    "last_login": "2011-08-24T09:20:01",
+    "last_login": "2011-08-24T09:20:01Z",
     "is_superuser": true,
     "username": "nexb_user",
     "first_name": "",
@@ -38,7 +38,7 @@
     "email": "test@test.com",
     "is_staff": true,
     "is_active": true,
-    "date_joined": "2011-08-24T09:20:01",
+    "date_joined": "2011-08-24T09:20:01Z",
     "uuid": "e7b90a81-f68f-4416-98d8-4eea0b2b6ac7",
     "dataspace": [
       "nexB"
