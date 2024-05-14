@@ -71,7 +71,7 @@ class ComponentFilterSet(DataspacedFilterSet):
         label=_("License"),
         field_name="licenses__key",
         to_field_name="key",
-        queryset=License.objects.all().only("key", "short_name", "dataspace"),
+        queryset=License.objects.only("key", "short_name", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search licenses",
         ),
@@ -80,7 +80,7 @@ class ComponentFilterSet(DataspacedFilterSet):
         label=_("Keyword"),
         to_field_name="label",
         lookup_expr="contains",
-        queryset=ComponentKeyword.objects.all().only("label", "dataspace"),
+        queryset=ComponentKeyword.objects.only("label", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search keywords",
         ),
@@ -183,7 +183,7 @@ class PackageFilterSet(DataspacedFilterSet):
         label=_("License"),
         field_name="licenses__key",
         to_field_name="key",
-        queryset=License.objects.all().only("key", "short_name", "dataspace"),
+        queryset=License.objects.only("key", "short_name", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search licenses",
         ),

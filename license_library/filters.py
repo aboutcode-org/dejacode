@@ -71,7 +71,7 @@ class LicenseFilterSet(DataspacedFilterSet):
         label=_("Category"),
         field_name="category__label",
         to_field_name="label",
-        queryset=LicenseCategory.objects.all(),
+        queryset=LicenseCategory.objects.only("label", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search categories",
         ),
@@ -80,7 +80,7 @@ class LicenseFilterSet(DataspacedFilterSet):
         label=_("License profile"),
         field_name="license_profile__name",
         to_field_name="name",
-        queryset=LicenseProfile.objects.all(),
+        queryset=LicenseProfile.objects.only("name", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search license profiles",
         ),
