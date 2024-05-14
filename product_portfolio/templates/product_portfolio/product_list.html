@@ -3,7 +3,9 @@
 
 {% block top-right-buttons %}
   <div class="btn-group">
-    <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled" data-bs-toggle="tooltip"><i class="far fa-clone"></i> {% trans "Compare" %}</button>
+    <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip">
+      <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled"><i class="far fa-clone"></i> {% trans "Compare" %}</button>
+    </span>
   </div>
   {{ block.super }}
 {% endblock %}
@@ -13,16 +15,17 @@
     <script>
     $(document).ready(function () {
         let compare_button = $('#compare_button');
+        let compare_button_wrapper = compare_button.parent();
 
         let handle_compare_button_display = function () {
             let count = $('tbody input[type="checkbox"]:checked').length;
             if (count === 2) {
                 compare_button.removeClass('disabled');
-                compare_button.attr('data-bs-title', '');
+                compare_button_wrapper.attr('data-bs-original-title', '');
             }
             else {
                 compare_button.addClass('disabled');
-                compare_button.attr('data-bs-title', 'Select first two products to compare, then click this button');
+                compare_button_wrapper.attr('data-bs-original-title', 'Select first two products to compare, then click this button');
             }
         };
 

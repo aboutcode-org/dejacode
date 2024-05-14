@@ -341,7 +341,7 @@ table.products-table .column-owner {
   min-width: 75px;
 }
 table.products-table .column-productinventoryitem_count {
-  max-width:80px;
+  width: 100px;
 }
 
 /* -- Package List -- */

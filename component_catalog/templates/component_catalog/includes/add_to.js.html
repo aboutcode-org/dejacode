@@ -1,16 +1,17 @@
 <script>
   $(document).ready(function () {
     let add_to_btn = $('#add-to-btn');
+    let add_to_btn_wrapper = add_to_btn.parent();
 
     let handle_button_display = function () {
       let count = $('main input[type="checkbox"]:checked').length;
       if (count >= 1) {
         add_to_btn.removeClass('disabled');
-        add_to_btn.parent().attr('data-bs-title', '');
+        add_to_btn_wrapper.attr('data-bs-original-title', '');
     }
       else {
         add_to_btn.addClass('disabled');
-        add_to_btn.parent().attr('data-bs-title', 'Select objects first');
+        add_to_btn_wrapper.attr('data-bs-original-title', 'Select objects first');
       }
     };
 
