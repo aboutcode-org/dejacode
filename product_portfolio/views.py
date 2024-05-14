@@ -148,7 +148,7 @@ class ProductListView(
         Header("primary_language", "Language", filter="primary_language"),
         Header("owner", "Owner"),
         Header("configuration_status", "Status", filter="configuration_status"),
-        Header("inventory", "Inventory", help_text="Inventory count"),
+        Header("productinventoryitem_count", "Inventory", help_text="Inventory count"),
         Header("keywords", "Keywords", filter="keywords"),
     )
 

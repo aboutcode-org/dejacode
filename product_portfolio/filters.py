@@ -56,6 +56,7 @@ class ProductFilterSet(DataspacedFilterSet):
             "primary_language",
             "owner",
             "configuration_status",
+            "productinventoryitem_count",
         ],
         field_labels={
             "primary_language": "Language",

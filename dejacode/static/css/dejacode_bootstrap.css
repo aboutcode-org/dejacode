@@ -340,6 +340,9 @@ table.products-table .column-license_expression {
 table.products-table .column-owner {
   min-width: 75px;
 }
+table.products-table .column-productinventoryitem_count {
+  max-width:80px;
+}
 
 /* -- Package List -- */
 table.packages-table .column-usage_policy {
