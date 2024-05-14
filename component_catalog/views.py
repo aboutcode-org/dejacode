@@ -34,6 +34,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
@@ -1247,6 +1248,9 @@ class PackageDetailsView(
         "vulnerabilities": {
             "verbose_name": "Vulnerabilities",
         },
+        "aboutcode": {
+            "verbose_name": "AboutCode",
+        },
         "history": {
             "fields": [
                 "created_date",
@@ -1446,6 +1450,15 @@ class PackageDetailsView(
             "tab_object_name": "PurlDB data",
         }
         return {"fields": [(None, tab_context, None, template)]}
+
+    def tab_aboutcode(self):
+        template = "component_catalog/tabs/tab_aboutcode.html"
+        context = {
+            "about_content": self.object.as_about_yaml(),
+            "notice_content": normalize_newlines(self.object.notice_text),
+        }
+
+        return {"fields": [(None, context, None, template)]}
 
     def get_vulnerabilities_tab_fields(self, vulnerabilities):
         dataspace = self.object.dataspace
