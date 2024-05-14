@@ -47,6 +47,13 @@
           </td>
           <td>{{ product.configuration_status|default_if_none:'' }}</td>
           <td>
+            {% if product.productinventoryitem_count %}
+              <a href="{% inject_preserved_filters product.get_absolute_url %}#inventory">{{ product.productinventoryitem_count }}</a>
+            {% else %}
+              0
+            {% endif %}
+          </td>
+          <td>
             <ul class="fa-ul ms-4 mb-0">
             {% for keyword in product.keywords %}
                 <li><span class="fa-li"><i class="fas fa-angle-right"></i></span>{{ keyword }}</li>
