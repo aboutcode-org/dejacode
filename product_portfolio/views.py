@@ -177,7 +177,13 @@ class ProductListView(
             .prefetch_related(
                 "licenses__usage_policy",
             )
-            .annotate(productinventoryitem_count=Count("productinventoryitem"))
+            .annotate(
+                productinventoryitem_count=Count("productinventoryitem"),
+            )
+            .order_by(
+                "name",
+                "version",
+            )
         )
 
     def get_extra_add_urls(self):

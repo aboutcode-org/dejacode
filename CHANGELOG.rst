@@ -66,6 +66,9 @@ Release notes
   Existing Keywords are suggested for consistency but any values is now allowed.
   https://github.com/nexB/dejacode/issues/48
 
+- Display Product inventory count on the Product list view.
+  https://github.com/nexB/dejacode/issues/81
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

@@ -1102,6 +1102,33 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(1, len(response.context_data["object_list"]))
         self.assertIn(self.product1, response.context_data["object_list"])
 
+    def test_product_portfolio_list_view_inventory_count(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = resolve_url("product_portfolio:product_list")
+
+        response = self.client.get(url)
+        self.assertContains(response, "<td>0</td>", html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(0, product1.productinventoryitem_count)
+
+        ProductComponent.objects.create(
+            product=self.product1, component=self.component1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = f'<a href="{self.product1.get_absolute_url()}#inventory">1</a>'
+        self.assertContains(response, expected, html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(1, product1.productinventoryitem_count)
+
+        ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = f'<a href="{self.product1.get_absolute_url()}#inventory">2</a>'
+        self.assertContains(response, expected, html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(2, product1.productinventoryitem_count)
+
     def test_product_portfolio_product_tree_comparison_view_proper(self):
         self.client.login(username="nexb_user", password="secret")
         url = resolve_url(
@@ -2775,7 +2802,7 @@ class ProductPortfolioViewsTestCase(TestCase):
                 scan.assert_called_once()
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
-    def test_product_portfolio_mport_manifest_view(self, mock_submit):
+    def test_product_portfolio_import_manifest_view(self, mock_submit):
         mock_submit.return_value = None
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_import_manifests_url()
