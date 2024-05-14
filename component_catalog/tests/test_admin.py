@@ -2291,7 +2291,7 @@ class ComponentAdminViewsTestCase(TestCase):
         for term in search_queries:
             response = self.client.get(url + f"&term={term}")
             results = json.loads(response.content.decode())
-            self.assertEqual("pypi/djangoproject/django@3.1", results[0].get("label"))
+            self.assertEqual("pkg:pypi/djangoproject/django@3.1", results[0].get("label"))
 
     def test_component_admin_get_initial_from_related_instance(self):
         release_date = datetime.datetime(2018, 6, 21, 3, 38, 24, 139528)

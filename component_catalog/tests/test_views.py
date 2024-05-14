@@ -1187,7 +1187,7 @@ class PackageUserViewsTestCase(TestCase):
 
         args = [p2.dataspace.name, p2.identifier, p2.uuid]
         url = reverse("component_catalog:package_details", args=args)
-        expected = "/packages/Dataspace/pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
+        expected = "/packages/Dataspace/pkg:pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
 
     def test_package_list_view_content(self):
@@ -1567,7 +1567,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(about_url)
         self.assertEqual("application/zip", response["content-type"])
         self.assertEqual(
-            'attachment; filename="pypi/django_about.zip"', response["content-disposition"]
+            'attachment; filename="pkg_pypi_django_about.zip"', response["content-disposition"]
         )
 
         package.filename = "django.whl"
@@ -3240,7 +3240,7 @@ class PackageUserViewsTestCase(TestCase):
             fixed_package_values,
         )
         self.assertIn(
-            f'<a href="{self.package1.get_absolute_url()}">nginx/nginx@1.11.1</a>',
+            f'<a href="{self.package1.get_absolute_url()}">pkg:nginx/nginx@1.11.1</a>',
             fixed_package_values,
         )
         self.assertEqual(

@@ -1670,11 +1670,11 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         self.assertEqual(
-            "/packages/nexB/pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/",
+            "/packages/nexB/pkg:pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/",
             package.get_absolute_url(),
         )
         self.assertEqual(
-            "/packages/nexB/pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/change/",
+            "/packages/nexB/pkg:pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/change/",
             package.get_change_url(),
         )
 
@@ -1706,8 +1706,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        # 1. Short Package URL
-        expected = "deb/debian/curl@7.50.3-1"
+        # 1. Plain Package URL
+        expected = "pkg:deb/debian/curl@7.50.3-1"
         self.assertEqual(expected, str(package))
 
         # 2. Full Package URL
@@ -1742,10 +1742,13 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations"
         self.assertEqual(expected, package.package_url)
 
+        expected = "pkg:deb/debian/curl@7.50.3-1"
+        self.assertEqual(expected, package.plain_package_url)
+
         expected = "deb/debian/curl@7.50.3-1"
         self.assertEqual(expected, package.short_package_url)
 
-        expected = "deb_debian_curl_7.50.3-1"
+        expected = "pkg_deb_debian_curl_7.50.3-1"
         self.assertEqual(expected, package.package_url_filename)
 
     def test_package_model_set_package_url(self):
@@ -1824,7 +1827,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, package_purl_only.as_about())
         expected = "about_resource: .\nname: name\npackage_url: pkg:type/name\n"
         self.assertEqual(expected, package_purl_only.as_about_yaml())
-        self.assertEqual("type_name.ABOUT", package_purl_only.about_file_name)
+        self.assertEqual("pkg_type_name.ABOUT", package_purl_only.about_file_name)
 
         package = Package.objects.create(
             filename="package.zip",
@@ -1924,8 +1927,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             version="1.0 beta",
             dataspace=self.dataspace,
         )
-        self.assertEqual("deb_name_1.020beta.ABOUT", p2.about_file_name)
-        self.assertEqual("deb_name_1.020beta.NOTICE", p2.notice_file_name)
+        self.assertEqual("pkg_deb_name_1.020beta.ABOUT", p2.about_file_name)
+        self.assertEqual("pkg_deb_name_1.020beta.NOTICE", p2.notice_file_name)
 
     def test_package_model_get_about_files(self):
         # Using a CRLF (windows) line endings to ensure it's converted to LF (unix) in the output
