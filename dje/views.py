@@ -591,7 +591,10 @@ class SendAboutFilesMixin:
         Return the value from the "filename" field when available or fallback to
         the string representation of the object.
         """
-        return getattr(instance, "filename", None) or str(instance).replace(" ", "_")
+        filename = getattr(instance, "filename", None) or str(instance)
+        for char in "/@?=#: ":
+            filename = filename.replace(char, "_")
+        return filename
 
     @staticmethod
     def get_zipped_response(about_files, filename):
