@@ -39,7 +39,7 @@ from dje.forms import DataspacedAdminForm
 from dje.forms import DataspacedModelForm
 from dje.forms import DefaultOnAdditionLabelMixin
 from dje.forms import Group
-from dje.forms import JSONListChoiceField
+from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
@@ -56,23 +56,29 @@ from product_portfolio.models import ProductPackage
 class SetKeywordsChoicesFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        keywords_field = self.fields.get("keywords")
-        if keywords_field:
+        if keywords_field := self.fields.get("keywords"):
             keywords_qs = ComponentKeyword.objects.scope(self.dataspace)
             labels = keywords_qs.values_list("label", flat=True)
-            keywords_field.choices = [(label, label) for label in labels]
-            keywords_field.widget.attrs.update(
-                {
-                    "data-list": ", ".join(labels),
-                }
-            )
+            keywords_field.widget.attrs.update({"data-list": ", ".join(labels)})
+
+
+class KeywordsField(JSONListField):
+    def __init__(self, **kwargs):
+        widget = AutocompleteInput(
+            attrs={
+                "data-api_url": reverse_lazy("api_v2:componentkeyword-list"),
+            },
+            display_link=False,
+            display_attribute="label",
+        )
+        kwargs.setdefault("widget", widget)
+        kwargs.setdefault("required", False)
+        super().__init__(**kwargs)
 
 
 class ComponentForm(
     LicenseExpressionFormMixin,
     DefaultOnAdditionLabelMixin,
-    SetKeywordsChoicesFormMixin,
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
@@ -83,10 +89,7 @@ class ComponentForm(
     ]
     color_initial = True
 
-    keywords = JSONListChoiceField(
-        required=False,
-        widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
-    )
+    keywords = KeywordsField()
 
     packages_ids = forms.CharField(
         widget=forms.HiddenInput,
@@ -262,16 +265,12 @@ class PackageFieldsValidationMixin:
 class PackageForm(
     LicenseExpressionFormMixin,
     PackageFieldsValidationMixin,
-    SetKeywordsChoicesFormMixin,
     DataspacedModelForm,
 ):
     save_as = True
     color_initial = True
 
-    keywords = JSONListChoiceField(
-        required=False,
-        widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
-    )
+    keywords = KeywordsField()
 
     collect_data = forms.BooleanField(
         required=False,
@@ -910,7 +909,7 @@ class ComponentAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -944,7 +943,7 @@ class PackageAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -990,7 +989,7 @@ class ComponentMassUpdateForm(
     DejacodeMassUpdateForm,
 ):
     raw_id_fields = ["owner"]
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -1063,7 +1062,7 @@ class SubcomponentMassUpdateForm(DejacodeMassUpdateForm):
 class PackageMassUpdateForm(
     LicenseExpressionFormMixin, SetKeywordsChoicesFormMixin, DejacodeMassUpdateForm
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
