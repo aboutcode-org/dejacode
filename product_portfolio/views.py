@@ -24,6 +24,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
 from django.db import transaction
+from django.db.models import Count
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import Http404
@@ -147,6 +148,7 @@ class ProductListView(
         Header("primary_language", "Language", filter="primary_language"),
         Header("owner", "Owner"),
         Header("configuration_status", "Status", filter="configuration_status"),
+        Header("productinventoryitem_count", "Inventory", help_text="Inventory count"),
         Header("keywords", "Keywords", filter="keywords"),
     )
 
@@ -174,6 +176,13 @@ class ProductListView(
             )
             .prefetch_related(
                 "licenses__usage_policy",
+            )
+            .annotate(
+                productinventoryitem_count=Count("productinventoryitem"),
+            )
+            .order_by(
+                "name",
+                "version",
             )
         )
 
