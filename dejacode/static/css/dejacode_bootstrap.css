@@ -248,6 +248,10 @@ dd.reduced pre {
     z-index: 1;
     font-size: 0.875rem;
 }
+th.column-grouping {
+  width: 36px;
+  max-width: 36px;
+}
 th.column-selection {
   width: 27px;
   max-width: 27px;
