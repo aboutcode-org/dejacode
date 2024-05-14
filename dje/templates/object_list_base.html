@@ -96,15 +96,6 @@
             $('.h-link').tooltip({placement: 'bottom', title: 'Hierarchy view', container: 'body'});
             $('.r-link').tooltip({placement: 'bottom', title: 'Request view', container: 'body'});
 
-            /* Select-all checkboxes */
-            let checkboxSelectAll = document.querySelector("thead th #checkbox-select-all");
-            checkboxSelectAll.addEventListener("click", function() {
-              let checkboxes = document.querySelectorAll("table#object-list-table tbody td input[type='checkbox']");
-              checkboxes.forEach(function(checkbox) {
-                checkbox.checked = checkboxSelectAll.checked;
-              });
-            });
-
             /* Left and Right keys navigation */
             {% if is_paginated %}
               document.addEventListener("keydown", function(e) {
