@@ -1841,10 +1841,9 @@ class Package(
     def identifier(self):
         """
         Provide a unique value to identify each Package.
-        It is the Package URL (minus the 'pkg:' prefix) if one exists;
-        otherwise it is the Package Filename.
+        It is the Package URL if one exists; otherwise it is the Package Filename.
         """
-        return self.short_package_url or self.filename
+        return self.plain_package_url or self.filename
 
     @classmethod
     def identifier_help(cls):
@@ -1875,8 +1874,8 @@ class Package(
         Return the Package URL string as a valid filename.
         Useful when `Package.filename` is not available.
         """
-        cleaned_package_url = self.short_package_url
-        for char in "/@?=#":
+        cleaned_package_url = self.plain_package_url
+        for char in "/@?=#:":
             cleaned_package_url = cleaned_package_url.replace(char, "_")
         return get_valid_filename(cleaned_package_url)
 

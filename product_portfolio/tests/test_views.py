@@ -1054,8 +1054,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         url = resolve_url("product_portfolio:product_list")
         response = self.client.get(url)
         expected = """
-        <button id="compare_button" href="/products/compare/"
-                class="btn btn-outline-dark disabled" data-bs-toggle="tooltip">
+        <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled">
           <i class="far fa-clone"></i> Compare
         </button>
         """

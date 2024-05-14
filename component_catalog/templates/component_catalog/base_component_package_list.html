@@ -2,9 +2,11 @@
 {% load i18n %}
 
 {% block top-right-buttons %}
-  <button class="btn btn-outline-dark disabled" id="download-aboutcode-files" href="{% if opts.model_name == 'package' %}{% url 'component_catalog:package_multi_about_files' %}{% elif opts.model_name == 'component' %}{% url 'component_catalog:component_multi_about_files' %}{% endif %}" data-bs-toggle="tooltip">
-    <i class="fas fa-download"></i> AboutCode
-  </button>
+  <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip">
+    <button class="btn btn-outline-dark disabled" id="download-aboutcode-files" href="{% if opts.model_name == 'package' %}{% url 'component_catalog:package_multi_about_files' %}{% elif opts.model_name == 'component' %}{% url 'component_catalog:component_multi_about_files' %}{% endif %}">
+      <i class="fas fa-download"></i> AboutCode
+    </button>
+  </span>
   {% if form or add_to_component_form %}
     <div class="btn-group">
       <div class="dropdown" data-bs-toggle="tooltip" title="{% trans 'Select objects first' %}">
@@ -47,16 +49,17 @@
   <script>
     $(document).ready(function () {
       let download_aboutcode_btn = $('#download-aboutcode-files');
+      let download_aboutcode_wrapper = download_aboutcode_btn.parent();
 
       let handle_button_display = function() {
-        let count = $('main input[type="checkbox"]:checked').length;
+        let count = $('table input[type="checkbox"]:checked').length;
         if (count >= 1) {
           download_aboutcode_btn.removeClass('disabled');
-          download_aboutcode_btn.attr('data-bs-title', 'Download AboutCode files');
+          download_aboutcode_wrapper.attr('data-bs-original-title', 'Download AboutCode files');
         }
         else {
           download_aboutcode_btn.addClass('disabled');
-          download_aboutcode_btn.attr('data-bs-title', 'Select objects first');
+          download_aboutcode_wrapper.attr('data-bs-original-title', 'Select objects first');
         }
       };
 
