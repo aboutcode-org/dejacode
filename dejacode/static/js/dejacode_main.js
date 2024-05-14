@@ -8,6 +8,92 @@
 #
 */
 
+function setupTooltips() {
+  // Enables all tooltips
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltips = Array.from(tooltipTriggerList).map(element => {
+    return new bootstrap.Tooltip(element, {
+      container: 'body'
+    });
+  });
+}
+
+function setupPopovers() {
+  // Enables all popovers
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+  const popovers = Array.from(popoverTriggerList).map(element => {
+    return new bootstrap.Popover(element, {
+      container: 'body',
+      html: true
+    });
+  });
+}
+
+function setupSelectionCheckboxes() {
+  const selectAllCheckbox = document.getElementById("checkbox-select-all");
+  const rowCheckboxes = document.querySelectorAll("table#object-list-table tbody input[type='checkbox']");
+  let lastChecked; // Store the last checked checkbox
+
+  if (!rowCheckboxes) return;
+
+  // Select-all checkboxes
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener("click", function() {
+      rowCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    });
+  }
+
+  // Add a click event listener to each row checkbox to handle individual selections
+  rowCheckboxes.forEach((checkbox) => {
+    checkbox.addEventListener("click", function (event) {
+      if (event.shiftKey && lastChecked) {
+        // Determine the index of the clicked checkbox
+        const currentCheckboxIndex = Array.from(rowCheckboxes).indexOf(checkbox);
+        const lastCheckedIndex = Array.from(rowCheckboxes).indexOf(lastChecked);
+
+        // Determine the range of checkboxes to check/uncheck
+        const startIndex = Math.min(currentCheckboxIndex, lastCheckedIndex);
+        const endIndex = Math.max(currentCheckboxIndex, lastCheckedIndex);
+
+        // Toggle the checkboxes within the range
+        for (let i = startIndex; i <= endIndex; i++) {
+          rowCheckboxes[i].checked = checkbox.checked;
+        }
+      }
+
+      // Update the last checked checkbox
+      lastChecked = checkbox;
+
+      // Check if all row checkboxes are checked and update the "Select All" checkbox accordingly
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = Array.from(rowCheckboxes).every((cb) => cb.checked);
+      }
+
+    });
+  });
+}
+
+function setupBackToTop() {
+  // Get the back-to-top button element
+  const backToTopButton = document.getElementById('back-to-top');
+
+  // Add a scroll event listener
+  window.addEventListener('scroll', function () {
+    if (window.scrollY >= 250) { // Page is scrolled more than 250px
+      backToTopButton.style.display = 'block';
+    } else {
+      backToTopButton.style.display = 'none';
+    }
+  });
+
+  // Add a click event listener to scroll back to the top
+  backToTopButton.addEventListener('click', function () {
+    window.scrollTo(0, 0);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -37,23 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
   }
 
-  // Enables all tooltips
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  const tooltips = Array.from(tooltipTriggerList).map(element => {
-    return new bootstrap.Tooltip(element, {
-      container: 'body'
-    });
-  });
-
-  // Enables all popovers
-  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-  const popovers = Array.from(popoverTriggerList).map(element => {
-    return new bootstrap.Popover(element, {
-      container: 'body',
-      html: true
-    });
-  });
-
   // Search selection in the header
   $('#search-selector-list a').click(function(event) {
     event.preventDefault();
@@ -62,21 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#search-input').focus();
   });
 
-  // Get the back-to-top button element
-  const backToTopButton = document.getElementById('back-to-top');
-
-  // Add a scroll event listener
-  window.addEventListener('scroll', function () {
-    if (window.scrollY >= 250) { // Page is scrolled more than 250px
-      backToTopButton.style.display = 'block';
-    } else {
-      backToTopButton.style.display = 'none';
-    }
-  });
-
-  // Add a click event listener to scroll back to the top
-  backToTopButton.addEventListener('click', function () {
-    window.scrollTo(0, 0);
-  });
+  setupTooltips();
+  setupPopovers();
+  setupSelectionCheckboxes();
+  setupBackToTop();
 
 });
