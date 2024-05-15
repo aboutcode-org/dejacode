@@ -30,6 +30,7 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from dje.fields import SmartFileField
 from dje.forms import JSONListField
 from dje.importers import BaseImporter
 from dje.importers import BaseImportModelForm
@@ -305,8 +306,17 @@ class PackageImportForm(
         return package
 
 
+class PackageImportableUploadFileForm(forms.Form):
+    file = SmartFileField(extensions=["csv", "json"])
+
+    @property
+    def header(self):
+        return "Select a <strong>CSV (.csv) or JSON (.json)</strong> file"
+
+
 class PackageImporter(BaseImporter):
     model_form = PackageImportForm
+    upload_form_class = PackageImportableUploadFileForm
     add_to_product_perm = "product_portfolio.add_productpackage"
     relation_model = ProductPackage
     update_existing = True

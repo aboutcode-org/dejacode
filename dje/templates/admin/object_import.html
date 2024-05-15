@@ -49,11 +49,15 @@
           <li>The character encoding of the input file needs to be "UTF-8"</li>
           <li>The column order does not matter.</li>
           <li>The column names are case sensitive.</li>
-          <li>Required column{{ importer.required_fields|pluralize }}: <strong>{{ importer.required_fields|join:", " }}</strong></li>
-          <li>Supported values for boolean fields:<br>
-            <strong>Yes:</strong> True, T, Yes, Y<br>
-            <strong>No:</strong> False, F, No, N
+          {% if importer.required_fields %}
+            <li>Required column{{ importer.required_fields|pluralize }}: <strong>{{ importer.required_fields|join:", " }}</strong></li>
+          {% endif %}
+          <li>Supported values for boolean fields:
+            <strong>Yes:</strong> True, T, Yes, Y; <strong>No:</strong> False, F, No, N
           </li>
+          {% if importer.verbose_name == "package" %}
+            <li>Note that a <strong>Package is uniquely defined in DejaCode by a combination of filename, download_url, and the six Package URL fields</strong> type, namespace, name, version, qualifiers, and subpath. You are not required to provide values in all of these fields (qualifiers and subpath are less commonly used) but if any of them are different from an existing similar package already in DejaCode, then the importer will perform an addition rather than a modification.</li>
+          {% endif %}
         {% endif %}
       </ul>
         <div class="text-center">
@@ -273,7 +277,7 @@
             </div>
           {% endif %}
           <form enctype="multipart/form-data" method="post">{% csrf_token %}
-            <p><input type="file" id="id_file" name="file"></p>
+            <p>{{ file_form.file }}</p>
             <input class="btn btn-primary" type="submit" value="Upload" />
           </form>
         </div>

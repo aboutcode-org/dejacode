@@ -288,6 +288,10 @@ class BaseImportModelFormSet(BaseModelFormSet):
             raise forms.ValidationError("One of the row is a duplicate.")
 
 
+class ImportableUploadFileForm(forms.Form):
+    file = SmartFileField(extensions=["csv"])
+
+
 class BaseImporter:
     """
     Import in 3 steps:
@@ -309,6 +313,7 @@ class BaseImporter:
 
     model_form = None
     formset_class = BaseImportModelFormSet
+    upload_form_class = ImportableUploadFileForm
     add_to_product = False
     update_existing = False
 
@@ -590,7 +595,7 @@ class BaseImporter:
     def save_form(self, form):
         instance = form.instance
 
-        if not instance.pk:  # Save only addition for now
+        if not instance.pk:
             saved_instance = form.save()
             self.results["added"].append(saved_instance)
             History.log_addition(self.user, saved_instance)
@@ -643,30 +648,11 @@ class BaseImporter:
             return form
 
 
-class ImportableUploadFileForm(forms.Form):
-    file = SmartFileField(extensions=["csv"])
-
-
-class PackageImportableUploadFileForm(forms.Form):
-    file = SmartFileField(extensions=["csv", "json"])
-    update_existing_packages = forms.BooleanField(
-        label="Update existing packages with import data",
-        required=False,
-        initial=True,
-    )
-
-    @property
-    def header(self):
-        return "Select a <strong>CSV (.csv) or JSON (.json)</strong> file"
-
-
 @login_required()
 def import_view(request, importer_class):
     user = request.user
     importer = importer_class(user)
-    upload_form_class = ImportableUploadFileForm
-    if importer_class.__name__ == "PackageImporter":
-        upload_form_class = PackageImportableUploadFileForm
+    upload_form_class = importer.upload_form_class
 
     opts = importer.model_form._meta.model._meta
     perm_codename = get_permission_codename("add", opts)
