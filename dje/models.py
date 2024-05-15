@@ -1127,13 +1127,15 @@ class DataspacedModel(models.Model):
                     setattr(self, field_name, " ".join(field_value.split()))
 
     def mark_all_notifications_as_read(self, user):
-        unread_notifications = Notification.objects.unread().filter(
+        unread_notifications_qs = Notification.objects.unread().filter(
             action_object_content_type__model=self._meta.model_name,
             action_object_object_id=self.id,
             recipient=user,
         )
-        if unread_notifications:
-            unread_notifications.update(unread=False)
+        # Trigger a single UPDATE query on the "unread" Notification.
+        # Even if the QS is empty, this is faster than checking is the QS contains
+        # entries first.
+        unread_notifications_qs.update(unread=False)
 
 
 class HistoryDateFieldsMixin(models.Model):

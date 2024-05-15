@@ -72,6 +72,9 @@ Release notes
 - Always display the full Package URL in the UI view including the "pkg:" prefix.
   https://github.com/nexB/dejacode/issues/115
 
+- Add a new AboutCode tab in Package details view.
+  https://github.com/nexB/dejacode/issues/42
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

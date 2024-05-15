@@ -2016,9 +2016,15 @@ class Package(
 
     @cached_property
     def component(self):
-        """Return the Component instance if 1 and only 1 Component is assigned to this Package."""
-        with suppress(ObjectDoesNotExist, MultipleObjectsReturned):
-            return self.component_set.get()
+        """
+        Return the Component instance if 1 and only 1 Component is assigned to this
+        Package.
+        Using ``component_set.all()`` to benefit from prefetch_related when it was
+        applied to the Package QuerySet.
+        """
+        component_set = self.component_set.all()
+        if len(component_set) == 1:
+            return component_set[0]
 
     def set_values_from_component(self, component, user):
         changed_fields = set_fields_from_object(

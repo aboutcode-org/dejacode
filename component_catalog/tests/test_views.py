@@ -1342,6 +1342,15 @@ class PackageUserViewsTestCase(TestCase):
         for expected in expecteds:
             self.assertContains(response, expected)
 
+    def test_package_details_view_aboutcode_tab(self):
+        details_url = self.package1.get_absolute_url()
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(details_url)
+        self.assertContains(response, 'id="tab_aboutcode-tab"')
+        self.assertContains(response, 'id="tab_aboutcode"')
+        self.assertContains(response, "This tab renders a preview of the AboutCode files")
+        self.assertContains(response, "about_resource: package1")
+
     def test_package_list_view_add_to_product(self):
         user = create_user("user", self.dataspace)
         self.client.login(username=user.username, password="secret")
