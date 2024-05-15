@@ -1187,7 +1187,7 @@ class PackageUserViewsTestCase(TestCase):
 
         args = [p2.dataspace.name, p2.identifier, p2.uuid]
         url = reverse("component_catalog:package_details", args=args)
-        expected = "/packages/Dataspace/pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
+        expected = "/packages/Dataspace/pkg:pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
 
     def test_package_list_view_content(self):
@@ -1341,6 +1341,15 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(details_url)
         for expected in expecteds:
             self.assertContains(response, expected)
+
+    def test_package_details_view_aboutcode_tab(self):
+        details_url = self.package1.get_absolute_url()
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(details_url)
+        self.assertContains(response, 'id="tab_aboutcode-tab"')
+        self.assertContains(response, 'id="tab_aboutcode"')
+        self.assertContains(response, "This tab renders a preview of the AboutCode files")
+        self.assertContains(response, "about_resource: package1")
 
     def test_package_list_view_add_to_product(self):
         user = create_user("user", self.dataspace)
@@ -1567,7 +1576,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(about_url)
         self.assertEqual("application/zip", response["content-type"])
         self.assertEqual(
-            'attachment; filename="pypi/django_about.zip"', response["content-disposition"]
+            'attachment; filename="pkg_pypi_django_about.zip"', response["content-disposition"]
         )
 
         package.filename = "django.whl"
@@ -3240,7 +3249,7 @@ class PackageUserViewsTestCase(TestCase):
             fixed_package_values,
         )
         self.assertIn(
-            f'<a href="{self.package1.get_absolute_url()}">nginx/nginx@1.11.1</a>',
+            f'<a href="{self.package1.get_absolute_url()}">pkg:nginx/nginx@1.11.1</a>',
             fixed_package_values,
         )
         self.assertEqual(
@@ -4641,8 +4650,6 @@ class ComponentListViewTestCase(TestCase):
         self.assertIn(status, form.fields["configuration_status"].queryset)
         self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
 
-        self.assertEqual([(keyword.label, keyword.label)], form.fields["keywords"].choices)
-
         # NameVersionValidationFormMixin
         data = {
             "name": self.component1.name,
@@ -4688,7 +4695,7 @@ class ComponentListViewTestCase(TestCase):
             "copyright": "Copyright",
             "notice_text": "Notice",
             "description": "Description",
-            "keywords": [keyword.label],
+            "keywords": [keyword.label, "Another keyword"],
             "primary_language": "Python",
             "homepage_url": "https://nexb.com",
             "configuration_status": status.pk,
@@ -4701,6 +4708,7 @@ class ComponentListViewTestCase(TestCase):
         self.assertEqual(owner, component.owner)
         self.assertEqual(status, component.configuration_status)
         self.assertEqual(license1.key, component.license_expression)
+        self.assertEqual(["Key1", "Another keyword"], component.keywords)
 
     def test_component_catalog_component_form_assigned_packages(self):
         data = {

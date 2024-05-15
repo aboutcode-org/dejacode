@@ -34,6 +34,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
@@ -1147,8 +1148,8 @@ class PackageDetailsView(
     AcceptAnonymousMixin,
     AddPackagePermissionMixin,
     TabVulnerabilityMixin,
-    ObjectDetailsView,
     AddToProductFormMixin,
+    ObjectDetailsView,
 ):
     model = Package
     slug_url_kwarg = "uuid"
@@ -1247,6 +1248,9 @@ class PackageDetailsView(
         "vulnerabilities": {
             "verbose_name": "Vulnerabilities",
         },
+        "aboutcode": {
+            "verbose_name": "AboutCode",
+        },
         "history": {
             "fields": [
                 "created_date",
@@ -1266,8 +1270,7 @@ class PackageDetailsView(
         has_change_package_permission = user.has_perm("component_catalog.change_package")
         context_data["has_change_package_permission"] = has_change_package_permission
 
-        # License data is required for the Scan tab "scan to package"
-        # license expression fields
+        # License data is required for the Scan tab "scan to package" license expression fields
         client_data = getattr(self.request, "client_data", {})
         include_all_licenses = all(
             [
@@ -1280,9 +1283,9 @@ class PackageDetailsView(
             all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
-        if self.request.user.has_perm("component_catalog.change_component"):
+        if user.has_perm("component_catalog.change_component"):
             context_data["add_to_component_form"] = AddToComponentForm(
-                self.request.user, initial={self.model._meta.model_name: self.object}
+                user, initial={self.model._meta.model_name: self.object}
             )
 
         return context_data
@@ -1446,6 +1449,15 @@ class PackageDetailsView(
             "tab_object_name": "PurlDB data",
         }
         return {"fields": [(None, tab_context, None, template)]}
+
+    def tab_aboutcode(self):
+        template = "component_catalog/tabs/tab_aboutcode.html"
+        context = {
+            "about_content": self.object.as_about_yaml(),
+            "notice_content": normalize_newlines(self.object.notice_text),
+        }
+
+        return {"fields": [(None, context, None, template)]}
 
     def get_vulnerabilities_tab_fields(self, vulnerabilities):
         dataspace = self.object.dataspace

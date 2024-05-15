@@ -96,34 +96,28 @@
             $('.h-link').tooltip({placement: 'bottom', title: 'Hierarchy view', container: 'body'});
             $('.r-link').tooltip({placement: 'bottom', title: 'Request view', container: 'body'});
 
-            /* Select all checkboxes */
-            let checkbox_select_all = $("thead th #checkbox-select-all");
-            checkbox_select_all.click(function() {
-              let checkboxes = $("table#object-list-table tbody td input[type='checkbox']");
-              checkboxes.prop("checked", $(this).prop("checked"));
-              // Fire the `change` event on the first item to trigger the `handle_button_display`
-              // There's no need to trigger that event for each checkbox in this "select all" action
-              checkboxes.first().change();
-            });
-
-            // Left and Right keys navigation
+            /* Left and Right keys navigation */
             {% if is_paginated %}
-                $(document).keydown(function(e) {
-                    // Do not trigger the navigation if an <input> or <textarea> currently has the focus
-                    var any_input_has_focus = (function() {return ($("input,textarea").is(":focus"))});
-                    {% if page_obj.has_previous %}
-                        if (e.keyCode == 37 && !any_input_has_focus()) {
-                            e.preventDefault();
-                            window.location.href = window.location.href.replace( /[\?#].*|$/, "?{{ previous_url }}" );
-                        }
-                    {% endif %}
-                    {% if page_obj.has_next %}
-                        if (e.keyCode == 39 && !any_input_has_focus()) {
-                            e.preventDefault();
-                            window.location.href = window.location.href.replace( /[\?#].*|$/, "?{{ next_url }}" );
-                        }
-                    {% endif %}
-                });
+              document.addEventListener("keydown", function(e) {
+                // Do not trigger the navigation if an <input> or <textarea> currently has the focus
+                var anyInputHasFocus = function() {
+                  return document.querySelector("input:focus, textarea:focus") !== null;
+                };
+
+                {% if page_obj.has_previous %}
+                  if (e.keyCode === 37 && !anyInputHasFocus()) {
+                    e.preventDefault();
+                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?{{ previous_url }}");
+                  }
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                  if (e.keyCode === 39 && !anyInputHasFocus()) {
+                    e.preventDefault();
+                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?{{ next_url }}");
+                  }
+                {% endif %}
+              });
             {% endif %}
 
             $('select.bootstrap-select-filter')
@@ -162,7 +156,7 @@
                     });
                   }
 
-                  /// If there are no active search/filters, add 'all=true' to the parameters
+                  // If there are no active search/filters, add 'all=true' to the parameters
                   if (params.toString() === "") {
                       params.set('all', 'true');
                   }

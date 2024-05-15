@@ -1196,7 +1196,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         for field_name, value in data.items():
             self.assertEqual(str(value), str(getattr(package, field_name)))
 
-        expected = 'Added Package: "deb/debian/curl@7.50.3-1"'
+        expected = 'Added Package: "pkg:deb/debian/curl@7.50.3-1"'
         self.assertEqual(expected, mail.outbox[0].subject)
         body = mail.outbox[0].body
         self.assertIn(package.get_admin_url(), body)

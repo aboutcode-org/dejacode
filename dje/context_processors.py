@@ -14,7 +14,7 @@ from dejacode import __version__ as DEJACODE_VERSION
 def dejacode_context(request):
     """Return all the DejaCode specific context variables."""
     return {
-        "DEJACODE_VERSION": DEJACODE_VERSION,
+        "DEJACODE_VERSION": DEJACODE_VERSION.lstrip("v"),
         "DEJACODE_SUPPORT_EMAIL": settings.DEJACODE_SUPPORT_EMAIL,
         "FAVICON_HREF": settings.FAVICON_HREF,
         "SITE_TITLE": settings.SITE_TITLE,

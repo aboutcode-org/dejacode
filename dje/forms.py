@@ -19,7 +19,6 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.forms import BoundField
-from django.forms import widgets
 from django.forms.utils import ErrorDict
 from django.forms.utils import ErrorList
 from django.utils.html import conditional_escape
@@ -831,16 +830,18 @@ class OwnerChoiceField(forms.ModelChoiceField):
             return super().prepare_value(value)
 
 
-class JSONListChoiceField(forms.MultipleChoiceField):
-    widget = widgets.TextInput
-
+class JSONListField(forms.CharField):
     def prepare_value(self, value):
         if isinstance(value, list):
             value = ", ".join(value)
         return super().prepare_value(value)
 
     def to_python(self, value):
-        if isinstance(value, str):
+        if not value:
+            return []
+        if isinstance(value, list):
+            return value
+        elif isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
         return super().to_python(value)
 

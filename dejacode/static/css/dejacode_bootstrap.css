@@ -248,6 +248,10 @@ dd.reduced pre {
     z-index: 1;
     font-size: 0.875rem;
 }
+th.column-grouping {
+  width: 36px;
+  max-width: 36px;
+}
 th.column-selection {
   width: 27px;
   max-width: 27px;
@@ -335,6 +339,9 @@ table.products-table .column-license_expression {
 }
 table.products-table .column-owner {
   min-width: 75px;
+}
+table.products-table .column-productinventoryitem_count {
+  width: 100px;
 }
 
 /* -- Package List -- */

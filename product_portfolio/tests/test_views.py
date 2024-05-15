@@ -1054,8 +1054,7 @@ class ProductPortfolioViewsTestCase(TestCase):
         url = resolve_url("product_portfolio:product_list")
         response = self.client.get(url)
         expected = """
-        <button id="compare_button" href="/products/compare/"
-                class="btn btn-outline-dark disabled" data-bs-toggle="tooltip">
+        <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled">
           <i class="far fa-clone"></i> Compare
         </button>
         """
@@ -1101,6 +1100,33 @@ class ProductPortfolioViewsTestCase(TestCase):
         response = self.client.get(url + f"?q={filename}")
         self.assertEqual(1, len(response.context_data["object_list"]))
         self.assertIn(self.product1, response.context_data["object_list"])
+
+    def test_product_portfolio_list_view_inventory_count(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = resolve_url("product_portfolio:product_list")
+
+        response = self.client.get(url)
+        self.assertContains(response, "<td>0</td>", html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(0, product1.productinventoryitem_count)
+
+        ProductComponent.objects.create(
+            product=self.product1, component=self.component1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = f'<a href="{self.product1.get_absolute_url()}#inventory">1</a>'
+        self.assertContains(response, expected, html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(1, product1.productinventoryitem_count)
+
+        ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = f'<a href="{self.product1.get_absolute_url()}#inventory">2</a>'
+        self.assertContains(response, expected, html=True)
+        product1 = response.context_data["object_list"][0]
+        self.assertEqual(2, product1.productinventoryitem_count)
 
     def test_product_portfolio_product_tree_comparison_view_proper(self):
         self.client.login(username="nexb_user", password="secret")
@@ -1227,6 +1253,55 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected_type, response.headers.get("Content-Type"))
         expected_disposition = "attachment; filename=product_comparison.xlsx"
         self.assertEqual(expected_disposition, response.headers.get("Content-Disposition"))
+
+    def test_product_portfolio_product_tree_comparison_view_package_identifier(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = resolve_url(
+            "product_portfolio:product_tree_comparison",
+            left_uuid=self.product1.uuid,
+            right_uuid=self.product2.uuid,
+        )
+
+        p1 = Package(dataspace=self.dataspace)
+        p1.set_package_url("pkg:bar/baz/pypdf@4.1.0")
+        p1.save()
+        pp1 = ProductPackage.objects.create(
+            product=self.product1, package=p1, dataspace=self.dataspace
+        )
+
+        # Same name different type and namespace
+        p2 = Package(dataspace=self.dataspace)
+        p2.set_package_url("pkg:github/py-pdf/pypdf@4.2.0")
+        p2.save()
+        pp2 = ProductPackage.objects.create(
+            product=self.product2, package=p2, dataspace=self.dataspace
+        )
+
+        response = self.client.get(url)
+        expected = [("removed", pp1, None, None), ("added", None, pp2, None)]
+        self.assertEqual(expected, response.context["rows"])
+
+        # Same type, namespace, name combo
+        p2.set_package_url("pkg:bar/baz/pypdf@4.2.0")
+        p2.save()
+        response = self.client.get(url)
+        expected = [("updated", pp1, pp2, None)]
+        self.assertEqual(expected, response.context["rows"])
+
+        # More than 2 packages with same unique identifier
+        p3 = Package(dataspace=self.dataspace)
+        p3.set_package_url("pkg:bar/baz/pypdf@4.3.0")
+        p3.save()
+        pp3 = ProductPackage.objects.create(
+            product=self.product2, package=p3, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = [
+            ("removed", pp1, None, None),
+            ("added", None, pp2, None),
+            ("added", None, pp3, None),
+        ]
+        self.assertEqual(expected, response.context["rows"])
 
     def test_product_portfolio_product_tree_comparison_view_secured_access(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -1673,8 +1748,6 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(1, len(form.fields["configuration_status"].queryset))
         self.assertIn(status, form.fields["configuration_status"].queryset)
         self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
-
-        self.assertEqual([(keyword.label, keyword.label)], form.fields["keywords"].choices)
 
         # NameVersionValidationFormMixin
         data = {
@@ -2728,7 +2801,7 @@ class ProductPortfolioViewsTestCase(TestCase):
                 scan.assert_called_once()
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
-    def test_product_portfolio_mport_manifest_view(self, mock_submit):
+    def test_product_portfolio_import_manifest_view(self, mock_submit):
         mock_submit.return_value = None
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_import_manifests_url()

@@ -51,6 +51,30 @@ Release notes
 - Show the individual PURL fields in the Package details view.
   https://github.com/nexB/dejacode/issues/83
 
+- Fix the logout link of the admin app.
+  https://github.com/nexB/dejacode/issues/89
+
+- Display full commit in the version displayed in the UI
+  https://github.com/nexB/dejacode/issues/88
+
+- Refine the Product comparison logic for Packages.
+  The type and namespace fields are now used along the name field to match similar
+  Packages (excluding the version).
+  https://github.com/nexB/dejacode/issues/113
+
+- Refactor the implementation of Keywords on forms to allow more flexibilty.
+  Existing Keywords are suggested for consistency but any values is now allowed.
+  https://github.com/nexB/dejacode/issues/48
+
+- Display Product inventory count on the Product list view.
+  https://github.com/nexB/dejacode/issues/81
+
+- Always display the full Package URL in the UI view including the "pkg:" prefix.
+  https://github.com/nexB/dejacode/issues/115
+
+- Add a new AboutCode tab in Package details view.
+  https://github.com/nexB/dejacode/issues/42
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

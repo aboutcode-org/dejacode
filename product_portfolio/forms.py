@@ -25,6 +25,7 @@ from guardian.shortcuts import assign_perm
 
 from component_catalog.forms import BaseAddToProductForm
 from component_catalog.forms import ComponentAddToProductForm
+from component_catalog.forms import KeywordsField
 from component_catalog.forms import PackageAddToProductForm
 from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
@@ -38,7 +39,7 @@ from dje.forms import DataspacedAdminForm
 from dje.forms import DataspacedModelForm
 from dje.forms import DefaultOnAdditionLabelMixin
 from dje.forms import Group
-from dje.forms import JSONListChoiceField
+from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
@@ -92,7 +93,6 @@ class ProductForm(
     LicenseExpressionFormMixin,
     DefaultOnAdditionLabelMixin,
     NameVersionValidationFormMixin,
-    SetKeywordsChoicesFormMixin,
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
@@ -103,10 +103,7 @@ class ProductForm(
         CodebaseResource,
     ]
 
-    keywords = JSONListChoiceField(
-        required=False,
-        widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
-    )
+    keywords = KeywordsField()
 
     class Meta:
         model = Product
@@ -187,7 +184,7 @@ class ProductAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -226,7 +223,7 @@ class ProductPackageAdminForm(ProductComponentAdminForm):
 
 
 class ProductMassUpdateForm(SetKeywordsChoicesFormMixin, DejacodeMassUpdateForm):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
