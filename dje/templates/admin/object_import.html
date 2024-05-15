@@ -30,7 +30,15 @@
       <h5>Help for {{ importer.verbose_name|title }} Import:</h5>
       <ul class="mb-0">
         {% if importer.formset and not importer.fatal_errors %}
-          <li><span class="badge text-bg-secondary">M</span> The {{ importer.verbose_name|title }} matches an already existing {{ importer.verbose_name|title }}. Nothing will be done for the row.</li>
+          <li>
+            <span class="badge text-bg-secondary">M</span>
+            The {{ importer.verbose_name|title }} matches an already existing {{ importer.verbose_name|title }}.
+            {% if importer.update_existing %}
+              Empty fields will be updated with import data.
+            {% else %}
+              Nothing will be done for the row.
+            {% endif %}
+          </li>
           <li><span class="badge text-bg-success">A</span> The {{ importer.verbose_name|title }} will be added based on the input data</li>
           <li><span class="badge text-bg-danger">E</span> The row contains at least one error</li>
           <li><span class="badge text-bg-warning">W</span> The row is valid but should be manually reviewed</li>
@@ -41,11 +49,15 @@
           <li>The character encoding of the input file needs to be "UTF-8"</li>
           <li>The column order does not matter.</li>
           <li>The column names are case sensitive.</li>
-          <li>Required column{{ importer.required_fields|pluralize }}: <strong>{{ importer.required_fields|join:", " }}</strong></li>
-          <li>Supported values for boolean fields:<br>
-            <strong>Yes:</strong> True, T, Yes, Y<br>
-            <strong>No:</strong> False, F, No, N
+          {% if importer.required_fields %}
+            <li>Required column{{ importer.required_fields|pluralize }}: <strong>{{ importer.required_fields|join:", " }}</strong></li>
+          {% endif %}
+          <li>Supported values for boolean fields:
+            <strong>Yes:</strong> True, T, Yes, Y; <strong>No:</strong> False, F, No, N
           </li>
+          {% if importer.verbose_name == "package" %}
+            <li>Note that a <strong>Package is uniquely defined in DejaCode by a combination of filename, download_url, and the six Package URL fields</strong> type, namespace, name, version, qualifiers, and subpath. You are not required to provide values in all of these fields (qualifiers and subpath are less commonly used) but if any of them are different from an existing similar package already in DejaCode, then the importer will perform an addition rather than a modification.</li>
+          {% endif %}
         {% endif %}
       </ul>
         <div class="text-center">
@@ -265,7 +277,7 @@
             </div>
           {% endif %}
           <form enctype="multipart/form-data" method="post">{% csrf_token %}
-            <p><input type="file" id="id_file" name="file"></p>
+            <p>{{ file_form.file }}</p>
             <input class="btn btn-primary" type="submit" value="Upload" />
           </form>
         </div>

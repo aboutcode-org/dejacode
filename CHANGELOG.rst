@@ -75,6 +75,9 @@ Release notes
 - Add a new AboutCode tab in Package details view.
   https://github.com/nexB/dejacode/issues/42
 
+- Enhance Package Import to support modifications.
+  https://github.com/nexB/dejacode/issues/84
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.
