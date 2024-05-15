@@ -1318,6 +1318,40 @@ class PackageImporterTestCase(TestCase):
         prepared_package = PackageImporter.prepare_package(package_data)
         self.assertEqual(expected, prepared_package)
 
+    def test_package_import_update_existing(self):
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+        }
+
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["added"]))
+
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["unmodified"]))
+
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+            "form-0-notes": "Notes",
+        }
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["modified"]))
+        modified_package = importer.results["modified"][0]
+        self.assertEqual("Notes", modified_package.notes)
+
+        history_entry = History.objects.get_for_object(modified_package).get()
+        expected_messages = "Updated notes from import"
+        self.assertEqual(expected_messages, history_entry.change_message)
+
     def test_package_import_add_to_product(self):
         admin_user = create_admin("admin_user", self.dataspace)
         self.client.login(username=admin_user.username, password="secret")
