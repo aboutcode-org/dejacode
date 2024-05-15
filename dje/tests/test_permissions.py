@@ -116,6 +116,7 @@ class DejaCodePermissionTestCase(TestCase):
                 "scan",
                 "purldb",
                 "vulnerabilities",
+                "aboutcode",
                 "history",
             ],
             "license": [

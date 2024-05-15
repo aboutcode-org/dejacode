@@ -1148,8 +1148,8 @@ class PackageDetailsView(
     AcceptAnonymousMixin,
     AddPackagePermissionMixin,
     TabVulnerabilityMixin,
-    ObjectDetailsView,
     AddToProductFormMixin,
+    ObjectDetailsView,
 ):
     model = Package
     slug_url_kwarg = "uuid"
@@ -1270,8 +1270,7 @@ class PackageDetailsView(
         has_change_package_permission = user.has_perm("component_catalog.change_package")
         context_data["has_change_package_permission"] = has_change_package_permission
 
-        # License data is required for the Scan tab "scan to package"
-        # license expression fields
+        # License data is required for the Scan tab "scan to package" license expression fields
         client_data = getattr(self.request, "client_data", {})
         include_all_licenses = all(
             [
@@ -1284,9 +1283,9 @@ class PackageDetailsView(
             all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
-        if self.request.user.has_perm("component_catalog.change_component"):
+        if user.has_perm("component_catalog.change_component"):
             context_data["add_to_component_form"] = AddToComponentForm(
-                self.request.user, initial={self.model._meta.model_name: self.object}
+                user, initial={self.model._meta.model_name: self.object}
             )
 
         return context_data
