@@ -1843,7 +1843,7 @@ class Package(
         Provide a unique value to identify each Package.
         It is the Package URL if one exists; otherwise it is the Package Filename.
         """
-        return self.plain_package_url or self.filename
+        return self.package_url or self.filename
 
     @classmethod
     def identifier_help(cls):
@@ -1888,7 +1888,8 @@ class Package(
         if not params:
             params = [self.dataspace.name, quote_plus(str(self.uuid))]
             if include_identifier:
-                params.insert(1, self.identifier)
+                # For the URL, using plain_package_url for simplification
+                params.insert(1, self.plain_package_url or self.filename)
         return super().get_url(name, params)
 
     def get_absolute_url(self):

@@ -1706,15 +1706,12 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        # 1. Plain Package URL
-        expected = "pkg:deb/debian/curl@7.50.3-1"
-        self.assertEqual(expected, str(package))
-
-        # 2. Full Package URL
+        # 1. Full Package URL
         expected = "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations"
+        self.assertEqual(expected, str(package))
         self.assertEqual(expected, str(package.package_url))
 
-        # 3. Filename
+        # 2. Filename
         package.type = ""
         package.save()
         self.assertFalse(package.package_url)
