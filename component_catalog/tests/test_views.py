@@ -1185,10 +1185,12 @@ class PackageUserViewsTestCase(TestCase):
         expected = "/packages/Dataspace/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
 
-        args = [p2.dataspace.name, p2.identifier, p2.uuid]
+        args = [p2.dataspace.name, p2.plain_package_url, p2.uuid]
         url = reverse("component_catalog:package_details", args=args)
         expected = "/packages/Dataspace/pkg:pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
+        self.assertEqual(expected, p2.details_url)
+        self.assertEqual(expected, p2.get_absolute_url())
 
     def test_package_list_view_content(self):
         self.client.login(username=self.super_user.username, password="secret")
