@@ -26,6 +26,7 @@ from license_expression import Licensing
 
 from component_catalog.importers import ComponentImporter
 from component_catalog.importers import PackageImporter
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedLicense
 from component_catalog.models import ComponentAssignedPackage
@@ -368,6 +369,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         ]
         for model_class, expected in inputs:
             self.assertEqual(expected, model_class.get_identifier_fields())
+
+        self.assertEqual(PACKAGE_URL_FIELDS, Package.get_identifier_fields(purl_fields_only=True))
 
     def test_component_model_get_absolute_url(self):
         c = Component(name="c1", version="1.0", dataspace=self.dataspace)

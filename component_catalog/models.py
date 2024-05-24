@@ -1915,12 +1915,16 @@ class Package(
         return self.get_url("export_cyclonedx")
 
     @classmethod
-    def get_identifier_fields(cls):
+    def get_identifier_fields(cls, *args, purl_fields_only=False, **kwargs):
         """
         Explicit list of identifier fields as we do not enforce a unique together
         on this model.
         This is used in the Importer, to catch duplicate entries.
+        The purl_fields_only option can be use to limit the results.
         """
+        if purl_fields_only:
+            return PACKAGE_URL_FIELDS
+
         return ["filename", "download_url", *PACKAGE_URL_FIELDS]
 
     @property

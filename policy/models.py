@@ -107,7 +107,7 @@ class UsagePolicy(ColoredIconMixin, DataspacedModel):
         return f"{self.label} ({self.content_type.model})"
 
     @classmethod
-    def get_identifier_fields(cls):
+    def get_identifier_fields(cls, *args, **kwargs):
         """Hack required by the Component import."""
         return ["label"]
 

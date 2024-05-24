@@ -285,28 +285,68 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(self.super_user, self.product1.last_modified_by)
 
-    def test_product_model_find_assigned_other_version_component(self):
+    def test_product_model_find_assigned_other_versions_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
         component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
         component3 = Component.objects.create(name="c", version="3.0", dataspace=self.dataspace)
 
         # No other version assigned
-        self.assertIsNone(self.product1.find_assigned_other_version(component1))
-        self.assertIsNone(self.product1.find_assigned_other_version(component2))
-        self.assertIsNone(self.product1.find_assigned_other_version(component3))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component3))
 
         # 1 other version assigned
         p1_c1 = self.product1.assign_object(component1, self.super_user)
-        # TODO: Do not include self?
-        # self.assertIsNone(self.product1.find_assigned_other_version(component1))
-        self.assertEqual(p1_c1, self.product1.find_assigned_other_version(component2))
-        self.assertEqual(p1_c1, self.product1.find_assigned_other_version(component3))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component3))
 
-        # Multiple other version assigned
-        self.product1.assign_object(component2, self.super_user)
-        self.assertIsNone(self.product1.find_assigned_other_version(component1))
-        self.assertIsNone(self.product1.find_assigned_other_version(component2))
-        self.assertIsNone(self.product1.find_assigned_other_version(component3))
+        # 2 other versions assigned
+        p1_c2 = self.product1.assign_object(component2, self.super_user)
+        self.assertQuerySetEqual([p1_c2], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual(
+            [p1_c1, p1_c2], self.product1.find_assigned_other_versions(component3)
+        )
+
+    def test_product_model_find_assigned_other_versions_package(self):
+        package_data = {
+            "filename": "package.zip",
+            "type": "deb",
+            "namespace": "debian",
+            "name": "curl",
+            "dataspace": self.dataspace,
+        }
+        package1 = Package.objects.create(**package_data, version="1.0")
+        package2 = Package.objects.create(**package_data, version="2.0")
+        package3 = Package.objects.create(**package_data, version="3.0")
+
+        # No other version assigned
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package3))
+
+        # 1 other version assigned
+        p1_p1 = self.product1.assign_object(package1, self.super_user)
+        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package3))
+
+        # 2 other versions assigned
+        p1_p2 = self.product1.assign_object(package2, self.super_user)
+        self.assertQuerySetEqual([p1_p2], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual(
+            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(package3)
+        )
+
+        # Only PURL fields are used as lookups as the filename and download_url
+        # fields change between version.
+        package_data["filename"] = "different_filename"
+        package4 = Package.objects.create(**package_data, version="4.0")
+        self.assertQuerySetEqual(
+            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(package4)
+        )
 
     def test_product_model_field_changes_mixin(self):
         self.assertFalse(Product().has_changed("name"))

@@ -881,7 +881,7 @@ class DataspacedModel(models.Model):
     local_foreign_fields = property(_get_local_foreign_fields)
 
     @classmethod
-    def get_identifier_fields(cls):
+    def get_identifier_fields(cls, *args, **kwargs):
         """
         Return a list of the fields, based on the Meta unique_together, to be
         used to match a unique instance within a Dataspace.
