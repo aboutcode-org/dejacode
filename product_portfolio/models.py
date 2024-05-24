@@ -332,7 +332,33 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             *list(self.productpackages.all().order_by("id")),
         ]
 
-    def assign_objects(self, related_objects, user):
+    def assign_object(self, obj, user, replace_existing_version=False):
+        relationship_models = {
+            "component": ProductComponent,
+            "package": ProductPackage,
+        }
+        object_model_name = obj._meta.model_name  # 'component' or 'package'
+        object_model_class = relationship_models.get(object_model_name)
+        if not object_model_class:
+            raise ValueError
+
+        filters = {
+            "product": self,
+            object_model_name: obj,
+            "dataspace": obj.dataspace,
+            "defaults": {
+                "license_expression": obj.license_expression,
+                "created_by": user,
+                "last_modified_by": user,
+            },
+        }
+        relation_obj, created = object_model_class.objects.get_or_create(**filters)
+        if created:
+            History.log_addition(user, relation_obj)
+            History.log_change(user, self, f'Added {object_model_name} "{obj}"')
+            return relation_obj
+
+    def assign_objects(self, related_objects, user, replace_existing_version=False):
         """
         Assign provided `related_objects` to this `Product`.
         Supported object models are `Component` and `Package`.
@@ -341,31 +367,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         created_count = 0
         unchanged_count = 0
 
-        relationship_models = {
-            "component": ProductComponent,
-            "package": ProductPackage,
-        }
-
         for obj in related_objects:
-            relation_model_name = obj._meta.model_name  # 'component' or 'package'
-            relation_model_class = relationship_models.get(relation_model_name)
-            if not relation_model_class:
-                continue
-
-            filters = {
-                "product": self,
-                relation_model_name: obj,
-                "dataspace": obj.dataspace,
-                "defaults": {
-                    "license_expression": obj.license_expression,
-                    "created_by": user,
-                    "last_modified_by": user,
-                },
-            }
-            relation_obj, created = relation_model_class.objects.get_or_create(**filters)
-            if created:
-                History.log_addition(user, relation_obj)
-                History.log_change(user, self, f'Added {relation_model_name} "{obj}"')
+            created_relation = self.assign_object(obj, user, replace_existing_version)
+            if created_relation:
                 created_count += 1
             else:
                 unchanged_count += 1

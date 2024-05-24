@@ -248,6 +248,9 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(0, self.product1.productcomponents.count())
 
+        with self.assertRaises(ValueError):
+            self.product1.assign_objects([status1], self.super_user)
+
         created, unchanged = self.product1.assign_objects([], self.super_user)
         self.assertEqual(0, created)
         self.assertEqual(0, unchanged)
