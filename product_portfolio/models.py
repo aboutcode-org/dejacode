@@ -333,36 +333,45 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         ]
 
     def assign_object(self, obj, user, replace_existing_version=False):
+        """
+        Assign a provided ``obj`` (either a ``ProductComponent`` or
+        ``ProductPackage``) to this ``Product``.
+        Return The created or existing relationship object.
+        """
         relationship_models = {
             "component": ProductComponent,
             "package": ProductPackage,
         }
-        object_model_name = obj._meta.model_name  # 'component' or 'package'
+        object_model_name = obj._meta.model_name  # "component" or "package"
         object_model_class = relationship_models.get(object_model_name)
         if not object_model_class:
-            raise ValueError
+            raise ValueError(f"Unsupported object model: {object_model_name}")
 
         filters = {
             "product": self,
-            object_model_name: obj,
             "dataspace": obj.dataspace,
-            "defaults": {
-                "license_expression": obj.license_expression,
-                "created_by": user,
-                "last_modified_by": user,
-            },
+            object_model_name: obj,
         }
-        relation_obj, created = object_model_class.objects.get_or_create(**filters)
+        defaults = {
+            "license_expression": obj.license_expression,
+            "created_by": user,
+            "last_modified_by": user,
+        }
+
+        relation_obj, created = object_model_class.objects.get_or_create(
+            defaults=defaults, **filters
+        )
+
         if created:
             History.log_addition(user, relation_obj)
             History.log_change(user, self, f'Added {object_model_name} "{obj}"')
-            return relation_obj
+
+        return relation_obj if created else None
 
     def assign_objects(self, related_objects, user, replace_existing_version=False):
         """
-        Assign provided `related_objects` to this `Product`.
-        Supported object models are `Component` and `Package`.
-        Return the both counts for created and unchanged objects.
+        Assign provided ``related_objects`` (either ``ProductComponent`` or
+        ``ProductPackage``) to this ``Product``.
         """
         created_count = 0
         unchanged_count = 0
@@ -374,7 +383,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             else:
                 unchanged_count += 1
 
-        if created_count:
+        if created_count > 0:
             self.last_modified_by = user
             self.save()
 

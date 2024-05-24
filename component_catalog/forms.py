@@ -647,9 +647,7 @@ class AddToProductAdminForm(forms.Form):
     )
     ids = forms.CharField(widget=forms.widgets.HiddenInput)
     replace_existing_version = forms.BooleanField(
-        required=False,
-        initial=False,
-        label="Replace existing relationships by newer version."
+        required=False, initial=False, label="Replace existing relationships by newer version."
     )
 
     def __init__(self, request, model, relation_model, *args, **kwargs):

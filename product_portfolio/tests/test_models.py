@@ -248,8 +248,9 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(0, self.product1.productcomponents.count())
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             self.product1.assign_objects([status1], self.super_user)
+        self.assertEqual("Unsupported object model: productrelationstatus", str(cm.exception))
 
         created, unchanged = self.product1.assign_objects([], self.super_user)
         self.assertEqual(0, created)
