@@ -646,6 +646,11 @@ class AddToProductAdminForm(forms.Form):
         queryset=Product.objects.none(),
     )
     ids = forms.CharField(widget=forms.widgets.HiddenInput)
+    replace_existing_version = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Replace existing relationships by newer version."
+    )
 
     def __init__(self, request, model, relation_model, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -663,9 +668,12 @@ class AddToProductAdminForm(forms.Form):
 
     def save(self):
         product = self.cleaned_data["product"]
+        replace_existing_version = self.cleaned_data["replace_existing_version"]
+
         return product.assign_objects(
             related_objects=self.get_selected_objects(),
             user=self.request.user,
+            replace_existing_version=replace_existing_version,
         )
 
 
