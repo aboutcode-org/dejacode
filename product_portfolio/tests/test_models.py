@@ -285,6 +285,62 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(self.super_user, self.product1.last_modified_by)
 
+    def test_product_model_assign_object_replace_version_component(self):
+        component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
+        component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
+        self.product1.assign_object(component1, self.super_user)
+        self.assertQuerySetEqual([component1], self.product1.components.all())
+        p1_c2 = self.product1.assign_object(component2, self.super_user)
+        self.assertQuerySetEqual([component1, component2], self.product1.components.all())
+
+        # Replacing the current single existing version.
+        p1_c2.delete()
+        p1_c2 = self.product1.assign_object(component2, self.super_user, replace_version=True)
+        self.assertQuerySetEqual([component2], self.product1.components.all())
+
+        history_entries = History.objects.get_for_object(self.product1)
+        expected_message = 'Updated component "c 1.0" to "c 2.0"'
+        self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
+        self.product1.refresh_from_db()
+        self.assertEqual(self.super_user, self.product1.last_modified_by)
+
+        # Relation already exists.
+        self.assertIsNone(
+            self.product1.assign_object(component2, self.super_user, replace_version=True)
+        )
+
+    def test_product_model_assign_object_replace_version_package(self):
+        package_data = {
+            "filename": "package.zip",
+            "type": "deb",
+            "namespace": "debian",
+            "name": "curl",
+            "dataspace": self.dataspace,
+        }
+        package1 = Package.objects.create(**package_data, version="1.0")
+        package2 = Package.objects.create(**package_data, version="2.0")
+
+        self.product1.assign_object(package1, self.super_user)
+        self.assertQuerySetEqual([package1], self.product1.packages.all())
+        p1_p2 = self.product1.assign_object(package2, self.super_user)
+        self.assertQuerySetEqual([package1, package2], self.product1.packages.all())
+
+        # Replacing the current single existing version.
+        p1_p2.delete()
+        p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        self.assertQuerySetEqual([package2], self.product1.packages.all())
+
+        history_entries = History.objects.get_for_object(self.product1)
+        expected_message = 'Updated package "pkg:deb/debian/curl@1.0" to "pkg:deb/debian/curl@2.0"'
+        self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
+        self.product1.refresh_from_db()
+        self.assertEqual(self.super_user, self.product1.last_modified_by)
+
+        # Relation already exists.
+        self.assertIsNone(
+            self.product1.assign_object(package2, self.super_user, replace_version=True)
+        )
+
     def test_product_model_find_assigned_other_versions_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
         component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)

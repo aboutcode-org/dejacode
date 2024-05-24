@@ -773,6 +773,17 @@ class DataspacedModel(models.Model):
 
         return updated_fields
 
+    def update(self, **kwargs):
+        """
+        Update this instance with the provided ``kwargs`` values.
+        The full ``save()`` process will be triggered, including signals, and the
+        ``update_fields`` is automatically set.
+        """
+        for field_name, value in kwargs.items():
+            setattr(self, field_name, value)
+
+        self.save(update_fields=list(kwargs.keys()))
+
     def as_json(self):
         try:
             serialized_data = serialize(

@@ -371,11 +371,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
         return relationship_model.objects.exclude(**excludes).filter(**filters)
 
-    def assign_object(self, obj, user, replace_existing_version=False):
+    def assign_object(self, obj, user, replace_version=False):
         """
-        Assign a provided ``obj`` (either a ``ProductComponent`` or
-        ``ProductPackage``) to this ``Product``.
-        Return The created or existing relationship object.
+        Assign a provided ``obj`` (either a Component or Package) to this Product.
+        Return the created or existing relationship object.
         """
         object_model_name = obj._meta.model_name  # "component" or "package"
         relationship_model = self.get_relationship_model(obj)
@@ -391,11 +390,16 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             return
 
         # 2. Find an existing relation for another version of the same object
-        # when replace_existing_version is provided.
-        if replace_existing_version:
-            other_versions = self.find_assigned_other_versions(obj)
-            if len(other_versions) == 1:
-                print("Remplace the obj on the relationship with:", other_versions[0])
+        #    when replace_version is provided.
+        if replace_version:
+            other_assigned_versions = self.find_assigned_other_versions(obj)
+            if len(other_assigned_versions) == 1:
+                exsisting_relation = other_assigned_versions[0]
+                other_version_object = getattr(exsisting_relation, object_model_name)
+                exsisting_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
+                History.log_change(user, self, message)
+                return exsisting_relation
 
         # 3. Otherwise, create a new relation
         defaults = {
@@ -404,22 +408,17 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             "last_modified_by": user,
         }
         created_relation = relationship_model.objects.create(**filters, **defaults)
+        History.log_addition(user, created_relation)
+        History.log_change(user, self, f'Added {object_model_name} "{obj}"')
+        return created_relation
 
-        if created_relation:
-            History.log_addition(user, created_relation)
-            History.log_change(user, self, f'Added {object_model_name} "{obj}"')
-            return created_relation
-
-    def assign_objects(self, related_objects, user, replace_existing_version=False):
-        """
-        Assign provided ``related_objects`` (either ``ProductComponent`` or
-        ``ProductPackage``) to this ``Product``.
-        """
+    def assign_objects(self, related_objects, user, replace_version=False):
+        """Assign provided ``related_objects`` (either a Component or Package) to this Product."""
         created_count = 0
         unchanged_count = 0
 
         for obj in related_objects:
-            created_relation = self.assign_object(obj, user, replace_existing_version)
+            created_relation = self.assign_object(obj, user, replace_version)
             if created_relation:
                 created_count += 1
             else:
