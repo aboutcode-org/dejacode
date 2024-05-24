@@ -252,8 +252,9 @@ class ProductPortfolioModelsTestCase(TestCase):
             self.product1.assign_objects([status1], self.super_user)
         self.assertEqual("Unsupported object model: productrelationstatus", str(cm.exception))
 
-        created, unchanged = self.product1.assign_objects([], self.super_user)
+        created, updated, unchanged = self.product1.assign_objects([], self.super_user)
         self.assertEqual(0, created)
+        self.assertEqual(0, updated)
         self.assertEqual(0, unchanged)
 
         component1 = Component.objects.create(
@@ -261,8 +262,9 @@ class ProductPortfolioModelsTestCase(TestCase):
             license_expression=self.license1.key,
             dataspace=self.dataspace,
         )
-        created, unchanged = self.product1.assign_objects([component1], self.super_user)
+        created, updated, unchanged = self.product1.assign_objects([component1], self.super_user)
         self.assertEqual(1, created)
+        self.assertEqual(0, updated)
         self.assertEqual(0, unchanged)
 
         pc = ProductComponent.objects.get(product=self.product1, component=component1)
@@ -288,26 +290,44 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_model_assign_object_replace_version_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
         component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
-        self.product1.assign_object(component1, self.super_user)
+
+        # Assign component1
+        status, relation = self.product1.assign_object(component1, self.super_user)
+        self.assertEqual("created", status)
+        self.assertTrue(relation)
         self.assertQuerySetEqual([component1], self.product1.components.all())
-        p1_c2 = self.product1.assign_object(component2, self.super_user)
+
+        # Re-assign component1, relation already exists.
+        status, relation = self.product1.assign_object(component1, self.super_user)
+        self.assertEqual("unchanged", status)
+        self.assertIsNone(relation)
+        self.assertQuerySetEqual([component1], self.product1.components.all())
+        # With replace_version
+        status, relation = self.product1.assign_object(
+            component1, self.super_user, replace_version=1
+        )
+        self.assertEqual("unchanged", status)
+        self.assertIsNone(relation)
+        self.assertQuerySetEqual([component1], self.product1.components.all())
+
+        # Assign component2
+        status, p1_c2 = self.product1.assign_object(component2, self.super_user)
+        self.assertEqual("created", status)
+        self.assertTrue(p1_c2)
         self.assertQuerySetEqual([component1, component2], self.product1.components.all())
 
         # Replacing the current single existing version.
         p1_c2.delete()
-        p1_c2 = self.product1.assign_object(component2, self.super_user, replace_version=True)
+        status, p1_c2 = self.product1.assign_object(
+            component2, self.super_user, replace_version=True
+        )
+        self.assertEqual("updated", status)
+        self.assertTrue(p1_c2)
         self.assertQuerySetEqual([component2], self.product1.components.all())
 
         history_entries = History.objects.get_for_object(self.product1)
         expected_message = 'Updated component "c 1.0" to "c 2.0"'
         self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
-        self.product1.refresh_from_db()
-        self.assertEqual(self.super_user, self.product1.last_modified_by)
-
-        # Relation already exists.
-        self.assertIsNone(
-            self.product1.assign_object(component2, self.super_user, replace_version=True)
-        )
 
     def test_product_model_assign_object_replace_version_package(self):
         package_data = {
@@ -320,26 +340,39 @@ class ProductPortfolioModelsTestCase(TestCase):
         package1 = Package.objects.create(**package_data, version="1.0")
         package2 = Package.objects.create(**package_data, version="2.0")
 
-        self.product1.assign_object(package1, self.super_user)
+        # Assign package1
+        status, relation = self.product1.assign_object(package1, self.super_user)
+        self.assertEqual("created", status)
+        self.assertTrue(relation)
         self.assertQuerySetEqual([package1], self.product1.packages.all())
-        p1_p2 = self.product1.assign_object(package2, self.super_user)
+
+        # Re-assign package1, relation already exists.
+        status, relation = self.product1.assign_object(package1, self.super_user)
+        self.assertEqual("unchanged", status)
+        self.assertIsNone(relation)
+        self.assertQuerySetEqual([package1], self.product1.packages.all())
+        # With replace_version
+        status, relation = self.product1.assign_object(package1, self.super_user, replace_version=1)
+        self.assertEqual("unchanged", status)
+        self.assertIsNone(relation)
+        self.assertQuerySetEqual([package1], self.product1.packages.all())
+
+        # Assign package2
+        status, p1_p2 = self.product1.assign_object(package2, self.super_user)
+        self.assertEqual("created", status)
+        self.assertTrue(p1_p2)
         self.assertQuerySetEqual([package1, package2], self.product1.packages.all())
 
         # Replacing the current single existing version.
         p1_p2.delete()
-        p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        status, p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        self.assertEqual("updated", status)
+        self.assertTrue(p1_p2)
         self.assertQuerySetEqual([package2], self.product1.packages.all())
 
         history_entries = History.objects.get_for_object(self.product1)
         expected_message = 'Updated package "pkg:deb/debian/curl@1.0" to "pkg:deb/debian/curl@2.0"'
         self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
-        self.product1.refresh_from_db()
-        self.assertEqual(self.super_user, self.product1.last_modified_by)
-
-        # Relation already exists.
-        self.assertIsNone(
-            self.product1.assign_object(package2, self.super_user, replace_version=True)
-        )
 
     def test_product_model_find_assigned_other_versions_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
@@ -352,13 +385,13 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component3))
 
         # 1 other version assigned
-        p1_c1 = self.product1.assign_object(component1, self.super_user)
+        _, p1_c1 = self.product1.assign_object(component1, self.super_user)
         self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component1))
         self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
         self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component3))
 
         # 2 other versions assigned
-        p1_c2 = self.product1.assign_object(component2, self.super_user)
+        _, p1_c2 = self.product1.assign_object(component2, self.super_user)
         self.assertQuerySetEqual([p1_c2], self.product1.find_assigned_other_versions(component1))
         self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
         self.assertQuerySetEqual(
@@ -383,13 +416,13 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package3))
 
         # 1 other version assigned
-        p1_p1 = self.product1.assign_object(package1, self.super_user)
+        _, p1_p1 = self.product1.assign_object(package1, self.super_user)
         self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package1))
         self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
         self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package3))
 
         # 2 other versions assigned
-        p1_p2 = self.product1.assign_object(package2, self.super_user)
+        _, p1_p2 = self.product1.assign_object(package2, self.super_user)
         self.assertQuerySetEqual([p1_p2], self.product1.find_assigned_other_versions(package1))
         self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
         self.assertQuerySetEqual(

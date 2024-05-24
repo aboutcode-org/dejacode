@@ -374,7 +374,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def assign_object(self, obj, user, replace_version=False):
         """
         Assign a provided ``obj`` (either a Component or Package) to this Product.
-        Return the created or existing relationship object.
+        Return a tuple with the status ("created", "updated", "unchanged") and the relationship
+        object.
         """
         object_model_name = obj._meta.model_name  # "component" or "package"
         relationship_model = self.get_relationship_model(obj)
@@ -387,19 +388,19 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
         # 1. Check if a relation for this object already exists
         if relationship_model.objects.filter(**filters).exists():
-            return
+            return "unchanged", None
 
         # 2. Find an existing relation for another version of the same object
         #    when replace_version is provided.
         if replace_version:
             other_assigned_versions = self.find_assigned_other_versions(obj)
             if len(other_assigned_versions) == 1:
-                exsisting_relation = other_assigned_versions[0]
-                other_version_object = getattr(exsisting_relation, object_model_name)
-                exsisting_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                existing_relation = other_assigned_versions[0]
+                other_version_object = getattr(existing_relation, object_model_name)
+                existing_relation.update(**{object_model_name: obj, "last_modified_by": user})
                 message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
                 History.log_change(user, self, message)
-                return exsisting_relation
+                return "updated", existing_relation
 
         # 3. Otherwise, create a new relation
         defaults = {
@@ -410,25 +411,31 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         created_relation = relationship_model.objects.create(**filters, **defaults)
         History.log_addition(user, created_relation)
         History.log_change(user, self, f'Added {object_model_name} "{obj}"')
-        return created_relation
+        return "created", created_relation
 
     def assign_objects(self, related_objects, user, replace_version=False):
-        """Assign provided ``related_objects`` (either a Component or Package) to this Product."""
+        """
+        Assign provided ``related_objects`` (either a Component or Package) to this Product.
+        Return counts of created, updated, and unchanged objects.
+        """
         created_count = 0
+        updated_count = 0
         unchanged_count = 0
 
         for obj in related_objects:
-            created_relation = self.assign_object(obj, user, replace_version)
-            if created_relation:
+            status, relation = self.assign_object(obj, user, replace_version)
+            if status == "created":
                 created_count += 1
+            elif status == "updated":
+                updated_count += 1
             else:
                 unchanged_count += 1
 
-        if created_count > 0:
+        if created_count > 0 or updated_count > 0:
             self.last_modified_by = user
             self.save()
 
-        return created_count, unchanged_count
+        return created_count, updated_count, unchanged_count
 
     def scan_all_packages_task(self, user):
         """
