@@ -285,6 +285,29 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(self.super_user, self.product1.last_modified_by)
 
+    def test_product_model_find_assigned_other_version_component(self):
+        component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
+        component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
+        component3 = Component.objects.create(name="c", version="3.0", dataspace=self.dataspace)
+
+        # No other version assigned
+        self.assertIsNone(self.product1.find_assigned_other_version(component1))
+        self.assertIsNone(self.product1.find_assigned_other_version(component2))
+        self.assertIsNone(self.product1.find_assigned_other_version(component3))
+
+        # 1 other version assigned
+        p1_c1 = self.product1.assign_object(component1, self.super_user)
+        # TODO: Do not include self?
+        # self.assertIsNone(self.product1.find_assigned_other_version(component1))
+        self.assertEqual(p1_c1, self.product1.find_assigned_other_version(component2))
+        self.assertEqual(p1_c1, self.product1.find_assigned_other_version(component3))
+
+        # Multiple other version assigned
+        self.product1.assign_object(component2, self.super_user)
+        self.assertIsNone(self.product1.find_assigned_other_version(component1))
+        self.assertIsNone(self.product1.find_assigned_other_version(component2))
+        self.assertIsNone(self.product1.find_assigned_other_version(component3))
+
     def test_product_model_field_changes_mixin(self):
         self.assertFalse(Product().has_changed("name"))
 

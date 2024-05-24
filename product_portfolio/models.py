@@ -7,9 +7,12 @@
 #
 
 import uuid
+from contextlib import suppress
 from pathlib import Path
 
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
@@ -332,41 +335,85 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             *list(self.productpackages.all().order_by("id")),
         ]
 
+    def get_relationship_model(self, obj):
+        """Return the relationship model class for a given object."""
+        relationship_models = {
+            "component": ProductComponent,
+            "package": ProductPackage,
+        }
+        object_model_name = obj._meta.model_name  # "component" or "package"
+        relationship_model = relationship_models.get(object_model_name)
+        if not relationship_model:
+            raise ValueError(f"Unsupported object model: {object_model_name}")
+
+        return relationship_model
+
+    def find_assigned_other_version(self, obj):
+        """
+        Look for the same object with a different version already assigned to the product.
+
+        Return:
+        ------
+            relation: The relationship for the object with a different version, if found.
+            None: If no such relation exists or if multiple versions are found.
+
+        """
+        object_model_name = obj._meta.model_name  # "component" or "package"
+        relationship_model = self.get_relationship_model(obj)
+
+        # Craft the lookups excluding the version field
+        no_version_object_lookups = {
+            f"{object_model_name}__{field_name}": getattr(obj, field_name)
+            for field_name in obj.get_identifier_fields()
+            if field_name != "version"
+        }
+
+        filters = {
+            "product": self,
+            "dataspace": obj.dataspace,
+            **no_version_object_lookups,
+        }
+
+        with suppress(ObjectDoesNotExist, MultipleObjectsReturned):
+            return relationship_model.objects.get(**filters)
+
     def assign_object(self, obj, user, replace_existing_version=False):
         """
         Assign a provided ``obj`` (either a ``ProductComponent`` or
         ``ProductPackage``) to this ``Product``.
         Return The created or existing relationship object.
         """
-        relationship_models = {
-            "component": ProductComponent,
-            "package": ProductPackage,
-        }
         object_model_name = obj._meta.model_name  # "component" or "package"
-        object_model_class = relationship_models.get(object_model_name)
-        if not object_model_class:
-            raise ValueError(f"Unsupported object model: {object_model_name}")
+        relationship_model = self.get_relationship_model(obj)
 
         filters = {
             "product": self,
             "dataspace": obj.dataspace,
             object_model_name: obj,
         }
+
+        # 1. Check if a relation for this object already exists
+        if relationship_model.objects.filter(**filters).exists():
+            return
+
+        # 2. Find an existing relation for another version of the same object
+        # when replace_existing_version is provided.
+        if replace_existing_version:
+            # other_version = self.find_assigned_other_version(obj)
+            pass
+
+        # 3. Otherwise, create a new relation
         defaults = {
             "license_expression": obj.license_expression,
             "created_by": user,
             "last_modified_by": user,
         }
+        created_relation = relationship_model.objects.create(**filters, **defaults)
 
-        relation_obj, created = object_model_class.objects.get_or_create(
-            defaults=defaults, **filters
-        )
-
-        if created:
-            History.log_addition(user, relation_obj)
+        if created_relation:
+            History.log_addition(user, created_relation)
             History.log_change(user, self, f'Added {object_model_name} "{obj}"')
-
-        return relation_obj if created else None
+            return created_relation
 
     def assign_objects(self, related_objects, user, replace_existing_version=False):
         """
