@@ -732,15 +732,15 @@ class AddToComponentFormMixin(forms.Form):
                 href = f"{component_add_url}?package_ids={package.id}"
 
             return HTML(
+                f"<hr>"
                 f'<div class="text-center">'
                 f'  <a href="{href}" '
                 f'     id="new-component-link" '
-                f'     class="btn btn-success" '
+                f'     class="btn btn-outline-success" '
                 f'     data-add-url="{component_add_url}">'
                 f"    Add Component from Package data"
                 f"  </a>"
                 f"</div>"
-                f"<hr>"
             )
 
     def clean_component(self):
@@ -762,9 +762,9 @@ class AddToComponentFormMixin(forms.Form):
         helper.layout = Layout(
             Fieldset(
                 None,
-                self.new_component_from_package_link(),
                 "object_id",
                 "component",
+                self.new_component_from_package_link(),
             ),
         )
         return helper
