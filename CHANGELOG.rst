@@ -78,6 +78,10 @@ Release notes
 - Enhance Package Import to support modifications.
   https://github.com/nexB/dejacode/issues/84
 
+- Add an option on the "Add to Product" form to to replace any existing relationships
+  with a different version of the same object by the selected object.
+  https://github.com/nexB/dejacode/issues/12
+
 ### Version 5.0.1
 
 - Improve the stability of the "Check for new Package versions" feature.

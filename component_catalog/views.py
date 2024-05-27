@@ -217,12 +217,17 @@ class AddToProductMultipleMixin(BaseFormView):
         return kwargs
 
     def form_valid(self, form):
-        created_count, unchanged_count = form.save()
+        created_count, updated_count, unchanged_count = form.save()
         product = form.cleaned_data["product"]
         opts = self.model._meta
 
+        msg = ""
         if created_count:
-            msg = f'{created_count} {opts.model_name}(s) added to "{product}".'
+            msg = f'{created_count} {opts.model_name}(s) added to "{product}". '
+        if updated_count:
+            msg += f'{updated_count} {opts.model_name}(s) updated on "{product}".'
+
+        if msg:
             messages.success(self.request, msg)
         else:
             msg = f"No new {opts.model_name}(s) were assigned to this product."
@@ -937,12 +942,16 @@ class AddToProductAdminView(LoginRequiredMixin, BaseAdminActionFormView):
         return kwargs
 
     def form_valid(self, form):
-        created_count, unchanged_count = form.save()
+        created_count, updated_count, unchanged_count = form.save()
         model_name = self.model._meta.model_name
         product_name = form.cleaned_data["product"].name
+
         msg = f"{created_count} {model_name}(s) added to {product_name}."
+        if updated_count:
+            msg += f" {updated_count} {model_name}(s) updated on {product_name}."
         if unchanged_count:
             msg += f" {unchanged_count} {model_name}(s) were already assigned."
+
         messages.success(self.request, msg)
         return super().form_valid(form)
 
