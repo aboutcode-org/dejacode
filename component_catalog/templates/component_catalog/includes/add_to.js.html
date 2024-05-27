@@ -28,7 +28,8 @@
     });
 
     $('#add-to-product-modal, #add-to-component-modal').on('show.bs.modal', function (event) {
-      let checked = $('main input[type="checkbox"]:checked');
+      // Do not include the select-all as its value is not an id we want to keep
+      let checked = $('main input[type="checkbox"]:checked').not('#checkbox-select-all');
 
       if (checked.length < 1) {
         event.preventDefault();
