@@ -1,0 +1,14 @@
+about_resource: django_grappelli-4.0.1-py2.py3-none-any.whl
+name: django-grappelli
+version: 4.0.1
+download_url: https://files.pythonhosted.org/packages/63/30/ca6b76f0583a0d1c957ad049d5669d0fc43d7c62d727ab1e23bad2b9b8f5/django_grappelli-4.0.1-py2.py3-none-any.whl
+package_url: pkg:pypi/django-grappelli@4.0.1
+license_expression: bsd-new
+copyright: Copyright django-grappelli project contributors
+attribute: yes
+checksum_md5: 32cb6084c89dd83356f76944d9cc75f2
+checksum_sha1: 09e4372790dcfc1c2fb7fcbc9c8cb34336302af2
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
