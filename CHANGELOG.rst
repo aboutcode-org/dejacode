@@ -1,6 +1,8 @@
 Release notes
 =============
 
+### Version 5.1.1-dev
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x
