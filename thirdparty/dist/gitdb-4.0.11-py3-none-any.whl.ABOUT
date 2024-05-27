@@ -1,0 +1,7 @@
+about_resource: gitdb-4.0.11-py3-none-any.whl
+name: gitdb
+version: 4.0.11
+download_url: https://files.pythonhosted.org/packages/fd/5b/8f0c4a5bb9fd491c277c21eff7ccae71b47d43c4446c9d0c6cff2fe8c2c4/gitdb-4.0.11-py3-none-any.whl
+package_url: pkg:pypi/gitdb@4.0.11
+checksum_md5: 71b509c059ea22fbd7c9f3e978027de7
+checksum_sha1: cd5e22ef8e579b895cbc25be1703d5273dbe0cfa

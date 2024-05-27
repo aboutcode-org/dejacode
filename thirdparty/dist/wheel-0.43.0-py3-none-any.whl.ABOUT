@@ -1,0 +1,14 @@
+about_resource: wheel-0.43.0-py3-none-any.whl
+name: wheel
+version: 0.43.0
+download_url: https://files.pythonhosted.org/packages/7d/cd/d7460c9a869b16c3dd4e1e403cce337df165368c71d6af229a74699622ce/wheel-0.43.0-py3-none-any.whl
+package_url: pkg:pypi/wheel@0.43.0
+license_expression: mit
+copyright: Copyright wheel project contributors
+attribute: yes
+checksum_md5: e65b1197e1dfc6bbc8df362935f5943d
+checksum_sha1: 71a83a2237cb57ab45bdafed364564e36ca5dc95
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,14 @@
+about_resource: isort-5.13.2-py3-none-any.whl
+name: isort
+version: 5.13.2
+download_url: https://files.pythonhosted.org/packages/d1/b3/8def84f539e7d2289a02f0524b944b15d7c75dab7628bedf1c4f0992029c/isort-5.13.2-py3-none-any.whl
+package_url: pkg:pypi/isort@5.13.2
+license_expression: mit
+copyright: Copyright isort project contributors
+attribute: yes
+checksum_md5: 0793de0d0994e53cb3bcf057433f7dc8
+checksum_sha1: d4a5070449450b41253589017d5088ef52d0726e
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

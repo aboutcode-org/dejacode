@@ -1,0 +1,14 @@
+about_resource: confusable_homoglyphs-3.3.1-py2.py3-none-any.whl
+name: confusable-homoglyphs
+version: 3.3.1
+download_url: https://files.pythonhosted.org/packages/c5/6e/c0fcbb7d341a46cf4241a6aa9e6a737734f0657521fc1bcd074953fe4eea/confusable_homoglyphs-3.3.1-py2.py3-none-any.whl
+package_url: pkg:pypi/confusable-homoglyphs@3.3.1
+license_expression: mit
+copyright: Copyright confusable-homoglyphs project contributors
+attribute: yes
+checksum_md5: d0e360dfe2222f73e8f0e26942b563d6
+checksum_sha1: d05fff96fc783d05480a8fbf96dfd53252e05492
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
