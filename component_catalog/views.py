@@ -945,9 +945,15 @@ class AddToProductAdminView(LoginRequiredMixin, BaseAdminActionFormView):
         created_count, updated_count, unchanged_count = form.save()
         model_name = self.model._meta.model_name
         product_name = form.cleaned_data["product"].name
-        msg = f"{created_count} {model_name}(s) added to {product_name}."
+
+        msg = ""
+        if created_count:
+            msg = f"{created_count} {model_name}(s) added to {product_name}."
+        if updated_count:
+            msg += f" {updated_count} {model_name}(s) updated on {product_name}."
         if unchanged_count:
             msg += f" {unchanged_count} {model_name}(s) were already assigned."
+
         messages.success(self.request, msg)
         return super().form_valid(form)
 
