@@ -61,6 +61,9 @@ DATASPACE_FIELD_HELP_TEXT = _(
     " either nexB master reference data or installation-specific data."
 )
 
+# PackageURL._fields
+PURL_FIELDS = ("type", "namespace", "name", "version", "qualifiers", "subpath")
+
 
 def is_dataspace_related(model_class):
     """
@@ -759,7 +762,12 @@ class DataspacedModel(models.Model):
         updated_fields = []
 
         for field_name, value in data.items():
-            if value in EMPTY_VALUES or field_name not in model_fields:
+            skip_reasons = [
+                value in EMPTY_VALUES,
+                field_name not in model_fields,
+                field_name in PURL_FIELDS,
+            ]
+            if any(skip_reasons):
                 continue
 
             current_value = getattr(self, field_name, None)
@@ -769,7 +777,7 @@ class DataspacedModel(models.Model):
 
         if updated_fields:
             self.last_modified_by = user
-            self.save()
+            self.save(update_fields=updated_fields)
 
         return updated_fields
 
