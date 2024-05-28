@@ -1929,12 +1929,7 @@ class PackageAddView(
 
         if purldb_entry := self.get_entry_from_purldb():
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
-            model_fields = [
-                field.name
-                for field in Package._meta.get_fields()
-                # Generic keywords are not supported because of validation
-                if field.name != "keywords"
-            ]
+            model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
                 field_name: value
                 for field_name, value in purldb_entry.items()
