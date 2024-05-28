@@ -33,8 +33,9 @@
 
     {% if has_scan_all_packages or has_change_permission %}
       <div class="dropdown btn-group">
-        <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="fas fa-barcode"></i>&nbsp;Scan</a>
+        <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="fas fa-toolbox"></i>&nbsp;Actions</a>
         <div class="dropdown-menu dropdown-menu-end">
+          <div class="dropdown-header">Import</div>
           {% if has_change_permission %}
             <a class="dropdown-item" href="{{ object.get_import_from_scan_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import data from Scan' %}</a>
             {% if request.user.dataspace.enable_package_scanning %}
@@ -46,7 +47,12 @@
             {% endif %}
           {% endif %}
           {% if has_scan_all_packages %}
+            <div class="dropdown-header">ScanCode.io</div>
             <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal"><i class="fas fa-barcode"></i> {% trans 'Scan all Packages' %}</a>
+          {% endif %}
+          {% if has_change_permission %}{# TODO: Only if PurlDB is configured! #}
+            <div class="dropdown-header">PurlDB</div>
+            <a class="dropdown-item" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
           {% endif %}
           </div>
       </div>

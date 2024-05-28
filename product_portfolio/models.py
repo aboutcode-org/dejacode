@@ -260,6 +260,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
 
+    def get_improve_packages_from_purldb_url(self):
+        return self.get_url("improve_packages_from_purldb")
+
     def can_be_changed_by(self, user):
         perms = guardian.shortcuts.get_perms(user, self)
         has_change_permission_on_product = "change_product" in perms
@@ -453,6 +456,15 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
+
+    def improve_packages_from_purldb(self, user):
+        """Update all Packages assigned to the Product using PurlDB data."""
+        updated_packages = []
+        for package in self.packages.all():
+            updated_fields = package.update_from_purldb(user)
+            if updated_fields:
+                updated_packages.append(package)
+        return updated_packages
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):
