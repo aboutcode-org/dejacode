@@ -2416,3 +2416,48 @@ class ComponentCatalogModelsTestCase(TestCase):
         package1.save()
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_url)
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb(self, mock_get_purldb_entries):
+        purldb_entry = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/django@3.0",
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "primary_language": "Python",
+            "description": "Description",
+            "release_date": "2019-11-18T00:00:00Z",
+            "parties": [],
+            "keywords": ["Keyword1", "Keyword2"],
+            "download_url": "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz",
+            "sha1": "96ae8d8dd673d4fc92ce2cb2df9cdab6f6fd7d9f",
+            "sha256": "0a1efde1b685a6c30999ba00902f23613cf5db864c5a1532d2edf3eda7896a37",
+            "copyright": "(c) Copyright",
+            "declared_license_expression": "(bsd-simplified AND bsd-new) AND unknown",
+        }
+
+        mock_get_purldb_entries.return_value = [purldb_entry]
+        package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
+        updated_fields = package1.update_from_purldb(self.user)
+        # Note: PURL fields are never updated.
+        expected = [
+            "primary_language",
+            "description",
+            "release_date",
+            "keywords",
+            "download_url",
+            "sha1",
+            "sha256",
+            "copyright",
+            "license_expression",
+        ]
+        self.assertEqual(expected, updated_fields)
+
+        package1.refresh_from_db()
+        # Handle release_date separatly
+        updated_fields.remove("release_date")
+        self.assertEqual(purldb_entry["release_date"], str(package1.release_date))
+
+        for field_name in updated_fields:
+            self.assertEqual(purldb_entry[field_name], getattr(package1, field_name))
