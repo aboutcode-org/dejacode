@@ -1,42 +1,10 @@
-<script>
-  function is_active_tab(id) {
-    var active_tab_id = $('.tab-pane.active')[0].id;
-    return (active_tab_id == id);
-  }
+{% extends "hierarchy_base.js.html" %}
 
-  jsPlumb.ready(function() {
-    var jsPlumbOwnerHierarchy = jsPlumb.getInstance({
-        Connector: ['Straight'],
-        PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
-        EndpointStyle: {radius: 3, fillStyle: 'gray'},
-        Anchors: ['LeftMiddle', 'RightMiddle'],
-        Container: $("#{{ tab_name }}")
-    });
-
-    // Do not draw right away as the tab may be hidden
-    jsPlumbOwnerHierarchy.setSuspendDrawing(true);
-    {% for parent in parents %}
-        jsPlumbOwnerHierarchy.connect({source: 'owner_{{ current_owner.pk }}', target: 'owner_{{ parent.pk }}'});
+{% block herarchy_js_content %}
+  {% for parent in parents %}
+        jsPlumbHierarchy.connect({source: 'owner_{{ current_owner.pk }}', target: 'owner_{{ parent.pk }}'});
     {% endfor %}
     {% for child in children %}
-        jsPlumbOwnerHierarchy.connect({source: 'owner_{{ child.pk }}', target: 'owner_{{ current_owner.pk }}'});
+        jsPlumbHierarchy.connect({source: 'owner_{{ child.pk }}', target: 'owner_{{ current_owner.pk }}'});
     {% endfor %}
-
-    // Draw if the related tab is active
-    if (is_active_tab("{{ tab_name }}"))
-      jsPlumbOwnerHierarchy.setSuspendDrawing(false, true);
-
-    // Repaint on opening the tab, as when the tab content is hidden
-    // the connectors are not painted properly
-    $('button[data-bs-target="#{{ tab_name }}"]').on('shown.bs.tab', function (e) {
-        // Second argument instructs jsPlumb to perform a full repaint.
-        jsPlumbOwnerHierarchy.setSuspendDrawing(false, true);
-    });
-
-    // Repaint on resizing the browser window if the related tab is active
-    $(window).resize(function(){
-        if (is_active_tab("{{ tab_name }}"))
-          jsPlumbOwnerHierarchy.repaintEverything();
-    });
-  });
-</script>
+{% endblock %}

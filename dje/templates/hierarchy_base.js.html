@@ -1,0 +1,56 @@
+<script>
+  function isTabActive(id) {
+    const activeTab = document.querySelector('.tab-pane.active');
+    return activeTab ? activeTab.id === id : false;
+  }
+
+  function addEndpointWithLink(jsPlumbInstance, elementId, position, linkUrl) {
+    const endpointOptions = {
+      paintStyle: {fillStyle: '#2e73d0', radius: 5},
+      anchors: [position]
+    }
+
+    const endpoint = jsPlumbInstance.addEndpoint(elementId, endpointOptions);
+    wrapEndpointInLink(endpoint.canvas, linkUrl);
+    return endpoint;
+  }
+
+  function wrapEndpointInLink(svgElement, linkUrl) {
+    const linkElement = document.createElement('a');
+    linkElement.href = linkUrl;
+    svgElement.parentNode.insertBefore(linkElement, svgElement);
+    linkElement.appendChild(svgElement);
+  }
+
+  function connectNodes(jsPlumbHierarchy, connectionOptions) {
+    jsPlumbHierarchy.connect(connectionOptions);
+  }
+
+  jsPlumb.ready(function() {
+    const jsPlumbHierarchy = jsPlumb.getInstance({
+      Connector: ['Straight'],
+      PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
+      EndpointStyle: {radius: 3, fillStyle: 'gray'},
+      Anchors: ['LeftMiddle', 'RightMiddle'],
+      Container: document.querySelector("#tab_hierarchy")
+    });
+
+    // Do not draw right away as the tab may be hidden
+    jsPlumbHierarchy.setSuspendDrawing(true);
+
+    // Draw if the hierarchy tab is active
+    if (isTabActive("tab_hierarchy")) jsPlumbHierarchy.setSuspendDrawing(false, true);
+
+    document.querySelector('button[data-bs-target="#tab_hierarchy"]').addEventListener('shown.bs.tab', function (e) {
+      // Second argument instructs jsPlumb to perform a full repaint.
+      jsPlumbHierarchy.setSuspendDrawing(false, true);
+    });
+
+    // Repaint on resizing the browser window if the related tab is active
+    window.addEventListener('resize', function(){
+      if (isTabActive("tab_hierarchy")) jsPlumbHierarchy.repaintEverything();
+    });
+
+    {% block herarchy_js_content %}{% endblock %}
+  });
+</script>

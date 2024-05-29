@@ -444,8 +444,8 @@ class ComponentUserViewsTestCase(TestCase):
 
         expected1 = f'<div id="component_{self.component1.id}" class="card bg-body-tertiary mb-2">'
         expected2 = f'<div id="component_{self.component2.id}" class="card bg-body-tertiary mb-2">'
-        expected3 = f"source: 'component_{self.component1.id}'"
-        expected4 = f"target: 'component_{self.component2.id}'"
+        expected3 = f"var source_id = 'component_{self.component1.id}'"
+        expected4 = f"var target_id = 'component_{self.component2.id}'"
 
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -598,7 +598,7 @@ class ComponentUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.component1.get_absolute_url()
         response = self.client.get(url)
-        self.assertNotContains(response, "jsPlumbOwnerHierarchy")
+        self.assertNotContains(response, "jsPlumbHierarchy")
         self.assertNotContains(response, "Selected Owner")
         self.assertNotContains(response, "Child Owners")
 
