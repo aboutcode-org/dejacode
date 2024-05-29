@@ -598,7 +598,7 @@ class ComponentUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.component1.get_absolute_url()
         response = self.client.get(url)
-        self.assertNotContains(response, "jsPlumbHierarchy")
+        self.assertNotContains(response, "jsPlumb")
         self.assertNotContains(response, "Selected Owner")
         self.assertNotContains(response, "Child Owners")
 

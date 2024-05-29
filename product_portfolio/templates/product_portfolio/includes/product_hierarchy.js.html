@@ -15,8 +15,7 @@
       {% endif %}
       connectNodes(jsPlumbHierarchy, connectionOptions);
 
-      {# Hierarchy is only supported on components, not yet on packages.
-      {% if relation.component.children.exists %}
+      {% if relation.children_count > 0 %}
         var linkUrl = '{{ relation.component.get_absolute_url }}#hierarchy';
         addEndpointWithLink(jsPlumbHierarchy, source_id, 'RightMiddle', linkUrl);
       {% endif %}

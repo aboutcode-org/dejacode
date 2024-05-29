@@ -20,7 +20,7 @@
     {% endif %}
     connectNodes(jsPlumbHierarchy, connectionOptions);
 
-    {% if related_parent.parent.related_parents.exists %}
+    {% if related_parent.parent_count > 0 %}
       var linkUrl = '{{ related_parent.parent.get_absolute_url }}#hierarchy';
       addEndpointWithLink(jsPlumbHierarchy, target_id, 'LeftMiddle', linkUrl);
     {% endif %}
@@ -58,7 +58,7 @@
     {% endif %}
     connectNodes(jsPlumbHierarchy, connectionOptions);
 
-    {% if related_child.child.children.exists %}
+    {% if related_child.child_count > 0 %}
       var linkUrl = '{{ related_child.child.get_absolute_url }}#hierarchy';
       addEndpointWithLink(jsPlumbHierarchy, source_id, 'RightMiddle', linkUrl);
     {% endif %}
