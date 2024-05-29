@@ -7,8 +7,29 @@
     return false;
   }
 
+  function addEndpointWithLink(jsPlumbInstance, elementId, position, linkUrl) {
+    const endpointOptions = {
+      paintStyle: {fillStyle: '#2e73d0', radius: 5},
+      anchors: [position]
+    }
+
+    // Add the endpoint to the specified source element
+    const endpoint = jsPlumbInstance.addEndpoint(elementId, endpointOptions);
+
+    // Wrap the endpoint's SVG element in an <a> tag
+    const svgElement = endpoint.canvas; // The canvas is the SVG element for the endpoint
+    const linkElement = document.createElement('a');
+    linkElement.href = linkUrl;
+
+    // Insert the SVG element into the <a> tag and replace the SVG element with the <a> tag in the DOM
+    svgElement.parentNode.insertBefore(linkElement, svgElement);
+    linkElement.appendChild(svgElement);
+
+    return endpoint;
+  }
+
   jsPlumb.ready(function() {
-    var jsPlumbComponentHierarchy = jsPlumb.getInstance({
+    const jsPlumbHierarchy = jsPlumb.getInstance({
       Connector: ['Straight'],
       PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
       EndpointStyle: {radius: 3, fillStyle: 'gray'},
@@ -17,11 +38,15 @@
     });
 
     // Do not draw right away as the tab may be hidden
-    jsPlumbComponentHierarchy.setSuspendDrawing(true);
+    jsPlumbHierarchy.setSuspendDrawing(true);
+
     {% for related_parent in related_parents %}
+      var source_id = 'component_{{ object.pk }}';
+      var target_id = 'component_{{ related_parent.parent.pk }}';
+
       var connection = {
-        source: 'component_{{ object.pk }}',
-        target: 'component_{{ related_parent.parent.pk }}',
+        source: source_id,
+        target: target_id,
         paintStyle: {strokeStyle: 'gray', lineWidth: 2}
       };
       {% if object.dataspace.show_usage_policy_in_user_views and related_parent.usage_policy %}
@@ -32,7 +57,13 @@
       {% if not related_parent.is_deployed %}
         connection['paintStyle']['dashstyle'] = '2 2';
       {% endif %}
-      jsPlumbComponentHierarchy.connect(connection);
+      jsPlumbHierarchy.connect(connection);
+
+      // related_parent.parent.parents.exists
+      {% if related_parent.parent.related_parents.exists %}
+        var linkUrl = '{{ related_parent.parent.get_absolute_url }}#hierarchy';
+        addEndpointWithLink(jsPlumbHierarchy, target_id, 'LeftMiddle', linkUrl);
+      {% endif %}
     {% endfor %}
 
     {% for productcomponent in productcomponents %}
@@ -44,41 +75,48 @@
       {% if not productcomponent.is_deployed %}
         connection['paintStyle']['dashstyle'] = '2 2';
       {% endif %}
-      jsPlumbComponentHierarchy.connect(connection);
+      jsPlumbHierarchy.connect(connection);
     {% endfor %}
 
     {% for related_child in related_children %}
-      var connection = {
-        source: 'component_{{ related_child.child.pk }}',
-        target: 'component_{{ object.pk }}',
+      var source_id = 'component_{{ related_child.child.pk }}';
+      var target_id = 'component_{{ object.pk }}';
+      var connectionOptions = {
+        source: source_id,
+        target: target_id,
         paintStyle: {strokeStyle: 'gray', lineWidth: 2}
       };
       {% if object.dataspace.show_usage_policy_in_user_views and related_child.usage_policy %}
         var fill_color = '{{ related_child.get_usage_policy_color }}';
-        connection['endpointStyle'] =  {fillStyle: fill_color, radius: 4};
-        connection['paintStyle'] =  {strokeStyle: fill_color, lineWidth: 2};
+        connectionOptions['endpointStyle'] =  {fillStyle: fill_color, radius: 4};
+        connectionOptions['paintStyle'] =  {strokeStyle: fill_color, lineWidth: 2};
       {% endif %}
-      {% if not related_parent.is_deployed %}
-        connection['paintStyle']['dashstyle'] = '2 2';
+      {% if not related_child.is_deployed %}
+        connectionOptions['paintStyle']['dashstyle'] = '2 2';
       {% endif %}
-      jsPlumbComponentHierarchy.connect(connection);
+      jsPlumbHierarchy.connect(connectionOptions);
+
+      {% if related_child.child.children.exists %}
+        var linkUrl = '{{ related_child.child.get_absolute_url }}#hierarchy';
+        addEndpointWithLink(jsPlumbHierarchy, source_id, 'RightMiddle', linkUrl);
+      {% endif %}
     {% endfor %}
 
     // Draw if the related tab is active
     if (isTabActive("tab_hierarchy"))
-      jsPlumbComponentHierarchy.setSuspendDrawing(false, true);
+      jsPlumbHierarchy.setSuspendDrawing(false, true);
 
     // Repaint on opening the tab, as when the tab content is hidden
     // the connectors are not painted properly
     $('button[data-bs-target="#tab_hierarchy"]').on('shown.bs.tab', function (e) {
         // Second argument instructs jsPlumb to perform a full repaint.
-        jsPlumbComponentHierarchy.setSuspendDrawing(false, true);
+        jsPlumbHierarchy.setSuspendDrawing(false, true);
     });
 
     // Repaint on resizing the browser window if the related tab is active
     $(window).resize(function(){
         if (isTabActive("tab_hierarchy"))
-          jsPlumbComponentHierarchy.repaintEverything();
+          jsPlumbHierarchy.repaintEverything();
     });
   });
 </script>
