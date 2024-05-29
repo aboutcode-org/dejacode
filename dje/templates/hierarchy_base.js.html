@@ -1,4 +1,6 @@
 <script>
+  const tabId = "{{ tab_name|default:"tab_hierarchy" }}"
+
   function isTabActive(id) {
     const activeTab = document.querySelector('.tab-pane.active');
     return activeTab ? activeTab.id === id : false;
@@ -39,7 +41,7 @@
     jsPlumbHierarchy.setSuspendDrawing(true);
 
     // Draw if the hierarchy tab is active
-    if (isTabActive("tab_hierarchy")) jsPlumbHierarchy.setSuspendDrawing(false, true);
+    if (isTabActive(tabId)) jsPlumbHierarchy.setSuspendDrawing(false, true);
 
     document.querySelector('button[data-bs-target="#tab_hierarchy"]').addEventListener('shown.bs.tab', function (e) {
       // Second argument instructs jsPlumb to perform a full repaint.
@@ -48,7 +50,7 @@
 
     // Repaint on resizing the browser window if the related tab is active
     window.addEventListener('resize', function(){
-      if (isTabActive("tab_hierarchy")) jsPlumbHierarchy.repaintEverything();
+      if (isTabActive(tabId)) jsPlumbHierarchy.repaintEverything();
     });
 
     {% block herarchy_js_content %}{% endblock %}
