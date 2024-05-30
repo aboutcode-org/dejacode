@@ -605,9 +605,7 @@ class ProductTabInventoryView(
         user = self.request.user
         dataspace = user.dataspace
 
-        productcomponents_count = self.object.productcomponents.count()
-        productpackages_count = self.object.productpackages.count()
-        context["inventory_count"] = productcomponents_count + productpackages_count
+        context["inventory_count"] = self.object.productinventoryitem_set.count()
 
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
@@ -627,7 +625,6 @@ class ProductTabInventoryView(
 
         productcomponent_qs = filter_productcomponent.qs.order_by(
             "feature",
-            "component",
             "component__name",
             "component__version",
             "name",

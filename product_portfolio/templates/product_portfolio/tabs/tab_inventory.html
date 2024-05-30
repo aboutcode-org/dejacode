@@ -242,11 +242,24 @@
 
 {% if compliance_errors %}
   <script>
-    $('.toggle-details')
-      .tooltip({container: 'body', placement: 'top'})
-      .on('click', function() {
-          $('.extra-details').toggle();
-      });
+    // Select all elements with the class 'toggle-details'
+    document.querySelectorAll('.toggle-details').forEach(function(toggleDetail) {
+        // Set the title attribute to add a tooltip
+        toggleDetail.setAttribute('title', 'Your Tooltip Text Here');
+
+        // Add event listener for 'click' event
+        toggleDetail.addEventListener('click', function() {
+            // Select all elements with the class 'extra-details'
+            document.querySelectorAll('.extra-details').forEach(function(extraDetail) {
+                // Toggle the display property
+                if (extraDetail.style.display === 'none' || extraDetail.style.display === '') {
+                    extraDetail.style.display = 'table-row';
+                } else {
+                    extraDetail.style.display = 'none';
+                }
+            });
+        });
+    });
 
     const tabInventoryLabel = document.getElementById('tab_inventory-tab');
     if (tabInventoryLabel) {
