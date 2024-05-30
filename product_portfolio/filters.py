@@ -214,6 +214,8 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         label=_("Search"),
         search_fields=[
             "package__filename",
+            "package__type",
+            "package__namespace",
             "package__name",
             "package__version",
             "license_expression",
@@ -241,7 +243,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         return queryset
 
     class Meta:
-        model = ProductComponent
+        model = ProductPackage
         fields = [
             "review_status",
             "purpose",

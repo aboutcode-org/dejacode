@@ -14,6 +14,7 @@ from collections import namedtuple
 from operator import attrgetter
 from urllib.parse import unquote_plus
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -72,6 +73,7 @@ from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
 from dje.utils import get_object_compare_diff
+from dje.utils import group_by_simple
 from dje.utils import is_uuid4
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedDeleteView
@@ -437,139 +439,29 @@ class ProductDetailsView(
         return {"fields": [(None, context, None, template)]}
 
     def tab_inventory(self):
-        productcomponent_qs = self.filter_productcomponent.qs.order_by(
-            "feature", "component", "name", "version"
-        ).group_by("feature")
-        productpackage_qs = self.filter_productpackage.qs.order_by("feature", "package").group_by(
-            "feature"
-        )
-
-        user = self.request.user
-        dataspace = user.dataspace
-
-        scancodeio = ScanCodeIO(user)
-        display_scan_features = all(
-            [
-                scancodeio.is_configured(),
-                dataspace.enable_package_scanning,
-                productpackage_qs,
-            ]
-        )
-
-        if display_scan_features:
-            self.display_scan_features = True
-            injected_feature_grouped = self.inject_scan_data(
-                scancodeio, productpackage_qs, dataspace.uuid
-            )
-            # Do not override the original data if ScanCode.io couldn't be reach
-            if injected_feature_grouped:
-                productpackage_qs = injected_feature_grouped
-
-        inventory_items = defaultdict(list)
-        for relation_qs in [productcomponent_qs, productpackage_qs]:
-            for feature, relation in relation_qs.items():
-                inventory_items[feature].extend(relation)
-
-        display_tab = any(
-            [
-                inventory_items,
-                self.filter_productcomponent.is_active(),
-                self.filter_productpackage.is_active(),
-            ]
-        )
-
-        if not display_tab:
+        productcomponents_count = self.object.productcomponents.count()
+        productpackages_count = self.object.productpackages.count()
+        inventory_count = productcomponents_count + productpackages_count
+        if not inventory_count:
             return
 
-        count = sum((len(items) for items in inventory_items.values()))
-        label = f'Inventory <span class="badge text-bg-primary">{count}</span>'
-        inventory_items = dict(sorted(inventory_items.items()))
+        label = f'Inventory <span class="badge text-bg-primary">{inventory_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_inventory")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
         tab_context = {
-            "inventory_items": inventory_items,
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "inventory",
         }
-
-        if self.show_licenses_policy:
-            compliance_alerts = set(
-                inventory_item.inventory_item_compliance_alert
-                for inventory_group in inventory_items.values()
-                for inventory_item in inventory_group
-            )
-
-            if "error" in compliance_alerts:
-                label = (
-                    f'<i class="fas fa-exclamation-circle text-danger" '
-                    f'   data-bs-toggle="tooltip" '
-                    f'   title="Compliance errors"></i> {label}'
-                )
-
-        vulnerablecode = VulnerableCode(user)
-        enable_vulnerabilities = all(
-            [
-                user.dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if enable_vulnerabilities:
-            # Re-use the inventory mapping to prevent duplicated queries
-            packages = [
-                inventory_item.package
-                for inventory_group in inventory_items.values()
-                for inventory_item in inventory_group
-                if isinstance(inventory_item, ProductPackage)
-            ]
-
-            tab_context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         return {
             "label": format_html(label),
-            "fields": [
-                (None, tab_context, None, "product_portfolio/tabs/tab_inventory.html"),
-            ],
+            "fields": [(None, tab_context, None, template)],
         }
-
-    @staticmethod
-    def inject_scan_data(scancodeio, feature_grouped, dataspace_uuid):
-        download_urls = [
-            product_package.package.download_url
-            for product_packages in feature_grouped.values()
-            for product_package in product_packages
-        ]
-
-        # WARNING: Do not trigger a Request for an empty list of download_urls
-        if not download_urls:
-            return
-
-        scoped_url_uids = [
-            f"{get_hash_uid(url)}.{get_hash_uid(dataspace_uuid)}" for url in download_urls
-        ]
-
-        scans = []
-        max_results_per_page = 50
-        for names in chunked(scoped_url_uids, chunk_size=max_results_per_page):
-            scan_list_data = scancodeio.fetch_scan_list(names=",".join(names))
-            if scan_list_data:
-                scans.extend(scan_list_data.get("results", []))
-
-        if not scans:
-            return
-
-        scans_by_uri = {get_package_download_url(scan): scan for scan in scans}
-
-        injected_feature_grouped = {}
-        for feature_label, productpackages in feature_grouped.items():
-            injected_productpackages = []
-            for productpackage in productpackages:
-                scan = scans_by_uri.get(productpackage.package.download_url)
-                if scan:
-                    scan["download_result_url"] = get_scan_results_as_file_url(scan)
-                    productpackage.scan = scan
-                injected_productpackages.append(productpackage)
-
-            if injected_productpackages:
-                injected_feature_grouped[feature_label] = injected_productpackages
-
-        return injected_feature_grouped
 
     def tab_codebase(self):
         codebaseresources_count = self.object.codebaseresources.count()
@@ -627,12 +519,6 @@ class ProductDetailsView(
 
         context = super().get_context_data(**kwargs)
 
-        context["has_change_productcomponent_permission"] = user.has_perm(
-            "product_portfolio.change_productcomponent"
-        )
-        context["has_change_productpackage_permission"] = user.has_perm(
-            "product_portfolio.change_productpackage"
-        )
         context["has_change_codebaseresource_permission"] = user.has_perm(
             "product_portfolio.change_codebaseresource"
         )
@@ -648,7 +534,7 @@ class ProductDetailsView(
 
         context["has_edit_productpackage"] = all(
             [
-                context["has_change_productpackage_permission"],
+                user.has_perm("product_portfolio.change_productpackage"),
                 context["has_change_permission"],
             ]
         )
@@ -664,7 +550,7 @@ class ProductDetailsView(
         )
         context["has_edit_productcomponent"] = all(
             [
-                context["has_change_productcomponent_permission"],
+                user.has_perm("product_portfolio.change_productcomponent"),
                 context["has_change_permission"],
             ]
         )
@@ -689,6 +575,7 @@ class ProductDetailsView(
 
         if include_scancodeio_features:
             context["pull_project_data_form"] = PullProjectDataForm()
+            context["display_scan_features"] = True
 
         context["purldb_enabled"] = all(
             [
@@ -698,9 +585,208 @@ class ProductDetailsView(
             ]
         )
 
-        context["display_scan_features"] = getattr(self, "display_scan_features", False)
+        return context
+
+
+class ProductTabInventoryView(
+    LoginRequiredMixin,
+    BaseProductView,
+    PreviousNextPaginationMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_inventory.html"
+    paginate_by = settings.TAB_PAGINATE_BY
+    query_dict_page_param = "inventory-page"
+    tab_id = "inventory"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        dataspace = user.dataspace
+
+        context["inventory_count"] = self.object.productinventoryitem_set.count()
+
+        filter_productpackage = ProductPackageFilterSet(
+            self.request.GET,
+            queryset=self.object.productpackages,
+            dataspace=self.object.dataspace,
+            prefix="inventory",
+            anchor="#inventory",
+        )
+
+        filter_productcomponent = ProductComponentFilterSet(
+            self.request.GET,
+            queryset=self.object.productcomponents,
+            dataspace=self.object.dataspace,
+            prefix="inventory",
+            anchor="#inventory",
+        )
+
+        productcomponent_qs = filter_productcomponent.qs.order_by(
+            "feature",
+            "component__name",
+            "component__version",
+            "name",
+            "version",
+        )
+
+        productpackage_qs = filter_productpackage.qs.order_by(
+            "feature",
+            "package__type",
+            "package__namespace",
+            "package__name",
+            "package__version",
+            "package__filename",
+        )
+
+        # 1. Combine components and packages into a single list of object
+        filtered_inventory_items = list(productcomponent_qs) + list(productpackage_qs)
+
+        display_tab = any(
+            [
+                filtered_inventory_items,
+                filter_productcomponent.is_active(),
+                filter_productpackage.is_active(),
+            ]
+        )
+        if not display_tab:
+            return
+
+        # 2. Paginate the inventory list
+        paginator = Paginator(filtered_inventory_items, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        # 3. Group objects by features
+        object_list = page_obj.object_list
+        objects_by_feature = defaultdict(list)
+        for feature, items in group_by_simple(object_list, "feature").items():
+            objects_by_feature[feature].extend(items)
+
+        # Sort the dictionary by features, so "no-features" items are first
+        objects_by_feature = dict(sorted(objects_by_feature.items()))
+
+        # 4. Inject the Scan data when activated
+        scancodeio = ScanCodeIO(user)
+        display_scan_features = all(
+            [
+                scancodeio.is_configured(),
+                dataspace.enable_package_scanning,
+                productpackage_qs,
+            ]
+        )
+        if display_scan_features:
+            context["display_scan_features"] = True
+            self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
+
+        # 5. Display the compliance alert based on license policies
+        if self.show_licenses_policy:
+            context["show_licenses_policy"] = True
+            compliance_alerts = set(
+                alert
+                for inventory_item in filtered_inventory_items
+                for alert in inventory_item.compliance_alerts
+            )
+            if "error" in compliance_alerts:
+                context["compliance_errors"] = True
+
+        # 6. Add vulnerability data
+        vulnerablecode = VulnerableCode(user)
+        enable_vulnerabilities = all(
+            [
+                user.dataspace.enable_vulnerablecodedb_access,
+                vulnerablecode.is_configured(),
+            ]
+        )
+        if enable_vulnerabilities:
+            # Re-use the inventory mapping to prevent duplicated queries
+            packages = [
+                inventory_item.package
+                for inventory_item in object_list
+                if isinstance(inventory_item, ProductPackage)
+            ]
+
+            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
+
+        context.update(
+            {
+                "filter_productcomponent": filter_productcomponent,
+                "inventory_items": dict(objects_by_feature.items()),
+                "page_obj": page_obj,
+                "search_query": self.request.GET.get("inventory-q", ""),
+            }
+        )
+
+        perms = guardian_get_perms(user, self.object)
+        has_product_change_permission = "change_product" in perms
+        context["has_edit_productcomponent"] = all(
+            [
+                has_product_change_permission,
+                user.has_perm("product_portfolio.change_productcomponent"),
+            ]
+        )
+        context["has_edit_productpackage"] = all(
+            [
+                has_product_change_permission,
+                user.has_perm("product_portfolio.change_productpackage"),
+            ]
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
 
         return context
+
+    @staticmethod
+    def inject_scan_data(scancodeio, feature_grouped, dataspace_uuid):
+        download_urls = [
+            product_package.package.download_url
+            for product_packages in feature_grouped.values()
+            for product_package in product_packages
+            if isinstance(product_package, ProductPackage)
+        ]
+
+        # WARNING: Do not trigger a Request for an empty list of download_urls
+        if not download_urls:
+            return
+
+        scoped_url_uids = [
+            f"{get_hash_uid(url)}.{get_hash_uid(dataspace_uuid)}" for url in download_urls
+        ]
+
+        scans = []
+        max_results_per_page = 50
+        for names in chunked(scoped_url_uids, chunk_size=max_results_per_page):
+            scan_list_data = scancodeio.fetch_scan_list(names=",".join(names))
+            if scan_list_data:
+                scans.extend(scan_list_data.get("results", []))
+
+        if not scans:
+            return
+
+        scans_by_uri = {get_package_download_url(scan): scan for scan in scans}
+
+        injected_feature_grouped = {}
+        for feature_label, productpackages in feature_grouped.items():
+            injected_productpackages = []
+            for productpackage in productpackages:
+                scan = scans_by_uri.get(productpackage.package.download_url)
+                if scan:
+                    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                    productpackage.scan = scan
+                injected_productpackages.append(productpackage)
+
+            if injected_productpackages:
+                injected_feature_grouped[feature_label] = injected_productpackages
+
+        return injected_feature_grouped
 
 
 class ProductTabCodebaseView(
@@ -712,6 +798,7 @@ class ProductTabCodebaseView(
     template_name = "product_portfolio/tabs/tab_codebase.html"
     paginate_by = 25
     query_dict_page_param = "codebase-page"
+    tab_id = "codebase"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
@@ -763,7 +850,6 @@ class ProductTabCodebaseView(
             {
                 "filter_codebaseresource": filter_codebaseresource,
                 "codebase_resources": codebase_resources,
-                "paginator": paginator,
                 "page_obj": page_obj,
                 "search_query": self.request.GET.get("codebase-q", ""),
                 "has_product_component": has_any_values("product_component"),
@@ -776,8 +862,8 @@ class ProductTabCodebaseView(
             previous_url, next_url = self.get_previous_next(page_obj)
             context_data.update(
                 {
-                    "previous_url": (previous_url or "") + "#codebase",
-                    "next_url": (next_url or "") + "#codebase",
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
                 }
             )
 
