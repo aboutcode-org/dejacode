@@ -76,7 +76,7 @@ if (typeof(grp) !== 'undefined') {
         }
     }
 
-    NEXB.setup_awesomplete_builder = function(element, related_field, max_items, license_data) {
+    setup_awesomplete_builder = function(element, related_field, max_items, license_data) {
         if (!element) return false;
         console.log('Setup license expression builder for #' + element.id);
 
@@ -144,7 +144,7 @@ if (typeof(grp) !== 'undefined') {
     function add_expression_builder(license_expression_field) {
         let fieldset = $(license_expression_field).parents('fieldset');
         let related_component_field = fieldset.find("input[name$='component'], input[name$='child'], input[name$='package']");
-        NEXB.setup_awesomplete_builder(license_expression_field, related_component_field);
+        setup_awesomplete_builder(license_expression_field, related_component_field);
     }
 
     function add_expression_builder_in_inlines_on_add_another(form) {

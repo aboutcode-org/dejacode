@@ -499,7 +499,7 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         # The following are displayed or not depending if the user is looking
         # at Reference Data from a non-reference dataspace:
         # * Dataspace field in Essential tab
-        expected0 = '<pre class="pre-bg-light mb-1 field-dataspace">{}</pre>'.format(
+        expected0 = '<pre class="pre-bg-body-tertiary mb-1 field-dataspace">{}</pre>'.format(
             self.license1.dataspace
         )
         # * Activity tab
@@ -598,16 +598,18 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         response = self.client.get(url)
-        self.assertContains(response, "jsPlumbOwnerHierarchy")
+        self.assertContains(response, "jsPlumbHierarchy")
         self.assertContains(response, "Selected Owner")
         self.assertContains(response, "Child Owners")
         self.assertContains(response, child_owner.name)
 
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(self.owner1.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id),
         )
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(child_owner.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id),
         )
         self.assertContains(
             response, f"{{source: 'owner_{child_owner.id}', target: 'owner_{self.owner1.id}'}}"

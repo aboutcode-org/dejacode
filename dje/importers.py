@@ -154,7 +154,7 @@ class BaseImportModelForm(ModelFormWithWarnings):
             identifier_fields = model_class.get_identifier_fields()
             # Crafting the list of unique filters to match the instance
             for field_name in identifier_fields:
-                value = data.get(prefix + field_name, None)
+                value = data.get(prefix + field_name, "")
                 if value:
                     value = value.strip()
                 filters.update({field_name: value})
@@ -203,9 +203,9 @@ class BaseImportModelForm(ModelFormWithWarnings):
                 continue
 
             choices = [str(getattr(choice, identifier_field, "")) for choice in form_field.queryset]
-            form_field.error_messages[
-                "invalid_choice"
-            ] = 'That choice is not one of the available choices: "{}"'.format(", ".join(choices))
+            form_field.error_messages["invalid_choice"] = (
+                'That choice is not one of the available choices: "{}"'.format(", ".join(choices))
+            )
 
         for field_name, field in self.fields.items():
             # Using `type()` comparison in place if `isinstance` since we do not want
@@ -288,6 +288,10 @@ class BaseImportModelFormSet(BaseModelFormSet):
             raise forms.ValidationError("One of the row is a duplicate.")
 
 
+class ImportableUploadFileForm(forms.Form):
+    file = SmartFileField(extensions=["csv"])
+
+
 class BaseImporter:
     """
     Import in 3 steps:
@@ -309,7 +313,9 @@ class BaseImporter:
 
     model_form = None
     formset_class = BaseImportModelFormSet
+    upload_form_class = ImportableUploadFileForm
     add_to_product = False
+    update_existing = False
 
     def __init__(self, user, file_location=None, formset_data=None):
         if not self.model_form and not isinstance(self.model_form, BaseImportModelForm):
@@ -564,7 +570,7 @@ class BaseImporter:
         """
         model_form_instance = self.model_form(dataspace=self.dataspace, user=self.user)
 
-        for _, field in model_form_instance.fields.items():
+        for field in model_form_instance.fields.values():
             field.supported_values = self.get_supported_values(field)
 
         return sorted(model_form_instance.fields.items())
@@ -582,14 +588,31 @@ class BaseImporter:
         if not self.formset.is_valid():  # Just in case...
             return
 
-        self.results = {"added": [], "unmodified": []}
+        self.results = {"added": [], "modified": [], "unmodified": []}
         for form in self.formset:
-            if not form.instance.pk:  # Save only addition for now
-                saved_instance = form.save()
-                self.results["added"].append(saved_instance)
-                History.log_addition(self.user, saved_instance)
-            else:
-                self.results["unmodified"].append(form.instance)
+            self.save_form(form)
+
+    def save_form(self, form):
+        instance = form.instance
+
+        if not instance.pk:
+            saved_instance = form.save()
+            self.results["added"].append(saved_instance)
+            History.log_addition(self.user, saved_instance)
+            return
+
+        elif self.update_existing:
+            # We need to refresh the instance from the db because form.instance has
+            # the unsaved form.cleaned_data modification at that stage.
+            instance.refresh_from_db()
+            updated_fields = instance.update_from_data(self.user, form.cleaned_data, override=False)
+            if updated_fields:
+                self.results["modified"].append(instance)
+                msg = f'Updated {", ".join(updated_fields)} from import'
+                History.log_change(self.user, instance, message=msg)
+                return
+
+        self.results["unmodified"].append(instance)
 
     def get_added_instance_ids(self):
         """Return the list of added instance ids."""
@@ -625,25 +648,11 @@ class BaseImporter:
             return form
 
 
-class ImportableUploadFileForm(forms.Form):
-    file = SmartFileField(extensions=["csv"])
-
-
-class PackageImportableUploadFileForm(forms.Form):
-    file = SmartFileField(extensions=["csv", "json"])
-
-    @property
-    def header(self):
-        return "Select a <strong>CSV (.csv) or JSON (.json)</strong> file"
-
-
 @login_required()
 def import_view(request, importer_class):
     user = request.user
     importer = importer_class(user)
-    upload_form_class = ImportableUploadFileForm
-    if importer_class.__name__ == "PackageImporter":
-        upload_form_class = PackageImportableUploadFileForm
+    upload_form_class = importer.upload_form_class
 
     opts = importer.model_form._meta.model._meta
     perm_codename = get_permission_codename("add", opts)

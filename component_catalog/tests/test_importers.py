@@ -12,7 +12,6 @@ from os.path import dirname
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import NON_FIELD_ERRORS
-from django.forms import widgets
 from django.test import TestCase
 from django.urls import reverse
 
@@ -24,7 +23,6 @@ from component_catalog.importers import PackageImporter
 from component_catalog.importers import SubcomponentImporter
 from component_catalog.models import AcceptableLinkage
 from component_catalog.models import Component
-from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Subcomponent
@@ -639,49 +637,21 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         formset_data["form-0-keywords"] = {"key": "value"}
         importer = ComponentImporter(self.super_user, formset_data=formset_data)
         self.assertFalse(importer.formset.is_valid())
-        expected = [{"keywords": ["Enter a list of values."]}]
+        expected = [{"keywords": ['Value must be valid JSON list: ["item1", "item2"].']}]
         self.assertEqual(expected, importer.formset.errors)
 
         formset_data["form-0-keywords"] = "keyword1"
         importer = ComponentImporter(self.super_user, formset_data=formset_data)
-        self.assertFalse(importer.formset.is_valid())
-        expected = [
-            {"keywords": ["Select a valid choice. keyword1 is not one of the available choices."]}
-        ]
-        self.assertEqual(expected, importer.formset.errors)
-
-        formset_data["form-0-keywords"] = "keyword1,keyword2"
-        importer = ComponentImporter(self.super_user, formset_data=formset_data)
-        self.assertFalse(importer.formset.is_valid())
-        expected = [
-            {"keywords": ["Select a valid choice. keyword1 is not one of the available choices."]}
-        ]
-        self.assertEqual(expected, importer.formset.errors)
-
-        k1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
-        k2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
-
-        formset_data["form-0-keywords"] = f"{k1.label}"
-        importer = ComponentImporter(self.super_user, formset_data=formset_data)
         self.assertTrue(importer.formset.is_valid())
 
-        formset_data["form-0-keywords"] = f" , {k1.label},  ,"
-        importer = ComponentImporter(self.super_user, formset_data=formset_data)
-        self.assertTrue(importer.formset.is_valid())
-
-        formset_data["form-0-keywords"] = f"{k1.label}, {k2.label}"
+        formset_data["form-0-keywords"] = ", keyword1,keyword2  ,"
         importer = ComponentImporter(self.super_user, formset_data=formset_data)
         self.assertTrue(importer.formset.is_valid())
 
         importer.save_all()
         self.assertEqual(1, len(importer.results["added"]))
         added_component = importer.results["added"][0]
-        self.assertEqual(["Keyword1", "Keyword2"], added_component.keywords)
-
-        # Making sure the TextInput widget is used in place of the default Select
-        # as loading multiple initial values is problematic on the Select
-        keywords_field = importer.formset.forms[0].fields["keywords"]
-        self.assertIsInstance(keywords_field.widget, widgets.TextInput)
+        self.assertEqual(["keyword1", "keyword2"], added_component.keywords)
 
     def test_component_import_license_expression(self):
         formset_data = {
@@ -895,7 +865,10 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1, html=True, count=4)
 
         expected_template = """
-        <select name="form-0-{0}" id="id_form-0-{0}">
+        <select name="form-0-{field_name}"
+                aria-describedby="id_form-0-{field_name}_helptext"
+                id="id_form-0-{field_name}"
+        >
           <option value="unknown">Unknown</option>
           <option value="true">Yes</option>
           <option value="false" selected>No</option>
@@ -909,7 +882,8 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
             "indemnification",
         ]
         for field_name in fields:
-            self.assertContains(response, expected_template.format(field_name), html=True)
+            expected = expected_template.format(field_name=field_name)
+            self.assertContains(response, expected, html=True)
 
         # Results
         formset_data = {
@@ -926,10 +900,10 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.client.post(url, formset_data)
         component = Component.objects.latest("id")
         self.assertEqual(formset_data["form-0-name"], component.name)
-        self.assertTrue(component.sublicense_allowed is False)
-        self.assertTrue(component.express_patent_grant is False)
-        self.assertTrue(component.covenant_not_to_assert is False)
-        self.assertTrue(component.indemnification is False)
+        self.assertFalse(component.sublicense_allowed)
+        self.assertFalse(component.express_patent_grant)
+        self.assertFalse(component.covenant_not_to_assert)
+        self.assertFalse(component.indemnification)
 
     def test_component_import_acceptable_linkages(self):
         formset_data = {
@@ -1167,49 +1141,29 @@ class PackageImporterTestCase(TestCase):
         formset_data["form-0-keywords"] = {"key": "value"}
         importer = PackageImporter(self.super_user, formset_data=formset_data)
         self.assertFalse(importer.formset.is_valid())
-        expected = [{"keywords": ["Enter a list of values."]}]
+        expected = [{"keywords": ['Value must be valid JSON list: ["item1", "item2"].']}]
         self.assertEqual(expected, importer.formset.errors)
 
         formset_data["form-0-keywords"] = "keyword1"
         importer = PackageImporter(self.super_user, formset_data=formset_data)
-        self.assertFalse(importer.formset.is_valid())
-        expected = [
-            {"keywords": ["Select a valid choice. keyword1 is not one of the available choices."]}
-        ]
-        self.assertEqual(expected, importer.formset.errors)
+        self.assertTrue(importer.formset.is_valid())
 
         formset_data["form-0-keywords"] = "keyword1,keyword2"
         importer = PackageImporter(self.super_user, formset_data=formset_data)
-        self.assertFalse(importer.formset.is_valid())
-        expected = [
-            {"keywords": ["Select a valid choice. keyword1 is not one of the available choices."]}
-        ]
-        self.assertEqual(expected, importer.formset.errors)
+        self.assertTrue(importer.formset.is_valid())
 
-        k1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
-        k2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
-
-        formset_data["form-0-keywords"] = f"{k1.label}"
+        formset_data["form-0-keywords"] = " , keyword1,  ,"
         importer = PackageImporter(self.super_user, formset_data=formset_data)
         self.assertTrue(importer.formset.is_valid())
 
-        formset_data["form-0-keywords"] = f" , {k1.label},  ,"
-        importer = PackageImporter(self.super_user, formset_data=formset_data)
-        self.assertTrue(importer.formset.is_valid())
-
-        formset_data["form-0-keywords"] = f"{k1.label}, {k2.label}"
+        formset_data["form-0-keywords"] = "keyword1, keyword2"
         importer = PackageImporter(self.super_user, formset_data=formset_data)
         self.assertTrue(importer.formset.is_valid())
 
         importer.save_all()
         self.assertEqual(1, len(importer.results["added"]))
         added_package = importer.results["added"][0]
-        self.assertEqual(["Keyword1", "Keyword2"], added_package.keywords)
-
-        # Making sure the TextInput widget is used in place of the default Select
-        # as loading multiple initial values is problematic on the Select
-        keywords_field = importer.formset.forms[0].fields["keywords"]
-        self.assertIsInstance(keywords_field.widget, widgets.TextInput)
+        self.assertEqual(["keyword1", "keyword2"], added_package.keywords)
 
     def test_package_import_scancode_json_input_issues(self):
         file = os.path.join(TESTFILES_LOCATION, "package_empty.json")
@@ -1253,6 +1207,7 @@ class PackageImporterTestCase(TestCase):
     def test_package_import_scancode_json_proper_no_summary(self):
         file = os.path.join(TESTFILES_LOCATION, "package_from_scancode_no_summary.json")
         importer = PackageImporter(self.super_user, file)
+        self.assertTrue(importer.is_valid())
         self.assertEqual([], importer.fatal_errors)
         self.assertTrue(importer.is_from_scancode)
         importer.save_all()
@@ -1362,6 +1317,40 @@ class PackageImporterTestCase(TestCase):
         del package_data["files"]
         prepared_package = PackageImporter.prepare_package(package_data)
         self.assertEqual(expected, prepared_package)
+
+    def test_package_import_update_existing(self):
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+        }
+
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["added"]))
+
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["unmodified"]))
+
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+            "form-0-notes": "Notes",
+        }
+        importer = PackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual(1, len(importer.results["modified"]))
+        modified_package = importer.results["modified"][0]
+        self.assertEqual("Notes", modified_package.notes)
+
+        history_entry = History.objects.get_for_object(modified_package).get()
+        expected_messages = "Updated notes from import"
+        self.assertEqual(expected_messages, history_entry.change_message)
 
     def test_package_import_add_to_product(self):
         admin_user = create_admin("admin_user", self.dataspace)

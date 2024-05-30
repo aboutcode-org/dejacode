@@ -26,6 +26,7 @@ from license_expression import Licensing
 
 from component_catalog.importers import ComponentImporter
 from component_catalog.importers import PackageImporter
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedLicense
 from component_catalog.models import ComponentAssignedPackage
@@ -369,6 +370,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         for model_class, expected in inputs:
             self.assertEqual(expected, model_class.get_identifier_fields())
 
+        self.assertEqual(PACKAGE_URL_FIELDS, Package.get_identifier_fields(purl_fields_only=True))
+
     def test_component_model_get_absolute_url(self):
         c = Component(name="c1", version="1.0", dataspace=self.dataspace)
         self.assertEqual("/components/nexB/c1/1.0/", c.get_absolute_url())
@@ -601,7 +604,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         # Deleting c1 should delete the c1 object and the Subcomponent, but c2
         # is not impacted
         self.c1.delete()
-        self.assertFalse(Subcomponent.objects.filter(parent=self.c1, child=self.c2))
+        self.assertFalse(Subcomponent.objects.filter(parent__id=self.c1.id, child=self.c2))
         self.assertFalse(Component.objects.filter(id=self.c1.id))
         self.assertTrue(Component.objects.filter(id=self.c2.id))
 
@@ -1670,11 +1673,11 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         self.assertEqual(
-            "/packages/nexB/pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/",
+            "/packages/nexB/pkg:pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/",
             package.get_absolute_url(),
         )
         self.assertEqual(
-            "/packages/nexB/pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/change/",
+            "/packages/nexB/pkg:pypi/django@1.0/dd0afd00-89bd-46d6-b1f0-57b553c44d32/change/",
             package.get_change_url(),
         )
 
@@ -1706,15 +1709,12 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        # 1. Short Package URL
-        expected = "deb/debian/curl@7.50.3-1"
-        self.assertEqual(expected, str(package))
-
-        # 2. Full Package URL
+        # 1. Full Package URL
         expected = "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations"
+        self.assertEqual(expected, str(package))
         self.assertEqual(expected, str(package.package_url))
 
-        # 3. Filename
+        # 2. Filename
         package.type = ""
         package.save()
         self.assertFalse(package.package_url)
@@ -1742,10 +1742,13 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations"
         self.assertEqual(expected, package.package_url)
 
+        expected = "pkg:deb/debian/curl@7.50.3-1"
+        self.assertEqual(expected, package.plain_package_url)
+
         expected = "deb/debian/curl@7.50.3-1"
         self.assertEqual(expected, package.short_package_url)
 
-        expected = "deb_debian_curl_7.50.3-1"
+        expected = "pkg_deb_debian_curl_7.50.3-1"
         self.assertEqual(expected, package.package_url_filename)
 
     def test_package_model_set_package_url(self):
@@ -1824,7 +1827,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, package_purl_only.as_about())
         expected = "about_resource: .\nname: name\npackage_url: pkg:type/name\n"
         self.assertEqual(expected, package_purl_only.as_about_yaml())
-        self.assertEqual("type_name.ABOUT", package_purl_only.about_file_name)
+        self.assertEqual("pkg_type_name.ABOUT", package_purl_only.about_file_name)
 
         package = Package.objects.create(
             filename="package.zip",
@@ -1924,8 +1927,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             version="1.0 beta",
             dataspace=self.dataspace,
         )
-        self.assertEqual("deb_name_1.020beta.ABOUT", p2.about_file_name)
-        self.assertEqual("deb_name_1.020beta.NOTICE", p2.notice_file_name)
+        self.assertEqual("pkg_deb_name_1.020beta.ABOUT", p2.about_file_name)
+        self.assertEqual("pkg_deb_name_1.020beta.NOTICE", p2.notice_file_name)
 
     def test_package_model_get_about_files(self):
         # Using a CRLF (windows) line endings to ensure it's converted to LF (unix) in the output
@@ -2126,8 +2129,11 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.homepage_url = "https://homepage.url"
         self.component1.notice_text = "Notice"
         cyclonedx_data = self.component1.as_cyclonedx()
-        expected_repr = "<Component group=None, name=a, version=1.0, type=library>"
-        self.assertEqual(expected_repr, repr(cyclonedx_data))
+        self.assertEqual("library", cyclonedx_data.type)
+        self.assertEqual(self.component1.name, cyclonedx_data.name)
+        self.assertEqual(self.component1.version, cyclonedx_data.version)
+        self.assertEqual(str(self.component1.uuid), str(cyclonedx_data.bom_ref))
+
         expected = {
             "aboutcode:homepage_url": "https://homepage.url",
             "aboutcode:notice_text": "Notice",
@@ -2150,8 +2156,14 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         cyclonedx_data = package.as_cyclonedx()
-        expected_repr = "<Component group=None, name=curl, version=7.50.3-1, type=library>"
-        self.assertEqual(expected_repr, repr(cyclonedx_data))
+
+        self.assertEqual("library", cyclonedx_data.type)
+        self.assertEqual(package.name, cyclonedx_data.name)
+        self.assertEqual(package.version, cyclonedx_data.version)
+        self.assertEqual("pkg:deb/debian/curl@7.50.3-1", str(cyclonedx_data.bom_ref))
+        package_url = package.get_package_url()
+        self.assertEqual(package_url, cyclonedx_data.purl)
+
         expected = {
             "aboutcode:download_url": "https://download.url",
             "aboutcode:filename": "package.zip",
@@ -2213,7 +2225,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         with self.assertRaisesMessage(DataCollectionException, expected_message):
             collect_package_data("ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2")
 
-        package_url = "http://domain.com/a.zip;<params>?<query>#<fragment>"
+        download_url = "http://domain.com/a%20b.zip;<params>?<query>#<fragment>"
 
         default_max_length = download.CONTENT_MAX_LENGTH
         download.CONTENT_MAX_LENGTH = 0
@@ -2223,15 +2235,18 @@ class ComponentCatalogModelsTestCase(TestCase):
             content=b"\x00", headers={"content-length": 300000000}, status_code=200
         )
         with self.assertRaisesMessage(DataCollectionException, expected_message):
-            collect_package_data(package_url)
+            collect_package_data(download_url)
 
         download.CONTENT_MAX_LENGTH = default_max_length
         mock_get.return_value = mock.Mock(
-            content=b"\x00", headers={"content-length": 1}, status_code=200
+            content=b"\x00",
+            headers={"content-length": 1},
+            status_code=200,
+            url=download_url,
         )
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
-            "filename": "a.zip",
+            "download_url": download_url,
+            "filename": "a b.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
@@ -2241,7 +2256,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                 "4a802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee"
             ),
         }
-        self.assertEqual(expected_data, collect_package_data(package_url))
+        self.assertEqual(expected_data, collect_package_data(download_url))
 
         expected_message = (
             "Exception Value: HTTPConnectionPool"
@@ -2253,7 +2268,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         mock_get.return_value = response
         with self.assertRaisesMessage(DataCollectionException, expected_message):
-            collect_package_data(package_url)
+            collect_package_data(download_url)
 
         headers = {
             "content-length": 1,
@@ -2261,7 +2276,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
         mock_get.return_value = mock.Mock(content=b"\x00", headers=headers, status_code=200)
         expected_data = {
-            "download_url": "http://domain.com/a.zip;<params>?<query>#<fragment>",
+            "download_url": download_url,
             "filename": "another_name.zip",
             "size": 1,
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
@@ -2272,7 +2287,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                 "4a802a71c3580b6370de4ceb293c324a8423342557d4e5c38438f0e36910ee"
             ),
         }
-        self.assertEqual(expected_data, collect_package_data(package_url))
+        self.assertEqual(expected_data, collect_package_data(download_url))
 
     def test_package_create_save_set_usage_policy_from_license(self):
         from policy.models import AssociatedPolicy

@@ -7,13 +7,13 @@
 #
 
 import json
+from hashlib import md5
 from urllib.parse import quote_plus
 
 from django.apps import apps
 from django.conf import settings
 from django.core import signing
 from django.urls import reverse
-from django.utils.crypto import md5
 
 import requests
 from license_expression import Licensing
@@ -66,7 +66,7 @@ class ScanCodeIO(BaseService):
         data = {
             "name": get_project_name(uri, user_uuid, dataspace_uuid),
             "input_urls": uri,
-            "pipeline": "scan_package",
+            "pipeline": "scan_single_package",
             "execute_now": True,
         }
 
@@ -76,10 +76,12 @@ class ScanCodeIO(BaseService):
         logger.debug(f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
         return self.request_post(url=self.project_api_url, json=data)
 
-    def submit_manifest_inspection(self, project_name, file_location, user_uuid, execute_now=False):
+    def submit_project(
+        self, project_name, pipeline_name, file_location, user_uuid, execute_now=False
+    ):
         data = {
             "name": project_name,
-            "pipeline": "inspect_manifest",
+            "pipeline": pipeline_name,
             "execute_now": execute_now,
         }
         files = {
@@ -92,7 +94,7 @@ class ScanCodeIO(BaseService):
         data["webhook_url"] = webhook_url
 
         logger.debug(
-            f"{self.label}: submit manifest inspection "
+            f"{self.label}: submit pipeline={pipeline_name} "
             f'project_name="{project_name}" webhook_url="{webhook_url}"'
         )
         return self.request_post(url=self.project_api_url, data=data, files=files)
@@ -167,6 +169,8 @@ class ScanCodeIO(BaseService):
         Only blank/null fields are updated. Fields with existing values are skipped.
         An entry is logged in the `package` history using the provided `user`.
         """
+        logger.debug(f'{self.label}: Start "update from scan" for package="{package}"')
+
         History = apps.get_model("dje", "History")
         values_from_scan = {}  # {'model_field': 'value_from_scan'}
         updated_fields = []
@@ -216,6 +220,7 @@ class ScanCodeIO(BaseService):
             updated_fields = package.update_from_data(user, values_from_scan)
             if updated_fields:
                 msg = f'Automatically updated {", ".join(updated_fields)} from scan results'
+                logger.debug(f"{self.label}: {msg}")
                 History.log_change(user, package, message=msg)
 
         return updated_fields
@@ -439,4 +444,4 @@ def get_scan_results_as_file_url(project_data):
 def get_package_download_url(project_data):
     input_sources = get_project_input_source(project_data)
     if len(input_sources) == 1:
-        return input_sources[0].get("source", None)
+        return input_sources[0].get("download_url", None)

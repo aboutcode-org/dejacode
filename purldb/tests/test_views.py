@@ -198,26 +198,26 @@ class PurlDBViewsTestCase(TestCase):
         self.nexb_user.dataspace.save()
         self.client.login(username=self.nexb_user.username, password="secret")
 
-        response = self.client.get(list_url + "?sort=-name&type__iexact=pypi")
+        response = self.client.get(list_url + "?sort=-name&type=pypi")
         self.assertContains(response, 'data-bs-target="#purldb-filterset-modal"')
         self.assertContains(response, 'id="purldb-filterset-modal"')
         self.assertContains(
             response, '<option value="-name" selected>Name (descending)</option>', html=True
         )
-        self.assertContains(response, '<input type="text" name="type__iexact"')
+        self.assertContains(response, '<input type="text" name="type"')
         self.assertContains(
             response, '<option value="-name" selected>Name (descending)</option>', html=True
         )
         self.assertContains(
             response,
-            '<span class="badge text-bg-dark rounded-pill">Type: "pypi" '
+            '<span class="badge text-bg-secondary rounded-pill">Type: "pypi" '
             '  <i class="fas fa-times-circle"></i>'
             "</span>",
             html=True,
         )
         self.assertContains(
             response,
-            '<a href="?type__iexact=pypi&sort=version" class="sort" aria-label="Sort">'
+            '<a href="?type=pypi&sort=version" class="sort" aria-label="Sort">'
             '<i class="fas fa-sort"></i>'
             "</a>",
             html=True,

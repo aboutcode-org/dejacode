@@ -5,7 +5,7 @@
   }
 
   jsPlumb.ready(function() {
-    var jsPlumbOwnerHierarchy = jsPlumb.getInstance({
+    var jsPlumbHierarchy = jsPlumb.getInstance({
         Connector: ['Straight'],
         PaintStyle: {strokeStyle: 'gray', lineWidth: 1},
         EndpointStyle: {radius: 3, fillStyle: 'gray'},
@@ -14,29 +14,30 @@
     });
 
     // Do not draw right away as the tab may be hidden
-    jsPlumbOwnerHierarchy.setSuspendDrawing(true);
+    jsPlumbHierarchy.setSuspendDrawing(true);
+
     {% for parent in parents %}
-        jsPlumbOwnerHierarchy.connect({source: 'owner_{{ current_owner.pk }}', target: 'owner_{{ parent.pk }}'});
+        jsPlumbHierarchy.connect({source: 'owner_{{ current_owner.pk }}', target: 'owner_{{ parent.pk }}'});
     {% endfor %}
     {% for child in children %}
-        jsPlumbOwnerHierarchy.connect({source: 'owner_{{ child.pk }}', target: 'owner_{{ current_owner.pk }}'});
+        jsPlumbHierarchy.connect({source: 'owner_{{ child.pk }}', target: 'owner_{{ current_owner.pk }}'});
     {% endfor %}
 
     // Draw if the related tab is active
     if (is_active_tab("{{ tab_name }}"))
-      jsPlumbOwnerHierarchy.setSuspendDrawing(false, true);
+      jsPlumbHierarchy.setSuspendDrawing(false, true);
 
     // Repaint on opening the tab, as when the tab content is hidden
     // the connectors are not painted properly
     $('button[data-bs-target="#{{ tab_name }}"]').on('shown.bs.tab', function (e) {
         // Second argument instructs jsPlumb to perform a full repaint.
-        jsPlumbOwnerHierarchy.setSuspendDrawing(false, true);
+        jsPlumbHierarchy.setSuspendDrawing(false, true);
     });
 
     // Repaint on resizing the browser window if the related tab is active
     $(window).resize(function(){
         if (is_active_tab("{{ tab_name }}"))
-          jsPlumbOwnerHierarchy.repaintEverything();
+          jsPlumbHierarchy.repaintEverything();
     });
   });
 </script>

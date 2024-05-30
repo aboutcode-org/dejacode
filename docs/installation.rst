@@ -33,7 +33,7 @@ Refer to Docker's documentation for the best installation path for your system:
 
    <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
 
-2. Build the Image
+2. Build the image
 ------------------
 
 DejaCode comes with the necessary ``Dockerfile`` and ``docker-compose.yml`` files to
@@ -60,7 +60,7 @@ Create an **environment file**, and **build the Docker image** with::
     cd dejacode && make envfile
     docker compose build
 
-3. Run the App
+3. Run the app
 --------------
 
 To **run the DejaCode images as containers**, use the following command::
@@ -107,23 +107,50 @@ Use these credentials to access the application.
     For example, with Docker configured for 8 CPUs, allocate a minimum of 8 GB of
     memory.
 
+5. Dataspace setup and AboutCode integrations
+---------------------------------------------
+
+Upon the initialization of the DejaCode application, the ``nexB`` reference
+:ref:`dataspace` is created with a **default set of data**, including license and
+organization libraries.
+
+Additionally, **AboutCode integrations are pre-configured** to connect to
+**public instances** of the following AboutCode applications:
+
+- **ScanCode.io**: Facilitates package scanning.
+  Refer to :ref:`dejacode_dataspace_scancodeio`.
+- **PurlDB**: Provides access to a database of scanned packages.
+  Refer to :ref:`dejacode_dataspace_purldb`.
+- **VulnerableCodeDB**: Enables access to a database containing information on package
+  vulnerabilities.
+  Refer to :ref:`dejacode_dataspace_vulnerablecode`.
+
+.. warning::
+    In the scenario of **deploying DejaCode as an enterprise service** within your
+    organization, it is **strongly recommended to review these configurations**.
+    Consideration should be given to **running your own instances** of these
+    applications  to ensure that **sensitive or private data** is not inadvertently
+    submitted to public services. This strategic approach helps to safeguard
+    organizational data and privacy during package scanning and vulnerability
+    assessments.
+
 Hardware requirements
 =====================
 
 The minimum hardware/system requirements for running DejaCode as an enterprise
 server are:
 
-+-----------+----------------------------------------------------------------+
-| Item      | Minimum                                                        |
-+===========+================================================================+
-| Processor | Modern X86 64 bits Intel Quad Core or better, or equivalent    |
-+-----------+----------------------------------------------------------------+
-| Memory    | 64 GB or more (ECC preferred)                                  |
-+-----------+----------------------------------------------------------------+
-| Disk      | 2 * 500GB SDD in RAID mirror setup (enterprise disk preferred) |
-+-----------+----------------------------------------------------------------+
-| OS        | Ubuntu 22.04 LTS 64-bit server clean installation              |
-+-----------+----------------------------------------------------------------+
++-----------+------------------------------------------------------------------+
+| Item      | Minimum                                                          |
++===========+==================================================================+
+| Processor | Modern X86 64 bit Multi Core, with at least **4 physical cores** |
++-----------+------------------------------------------------------------------+
+| Memory    | **64 GB** or more (ECC preferred)                                |
++-----------+------------------------------------------------------------------+
+| Disk      | 2 * 500GB SDD in RAID mirror setup (enterprise disk preferred)   |
++-----------+------------------------------------------------------------------+
+| OS        | **Ubuntu 22.04 LTS 64-bit** server clean installation            |
++-----------+------------------------------------------------------------------+
 
 .. _local_development_installation:
 
@@ -152,7 +179,7 @@ Pre-installation Checklist
 
 Before you install DejaCode, make sure you have the following prerequisites:
 
-#. **Python: versions 3.10** found at https://www.python.org/downloads/
+#. **Python: versions 3.12** found at https://www.python.org/downloads/
 #. **Git**: most recent release available at https://git-scm.com/
 #. **PostgreSQL**: release 16 or later found at https://www.postgresql.org/ or
    https://postgresapp.com/ on macOS

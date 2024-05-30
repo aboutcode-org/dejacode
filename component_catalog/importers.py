@@ -5,6 +5,7 @@
 # See https://github.com/nexB/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
+
 import json
 import os
 from urllib.parse import urlparse
@@ -29,7 +30,8 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
-from dje.forms import JSONListChoiceField
+from dje.fields import SmartFileField
+from dje.forms import JSONListField
 from dje.importers import BaseImporter
 from dje.importers import BaseImportModelForm
 from dje.importers import ComponentRelatedFieldImportMixin
@@ -39,6 +41,12 @@ from organization.models import Owner
 from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+
+keywords_help = (
+    get_help_text(Component, "keywords")
+    + " You can add multiple keywords by separating them with commas, like this: "
+    "keyword1, keyword2."
+)
 
 
 class OwnerChoiceField(ModelChoiceFieldForImport):
@@ -157,8 +165,9 @@ class ComponentImportForm(
         identifier_field="label",
     )
 
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
+        help_text=keywords_help,
     )
 
     acceptable_linkages = ImportMultipleChoiceField(
@@ -172,6 +181,7 @@ class ComponentImportForm(
             "children",
             "packages",
             "completion_level",
+            "request_count",
             # JSONField not supported
             "dependencies",
         )
@@ -237,8 +247,9 @@ class PackageImportForm(
         identifier_field="label",
     )
 
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
+        help_text=keywords_help,
     )
 
     class Meta:
@@ -248,6 +259,7 @@ class PackageImportForm(
             # JSONField not supported
             "dependencies",
             "file_references",
+            "request_count",
             "parties",
         ]
 
@@ -294,10 +306,20 @@ class PackageImportForm(
         return package
 
 
+class PackageImportableUploadFileForm(forms.Form):
+    file = SmartFileField(extensions=["csv", "json"])
+
+    @property
+    def header(self):
+        return "Select a <strong>CSV (.csv) or JSON (.json)</strong> file"
+
+
 class PackageImporter(BaseImporter):
     model_form = PackageImportForm
+    upload_form_class = PackageImportableUploadFileForm
     add_to_product_perm = "product_portfolio.add_productpackage"
     relation_model = ProductPackage
+    update_existing = True
 
     def prepare_data_json(self, data):
         """

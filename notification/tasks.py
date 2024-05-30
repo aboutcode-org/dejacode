@@ -7,38 +7,36 @@
 #
 
 import json
-import logging
 
 import requests
-from celery.task import Task
+from django_rq import job
 from rest_framework.utils import encoders
 
-logger = logging.getLogger("dje")
+from dje.tasks import logger
 
 
-class DeliverHook(Task):
-    max_retries = 2
+@job
+def deliver_hook_task(
+    target, payload, instance_id=None, hook_id=None, extra_headers=None, **kwargs
+):
+    """
+    target: the url to receive the payload.
+    payload: a python primitive data structure
+    instance_id: a possibly None "trigger" instance ID
+    hook_id: the ID of defining Hook object
+    extra_headers: Additional headers such as Authentication ones
+    """
+    session = requests.Session()
 
-    def run(self, target, payload, instance_id=None, hook_id=None, extra_headers=None, **kwargs):
-        """
-        target: the url to receive the payload
-        payload: a python primitive data structure
-        instance_id: a possibly None "trigger" instance ID
-        hook_id: the ID of defining Hook object
-        extra_headers: Additional headers such as Authentication ones
-        """
-        session = requests.Session()
+    session.headers.update({"Content-Type": "application/json"})
+    if extra_headers:
+        session.headers.update(extra_headers)
 
-        session.headers.update({"Content-Type": "application/json"})
-        if extra_headers:
-            session.headers.update(extra_headers)
-
-        logger.info(f"Delivering Webhook hook_id={hook_id} to target={target}")
-        try:
-            session.post(url=target, data=payload)
-        except requests.ConnectionError:
-            delay_in_seconds = 2**self.request.retries
-            self.retry(countdown=delay_in_seconds)
+    logger.info(f"Delivering Webhook hook_id={hook_id} to target={target}")
+    try:
+        session.post(url=target, data=payload)
+    except requests.ConnectionError:
+        return
 
 
 def deliver_hook_wrapper(target, payload, instance, hook):
@@ -57,4 +55,4 @@ def deliver_hook_wrapper(target, payload, instance, hook):
     if hook.extra_headers:
         kwargs["extra_headers"] = hook.get_extra_headers()
 
-    DeliverHook().apply_async(kwargs=kwargs)
+    deliver_hook_task.delay(**kwargs)

@@ -22,11 +22,11 @@
       'trigger': 'hover',
       'html': true,
       'container': 'body',
-      'content': function(){
-        var pk = $(this).data('category-pk');
-        return NEXB.client_data.license_categories[pk];
+      'content': function(element){
+        const category_pk = $(element).data('category-pk');
+        return NEXB.client_data.license_categories[category_pk];
       },
-      'title': function(){ return $(this).text(); }
+      'title': function(element){ return $(element).text(); }
     });
 
     $('#license_text_search_modal').on('shown.bs.modal', function () {

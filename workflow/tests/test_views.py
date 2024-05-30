@@ -333,7 +333,7 @@ class RequestUserViewsTestCase(TestCase):
               <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
                 <i class="fas fa-clipboard"></i>
               </button>
-              <pre id="Organization" class="pre-bg-light">char</pre>
+              <pre id="Organization" class="pre-bg-body-tertiary">char</pre>
             </div>
         </div>
         """
@@ -346,17 +346,20 @@ class RequestUserViewsTestCase(TestCase):
         self.assertContains(
             response,
             '<textarea name="field_0" cols="40" rows="2" '
-            'class="textarea form-control" id="id_field_0">',
+            'class="textarea form-control" '
+            'aria-describedby="id_field_0_helptext" id="id_field_0">',
             html=True,
         )
         self.assertContains(
             response,
             '<textarea name="field_1" cols="40" rows="2" '
-            'class="textarea form-control" required id="id_field_1">',
+            'class="textarea form-control" required '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">',
             html=True,
         )
         expected = (
-            '<select name="priority" class="form-control-sm select form-select" id="id_priority">'
+            '<select name="priority" class="select form-select" '
+            'aria-describedby="id_priority_helptext" id="id_priority">'
         )
         self.assertContains(response, expected)
         expected = f'<option value="{self.priority1.id}">{self.priority1.label}</option>'
@@ -438,8 +441,8 @@ class RequestUserViewsTestCase(TestCase):
 
         self.assertEqual(self.nexb_user, pc.created_by)
         self.assertEqual(self.nexb_user, pc.last_modified_by)
-        self.assertEqual(26, len(str(pc.created_date)))
-        self.assertEqual(26, len(str(pc.last_modified_date)))
+        self.assertEqual(32, len(str(pc.created_date)))
+        self.assertEqual(32, len(str(pc.last_modified_date)))
 
         product1.refresh_from_db()
         history_entries = History.objects.get_for_object(product1)
@@ -483,8 +486,8 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.get(url)
         expected_html = (
-            '<select name="product_context" class="form-control-sm select form-select" '
-            'id="id_product_context">'
+            '<select name="product_context" class="select form-select" '
+            'aria-describedby="id_product_context_helptext" id="id_product_context">'
         )
         self.assertContains(response, expected_html)
 
@@ -942,7 +945,8 @@ class RequestUserViewsTestCase(TestCase):
         <input type="text" name="applies_to" value="{self.component1}"
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
-               class="form-control-sm autocompleteinput form-control"
+               class="autocompleteinput form-control"
+               aria-describedby="id_applies_to_helptext"
                id="id_applies_to"
         >
         """
@@ -1000,7 +1004,10 @@ class RequestUserViewsTestCase(TestCase):
         self.question2.save()
 
         response = self.client.get(url)
-        expected = '<select name="field_1" class="select form-select" id="id_field_1">'
+        expected = (
+            '<select name="field_1" class="select form-select" '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">'
+        )
         self.assertContains(response, expected)
 
         data = {
@@ -1026,7 +1033,9 @@ class RequestUserViewsTestCase(TestCase):
         self.assertIsNone(request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">Yes</pre>', html=True)
+        self.assertContains(
+            response, '<pre id="Bool" class="pre-bg-body-tertiary">Yes</pre>', html=True
+        )
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
         expected = '<option value="1" selected="selected">Yes</option>'
@@ -1044,7 +1053,9 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(self.basic_user, request_instance.last_modified_by)
 
         response = self.client.get(request_instance.get_absolute_url())
-        self.assertContains(response, '<pre id="Bool" class="pre-bg-light">No</pre>', html=True)
+        self.assertContains(
+            response, '<pre id="Bool" class="pre-bg-body-tertiary">No</pre>', html=True
+        )
 
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
@@ -1082,7 +1093,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = (
             '<input type="text" name="field_1" placeholder="YYYY-MM-DD" '
-            'class="datepicker form-control" id="id_field_1">'
+            'class="datepicker form-control" aria-describedby="id_field_1_helptext" '
+            'id="id_field_1">'
         )
         self.assertContains(response, expected, html=True)
 
@@ -1097,7 +1109,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = (
             '<input type="text" name="field_1" value="2015-11-11" '
-            'placeholder="YYYY-MM-DD" class="datepicker form-control" id="id_field_1">'
+            'placeholder="YYYY-MM-DD" class="datepicker form-control" '
+            'aria-describedby="id_field_1_helptext" id="id_field_1">'
         )
         self.assertContains(response, expected, html=True)
 
@@ -1163,7 +1176,8 @@ class RequestUserViewsTestCase(TestCase):
         <input type="text" name="applies_to" value="{component2}"
                placeholder="Start typing for suggestions..."
                data-api_url="/api/v2/components/"
-               class="form-control-sm autocompleteinput form-control"
+               class="autocompleteinput form-control"
+               aria-describedby="id_applies_to_helptext"
                id="id_applies_to" />
         """
         self.assertContains(response, expected, html=True)

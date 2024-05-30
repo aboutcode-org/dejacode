@@ -310,9 +310,9 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"q": ""}
         filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
         expected = [
-            "deb/debian/curl@7.50.3-1",
-            "git/curl",
-            "deb/curl",
+            "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
+            "pkg:git/curl",
+            "pkg:deb/curl",
             "setup.exe",
         ]
         self.assertEqual(sorted(expected), sorted_results(filterset.qs))
@@ -320,8 +320,8 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"q": "deb/curl"}
         filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
         expected = [
-            "deb/curl",
-            "deb/debian/curl@7.50.3-1",
+            "pkg:deb/curl",
+            "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
         ]
         self.assertEqual(sorted(expected), sorted_results(filterset.qs))
         data = {"q": "pkg:deb/curl"}
@@ -331,7 +331,7 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"q": "deb/debian/curl@7.50.3-1"}
         filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
         expected = [
-            "deb/debian/curl@7.50.3-1",
+            "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
         ]
         self.assertEqual(sorted(expected), sorted_results(filterset.qs))
         data = {"q": "pkg:deb/debian/curl@7.50.3-1"}
@@ -341,7 +341,7 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"q": "git/curl"}
         filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
         expected = [
-            "git/curl",
+            "pkg:git/curl",
         ]
         self.assertEqual(sorted(expected), sorted_results(filterset.qs))
         data = {"q": "pkg:git/curl"}

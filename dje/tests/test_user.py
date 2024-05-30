@@ -687,8 +687,8 @@ class DejaCodeUserModelTestCase(TestCase):
 
     def test_user_model_serialize_user_data(self):
         user = create_user("active", self.dataspace)
-        user.date_joined = "2020-09-01 23:13:05.611210"
-        user.last_login = "2021-09-01 23:13:05.611210"
+        user.date_joined = "2020-09-01 23:13:05.611210Z"
+        user.last_login = "2021-09-01 23:13:05.611210Z"
         user.save()
 
         expected = {
@@ -697,9 +697,9 @@ class DejaCodeUserModelTestCase(TestCase):
             "last_name": "",
             "username": "active",
             "company": "",
-            "last_login": "2021-09-01 23:13:05.611210",
-            "date_joined": "2020-09-01 23:13:05.611210",
-            "last_active": "2021-09-01 23:13:05.611210",
+            "last_login": "2021-09-01 23:13:05.611210Z",
+            "date_joined": "2020-09-01 23:13:05.611210Z",
+            "last_active": "2021-09-01 23:13:05.611210Z",
             "is_superuser": "False",
             "is_staff": "False",
             "is_active": "True",

@@ -7,7 +7,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form autocomplete="off" method="{{ scan_to_package_form.helper.form_method }}" action="{{ scan_to_package_form.helper.form_action }}" id="{{ scan_to_package_form.helper.form_id }}" class="{{ scan_to_package_form.helper.form_class }}">
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           {% crispy scan_to_package_form %}
         </div>
         <div class="modal-footer">
@@ -21,6 +21,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  NEXB.setup_awesomplete_builder($('#id_scan-to-package-license_expression').get(0));
+  setup_awesomplete_builder($('#id_scan-to-package-license_expression').get(0));
 });
 </script>

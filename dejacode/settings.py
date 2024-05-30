@@ -9,6 +9,7 @@
 # Common Django settings for all deployments of DejaCode
 
 import sys
+import tempfile
 from pathlib import Path
 
 import environ
@@ -29,7 +30,7 @@ environ.Env.read_env(ENV_FILE)  # Reading the .env file into os.environ
 SECRET_KEY = env.str("SECRET_KEY")
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
-    default=[".localhost", "127.0.0.1", "[::1]", "host.docker.internal"],
+    default=[".localhost", "127.0.0.1", "[::1]", "host.docker.internal", "172.17.0.1"],
 )
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # SECURITY WARNING: don't run with debug turned on in production
@@ -87,7 +88,6 @@ TEMPLATE_DATASPACE = env.str("TEMPLATE_DATASPACE", default=None)
 # timezone as the operating system.
 TIME_ZONE = env.str("TIME_ZONE", default="US/Pacific")
 
-SITE_ID = env.int("SITE_ID", default=1)
 SITE_URL = env.str("SITE_URL", default="")
 
 ENABLE_SELF_REGISTRATION = env.bool("ENABLE_SELF_REGISTRATION", default=False)
@@ -162,8 +162,7 @@ MAX_UPLOAD_SIZE = env.int("MAX_UPLOAD_SIZE", default=31457280)  # 30M
 FILE_UPLOAD_PERMISSIONS = 0o644  # -rw-rw-r--
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#data-upload-max-number-fields
-# Set to 10 times the default value (1,000)
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
 
 # hCaptcha script location for registration form
 HCAPTCHA_JS_API_URL = env.str("HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
@@ -209,7 +208,13 @@ X_FRAME_OPTIONS = "DENY"
 # CSRF_COOKIE_HTTPONLY = True
 # Also, security.W004 SECURE_HSTS_SECONDS and security.W008 SECURE_SSL_REDIRECT
 # are handled at the web server level.
-SILENCED_SYSTEM_CHECKS = ["security.W004", "security.W008", "security.W017", "urls.W005"]
+SILENCED_SYSTEM_CHECKS = [
+    "security.W004",
+    "security.W008",
+    "security.W017",
+    "urls.W005",
+    "admin.E039",
+]
 
 # Set the following to True to enable ClamAV scan on uploaded files
 # This requires the installation of ClamAV
@@ -297,14 +302,15 @@ TEMPLATES = [
 # On the other hand, the management commands will override each others if the
 # app is declared after another in the list.
 PREREQ_APPS = [
+    # Must come before Third-party apps for proper templates override
     "dje",
+    # Django built-in
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sitemaps",
-    "django.contrib.sites",
+    # Third-party apps
     "django.contrib.humanize",
     "django.contrib.postgres",
     "grappelli.dashboard",
@@ -312,6 +318,7 @@ PREREQ_APPS = [
     "django.contrib.admin",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_rq",
     "crispy_forms",
     "crispy_bootstrap5",
     "guardian",
@@ -362,6 +369,9 @@ EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 
+# An email address displayed in UI for users to reach the support team.
+DEJACODE_SUPPORT_EMAIL = env.str("DEJACODE_SUPPORT_EMAIL", default="")
+
 # Enable this setting to display a "Tools" section in the navbar including
 # links to the "Requests" and "Reporting" views.
 SHOW_TOOLS_IN_NAV = env.bool("SHOW_TOOLS_IN_NAV", default=True)
@@ -401,8 +411,7 @@ REDIS_URL = env.str("REDIS_URL", default="redis://127.0.0.1:6379")
 
 # Default setup for the cache
 # See https://docs.djangoproject.com/en/dev/topics/cache/
-# Set CACHE_BACKEND="django.core.cache.backends.locmem.LocMemCache" in dev mode
-CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.redis.RedisCache")
+CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache")
 CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
@@ -416,6 +425,44 @@ CACHES = {
         "KEY_PREFIX": "vuln",
     },
 }
+
+# Job Queue
+RQ_QUEUES = {
+    "default": {
+        "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
+        "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
+        "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_REDIS_DEFAULT_TIMEOUT", default=360),
+    },
+}
+
+
+def enable_rq_eager_mode():
+    """
+    Enable the eager mode for the RQ tasks system.
+    Meaning the tasks will run directly sychroniously without the need of a worker.
+    Setting ASYNC to False in RQ_QUEUES will run jobs synchronously, but a running
+    Redis server is still needed to store job data.
+    This function patch the django_rq.get_redis_connection to always return a fake
+    redis connection using the `fakeredis` library.
+    """
+    import django_rq.queues
+    from fakeredis import FakeRedis
+    from fakeredis import FakeStrictRedis
+
+    for queue_config in RQ_QUEUES.values():
+        queue_config["ASYNC"] = False
+
+    def get_fake_redis_connection(config, use_strict_redis):
+        return FakeStrictRedis() if use_strict_redis else FakeRedis()
+
+    django_rq.queues.get_redis_connection = get_fake_redis_connection
+
+
+DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
+if not DEJACODE_ASYNC or IS_TESTS:
+    enable_rq_eager_mode()
+
 
 # https://docs.djangoproject.com/en/dev/topics/logging/#configuring-logging
 LOGGING = {
@@ -490,7 +537,7 @@ LOGGING = {
         "dejacode_toolkit": {
             "handlers": ["null"] if IS_TESTS else ["console"],
             "propagate": False,
-            "level": DEJACODE_LOG_LEVEL,
+            "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
         },
         "django_auth_ldap": {
             "handlers": ["null"] if IS_TESTS else ["console"],
@@ -598,10 +645,6 @@ AXES_RESET_ON_SUCCESS = True
 # authentication.
 AXES_DISABLE_ACCESS_LOG = True
 
-# Celery
-CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://")
-CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
-
 # 2FA with django-otp
 OTP_TOTP_ISSUER = "DejaCode"
 
@@ -619,10 +662,10 @@ if DEBUG and DEBUG_TOOLBAR:
     INTERNAL_IPS = ["127.0.0.1"]
 
 if IS_TESTS:
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
+    # Do not pollute the MEDIA_ROOT location while running the tests.
+    MEDIA_ROOT = tempfile.TemporaryDirectory().name
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [

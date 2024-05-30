@@ -56,6 +56,7 @@ class ProductFilterSet(DataspacedFilterSet):
             "primary_language",
             "owner",
             "configuration_status",
+            "productinventoryitem_count",
         ],
         field_labels={
             "primary_language": "Language",
@@ -67,7 +68,7 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("Configuration status"),
         field_name="configuration_status__label",
         to_field_name="label",
-        queryset=ProductStatus.objects.all(),
+        queryset=ProductStatus.objects.only("label", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search=False,
             search_placeholder="Search configuration status",
@@ -84,7 +85,7 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("License"),
         field_name="licenses__key",
         to_field_name="key",
-        queryset=License.objects.all(),
+        queryset=License.objects.only("key", "short_name", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search licenses",
         ),
@@ -93,7 +94,7 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("Keyword"),
         to_field_name="label",
         lookup_expr="contains",
-        queryset=ComponentKeyword.objects.all().only("label", "dataspace"),
+        queryset=ComponentKeyword.objects.only("label", "dataspace__id"),
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search keywords",
         ),

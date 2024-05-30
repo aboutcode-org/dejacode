@@ -22,6 +22,7 @@ from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
 
 from component_catalog.api import ComponentViewSet
+from component_catalog.api import KeywordViewSet
 from component_catalog.api import PackageViewSet
 from component_catalog.api import SubcomponentViewSet
 from component_catalog.views import send_scan_notification
@@ -64,6 +65,7 @@ api_router.register("licenses", LicenseViewSet)
 api_router.register("license_annotations", LicenseAnnotationViewSet)
 api_router.register("components", ComponentViewSet)
 api_router.register("subcomponents", SubcomponentViewSet)
+api_router.register("keywords", KeywordViewSet)
 api_router.register("packages", PackageViewSet)
 api_router.register("products", ProductViewSet)
 api_router.register("product_components", ProductComponentViewSet)

@@ -39,7 +39,7 @@ from dje.forms import DataspacedAdminForm
 from dje.forms import DataspacedModelForm
 from dje.forms import DefaultOnAdditionLabelMixin
 from dje.forms import Group
-from dje.forms import JSONListChoiceField
+from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
@@ -56,23 +56,29 @@ from product_portfolio.models import ProductPackage
 class SetKeywordsChoicesFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        keywords_field = self.fields.get("keywords")
-        if keywords_field:
+        if keywords_field := self.fields.get("keywords"):
             keywords_qs = ComponentKeyword.objects.scope(self.dataspace)
             labels = keywords_qs.values_list("label", flat=True)
-            keywords_field.choices = [(label, label) for label in labels]
-            keywords_field.widget.attrs.update(
-                {
-                    "data-list": ", ".join(labels),
-                }
-            )
+            keywords_field.widget.attrs.update({"data-list": ", ".join(labels)})
+
+
+class KeywordsField(JSONListField):
+    def __init__(self, **kwargs):
+        widget = AutocompleteInput(
+            attrs={
+                "data-api_url": reverse_lazy("api_v2:componentkeyword-list"),
+            },
+            display_link=False,
+            display_attribute="label",
+        )
+        kwargs.setdefault("widget", widget)
+        kwargs.setdefault("required", False)
+        super().__init__(**kwargs)
 
 
 class ComponentForm(
     LicenseExpressionFormMixin,
     DefaultOnAdditionLabelMixin,
-    SetKeywordsChoicesFormMixin,
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
@@ -83,10 +89,7 @@ class ComponentForm(
     ]
     color_initial = True
 
-    keywords = JSONListChoiceField(
-        required=False,
-        widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
-    )
+    keywords = KeywordsField()
 
     packages_ids = forms.CharField(
         widget=forms.HiddenInput,
@@ -262,16 +265,12 @@ class PackageFieldsValidationMixin:
 class PackageForm(
     LicenseExpressionFormMixin,
     PackageFieldsValidationMixin,
-    SetKeywordsChoicesFormMixin,
     DataspacedModelForm,
 ):
     save_as = True
     color_initial = True
 
-    keywords = JSONListChoiceField(
-        required=False,
-        widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
-    )
+    keywords = KeywordsField()
 
     collect_data = forms.BooleanField(
         required=False,
@@ -647,6 +646,17 @@ class AddToProductAdminForm(forms.Form):
         queryset=Product.objects.none(),
     )
     ids = forms.CharField(widget=forms.widgets.HiddenInput)
+    replace_existing_version = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Replace existing relationships by newer version.",
+        help_text=(
+            "Select this option to replace any existing relationships with a different version "
+            "of the same object. "
+            "If more than one version of the object is already assigned, no replacements will be "
+            "made, and the new version will be added instead."
+        ),
+    )
 
     def __init__(self, request, model, relation_model, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -664,9 +674,11 @@ class AddToProductAdminForm(forms.Form):
 
     def save(self):
         product = self.cleaned_data["product"]
+
         return product.assign_objects(
             related_objects=self.get_selected_objects(),
             user=self.request.user,
+            replace_version=self.cleaned_data["replace_existing_version"],
         )
 
 
@@ -720,15 +732,15 @@ class AddToComponentFormMixin(forms.Form):
                 href = f"{component_add_url}?package_ids={package.id}"
 
             return HTML(
+                f"<hr>"
                 f'<div class="text-center">'
                 f'  <a href="{href}" '
                 f'     id="new-component-link" '
-                f'     class="btn btn-success" '
+                f'     class="btn btn-outline-success" '
                 f'     data-add-url="{component_add_url}">'
                 f"    Add Component from Package data"
                 f"  </a>"
                 f"</div>"
-                f"<hr>"
             )
 
     def clean_component(self):
@@ -750,9 +762,9 @@ class AddToComponentFormMixin(forms.Form):
         helper.layout = Layout(
             Fieldset(
                 None,
-                self.new_component_from_package_link(),
                 "object_id",
                 "component",
+                self.new_component_from_package_link(),
             ),
         )
         return helper
@@ -910,7 +922,7 @@ class ComponentAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -944,7 +956,7 @@ class PackageAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -990,7 +1002,7 @@ class ComponentMassUpdateForm(
     DejacodeMassUpdateForm,
 ):
     raw_id_fields = ["owner"]
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
     )
@@ -1063,7 +1075,7 @@ class SubcomponentMassUpdateForm(DejacodeMassUpdateForm):
 class PackageMassUpdateForm(
     LicenseExpressionFormMixin, SetKeywordsChoicesFormMixin, DejacodeMassUpdateForm
 ):
-    keywords = JSONListChoiceField(
+    keywords = JSONListField(
         required=False,
         widget=AwesompleteInputWidget(attrs=autocomplete_placeholder),
     )

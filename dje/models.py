@@ -773,6 +773,17 @@ class DataspacedModel(models.Model):
 
         return updated_fields
 
+    def update(self, **kwargs):
+        """
+        Update this instance with the provided ``kwargs`` values.
+        The full ``save()`` process will be triggered, including signals, and the
+        ``update_fields`` is automatically set.
+        """
+        for field_name, value in kwargs.items():
+            setattr(self, field_name, value)
+
+        self.save(update_fields=list(kwargs.keys()))
+
     def as_json(self):
         try:
             serialized_data = serialize(
@@ -881,7 +892,7 @@ class DataspacedModel(models.Model):
     local_foreign_fields = property(_get_local_foreign_fields)
 
     @classmethod
-    def get_identifier_fields(cls):
+    def get_identifier_fields(cls, *args, **kwargs):
         """
         Return a list of the fields, based on the Meta unique_together, to be
         used to match a unique instance within a Dataspace.
@@ -1127,13 +1138,15 @@ class DataspacedModel(models.Model):
                     setattr(self, field_name, " ".join(field_value.split()))
 
     def mark_all_notifications_as_read(self, user):
-        unread_notifications = Notification.objects.unread().filter(
+        unread_notifications_qs = Notification.objects.unread().filter(
             action_object_content_type__model=self._meta.model_name,
             action_object_object_id=self.id,
             recipient=user,
         )
-        if unread_notifications:
-            unread_notifications.update(unread=False)
+        # Trigger a single UPDATE query on the "unread" Notification.
+        # Even if the QS is empty, this is faster than checking is the QS contains
+        # entries first.
+        unread_notifications_qs.update(unread=False)
 
 
 class HistoryDateFieldsMixin(models.Model):
@@ -1512,7 +1525,7 @@ class DejacodeUser(AbstractUser):
         null=True,
         blank=True,
         related_name="+",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         serialize=False,
         help_text=_(
             "Select a Card layout that provides the query results on the "

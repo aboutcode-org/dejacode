@@ -40,6 +40,7 @@
             <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
           </li>
         {% endif %}
+        {% include 'includes/theme_toogle.html' %}
         {% if user.is_anonymous %}
           <li class="nav-item">
             <a class="nav-item nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
@@ -125,7 +126,7 @@
                 </a>
               {% endif %}
               <div class="dropdown-divider"></div>
-              <div class="dropdown-header">DejaCode: v{{ DEJACODE_VERSION }}</div>
+              <div class="dropdown-header">v{{ DEJACODE_VERSION }}</div>
               <div class="dropdown-divider"></div>
               <form id="logout-form" method="post" action="{% url 'logout' %}">
                 {% csrf_token %}

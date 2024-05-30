@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import logging
 from datetime import datetime
 from io import StringIO
 
@@ -18,16 +19,15 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.template.defaultfilters import pluralize
 
-from celery import shared_task
-from celery.utils.log import get_task_logger
+from django_rq import job
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.utils import is_available
 
-tasks_logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-@shared_task
+@job
 def send_mail_task(subject, message, from_email, recipient_list, fail_silently=True):
     """
     Send an email as an asynchronous task.
@@ -41,7 +41,7 @@ def send_mail_task(subject, message, from_email, recipient_list, fail_silently=T
     send_mail(subject, message, from_email, recipient_list, fail_silently)
 
 
-@shared_task
+@job
 def send_mail_to_admins_task(subject, message, from_email=None, fail_silently=True):
     """Send an email to system administrators as an asynchronous task."""
     if not from_email:
@@ -54,10 +54,10 @@ def send_mail_to_admins_task(subject, message, from_email=None, fail_silently=Tr
     send_mail_task(subject, message, from_email, recipient_list, fail_silently)
 
 
-@shared_task(time_limit=7200)
+@job("default", timeout=7200)
 def call_management_command(name, *args, **options):
     """Run a management command as an asynchronous task."""
-    tasks_logger.info(
+    logger.info(
         f"Entering call_management_command task with name={name} args={args} options={options}"
     )
 
@@ -76,17 +76,17 @@ def call_management_command(name, *args, **options):
         user.email_user(subject, msg)
 
 
-@shared_task
+@job
 def package_collect_data(instance_id):
     """Run Package.collect_data() as an asynchronous task."""
     Package = apps.get_model("component_catalog", "package")
-    tasks_logger.info(f"Entering package_collect_data task for Package.id={instance_id}")
+    logger.info(f"Entering package_collect_data task for Package.id={instance_id}")
     package = Package.objects.get(id=instance_id)
-    tasks_logger.info(f"Package Download URL: {package.download_url}")
+    logger.info(f"Package Download URL: {package.download_url}")
     package.collect_data()
 
 
-@shared_task
+@job
 def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     """
     Submit the provided `uris` to ScanCode.io as an asynchronous task.
@@ -94,7 +94,7 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     """
     from dje.models import DejacodeUser
 
-    tasks_logger.info(
+    logger.info(
         f"Entering scancodeio_submit_scan task with "
         f"uris={uris} user_uuid={user_uuid} dataspace_uuid={dataspace_uuid}"
     )
@@ -111,20 +111,18 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
         if is_available(uri):
             ScanCodeIO(user).submit_scan(uri, user_uuid, dataspace_uuid)
         else:
-            tasks_logger.info(f'uri="{uri}" is not reachable.')
+            logger.info(f'uri="{uri}" is not reachable.')
 
 
-@shared_task
-def scancodeio_submit_manifest_inspection(scancodeproject_uuid, user_uuid):
-    """
-    Submit the provided `uris` to ScanCode.io as an asynchronous task.
-    Only publicly available URLs are sent to ScanCode.io.
-    """
+@job
+def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
+    """Submit the provided SBOM file to ScanCode.io as an asynchronous task."""
     from dje.models import DejacodeUser
 
-    tasks_logger.info(
-        f"Entering scancodeio_submit_manifest_inspection task with "
-        f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid}"
+    logger.info(
+        f"Entering scancodeio_submit_project task with "
+        f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid} "
+        f"pipeline_name={pipeline_name}"
     )
 
     ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")
@@ -140,40 +138,41 @@ def scancodeio_submit_manifest_inspection(scancodeproject_uuid, user_uuid):
     # Create a Project instance on ScanCode.io without immediate execution of the
     # pipeline. This allows to get instant feedback from ScanCode.io about the Project
     # creation status and its related data, even in SYNC mode.
-    response = scancodeio.submit_manifest_inspection(
+    response = scancodeio.submit_project(
         project_name=scancodeproject_uuid,
+        pipeline_name=pipeline_name,
         file_location=scancode_project.input_file.path,
         user_uuid=user_uuid,
         execute_now=False,
     )
 
     if not response:
-        tasks_logger.info("Error submitting the manifest to ScanCode.io server")
+        logger.info("Error submitting the file to ScanCode.io server")
         scancode_project.status = ScanCodeProject.Status.FAILURE
-        msg = "- Error: Manifest could not be submitted to ScanCode.io"
+        msg = "- Error: File could not be submitted to ScanCode.io"
         scancode_project.append_to_log(msg, save=True)
         return
 
-    tasks_logger.info("Update the ScanCodeProject instance")
+    logger.info("Update the ScanCodeProject instance")
     scancode_project.status = ScanCodeProject.Status.SUBMITTED
     scancode_project.project_uuid = response.get("uuid")
-    msg = "- Manifest submitted to ScanCode.io for inspection"
+    msg = "- File submitted to ScanCode.io for inspection"
     scancode_project.append_to_log(msg, save=True)
 
     # Delay the execution of the pipeline after the ScancodeProject instance was
     # properly saved and committed in order to avoid any race conditions.
     if runs := response.get("runs"):
-        tasks_logger.info("Start the pipeline run")
+        logger.info("Start the pipeline run")
         transaction.on_commit(lambda: scancodeio.start_pipeline(run_url=runs[0]["url"]))
 
 
-@shared_task
+@job("default", timeout=1200)
 def pull_project_data_from_scancodeio(scancodeproject_uuid):
     """
     Pull Project data from ScanCode.io as an asynchronous task for the provided
     `scancodeproject_uuid`.
     """
-    tasks_logger.info(
+    logger.info(
         f"Entering pull_project_data_from_scancodeio task with "
         f"scancodeproject_uuid={scancodeproject_uuid}"
     )
@@ -184,7 +183,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     # Make sure the import is not already in progress,
     # or that the import has not completed yet.
     if not scancode_project.can_start_import:
-        tasks_logger.error("Cannot start import")
+        logger.error("Cannot start import")
         return
 
     # Update the status to prevent from starting the task again
@@ -192,8 +191,8 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
         status=ScanCodeProject.Status.IMPORT_STARTED
     )
 
-    if scancode_project.type == scancode_project.ProjectType.IMPORT_FROM_MANIFEST:
-        notification_verb = "Import packages from manifest"
+    if scancode_project.type == scancode_project.ProjectType.LOAD_SBOMS:
+        notification_verb = "Load Packages from SBOMs"
     else:
         notification_verb = "Import packages from ScanCode.io"
 

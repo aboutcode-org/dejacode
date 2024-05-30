@@ -2,12 +2,12 @@
 {% load i18n grp_tags static %}
 
 {% block title %}
-    {{ SITE_TITLE }} {{ DEJACODE_VERSION }} Administration
+    {{ SITE_TITLE }} Administration v{{ DEJACODE_VERSION }}
 {% endblock %}
 
 {% block admin_title %}
     <h1 id="grp-admin-title">
-        {{ SITE_TITLE }} {{ DEJACODE_VERSION }} Administration
+        {{ SITE_TITLE }} Administration v{{ DEJACODE_VERSION }}
     </h1>
 {% endblock %}
 
@@ -120,7 +120,9 @@
               </li>
             {% endif %}
             <li>
-                <a href="{% url 'logout' %}">{% trans 'Sign out' %}</a>
+                <form id="logout-form" method="post" action="{% url 'admin:logout' %}">{% csrf_token %}
+                    <button type="submit">{% trans 'Sign out' %}</button>
+                </form>
             </li>
         </ul>
     </li>

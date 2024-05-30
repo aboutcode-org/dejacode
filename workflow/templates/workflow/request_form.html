@@ -39,14 +39,16 @@
         <div class="card card-border-color card-border-color-primary">
           <div class="card-header card-header-divider m-0 p-3">
             <h2 class="h4">{{ form.request_template.name }}</h2>
-            <span class="card-subtitle mb-0" style="font-size: 0.875rem;">{{ form.request_template.description }}</span>
+            <span class="card-subtitle mb-0" style="font-size: 0.875rem;">
+              {{ form.request_template.description }}
+            </span>
           </div>
           <div class="card-body">
             {% crispy form %}
           </div>
         </div>
       </div>
-      <div class="col-md-4 pt-3">
+      <div class="col-md-4 pt-1">
         {% crispy form form.helper_right_side %}
       </div>
     </div>
@@ -55,7 +57,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link href="{% static "awesomplete/awesomplete-1.1.5.css" %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
+  <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
 {% endblock %}
 
 {% block javascripts %}

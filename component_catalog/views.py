@@ -20,6 +20,8 @@ from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
+from django.core.validators import EMPTY_VALUES
+from django.db.models import Count
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -33,6 +35,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
@@ -45,6 +48,7 @@ from crispy_forms.utils import render_crispy_form
 from natsort import natsorted
 from notifications.signals import notify
 from packageurl import PackageURL
+from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
 
 from component_catalog.filters import ComponentFilterSet
@@ -214,12 +218,17 @@ class AddToProductMultipleMixin(BaseFormView):
         return kwargs
 
     def form_valid(self, form):
-        created_count, unchanged_count = form.save()
+        created_count, updated_count, unchanged_count = form.save()
         product = form.cleaned_data["product"]
         opts = self.model._meta
 
+        msg = ""
         if created_count:
-            msg = f'{created_count} {opts.model_name}(s) added to "{product}".'
+            msg = f'{created_count} {opts.model_name}(s) added to "{product}". '
+        if updated_count:
+            msg += f'{updated_count} {opts.model_name}(s) updated on "{product}".'
+
+        if msg:
             messages.success(self.request, msg)
         else:
             msg = f"No new {opts.model_name}(s) were assigned to this product."
@@ -309,6 +318,14 @@ class TabVulnerabilityMixin:
         tab_fields = [
             (_("Summary"), summary, "Summary of the vulnerability"),
         ]
+
+        if vulnerability_url := vulnerability.get("resource_url"):
+            vulnerability_url_help = "Link to the VulnerableCode app."
+            url_as_link = format_html(
+                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
+                vulnerability_url=vulnerability_url,
+            )
+            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
 
         if include_fixed_packages:
             fixed_packages = vulnerability.get("fixed_packages", [])
@@ -614,18 +631,38 @@ class ComponentDetailsView(
             "licenses",
         )
 
-        related_children_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("child", queryset=component_prefetch_qs),
+        related_children_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("child", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                child_count=Count("child__children"),
+            )
+            .order_by(
+                "child__name",
+                "child__version",
+            )
         )
 
-        related_parents_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("parent", queryset=component_prefetch_qs),
+        related_parents_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("parent", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                parent_count=Count("parent__related_parents"),
+            )
+            .order_by(
+                "parent__name",
+                "parent__version",
+            )
         )
 
         return (
@@ -926,12 +963,16 @@ class AddToProductAdminView(LoginRequiredMixin, BaseAdminActionFormView):
         return kwargs
 
     def form_valid(self, form):
-        created_count, unchanged_count = form.save()
+        created_count, updated_count, unchanged_count = form.save()
         model_name = self.model._meta.model_name
         product_name = form.cleaned_data["product"].name
+
         msg = f"{created_count} {model_name}(s) added to {product_name}."
+        if updated_count:
+            msg += f" {updated_count} {model_name}(s) updated on {product_name}."
         if unchanged_count:
             msg += f" {unchanged_count} {model_name}(s) were already assigned."
+
         messages.success(self.request, msg)
         return super().form_valid(form)
 
@@ -1137,8 +1178,8 @@ class PackageDetailsView(
     AcceptAnonymousMixin,
     AddPackagePermissionMixin,
     TabVulnerabilityMixin,
-    ObjectDetailsView,
     AddToProductFormMixin,
+    ObjectDetailsView,
 ):
     model = Package
     slug_url_kwarg = "uuid"
@@ -1237,6 +1278,9 @@ class PackageDetailsView(
         "vulnerabilities": {
             "verbose_name": "Vulnerabilities",
         },
+        "aboutcode": {
+            "verbose_name": "AboutCode",
+        },
         "history": {
             "fields": [
                 "created_date",
@@ -1256,8 +1300,7 @@ class PackageDetailsView(
         has_change_package_permission = user.has_perm("component_catalog.change_package")
         context_data["has_change_package_permission"] = has_change_package_permission
 
-        # License data is required for the Scan tab "scan to package"
-        # license expression fields
+        # License data is required for the Scan tab "scan to package" license expression fields
         client_data = getattr(self.request, "client_data", {})
         include_all_licenses = all(
             [
@@ -1270,9 +1313,9 @@ class PackageDetailsView(
             all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
-        if self.request.user.has_perm("component_catalog.change_component"):
+        if user.has_perm("component_catalog.change_component"):
             context_data["add_to_component_form"] = AddToComponentForm(
-                self.request.user, initial={self.model._meta.model_name: self.object}
+                user, initial={self.model._meta.model_name: self.object}
             )
 
         return context_data
@@ -1436,6 +1479,15 @@ class PackageDetailsView(
             "tab_object_name": "PurlDB data",
         }
         return {"fields": [(None, tab_context, None, template)]}
+
+    def tab_aboutcode(self):
+        template = "component_catalog/tabs/tab_aboutcode.html"
+        context = {
+            "about_content": self.object.as_about_yaml(),
+            "notice_content": normalize_newlines(self.object.notice_text),
+        }
+
+        return {"fields": [(None, context, None, template)]}
 
     def get_vulnerabilities_tab_fields(self, vulnerabilities):
         dataspace = self.object.dataspace
@@ -1772,7 +1824,10 @@ def send_scan_notification(request, key):
 
     project = json_data.get("project")
     input_sources = project.get("input_sources")
-    download_url = list(input_sources.values())[0]
+    if not input_sources:
+        raise Http404("Missing `input_sources` entry in provided data.")
+    download_url = input_sources[0].get("download_url")
+
     package = get_object_or_404(Package, download_url=download_url, dataspace=user.dataspace)
     description = package.download_url
 
@@ -1893,25 +1948,51 @@ class PackageAddView(
         """Pre-fill the form with initial data from a PurlDB entry or a `package_url`."""
         initial = super().get_initial()
 
-        purldb_uuid = self.request.GET.get("purldb_uuid", None)
-        if purldb_uuid:
-            purldb_entry = PurlDB(self.request.user).get_package(purldb_uuid)
+        if purldb_entry := self.get_entry_from_purldb():
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
-            model_fields = [field.name for field in Package._meta.get_fields()]
+            model_fields = [
+                field.name
+                for field in Package._meta.get_fields()
+                # Generic keywords are not supported because of validation
+                if field.name != "keywords"
+            ]
             initial_from_purldb_entry = {
                 field_name: value
                 for field_name, value in purldb_entry.items()
-                if value and field_name in model_fields
+                if value not in EMPTY_VALUES and field_name in model_fields
             }
             initial.update(initial_from_purldb_entry)
+            messages.info(self.request, "Initial data fetched from PurlDB.")
 
-        package_url = self.request.GET.get("package_url", None)
-        if package_url:
+        elif package_url := self.request.GET.get("package_url", None):
             purl = PackageURL.from_string(package_url)
             package_url_dict = purl.to_dict(encode=True, empty="")
             initial.update(package_url_dict)
+            if download_url := purl2url.get_download_url(package_url):
+                initial.update({"download_url": download_url})
 
         return initial
+
+    def get_entry_from_purldb(self):
+        user = self.request.user
+        purldb = PurlDB(user)
+        is_purldb_enabled = all(
+            [
+                purldb.is_configured(),
+                user.dataspace.enable_purldb_access,
+            ]
+        )
+
+        if not is_purldb_enabled:
+            return
+
+        purldb_uuid = self.request.GET.get("purldb_uuid", None)
+        package_url = self.request.GET.get("package_url", None)
+
+        if purldb_uuid:
+            return purldb.get_package(purldb_uuid)
+        elif package_url:
+            return purldb.get_package_by_purl(package_url)
 
     def get_success_message(self, cleaned_data):
         success_message = super().get_success_message(cleaned_data)
@@ -2108,8 +2189,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 value = f'<span class="badge {badge_color} fs-85pct">{weight}</span>'
 
             elif field == "score":
-                td_class += " bg-light"
-                th_class = "bg-light"
+                td_class += " bg-body-tertiary"
+                th_class = "bg-body-tertiary"
                 badge_color = "text-bg-primary"
                 value = f'<span class="badge {badge_color} fs-85pct">{field_value}</span>'
 
@@ -2132,7 +2213,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
     @staticmethod
     def get_key_file_summary(key_file_data):
         dt = '<dt class="col-sm-2 text-end pt-2 pe-0">{}</dt>'
-        dd = '<dd class="col-sm-10"><pre class="pre-bg-light mb-1">{}</pre></dd>'
+        dd = '<dd class="col-sm-10"><pre class="pre-bg-body-tertiary mb-1">{}</pre></dd>'
         summary = ""
 
         for label, field, value_key in ScanCodeIO.KEY_FILE_DETECTION_FIELDS:

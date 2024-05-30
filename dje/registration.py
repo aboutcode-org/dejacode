@@ -126,9 +126,9 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
         self.fields["hcaptcha"].label = ""
 
-        self.fields[
-            "updates_email_notification"
-        ].label = "Receive updates on DejaCode features and news"
+        self.fields["updates_email_notification"].label = (
+            "Receive updates on DejaCode features and news"
+        )
 
         for field in self.fields.values():
             field.help_text = None
@@ -141,9 +141,11 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
         helper.form_action = "django_registration_register"
         helper.attrs = {"autocomplete": "off"}
 
-        eula = HTML(
-            '<p class="eula">By clicking on "Create account" below, you are agreeing '
-            'to our <a href="/eula/">EULA</a>.</p>'
+        tos = HTML(
+            '<p class="fw-bolder mb-2">'
+            '  By clicking on "Create account" below, you are agreeing to our '
+            '  <a href="https://nexb.com/dejacode-com-tos/" target="blank">Terms of Service</a>.'
+            "</p>"
         )
 
         helper.layout = Layout(
@@ -167,7 +169,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                     css_class="alert alert-primary px-2",
                 ),
                 "hcaptcha",
-                eula,
+                tos,
                 Div(
                     StrictSubmit(
                         "submit",

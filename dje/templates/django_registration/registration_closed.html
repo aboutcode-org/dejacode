@@ -3,11 +3,13 @@
 
 {% block page_title %}{% trans 'Registration closed' %}{% endblock %}
 
-{% block bodyclass %}body-background{% endblock %}
+{% block bodyclass %}bg-body-tertiary{% endblock %}
 
 {% block content %}
   {% include 'includes/header_title.html' with pretitle='Account' title='The DejaCode registration is currently closed' %}
-  <p>
-    Send us an email at <a href="mailto:support@dejacode.com">support@dejacode.com</a> for any question.
-  </p>
+  {% if DEJACODE_SUPPORT_EMAIL %}
+    <p>
+      Send us an email at <a href="mailto:{{ DEJACODE_SUPPORT_EMAIL }}">{{ DEJACODE_SUPPORT_EMAIL }}</a> for any question.
+    </p>
+  {% endif %}
 {% endblock %}

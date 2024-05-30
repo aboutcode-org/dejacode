@@ -37,6 +37,7 @@ class Command(DataspacedCommand):
 
     def handle(self, *args, **options):
         super().handle(*args, **options)
+        dataspace = self.dataspace
 
         models = ALL_MODELS[:]  # Making a copy to not impact the original list
         models += WORKFLOW_MODELS
@@ -52,7 +53,11 @@ class Command(DataspacedCommand):
             Webhook,
         ])
 
-        dataspace = self.dataspace
+        # Clear the associated_product_relation_status FK values so the
+        # ProductRelationStatus model can be flushed before the UsagePolicy model.
+        usage_policies = UsagePolicy.objects.filter(dataspace=dataspace)
+        usage_policies.update(associated_product_relation_status=None)
+
         for model_class in models:
             qs = get_unsecured_manager(model_class).filter(dataspace=dataspace)
             if options['verbosity'] > 1:

@@ -9,6 +9,7 @@
     <div class="dropdown-menu">
       <a class="dropdown-item" href="/">Home</a>{# No trans for Home on purpose #}
       <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="https://dejacode.readthedocs.io/en/latest/" target="_blank" rel="noreferrer">{% trans 'Documentation' %}</a>
       <a class="dropdown-item" href="https://www.nexb.com/resources/#support" target="_blank" rel="noreferrer">{% trans 'Support' %}</a>
       <a class="dropdown-item" href="https://www.nexb.com/dejacode/" target="_blank" rel="noreferrer">{% trans 'About' %}</a>
       <div class="dropdown-divider"></div>
@@ -16,7 +17,7 @@
       <a class="dropdown-item" href="https://github.com/nexB/dejacode/releases" target="_blank" rel="noreferrer">{% trans 'Releases' %}</a>
       <a class="dropdown-item" href="https://scancode-licensedb.aboutcode.org/agpl-3.0.html" target="_blank" rel="noreferrer">{% trans 'License' %}</a>
       <div class="dropdown-divider"></div>
-      <h6 class="dropdown-header">DejaCode: v{{ DEJACODE_VERSION }}</h6>
+      <h6 class="dropdown-header">v{{ DEJACODE_VERSION }}</h6>
     </div>
   </div>
 {% endblock %}

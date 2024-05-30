@@ -1,28 +1,35 @@
 <script>
-  $(document).ready(function () {
-    let add_to_btn = $('#add-to-btn');
+  document.addEventListener('DOMContentLoaded', function () {
+    let add_to_btn = document.getElementById('add-to-btn');
+    let add_to_btn_wrapper = add_to_btn.parentElement;
 
     let handle_button_display = function () {
-      let count = $('main input[type="checkbox"]:checked').length;
-      if (count >= 1) {
-        add_to_btn.removeClass('disabled');
-        add_to_btn.parent().attr('data-bs-title', '');
-    }
-      else {
-        add_to_btn.addClass('disabled');
-        add_to_btn.parent().attr('data-bs-title', 'Select objects first');
-      }
+        let checkedCheckboxes = document.querySelectorAll('main input[type="checkbox"]:checked');
+        if (checkedCheckboxes.length >= 1) {
+            add_to_btn.classList.remove('disabled');
+            add_to_btn_wrapper.setAttribute('data-bs-original-title', '');
+        } else {
+            add_to_btn.classList.add('disabled');
+            add_to_btn_wrapper.setAttribute('data-bs-original-title', 'Select objects first');
+        }
     };
 
-    $('main input[type="checkbox"]').on('change', function() {
-      handle_button_display();
+    // Adding change event listener to all checkboxes
+    document.querySelectorAll('main input[type="checkbox"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', handle_button_display);
     });
 
-    // Runs on load to support the "back" button of the browser
+    // Initial call to handle_button_display to set the correct state on page load
     handle_button_display();
 
+    // Call handle_button_display when the page is shown (e.g., when navigating back)
+    window.addEventListener('pageshow', function () {
+        handle_button_display();
+    });
+
     $('#add-to-product-modal, #add-to-component-modal').on('show.bs.modal', function (event) {
-      let checked = $('main input[type="checkbox"]:checked');
+      // Do not include the select-all as its value is not an id we want to keep
+      let checked = $('main input[type="checkbox"]:checked').not('#checkbox-select-all');
 
       if (checked.length < 1) {
         event.preventDefault();
@@ -51,5 +58,13 @@
       }
     });
 
+    // Select all forms with id starting with "add-to-"
+    const forms = document.querySelectorAll('form[id^="add-to-"]');
+    forms.forEach(function (form) {
+        form.addEventListener('submit', function () {
+            NEXB.displayOverlay("Adding objects...");
+        });
+    });
+
   });
-  </script>
+</script>

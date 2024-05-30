@@ -1,0 +1,14 @@
+about_resource: black-24.4.2-py3-none-any.whl
+name: black
+version: 24.4.2
+download_url: https://files.pythonhosted.org/packages/0f/89/294c9a6b6c75a08da55e9d05321d0707e9418735e3062b12ef0f54c33474/black-24.4.2-py3-none-any.whl
+package_url: pkg:pypi/black@24.4.2
+license_expression: mit
+copyright: Copyright black project contributors
+attribute: yes
+checksum_md5: 671abe813699f2d19dbdc0a8ad3b1bcd
+checksum_sha1: a86357193575e6a44ac2aad4dc72a4edee96dd63
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

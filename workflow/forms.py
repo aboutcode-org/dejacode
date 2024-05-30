@@ -245,7 +245,7 @@ class RequestForm(forms.ModelForm):
             )
 
         request_fields = [
-            Field(field, css_class="form-control-sm")
+            Field(field)
             for field in self._meta.fields
             if field in self.fields.keys() and field != "title"
         ]

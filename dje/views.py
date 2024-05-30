@@ -51,6 +51,7 @@ from django.test import RequestFactory
 from django.urls import NoReverseMatch
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.text import capfirst
@@ -66,19 +67,16 @@ from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import DeleteView
 
 import django_otp
-from cyclonedx import output as cyclonedx_output
-from cyclonedx.model import bom as cyclonedx_bom
 from django_filters.views import FilterView
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
 from component_catalog.license_expression_dje import get_license_objects
-from dejacode import __version__ as dejacode_version
-from dejacode_toolkit import spdx
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import outputs
 from dje.copier import COPY_DEFAULT_EXCLUDE
 from dje.copier import SKIP
 from dje.copier import get_object_in
@@ -117,7 +115,6 @@ from dje.utils import group_by_name_version
 from dje.utils import group_by_simple
 from dje.utils import has_permission
 from dje.utils import queryset_to_changelist_href
-from dje.utils import safe_filename
 from dje.utils import str_to_id_list
 
 License = apps.get_model("license_library", "License")
@@ -594,7 +591,10 @@ class SendAboutFilesMixin:
         Return the value from the "filename" field when available or fallback to
         the string representation of the object.
         """
-        return getattr(instance, "filename", None) or str(instance).replace(" ", "_")
+        filename = getattr(instance, "filename", None) or str(instance)
+        for char in "/@?=#: ":
+            filename = filename.replace(char, "_")
+        return filename
 
     @staticmethod
     def get_zipped_response(about_files, filename):
@@ -663,12 +663,12 @@ def home_view(request):
     """Dataspace homepage."""
     documentation_urls = {}
     rtd_url = "https://dejacode.readthedocs.io/en/latest"
-    tutorials_label = format_html('Tutorials <span class="badge text-bg-success">New</span>')
 
     documentation_urls = {
-        tutorials_label: f"{rtd_url}/tutorial-1.html",
-        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
+        "Documentation": "https://dejacode.readthedocs.io/en/latest/",
+        "Tutorials": f"{rtd_url}/tutorial-1.html",
         "API documentation": reverse("api-docs:docs-index"),
+        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
     }
 
     support_urls = {
@@ -1007,6 +1007,8 @@ class TabSetMixin:
         }
 
     def get_package_fields(self, package, essential_tab=False):
+        from component_catalog.models import PACKAGE_URL_FIELDS
+
         # Always displayed in the Package "Essentials" tab context but only
         # displayed if a value is available in the Component "Packages" tab.
         essential_else_bool = None if essential_tab else bool
@@ -1027,9 +1029,20 @@ class TabSetMixin:
                 (_("Identifier"), package.get_absolute_link(), package.identifier_help(), None)
             )
 
+        package_url_fields_context = {
+            "package": package,
+            "help_texts": {field: ght(package._meta, field) for field in PACKAGE_URL_FIELDS},
+        }
+
         tab_fields.extend(
             [
                 (_("Package URL"), package.package_url, package.package_url_help(), None),
+                (
+                    "",
+                    package_url_fields_context,
+                    None,
+                    "component_catalog/tabs/field_package_url_fields.html",
+                ),
                 TabField("filename", package, condition=essential_else_bool),
                 TabField(
                     "usage_policy",
@@ -1583,7 +1596,7 @@ def object_compare_view(request):
 
 @login_required
 def clone_dataset_view(request, pk):
-    """Call the clonedataset management command as a celery task."""
+    """Call the clonedataset management command as a an async task."""
     changelist_url = reverse("admin:dje_dataspace_changelist")
     user = request.user
     template_dataspace = settings.TEMPLATE_DATASPACE
@@ -1935,7 +1948,8 @@ class ActivityLog(
         """
         user_dataspace_id = self.request.user.dataspace_id
         content_type = ContentType.objects.get_for_model(self.model)
-        start = datetime.datetime.now() - datetime.timedelta(days=days)
+
+        start = timezone.now() - datetime.timedelta(days=days)
 
         history_entries = History.objects.filter(
             object_dataspace_id=user_dataspace_id,
@@ -2008,7 +2022,7 @@ class ActivityLog(
                 "objects": self.get_objects(days),
                 "verbose_name": self.model._meta.verbose_name,
                 "dataspace": self.request.user.dataspace,
-                "now": datetime.datetime.now(),
+                "now": timezone.now(),
             }
         )
         return context
@@ -2294,6 +2308,7 @@ class IntegrationsStatusView(
 
         if self.request.user.is_superuser:
             status["service_url"] = integration.service_url
+            status["has_api_key"] = bool(integration.service_api_key)
 
         return status
 
@@ -2313,32 +2328,6 @@ class IntegrationsStatusView(
         return context
 
 
-def get_spdx_extracted_licenses(spdx_packages):
-    """
-    Return all the licenses to be included in the SPDX extracted_licenses.
-    Those include the `LicenseRef-` licenses, ie: licenses not available in the
-    SPDX list.
-
-    In the case of Product relationships, ProductComponent and ProductPackage,
-    the set of licenses of the related object, Component or Package, is used
-    as the licenses of the relationship is always a subset of the ones of the
-    related object.
-    This ensures that we have all the license required for a valid SPDX document.
-    """
-    from product_portfolio.models import ProductRelationshipMixin
-
-    all_licenses = set()
-    for entry in spdx_packages:
-        if isinstance(entry, ProductRelationshipMixin):
-            all_licenses.update(entry.related_component_or_package.licenses.all())
-        else:
-            all_licenses.update(entry.licenses.all())
-
-    return [
-        license.as_spdx() for license in all_licenses if license.spdx_id.startswith("LicenseRef")
-    ]
-
-
 class ExportSPDXDocumentView(
     LoginRequiredMixin,
     DataspaceScopeMixin,
@@ -2346,43 +2335,14 @@ class ExportSPDXDocumentView(
     BaseDetailView,
 ):
     def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        spdx_document = self.get_spdx_document(instance, self.request.user)
-        document_name = spdx_document.as_dict()["name"]
-        filename = f"{document_name}.spdx.json"
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document_json = spdx_document.as_json()
 
-        if not spdx_document:
-            raise Http404
-
-        response = FileResponse(
-            spdx_document.as_json(),
-            filename=filename,
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
             content_type="application/json",
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
-
-    @staticmethod
-    def get_spdx_document(instance, user):
-        spdx_packages = instance.get_spdx_packages()
-
-        creation_info = spdx.CreationInfo(
-            person_name=f"{user.first_name} {user.last_name}",
-            person_email=user.email,
-            organization_name=user.dataspace.name,
-            tool=f"DejaCode-{dejacode_version}",
-        )
-
-        document = spdx.Document(
-            name=f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}_{instance}",
-            namespace=f"https://dejacode.com/spdxdocs/{instance.uuid}",
-            creation_info=creation_info,
-            packages=[package.as_spdx() for package in spdx_packages],
-            extracted_licenses=get_spdx_extracted_licenses(spdx_packages),
-        )
-
-        return document
 
 
 class ExportCycloneDXBOMView(
@@ -2393,57 +2353,17 @@ class ExportCycloneDXBOMView(
 ):
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        cyclonedx_bom = self.get_cyclonedx_bom(instance, self.request.user)
-        base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
-        filename = safe_filename(f"{base_filename}_{instance}.cdx.json")
+        spec_version = self.request.GET.get("spec_version")
 
-        if not cyclonedx_bom:
-            raise Http404
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
 
-        outputter = cyclonedx_output.get_instance(
-            bom=cyclonedx_bom,
-            output_format=cyclonedx_output.OutputFormat.JSON,
-        )
-        bom_json = outputter.output_as_string()
+        try:
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+        except ValueError:
+            raise Http404(f"Spec version {spec_version} not supported")
 
-        response = FileResponse(
-            bom_json,
-            filename=filename,
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
             content_type="application/json",
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
-
-    @staticmethod
-    def get_cyclonedx_bom(instance, user):
-        """https://cyclonedx.org/use-cases/#dependency-graph"""
-        cyclonedx_components = []
-
-        if hasattr(instance, "get_cyclonedx_components"):
-            cyclonedx_components = [
-                component.as_cyclonedx() for component in instance.get_cyclonedx_components()
-            ]
-
-        bom = cyclonedx_bom.Bom(components=cyclonedx_components)
-
-        cdx_component = instance.as_cyclonedx()
-        cdx_component.dependencies.update([component.bom_ref for component in cyclonedx_components])
-
-        bom.metadata = cyclonedx_bom.BomMetaData(
-            component=cdx_component,
-            tools=[
-                cyclonedx_bom.Tool(
-                    vendor="nexB",
-                    name="DejaCode",
-                    version=dejacode_version,
-                )
-            ],
-            authors=[
-                cyclonedx_bom.OrganizationalContact(
-                    name=f"{user.first_name} {user.last_name}",
-                )
-            ],
-        )
-
-        return bom

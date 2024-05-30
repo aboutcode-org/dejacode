@@ -1,0 +1,14 @@
+about_resource: pip-24.0-py3-none-any.whl
+name: pip
+version: '24.0'
+download_url: https://files.pythonhosted.org/packages/8a/6a/19e9fe04fca059ccf770861c7d5721ab4c2aebc539889e97c7977528a53b/pip-24.0-py3-none-any.whl
+package_url: pkg:pypi/pip@24.0
+license_expression: mit
+copyright: Copyright pip project contributors
+attribute: yes
+checksum_md5: 74e3c5e4082113b1239ca0e9abfd1e82
+checksum_sha1: e44313ae1e6af3c2bd3b60ab2fa8c34308d00555
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

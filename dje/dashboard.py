@@ -68,6 +68,10 @@ class DejaCodeDashboard(Dashboard):
 
         shortcuts = [
             {
+                "title": _("Documentation"),
+                "url": "https://dejacode.readthedocs.io/en/latest/",
+            },
+            {
                 "title": _("Models documentation"),
                 "url": reverse("admin:docs_models"),
             },

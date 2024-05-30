@@ -1,0 +1,21 @@
+<div class="alert alert-primary m-0 mb-3" role="alert">
+  <p class="m-0">
+    This tab renders a preview of the AboutCode files: .ABOUT and .NOTICE,
+    exactly as it will appear in the generated .yml files.<br>
+    <a href="{{ object.get_about_files_url }}" class="fw-bold">Click here to download</a>
+    those files as a zip archive.
+  </p>
+</div>
+
+<dl class="row mb-0">
+  <dt class="col-sm-1 text-end pt-2 pe-0">.ABOUT</dt>
+  <dd class="col-sm-11">
+    <pre class="pre-bg-body-tertiary mb-1">{{ values.about_content }}</pre>
+  </dd>
+  {% if values.notice_content %}
+    <dt class="col-sm-1 text-end pt-2 pe-0">.NOTICE</dt>
+    <dd class="col-sm-11">
+      <pre class="pre-bg-body-tertiary mb-1">{{ values.notice_content }}</pre>
+    </dd>
+  {% endif %}
+</dl>

@@ -152,7 +152,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="component-add-form" method="post" data-add-url="{% url 'component_catalog:component_add_ajax' %}">{% csrf_token %}
-            <div class="modal-body bg-light">
+            <div class="modal-body bg-body-tertiary">
               {% crispy component_add_form %}
             </div>
             <div class="modal-footer">
@@ -167,7 +167,7 @@
 {% endblock %}
 
 {% block javascripts %}
-  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-4HsJEwGM0+w+SABCJJ53kp6t8ClDVpaL1J381RyPr7Coyw8vwZ4k1ergxs2XknIF" crossorigin="anonymous"></script>
+  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-oTqsk3bKZbt7gvIiSLAxv/f/1zUBuzofCLQcVe+9J9s7zHhGnWfebQu3miHGT1Vc" crossorigin="anonymous"></script>
   <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
   {% if component_add_form %}
     <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
@@ -247,7 +247,7 @@
         let create_component_modal = $('#create-component-modal');
         let license_expression_field = create_component_modal.find('.licenseexpressionwidget');
         let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
-        NEXB.setup_awesomplete_builder(license_expression_field.get(0), null,  100, licenses_data_for_builder);
+        setup_awesomplete_builder(license_expression_field.get(0), null,  100, licenses_data_for_builder);
 
         $('#component-add-form').on('submit', function(e) {
           e.preventDefault();

@@ -10,7 +10,6 @@ import uuid
 from contextlib import suppress
 from urllib.parse import urlparse
 
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,6 +36,7 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.relations import ManyRelatedField
 from rest_framework.response import Response
 
+from dje import outputs
 from dje.api_custom import TabPermission
 from dje.copier import copy_object
 from dje.fields import ExtendedNullBooleanSelect
@@ -177,7 +177,7 @@ class CreateRetrieveUpdateListViewSet(
 
         History.log_addition(user, serializer.instance)
         if History.ADDITION in self.email_notification_on:
-            send_notification_email(user, serializer.instance, History.ADDITION)
+            send_notification_email(self.request, serializer.instance, History.ADDITION)
 
     def perform_update(self, serializer):
         """Add the CHANGE History."""
@@ -214,7 +214,9 @@ class CreateRetrieveUpdateListViewSet(
             change_message += construct_changes_details_message(
                 {serializer.instance: changes_details}
             )
-            send_notification_email(user, serializer.instance, History.CHANGE, change_message)
+            send_notification_email(
+                self.request, serializer.instance, History.CHANGE, change_message
+            )
 
 
 class ExtraPermissionsViewSetMixin:
@@ -317,14 +319,17 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_absolute_url(self, obj):
         """
-        Return a fully qualified URL (includes the schema and domains) of the object.
-        Combining the settings site URL and the get_absolute_url() method of the object.
+        Return the object fully qualified URL including the schema and domain.
 
         Usage:
             absolute_url = serializers.SerializerMethodField()
         """
-        site = settings.SITE_URL.rstrip("/")
-        return f"{site}{obj.get_absolute_url()}"
+        absolute_url = obj.get_absolute_url()
+
+        if request := self.context.get("request", None):
+            return request.build_absolute_uri(location=absolute_url)
+
+        return absolute_url
 
     def apply_tabs_permission(self, fields, user):
         model_tabset = get_tabset_for_model(self.Meta.model)
@@ -577,4 +582,47 @@ class ExternalReferenceViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdat
             .scope(self.request.user.dataspace)
             .select_related("content_type")
             .prefetch_related("content_object")
+        )
+
+
+class AboutCodeFilesActionMixin:
+    @action(detail=True, name="Download AboutCode files")
+    def aboutcode_files(self, request, uuid):
+        instance = self.get_object()
+        about_files = instance.get_about_files()
+        filename = self.get_filename(instance)
+        return self.get_zipped_response(about_files, filename)
+
+
+class SPDXDocumentActionMixin:
+    @action(detail=True, name="Download SPDX document")
+    def spdx_document(self, request, uuid):
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+
+        spdx_document_json = spdx_document.as_json()
+
+        return outputs.get_attachment_response(
+            file_content=spdx_document_json,
+            filename=outputs.get_spdx_filename(spdx_document),
+            content_type="application/json",
+        )
+
+
+class CycloneDXSOMActionMixin:
+    @action(detail=True, name="Download CycloneDX SBOM")
+    def cyclonedx_sbom(self, request, uuid):
+        instance = self.get_object()
+        spec_version = request.query_params.get("spec_version")
+
+        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        try:
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+        except ValueError:
+            error = f"Spec version {spec_version} not supported"
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+        return outputs.get_attachment_response(
+            file_content=cyclonedx_bom_json,
+            filename=outputs.get_cyclonedx_filename(instance),
+            content_type="application/json",
         )

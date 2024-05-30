@@ -9,7 +9,8 @@
 from django.urls import path
 
 from product_portfolio.views import AttributionView
-from product_portfolio.views import ImportManifestView
+from product_portfolio.views import ImportManifestsView
+from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView
 from product_portfolio.views import ManagePackageGridView
 from product_portfolio.views import ProductAddView
@@ -22,6 +23,7 @@ from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
 from product_portfolio.views import ProductTabImportsView
 from product_portfolio.views import ProductTabInventoryView
+from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
 from product_portfolio.views import add_customcomponent_ajax_view
@@ -30,7 +32,6 @@ from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import license_summary_view
-from product_portfolio.views import product_tree_comparison_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_status_view
 
@@ -67,7 +68,7 @@ urlpatterns = [
     ),
     path(
         "compare/<uuid:left_uuid>/<uuid:right_uuid>/",
-        product_tree_comparison_view,
+        ProductTreeComparisonView.as_view(),
         name="product_tree_comparison",
     ),
     path(
@@ -88,7 +89,8 @@ urlpatterns = [
     *product_path("manage_packages", ManagePackageGridView.as_view()),
     *product_path("license_summary", license_summary_view),
     *product_path("check_package_version", check_package_version_ajax_view),
-    *product_path("import_manifest", ImportManifestView.as_view()),
+    *product_path("load_sboms", LoadSBOMsView.as_view()),
+    *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),

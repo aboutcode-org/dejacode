@@ -63,7 +63,8 @@ class HistoryActionTimeListFilterTestCaseMixin:
         # History.action_time is automatically set to the current
         # time *anytime* the model is saved, so to set a custom value for
         # action_time we use QuerySet.update()
-        self.fake_now = datetime.datetime(year=2012, month=8, day=1)
+        fake_now = datetime.datetime(year=2012, month=8, day=1)
+        self.fake_now = fake_now.astimezone(datetime.timezone.utc)
 
         # create LogEntry objects for the owners
 
@@ -115,12 +116,12 @@ class HistoryCreatedActionTimeListFilterTestCase(
     class_under_test = HistoryCreatedActionTimeListFilter
 
     def get_lookup_params(self):
-        return {"created_date": "past_7_days"}
+        return {"created_date": ["past_7_days"]}
 
     def test_get_history_objects(self):
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(0, self.filter.get_history_objects().count())
 
     def test_get_history_objects_with_invalid_input(self):
@@ -131,18 +132,18 @@ class HistoryCreatedActionTimeListFilterTestCase(
             request, {"created_date": "invalid_value"}, Owner, model_admin
         )
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(None, filter.get_history_objects())
 
     def test_queryset(self):
         request = Mock()
         qs = Owner.objects.all()
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             qs2 = self.filter.queryset(request, qs)
             self.assertEqual(0, qs2.count())
 
@@ -155,9 +156,9 @@ class HistoryCreatedActionTimeListFilterTestCase(
         )
         qs = Owner.objects.all()
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(None, filter.queryset(request, qs))
 
     def test_choices(self):
@@ -194,12 +195,12 @@ class HistoryModifiedActionTimeListFilterTestCase(
     class_under_test = HistoryModifiedActionTimeListFilter
 
     def get_lookup_params(self):
-        return {"modified_date": "past_7_days"}
+        return {"modified_date": ["past_7_days"]}
 
     def test_get_history_objects(self):
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(1, self.filter.get_history_objects().count())
 
     def test_get_history_objects_with_invalid_input(self):
@@ -210,18 +211,18 @@ class HistoryModifiedActionTimeListFilterTestCase(
             request, {"modified_date": "invalid_value"}, Owner, model_admin
         )
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(None, filter.get_history_objects())
 
     def test_queryset(self):
         request = Mock()
         qs = Owner.objects.all()
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             qs2 = self.filter.queryset(request, qs)
             self.assertEqual(1, qs2.count())
 
@@ -234,9 +235,9 @@ class HistoryModifiedActionTimeListFilterTestCase(
         )
         qs = Owner.objects.all()
 
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = self.fake_now
+            mock_timezone.return_value = self.fake_now
             self.assertEqual(None, filter.queryset(request, qs))
 
     def test_choices(self):
@@ -414,7 +415,9 @@ class CreatedByListFilterTestCase(TestCase):
         request.GET = {}
         request.user = self.nexb_user
         model_admin = Mock()
-        filter = CreatedByListFilter(request, {"created_by": self.nexb_user.pk}, Owner, model_admin)
+        filter = CreatedByListFilter(
+            request, {"created_by": [self.nexb_user.pk]}, Owner, model_admin
+        )
         qs = Owner.objects.scope(self.nexb_dataspace)
 
         expected = [self.owner1, self.owner4]
@@ -427,7 +430,7 @@ class CreatedByListFilterTestCase(TestCase):
         request.user = self.other_user
         model_admin = Mock()
         filter = CreatedByListFilter(
-            request, {"created_by": self.other_user.pk}, Owner, model_admin
+            request, {"created_by": [self.other_user.pk]}, Owner, model_admin
         )
         qs = Owner.objects.scope(self.nexb_dataspace)
 

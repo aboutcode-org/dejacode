@@ -34,6 +34,8 @@ from django.utils.translation import gettext_lazy as _
 from attributecode.model import About
 from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
+from cyclonedx.model import contact as cyclonedx_contact
+from cyclonedx.model import license as cyclonedx_license
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
@@ -62,7 +64,7 @@ from dje.models import HistoryFieldsMixin
 from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
-from dje.tasks import tasks_logger
+from dje.tasks import logger as tasks_logger
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -758,7 +760,7 @@ def component_mixin_factory(verbose_name):
             """Return this Component/Product as an CycloneDX Component entry."""
             supplier = None
             if self.owner:
-                supplier = cyclonedx_model.OrganizationalEntity(
+                supplier = cyclonedx_contact.OrganizationalEntity(
                     name=self.owner.name,
                     urls=[self.owner.homepage_url],
                 )
@@ -766,9 +768,9 @@ def component_mixin_factory(verbose_name):
             expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
             licenses = []
             if expression_spdx:
-                licenses = [
-                    cyclonedx_model.LicenseChoice(license_expression=expression_spdx),
-                ]
+                # Using the LicenseExpression directly as the make_with_expression method
+                # does not support the "LicenseRef-" keys.
+                licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
 
             if self.__class__.__name__ == "Product":
                 component_type = cyclonedx_component.ComponentType.APPLICATION
@@ -777,12 +779,12 @@ def component_mixin_factory(verbose_name):
 
             return cyclonedx_component.Component(
                 name=self.name,
-                component_type=component_type,
+                type=component_type,
                 version=self.version,
                 bom_ref=str(self.uuid),
                 supplier=supplier,
                 licenses=licenses,
-                copyright_=self.copyright,
+                copyright=self.copyright,
                 description=self.description,
                 cpe=getattr(self, "cpe", None),
                 properties=get_cyclonedx_properties(self),
@@ -1839,10 +1841,9 @@ class Package(
     def identifier(self):
         """
         Provide a unique value to identify each Package.
-        It is the Package URL (minus the 'pkg:' prefix) if one exists;
-        otherwise it is the Package Filename.
+        It is the Package URL if one exists; otherwise it is the Package Filename.
         """
-        return self.short_package_url or self.filename
+        return self.package_url or self.filename
 
     @classmethod
     def identifier_help(cls):
@@ -1873,8 +1874,8 @@ class Package(
         Return the Package URL string as a valid filename.
         Useful when `Package.filename` is not available.
         """
-        cleaned_package_url = self.short_package_url
-        for char in "/@?=#":
+        cleaned_package_url = self.plain_package_url
+        for char in "/@?=#:":
             cleaned_package_url = cleaned_package_url.replace(char, "_")
         return get_valid_filename(cleaned_package_url)
 
@@ -1887,7 +1888,8 @@ class Package(
         if not params:
             params = [self.dataspace.name, quote_plus(str(self.uuid))]
             if include_identifier:
-                params.insert(1, self.identifier)
+                # For the URL, using plain_package_url for simplification
+                params.insert(1, self.plain_package_url or self.filename)
         return super().get_url(name, params)
 
     def get_absolute_url(self):
@@ -1913,12 +1915,16 @@ class Package(
         return self.get_url("export_cyclonedx")
 
     @classmethod
-    def get_identifier_fields(cls):
+    def get_identifier_fields(cls, *args, purl_fields_only=False, **kwargs):
         """
         Explicit list of identifier fields as we do not enforce a unique together
         on this model.
         This is used in the Importer, to catch duplicate entries.
+        The purl_fields_only option can be use to limit the results.
         """
+        if purl_fields_only:
+            return PACKAGE_URL_FIELDS
+
         return ["filename", "download_url", *PACKAGE_URL_FIELDS]
 
     @property
@@ -2015,9 +2021,15 @@ class Package(
 
     @cached_property
     def component(self):
-        """Return the Component instance if 1 and only 1 Component is assigned to this Package."""
-        with suppress(ObjectDoesNotExist, MultipleObjectsReturned):
-            return self.component_set.get()
+        """
+        Return the Component instance if 1 and only 1 Component is assigned to this
+        Package.
+        Using ``component_set.all()`` to benefit from prefetch_related when it was
+        applied to the Package QuerySet.
+        """
+        component_set = self.component_set.all()
+        if len(component_set) == 1:
+            return component_set[0]
 
     def set_values_from_component(self, component, user):
         changed_fields = set_fields_from_object(
@@ -2222,9 +2234,9 @@ class Package(
 
         licenses = []
         if expression_spdx:
-            licenses = [
-                cyclonedx_model.LicenseChoice(license_expression=expression_spdx),
-            ]
+            # Using the LicenseExpression directly as the make_with_expression method
+            # does not support the "LicenseRef-" keys.
+            licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
 
         hash_fields = {
             "md5": cyclonedx_model.HashAlgorithm.MD5,
@@ -2233,19 +2245,19 @@ class Package(
             "sha512": cyclonedx_model.HashAlgorithm.SHA_512,
         }
         hashes = [
-            cyclonedx_model.HashType(algorithm=algorithm, hash_value=hash_value)
+            cyclonedx_model.HashType(alg=algorithm, content=hash_value)
             for field_name, algorithm in hash_fields.items()
             if (hash_value := getattr(self, field_name))
         ]
 
-        purl = self.package_url
+        package_url = self.get_package_url()
         return cyclonedx_component.Component(
             name=self.name,
             version=self.version,
-            bom_ref=purl or str(self.uuid),
-            purl=purl,
+            bom_ref=str(package_url) or str(self.uuid),
+            purl=package_url,
             licenses=licenses,
-            copyright_=self.copyright,
+            copyright=self.copyright,
             description=self.description,
             cpe=self.cpe,
             author=self.author,

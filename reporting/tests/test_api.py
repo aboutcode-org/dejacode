@@ -139,7 +139,8 @@ class ReportAPITestCase(TestCase):
         self.assertEqual(str(self.report1.uuid), response.data["uuid"])
         self.assertEqual(self.report1.column_template.name, response.data["column_template"])
         self.assertEqual(self.report1.description, response.data["description"])
-        self.assertIn(self.report1.get_absolute_url(), response.data["absolute_url"])
+        expected_url = f"http://testserver{self.report1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(self.report1.name, response.data["name"])
         self.assertEqual(self.report1.query.content_type.model, response.data["content_type"])
         self.assertEqual(self.report1.query.name, response.data["query"])

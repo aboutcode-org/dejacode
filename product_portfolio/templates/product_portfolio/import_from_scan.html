@@ -36,7 +36,7 @@
     </ul>
   </div>
 
-  <div class="alert alert-dark bg-light">
+  <div class="alert alert-dark bg-body-tertiary">
     <h5>Option 1: From a ScanCode-toolkit scan output</h5>
     <div class="mb-2">
       Upload a ScanCode-toolkit JSON output file, generated with <strong>version 31.2.3 or later</strong>, the following <strong>options are mandatory</strong>:
@@ -44,14 +44,17 @@
     <kbd>$ scancode --copyright --license --info --package --json {file_output.json} {input_directory}</kbd>
   </div>
 
-  <div class="alert alert-dark bg-light">
+  <div class="alert alert-dark bg-body-tertiary">
     <h5>Option 2: From ScanCode.io pipeline results</h5>
     <p class="mb-1">
       Upload a ScanCode.io JSON output file, <strong>generated with one of the following pipelines:</strong>
     </p>
     <p class="mb-0">
-      <code>docker</code>, <code>docker_windows</code>, <code>inspect_manifest</code>, <code>load_inventory</code>
-      <code>root_filesystems</code>, <code>scan_codebase</code>, <code>scan_package</code>
+      <code>analyze_docker_image</code>,
+      <code>analyze_windows_docker_image</code>,
+      <code>inspect_packages</code>,
+      <code>scan_codebase</code>,
+      <code>scan_single_package</code>
     </p>
   </div>
 

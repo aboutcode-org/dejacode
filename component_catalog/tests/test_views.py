@@ -442,10 +442,10 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertEqual(["ArchLinux", "Component2"], [x.parent.name for x in parents])
         self.assertEqual(["Apache", "Component3"], [x.child.name for x in children])
 
-        expected1 = f'<div id="component_{self.component1.id}" class="card bg-light mb-2">'
-        expected2 = f'<div id="component_{self.component2.id}" class="card bg-light mb-2">'
-        expected3 = f"source: 'component_{self.component1.id}'"
-        expected4 = f"target: 'component_{self.component2.id}'"
+        expected1 = f'<div id="component_{self.component1.id}" class="card bg-body-tertiary mb-2">'
+        expected2 = f'<div id="component_{self.component2.id}" class="card bg-body-tertiary mb-2">'
+        expected3 = f"var source_id = 'component_{self.component1.id}'"
+        expected4 = f"var target_id = 'component_{self.component2.id}'"
 
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -476,7 +476,7 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertEqual(1, product1.productcomponents.count())
         response = self.client.get(url)
-        expected = f'<div id="product_{product1.id}" class="card bg-light mb-2">'
+        expected = f'<div id="product_{product1.id}" class="card bg-body-tertiary mb-2">'
         self.assertContains(response, expected)
         self.assertContains(response, f"target: 'product_{product1.id}'")
 
@@ -598,7 +598,6 @@ class ComponentUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.component1.get_absolute_url()
         response = self.client.get(url)
-        self.assertNotContains(response, "jsPlumbOwnerHierarchy")
         self.assertNotContains(response, "Selected Owner")
         self.assertNotContains(response, "Child Owners")
 
@@ -608,16 +607,17 @@ class ComponentUserViewsTestCase(TestCase):
         )
 
         response = self.client.get(url)
-        self.assertContains(response, "jsPlumb")
         self.assertContains(response, "Selected Owner")
         self.assertContains(response, "Child Owners")
         self.assertContains(response, child_owner.name)
 
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(self.owner1.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id),
         )
         self.assertContains(
-            response, '<div id="owner_{}" class="card bg-light mb-2">'.format(child_owner.id)
+            response,
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id),
         )
         self.assertContains(
             response, f"{{source: 'owner_{child_owner.id}', target: 'owner_{self.owner1.id}'}}"
@@ -711,27 +711,27 @@ class ComponentUserViewsTestCase(TestCase):
         expected = f"""
         <div class="my-1">
             <a href="{href1}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Type: "not_a_valid_entry" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href2}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 License: "license1" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href3}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 License: "license2" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href4}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Search: "a" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
             <a href="{href5}" class="text-decoration-none">
-              <span class="badge text-bg-dark rounded-pill">
+              <span class="badge text-bg-secondary rounded-pill">
                 Sort: "name" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
@@ -1006,7 +1006,7 @@ class ComponentUserViewsTestCase(TestCase):
     def test_component_catalog_details_view_hide_empty_fields(self):
         self.client.login(username="nexb_user", password="t3st")
         details_url = self.component1.get_absolute_url()
-        expected = '<pre class="pre-bg-light mb-1 field-description">&nbsp;</pre>'
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-description">&nbsp;</pre>'
 
         self.assertFalse(self.nexb_dataspace.hide_empty_fields_in_component_details_view)
         response = self.client.get(details_url)
@@ -1025,7 +1025,9 @@ class ComponentUserViewsTestCase(TestCase):
 
         response = self.client.get(details_url)
         expected = (
-            '<pre class="pre-bg-light mb-1 field-acceptable-linkages">linkage1 linkage2</pre>'
+            '<pre class="pre-bg-body-tertiary mb-1 field-acceptable-linkages">'
+            "  linkage1 linkage2"
+            "</pre>"
         )
         self.assertContains(response, expected, html=True)
 
@@ -1181,10 +1183,12 @@ class PackageUserViewsTestCase(TestCase):
         expected = "/packages/Dataspace/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
 
-        args = [p2.dataspace.name, p2.identifier, p2.uuid]
+        args = [p2.dataspace.name, p2.plain_package_url, p2.uuid]
         url = reverse("component_catalog:package_details", args=args)
-        expected = "/packages/Dataspace/pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
+        expected = "/packages/Dataspace/pkg:pypi/django@1.0/0c895367-e565-426b-9a63-589432fffa8c/"
         self.assertEqual(expected, url)
+        self.assertEqual(expected, p2.details_url)
+        self.assertEqual(expected, p2.get_absolute_url())
 
     def test_package_list_view_content(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -1337,6 +1341,15 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(details_url)
         for expected in expecteds:
             self.assertContains(response, expected)
+
+    def test_package_details_view_aboutcode_tab(self):
+        details_url = self.package1.get_absolute_url()
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(details_url)
+        self.assertContains(response, 'id="tab_aboutcode-tab"')
+        self.assertContains(response, 'id="tab_aboutcode"')
+        self.assertContains(response, "This tab renders a preview of the AboutCode files")
+        self.assertContains(response, "about_resource: package1")
 
     def test_package_list_view_add_to_product(self):
         user = create_user("user", self.dataspace)
@@ -1505,8 +1518,9 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, 'value="1.0"')
         self.assertContains(
             response,
-            '<input type="url" name="homepage_url" maxlength="1024"'
-            ' class="urlinput form-control" id="id_homepage_url">',
+            '<input type="url" name="homepage_url" maxlength="1024" '
+            'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
+            'id="id_homepage_url">',
         )
 
     def test_package_list_view_usage_policy_availability(self):
@@ -1562,7 +1576,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(about_url)
         self.assertEqual("application/zip", response["content-type"])
         self.assertEqual(
-            'attachment; filename="pypi/django_about.zip"', response["content-disposition"]
+            'attachment; filename="pkg_pypi_django_about.zip"', response["content-disposition"]
         )
 
         package.filename = "django.whl"
@@ -1728,10 +1742,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected)
         self.assertIsNotNone(response.context_data["form"])
 
-        expected_status_select = (
-            '<select name="review_status" class="select form-select" disabled'
-            ' id="id_review_status">'
-        )
+        expected_status_select = '<select name="review_status" class="select form-select" disabled'
         self.assertContains(response, expected_status_select)
         self.assertContains(response, f'<option value="{purpose1.pk}">Core</option>')
 
@@ -2035,29 +2046,31 @@ class PackageUserViewsTestCase(TestCase):
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-status">Scan running</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Created date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-created-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-created-date">
+            June 21, 2018, 12:32 PM UTC
+          </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
         <dd class="col-sm-10 clipboard">
-          <pre class="pre-bg-light mb-1 field-end-date">&nbsp;</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-end-date">&nbsp;</pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">ScanCode.io version</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-light mb-1 field-scancodeio-version">31.0.0</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>
         </dd>
         </dl>
         """
@@ -2305,7 +2318,7 @@ class PackageUserViewsTestCase(TestCase):
           <td class="text-center"><span class="badge text-bg-success fs-85pct">+10</span></td>
           <td class="text-center"><span class="badge text-bg-danger fs-85pct">-10</span></td>
           <td class="text-center"></td>
-          <td class="text-center bg-light">
+          <td class="text-center bg-body-tertiary">
             <span class="badge text-bg-primary fs-85pct">90</span>
           </td>
         </tr>
@@ -2823,7 +2836,11 @@ class PackageUserViewsTestCase(TestCase):
                     "input_sources": [
                         {
                             "filename": self.package1.filename,
-                            "source": self.package1.download_url,
+                            "download_url": self.package1.download_url,
+                            "is_uploaded": False,
+                            "tag": "",
+                            "exists": True,
+                            "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
                         }
                     ],
                     "runs": [
@@ -3194,9 +3211,11 @@ class PackageUserViewsTestCase(TestCase):
         fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
         self.assertEqual(fields[0], ("Summary", None, "Summary of the vulnerability"))
 
+        vulnerability_url = "http://public.vulnerablecode.io/vulnerabilities/VCID-pk3r-ga7k-aaap"
         vulnerability = {
-            "vulnerability_id": "42d0a7c4-99e9-4506-b0c6-338ec2993147",
+            "vulnerability_id": "VCID-pk3r-ga7k-aaap",
             "summary": "SQL Injection",
+            "resource_url": vulnerability_url,
             "references": [
                 {
                     "reference_id": "",
@@ -3219,19 +3238,22 @@ class PackageUserViewsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         self.assertEqual(fields[0], ("Summary", "SQL Injection", "Summary of the vulnerability"))
-        self.assertEqual(fields[1][0], "Fixed packages")
-        fixed_package_values = fields[1][1]
+        self.assertEqual(fields[1][0], "VulnerableCode URL")
+        url_as_link = f'<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>'
+        self.assertEqual(fields[1][1], url_as_link)
+        self.assertEqual(fields[2][0], "Fixed packages")
+        fixed_package_values = fields[2][1]
         self.assertIn("nginx/nginx@1.10.1", fixed_package_values)
         self.assertIn(
             '<a href="/packages/add/?package_url=pkg:nginx/nginx@1.10.1"',
             fixed_package_values,
         )
         self.assertIn(
-            f'<a href="{self.package1.get_absolute_url()}">nginx/nginx@1.11.1</a>',
+            f'<a href="{self.package1.get_absolute_url()}">pkg:nginx/nginx@1.11.1</a>',
             fixed_package_values,
         )
         self.assertEqual(
-            fields[2][0:2],
+            fields[3][0:2],
             (
                 "Reference IDs",
                 '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
@@ -3240,7 +3262,7 @@ class PackageUserViewsTestCase(TestCase):
             ),
         )
         self.assertEqual(
-            fields[3][0:2],
+            fields[4][0:2],
             (
                 "Reference URLs",
                 '<a target="_blank" href="http://www.openwall.com/lists/oss-security/2022/01/18/4" '
@@ -3406,13 +3428,22 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }
@@ -3441,13 +3472,22 @@ class PackageUserViewsTestCase(TestCase):
             "project": {
                 "uuid": "5f2cdda6-fe86-4587-81f1-4d407d4d2c02",
                 "name": "project_name",
-                "input_sources": {
-                    self.package1.filename: self.package1.download_url,
-                },
+                "input_sources": [
+                    {
+                        "uuid": "8e454229-70f4-476f-a56f-2967eb2e8f4c",
+                        "filename": self.package1.filename,
+                        "download_url": self.package1.download_url,
+                        "is_uploaded": False,
+                        "tag": "",
+                        "size": 8731,
+                        "is_file": True,
+                        "exists": True,
+                    }
+                ],
             },
             "run": {
                 "uuid": "b45149cf-9e4c-41e5-8824-6abe7207551a",
-                "pipeline_name": "scan_package",
+                "pipeline_name": "scan_single_package",
                 "status": "success",
             },
         }
@@ -3554,22 +3594,22 @@ class PackageUserViewsTestCase(TestCase):
         self.assertTrue(self.super_user.dataspace.enable_purldb_access)
         response = self.client.get(self.package1.get_absolute_url())
         self.assertContains(response, expected)
-        self.assertContains(response, '<pre class="pre-bg-light mb-1 field-download-url">')
+        self.assertContains(response, '<pre class="pre-bg-body-tertiary mb-1 field-download-url">')
 
         response = self.client.get(self.package1.get_url("tab_purldb"))
         self.assertContains(
             response,
-            '<pre class="pre-bg-light mb-1 field-sha1">'
+            '<pre class="pre-bg-body-tertiary mb-1 field-sha1">'
             "a2363646a9dd05955633b450010b59a21af8a423"
             "</pre>",
         )
         self.assertContains(
-            response, '<pre class="pre-bg-light mb-1 field-release-date">2015-09-22</pre>'
+            response, '<pre class="pre-bg-body-tertiary mb-1 field-release-date">2015-09-22</pre>'
         )
         self.assertContains(
-            response, '<pre class="pre-bg-light mb-1 field-primary-language">Java</pre>'
+            response, '<pre class="pre-bg-body-tertiary mb-1 field-primary-language">Java</pre>'
         )
-        self.assertContains(response, '<pre class="pre-bg-light mb-1 field-homepage-url">')
+        self.assertContains(response, '<pre class="pre-bg-body-tertiary mb-1 field-homepage-url">')
 
     def test_component_catalog_package_add_view_permission_access(self):
         add_url = reverse("component_catalog:package_add")
@@ -3631,6 +3671,53 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, package.license_expression)
         expected = "Package &quot;name.zip&quot; was successfully created."
         self.assertContains(response, expected)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_component_catalog_package_add_view_initial_data(
+        self, mock_is_configured, mock_request_get
+    ):
+        self.client.login(username=self.super_user.username, password="secret")
+        add_url = reverse("component_catalog:package_add")
+
+        mock_is_configured.return_value = True
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+
+        puyrldb_entry = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "qualifiers": "",
+            "subpath": "",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        mock_request_get.return_value = {
+            "count": 1,
+            "results": [puyrldb_entry],
+        }
+
+        response = self.client.get(add_url)
+        self.assertEqual({}, response.context["form"].initial)
+
+        response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
+        expected = {
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2015-09-22",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+        }
+        self.assertEqual(expected, response.context["form"].initial)
 
     @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
@@ -4563,8 +4650,6 @@ class ComponentListViewTestCase(TestCase):
         self.assertIn(status, form.fields["configuration_status"].queryset)
         self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
 
-        self.assertEqual([(keyword.label, keyword.label)], form.fields["keywords"].choices)
-
         # NameVersionValidationFormMixin
         data = {
             "name": self.component1.name,
@@ -4610,7 +4695,7 @@ class ComponentListViewTestCase(TestCase):
             "copyright": "Copyright",
             "notice_text": "Notice",
             "description": "Description",
-            "keywords": [keyword.label],
+            "keywords": [keyword.label, "Another keyword"],
             "primary_language": "Python",
             "homepage_url": "https://nexb.com",
             "configuration_status": status.pk,
@@ -4623,6 +4708,7 @@ class ComponentListViewTestCase(TestCase):
         self.assertEqual(owner, component.owner)
         self.assertEqual(status, component.configuration_status)
         self.assertEqual(license1.key, component.license_expression)
+        self.assertEqual(["Key1", "Another keyword"], component.keywords)
 
     def test_component_catalog_component_form_assigned_packages(self):
         data = {

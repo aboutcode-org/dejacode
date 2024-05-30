@@ -19,17 +19,22 @@
             The Product provides you with a group of {% trans opts.verbose_name_plural|title %} that are used together, so that
             you can generate Attribution documentation for all of the {% trans opts.verbose_name_plural|title %} in that Product.
         </p>
-        <p style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px;">
             {{ form.non_field_errors }}
             <label for="id_product">Product:</label>
             {{ form.product.errors }}
             {{ form.product }}
+            <div style="margin-top:15px;margin-bottom:15px;">
+                {{ form.replace_existing_version }}
+                {{ form.replace_existing_version.label }}
+                <p class="grp-help">{{ form.replace_existing_version.help_text }}</p>
+            </div>
             {% if perms.product_portfolio.add_product %}
                 <a href="{% url 'admin:product_portfolio_product_add' %}" class="add-another"></a>
             {% endif %}
             {{ form.ct }}
             {{ form.ids }}
-        </p>
+        </div>
         <p id="description" style="margin-bottom: 10px;"></p>
         <div class="grp-content-container g-d-c">
             <div class="grp-module">

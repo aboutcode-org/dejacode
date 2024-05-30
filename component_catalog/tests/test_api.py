@@ -53,7 +53,6 @@ from policy.models import UsagePolicy
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class ComponentAPITestCase(TestCase):
     def setUp(self):
@@ -315,6 +314,8 @@ class ComponentAPITestCase(TestCase):
         self.assertContains(response, self.component1_detail_url)
         self.assertEqual(str(self.component1), response.data["display_name"])
         self.assertIn(self.component1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.component1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.component1.uuid), response.data["uuid"])
         self.assertEqual(self.component1.name, response.data["name"])
         self.assertEqual(self.component1.type, response.data["type"])
@@ -923,7 +924,6 @@ class ComponentAPITestCase(TestCase):
     EMAIL_HOST="localhost",
     EMAIL_PORT=25,
     DEFAULT_FROM_EMAIL="webmaster@localhost",
-    SITE_URL="server.dejacode.nexb",
 )
 class PackageAPITestCase(MaxQueryMixin, TestCase):
     def setUp(self):
@@ -1069,6 +1069,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, self.package1_detail_url)
         self.assertIn(self.package1_detail_url, response.data["api_url"])
+        expected_url = f"http://testserver{self.package1.get_absolute_url()}"
+        self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(str(self.package1.uuid), response.data["uuid"])
         self.assertEqual(self.package1.filename, response.data["filename"])
         self.assertEqual(self.package1.size, response.data["size"])
@@ -1194,7 +1196,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         for field_name, value in data.items():
             self.assertEqual(str(value), str(getattr(package, field_name)))
 
-        expected = 'Added Package: "deb/debian/curl@7.50.3-1"'
+        expected = f'Added Package: "{package.package_url}"'
         self.assertEqual(expected, mail.outbox[0].subject)
         body = mail.outbox[0].body
         self.assertIn(package.get_admin_url(), body)
@@ -1417,8 +1419,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         }
         self.assertEqual(expected, response.json())
 
-    def test_api_package_viewset_about_files_action(self):
-        about_url = reverse("api_v2:package-about-files", args=[self.package1.uuid])
+    def test_api_package_viewset_aboutcode_files_action(self):
+        about_url = reverse("api_v2:package-aboutcode-files", args=[self.package1.uuid])
 
         response = self.client.get(about_url)
         self.assertEqual(403, response.status_code)

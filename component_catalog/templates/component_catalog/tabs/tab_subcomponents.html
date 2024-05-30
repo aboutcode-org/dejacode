@@ -34,7 +34,7 @@
                     {% endif %}
                 </td>
                 <td>{{ data.child.version }}</td>
-                <td>{{ data.child.owner }}</td>
+                <td>{{ data.child.owner|default_if_none:"" }}</td>
                 <td>{{ data.subcomponent.purpose }}</td>
                 <td>
                     {% if data.subcomponent.license_expression %}
@@ -50,7 +50,7 @@
                 <td class="text-center">{{ data.subcomponent.is_modified|as_icon }}</td>
                 <td>
                     {% if component.is_active %}
-                        <ul class="list-inline">
+                        <ul class="list-inline mb-0">
                             <li class="list-inline-item">
                                 <a href="{{ data.child.get_absolute_url }}#hierarchy" target="_blank" title="{% trans 'Hierarchy' %}"><i class="fas fa-sitemap"></i></a>
                             </li>

@@ -46,7 +46,7 @@ def has_email_settings():
     return False
 
 
-def send_notification_email(user, instance, action, message=""):
+def send_notification_email(request, instance, action, message=""):
     if not has_email_settings():
         return
 
@@ -57,6 +57,7 @@ def send_notification_email(user, instance, action, message=""):
     if not recipients:
         return
 
+    user = request.user
     verbose_name = instance._meta.verbose_name.capitalize()
     verbose_action = VERBOSE_ACTION[action]
     subject = f'{verbose_action} {verbose_name}: "{instance}"'
@@ -70,14 +71,14 @@ def send_notification_email(user, instance, action, message=""):
             return
         body += f"\n\n{message}"
 
-    if action is not History.DELETION and settings.SITE_URL:
-        site_url = settings.SITE_URL.rstrip("/")
-        body += f"\n\n{site_url}{instance.get_admin_url()}"
+    if action is not History.DELETION:
+        absolute_url = request.build_absolute_uri(location=instance.get_admin_url())
+        body += f"\n\n{absolute_url}"
 
     send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
 
 
-def send_notification_email_on_queryset(user, queryset, action, message=""):
+def send_notification_email_on_queryset(request, queryset, action, message=""):
     if not has_email_settings():
         return
 
@@ -85,7 +86,7 @@ def send_notification_email_on_queryset(user, queryset, action, message=""):
         return
 
     if len(queryset) == 1:
-        return send_notification_email(user, queryset[0], action, message)
+        return send_notification_email(request, queryset[0], action, message)
 
     first = queryset[0]
     if not hasattr(first, "dataspace"):
@@ -95,6 +96,7 @@ def send_notification_email_on_queryset(user, queryset, action, message=""):
     if not recipients:
         return
 
+    user = request.user
     verbose_name_plural = first._meta.verbose_name_plural.capitalize()
     verbose_action = VERBOSE_ACTION[action]
 
@@ -107,9 +109,9 @@ def send_notification_email_on_queryset(user, queryset, action, message=""):
     for instance in queryset:
         body += f"\n- {instance}"
 
-        if action is not History.DELETION and settings.SITE_URL:
-            site_url = settings.SITE_URL.rstrip("/")
-            body += f" {site_url}{instance.get_admin_url()}"
+        if action is not History.DELETION:
+            absolute_url = request.build_absolute_uri(location=instance.get_admin_url())
+            body += f" {absolute_url}"
 
     if message:
         body += f"\n\n{message}"
@@ -158,7 +160,7 @@ def successful_mass_update(sender, action, request, queryset, modeladmin, form, 
     message = "Changes details:\n\n"
     message += "\n\n".join(f"* {field}\nNew value: {value}" for field, value in changes)
 
-    send_notification_email_on_queryset(request.user, queryset, History.CHANGE, message)
+    send_notification_email_on_queryset(request, queryset, History.CHANGE, message)
 
 
 def send_password_changed_email(user):
@@ -178,9 +180,9 @@ def notify_on_user_locked_out(request, username, **kwargs):
     Webhook defined in the reference Dataspace when the `user_locked_out`
     signal is triggered.
     """
-    site_url = settings.SITE_URL.rstrip("/")
     access_attempt_url = reverse("admin:axes_accessattempt_changelist")
-    access_attempt_link = f"{site_url}{access_attempt_url}?q={username}"
+    access_attempt_absolute_url = request.build_absolute_uri(location=access_attempt_url)
+    access_attempt_link = f"{access_attempt_absolute_url}?q={username}"
     user = DejacodeUser.objects.get_or_none(username=username)
 
     subject = "[DejaCode] Login attempt on locked account requires review!"
@@ -198,7 +200,8 @@ def notify_on_user_locked_out(request, username, **kwargs):
 
     if user:
         user_list_url = reverse("admin:dje_dejacodeuser_changelist")
-        user_list_link = f"{site_url}{user_list_url}?q={username}"
+        user_list_absolute_url = request.build_absolute_uri(location=user_list_url)
+        user_list_link = f"{user_list_absolute_url}?q={username}"
         message += (
             f'"{username}" is an existing DejaCode user in Dataspace '
             f'"{user.dataspace.name}": {user_list_link}\n'

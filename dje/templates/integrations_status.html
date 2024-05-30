@@ -2,7 +2,7 @@
 
 {% block page_title %}Integrations status{% endblock %}
 
-{% block bodyclass %}body-background{% endblock %}
+{% block bodyclass %}bg-body-tertiary{% endblock %}
 
 {% block content %}
   {% include 'includes/header_title.html' with pretitle='Status' title='Integrations' %}
@@ -14,6 +14,9 @@
           <h5 class="card-header">{{ label }}</h5>
           {% if status.service_url %}
             <small class="d-inline-flex px-3 py-1 fw-semibold text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle">
+              {% if status.has_api_key %}
+                <i class="fa fa-key me-1" data-bs-toggle="tooltip" title="API key provided"></i>
+              {% endif %}
               {{ status.service_url }}
             </small>
           {% endif %}

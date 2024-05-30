@@ -251,8 +251,11 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
 
-    def get_import_manifest_url(self):
-        return self.get_url("import_manifest")
+    def get_load_sboms_url(self):
+        return self.get_url("load_sboms")
+
+    def get_import_manifests_url(self):
+        return self.get_url("import_manifests")
 
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
@@ -324,51 +327,115 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
 
     def get_cyclonedx_components(self):
-        return list(self.productcomponents.catalogs()) + list(self.productpackages.all())
+        return [
+            *list(self.productcomponents.catalogs().order_by("id")),
+            *list(self.productpackages.all().order_by("id")),
+        ]
 
-    def assign_objects(self, related_objects, user):
-        """
-        Assign provided `related_objects` to this `Product`.
-        Supported object models are `Component` and `Package`.
-        Return the both counts for created and unchanged objects.
-        """
-        created_count = 0
-        unchanged_count = 0
-
+    def get_relationship_model(self, obj):
+        """Return the relationship model class for a given object."""
         relationship_models = {
             "component": ProductComponent,
             "package": ProductPackage,
         }
+        object_model_name = obj._meta.model_name  # "component" or "package"
+        relationship_model = relationship_models.get(object_model_name)
+        if not relationship_model:
+            raise ValueError(f"Unsupported object model: {object_model_name}")
+
+        return relationship_model
+
+    def find_assigned_other_versions(self, obj):
+        """
+        Look for the same objects with a different version already assigned to the product.
+        Return the relation queryset for the objects with a different version.
+        """
+        object_model_name = obj._meta.model_name  # "component" or "package"
+        relationship_model = self.get_relationship_model(obj)
+
+        # Craft the lookups excluding the version field
+        no_version_object_lookups = {
+            f"{object_model_name}__{field_name}": getattr(obj, field_name)
+            for field_name in obj.get_identifier_fields(purl_fields_only=True)
+            if field_name != "version"
+        }
+
+        filters = {
+            "product": self,
+            "dataspace": obj.dataspace,
+            **no_version_object_lookups,
+        }
+        excludes = {
+            f"{object_model_name}__id": obj.id,
+        }
+
+        return relationship_model.objects.exclude(**excludes).filter(**filters)
+
+    def assign_object(self, obj, user, replace_version=False):
+        """
+        Assign a provided ``obj`` (either a Component or Package) to this Product.
+        Return a tuple with the status ("created", "updated", "unchanged") and the relationship
+        object.
+        """
+        object_model_name = obj._meta.model_name  # "component" or "package"
+        relationship_model = self.get_relationship_model(obj)
+
+        filters = {
+            "product": self,
+            "dataspace": obj.dataspace,
+            object_model_name: obj,
+        }
+
+        # 1. Check if a relation for this object already exists
+        if relationship_model.objects.filter(**filters).exists():
+            return "unchanged", None
+
+        # 2. Find an existing relation for another version of the same object
+        #    when replace_version is provided.
+        if replace_version:
+            other_assigned_versions = self.find_assigned_other_versions(obj)
+            if len(other_assigned_versions) == 1:
+                existing_relation = other_assigned_versions[0]
+                other_version_object = getattr(existing_relation, object_model_name)
+                existing_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
+                History.log_change(user, self, message)
+                return "updated", existing_relation
+
+        # 3. Otherwise, create a new relation
+        defaults = {
+            "license_expression": obj.license_expression,
+            "created_by": user,
+            "last_modified_by": user,
+        }
+        created_relation = relationship_model.objects.create(**filters, **defaults)
+        History.log_addition(user, created_relation)
+        History.log_change(user, self, f'Added {object_model_name} "{obj}"')
+        return "created", created_relation
+
+    def assign_objects(self, related_objects, user, replace_version=False):
+        """
+        Assign provided ``related_objects`` (either a Component or Package) to this Product.
+        Return counts of created, updated, and unchanged objects.
+        """
+        created_count = 0
+        updated_count = 0
+        unchanged_count = 0
 
         for obj in related_objects:
-            relation_model_name = obj._meta.model_name  # 'component' or 'package'
-            relation_model_class = relationship_models.get(relation_model_name)
-            if not relation_model_class:
-                continue
-
-            filters = {
-                "product": self,
-                relation_model_name: obj,
-                "dataspace": obj.dataspace,
-                "defaults": {
-                    "license_expression": obj.license_expression,
-                    "created_by": user,
-                    "last_modified_by": user,
-                },
-            }
-            relation_obj, created = relation_model_class.objects.get_or_create(**filters)
-            if created:
-                History.log_addition(user, relation_obj)
-                History.log_change(user, self, f'Added {relation_model_name} "{obj}"')
+            status, relation = self.assign_object(obj, user, replace_version)
+            if status == "created":
                 created_count += 1
+            elif status == "updated":
+                updated_count += 1
             else:
                 unchanged_count += 1
 
-        if created_count:
+        if created_count > 0 or updated_count > 0:
             self.last_modified_by = user
             self.save()
 
-        return created_count, unchanged_count
+        return created_count, updated_count, unchanged_count
 
     def scan_all_packages_task(self, user):
         """
@@ -1120,6 +1187,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
 
     class ProjectType(models.TextChoices):
         IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
+        LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
         PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
 
     class Status(models.TextChoices):

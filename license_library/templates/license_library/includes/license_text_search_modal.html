@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="get" action="{% url 'license_library:license_list' %}">
-        <div class="modal-body bg-light">
+        <div class="modal-body bg-body-tertiary">
           <div class="mb-3">
             <textarea maxlength="1500" rows="8" cols="10" id="text_search" name="text_search" class="form-control" style="width: 100%;">{{ text_search }}</textarea>
             <small class="form-text text-muted mt-2">

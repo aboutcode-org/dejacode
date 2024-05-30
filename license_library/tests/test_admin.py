@@ -1348,10 +1348,11 @@ class LicenseAdminViewsTestCase(TestCase):
         self.assertContains(response, long_desc_html, html=True)
 
     def test_history_list_filter(self):
-        with patch("dje.filters.timezone") as mock_timezone:
+        with patch("dje.filters.timezone.now") as mock_timezone:
             fake_now = datetime.datetime(year=2012, month=8, day=1)
+            fake_now = fake_now.astimezone(datetime.timezone.utc)
             # patch timezone.now() so that it Return a consistent date
-            mock_timezone.now.return_value = fake_now
+            mock_timezone.return_value = fake_now
 
             self.client.login(username="nexb_user", password="t3st")
             url = reverse("admin:license_library_licensetag_changelist")
