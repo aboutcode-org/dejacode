@@ -7,6 +7,10 @@ Release notes
   also belong or have a hierarchy (relathionship tree).
   https://github.com/nexB/dejacode/issues/70
 
+- Add search and pagination on the Product Inventory tab.
+  https://github.com/nexB/dejacode/issues/3
+  https://github.com/nexB/dejacode/issues/112
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x
