@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
+from django.db.models import Count
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -630,18 +631,38 @@ class ComponentDetailsView(
             "licenses",
         )
 
-        related_children_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("child", queryset=component_prefetch_qs),
+        related_children_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("child", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                child_count=Count("child__children"),
+            )
+            .order_by(
+                "child__name",
+                "child__version",
+            )
         )
 
-        related_parents_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("parent", queryset=component_prefetch_qs),
+        related_parents_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("parent", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                parent_count=Count("parent__related_parents"),
+            )
+            .order_by(
+                "parent__name",
+                "parent__version",
+            )
         )
 
         return (

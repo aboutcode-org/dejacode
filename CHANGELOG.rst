@@ -3,6 +3,10 @@ Release notes
 
 ### Version 5.1.1-dev
 
+- Add visual indicator in hierarchy views, when an object on the far left or far right
+  also belong or have a hierarchy (relathionship tree).
+  https://github.com/nexB/dejacode/issues/70
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

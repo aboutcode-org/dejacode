@@ -389,6 +389,9 @@ class ProductDetailsView(
             .prefetch_related(
                 "component__licenses",
             )
+            .annotate(
+                children_count=Count("component__children"),
+            )
             .order_by(
                 "feature",
                 "component",

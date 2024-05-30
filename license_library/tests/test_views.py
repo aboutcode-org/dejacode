@@ -598,7 +598,7 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         response = self.client.get(url)
-        self.assertContains(response, "jsPlumbOwnerHierarchy")
+        self.assertContains(response, "jsPlumbHierarchy")
         self.assertContains(response, "Selected Owner")
         self.assertContains(response, "Child Owners")
         self.assertContains(response, child_owner.name)
