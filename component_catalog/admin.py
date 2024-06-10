@@ -324,6 +324,13 @@ class ComponentAdmin(
                     "copyright",
                     "holder",
                     "license_expression",
+                    "declared_license_expression",
+                    "declared_license_expression_spdx",
+                    "license_detections",
+                    "other_license_expression",
+                    "other_license_expression_spdx",
+                    "other_license_detections",
+                    "extracted_license_statement",
                     "reference_notes",
                     "release_date",
                     "description",
@@ -418,7 +425,12 @@ class ComponentAdmin(
     autocomplete_lookup_fields = {"fk": ["owner"]}
     # We have to use 'completion_level' rather than the 'completion_level_pct'
     # callable to keep the help_text available during render in the template.
-    readonly_fields = DataspacedAdmin.readonly_fields + ("urn_link", "completion_level")
+    readonly_fields = DataspacedAdmin.readonly_fields + (
+        "urn_link",
+        "completion_level",
+        "declared_license_expression_spdx",
+        "other_license_expression_spdx",
+    )
     form = ComponentAdminForm
     inlines = [
         SubcomponentChildInline,
