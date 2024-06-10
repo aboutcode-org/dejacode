@@ -916,7 +916,15 @@ class TabSetMixin:
         if show_usage_policy:
             licence_expression_source = "get_license_expression_linked_with_policy"
 
-        fields = [TabField("license_expression", source=licence_expression_source)]
+        fields = [
+            TabField("license_expression", source=licence_expression_source),
+            TabField("declared_license_expression"),
+            TabField("declared_license_expression_spdx"),
+            TabField("license_detections"),
+            TabField("other_license_expression"),
+            TabField("other_license_expression_spdx"),
+            TabField("extracted_license_statement"),
+        ]
 
         if getattr(obj, "reference_notes", False):
             fields.append(TabField("reference_notes"))
