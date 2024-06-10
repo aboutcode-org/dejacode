@@ -294,6 +294,70 @@ class LicenseExpressionMixin:
             return "table-warning"
 
 
+class LicenseFieldsMixin(models.Model):
+    declared_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from statements in the key files of a "
+            "software project, such as the NOTICE, COPYING, README, and LICENSE files."
+        ),
+    )
+    declared_license_expression_spdx = models.TextField(
+        verbose_name=_("Declared license expression SPDX"),
+        blank=True,
+        help_text=_(
+            "A declared license expression that uses the license identifiers defined "
+            "by SPDX, as well as the “Licenseref” syntax for licenses not on the SPDX "
+            "list."
+        ),
+    )
+    license_detections = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_(
+            "A list of specific license identifiers derived from statements in the "
+            "key files of a software project, such as the NOTICE, COPYING, README, "
+            "and LICENSE files."
+        ),
+    )
+    other_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from detected licenses in the non-key files "
+            "of a software project, which are often third-party software used by the "
+            "project, or test, sample and documentation files."
+        ),
+    )
+    other_license_expression_spdx = models.TextField(
+        verbose_name=_("Other license expression SPDX"),
+        blank=True,
+        help_text=_(
+            "A license expression derived from detected licenses in the non-key files "
+            "of a software project, using the license identifiers defined by SPDX, "
+            "as well as the “Licenseref” syntax for licenses not on the SPDX list."
+        ),
+    )
+    other_license_detections = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_(
+            "A list of specific license identifiers derived from the non-key files "
+            "of a software project, which are very often third-party software used "
+            "by the project, or test, sample and documentation files."
+        ),
+    )
+    extracted_license_statement = models.TextField(
+        blank=True,
+        help_text=_(
+            "The actual text extracted from a software project that supports the "
+            "license detection process."
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+
 def get_cyclonedx_properties(instance):
     """
     Return fields not supported natively by CycloneDX as properties.
@@ -819,6 +883,7 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    LicenseFieldsMixin,
     ParentChildModelMixin,
     BaseComponentMixin,
     DataspacedModel,
@@ -1584,6 +1649,7 @@ class Package(
     UsagePolicyMixin,
     SetPolicyFromLicenseMixin,
     LicenseExpressionMixin,
+    LicenseFieldsMixin,
     RequestMixin,
     HistoryFieldsMixin,
     ReferenceNotesMixin,
