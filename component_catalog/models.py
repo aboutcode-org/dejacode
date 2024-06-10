@@ -92,6 +92,24 @@ COMPONENT_PACKAGE_COMMON_FIELDS = [
     "version",
 ]
 
+LICENSE_EXPRESSION_HELP_TEXT = _(
+    "The License Expression assigned to a DejaCode Package or Component is an editable "
+    'value equivalent to a "concluded license" as determined by a curator who has '
+    "performed analysis to clarify or correct the declared license expression, which "
+    "may have been assigned automatically (from a scan or an associated package "
+    "definition) when the Package or Component was originally created. "
+    "A license expression defines the relationship of one or more licenses to a "
+    "software object. More than one applicable license can be expressed as "
+    '"license-key-a AND license-key-b". A choice of applicable licenses can be '
+    'expressed as "license-key-a OR license-key-b", and you can indicate the primary '
+    "(preferred) license by placing it first, on the left-hand side of the OR "
+    "relationship. The relationship words (OR, AND) can be combined as needed, "
+    "and the use of parentheses can be applied to clarify the meaning; "
+    'for example "((license-key-a AND license-key-b) OR (license-key-c))". '
+    "An exception to a license can be expressed as "
+    '"license-key WITH license-exception-key".'
+)
+
 
 def validate_filename(value):
     invalid_chars = ["/", "\\", ":"]
@@ -755,25 +773,6 @@ def component_mixin_factory(verbose_name):
             ),
         )
 
-        license_expression = models.CharField(
-            _("License expression"),
-            max_length=1024,
-            blank=True,
-            db_index=True,
-            help_text=_(
-                "On a component or a product in DejaCode, a license expression defines the "
-                "relationship of one or more licenses to that software as declared by its "
-                'licensor. More than one applicable license can be expressed as "license-key-a '
-                'AND license-key-b". A choice of applicable licenses can be expressed as '
-                '"license-key-a OR license-key-b", and you can indicate the primary (preferred) '
-                "license by placing it first, on the left-hand side of the OR relationship. "
-                "The relationship words (OR, AND) can be combined as needed, and the use of "
-                'parentheses can be applied to clarify the meaning; for example "((license-key-a '
-                'AND license-key-b) OR (license-key-c))". An exception to a license can be '
-                'expressed as “license-key WITH license-exception-key".'
-            ),
-        )
-
         class Meta:
             abstract = True
             unique_together = (("dataspace", "name", "version"), ("dataspace", "uuid"))
@@ -888,6 +887,14 @@ class Component(
     BaseComponentMixin,
     DataspacedModel,
 ):
+    license_expression = models.CharField(
+        _("Concluded license expression"),
+        max_length=1024,
+        blank=True,
+        db_index=True,
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
+    )
+
     configuration_status = models.ForeignKey(
         to="component_catalog.ComponentStatus",
         on_delete=models.PROTECT,
@@ -1738,21 +1745,11 @@ class Package(
     )
 
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
         db_index=True,
-        help_text=_(
-            "On a package in DejaCode, a license expression defines the relationship of one or "
-            "more licenses to that software as declared by its licensor. More than one "
-            'applicable license can be expressed as "license-key-a AND license-key-b". A choice '
-            'of applicable licenses can be expressed as "license-key-a OR license-key-b", and you '
-            "can indicate the primary (preferred) license by placing it first, on the left-hand "
-            "side of the OR relationship. The relationship words (OR, AND) can be combined as "
-            "needed, and the use of parentheses can be applied to clarify the meaning; for "
-            'example "((license-key-a AND license-key-b) OR (license-key-c))". An exception to '
-            'a license can be expressed as “license-key WITH license-exception-key".'
-        ),
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
     )
 
     copyright = models.TextField(

@@ -42,6 +42,24 @@ from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
 
+RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
+    "The License Expression assigned to a DejaCode Product Package or Product "
+    'Component is an editable value equivalent to a "concluded license" as determined '
+    "by a curator who has performed analysis to clarify or correct the declared "
+    "license expression, which may have been assigned automatically "
+    "(from a scan or an associated package definition) when the Package or Component "
+    "was originally created, or which may require the assertion of a choice of license."
+    "A license expression defines the relationship of one  or more licenses to a "
+    "software object. More than one applicable license can be expressed as "
+    '"license-key-a AND license-key-b". A choice of applicable licenses can be '
+    'expressed as "license-key-a OR license-key-b", and you can indicate the '
+    "primary (preferred) license by placing it first, on the left-hand side of the "
+    "OR relationship. The relationship words (OR, AND) can be combined as needed, "
+    "and the use of parentheses can be applied to clarify the meaning; for example "
+    '"((license-key-a AND license-key-b) OR (license-key-c))". An exception '
+    'to a license can be expressed as "license-key WITH license-exception-key".'
+)
+
 
 class FieldChangesMixin:
     """
@@ -164,6 +182,24 @@ BaseProductMixin = component_mixin_factory("product")
 
 
 class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedModel):
+    license_expression = models.CharField(
+        max_length=1024,
+        blank=True,
+        db_index=True,
+        help_text=_(
+            "On a product in DejaCode, a license expression defines the "
+            "relationship of one or more licenses to that software as declared by its "
+            'licensor. More than one applicable license can be expressed as "license-key-a '
+            'AND license-key-b". A choice of applicable licenses can be expressed as '
+            '"license-key-a OR license-key-b", and you can indicate the primary (preferred) '
+            "license by placing it first, on the left-hand side of the OR relationship. "
+            "The relationship words (OR, AND) can be combined as needed, and the use of "
+            'parentheses can be applied to clarify the meaning; for example "((license-key-a '
+            'AND license-key-b) OR (license-key-c))". An exception to a license can be '
+            'expressed as "license-key WITH license-exception-key".'
+        ),
+    )
+
     is_active = models.BooleanField(
         verbose_name=_("active"),
         default=True,
@@ -652,25 +688,11 @@ class ProductComponent(ProductRelationshipMixin):
     # it makes test_productcomponent_import_license_expression fail
     # This license_expression is never generated but always stored.
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
         db_index=True,
-        help_text=_(
-            "On a product component relationship (which defines a component as used in your "
-            "product), a license expression is limited by the license(s) assigned to the original "
-            "component, and expresses the license(s) that apply to the context of that component "
-            "as it is used by your product. More than one applicable license can be expressed as "
-            '"license-key-a AND license-key-b". A choice of licenses can be expressed as '
-            '"license-key-a OR license-key-b", and you can indicate the primary license by '
-            "placing it first, on the left-hand side of the OR relationship. You can also assert "
-            "your license choice for the component as used in your product by editing the license "
-            "expression to remove any license keys that do not apply. The relationship words "
-            "(OR, AND) can be combined as needed, and the use of parentheses can be applied to "
-            'clarify the meaning; for example "((license-key-a AND license-key-b) OR '
-            '(license-key-c))". An exception to a license can be expressed as "license-key WITH '
-            'license-exception-key".'
-        ),
+        help_text=RELATION_LICENSE_EXPRESSION_HELP_TEXT,
     )
 
     licenses = models.ManyToManyField(
@@ -806,25 +828,11 @@ class ProductPackage(ProductRelationshipMixin):
     # it makes test_productcomponent_import_license_expression fail
     # This license_expression is never generated but always stored.
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
         db_index=True,
-        help_text=_(
-            "On a product package relationship (which defines a package as used in your product), "
-            "a license expression is limited by the license(s) assigned to the original package "
-            "(unless none were assigned), and expresses the license(s) that apply to the context "
-            "of that package as it is used by your product. More than one applicable license can "
-            'be expressed as "license-key-a AND license-key-b". A choice of licenses can be '
-            'expressed as "license-key-a OR license-key-b", and you can indicate the primary '
-            "license by placing it first, on the left-hand side of the OR relationship. You can "
-            "also assert your license choice for the package as used in your product by editing "
-            "the license expression to remove any license keys that do not apply. The "
-            "relationship words (OR, AND) can be combined as needed, and the use of parentheses "
-            'can be applied to clarify the meaning; for example "((license-key-a AND '
-            'license-key-b) OR (license-key-c))". An exception to a license can be expressed '
-            'as "license-key WITH license-exception-key".'
-        ),
+        help_text=RELATION_LICENSE_EXPRESSION_HELP_TEXT,
     )
 
     licenses = models.ManyToManyField(
@@ -1124,7 +1132,7 @@ class ProductInventoryItem(ProductRelationshipMixin):
     )
 
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
     )

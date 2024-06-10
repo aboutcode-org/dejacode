@@ -826,6 +826,13 @@ class PackageAdmin(
             {
                 "fields": (
                     "license_expression",
+                    "declared_license_expression",
+                    "declared_license_expression_spdx",
+                    "license_detections",
+                    "other_license_expression",
+                    "other_license_expression_spdx",
+                    "other_license_detections",
+                    "extracted_license_statement",
                     "copyright",
                     "holder",
                     "author",
@@ -880,7 +887,12 @@ class PackageAdmin(
         ),
         get_additional_information_fieldset(),
     ]
-    readonly_fields = DataspacedAdmin.readonly_fields + ("package_url", "inferred_url")
+    readonly_fields = DataspacedAdmin.readonly_fields + (
+        "package_url",
+        "inferred_url",
+        "declared_license_expression_spdx",
+        "other_license_expression_spdx",
+    )
     form = PackageAdminForm
     importer_class = PackageImporter
     mass_update_form = PackageMassUpdateForm
