@@ -1631,9 +1631,12 @@ def create_package_from_url(url, user):
     if user.dataspace.enable_purldb_access:
         package_for_match = Package(download_url=download_url)
         package_for_match.set_package_url(package_url)
-        purldb_entries = package_for_match.get_purldb_entries(package_for_match, user)
+        purldb_entries = package_for_match.get_purldb_entries(user)
         # Look for one ith the same exact purl in that case
         if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
+            # TODO: Add support for thos fields
+            if "release_date" in purldb_data:
+                del purldb_data["release_date"]
             package_data.update(purldb_data)
 
     if download_url and not purldb_data:
