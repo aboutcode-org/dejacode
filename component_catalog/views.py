@@ -74,6 +74,7 @@ from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
+from dejacode_toolkit.purldb import pick_purldb_entry
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
@@ -1625,10 +1626,17 @@ def create_package_from_url(url, user):
             f"{url} already exists in your Dataspace as {', '.join(package_links)}"
         )
 
-    # TODO: Match in PurlDB at that stage, to avoid more processing in case of a match.
-    # get_entry_from_purldb
+    # Matching in PurlDB early to avoid more processing in case of a match.
+    purldb_data = None
+    if user.dataspace.enable_purldb_access:
+        package_for_match = Package(download_url=download_url)
+        package_for_match.set_package_url(package_url)
+        purldb_entries = package_for_match.get_purldb_entries(package_for_match, user)
+        # Look for one ith the same exact purl in that case
+        if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
+            package_data.update(purldb_data)
 
-    if download_url:
+    if download_url and not purldb_data:
         package_data = collect_package_data(download_url)
 
     if sha1 := package_data.get("sha1"):
