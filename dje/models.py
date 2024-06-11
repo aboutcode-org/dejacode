@@ -737,8 +737,7 @@ class DataspacedModel(models.Model):
         cleaned_data = {
             field_name: value
             for field_name, value in data.items()
-            if field_name in model_fields
-            and value not in EMPTY_VALUES
+            if field_name in model_fields and value not in EMPTY_VALUES
         }
 
         instance = cls(
