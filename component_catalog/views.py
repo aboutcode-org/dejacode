@@ -1613,8 +1613,7 @@ def create_package_from_url(url, user):
     if is_purl_str(url):
         download_url = purl2url.get_download_url(url)
         package_url = PackageURL.from_string(url)
-        # TODO: For PURLs, we need a QS filter that does an exact match.
-        existing_packages = scoped_packages_qs.for_package_url(url)
+        existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
     else:
         download_url = url
         package_url = url2purl.get_purl(url)
