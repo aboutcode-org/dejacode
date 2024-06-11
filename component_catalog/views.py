@@ -88,6 +88,7 @@ from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
+from dje.utils import is_purl_str
 from dje.utils import is_uuid4
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -1593,30 +1594,51 @@ class PackageAlreadyExistsWarning(Exception):
 
 
 def create_package_from_url(url, user):
+    """
+    Create a package from the given URL for the specified user.
+
+    This function processes the URL to create a package entry. It handles
+    both direct download URLs and Package URLs (purls), checking for
+    existing packages to avoid duplicates. If the package is not already
+    present, it collects necessary package data and creates a new package
+    entry.
+    """
     url = url.strip()
     if not url:
         return
 
+    package_data = {}
     scoped_packages_qs = Package.objects.scope(user.dataspace)
-    existing_packages = scoped_packages_qs.filter(download_url=url)
+
+    if is_purl_str(url):
+        download_url = purl2url.get_download_url(url)
+        package_url = PackageURL.from_string(url)
+        # TODO: For PURLs, we need a QS filter that does an exact match.
+        existing_packages = scoped_packages_qs.for_package_url(url)
+    else:
+        download_url = url
+        package_url = url2purl.get_purl(url)
+        existing_packages = scoped_packages_qs.filter(download_url=url)
 
     if existing_packages:
-        package_link = existing_packages[0].get_absolute_link()
+        package_links = [package.get_absolute_link() for package in existing_packages]
         raise PackageAlreadyExistsWarning(
-            f"URL {url} already exists in your Dataspace as {package_link}"
+            f"{url} already exists in your Dataspace as {', '.join(package_links)}"
         )
 
-    # This may raise a DataCollectionException
-    package_data = collect_package_data(url)
+    # TODO: Match in PurlDB at that stage, to avoid more processing in case of a match.
+    # get_entry_from_purldb
+
+    if download_url:
+        package_data = collect_package_data(download_url)
 
     if sha1 := package_data.get("sha1"):
         if sha1_match := scoped_packages_qs.filter(sha1=sha1):
             package_link = sha1_match[0].get_absolute_link()
             raise PackageAlreadyExistsWarning(
-                f"URL {url} already exists in your Dataspace as {package_link}"
+                f"{url} already exists in your Dataspace as {package_link}"
             )
 
-    package_url = url2purl.get_purl(url)
     if package_url:
         package_data.update(package_url.to_dict(encode=True, empty=""))
 
@@ -1625,6 +1647,7 @@ def create_package_from_url(url, user):
 
 
 @login_required
+@require_POST
 def package_create_ajax_view(request):
     user = request.user
     if not user.has_perm("component_catalog.add_package"):
@@ -1645,7 +1668,7 @@ def package_create_ajax_view(request):
             created.append(package)
         except PackageAlreadyExistsWarning as warning:
             warnings.append(str(warning))
-        except DataCollectionException as error:
+        except (DataCollectionException, Exception) as error:
             errors.append(str(error))
 
     redirect_url = reverse("component_catalog:package_list")

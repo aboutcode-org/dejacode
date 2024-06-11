@@ -1632,12 +1632,15 @@ class PackageUserViewsTestCase(TestCase):
 
         self.client.login(username=self.basic_user.username, password="secret")
         response = self.client.get(package_add_url)
+        self.assertEqual(405, response.status_code)
+
+        response = self.client.post(package_add_url)
         self.assertEqual(403, response.status_code)
         expected = {"error_message": "Permission denied"}
         self.assertEqual(expected, response.json())
 
         self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(package_add_url)
+        response = self.client.post(package_add_url)
         self.assertEqual(400, response.status_code)
         expected = {"error_message": "Missing Download URL"}
         self.assertEqual(expected, response.json())
@@ -1664,7 +1667,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get("/packages/")
         messages = list(response.context["messages"])
         msg = (
-            f"URL https://dejacode.com/archive.zip already exists in your Dataspace as "
+            f"https://dejacode.com/archive.zip already exists in your Dataspace as "
             f'<a href="{self.package1.get_absolute_url()}">package1</a>'
         )
         self.assertEqual(str(messages[0]), msg)
@@ -1709,7 +1712,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get("/packages/")
         messages = list(response.context["messages"])
         msg = (
-            f'URL {collected_data["download_url"]} already exists in your Dataspace as '
+            f'{collected_data["download_url"]} already exists in your Dataspace as '
             f'<a href="{new_package.get_absolute_url()}">{new_package}</a>'
         )
         self.assertEqual(str(messages[0]), msg)

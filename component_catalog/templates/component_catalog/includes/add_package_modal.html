@@ -66,8 +66,13 @@
                 },
                 error: function(data) {
                     $('#overlay').remove();
-                    let error_msg = data;
-                    if (data.responseJSON) error_msg = data.responseJSON.error_message;
+                    let error_msg;
+                    if (data.responseJSON)  {
+                        error_msg = data.responseJSON.error_message;
+                    }
+                    else {
+                        error_msg = data.statusText;
+                    }
                     $('#package-add-error').html('<strong>Error:</strong> ' + error_msg).show();
                 }
             });
