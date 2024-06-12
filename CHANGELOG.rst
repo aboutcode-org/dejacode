@@ -4,12 +4,16 @@ Release notes
 ### Version 5.1.1-dev
 
 - Add visual indicator in hierarchy views, when an object on the far left or far right
-  also belong or have a hierarchy (relathionship tree).
+  also belong or have a hierarchy (relationship tree).
   https://github.com/nexB/dejacode/issues/70
 
 - Add search and pagination on the Product Inventory tab.
   https://github.com/nexB/dejacode/issues/3
   https://github.com/nexB/dejacode/issues/112
+
+- Fix an issue displaying the "Delete" button in the "Edit Product Relationship"
+  modal form.
+  https://github.com/nexB/dejacode/issues/128
 
 ### Version 5.1.0
 
