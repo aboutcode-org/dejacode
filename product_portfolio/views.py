@@ -732,6 +732,12 @@ class ProductTabInventoryView(
                 user.has_perm("product_portfolio.change_productpackage"),
             ]
         )
+        context["has_delete_productpackage"] = user.has_perm(
+            "product_portfolio.delete_productpackage"
+        )
+        context["has_delete_productcomponent"] = user.has_perm(
+            "product_portfolio.delete_productcomponent"
+        )
 
         if page_obj:
             previous_url, next_url = self.get_previous_next(page_obj)
