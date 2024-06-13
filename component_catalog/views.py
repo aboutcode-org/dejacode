@@ -49,7 +49,6 @@ from natsort import natsorted
 from notifications.signals import notify
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
-from packageurl.contrib import url2purl
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -70,9 +69,9 @@ from component_catalog.license_expression_dje import get_licensing_for_formatted
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
-from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
@@ -1588,80 +1587,49 @@ def package_scan_view(request, dataspace, uuid):
 
 
 @login_required
+@require_POST
 def package_create_ajax_view(request):
     user = request.user
     if not user.has_perm("component_catalog.add_package"):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
-    download_urls = request.POST.get("download_urls", "").strip().split()
-    if not download_urls:
+    urls = request.POST.get("download_urls", "").strip().split()
+    if not urls:
         return JsonResponse({"error_message": "Missing Download URL"}, status=400)
 
     created = []
     errors = []
     warnings = []
     scan_msg = ""
-    scoped_packages_qs = Package.objects.scope(user.dataspace)
 
-    for download_url in download_urls:
-        download_url = download_url.strip()
-        if not download_url:
-            continue
-
-        existing_packages = scoped_packages_qs.filter(download_url=download_url)
-
-        if existing_packages:
-            package_link = existing_packages[0].get_absolute_link()
-            warnings.append(
-                f"URL {download_url} already exists in your Dataspace as {package_link}"
-            )
-            continue
-
-        # Submit the `download_url` to ScanCode.io early to get results available as
-        # soon as possible.
-        # The availability of the `download_url` is checked in the task.
-        scancodeio = ScanCodeIO(request.user)
-        if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
-            tasks.scancodeio_submit_scan.delay(
-                uris=download_url,
-                user_uuid=user.uuid,
-                dataspace_uuid=user.dataspace.uuid,
-            )
-            scan_msg = " and submitted to ScanCode.io for scanning"
-
+    for url in urls:
         try:
-            package_data = collect_package_data(download_url)
-        except DataCollectionException as e:
-            errors.append(str(e))
-            continue
-
-        sha1 = package_data.get("sha1")
-        if sha1:
-            sha1_match = scoped_packages_qs.filter(sha1=sha1)
-            if sha1_match:
-                package_link = sha1_match[0].get_absolute_link()
-                warnings.append(
-                    f"The package at URL {download_url} already exists in your "
-                    f"Dataspace as {package_link}"
-                )
-                continue
-
-        package_url = url2purl.get_purl(download_url)
-        if package_url:
-            package_data.update(package_url.to_dict(encode=True, empty=""))
-
-        package = Package.create_from_data(user, package_data)
-        created.append(package)
+            package = Package.create_from_url(url, user)
+            created.append(package)
+        except PackageAlreadyExistsWarning as warning:
+            warnings.append(str(warning))
+        except (DataCollectionException, Exception) as error:
+            errors.append(str(error))
 
     redirect_url = reverse("component_catalog:package_list")
     len_created = len(created)
+
+    scancodeio = ScanCodeIO(request.user)
+    if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+        # The availability of the each `download_url` is checked in the task.
+        tasks.scancodeio_submit_scan.delay(
+            uris=[package.download_url for package in created if package.download_url],
+            user_uuid=user.uuid,
+            dataspace_uuid=user.dataspace.uuid,
+        )
+        scan_msg = " and submitted to ScanCode.io for scanning"
 
     if len_created == 1:
         redirect_url = created[0].get_absolute_url()
         messages.success(request, "The Package was successfully created.")
     elif len_created > 1:
         packages = "\n".join([package.get_absolute_link() for package in created])
-        msg = f"The following Packages were successfully created {scan_msg}:\n{packages}"
+        msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
         messages.success(request, format_html(msg))
 
     if errors:

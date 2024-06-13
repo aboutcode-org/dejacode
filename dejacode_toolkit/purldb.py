@@ -64,3 +64,27 @@ class PurlDB(BaseService):
         response = self.request_get(self.package_api_url, params=payload, timeout=timeout)
         if response and response.get("count") > 0:
             return response.get("results")
+
+
+def pick_purldb_entry(purldb_entries, purl=None):
+    """
+    Select a single entry from a list of PurlDB package entries.
+
+    This function takes a list of PurlDB package entries and optionally a purl string,
+    and returns a single entry based on the following logic:
+
+    - If the list is empty, returns None.
+    - If there is exactly one entry in the list, returns that entry.
+    - If a purl string is provided and exactly one entry matches that purl,
+      returns that entry.
+    """
+    if not purldb_entries:
+        return
+
+    if len(purldb_entries) == 1:
+        return purldb_entries[0]
+
+    if purl:
+        matches = [entry for entry in purldb_entries if entry.get("purl") == purl]
+        if len(matches) == 1:
+            return matches[0]
