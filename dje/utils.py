@@ -29,6 +29,7 @@ from django.utils.html import mark_safe
 from django.utils.http import urlencode
 
 import requests
+from packageurl import PackageURL
 
 
 def has_permission(model, user, action):
@@ -612,3 +613,21 @@ def get_cpe_vuln_link(cpe):
 def safe_filename(filename):
     """Convert provided `name` to a safe filename."""
     return re.sub("[^A-Za-z0-9.-]+", "_", filename).lower()
+
+
+def is_purl_str(url, validate=False):
+    """
+    Check if a given URL string is a Package URL (purl).
+
+    If ``validate`` is proviuded, validate the purl format using the
+    PackageURL class. If False, simply check if the string starts with
+    "pkg:".
+    """
+    if not validate:
+        return url.startswith("pkg:")
+
+    try:
+        PackageURL.from_string(purl=url)
+    except ValueError:
+        return False
+    return True

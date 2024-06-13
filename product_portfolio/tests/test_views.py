@@ -161,6 +161,19 @@ class ProductPortfolioViewsTestCase(TestCase):
             response.context["tabsets"]["Inventory"]["label"],
         )
 
+    def test_product_portfolio_detail_view_tab_permissions(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_inventory")
+        ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        self.assertTrue(response.context["has_edit_productcomponent"])
+        self.assertTrue(response.context["has_delete_productcomponent"])
+        self.assertTrue(response.context["has_edit_productpackage"])
+        self.assertTrue(response.context["has_delete_productpackage"])
+        self.assertContains(response, 'data-can-delete="yes"')
+
     def test_product_portfolio_detail_view_tab_imports(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_absolute_url()

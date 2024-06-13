@@ -35,7 +35,7 @@
       <th style="min-width: 300px;">
         {% trans 'Item' %}
         {{ filter_productcomponent.form.object_type }}
-        <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
+        <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" data-bs-toggle="tooltip" data-bs-trigger="hover" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
       </th>
       <th style="min-width: 100px;">
         {% trans 'Purpose' %}
@@ -240,27 +240,24 @@
 </div>
 {% endspaceless %}
 
-{% if compliance_errors %}
-  <script>
-    // Select all elements with the class 'toggle-details'
-    document.querySelectorAll('.toggle-details').forEach(function(toggleDetail) {
-        // Set the title attribute to add a tooltip
-        toggleDetail.setAttribute('title', 'Your Tooltip Text Here');
+<script>
+  // Select all elements with the class 'toggle-details'
+  document.querySelectorAll('.toggle-details').forEach(function(toggleDetail) {
+      // Add event listener for 'click' event
+      toggleDetail.addEventListener('click', function() {
+          // Select all elements with the class 'extra-details'
+          document.querySelectorAll('.extra-details').forEach(function(extraDetail) {
+              // Toggle the display property
+              if (extraDetail.style.display === 'none' || extraDetail.style.display === '') {
+                  extraDetail.style.display = 'table-row';
+              } else {
+                  extraDetail.style.display = 'none';
+              }
+          });
+      });
+  });
 
-        // Add event listener for 'click' event
-        toggleDetail.addEventListener('click', function() {
-            // Select all elements with the class 'extra-details'
-            document.querySelectorAll('.extra-details').forEach(function(extraDetail) {
-                // Toggle the display property
-                if (extraDetail.style.display === 'none' || extraDetail.style.display === '') {
-                    extraDetail.style.display = 'table-row';
-                } else {
-                    extraDetail.style.display = 'none';
-                }
-            });
-        });
-    });
-
+  {% if compliance_errors %}
     const tabInventoryLabel = document.getElementById('tab_inventory-tab');
     if (tabInventoryLabel) {
       var iconElement = document.createElement('i');
@@ -269,7 +266,7 @@
       iconElement.setAttribute('title', 'Compliance errors');
       tabInventoryLabel.insertBefore(iconElement, tabInventoryLabel.firstChild);
       // Initialize the tooltip
-      new bootstrap.Tooltip(iconElement, { container: 'body' });
+      new bootstrap.Tooltip(iconElement, {container: 'body'});
     }
-  </script>
-{% endif %}
+  {% endif %}
+</script>

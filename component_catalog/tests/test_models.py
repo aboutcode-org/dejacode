@@ -35,6 +35,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
+from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit import download
 from dejacode_toolkit.download import DataCollectionException
@@ -1643,6 +1644,70 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(["name"], updated_fields)
         package.refresh_from_db()
         self.assertEqual(new_data["name"], package.name)
+
+    @mock.patch("component_catalog.models.collect_package_data")
+    def test_package_model_create_from_url(self, mock_collect):
+        self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
+
+        download_url = "https://dejacode.com/archive.zip"
+        mock_collect.return_value = {
+            "download_url": download_url,
+            "filename": "archive.zip",
+        }
+        package = Package.create_from_url(url=download_url, user=self.user)
+        self.assertTrue(package.uuid)
+        self.assertEqual(self.user, package.created_by)
+        expected = "pkg:generic/archive.zip?download_url=https://dejacode.com/archive.zip"
+        self.assertEqual(expected, package.package_url)
+        self.assertEqual(download_url, package.download_url)
+
+        with self.assertRaises(PackageAlreadyExistsWarning) as cm:
+            Package.create_from_url(url=download_url, user=self.user)
+        self.assertIn("already exists in your Dataspace", cm.exception.message)
+
+        purl = "pkg:npm/is-npm@1.0.0"
+        mock_collect.return_value = {}
+        package = Package.create_from_url(url=purl, user=self.user)
+        self.assertTrue(package.uuid)
+        self.assertEqual(self.user, package.created_by)
+        self.assertEqual(purl, package.package_url)
+        mock_collect.assert_called_with("http://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_package_model_create_from_url_enable_purldb_access(
+        self, mock_is_configured, mock_get_purldb_entries
+    ):
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+        mock_is_configured.return_value = True
+        purldb_entry = {
+            "uuid": "7b947095-ab4c-45e3-8af3-6a73bd88e31d",
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2023-02-01T00:27:00Z",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "keywords": ["keyword1", "keyword2"],
+            "homepage_url": "http://abbot.sf.net/",
+            "download_url": "http://repo1.maven.org/maven2/abbot/abbot/" "1.4.0/abbot-1.4.0.jar",
+            "size": 687192,
+            "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
+            "license_expression": "(bsd-new OR eps-1.0 OR apache-2.0 OR mit) AND unknown",
+            "declared_license": "EPL\nhttps://www.eclipse.org/legal/eps-v10.html",
+            "package_url": "pkg:maven/abbot/abbot@1.4.0",
+        }
+        mock_get_purldb_entries.return_value = [purldb_entry]
+
+        purl = "pkg:maven/abbot/abbot@1.4.0"
+        package = Package.create_from_url(url=purl, user=self.user)
+        mock_get_purldb_entries.assert_called_once()
+        self.assertEqual(self.user, package.created_by)
+        for field_name, value in purldb_entry.items():
+            self.assertEqual(value, getattr(package, field_name))
 
     def test_package_model_get_url_methods(self):
         package = Package(
