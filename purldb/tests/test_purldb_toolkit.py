@@ -64,9 +64,14 @@ class PurlDBToolkitTestCase(TestCase):
         purl1 = "pkg:type/name@1.0"
         purl2 = "pkg:type/name@2.0"
         purl3 = "pkg:type/name@3.0"
-        self.assertEqual(purl1, pick_purldb_entry([purl1]))
-        self.assertIsNone(purl1, pick_purldb_entry([purl1, purl2]))
 
-        self.assertEqual(purl1, pick_purldb_entry([purl1, purl2], purl=purl1))
-        self.assertEqual(purl2, pick_purldb_entry([purl1, purl2], purl=purl2))
-        self.assertIsNone(pick_purldb_entry([purl1, purl2], purl=purl3))
+        entry1 = {"purl": purl1}
+        entry2 = {"purl": purl2}
+
+        self.assertEqual(entry1, pick_purldb_entry([entry1]))
+        self.assertIsNone(pick_purldb_entry([entry1, entry2]))
+
+        self.assertEqual(entry1, pick_purldb_entry([entry1, entry2], purl=purl1))
+        self.assertEqual(entry2, pick_purldb_entry([entry1, entry2], purl=purl2))
+        self.assertIsNone(pick_purldb_entry([entry1, entry1], purl=purl1))
+        self.assertIsNone(pick_purldb_entry([entry1, entry2], purl=purl3))
