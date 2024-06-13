@@ -49,7 +49,6 @@ from natsort import natsorted
 from notifications.signals import notify
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
-from packageurl.contrib import url2purl
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -70,11 +69,10 @@ from component_catalog.license_expression_dje import get_licensing_for_formatted
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
-from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
-from dejacode_toolkit.purldb import pick_purldb_entry
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
@@ -89,7 +87,6 @@ from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
-from dje.utils import is_purl_str
 from dje.utils import is_uuid4
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -1589,73 +1586,6 @@ def package_scan_view(request, dataspace, uuid):
     return redirect(f"{package.details_url}#scan")
 
 
-class PackageAlreadyExistsWarning(Exception):
-    def __init__(self, message):
-        self.message = message
-
-
-def create_package_from_url(url, user):
-    """
-    Create a package from the given URL for the specified user.
-
-    This function processes the URL to create a package entry. It handles
-    both direct download URLs and Package URLs (purls), checking for
-    existing packages to avoid duplicates. If the package is not already
-    present, it collects necessary package data and creates a new package
-    entry.
-    """
-    url = url.strip()
-    if not url:
-        return
-
-    package_data = {}
-    scoped_packages_qs = Package.objects.scope(user.dataspace)
-
-    if is_purl_str(url):
-        download_url = purl2url.get_download_url(url)
-        package_url = PackageURL.from_string(url)
-        existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
-    else:
-        download_url = url
-        package_url = url2purl.get_purl(url)
-        existing_packages = scoped_packages_qs.filter(download_url=url)
-
-    if existing_packages:
-        package_links = [package.get_absolute_link() for package in existing_packages]
-        raise PackageAlreadyExistsWarning(
-            f"{url} already exists in your Dataspace as {', '.join(package_links)}"
-        )
-
-    # Matching in PurlDB early to avoid more processing in case of a match.
-    purldb_data = None
-    if user.dataspace.enable_purldb_access:
-        package_for_match = Package(download_url=download_url)
-        package_for_match.set_package_url(package_url)
-        purldb_entries = package_for_match.get_purldb_entries(user)
-        # Look for one ith the same exact purl in that case
-        if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
-            # TODO: Add support for thos fields
-            if "release_date" in purldb_data:
-                del purldb_data["release_date"]
-            package_data.update(purldb_data)
-
-    if download_url and not purldb_data:
-        package_data = collect_package_data(download_url)
-
-    if sha1 := package_data.get("sha1"):
-        if sha1_match := scoped_packages_qs.filter(sha1=sha1):
-            package_link = sha1_match[0].get_absolute_link()
-            raise PackageAlreadyExistsWarning(
-                f"{url} already exists in your Dataspace as {package_link}"
-            )
-
-    if package_url:
-        package_data.update(package_url.to_dict(encode=True, empty=""))
-
-    package = Package.create_from_data(user, package_data)
-    return package
-
-
 @login_required
 @require_POST
 def package_create_ajax_view(request):
@@ -1674,7 +1604,7 @@ def package_create_ajax_view(request):
 
     for url in urls:
         try:
-            package = create_package_from_url(url, user)
+            package = Package.create_from_url(url, user)
             created.append(package)
         except PackageAlreadyExistsWarning as warning:
             warnings.append(str(warning))

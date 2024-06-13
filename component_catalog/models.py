@@ -50,6 +50,7 @@ from dejacode_toolkit import spdx
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
+from dejacode_toolkit.purldb import pick_purldb_entry
 from dje import urn
 from dje.copier import post_copy
 from dje.copier import post_update
@@ -65,6 +66,7 @@ from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
+from dje.utils import is_purl_str
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -91,6 +93,11 @@ COMPONENT_PACKAGE_COMMON_FIELDS = [
     "release_date",
     "version",
 ]
+
+
+class PackageAlreadyExistsWarning(Exception):
+    def __init__(self, message):
+        self.message = message
 
 
 def validate_filename(value):
@@ -2290,6 +2297,68 @@ class Package(
             f"Product {self.product_set.get_related_secured_queryset(user).count()}\n"
             f"Component {self.component_set.count()}\n"
         )
+
+    @classmethod
+    def create_from_url(cls, url, user):
+        """
+        Create a package from the given URL for the specified user.
+
+        This function processes the URL to create a package entry. It handles
+        both direct download URLs and Package URLs (purls), checking for
+        existing packages to avoid duplicates. If the package is not already
+        present, it collects necessary package data and creates a new package
+        entry.
+        """
+        url = url.strip()
+        if not url:
+            return
+
+        package_data = {}
+        scoped_packages_qs = cls.objects.scope(user.dataspace)
+
+        if is_purl_str(url):
+            download_url = purl2url.get_download_url(url)
+            package_url = PackageURL.from_string(url)
+            existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
+        else:
+            download_url = url
+            package_url = url2purl.get_purl(url)
+            existing_packages = scoped_packages_qs.filter(download_url=url)
+
+        if existing_packages:
+            package_links = [package.get_absolute_link() for package in existing_packages]
+            raise PackageAlreadyExistsWarning(
+                f"{url} already exists in your Dataspace as {', '.join(package_links)}"
+            )
+
+        # Matching in PurlDB early to avoid more processing in case of a match.
+        purldb_data = None
+        if user.dataspace.enable_purldb_access:
+            package_for_match = cls(download_url=download_url)
+            package_for_match.set_package_url(package_url)
+            purldb_entries = package_for_match.get_purldb_entries(user)
+            # Look for one ith the same exact purl in that case
+            if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
+                # TODO: Add support for this field
+                if "release_date" in purldb_data:
+                    del purldb_data["release_date"]
+                package_data.update(purldb_data)
+
+        if download_url and not purldb_data:
+            package_data = collect_package_data(download_url)
+
+        if sha1 := package_data.get("sha1"):
+            if sha1_match := scoped_packages_qs.filter(sha1=sha1):
+                package_link = sha1_match[0].get_absolute_link()
+                raise PackageAlreadyExistsWarning(
+                    f"{url} already exists in your Dataspace as {package_link}"
+                )
+
+        if package_url:
+            package_data.update(package_url.to_dict(encode=True, empty=""))
+
+        package = cls.create_from_data(user, package_data)
+        return package
 
     def get_purldb_entries(self, user, max_request_call=0, timeout=None):
         """

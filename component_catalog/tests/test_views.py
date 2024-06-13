@@ -1681,7 +1681,7 @@ class PackageUserViewsTestCase(TestCase):
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
         }
-        with mock.patch("component_catalog.views.collect_package_data") as collect:
+        with mock.patch("component_catalog.models.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 
@@ -1704,7 +1704,7 @@ class PackageUserViewsTestCase(TestCase):
         # Different URL but sha1 match in the db
         data = {"download_urls": "https://url.com/file.ext"}
         collected_data["download_url"] = data["download_urls"]
-        with mock.patch("component_catalog.views.collect_package_data") as collect:
+        with mock.patch("component_catalog.models.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 

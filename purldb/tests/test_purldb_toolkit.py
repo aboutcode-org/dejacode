@@ -11,6 +11,7 @@ from unittest import mock
 from django.test import TestCase
 
 from dejacode_toolkit.purldb import PurlDB
+from dejacode_toolkit.purldb import pick_purldb_entry
 from dje.models import Dataspace
 from dje.tests import create_user
 
@@ -55,3 +56,17 @@ class PurlDBToolkitTestCase(TestCase):
         mock_request_get.assert_called_with(
             "/api/packages/", params={"purl": "type/name@1.0"}, timeout=None
         )
+
+    def test_purldb_toolkit_pick_purldb_entry(self):
+        self.assertIsNone(pick_purldb_entry(None))
+        self.assertIsNone(pick_purldb_entry([]))
+
+        purl1 = "pkg:type/name@1.0"
+        purl2 = "pkg:type/name@2.0"
+        purl3 = "pkg:type/name@3.0"
+        self.assertEqual(purl1, pick_purldb_entry([purl1]))
+        self.assertIsNone(purl1, pick_purldb_entry([purl1, purl2]))
+
+        self.assertEqual(purl1, pick_purldb_entry([purl1, purl2], purl=purl1))
+        self.assertEqual(purl2, pick_purldb_entry([purl1, purl2], purl=purl2))
+        self.assertIsNone(pick_purldb_entry([purl1, purl2], purl=purl3))
