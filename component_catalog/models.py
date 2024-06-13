@@ -2339,9 +2339,9 @@ class Package(
             purldb_entries = package_for_match.get_purldb_entries(user)
             # Look for one ith the same exact purl in that case
             if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
-                # TODO: Add support for this field
-                if "release_date" in purldb_data:
-                    del purldb_data["release_date"]
+                # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
+                if release_date := purldb_data.get("release_date"):
+                    purldb_data["release_date"] = release_date.split("T")[0]
                 package_data.update(purldb_data)
 
         if download_url and not purldb_data:
