@@ -26,6 +26,13 @@
                 </small>
               </div>
             {% endif %}
+            {% if user.dataspace.enable_purldb_access %}
+              <div class="mt-3">
+                <small class="form-text text-muted mt-3">
+                  <strong>PurlDB access is enabled in your Dataspace</strong>, DejaCode will look up the PurlDB to retrieve and fetch all available data to create the package.
+                </small>
+              </div>
+            {% endif %}
             <div id="package-add-error" class="alert alert-danger mt-3" role="alert" style="display: none;"></div>
           </div>
         </div>

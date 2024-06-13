@@ -15,6 +15,16 @@ Release notes
   modal form.
   https://github.com/nexB/dejacode/issues/128
 
+- Add support for PURL(s) in the "Add Package" modal.
+  If the PURL type is supported by the packageurl_python library, a download URL
+  will be generated for creating the package and submitting a scan.
+  https://github.com/nexB/dejacode/issues/131
+
+- Leverage PurlDB during the "Add Package" process.
+  DejaCode will look up the PurlDB to retrieve and fetch all available data to
+  create the package.
+  https://github.com/nexB/dejacode/issues/131
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x
