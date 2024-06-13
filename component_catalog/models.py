@@ -1567,37 +1567,7 @@ class ComponentKeyword(DataspacedModel):
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
-# TODO: Move this into the packageurl library
-def purl_to_lookups(purl_str, encode=True, include_empty_values=False):
-    """Add include_empty_values to original `purl_to_lookups`."""
-    if not purl_str.startswith("pkg:"):
-        purl_str = "pkg:" + purl_str
-
-    try:
-        package_url = PackageURL.from_string(purl_str)
-    except ValueError:
-        return  # Not a valid PackageURL
-
-    package_url_dict = package_url.to_dict(encode=encode, empty="")
-    if include_empty_values:
-        return package_url_dict
-    else:
-        return without_empty_values(package_url_dict)
-
-
 class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
-    def for_package_url(self, purl_str, encode=True, exact_match=False):
-        """
-        Filter the QuerySet based on a Package URL (purl) string with an option for
-        exact match filtering.
-        """
-        lookups = purl_to_lookups(
-            purl_str=purl_str, encode=encode, include_empty_values=exact_match
-        )
-        if lookups:
-            return self.filter(**lookups)
-        return self.none()
-
     def annotate_sortable_identifier(self):
         """
         Annotate the QuerySet with a `sortable_identifier` value that combines
