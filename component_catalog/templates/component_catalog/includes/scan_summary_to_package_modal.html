@@ -20,6 +20,7 @@
 </div>
 
 <script>
+// TODO: This code is not executed.
 document.addEventListener('DOMContentLoaded', function () {
   setup_awesomplete_builder($('#id_scan-summary-to-package-license_expression').get(0));
 
@@ -32,10 +33,10 @@ document.addEventListener('DOMContentLoaded', function () {
       let field_name = element.name;
       let join_separator = '\n';
 
-      if (field_name === 'license_expression') {
-        join_separator = ' AND ';
-        if (text_value.toLowerCase().includes(' or ')) text_value = '(' + text_value + ')';
-      }
+      // if (field_name === 'license_expression') {
+      //   join_separator = ' AND ';
+      //   if (text_value.toLowerCase().includes(' or ')) text_value = '(' + text_value + ')';
+      // }
 
       if (dict_values[field_name])
         dict_values[field_name] += join_separator + text_value;

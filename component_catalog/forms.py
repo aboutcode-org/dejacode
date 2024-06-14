@@ -440,6 +440,12 @@ class PackageForm(
 
 
 class BaseScanToPackageForm(LicenseExpressionFormMixin, DataspacedModelForm):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     @property
     def helper(self):
         helper = FormHelper()
@@ -451,7 +457,6 @@ class BaseScanToPackageForm(LicenseExpressionFormMixin, DataspacedModelForm):
 
 class ScanToPackageForm(BaseScanToPackageForm):
     prefix = "scan-to-package"
-    expression_field_names = ["declared_license_expression", "other_license_expression"]
 
     package_url = forms.CharField(
         label="Package URL",
@@ -544,6 +549,8 @@ class ScanSummaryToPackageForm(BaseScanToPackageForm):
         model = Package
         fields = [
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "primary_language",
             "holder",
         ]

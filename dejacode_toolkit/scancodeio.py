@@ -244,10 +244,15 @@ class ScanCodeIO(BaseService):
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [
-        ("Declared license", "declared_license_expression", "license_expression", "checkbox"),
+        (
+            "Declared license",
+            "declared_license_expression",
+            "declared_license_expression",
+            "checkbox",
+        ),
         ("Declared holder", "declared_holder", "holder", "checkbox"),
         ("Primary language", "primary_language", "primary_language", "radio"),
-        ("Other licenses", "other_license_expressions", "license_expression", "checkbox"),
+        ("Other licenses", "other_license_expressions", "other_license_expression", "checkbox"),
         ("Other holders", "other_holders", "holder", "checkbox"),
         ("Other languages", "other_languages", "primary_language", "radio"),
     ]
