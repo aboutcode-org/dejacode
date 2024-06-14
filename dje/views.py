@@ -906,24 +906,25 @@ class TabSetMixin:
         """Return a mapping of data for use in the license tab display or None."""
         obj = self.object
         licenses = get_license_objects(obj.license_expression, obj.licensing)
-
-        if not licenses:
-            return
-
         show_usage_policy = self.request.user.dataspace.show_usage_policy_in_user_views
 
         licence_expression_source = "license_expression_linked"
         if show_usage_policy:
             licence_expression_source = "get_license_expression_linked_with_policy"
 
-        fields = [
+        tab_fields = [
             TabField("license_expression", source=licence_expression_source),
             TabField("declared_license_expression"),
             TabField("other_license_expression"),
         ]
 
         if getattr(obj, "reference_notes", False):
-            fields.append(TabField("reference_notes"))
+            tab_fields.append(TabField("reference_notes"))
+
+        fields = self.get_tab_fields(tab_fields)
+        # At least 1 value need to be set for the tab to be available.
+        if not any([1 for field in fields if field[1]]):
+            return
 
         license_conditions_help = _(
             "A list of all the license conditions (obligations, restrictions, policies) that "
@@ -949,7 +950,7 @@ class TabSetMixin:
         }
 
         return {
-            "fields": self.get_tab_fields(fields),
+            "fields": fields,
             "extra": extra,
         }
 

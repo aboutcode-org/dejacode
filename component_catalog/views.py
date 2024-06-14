@@ -2307,10 +2307,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
             # Add the supported Package fields in the tab UI.
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
-                if scan_field == "declared_license_expression":
-                    scan_field = "license_expression"
-                value = self.detected_package_data.get(scan_field)
-                if value:
+                if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
                         value = format_html("<br>".join(([escape(entry) for entry in value])))
                     else:

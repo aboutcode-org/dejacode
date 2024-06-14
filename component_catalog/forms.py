@@ -14,6 +14,7 @@ from django.forms import modelform_factory
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.functional import cached_property
+from django.utils.text import Truncator
 
 import packageurl
 from crispy_forms.helper import FormHelper
@@ -450,6 +451,7 @@ class BaseScanToPackageForm(LicenseExpressionFormMixin, DataspacedModelForm):
 
 class ScanToPackageForm(BaseScanToPackageForm):
     prefix = "scan-to-package"
+    expression_field_names = ["declared_license_expression", "other_license_expression"]
 
     package_url = forms.CharField(
         label="Package URL",
@@ -461,6 +463,8 @@ class ScanToPackageForm(BaseScanToPackageForm):
         fields = [
             "package_url",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "copyright",
             "primary_language",
             "description",
@@ -492,6 +496,12 @@ class ScanToPackageForm(BaseScanToPackageForm):
     def fields_with_initial_value(self):
         kept_fields = {}
 
+        # Duplicate the declared_license_expression into the license_expression field
+        # if currently empty on the Package instance.
+        if not self.instance.license_expression:
+            if declared_license_expression := self.initial.get("declared_license_expression"):
+                self.initial["license_expression"] = declared_license_expression
+
         for field_name, field in self.fields.items():
             if not self.initial.get(field_name):
                 continue
@@ -499,7 +509,7 @@ class ScanToPackageForm(BaseScanToPackageForm):
             instance_value = getattr(self.instance, field_name, None)
             help_text = "No current value"
             if instance_value:
-                help_text = f"Current value: {instance_value}"
+                help_text = f"Current value: {Truncator(instance_value).chars(200)}"
             field.help_text = help_text
 
             kept_fields[field_name] = field
@@ -552,7 +562,7 @@ class ScanSummaryToPackageForm(BaseScanToPackageForm):
             instance_value = getattr(self.instance, field_name, None)
             help_text = "No current value"
             if instance_value:
-                help_text = f"Current value: {instance_value}"
+                help_text = f"Current value: {Truncator(instance_value).chars(200)}"
             field.help_text = help_text
 
 

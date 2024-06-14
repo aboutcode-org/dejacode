@@ -255,8 +255,8 @@ class ScanCodeIO(BaseService):
     # (label, scan_field)
     SCAN_PACKAGE_FIELD = [
         ("Package URL", "purl"),
-        ("License expression", "declared_license_expression"),
-        ("Other license expression", "other_license_expression"),
+        ("Declared license", "declared_license_expression"),
+        ("Other license", "other_license_expression"),
         ("Copyright", "copyright"),
         ("Holder", "holder"),
         ("Description", "description"),
@@ -354,6 +354,8 @@ class ScanCodeIO(BaseService):
     # (scan_field, model_field)
     AUTO_UPDATE_FIELDS = [
         ("declared_license_expression", "license_expression"),
+        ("declared_license_expression", "declared_license_expression"),
+        ("other_license_expression", "other_license_expression"),
         ("declared_holder", "holder"),
         ("primary_language", "primary_language"),
     ]
@@ -366,26 +368,22 @@ class ScanCodeIO(BaseService):
         """
         package_data_for_model = {}
 
-        for _, scan_field in cls.SCAN_PACKAGE_FIELD:
-            value = detected_package.get(scan_field)
+        for _, scan_data_field in cls.SCAN_PACKAGE_FIELD:
+            value = detected_package.get(scan_data_field)
             if not value:
                 continue
 
-            if scan_field == "dependencies":
+            if scan_data_field == "dependencies":
                 value = json.dumps(value, indent=2)
 
-            if scan_field == "other_license_expression":
-                continue
-
             # Add `package_url` alias to be used in place of `purl` depending on the context
-            if scan_field == "purl":
+            if scan_data_field == "purl":
                 package_data_for_model["package_url"] = value
 
-            elif scan_field == "declared_license_expression":
-                scan_field = "license_expression"
+            elif scan_data_field.endswith("license_expression"):
                 value = str(Licensing().dedup(value))
 
-            package_data_for_model[scan_field] = value
+            package_data_for_model[scan_data_field] = value
 
         return package_data_for_model
 
