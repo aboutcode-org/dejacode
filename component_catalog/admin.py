@@ -325,12 +325,7 @@ class ComponentAdmin(
                     "holder",
                     "license_expression",
                     "declared_license_expression",
-                    "declared_license_expression_spdx",
-                    "license_detections",
                     "other_license_expression",
-                    "other_license_expression_spdx",
-                    "other_license_detections",
-                    "extracted_license_statement",
                     "reference_notes",
                     "release_date",
                     "description",
@@ -401,7 +396,6 @@ class ComponentAdmin(
                     "ip_sensitivity_approved",
                     "affiliate_obligations",
                     "affiliate_obligation_triggers",
-                    "concluded_license",
                     "legal_comments",
                     "sublicense_allowed",
                     "express_patent_grant",
@@ -428,8 +422,6 @@ class ComponentAdmin(
     readonly_fields = DataspacedAdmin.readonly_fields + (
         "urn_link",
         "completion_level",
-        "declared_license_expression_spdx",
-        "other_license_expression_spdx",
     )
     form = ComponentAdminForm
     inlines = [
@@ -839,12 +831,7 @@ class PackageAdmin(
                 "fields": (
                     "license_expression",
                     "declared_license_expression",
-                    "declared_license_expression_spdx",
-                    "license_detections",
                     "other_license_expression",
-                    "other_license_expression_spdx",
-                    "other_license_detections",
-                    "extracted_license_statement",
                     "copyright",
                     "holder",
                     "author",
@@ -883,7 +870,6 @@ class PackageAdmin(
             "Others",
             {
                 "fields": (
-                    "declared_license",
                     "parties",
                     "datasource_id",
                     "file_references",
@@ -902,8 +888,6 @@ class PackageAdmin(
     readonly_fields = DataspacedAdmin.readonly_fields + (
         "package_url",
         "inferred_url",
-        "declared_license_expression_spdx",
-        "other_license_expression_spdx",
     )
     form = PackageAdminForm
     importer_class = PackageImporter

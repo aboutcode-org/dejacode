@@ -920,10 +920,8 @@ class TabSetMixin:
             TabField("license_expression", source=licence_expression_source),
             TabField("declared_license_expression"),
             TabField("declared_license_expression_spdx"),
-            TabField("license_detections"),
             TabField("other_license_expression"),
             TabField("other_license_expression_spdx"),
-            TabField("extracted_license_statement"),
         ]
 
         if getattr(obj, "reference_notes", False):

@@ -323,28 +323,12 @@ class LicenseFieldsMixin(models.Model):
     declared_license_expression = models.TextField(
         blank=True,
         help_text=_(
-            "A license expression derived from statements in the key files of a "
-            "software project, such as the NOTICE, COPYING, README, and LICENSE files."
+            "A license expression derived from statements in the manifests or key "
+            "files of a software project, such as the NOTICE, COPYING, README, and "
+            "LICENSE files."
         ),
     )
-    declared_license_expression_spdx = models.TextField(
-        verbose_name=_("Declared license expression SPDX"),
-        blank=True,
-        help_text=_(
-            "A declared license expression that uses the license identifiers defined "
-            "by SPDX, as well as the “Licenseref” syntax for licenses not on the SPDX "
-            "list."
-        ),
-    )
-    license_detections = models.JSONField(
-        default=list,
-        blank=True,
-        help_text=_(
-            "A list of specific license identifiers derived from statements in the "
-            "key files of a software project, such as the NOTICE, COPYING, README, "
-            "and LICENSE files."
-        ),
-    )
+
     other_license_expression = models.TextField(
         blank=True,
         help_text=_(
@@ -353,34 +337,17 @@ class LicenseFieldsMixin(models.Model):
             "project, or test, sample and documentation files."
         ),
     )
-    other_license_expression_spdx = models.TextField(
-        verbose_name=_("Other license expression SPDX"),
-        blank=True,
-        help_text=_(
-            "A license expression derived from detected licenses in the non-key files "
-            "of a software project, using the license identifiers defined by SPDX, "
-            "as well as the “Licenseref” syntax for licenses not on the SPDX list."
-        ),
-    )
-    other_license_detections = models.JSONField(
-        default=list,
-        blank=True,
-        help_text=_(
-            "A list of specific license identifiers derived from the non-key files "
-            "of a software project, which are very often third-party software used "
-            "by the project, or test, sample and documentation files."
-        ),
-    )
-    extracted_license_statement = models.TextField(
-        blank=True,
-        help_text=_(
-            "The actual text extracted from a software project that supports the "
-            "license detection process."
-        ),
-    )
 
     class Meta:
         abstract = True
+
+    @property
+    def declared_license_expression_spdx(self):
+        return "TODO"
+
+    @property
+    def other_license_expression_spdx(self):
+        return "TODO"
 
 
 def get_cyclonedx_properties(instance):
@@ -1099,19 +1066,6 @@ class Component(
         ),
     )
 
-    concluded_license = models.CharField(
-        max_length=1024,
-        blank=True,
-        db_index=True,
-        help_text=_(
-            "This is a memo field to record the conclusions of the legal team after full review "
-            "and scanning of the component package, and is only intended to document that "
-            "decision. The main value of the field is to clarify the company interpretation of "
-            "the license that should apply to a component when there is a choice, or when there "
-            "is ambiguity in the original component documentation."
-        ),
-    )
-
     legal_comments = models.TextField(
         blank=True,
         help_text=_(
@@ -1820,15 +1774,6 @@ class Package(
         help_text=_(
             "API URL to obtain structured data for this package such as the "
             "URL to a JSON or XML api its package repository."
-        ),
-    )
-
-    declared_license = models.TextField(
-        blank=True,
-        help_text=_(
-            "The declared license mention, tag or text as found in a package manifest. "
-            "This can be a string, a list or dict of strings possibly nested, "
-            "as found originally in the manifest."
         ),
     )
 

@@ -563,11 +563,8 @@ class ComponentDetailsView(
                 "licenses_summary",
                 "declared_license_expression",
                 "declared_license_expression_spdx",
-                "license_detections",
                 "other_license_expression",
                 "other_license_expression_spdx",
-                "other_license_detections",
-                "extracted_license_statement",
             ],
         },
         "hierarchy": {},
@@ -604,7 +601,6 @@ class ComponentDetailsView(
                 "ip_sensitivity_approved",
                 "affiliate_obligations",
                 "affiliate_obligation_triggers",
-                "concluded_license",
                 "legal_comments",
                 "sublicense_allowed",
                 "express_patent_grant",
@@ -866,7 +862,6 @@ class ComponentDetailsView(
             TabField("ip_sensitivity_approved"),
             TabField("affiliate_obligations"),
             TabField("affiliate_obligation_triggers"),
-            TabField("concluded_license"),
             TabField("legal_comments"),
             TabField("sublicense_allowed"),
             TabField("express_patent_grant"),
@@ -1222,11 +1217,8 @@ class PackageDetailsView(
                 "licenses_summary",
                 "declared_license_expression",
                 "declared_license_expression_spdx",
-                "license_detections",
                 "other_license_expression",
                 "other_license_expression_spdx",
-                "other_license_detections",
-                "extracted_license_statement",
             ],
         },
         "terms": {
@@ -1260,7 +1252,6 @@ class PackageDetailsView(
         },
         "others": {
             "fields": [
-                "declared_license",
                 "parties",
                 "datasource_id",
                 "file_references",
@@ -1413,7 +1404,6 @@ class PackageDetailsView(
 
     def tab_others(self):
         tab_fields = [
-            TabField("declared_license"),
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),

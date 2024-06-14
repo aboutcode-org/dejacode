@@ -1928,7 +1928,6 @@ class ColumnTemplateTestCase(TestCase):
                 "value": "codescan_identifier",
             },
             {"group": "Direct Fields", "label": "completion_level", "value": "completion_level"},
-            {"group": "Direct Fields", "label": "concluded_license", "value": "concluded_license"},
             {
                 "group": "Direct Fields",
                 "label": "configuration_status >>",

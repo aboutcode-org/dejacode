@@ -256,13 +256,7 @@ class ScanCodeIO(BaseService):
     SCAN_PACKAGE_FIELD = [
         ("Package URL", "purl"),
         ("License expression", "declared_license_expression"),
-        ("Declared license expression SPDX", "declared_license_expression_spdx"),
-        # TODO:
-        # ("License detections", "license_detections"),
         ("Other license expression", "other_license_expression"),
-        ("Other license expression SPDX", "other_license_expression_spdx"),
-        # ("Other license detections", "other_license_detections"),
-        ("Extracted license statement", "extracted_license_statement"),
         ("Copyright", "copyright"),
         ("Holder", "holder"),
         ("Description", "description"),

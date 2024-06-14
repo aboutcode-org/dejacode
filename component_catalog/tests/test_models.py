@@ -1254,7 +1254,6 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "ip_sensitivity_approved",
                     "affiliate_obligations",
                     "affiliate_obligation_triggers",
-                    "concluded_license",
                     "keywords",
                     "legal_comments",
                     "sublicense_allowed",

@@ -1043,7 +1043,6 @@ class ComponentMassUpdateForm(
             "ip_sensitivity_approved",
             "affiliate_obligations",
             "affiliate_obligation_triggers",
-            "concluded_license",
             "legal_comments",
             "sublicense_allowed",
             "express_patent_grant",
