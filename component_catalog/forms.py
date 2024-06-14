@@ -106,6 +106,8 @@ class ComponentForm(
             "holder",
             "notice_text",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "release_date",
             "description",
             "homepage_url",
@@ -130,6 +132,8 @@ class ComponentForm(
             "owner": OwnerChoiceField,
         }
         widgets = {
+            "declared_license_expression": forms.Textarea(attrs={"rows": 2}),
+            "other_license_expression": forms.Textarea(attrs={"rows": 2}),
             "copyright": forms.Textarea(attrs={"rows": 2}),
             "notice_text": forms.Textarea(attrs={"rows": 2}),
             "description": forms.Textarea(attrs={"rows": 2}),
@@ -188,6 +192,7 @@ class ComponentForm(
                 Group("name", "version", "owner"),
                 HTML("<hr>"),
                 "license_expression",
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "holder"),
                 "notice_text",
                 Group("notice_filename", "notice_url"),
@@ -299,6 +304,8 @@ class PackageForm(
             "notes",
             "usage_policy",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "copyright",
             "holder",
             "author",
@@ -320,6 +327,8 @@ class PackageForm(
             "collect_data",
         ]
         widgets = {
+            "declared_license_expression": forms.Textarea(attrs={"rows": 2}),
+            "other_license_expression": forms.Textarea(attrs={"rows": 2}),
             "description": forms.Textarea(attrs={"rows": 2}),
             "notes": forms.Textarea(attrs={"rows": 2}),
             "copyright": forms.Textarea(attrs={"rows": 2}),
@@ -377,6 +386,7 @@ class PackageForm(
                 Group("version", "qualifiers", "subpath"),
                 HTML("<hr>"),
                 "license_expression",
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "notice_text"),
                 Group("holder", "author"),
                 HTML("<hr>"),

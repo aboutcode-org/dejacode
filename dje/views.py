@@ -919,9 +919,7 @@ class TabSetMixin:
         fields = [
             TabField("license_expression", source=licence_expression_source),
             TabField("declared_license_expression"),
-            TabField("declared_license_expression_spdx"),
             TabField("other_license_expression"),
-            TabField("other_license_expression_spdx"),
         ]
 
         if getattr(obj, "reference_notes", False):
