@@ -20,13 +20,13 @@
 </div>
 
 <script>
-  const licenseExpressionInputIds = [
+  const ScanSummarylicenseExpressionInputIds = [
     'id_scan-summary-to-package-license_expression',
     'id_scan-summary-to-package-declared_license_expression',
     'id_scan-summary-to-package-other_license_expression'
   ];
 
-  licenseExpressionInputIds.forEach(function(id) {
+  ScanSummarylicenseExpressionInputIds.forEach(function(id) {
     const licenseExpressionInput = document.getElementById(id);
     if (licenseExpressionInput) {
       setup_awesomplete_builder(licenseExpressionInput);

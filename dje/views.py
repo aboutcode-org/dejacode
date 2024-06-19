@@ -914,9 +914,11 @@ class TabSetMixin:
 
         tab_fields = [
             TabField("license_expression", source=licence_expression_source),
-            TabField("declared_license_expression"),
-            TabField("other_license_expression"),
         ]
+
+        for license_field in ["declared_license_expression", "other_license_expression"]:
+            if hasattr(obj, license_field):
+                tab_fields.append(TabField(license_field))
 
         if getattr(obj, "reference_notes", False):
             tab_fields.append(TabField("reference_notes"))
