@@ -494,6 +494,9 @@ div.awesomplete {
   max-height: 50vh;
   overflow-y: auto;
 }
+.awesomplete > ul:before {
+  display: none;
+}
 [data-bs-theme=dark] .awesomplete > ul {
   background: var(--bs-black);
 }

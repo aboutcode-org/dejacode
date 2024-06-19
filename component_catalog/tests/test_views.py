@@ -2818,7 +2818,7 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         values = PackageTabScanView.get_license_expressions_scan_values(
-            self.dataspace, field_data, input_type, license_matches
+            self.dataspace, field_data, "license_expression", input_type, license_matches
         )
         self.assertEqual(1, len(values))
         self.assertIn("MATCH", values[0])

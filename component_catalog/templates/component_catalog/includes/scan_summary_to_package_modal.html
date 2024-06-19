@@ -20,37 +20,65 @@
 </div>
 
 <script>
-// TODO: This code is not executed.
-document.addEventListener('DOMContentLoaded', function () {
-  setup_awesomplete_builder($('#id_scan-summary-to-package-license_expression').get(0));
+  const licenseExpressionInputIds = [
+    'id_scan-summary-to-package-license_expression',
+    'id_scan-summary-to-package-declared_license_expression',
+    'id_scan-summary-to-package-other_license_expression'
+  ];
 
-  $('#scan-summary-to-package-modal').on('show.bs.modal', function () {
-    let checkbox_and_radio = $("#tab_scan").find("input[type='checkbox']:checked, input[type='radio']:checked");
-    let dict_values = {};
-
-    $.each(checkbox_and_radio, function(index, element) {
-      let text_value = element.value.trim();
-      let field_name = element.name;
-      let join_separator = '\n';
-
-      // if (field_name === 'license_expression') {
-      //   join_separator = ' AND ';
-      //   if (text_value.toLowerCase().includes(' or ')) text_value = '(' + text_value + ')';
-      // }
-
-      if (dict_values[field_name])
-        dict_values[field_name] += join_separator + text_value;
-      else
-        dict_values[field_name] = text_value;
-    });
-
-    let input_text_and_textarea = $("#scan-summary-to-package-modal").find("textarea, input[type='text']");
-    $.each(input_text_and_textarea, function(index, element) {
-      let field_name = element.name.replace('scan-summary-to-package-', '');
-      if (dict_values[field_name])
-        element.value = dict_values[field_name];
-    });
-
+  licenseExpressionInputIds.forEach(function(id) {
+    const licenseExpressionInput = document.getElementById(id);
+    if (licenseExpressionInput) {
+      setup_awesomplete_builder(licenseExpressionInput);
+    }
   });
-});
+
+  const scanSummaryToPackageModal = document.getElementById('scan-summary-to-package-modal');
+  if (scanSummaryToPackageModal) {
+    scanSummaryToPackageModal.addEventListener('show.bs.modal', function() {
+      // Find all checked checkboxes and radio buttons within the tab_scan element
+      const checkboxAndRadio = document.querySelectorAll("#tab_scan input[type='checkbox']:checked, #tab_scan input[type='radio']:checked");
+      const dictValues = {};
+
+      checkboxAndRadio.forEach(function(element) {
+        processCheckboxAndRadio(element, dictValues);
+      });
+
+      // Get all textarea and input[type='text'] elements within the modal
+      const inputTextAndTextarea = document.querySelectorAll("#scan-summary-to-package-modal textarea, #scan-summary-to-package-modal input[type='text']");
+      inputTextAndTextarea.forEach(function(element) {
+        const fieldName = element.name.replace('scan-summary-to-package-', '');
+        let value = dictValues[fieldName];
+
+        // For the "concluded" license_expression field, take value from declared_license_expression
+        if (fieldName === 'license_expression' && dictValues['declared_license_expression']) {
+            value = dictValues['declared_license_expression'];
+        }
+
+        // Set element value if value exists
+        if (value !== undefined && value !== null) {
+            element.value = value;
+        }
+      });
+    });
+  }
+
+  function processCheckboxAndRadio(element, dictValues) {
+    let textValue = element.value.trim();
+    const fieldName = element.name;
+    let joinSeparator = '\n';
+
+    if (fieldName.endsWith('license_expression')) {
+      joinSeparator = ' AND ';
+      if (textValue.toLowerCase().includes(' or ')) {
+        textValue = '(' + textValue + ')';
+      }
+    }
+
+    if (dictValues[fieldName]) {
+      dictValues[fieldName] += joinSeparator + textValue;
+    } else {
+      dictValues[fieldName] = textValue;
+    }
+  }
 </script>

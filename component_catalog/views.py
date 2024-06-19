@@ -2081,7 +2081,13 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
     @classmethod
     def get_license_expressions_scan_values(
-        cls, dataspace, license_expressions, input_type, license_matches, checked=False
+        cls,
+        dataspace,
+        license_expressions,
+        field_name,
+        input_type,
+        license_matches,
+        checked=False,
     ):
         licensing, show_policy = cls._get_licensing_for_formatted_render(
             dataspace, license_expressions
@@ -2096,7 +2102,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             count = entry.get("count")
             checked_html = "checked" if checked else ""
             select_input = (
-                f'<input type="{input_type}" name="license_expression" '
+                f'<input type="{input_type}" name="{field_name}" '
                 f'value="{license_expression}" {checked_html}>'
             )
 
@@ -2347,7 +2353,6 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         )
         license_matches = scan_summary.get("license_matches") or {}
         self.object.has_license_matches = bool(license_matches)
-
         for label, field, model_field_name, input_type in summary_fields:
             field_data = scan_summary.get(field, [])
             if field in ("declared_license_expression", "other_license_expressions"):
@@ -2357,7 +2362,12 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 else:
                     checked = False
                 values = self.get_license_expressions_scan_values(
-                    user.dataspace, field_data, input_type, license_matches, checked
+                    user.dataspace,
+                    field_data,
+                    model_field_name,
+                    input_type,
+                    license_matches,
+                    checked,
                 )
 
             elif field in ("declared_holder", "primary_language"):
