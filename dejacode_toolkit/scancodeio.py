@@ -267,10 +267,7 @@ class ScanCodeIO(BaseService):
         ("Description", "description"),
         ("Primary language", "primary_language"),
         ("Homepage URL", "homepage_url"),
-        # We need to remove the validation in SetKeywordsChoicesFormMixin before enabling
-        # keywords that are not available as ComponentKeyword.
-        # Essentially using ComponentKeyword only as suggestions but not limited to.
-        # ('Keywords', 'keywords'),
+        ("Keywords", "keywords"),
         ("Release date", "release_date"),
         ("Notice text", "notice_text"),
         # ('Dependencies', 'dependencies'),
@@ -452,22 +449,16 @@ def get_package_download_url(project_data):
         return input_sources[0].get("download_url", None)
 
 
-def get_notice_text_from_key_files(scan_summary, separator="\n---\n"):
+def get_notice_text_from_key_files(scan_summary, separator="\n---\n\n"):
     """
     Return a generate notice_text from the key files contained in the provided
     ``scan_summary``.
     """
     key_files = scan_summary.get("key_files", [])
 
-    # See https://github.com/nexB/scancode-toolkit/issues/3822 for the addition of
-    # a `is_notice` attribute.
-    notice_files = [
-        key_file for key_file in key_files
-        if "notice" in key_file.get("name").lower()
-    ]
+    # See https://github.com/nexB/scancode-toolkit/issues/3822 about the addition
+    # of a `is_notice` attribute.
+    notice_files = [key_file for key_file in key_files if "notice" in key_file.get("name").lower()]
 
-    notice_text = separator.join([
-        notice_file.get("content") for notice_file in notice_files
-    ])
-
+    notice_text = separator.join([notice_file.get("content") for notice_file in notice_files])
     return notice_text

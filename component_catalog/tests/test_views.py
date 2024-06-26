@@ -3098,7 +3098,14 @@ class PackageUserViewsTestCase(TestCase):
             ],
         }
         updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        expected = ["holder", "primary_language", "description", "homepage_url", "copyright"]
+        expected = [
+            "holder",
+            "primary_language",
+            "description",
+            "homepage_url",
+            "keywords",
+            "copyright",
+        ]
         self.assertEqual(expected, updated_fields)
 
         self.package1.refresh_from_db()
@@ -3107,14 +3114,14 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual("Modern CSS framework", self.package1.description)
         self.assertEqual("https://bulma.io", self.package1.homepage_url)
         self.assertEqual("Copyright Jeremy Thomas", self.package1.copyright)
-        # expected_keywords = ['css', 'sass', 'flexbox', 'responsive', 'framework']
-        # self.assertEqual(expected_keywords, self.package1.keywords)
+        expected_keywords = ["css", "sass", "flexbox", "responsive", "framework"]
+        self.assertEqual(expected_keywords, self.package1.keywords)
 
         self.assertEqual(self.super_user, self.package1.last_modified_by)
         history_entry = History.objects.get_for_object(self.package1).get()
         expected = (
             "Automatically updated holder, primary_language, description, "
-            "homepage_url, copyright from scan results"
+            "homepage_url, keywords, copyright from scan results"
         )
         self.assertEqual(expected, history_entry.change_message)
 
@@ -3158,11 +3165,11 @@ class PackageUserViewsTestCase(TestCase):
             "purl": "pkg:maven/aopalliance/aopalliance@1.0",
             "license_expression": "mit",
             "primary_language": "Java",
-            # 'keywords': [
-            #     'json',
-            #     'Development Status :: 5 - Production/Stable',
-            #     'Operating System :: OS Independent',
-            # ],
+            "keywords": [
+                "json",
+                "Development Status :: 5 - Production/Stable",
+                "Operating System :: OS Independent",
+            ],
         }
         mapped_data = ScanCodeIO.map_detected_package_data(detected_package)
         self.assertEqual(expected, mapped_data)
@@ -3468,7 +3475,12 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(self.package1.download_url, notif.description)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.update_from_scan")
-    def test_send_scan_notification_update_package_from_scan(self, mock_update_from_scan):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    def test_send_scan_notification_update_package_from_scan(
+        self, mock_is_configured, mock_update_from_scan
+    ):
+        mock_is_configured.return_value = True
+
         self.client.login(username=self.super_user.username, password="secret")
 
         data = {
