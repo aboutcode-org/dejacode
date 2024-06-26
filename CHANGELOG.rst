@@ -25,6 +25,9 @@ Release notes
   create the package.
   https://github.com/nexB/dejacode/issues/131
 
+- Populate the Package notice_text using "*NOTICE*" file content from Scan "key files".
+  https://github.com/nexB/dejacode/issues/136
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

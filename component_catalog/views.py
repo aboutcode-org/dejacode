@@ -1801,18 +1801,19 @@ def send_scan_notification(request, key):
 
     run = json_data.get("run")
     scan_status = run.get("status")
+    scancodeio = ScanCodeIO(user)
 
     update_package_from_scan = all(
         [
             dataspace.enable_package_scanning,
             dataspace.update_packages_from_scan,
             scan_status.lower() == "success",
+            scancodeio.is_configured(),
         ]
     )
 
     # Triggers the Package data automatic update from Scan results, if enabled.
     if update_package_from_scan:
-        scancodeio = ScanCodeIO(user)
         updated_fields = scancodeio.update_from_scan(package, user)
         if updated_fields:
             description = (
@@ -2224,8 +2225,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["summary"] = self.get_key_file_summary(key_file)
 
             # Inject the matched values as a grouped list for usage in the template
-            # Limit the matched_text to 300 chars to prevent rendering issues.
-            MATCHED_MAX_LENGTH = 300
+            # Limit the matched_text to 1,000 chars to prevent rendering issues.
+            MATCHED_MAX_LENGTH = 1_000
             license_detections = key_file.get("license_detections", [])
 
             matched_texts = []
