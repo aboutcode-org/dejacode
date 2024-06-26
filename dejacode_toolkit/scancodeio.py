@@ -207,7 +207,7 @@ class ScanCodeIO(BaseService):
                 if scan_value and model_field not in ["package_url", "purl"]:
                     values_from_scan[model_field] = scan_value
 
-        # 3. Inferred values: copyright
+        # 3a. Inferred values: copyright
         if not values_from_scan.get("copyright", None):
             if holder := values_from_scan.get("holder"):
                 values_from_scan["copyright"] = f"Copyright {holder}"
@@ -215,6 +215,11 @@ class ScanCodeIO(BaseService):
                 values_from_scan["copyright"] = f"Copyright {package.name} project contributors"
             elif package_name := detected_package.get("name"):
                 values_from_scan["copyright"] = f"Copyright {package_name} project contributors"
+
+        # 3b. Inferred values: notice_text, generated from key fields.
+        if not values_from_scan.get("notice_text", None):
+            if notice_text := get_notice_text_from_key_files(scan_summary):
+                values_from_scan["notice_text"] = notice_text
 
         if values_from_scan:
             updated_fields = package.update_from_data(user, values_from_scan)
@@ -262,10 +267,7 @@ class ScanCodeIO(BaseService):
         ("Description", "description"),
         ("Primary language", "primary_language"),
         ("Homepage URL", "homepage_url"),
-        # We need to remove the validation in SetKeywordsChoicesFormMixin before enabling
-        # keywords that are not available as ComponentKeyword.
-        # Essentially using ComponentKeyword only as suggestions but not limited to.
-        # ('Keywords', 'keywords'),
+        ("Keywords", "keywords"),
         ("Release date", "release_date"),
         ("Notice text", "notice_text"),
         # ('Dependencies', 'dependencies'),
@@ -445,3 +447,20 @@ def get_package_download_url(project_data):
     input_sources = get_project_input_source(project_data)
     if len(input_sources) == 1:
         return input_sources[0].get("download_url", None)
+
+
+def get_notice_text_from_key_files(scan_summary, separator="\n\n---\n\n"):
+    """
+    Return a generate notice_text from the key files contained in the provided
+    ``scan_summary``.
+    """
+    key_files = scan_summary.get("key_files", [])
+
+    # See https://github.com/nexB/scancode-toolkit/issues/3822 about the addition
+    # of a `is_notice` attribute.
+    notice_files = [key_file for key_file in key_files if "notice" in key_file.get("name").lower()]
+
+    notice_text = separator.join(
+        [notice_file.get("content").strip() for notice_file in notice_files]
+    )
+    return notice_text
