@@ -2219,8 +2219,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["summary"] = self.get_key_file_summary(key_file)
 
             # Inject the matched values as a grouped list for usage in the template
-            # Limit the matched_text to 300 chars to prevent rendering issues.
-            MATCHED_MAX_LENGTH = 300
+            # Limit the matched_text to 1,000 chars to prevent rendering issues.
+            MATCHED_MAX_LENGTH = 1_000
             license_detections = key_file.get("license_detections", [])
 
             matched_texts = []
