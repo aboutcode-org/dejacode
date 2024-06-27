@@ -83,6 +83,11 @@ class ComponentForm(
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
     save_as = True
     clone_m2m_classes = [
         ComponentAssignedPackage,
@@ -273,6 +278,11 @@ class PackageForm(
     PackageFieldsValidationMixin,
     DataspacedModelForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
     save_as = True
     color_initial = True
 

@@ -276,6 +276,14 @@ class LicenseExpressionFormMixin:
         # or without `license_expression` value.
         return self.clean_expression_base(expression)
 
+    def clean_declared_license_expression(self):
+        expression = self.cleaned_data.get("declared_license_expression")
+        return self.clean_expression_base(expression)
+
+    def clean_other_license_expression(self):
+        expression = self.cleaned_data.get("other_license_expression")
+        return self.clean_expression_base(expression)
+
     def clean_expression_base(self, expression):
         """
         Return a normalized license expression string validated against
