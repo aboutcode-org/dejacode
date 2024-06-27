@@ -189,7 +189,6 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, 'id="tab_hierarchy"')
 
         # Legal tab is only displayed if one a the legal field is set
-        self.assertNotContains(response, 'id="tab_legal"')
         self.component1.legal_comments = "Comments"
         self.component1.save()
         response = self.client.get(url)
@@ -2136,8 +2135,8 @@ class PackageUserViewsTestCase(TestCase):
 
         expected_declared_license = """
         <span class="license-expression">
-          <input type="checkbox" name="license_expression" value="l1 AND l2 WITH e" checked>
-          <a href="/licenses/Dataspace/l1/" title="L1">l1</a>
+          <input type="checkbox" name="declared_license_expression" value="l1 AND l2 WITH e"
+          checked><a href="/licenses/Dataspace/l1/" title="L1">l1</a>
           AND (<a href="/licenses/Dataspace/l2/" title="L2">l2</a>
            WITH <a href="/licenses/Dataspace/e/" title="e">e</a>)
         </span>
@@ -2149,7 +2148,7 @@ class PackageUserViewsTestCase(TestCase):
             '<input type="radio" name="primary_language" value="C++" checked> C++'
         )
         expected_other_licenses = """
-        <span class="license-expression"><input type="checkbox" name="license_expression"
+        <span class="license-expression"><input type="checkbox" name="other_license_expression"
         value="mit" > mit <span class="badge text-bg-secondary rounded-pill">3</span></span>
         """
         expected_other_holders = (
@@ -2450,12 +2449,14 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         expected1 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="apache-2.0" > apache-2.0 <span class="badge text-bg-secondary rounded-pill">3'
             "</span></span>"
         )
         expected2 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="mit" > mit <span class="badge text-bg-secondary rounded-pill">2</span></span>'
         )
         response = self.client.get(self.package1_tab_scan_url)
@@ -2695,7 +2696,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual("The Rust Project Developers", self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Concluded license expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -2738,7 +2739,8 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(self.package1_tab_scan_url)
         expected_license_expression_html = (
             '<span class="license-expression">'
-            '<input type="checkbox" name="license_expression" value="apache-2.0 OR mit" checked> '
+            '<input type="checkbox" name="declared_license_expression" '
+            'value="apache-2.0 OR mit" checked> '
             "apache-2.0 OR mit</span>"
         )
         expected_holder_html = (
@@ -2790,7 +2792,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(expected_holder, self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)

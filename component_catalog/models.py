@@ -2362,6 +2362,7 @@ class Package(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
 
+        # Duplicate the declared_license_expression into the license_expression field.
         if declared_license_expression := package_data.get("declared_license_expression"):
             package_data["license_expression"] = declared_license_expression
 
