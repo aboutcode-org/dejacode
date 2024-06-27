@@ -249,7 +249,7 @@ class ScanCodeIOTestCase(TestCase):
             "purl": "pkg:maven/aopalliance/aopalliance@1.0",
             "primary_language": "Java",
             "declared_license_expression": "mit AND mit",
-            "other_license_expression": "apache-20 AND apache-20",
+            "other_license_expression": "apache-2.0 AND apache-2.0",
             "keywords": [
                 "json",
                 "Development Status :: 5 - Production/Stable",
@@ -265,6 +265,8 @@ class ScanCodeIOTestCase(TestCase):
             "package_url": "pkg:maven/aopalliance/aopalliance@1.0",
             "purl": "pkg:maven/aopalliance/aopalliance@1.0",
             "license_expression": "mit",
+            "declared_license_expression": "mit",
+            "other_license_expression": "apache-2.0",
             "primary_language": "Java",
             "keywords": [
                 "json",

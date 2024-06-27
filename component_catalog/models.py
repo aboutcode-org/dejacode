@@ -2362,6 +2362,9 @@ class Package(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
 
+        if declared_license_expression := package_data.get("declared_license_expression"):
+            package_data["license_expression"] = declared_license_expression
+
         if package_url:
             package_data.update(package_url.to_dict(encode=True, empty=""))
 

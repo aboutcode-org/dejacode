@@ -1222,6 +1222,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "reference_notes",
                     "usage_policy",
                     "version",
+                    "other_license_expression",
                     "owner",
                     "release_date",
                     "description",
@@ -1248,6 +1249,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "is_notice_in_codebase",
                     "notice_filename",
                     "notice_url",
+                    "declared_license_expression",
                     "dependencies",
                     "codescan_identifier",
                     "website_terms_of_use",
@@ -1319,13 +1321,14 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "copyright",
                     "notice_text",
                     "author",
+                    "declared_license_expression",
                     "dependencies",
                     "repository_homepage_url",
                     "repository_download_url",
                     "api_data_url",
-                    "declared_license",
                     "datasource_id",
                     "file_references",
+                    "other_license_expression",
                     "parties",
                 ],
             ),
@@ -1692,10 +1695,11 @@ class ComponentCatalogModelsTestCase(TestCase):
             "description": "Abbot Java GUI Test Library",
             "keywords": ["keyword1", "keyword2"],
             "homepage_url": "http://abbot.sf.net/",
-            "download_url": "http://repo1.maven.org/maven2/abbot/abbot/" "1.4.0/abbot-1.4.0.jar",
+            "download_url": "http://repo1.maven.org/maven2/abbot/abbot/1.4.0/abbot-1.4.0.jar",
             "size": 687192,
             "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
-            "license_expression": "(bsd-new OR eps-1.0 OR apache-2.0 OR mit) AND unknown",
+            "declared_license_expression": "bsd-new OR epl-1.0 OR apache-2.0",
+            "declared_license_expression_spdx": "BSD-3-Clause OR EPL-1.0 OR Apache-2.0",
             "declared_license": "EPL\nhttps://www.eclipse.org/legal/eps-v10.html",
             "package_url": "pkg:maven/abbot/abbot@1.4.0",
         }
@@ -1704,7 +1708,10 @@ class ComponentCatalogModelsTestCase(TestCase):
         purl = "pkg:maven/abbot/abbot@1.4.0"
         package = Package.create_from_url(url=purl, user=self.user)
         mock_get_purldb_entries.assert_called_once()
+
         self.assertEqual(self.user, package.created_by)
+        self.assertEqual(purldb_entry["declared_license_expression"], package.license_expression)
+
         for field_name, value in purldb_entry.items():
             self.assertEqual(value, getattr(package, field_name))
 

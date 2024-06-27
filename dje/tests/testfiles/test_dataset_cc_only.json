@@ -44,6 +44,8 @@
     "last_modified_date": "2011-08-24T09:20:01Z",
     "reference_notes": "",
     "usage_policy": null,
+    "declared_license_expression": "",
+    "other_license_expression": "",
     "holder": "",
     "keywords": [
       "Framework"
@@ -112,6 +114,8 @@
     "last_modified_date": "2011-08-24T09:20:01Z",
     "reference_notes": "",
     "usage_policy": null,
+    "declared_license_expression": "",
+    "other_license_expression": "",
     "holder": "",
     "keywords": [
       "Framework"
@@ -276,6 +280,8 @@
     "version": "",
     "qualifiers": "",
     "subpath": "",
+    "declared_license_expression": "",
+    "other_license_expression": "",
     "holder": "",
     "keywords": [],
     "cpe": "",
@@ -303,7 +309,6 @@
     "repository_homepage_url": "",
     "repository_download_url": "",
     "api_data_url": "",
-    "declared_license": "",
     "datasource_id": "",
     "file_references": [],
     "parties": []

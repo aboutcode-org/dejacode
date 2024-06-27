@@ -2599,8 +2599,8 @@ class PackageUserViewsTestCase(TestCase):
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
         expected = (
-            "Changed Package URL, License expression, Copyright, Primary language, Description, "
-            "Homepage URL, Release date and Notice text."
+            "Changed Package URL, Concluded license expression, Copyright, Primary language, "
+            "Description, Homepage URL, Release date and Notice text."
         )
         self.assertEqual(expected, history.get_change_message())
 
@@ -2695,7 +2695,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual("The Rust Project Developers", self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -3471,6 +3471,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
         }
         self.assertEqual(expected, response.context["form"].initial)
 

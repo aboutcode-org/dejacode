@@ -391,6 +391,8 @@ class ScanCodeIO(BaseService):
 
             elif scan_data_field.endswith("license_expression"):
                 value = str(Licensing().dedup(value))
+                if scan_data_field == "declared_license_expression":
+                    package_data_for_model["license_expression"] = value
 
             package_data_for_model[scan_data_field] = value
 

@@ -1943,6 +1943,11 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Direct Fields", "value": "created_by", "label": "created_by >>"},
             {"group": "Direct Fields", "label": "created_date", "value": "created_date"},
             {"group": "Direct Fields", "label": "curation_level", "value": "curation_level"},
+            {
+                "group": "Direct Fields",
+                "label": "declared_license_expression",
+                "value": "declared_license_expression",
+            },
             {"group": "Direct Fields", "label": "dependencies", "value": "dependencies"},
             {"group": "Direct Fields", "label": "description", "value": "description"},
             {
@@ -2000,6 +2005,11 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Direct Fields", "label": "notice_filename", "value": "notice_filename"},
             {"group": "Direct Fields", "label": "notice_text", "value": "notice_text"},
             {"group": "Direct Fields", "label": "notice_url", "value": "notice_url"},
+            {
+                "group": "Direct Fields",
+                "label": "other_license_expression",
+                "value": "other_license_expression",
+            },
             {"group": "Direct Fields", "label": "owner >>", "value": "owner"},
             {"group": "Direct Fields", "label": "primary_language", "value": "primary_language"},
             {"group": "Direct Fields", "label": "project", "value": "project"},
