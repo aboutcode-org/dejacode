@@ -191,7 +191,8 @@ class ScanCodeIO(BaseService):
             logger.debug(f'{self.label}: scan summary not available for package="{package}"')
             return []
 
-        # 1. Summary fields: declared_license_expression, declared_holder, primary_language
+        # 1. Summary fields: declared_license_expression, license_expression,
+        #   declared_holder, primary_language
         for summary_field, model_field in self.AUTO_UPDATE_FIELDS:
             summary_field_value = scan_summary.get(summary_field)
             if summary_field_value:
@@ -360,6 +361,7 @@ class ScanCodeIO(BaseService):
 
     # (scan_field, model_field)
     AUTO_UPDATE_FIELDS = [
+        # declared_license_expression goes in both license fields.
         ("declared_license_expression", "license_expression"),
         ("declared_license_expression", "declared_license_expression"),
         ("other_license_expression", "other_license_expression"),

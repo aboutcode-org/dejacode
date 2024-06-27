@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+from pathlib import Path
 from unittest import mock
 
 from django.test import TestCase
@@ -26,6 +28,8 @@ from organization.models import Owner
 
 
 class ScanCodeIOTestCase(TestCase):
+    data = Path(__file__).parent / "testfiles"
+
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="Dataspace")
         self.basic_user = create_user("basic_user", self.dataspace)
@@ -164,6 +168,8 @@ class ScanCodeIOTestCase(TestCase):
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_scan_results):
+        self.package1.license_expression = ""
+        self.package1.save()
         scancodeio = ScanCodeIO(self.basic_user)
 
         mock_get_scan_results.return_value = None
@@ -180,66 +186,43 @@ class ScanCodeIOTestCase(TestCase):
         updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 
-        mock_fetch_scan_data.return_value = {
-            "declared_license_expression": "mit",
-            "declared_holder": "Jeremy Thomas",
-            "primary_language": "JavaScript",
-            "key_files": [
-                {
-                    "name": "about.NOTICE",
-                    "content": "Notice text",
-                }
-            ],
-            "key_files_packages": [
-                {
-                    "purl": "pkg:npm/bulma@0.9.4",
-                    "type": "npm",
-                    "namespace": "",
-                    "name": "bulma",
-                    "version": "0.9.4",
-                    "qualifiers": "",
-                    "subpath": "",
-                    "primary_language": "JavaScript_from_package",
-                    "description": "Modern CSS framework",
-                    "release_date": None,
-                    "homepage_url": "https://bulma.io",
-                    "bug_tracking_url": "https://github.com/jgthms/bulma/issues",
-                    "code_view_url": "",
-                    "vcs_url": "git+https://github.com/jgthms/bulma.git",
-                    "copyright": "",
-                    "license_expression": "mit",
-                    "notice_text": "",
-                    "dependencies": [],
-                    "keywords": ["css", "sass", "flexbox", "responsive", "framework"],
-                }
-            ],
-        }
+        scan_summary_location = self.data / "summary" / "bulma-1.0.1-scancode.io-summary.json"
+        with open(scan_summary_location) as f:
+            scan_summary = json.load(f)
+
+        mock_fetch_scan_data.return_value = scan_summary
         updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         expected = [
+            "license_expression",
+            "declared_license_expression",
             "holder",
             "primary_language",
+            "other_license_expression",
             "description",
             "homepage_url",
             "keywords",
             "copyright",
-            "notice_text",
         ]
         self.assertEqual(expected, updated_fields)
 
         self.package1.refresh_from_db()
+        self.assertEqual("mit", self.package1.license_expression)
+        self.assertEqual("mit", self.package1.declared_license_expression)
+        self.assertEqual("apache-2.0", self.package1.other_license_expression)
         self.assertEqual("Jeremy Thomas", self.package1.holder)
-        self.assertEqual("JavaScript_from_package", self.package1.primary_language)
-        self.assertEqual("Modern CSS framework", self.package1.description)
+        self.assertEqual("JavaScript", self.package1.primary_language)
+        self.assertEqual("Modern CSS framework based on Flexbox", self.package1.description)
         self.assertEqual("https://bulma.io", self.package1.homepage_url)
         self.assertEqual("Copyright Jeremy Thomas", self.package1.copyright)
-        expected_keywords = ["css", "sass", "flexbox", "responsive", "framework"]
+        expected_keywords = ["css", "sass", "scss", "flexbox", "grid", "responsive", "framework"]
         self.assertEqual(expected_keywords, self.package1.keywords)
 
         self.assertEqual(self.super_user, self.package1.last_modified_by)
         history_entry = History.objects.get_for_object(self.package1).get()
         expected = (
-            "Automatically updated holder, primary_language, description, "
-            "homepage_url, keywords, copyright, notice_text from scan results"
+            "Automatically updated license_expression, declared_license_expression, holder, "
+            "primary_language, other_license_expression, description, homepage_url, "
+            "keywords, copyright from scan results"
         )
         self.assertEqual(expected, history_entry.change_message)
 
