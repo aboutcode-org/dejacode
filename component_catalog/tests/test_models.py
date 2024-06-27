@@ -1699,8 +1699,6 @@ class ComponentCatalogModelsTestCase(TestCase):
             "size": 687192,
             "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
             "declared_license_expression": "bsd-new OR epl-1.0 OR apache-2.0",
-            "declared_license_expression_spdx": "BSD-3-Clause OR EPL-1.0 OR Apache-2.0",
-            "declared_license": "EPL\nhttps://www.eclipse.org/legal/eps-v10.html",
             "package_url": "pkg:maven/abbot/abbot@1.4.0",
         }
         mock_get_purldb_entries.return_value = [purldb_entry]

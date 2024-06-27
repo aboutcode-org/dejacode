@@ -341,14 +341,6 @@ class LicenseFieldsMixin(models.Model):
     class Meta:
         abstract = True
 
-    @property
-    def declared_license_expression_spdx(self):
-        return "TODO"
-
-    @property
-    def other_license_expression_spdx(self):
-        return "TODO"
-
 
 def get_cyclonedx_properties(instance):
     """
