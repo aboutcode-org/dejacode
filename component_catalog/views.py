@@ -1857,6 +1857,8 @@ class ComponentAddView(
                 "primary_language",
                 "cpe",
                 "license_expression",
+                "declared_license_expression",
+                "other_license_expression",
                 "keywords",
                 "usage_policy",
                 "copyright",

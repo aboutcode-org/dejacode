@@ -1504,6 +1504,8 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="",
             homepage_url="https://p2.com",
+            declared_license_expression="mit",
+            other_license_expression="mpl",
             dataspace=self.dataspace,
         )
         component_add_url = reverse("component_catalog:component_add")
@@ -1517,6 +1519,8 @@ class PackageUserViewsTestCase(TestCase):
             'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
             'id="id_homepage_url">',
         )
+        self.assertContains(response, "mit")
+        self.assertContains(response, "mpl")
 
     def test_package_list_view_usage_policy_availability(self):
         self.client.login(username=self.super_user.username, password="secret")
