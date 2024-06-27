@@ -949,6 +949,12 @@ class ComponentAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
@@ -983,6 +989,12 @@ class PackageAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),

@@ -201,14 +201,15 @@ p.url .vURLField {margin-top: 5px; width: 710px;}
 fieldset.grp-module p.selector-filter label {display: none;}
 
 /* Fix for the visibility of the awesomplete license expression builder choices */
-fieldset.grp-module div.license_expression,
-fieldset.grp-module div.from_expression,
-fieldset.grp-module div.to_expression,
+fieldset.grp-module div[class*="_expression"],
 fieldset.grp-module div.primary_language,
 fieldset.grp-module div.keywords,
 fieldset.grp-module div.feature {overflow: visible;}
 body.mass_update div.awesomplete {display: block;}
 div.awesomplete > ul {z-index: 1000 !important;}
+
+/* License expression fields */
+textarea#id_declared_license_expression, textarea#id_other_license_expression {height: 60px;}
 
 /* License choices */
 code.license_expression {border: 1px solid #ccc; background-color: #EEE; color: black; padding: 2px 4px; border-radius: 3px;}
