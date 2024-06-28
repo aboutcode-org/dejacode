@@ -64,8 +64,8 @@ from component_catalog.forms import PackageForm
 from component_catalog.forms import ScanSummaryToPackageForm
 from component_catalog.forms import ScanToPackageForm
 from component_catalog.forms import SetPolicyForm
+from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
-from component_catalog.license_expression_dje import get_licensing_for_formatted_render
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
@@ -2082,7 +2082,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             """
 
     @staticmethod
-    def _get_licensing_for_formatted_render(dataspace, license_expressions):
+    def _get_dataspace_licensing(dataspace, license_expressions):
         # Get the set of unique license symbols as an optimization
         # to filter the License QuerySet to relevant objects.
         license_keys = set()
@@ -2092,7 +2092,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 license_keys.update(get_unique_license_keys(expression))
 
         show_policy = dataspace.show_usage_policy_in_user_views
-        licensing = get_licensing_for_formatted_render(dataspace, show_policy, license_keys)
+        licensing = get_dataspace_licensing(dataspace, license_keys)
 
         return licensing, show_policy
 
@@ -2106,9 +2106,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         license_matches,
         checked=False,
     ):
-        licensing, show_policy = cls._get_licensing_for_formatted_render(
-            dataspace, license_expressions
-        )
+        licensing, show_policy = cls._get_dataspace_licensing(dataspace, license_expressions)
         values = []
         for entry in license_expressions:
             license_expression = entry.get("value")
@@ -2267,7 +2265,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["matched_texts"] = matched_texts
 
             if detected_license_expression := key_file["detected_license_expression"]:
-                licensing, show_policy = self._get_licensing_for_formatted_render(
+                licensing, show_policy = self._get_dataspace_licensing(
                     self.object.dataspace, [{"value": detected_license_expression}]
                 )
                 key_file["formatted_expression"] = get_formatted_expression(
