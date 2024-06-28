@@ -3457,6 +3457,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+            "keywords": ["keyword1", "keyword2"],
         }
         mock_request_get.return_value = {
             "count": 1,
@@ -3469,6 +3470,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
         expected = {
             "filename": "abbot-1.4.0.jar",
+            "keywords": ["keyword1", "keyword2"],
             "release_date": "2015-09-22",
             "type": "maven",
             "namespace": "abbot",
