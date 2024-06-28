@@ -88,6 +88,7 @@ from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
 from dje.utils import is_uuid4
+from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
 from dje.views import APIWrapperListView
@@ -868,8 +869,11 @@ class ComponentDetailsView(
         ]
 
         fields = self.get_tab_fields(tab_fields)
-        # At least 1 value need to be set for the tab to be available.
-        if not any([1 for field in fields if field[1] and field[0] != "License expression"]):
+        # At least 1 value need to be set (excepting the license_expression)
+        # for the tab to be available.
+        if not any(
+            [1 for field in fields if field[1] and field[0] != "Concluded license expression"]
+        ):
             return
 
         return {"fields": fields}
@@ -1839,56 +1843,70 @@ class ComponentAddView(
     model = Component
     form_class = ComponentForm
     permission_required = "component_catalog.add_component"
+    initial_from_package_fields = [
+        "name",
+        "version",
+        "description",
+        "primary_language",
+        "cpe",
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+        "keywords",
+        "usage_policy",
+        "copyright",
+        "holder",
+        "notice_text",
+        "dependencies",
+        "reference_notes",
+        "release_date",
+        "homepage_url",
+        "code_view_url",
+        "vcs_url",
+        "bug_tracking_url",
+        "project",
+    ]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        package_ids = self.request.GET.get("package_ids")
-        package_ids = str_to_id_list(package_ids)
+        package_ids = str_to_id_list(self.request.GET.get("package_ids", ""))
 
         packages = (
             Package.objects.scope(self.request.user.dataspace)
             .filter(id__in=package_ids)
-            .values(
-                "id",
-                "name",
-                "version",
-                "description",
-                "primary_language",
-                "cpe",
-                "license_expression",
-                "declared_license_expression",
-                "other_license_expression",
-                "keywords",
-                "usage_policy",
-                "copyright",
-                "holder",
-                "notice_text",
-                "dependencies",
-                "reference_notes",
-                "release_date",
-                "homepage_url",
-                "project",
-            )
+            .values("id", *self.initial_from_package_fields)
         )
 
         initial = {"packages_ids": ",".join([str(entry.pop("id")) for entry in packages])}
+
         if packages:
-            for key in packages[0].keys():
-                unique_values = set()
-                for entry in packages:
-                    value = entry.get(key)
-                    if not value:
-                        continue
-                    if isinstance(value, list):
-                        value = ", ".join(value)
-                    unique_values.add(value)
-                if len(unique_values) == 1:
-                    initial[key] = list(unique_values)[0]
+            initial.update(self.extract_common_values(packages))
 
         kwargs.update({"initial": initial})
 
         return kwargs
+
+    @staticmethod
+    def extract_common_values(packages):
+        if not (packages):
+            return {}
+
+        if len(packages) == 1:
+            return remove_empty_values(packages[0])
+
+        common_values = {}
+        for key in packages[0].keys():
+            unique_values = set()
+            for entry in packages:
+                value = entry.get(key)
+                if value in EMPTY_VALUES or isinstance(value, (list, dict)):
+                    continue
+                unique_values.add(value)
+            if len(unique_values) == 1:
+                common_values[key] = list(unique_values)[0]
+
+        return common_values
 
 
 class ComponentUpdateView(

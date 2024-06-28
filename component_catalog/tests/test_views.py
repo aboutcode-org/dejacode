@@ -39,6 +39,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageDetailsView
 from component_catalog.views import PackageTabScanView
@@ -1497,6 +1498,7 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="1.0",
             homepage_url="https://p1.com",
+            dependencies=[{"purl": "pkg:maven/org.apache.lucene/lucene"}],
             dataspace=self.dataspace,
         )
         p2 = Package.objects.create(
@@ -1521,6 +1523,32 @@ class PackageUserViewsTestCase(TestCase):
         )
         self.assertContains(response, "mit")
         self.assertContains(response, "mpl")
+        self.assertNotContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+        component_add_url = reverse("component_catalog:component_add")
+        url = f"{component_add_url}?package_ids={p1.id}"
+        response = self.client.get(url)
+        self.assertContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+    def test_add_component_from_package_data_extract_common_values(self):
+        extract_common_values = ComponentAddView.extract_common_values
+
+        packages = None
+        self.assertEqual({}, extract_common_values(packages))
+
+        packages = []
+        self.assertEqual({}, extract_common_values(packages))
+
+        package1 = {"name": "common", "version": "1.0", "empty_value": ""}
+        package2 = {"name": "common", "version": "2.0", "list_value": [1], "dict_value": {"a": "b"}}
+
+        packages = [package1]
+        expected = {"name": "common", "version": "1.0"}
+        self.assertEqual(expected, extract_common_values(packages))
+
+        packages = [package1, package2]
+        expected = {"name": "common"}
+        self.assertEqual(expected, extract_common_values(packages))
 
     def test_package_list_view_usage_policy_availability(self):
         self.client.login(username=self.super_user.username, password="secret")
