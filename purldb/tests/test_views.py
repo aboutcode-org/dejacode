@@ -51,7 +51,7 @@ purldb_list = json.loads(
                     "url": null
                 }
             ],
-            "keywords": [],
+            "keywords": ["keyword1", "keyword2"],
             "homepage_url": "http://abbot.sf.net/",
             "download_url": "https://repo1.maven.org/maven2/abbot/abbot/1.4.0/abbot-1.4.0.jar",
             "bug_tracking_url": null,
@@ -269,6 +269,9 @@ class PurlDBViewsTestCase(TestCase):
 
         expected = 'id="tab_purldb"'
         self.assertContains(response, expected)
+
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-keywords">keyword1\nkeyword2</pre>'
+        self.assertContains(response, expected, html=True)
 
     def test_purldb_search_table_view(self):
         search_table_url = reverse("purldb:purldb_search_table")

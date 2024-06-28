@@ -82,9 +82,6 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
     if package_url:
         tab_fields.append(("Package URL", package_url, Package.package_url_help()))
 
-    # Workaround the `declared_license_expression` field renaming
-    sorted_data["license_expression"] = sorted_data.get("declared_license_expression")
-
     for field_name, value in sorted_data.items():
         if not value or field_name in exclude:
             continue
@@ -94,7 +91,7 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
         except FieldDoesNotExist:
             continue
 
-        if field_name == "license_expression":
+        if field_name == "declared_license_expression":
             show_policy = dataspace.show_usage_policy_in_user_views
             licensing = get_licensing_for_formatted_render(dataspace, show_policy)
             value = format_html(get_formatted_expression(licensing, value, show_policy))
