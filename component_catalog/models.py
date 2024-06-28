@@ -36,6 +36,7 @@ from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
 from cyclonedx.model import license as cyclonedx_license
+from license_expression import ExpressionError
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
@@ -220,8 +221,13 @@ class LicenseExpressionMixin:
     primary_license = cached_property(_get_primary_license)
 
     def get_expression_as_spdx(self, expression):
-        if expression:
+        if not expression:
+            return
+
+        try:
             return get_expression_as_spdx(expression, self.dataspace)
+        except ExpressionError as e:
+            return str(e)
 
     @property
     def concluded_license_expression_spdx(self):

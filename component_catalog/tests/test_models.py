@@ -443,6 +443,29 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "SPDX-1 WITH SPDX-2"
         self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
 
+    def test_component_model_license_expression_spdx_properties(self):
+        self.license1.spdx_license_key = "SPDX-1"
+        self.license1.save()
+
+        expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        self.component1.license_expression = expression
+        self.component1.declared_license_expression = expression
+        self.component1.other_license_expression = expression
+        self.component1.save()
+
+        expected = "SPDX-1 AND LicenseRef-dejacode-license2"
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
+
+        self.component1.license_expression = "unknown"
+        self.component1.save()
+        expected = "Unknown license key(s): unknown"
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+
+    def test_component_model_get_expression_as_spdx(self):
+        pass
+
     def test_get_license_expression_key_as_link_conflict(self):
         # self.license1.key is contained in self.license2.key
         self.license1.key = "w3c"

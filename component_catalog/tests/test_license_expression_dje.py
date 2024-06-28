@@ -10,24 +10,42 @@ import json
 import os
 from collections import namedtuple
 from itertools import zip_longest
-from unittest import TestCase
 
 from django.core.exceptions import ValidationError
+from django.test import TestCase
 
+from license_expression import ExpressionError
 from license_expression import LicenseSymbolLike
 from license_expression import ParseError
 from license_expression import as_symbols
 
 from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.license_expression_dje import normalize_and_validate_expression
 from component_catalog.license_expression_dje import parse_expression
+from dje.models import Dataspace
+from license_library.models import License
+from organization.models import Owner
 
 MockLicense = namedtuple("MockLicense", "key aliases is_exception")
 
 
 class LicenseExpressionDjeTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="Starship")
+        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+
+        self.license1 = License.objects.create(
+            key="apache-2.0",
+            name="Apache License 2.0",
+            short_name="Apache 2.0",
+            spdx_license_key="Apache-2.0",
+            dataspace=self.dataspace,
+            owner=self.owner,
+        )
+
     def test_as_symbols(self):
         lic1 = MockLicense("x11", ["X11 License"], True)
         lic2 = MockLicense("x11-xconsortium", ["X11 XConsortium"], False)
@@ -262,6 +280,14 @@ class LicenseExpressionDjeTestCase(TestCase):
         expression = "gps-2.0 WITH classpath OR (gps-2.0 AND lgpl) OR oracle-bcl"
         expected = {"lgpl", "oracle-bcl", "gps-2.0", "classpath"}
         self.assertEqual(expected, get_unique_license_keys(expression))
+
+    def test_get_expression_as_spdx(self):
+        expression = "apache-2.0"
+        expected = "Apache-2.0"
+        self.assertEqual(expected, get_expression_as_spdx(expression, self.dataspace))
+
+        with self.assertRaises(ExpressionError):
+            get_expression_as_spdx("unknown", self.dataspace)
 
 
 def _print_sequence_diff(left, right):
