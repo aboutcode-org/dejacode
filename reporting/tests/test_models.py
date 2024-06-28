@@ -2059,6 +2059,21 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Related Fields", "label": "related_parents", "value": "related_parents"},
             {"group": "Properties", "label": "urn", "value": "urn"},
             {"group": "Properties", "label": "details_url", "value": "details_url"},
+            {
+                "group": "Properties",
+                "label": "concluded_license_expression_spdx",
+                "value": "concluded_license_expression_spdx",
+            },
+            {
+                "group": "Properties",
+                "label": "declared_license_expression_spdx",
+                "value": "declared_license_expression_spdx",
+            },
+            {
+                "group": "Properties",
+                "label": "other_license_expression_spdx",
+                "value": "other_license_expression_spdx",
+            },
             {"group": "Properties", "value": "primary_license", "label": "primary_license"},
             {
                 "group": "Properties",

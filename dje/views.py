@@ -74,7 +74,7 @@ from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
 from component_catalog.license_expression_dje import get_license_objects
-from component_catalog.license_expression_dje import render_expression_for_ui
+from component_catalog.license_expression_dje import render_expression_as_html
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -916,7 +916,7 @@ class TabSetMixin:
 
         for license_field in license_fields:
             if expression := getattr(obj, license_field, None):
-                rendered_expression = render_expression_for_ui(expression, obj.dataspace)
+                rendered_expression = render_expression_as_html(expression, obj.dataspace)
                 tab_fields.append(TabField(license_field, value=rendered_expression))
 
         if getattr(obj, "reference_notes", False):

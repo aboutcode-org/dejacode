@@ -426,9 +426,17 @@ def get_formatted_expression(licensing, license_expression, show_policy, show_ca
     )
 
 
-def render_expression_for_ui(expression_str, dataspace):
+def render_expression_as_html(expression, dataspace):
+    """Return the ``expression`` as rendered HTML content."""
     show_policy = dataspace.show_usage_policy_in_user_views
     licensing = get_dataspace_licensing(dataspace)
 
-    formatted_expression = get_formatted_expression(licensing, expression_str, show_policy)
+    formatted_expression = get_formatted_expression(licensing, expression, show_policy)
     return format_html(formatted_expression)
+
+
+def get_expression_as_spdx(expression, dataspace):
+    """Return an SPDX license expression built from the ``expression``."""
+    licensing = get_dataspace_licensing(dataspace)
+    parsed_expression = parse_expression(expression, licensing)
+    return parsed_expression.render(template="{symbol.spdx_license_key}")

@@ -44,6 +44,7 @@ from packageurl.contrib.django.models import PackageURLQuerySetMixin
 from packageurl.contrib.django.utils import without_empty_values
 
 from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from dejacode_toolkit import spdx
@@ -196,6 +197,9 @@ class LicenseExpressionMixin:
         "LicenseRef-".
 
         See discussion at https://github.com/spdx/tools-java/issues/73
+
+        Note: A new get_expression_as_spdx function is available and should be used in
+        place of this one.
         """
         expression = self.get_license_expression("{symbol.spdx_id}")
         if expression:
@@ -214,6 +218,14 @@ class LicenseExpressionMixin:
             return licensing.primary_license_key(self.license_expression)
 
     primary_license = cached_property(_get_primary_license)
+
+    def get_expression_as_spdx(self, expression):
+        if expression:
+            return get_expression_as_spdx(expression, self.dataspace)
+
+    @property
+    def concluded_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.license_expression)
 
     def save(self, *args, **kwargs):
         """
@@ -340,6 +352,14 @@ class LicenseFieldsMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    @property
+    def declared_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.declared_license_expression)
+
+    @property
+    def other_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.other_license_expression)
 
 
 def get_cyclonedx_properties(instance):
