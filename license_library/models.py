@@ -464,20 +464,16 @@ class LicenseSymbolMixin:
 
 
 class LicenseQuerySet(DataspacedQuerySet):
-    def for_expression(self, show_policy=False, license_keys=None):
-        select_related = ["dataspace"]
-        only = [
+    def for_expression(self, license_keys=None):
+        qs = self.only(
             "key",
+            "name",
             "short_name",
+            "spdx_license_key",
             "is_exception",
+            "usage_policy",
             "dataspace",
-        ]
-
-        if show_policy:
-            select_related.append("usage_policy")
-            only.append("usage_policy")
-
-        qs = self.select_related(*select_related).only(*only)
+        ).select_related("dataspace", "usage_policy")
 
         if license_keys:
             qs = qs.filter(key__in=license_keys)

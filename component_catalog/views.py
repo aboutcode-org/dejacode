@@ -64,8 +64,8 @@ from component_catalog.forms import PackageForm
 from component_catalog.forms import ScanSummaryToPackageForm
 from component_catalog.forms import ScanToPackageForm
 from component_catalog.forms import SetPolicyForm
+from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
-from component_catalog.license_expression_dje import get_licensing_for_formatted_render
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
@@ -88,6 +88,7 @@ from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
 from dje.utils import is_uuid4
+from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
 from dje.views import APIWrapperListView
@@ -434,7 +435,7 @@ class ComponentListView(
         Header("name", _("Component name")),
         Header("version", _("Version")),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
-        Header("license_expression", _("License"), filter="licenses"),
+        Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("owner", _("Owner")),
         Header("keywords", _("Keywords"), filter="keywords"),
@@ -561,6 +562,8 @@ class ComponentDetailsView(
                 "reference_notes",
                 "licenses",
                 "licenses_summary",
+                "declared_license_expression",
+                "other_license_expression",
             ],
         },
         "hierarchy": {},
@@ -597,7 +600,6 @@ class ComponentDetailsView(
                 "ip_sensitivity_approved",
                 "affiliate_obligations",
                 "affiliate_obligation_triggers",
-                "concluded_license",
                 "legal_comments",
                 "sublicense_allowed",
                 "express_patent_grant",
@@ -859,7 +861,6 @@ class ComponentDetailsView(
             TabField("ip_sensitivity_approved"),
             TabField("affiliate_obligations"),
             TabField("affiliate_obligation_triggers"),
-            TabField("concluded_license"),
             TabField("legal_comments"),
             TabField("sublicense_allowed"),
             TabField("express_patent_grant"),
@@ -868,8 +869,11 @@ class ComponentDetailsView(
         ]
 
         fields = self.get_tab_fields(tab_fields)
-        # At least 1 value need to be set for the tab to be available.
-        if not any([1 for field in fields if field[1] and field[0] != "License expression"]):
+        # At least 1 value need to be set (excepting the license_expression)
+        # for the tab to be available.
+        if not any(
+            [1 for field in fields if field[1] and field[0] != "Concluded license expression"]
+        ):
             return
 
         return {"fields": fields}
@@ -1072,7 +1076,7 @@ class PackageListView(
     table_headers = (
         Header("sortable_identifier", _("Identifier"), Package.identifier_help()),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
-        Header("license_expression", _("License"), filter="licenses"),
+        Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("filename", _("Download"), help_text="Download link"),
         Header("components", "Components", PACKAGE_COMPONENTS_HELP, "component"),
@@ -1213,6 +1217,8 @@ class PackageDetailsView(
                 "reference_notes",
                 "licenses",
                 "licenses_summary",
+                "declared_license_expression",
+                "other_license_expression",
             ],
         },
         "terms": {
@@ -1246,7 +1252,6 @@ class PackageDetailsView(
         },
         "others": {
             "fields": [
-                "declared_license",
                 "parties",
                 "datasource_id",
                 "file_references",
@@ -1399,7 +1404,6 @@ class PackageDetailsView(
 
     def tab_others(self):
         tab_fields = [
-            TabField("declared_license"),
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),
@@ -1839,54 +1843,70 @@ class ComponentAddView(
     model = Component
     form_class = ComponentForm
     permission_required = "component_catalog.add_component"
+    initial_from_package_fields = [
+        "name",
+        "version",
+        "description",
+        "primary_language",
+        "cpe",
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+        "keywords",
+        "usage_policy",
+        "copyright",
+        "holder",
+        "notice_text",
+        "dependencies",
+        "reference_notes",
+        "release_date",
+        "homepage_url",
+        "code_view_url",
+        "vcs_url",
+        "bug_tracking_url",
+        "project",
+    ]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        package_ids = self.request.GET.get("package_ids")
-        package_ids = str_to_id_list(package_ids)
+        package_ids = str_to_id_list(self.request.GET.get("package_ids", ""))
 
         packages = (
             Package.objects.scope(self.request.user.dataspace)
             .filter(id__in=package_ids)
-            .values(
-                "id",
-                "name",
-                "version",
-                "description",
-                "primary_language",
-                "cpe",
-                "license_expression",
-                "keywords",
-                "usage_policy",
-                "copyright",
-                "holder",
-                "notice_text",
-                "dependencies",
-                "reference_notes",
-                "release_date",
-                "homepage_url",
-                "project",
-            )
+            .values("id", *self.initial_from_package_fields)
         )
 
         initial = {"packages_ids": ",".join([str(entry.pop("id")) for entry in packages])}
+
         if packages:
-            for key in packages[0].keys():
-                unique_values = set()
-                for entry in packages:
-                    value = entry.get(key)
-                    if not value:
-                        continue
-                    if isinstance(value, list):
-                        value = ", ".join(value)
-                    unique_values.add(value)
-                if len(unique_values) == 1:
-                    initial[key] = list(unique_values)[0]
+            initial.update(self.extract_common_values(packages))
 
         kwargs.update({"initial": initial})
 
         return kwargs
+
+    @staticmethod
+    def extract_common_values(packages):
+        if not (packages):
+            return {}
+
+        if len(packages) == 1:
+            return remove_empty_values(packages[0])
+
+        common_values = {}
+        for key in packages[0].keys():
+            unique_values = set()
+            for entry in packages:
+                value = entry.get(key)
+                if value in EMPTY_VALUES or isinstance(value, (list, dict)):
+                    continue
+                unique_values.add(value)
+            if len(unique_values) == 1:
+                common_values[key] = list(unique_values)[0]
+
+        return common_values
 
 
 class ComponentUpdateView(
@@ -1918,13 +1938,9 @@ class PackageAddView(
         initial = super().get_initial()
 
         if purldb_entry := self.get_entry_from_purldb():
+            # Duplicate the declared_license_expression as the "concluded" license_expression
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
-            model_fields = [
-                field.name
-                for field in Package._meta.get_fields()
-                # Generic keywords are not supported because of validation
-                if field.name != "keywords"
-            ]
+            model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
                 field_name: value
                 for field_name, value in purldb_entry.items()
@@ -2066,7 +2082,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             """
 
     @staticmethod
-    def _get_licensing_for_formatted_render(dataspace, license_expressions):
+    def _get_dataspace_licensing(dataspace, license_expressions):
         # Get the set of unique license symbols as an optimization
         # to filter the License QuerySet to relevant objects.
         license_keys = set()
@@ -2076,17 +2092,21 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 license_keys.update(get_unique_license_keys(expression))
 
         show_policy = dataspace.show_usage_policy_in_user_views
-        licensing = get_licensing_for_formatted_render(dataspace, show_policy, license_keys)
+        licensing = get_dataspace_licensing(dataspace, license_keys)
 
         return licensing, show_policy
 
     @classmethod
     def get_license_expressions_scan_values(
-        cls, dataspace, license_expressions, input_type, license_matches, checked=False
+        cls,
+        dataspace,
+        license_expressions,
+        field_name,
+        input_type,
+        license_matches,
+        checked=False,
     ):
-        licensing, show_policy = cls._get_licensing_for_formatted_render(
-            dataspace, license_expressions
-        )
+        licensing, show_policy = cls._get_dataspace_licensing(dataspace, license_expressions)
         values = []
         for entry in license_expressions:
             license_expression = entry.get("value")
@@ -2097,7 +2117,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             count = entry.get("count")
             checked_html = "checked" if checked else ""
             select_input = (
-                f'<input type="{input_type}" name="license_expression" '
+                f'<input type="{input_type}" name="{field_name}" '
                 f'value="{license_expression}" {checked_html}>'
             )
 
@@ -2245,7 +2265,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["matched_texts"] = matched_texts
 
             if detected_license_expression := key_file["detected_license_expression"]:
-                licensing, show_policy = self._get_licensing_for_formatted_render(
+                licensing, show_policy = self._get_dataspace_licensing(
                     self.object.dataspace, [{"value": detected_license_expression}]
                 )
                 key_file["formatted_expression"] = get_formatted_expression(
@@ -2308,10 +2328,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
             # Add the supported Package fields in the tab UI.
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
-                if scan_field == "declared_license_expression":
-                    scan_field = "license_expression"
-                value = self.detected_package_data.get(scan_field)
-                if value:
+                if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
                         value = format_html("<br>".join(([escape(entry) for entry in value])))
                     else:
@@ -2351,7 +2368,6 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         )
         license_matches = scan_summary.get("license_matches") or {}
         self.object.has_license_matches = bool(license_matches)
-
         for label, field, model_field_name, input_type in summary_fields:
             field_data = scan_summary.get(field, [])
             if field in ("declared_license_expression", "other_license_expressions"):
@@ -2361,7 +2377,12 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 else:
                     checked = False
                 values = self.get_license_expressions_scan_values(
-                    user.dataspace, field_data, input_type, license_matches, checked
+                    user.dataspace,
+                    field_data,
+                    model_field_name,
+                    input_type,
+                    license_matches,
+                    checked,
                 )
 
             elif field in ("declared_holder", "primary_language"):

@@ -418,6 +418,12 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "TIMEOUT": 900,  # 15 minutes, in seconds
     },
+    "licensing": {
+        "BACKEND": CACHE_BACKEND,
+        "LOCATION": REDIS_URL,
+        "TIMEOUT": 300,  # 10 minutes, in seconds
+        "KEY_PREFIX": "licensing",
+    },
     "vulnerabilities": {
         "BACKEND": CACHE_BACKEND,
         "LOCATION": REDIS_URL,

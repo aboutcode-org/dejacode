@@ -1928,7 +1928,6 @@ class ColumnTemplateTestCase(TestCase):
                 "value": "codescan_identifier",
             },
             {"group": "Direct Fields", "label": "completion_level", "value": "completion_level"},
-            {"group": "Direct Fields", "label": "concluded_license", "value": "concluded_license"},
             {
                 "group": "Direct Fields",
                 "label": "configuration_status >>",
@@ -1944,6 +1943,11 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Direct Fields", "value": "created_by", "label": "created_by >>"},
             {"group": "Direct Fields", "label": "created_date", "value": "created_date"},
             {"group": "Direct Fields", "label": "curation_level", "value": "curation_level"},
+            {
+                "group": "Direct Fields",
+                "label": "declared_license_expression",
+                "value": "declared_license_expression",
+            },
             {"group": "Direct Fields", "label": "dependencies", "value": "dependencies"},
             {"group": "Direct Fields", "label": "description", "value": "description"},
             {
@@ -2001,6 +2005,11 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Direct Fields", "label": "notice_filename", "value": "notice_filename"},
             {"group": "Direct Fields", "label": "notice_text", "value": "notice_text"},
             {"group": "Direct Fields", "label": "notice_url", "value": "notice_url"},
+            {
+                "group": "Direct Fields",
+                "label": "other_license_expression",
+                "value": "other_license_expression",
+            },
             {"group": "Direct Fields", "label": "owner >>", "value": "owner"},
             {"group": "Direct Fields", "label": "primary_language", "value": "primary_language"},
             {"group": "Direct Fields", "label": "project", "value": "project"},
@@ -2050,6 +2059,21 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Related Fields", "label": "related_parents", "value": "related_parents"},
             {"group": "Properties", "label": "urn", "value": "urn"},
             {"group": "Properties", "label": "details_url", "value": "details_url"},
+            {
+                "group": "Properties",
+                "label": "concluded_license_expression_spdx",
+                "value": "concluded_license_expression_spdx",
+            },
+            {
+                "group": "Properties",
+                "label": "declared_license_expression_spdx",
+                "value": "declared_license_expression_spdx",
+            },
+            {
+                "group": "Properties",
+                "label": "other_license_expression_spdx",
+                "value": "other_license_expression_spdx",
+            },
             {"group": "Properties", "value": "primary_license", "label": "primary_license"},
             {
                 "group": "Properties",

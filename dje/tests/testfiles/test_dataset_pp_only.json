@@ -16,6 +16,8 @@
     "version": "",
     "qualifiers": "",
     "subpath": "",
+    "declared_license_expression": "",
+    "other_license_expression": "",
     "holder": "",
     "keywords": [],
     "cpe": "",
@@ -43,7 +45,6 @@
     "repository_homepage_url": "",
     "repository_download_url": "",
     "api_data_url": "",
-    "declared_license": "",
     "datasource_id": "",
     "file_references": [],
     "parties": []

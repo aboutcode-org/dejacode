@@ -36,6 +36,7 @@ from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
 from cyclonedx.model import license as cyclonedx_license
+from license_expression import ExpressionError
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
@@ -44,6 +45,7 @@ from packageurl.contrib.django.models import PackageURLQuerySetMixin
 from packageurl.contrib.django.utils import without_empty_values
 
 from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from dejacode_toolkit import spdx
@@ -93,6 +95,24 @@ COMPONENT_PACKAGE_COMMON_FIELDS = [
     "release_date",
     "version",
 ]
+
+LICENSE_EXPRESSION_HELP_TEXT = _(
+    "The License Expression assigned to a DejaCode Package or Component is an editable "
+    'value equivalent to a "concluded license" as determined by a curator who has '
+    "performed analysis to clarify or correct the declared license expression, which "
+    "may have been assigned automatically (from a scan or an associated package "
+    "definition) when the Package or Component was originally created. "
+    "A license expression defines the relationship of one or more licenses to a "
+    "software object. More than one applicable license can be expressed as "
+    '"license-key-a AND license-key-b". A choice of applicable licenses can be '
+    'expressed as "license-key-a OR license-key-b", and you can indicate the primary '
+    "(preferred) license by placing it first, on the left-hand side of the OR "
+    "relationship. The relationship words (OR, AND) can be combined as needed, "
+    "and the use of parentheses can be applied to clarify the meaning; "
+    'for example "((license-key-a AND license-key-b) OR (license-key-c))". '
+    "An exception to a license can be expressed as "
+    '"license-key WITH license-exception-key".'
+)
 
 
 class PackageAlreadyExistsWarning(Exception):
@@ -178,6 +198,9 @@ class LicenseExpressionMixin:
         "LicenseRef-".
 
         See discussion at https://github.com/spdx/tools-java/issues/73
+
+        Note: A new get_expression_as_spdx function is available and should be used in
+        place of this one.
         """
         expression = self.get_license_expression("{symbol.spdx_id}")
         if expression:
@@ -196,6 +219,19 @@ class LicenseExpressionMixin:
             return licensing.primary_license_key(self.license_expression)
 
     primary_license = cached_property(_get_primary_license)
+
+    def get_expression_as_spdx(self, expression):
+        if not expression:
+            return
+
+        try:
+            return get_expression_as_spdx(expression, self.dataspace)
+        except ExpressionError as e:
+            return str(e)
+
+    @property
+    def concluded_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.license_expression)
 
     def save(self, *args, **kwargs):
         """
@@ -299,6 +335,37 @@ class LicenseExpressionMixin:
             return "table-danger"
         elif "warning" in self.compliance_alerts:
             return "table-warning"
+
+
+class LicenseFieldsMixin(models.Model):
+    declared_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from statements in the manifests or key "
+            "files of a software project, such as the NOTICE, COPYING, README, and "
+            "LICENSE files."
+        ),
+    )
+
+    other_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from detected licenses in the non-key files "
+            "of a software project, which are often third-party software used by the "
+            "project, or test, sample and documentation files."
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def declared_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.declared_license_expression)
+
+    @property
+    def other_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.other_license_expression)
 
 
 def get_cyclonedx_properties(instance):
@@ -698,25 +765,6 @@ def component_mixin_factory(verbose_name):
             ),
         )
 
-        license_expression = models.CharField(
-            _("License expression"),
-            max_length=1024,
-            blank=True,
-            db_index=True,
-            help_text=_(
-                "On a component or a product in DejaCode, a license expression defines the "
-                "relationship of one or more licenses to that software as declared by its "
-                'licensor. More than one applicable license can be expressed as "license-key-a '
-                'AND license-key-b". A choice of applicable licenses can be expressed as '
-                '"license-key-a OR license-key-b", and you can indicate the primary (preferred) '
-                "license by placing it first, on the left-hand side of the OR relationship. "
-                "The relationship words (OR, AND) can be combined as needed, and the use of "
-                'parentheses can be applied to clarify the meaning; for example "((license-key-a '
-                'AND license-key-b) OR (license-key-c))". An exception to a license can be '
-                'expressed as “license-key WITH license-exception-key".'
-            ),
-        )
-
         class Meta:
             abstract = True
             unique_together = (("dataspace", "name", "version"), ("dataspace", "uuid"))
@@ -826,10 +874,19 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    LicenseFieldsMixin,
     ParentChildModelMixin,
     BaseComponentMixin,
     DataspacedModel,
 ):
+    license_expression = models.CharField(
+        _("Concluded license expression"),
+        max_length=1024,
+        blank=True,
+        db_index=True,
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
+    )
+
     configuration_status = models.ForeignKey(
         to="component_catalog.ComponentStatus",
         on_delete=models.PROTECT,
@@ -1024,19 +1081,6 @@ class Component(
         help_text=_(
             "Explanation of how affiliate obligations are triggered, and what is the mitigation "
             "strategy."
-        ),
-    )
-
-    concluded_license = models.CharField(
-        max_length=1024,
-        blank=True,
-        db_index=True,
-        help_text=_(
-            "This is a memo field to record the conclusions of the legal team after full review "
-            "and scanning of the component package, and is only intended to document that "
-            "decision. The main value of the field is to clarify the company interpretation of "
-            "the license that should apply to a component when there is a choice, or when there "
-            "is ambiguity in the original component documentation."
         ),
     )
 
@@ -1591,6 +1635,7 @@ class Package(
     UsagePolicyMixin,
     SetPolicyFromLicenseMixin,
     LicenseExpressionMixin,
+    LicenseFieldsMixin,
     RequestMixin,
     HistoryFieldsMixin,
     ReferenceNotesMixin,
@@ -1679,21 +1724,11 @@ class Package(
     )
 
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
         db_index=True,
-        help_text=_(
-            "On a package in DejaCode, a license expression defines the relationship of one or "
-            "more licenses to that software as declared by its licensor. More than one "
-            'applicable license can be expressed as "license-key-a AND license-key-b". A choice '
-            'of applicable licenses can be expressed as "license-key-a OR license-key-b", and you '
-            "can indicate the primary (preferred) license by placing it first, on the left-hand "
-            "side of the OR relationship. The relationship words (OR, AND) can be combined as "
-            "needed, and the use of parentheses can be applied to clarify the meaning; for "
-            'example "((license-key-a AND license-key-b) OR (license-key-c))". An exception to '
-            'a license can be expressed as “license-key WITH license-exception-key".'
-        ),
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
     )
 
     copyright = models.TextField(
@@ -1757,15 +1792,6 @@ class Package(
         help_text=_(
             "API URL to obtain structured data for this package such as the "
             "URL to a JSON or XML api its package repository."
-        ),
-    )
-
-    declared_license = models.TextField(
-        blank=True,
-        help_text=_(
-            "The declared license mention, tag or text as found in a package manifest. "
-            "This can be a string, a list or dict of strings possibly nested, "
-            "as found originally in the manifest."
         ),
     )
 
@@ -2353,6 +2379,10 @@ class Package(
                 raise PackageAlreadyExistsWarning(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
+
+        # Duplicate the declared_license_expression into the license_expression field.
+        if declared_license_expression := package_data.get("declared_license_expression"):
+            package_data["license_expression"] = declared_license_expression
 
         if package_url:
             package_data.update(package_url.to_dict(encode=True, empty=""))

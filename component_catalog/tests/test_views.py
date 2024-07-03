@@ -39,6 +39,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageDetailsView
 from component_catalog.views import PackageTabScanView
@@ -189,7 +190,6 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, 'id="tab_hierarchy"')
 
         # Legal tab is only displayed if one a the legal field is set
-        self.assertNotContains(response, 'id="tab_legal"')
         self.component1.legal_comments = "Comments"
         self.component1.save()
         response = self.client.get(url)
@@ -378,7 +378,7 @@ class ComponentUserViewsTestCase(TestCase):
 
         # Check the tag set to True is displayed
         self.assertTrue(self.license_assigned_tag1.value)
-        # self.assertContains(response, f'{self.license_tag1.label}</strong>')
+        self.assertContains(response, f"{self.license_tag1.label}")
         self.assertContains(response, f' data-bs-content="{self.license_tag1.text}"')
 
         # Check the ordering of the tables respect the license_expression ordering
@@ -400,6 +400,16 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = "<td>{}</td><td>{}</td>".format(license2_str, license1_str)
         self.assertIn(no_whitespace(expected), no_whitespace(response.content))
+
+    def test_component_catalog_detail_view_license_tab_licenses_fields(self):
+        self.client.login(username="nexb_user", password="t3st")
+
+        self.component1.declared_license_expression = self.license1.key
+        self.component1.other_license_expression = self.license1.key
+        self.component1.save()
+        response = self.client.get(self.component1.get_absolute_url())
+        self.assertContains(response, "field-declared-license-expression")
+        self.assertContains(response, "field-other-license-expression")
 
     def test_return_to_component_from_license_details(self):
         # Making sure a 'Return to Component' link is available on a License
@@ -1498,6 +1508,7 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="1.0",
             homepage_url="https://p1.com",
+            dependencies=[{"purl": "pkg:maven/org.apache.lucene/lucene"}],
             dataspace=self.dataspace,
         )
         p2 = Package.objects.create(
@@ -1505,6 +1516,8 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="",
             homepage_url="https://p2.com",
+            declared_license_expression="mit",
+            other_license_expression="mpl",
             dataspace=self.dataspace,
         )
         component_add_url = reverse("component_catalog:component_add")
@@ -1518,6 +1531,34 @@ class PackageUserViewsTestCase(TestCase):
             'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
             'id="id_homepage_url">',
         )
+        self.assertContains(response, "mit")
+        self.assertContains(response, "mpl")
+        self.assertNotContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+        component_add_url = reverse("component_catalog:component_add")
+        url = f"{component_add_url}?package_ids={p1.id}"
+        response = self.client.get(url)
+        self.assertContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+    def test_add_component_from_package_data_extract_common_values(self):
+        extract_common_values = ComponentAddView.extract_common_values
+
+        packages = None
+        self.assertEqual({}, extract_common_values(packages))
+
+        packages = []
+        self.assertEqual({}, extract_common_values(packages))
+
+        package1 = {"name": "common", "version": "1.0", "empty_value": ""}
+        package2 = {"name": "common", "version": "2.0", "list_value": [1], "dict_value": {"a": "b"}}
+
+        packages = [package1]
+        expected = {"name": "common", "version": "1.0"}
+        self.assertEqual(expected, extract_common_values(packages))
+
+        packages = [package1, package2]
+        expected = {"name": "common"}
+        self.assertEqual(expected, extract_common_values(packages))
 
     def test_package_list_view_usage_policy_availability(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -2136,8 +2177,8 @@ class PackageUserViewsTestCase(TestCase):
 
         expected_declared_license = """
         <span class="license-expression">
-          <input type="checkbox" name="license_expression" value="l1 AND l2 WITH e" checked>
-          <a href="/licenses/Dataspace/l1/" title="L1">l1</a>
+          <input type="checkbox" name="declared_license_expression" value="l1 AND l2 WITH e"
+          checked><a href="/licenses/Dataspace/l1/" title="L1">l1</a>
           AND (<a href="/licenses/Dataspace/l2/" title="L2">l2</a>
            WITH <a href="/licenses/Dataspace/e/" title="e">e</a>)
         </span>
@@ -2149,7 +2190,7 @@ class PackageUserViewsTestCase(TestCase):
             '<input type="radio" name="primary_language" value="C++" checked> C++'
         )
         expected_other_licenses = """
-        <span class="license-expression"><input type="checkbox" name="license_expression"
+        <span class="license-expression"><input type="checkbox" name="other_license_expression"
         value="mit" > mit <span class="badge text-bg-secondary rounded-pill">3</span></span>
         """
         expected_other_holders = (
@@ -2450,12 +2491,14 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         expected1 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="apache-2.0" > apache-2.0 <span class="badge text-bg-secondary rounded-pill">3'
             "</span></span>"
         )
         expected2 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="mit" > mit <span class="badge text-bg-secondary rounded-pill">2</span></span>'
         )
         response = self.client.get(self.package1_tab_scan_url)
@@ -2599,8 +2642,8 @@ class PackageUserViewsTestCase(TestCase):
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
         expected = (
-            "Changed Package URL, License expression, Copyright, Primary language, Description, "
-            "Homepage URL, Release date and Notice text."
+            "Changed Package URL, Concluded license expression, Copyright, Primary language, "
+            "Description, Homepage URL, Release date and Notice text."
         )
         self.assertEqual(expected, history.get_change_message())
 
@@ -2695,7 +2738,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual("The Rust Project Developers", self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -2738,7 +2781,8 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(self.package1_tab_scan_url)
         expected_license_expression_html = (
             '<span class="license-expression">'
-            '<input type="checkbox" name="license_expression" value="apache-2.0 OR mit" checked> '
+            '<input type="checkbox" name="declared_license_expression" '
+            'value="apache-2.0 OR mit" checked> '
             "apache-2.0 OR mit</span>"
         )
         expected_holder_html = (
@@ -2790,7 +2834,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(expected_holder, self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -2814,7 +2858,7 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         values = PackageTabScanView.get_license_expressions_scan_values(
-            self.dataspace, field_data, input_type, license_matches
+            self.dataspace, field_data, "license_expression", input_type, license_matches
         )
         self.assertEqual(1, len(values))
         self.assertIn("MATCH", values[0])
@@ -3451,6 +3495,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+            "keywords": ["keyword1", "keyword2"],
         }
         mock_request_get.return_value = {
             "count": 1,
@@ -3463,6 +3508,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
         expected = {
             "filename": "abbot-1.4.0.jar",
+            "keywords": ["keyword1", "keyword2"],
             "release_date": "2015-09-22",
             "type": "maven",
             "namespace": "abbot",
@@ -3471,6 +3517,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
         }
         self.assertEqual(expected, response.context["form"].initial)
 

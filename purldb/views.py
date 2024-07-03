@@ -25,8 +25,8 @@ from django.views.generic import TemplateView
 import saneyaml
 from crispy_forms.helper import FormHelper
 
+from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
-from component_catalog.license_expression_dje import get_licensing_for_formatted_render
 from component_catalog.license_expression_dje import get_unique_license_keys
 from dejacode_toolkit.purldb import PurlDB
 from dje.templatetags.dje_tags import urlize_target_blank
@@ -82,9 +82,6 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
     if package_url:
         tab_fields.append(("Package URL", package_url, Package.package_url_help()))
 
-    # Workaround the `declared_license_expression` field renaming
-    sorted_data["license_expression"] = sorted_data.get("declared_license_expression")
-
     for field_name, value in sorted_data.items():
         if not value or field_name in exclude:
             continue
@@ -94,9 +91,9 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
         except FieldDoesNotExist:
             continue
 
-        if field_name == "license_expression":
+        if field_name == "declared_license_expression":
             show_policy = dataspace.show_usage_policy_in_user_views
-            licensing = get_licensing_for_formatted_render(dataspace, show_policy)
+            licensing = get_dataspace_licensing(dataspace)
             value = format_html(get_formatted_expression(licensing, value, show_policy))
         elif field_name == "dependencies":
             value = json.dumps(value, indent=2)
@@ -135,7 +132,7 @@ def inject_license_expression_formatted(dataspace, object_list):
         if expression:
             license_keys.update(get_unique_license_keys(expression))
 
-    licensing = get_licensing_for_formatted_render(dataspace, show_policy, license_keys)
+    licensing = get_dataspace_licensing(dataspace, license_keys)
 
     for obj in object_list:
         expression = obj.get("declared_license_expression")

@@ -534,7 +534,7 @@ class DJEViewsTestCase(TestCase):
             '<input type="checkbox" name="form-2-license" value="usage_policy" class="inline"'
             ' id="id_form-2-license_26" checked />',
             '<input type="checkbox" name="form-3-component" value="usage_policy" class="inline"'
-            ' id="id_form-3-component_45" checked />',
+            ' id="id_form-3-component_46" checked />',
             '<input type="checkbox" name="form-3-component" value="guidance" class="inline"'
             ' id="id_form-3-component_12" checked />',
             '<input type="checkbox" name="form-3-subcomponent relationship" value="usage_policy"'
