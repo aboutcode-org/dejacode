@@ -28,6 +28,29 @@ Release notes
 - Populate the Package notice_text using "*NOTICE*" file content from Scan "key files".
   https://github.com/nexB/dejacode/issues/136
 
+- Added 2 new license related fields on the Component and Package models:
+  * declared_license_expression
+  * other_license_expression
+  https://github.com/nexB/dejacode/issues/63
+
+- Added 2 properties on the Component and Package models:
+  * declared_license_expression_spdx (computed from declared_license_expression)
+  * other_license_expression_spdx (computed from other_license_expression)
+  https://github.com/nexB/dejacode/issues/63
+
+- Removed 2 fields: Package.declared_license and Component.concluded_license
+  https://github.com/nexB/dejacode/issues/63
+
+- The new license fields are automatically populated from the Package scan
+  "Update packages automatically from scan".
+  The new license fields are pre-filled in the Package form when using the
+  "Add Package" from a PurlDB entry.
+  The new license fields are pre-filled in the Component form when using the
+  "Add Component from Package data".
+  The license expression values provided in the form for the new field is now
+  properly checked and return a validation error when incorrect.
+  https://github.com/nexB/dejacode/issues/63
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x
