@@ -459,12 +459,23 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, self.component1.other_license_expression_spdx)
 
         self.component1.license_expression = "unknown"
+        self.component1.declared_license_expression = "unknown"
+        self.component1.other_license_expression = "unknown"
         self.component1.save()
         expected = "Unknown license key(s): unknown"
         self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
 
     def test_component_model_get_expression_as_spdx(self):
-        pass
+        self.license1.spdx_license_key = "SPDX-1"
+        self.license1.save()
+
+        expression_as_spdx = self.component1.get_expression_as_spdx(str(self.license1.key))
+        self.assertEqual("SPDX-1", expression_as_spdx)
+
+        expression_as_spdx = self.component1.get_expression_as_spdx("unknown")
+        self.assertEqual("Unknown license key(s): unknown", expression_as_spdx)
 
     def test_get_license_expression_key_as_link_conflict(self):
         # self.license1.key is contained in self.license2.key

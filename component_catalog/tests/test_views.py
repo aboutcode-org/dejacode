@@ -378,7 +378,7 @@ class ComponentUserViewsTestCase(TestCase):
 
         # Check the tag set to True is displayed
         self.assertTrue(self.license_assigned_tag1.value)
-        # self.assertContains(response, f'{self.license_tag1.label}</strong>')
+        self.assertContains(response, f"{self.license_tag1.label}")
         self.assertContains(response, f' data-bs-content="{self.license_tag1.text}"')
 
         # Check the ordering of the tables respect the license_expression ordering
@@ -400,6 +400,16 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = "<td>{}</td><td>{}</td>".format(license2_str, license1_str)
         self.assertIn(no_whitespace(expected), no_whitespace(response.content))
+
+    def test_component_catalog_detail_view_license_tab_licenses_fields(self):
+        self.client.login(username="nexb_user", password="t3st")
+
+        self.component1.declared_license_expression = self.license1.key
+        self.component1.other_license_expression = self.license1.key
+        self.component1.save()
+        response = self.client.get(self.component1.get_absolute_url())
+        self.assertContains(response, "field-declared-license-expression")
+        self.assertContains(response, "field-other-license-expression")
 
     def test_return_to_component_from_license_details(self):
         # Making sure a 'Return to Component' link is available on a License

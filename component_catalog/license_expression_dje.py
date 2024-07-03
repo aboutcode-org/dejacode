@@ -439,4 +439,4 @@ def get_expression_as_spdx(expression, dataspace):
     """Return an SPDX license expression built from the ``expression``."""
     licensing = get_dataspace_licensing(dataspace)
     parsed_expression = parse_expression(expression, licensing)
-    return parsed_expression.render(template="{symbol.spdx_license_key}")
+    return parsed_expression.render(template="{symbol.spdx_id}")

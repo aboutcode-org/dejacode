@@ -11,6 +11,7 @@ import os
 from collections import namedtuple
 from itertools import zip_longest
 
+from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -20,11 +21,14 @@ from license_expression import ParseError
 from license_expression import as_symbols
 
 from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import fetch_licensing_for_dataspace
+from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.license_expression_dje import normalize_and_validate_expression
 from component_catalog.license_expression_dje import parse_expression
+from component_catalog.license_expression_dje import render_expression_as_html
 from dje.models import Dataspace
 from license_library.models import License
 from organization.models import Owner
@@ -288,6 +292,28 @@ class LicenseExpressionDjeTestCase(TestCase):
 
         with self.assertRaises(ExpressionError):
             get_expression_as_spdx("unknown", self.dataspace)
+
+    def test_fetch_licensing_for_dataspace(self):
+        licensing = fetch_licensing_for_dataspace(self.dataspace)
+        self.assertEqual([self.license1.key], list(licensing.known_symbols.keys()))
+
+    def test_get_dataspace_licensing(self):
+        licensing_cache = caches["licensing"]
+        cache_key = str({self.dataspace.name})
+        self.assertFalse(licensing_cache.has_key(cache_key))
+
+        licensing = get_dataspace_licensing(self.dataspace)
+        self.assertEqual([self.license1.key], list(licensing.known_symbols.keys()))
+        self.assertTrue(licensing_cache.has_key(cache_key))
+        self.assertTrue(licensing_cache.get(cache_key))
+
+    def test_render_expression_as_html(self):
+        expression_as_html = render_expression_as_html(str(self.license1.key), self.dataspace)
+        expected = '<a href="/licenses/Starship/apache-2.0/" title="Apache 2.0">apache-2.0</a>'
+        self.assertEqual(expected, expression_as_html)
+
+        expression_as_html = render_expression_as_html("unknown", self.dataspace)
+        self.assertEqual("unknown", expression_as_html)
 
 
 def _print_sequence_diff(left, right):
