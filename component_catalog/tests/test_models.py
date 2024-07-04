@@ -419,7 +419,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual(expected, self.component1.get_license_expression_linked())
 
-    def test_component_get_license_expression_spdx_id(self):
+    def test_component_concluded_license_expression_spdx(self):
         self.license1.spdx_license_key = "SPDX-1"
         self.license1.save()
 
@@ -427,21 +427,21 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.license_expression = expression
         self.component1.save()
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         expression = "{} WITH {}".format(self.license1.key, self.license2.key)
         self.component1.license_expression = expression
         self.component1.save()
         # WITH is replaced by AND for "LicenseRef-" exceptions
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         self.license2.spdx_license_key = "SPDX-2"
         self.license2.save()
         self.component1 = Component.objects.get(pk=self.component1.pk)
         # WITH is kept for exceptions in SPDX list
         expected = "SPDX-1 WITH SPDX-2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
     def test_component_model_license_expression_spdx_properties(self):
         self.license1.spdx_license_key = "SPDX-1"
@@ -2139,6 +2139,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_model_as_spdx(self):
         self.component1.license_expression = f"{self.license1.key} AND {self.license2.key}"
+        self.component1.declared_license_expression = self.license1.key
         self.component1.copyright = "copyright on component"
         self.component1.homepage_url = "https://homepage.url"
         self.component1.description = "Description"
@@ -2152,7 +2153,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "attributionTexts": [("Notice\r\nText",)],
             "downloadLocation": "NOASSERTION",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on component",
             "filesAnalyzed": False,
             "supplier": "Organization: Owner",
@@ -2173,6 +2174,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             copyright="copyright on package",
             notice_text="Notice\r\nText",
             license_expression=f"{self.license1.key} AND {self.license2.key}",
+            declared_license_expression=self.license1.key,
             sha1="5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             md5="93b885adfe0da089cdf634904fd59f71",
             cpe="cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*",
@@ -2191,7 +2193,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "SPDXID": f"SPDXRef-dejacode-package-{package1.uuid}",
             "downloadLocation": "htp://domain.com/package.zip",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on package",
             "filesAnalyzed": False,
             "versionInfo": "7.50.3-1",

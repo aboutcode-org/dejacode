@@ -837,6 +837,7 @@ class ProductPortfolioModelsTestCase(TestCase):
         component1 = Component.objects.create(
             name="c1",
             license_expression=f"{self.license1.key} OR {self.license2.key}",
+            declared_license_expression=f"{self.license1.key} OR {self.license2.key}",
             dataspace=self.dataspace,
         )
         pc1 = ProductComponent.objects.create(
@@ -859,6 +860,7 @@ class ProductPortfolioModelsTestCase(TestCase):
         package1 = Package.objects.create(
             filename="package1",
             license_expression=f"{self.license1.key} OR {self.license2.key}",
+            declared_license_expression=f"{self.license1.key} OR {self.license2.key}",
             dataspace=self.dataspace,
         )
         pp1 = ProductPackage.objects.create(

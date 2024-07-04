@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.core import validators
+from django.core.cache import caches
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -811,6 +812,11 @@ class License(
 
     def __str__(self):
         return f"{self.short_name} ({self.key})"
+
+    def save(self, *args, **kwargs):
+        """Clear the licensing cache on License object changes."""
+        super().save(*args, **kwargs)
+        caches["licensing"].clear()
 
     def clean(self, from_api=False):
         if self.is_active is False and self.spdx_license_key:
