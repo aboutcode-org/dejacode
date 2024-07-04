@@ -785,6 +785,8 @@ class ProductTabInventoryView(
         for feature_label, productpackages in feature_grouped.items():
             injected_productpackages = []
             for productpackage in productpackages:
+                if not isinstance(productpackage, ProductPackage):
+                    continue
                 scan = scans_by_uri.get(productpackage.package.download_url)
                 if scan:
                     scan["download_result_url"] = get_scan_results_as_file_url(scan)
