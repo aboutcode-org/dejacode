@@ -166,7 +166,7 @@ class PurlDBListView(
         filters_data = dict(self.filterset.data.items())
 
         self.list_data = (
-            PurlDB(self.request.user).get_package_list(
+            PurlDB(self.request.user.dataspace).get_package_list(
                 search=self.request.GET.get("q", ""),
                 page_size=self.paginate_by,
                 page=self.request.GET.get("page", None),
@@ -220,7 +220,7 @@ class PurlDBDetailsView(
 
     def get_object(self, queryset=None):
         uuid = self.kwargs.get(self.pk_url_kwarg)
-        obj = PurlDB(self.request.user).get_package(uuid=uuid)
+        obj = PurlDB(self.request.user.dataspace).get_package(uuid=uuid)
         if obj:
             return obj
         raise Http404
@@ -283,14 +283,15 @@ class PurlDBSearchTableView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        dataspace = self.request.user.dataspace
         search_query = self.request.GET.get("q")
-        purldb_json = PurlDB(self.request.user).get_package_list(search_query, page_size=20)
+        purldb_json = PurlDB(dataspace).get_package_list(search_query, page_size=20)
 
         if not (purldb_json and purldb_json.get("results", None)):
             raise Http404
 
         object_list = inject_license_expression_formatted(
-            dataspace=self.request.user.dataspace,
+            dataspace=dataspace,
             object_list=purldb_json["results"],
         )
 

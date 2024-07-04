@@ -43,10 +43,9 @@ class BaseService:
     api_key_field_name = None
     default_timeout = 5
 
-    def __init__(self, user):
-        if not user:
-            raise
-        self.user = user
+    def __init__(self, dataspace):
+        if not dataspace:
+            raise ValueError("Dataspace must be provided.")
 
         self.service_url = None
         self.service_api_key = None
@@ -54,7 +53,7 @@ class BaseService:
         self.basic_auth_password = None
 
         try:
-            dataspace_configuration = user.dataspace.configuration
+            dataspace_configuration = dataspace.configuration
         except ObjectDoesNotExist:
             dataspace_configuration = None
 

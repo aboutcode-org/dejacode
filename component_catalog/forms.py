@@ -357,7 +357,7 @@ class PackageForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        scancodeio = ScanCodeIO(self.user)
+        scancodeio = ScanCodeIO(self.dataspace)
         self.submit_scan_enabled = all(
             [
                 self.is_addition,

@@ -255,7 +255,7 @@ class TabVulnerabilityMixin:
     def tab_vulnerabilities(self):
         matching_value = getattr(self.object, self.vulnerability_matching_field)
         dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
 
         # The display of vulnerabilities is controlled by the object Dataspace
         display_tab = all(
@@ -479,7 +479,7 @@ class ComponentListView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
 
         # The display of vulnerabilities is controlled by the objects Dataspace
         enable_vulnerabilities = all(
@@ -1128,7 +1128,7 @@ class PackageListView(
         if self.request.user.has_perm("component_catalog.change_component"):
             context["add_to_component_form"] = AddMultipleToComponentForm(self.request)
 
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
         # The display of vulnerabilities is controlled by the objects Dataspace
         enable_vulnerabilities = all(
             [
@@ -1438,11 +1438,12 @@ class PackageDetailsView(
             return {"fields": [(None, productpackages, None, template)]}
 
     def tab_scan(self):
-        scancodeio = ScanCodeIO(self.request.user)
+        user_dataspace = self.request.user.dataspace
+        scancodeio = ScanCodeIO(user_dataspace)
         scan_tab_display_conditions = [
             self.object.download_url,
             scancodeio.is_configured(),
-            self.request.user.dataspace.enable_package_scanning,
+            user_dataspace.enable_package_scanning,
             self.is_user_dataspace,
         ]
 
@@ -1462,10 +1463,11 @@ class PackageDetailsView(
         return {"fields": [(None, tab_context, None, template)]}
 
     def tab_purldb(self):
+        dataspace = self.request.user.dataspace
         display_tab_purldb = [
-            PurlDB(self.request.user).is_configured(),
+            dataspace.enable_purldb_access,
+            PurlDB(dataspace).is_configured(),
             self.is_user_dataspace,
-            self.request.user.dataspace.enable_purldb_access,
         ]
 
         if not all(display_tab_purldb):
@@ -1569,17 +1571,18 @@ class PackageDetailsView(
 @login_required
 def package_scan_view(request, dataspace, uuid):
     user = request.user
-    package = get_object_or_404(Package, uuid=uuid, dataspace=user.dataspace)
+    dataspace = user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     download_url = package.download_url
 
-    scancodeio = ScanCodeIO(request.user)
-    if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+    scancodeio = ScanCodeIO(dataspace)
+    if scancodeio.is_configured() and dataspace.enable_package_scanning:
         if is_available(download_url):
             # Run the task synchronously to prevent from race condition.
             tasks.scancodeio_submit_scan(
                 uris=download_url,
                 user_uuid=user.uuid,
-                dataspace_uuid=user.dataspace.uuid,
+                dataspace_uuid=dataspace.uuid,
             )
             scancode_msg = "The Package URL was submitted to ScanCode.io for scanning."
             messages.success(request, scancode_msg)
@@ -1594,6 +1597,8 @@ def package_scan_view(request, dataspace, uuid):
 @require_POST
 def package_create_ajax_view(request):
     user = request.user
+    dataspace = user.dataspace
+
     if not user.has_perm("component_catalog.add_package"):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
@@ -1618,13 +1623,13 @@ def package_create_ajax_view(request):
     redirect_url = reverse("component_catalog:package_list")
     len_created = len(created)
 
-    scancodeio = ScanCodeIO(request.user)
-    if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+    scancodeio = ScanCodeIO(dataspace)
+    if scancodeio.is_configured() and dataspace.enable_package_scanning:
         # The availability of the each `download_url` is checked in the task.
         tasks.scancodeio_submit_scan.delay(
             uris=[package.download_url for package in created if package.download_url],
             user_uuid=user.uuid,
-            dataspace_uuid=user.dataspace.uuid,
+            dataspace_uuid=dataspace.uuid,
         )
         scan_msg = " and submitted to ScanCode.io for scanning"
 
@@ -1672,10 +1677,11 @@ def component_create_ajax_view(request):
 
 @login_required
 def send_scan_data_as_file_view(request, project_uuid, filename):
-    if not request.user.dataspace.enable_package_scanning:
+    dataspace = request.user.dataspace
+    if not dataspace.enable_package_scanning:
         raise Http404
 
-    scancodeio = ScanCodeIO(request.user)
+    scancodeio = ScanCodeIO(dataspace)
     scan_results_url = scancodeio.get_scan_results_url(project_uuid)
     scan_results = scancodeio.fetch_scan_data(scan_results_url)
     scan_summary_url = scancodeio.get_scan_summary_url(project_uuid)
@@ -1694,10 +1700,11 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
 @login_required
 def delete_scan_view(request, project_uuid):
-    if not request.user.dataspace.enable_package_scanning:
+    dataspace = request.user.dataspace
+    if not dataspace.enable_package_scanning:
         raise Http404
 
-    scancodeio = ScanCodeIO(request.user)
+    scancodeio = ScanCodeIO(dataspace)
     scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
 
     if not scan_list or scan_list.get("count") != 1:
@@ -1736,7 +1743,7 @@ class ScanListView(
             "page": self.request.GET.get("page"),
         }
 
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(dataspace)
         self.list_data = (
             scancodeio.fetch_scan_list(
                 dataspace=dataspace,
@@ -1805,7 +1812,7 @@ def send_scan_notification(request, key):
 
     run = json_data.get("run")
     scan_status = run.get("status")
-    scancodeio = ScanCodeIO(user)
+    scancodeio = ScanCodeIO(dataspace)
 
     update_package_from_scan = all(
         [
@@ -1959,12 +1966,12 @@ class PackageAddView(
         return initial
 
     def get_entry_from_purldb(self):
-        user = self.request.user
-        purldb = PurlDB(user)
+        dataspace = self.request.user.dataspace
+        purldb = PurlDB(dataspace)
         is_purldb_enabled = all(
             [
                 purldb.is_configured(),
-                user.dataspace.enable_purldb_access,
+                dataspace.enable_purldb_access,
             ]
         )
 
@@ -2476,11 +2483,12 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
     def tab_scan(self):
         user = self.request.user
-        scancodeio = ScanCodeIO(user)
+        dataspace = user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
 
         scan = scancodeio.get_scan_results(
             download_url=self.object.download_url,
-            dataspace=user.dataspace,
+            dataspace=dataspace,
         )
 
         if not scan:

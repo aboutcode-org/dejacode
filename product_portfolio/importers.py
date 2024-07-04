@@ -646,7 +646,7 @@ class ImportPackageFromScanCodeIO:
         self.update_existing = update_existing
         self.scan_all_packages = scan_all_packages
 
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")

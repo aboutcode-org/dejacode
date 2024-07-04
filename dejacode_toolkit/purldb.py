@@ -15,8 +15,8 @@ class PurlDB(BaseService):
     url_field_name = "purldb_url"
     api_key_field_name = "purldb_api_key"
 
-    def __init__(self, user):
-        super().__init__(user)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.package_api_url = f"{self.api_url}packages/"
 
     def get_package_list(
