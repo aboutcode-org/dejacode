@@ -3131,7 +3131,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(["pkg:pypi/django@2.1"], purls)
 
     def test_vulnerablecode_get_vulnerable_purls(self):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
         vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[])
         self.assertEqual([], vulnerable_purls)
 
@@ -3155,7 +3155,7 @@ class PackageUserViewsTestCase(TestCase):
             self.assertEqual(["pkg:pypi/django@2.1"], vulnerable_purls)
 
     def test_vulnerablecode_get_vulnerable_cpes(self):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
         vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=[])
         self.assertEqual([], vulnerable_cpes)
 
@@ -3187,7 +3187,7 @@ class PackageUserViewsTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
     def test_vulnerablecode_get_vulnerabilities_cache(self, mock_request_get):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
 
         self.package1.set_package_url("pkg:pypi/django@2.1")
         self.package1.save()

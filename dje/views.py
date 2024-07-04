@@ -1847,9 +1847,11 @@ class GlobalSearchListView(AcceptAnonymousMixin, TemplateView):
                 }
             )
 
-        context["include_purldb"] = all(
-            [user_dataspace.enable_purldb_access, PurlDB(user).is_available()]
-        )
+        include_purldb_conditions = [
+            user_dataspace.enable_purldb_access,
+            PurlDB(user_dataspace).is_available(),
+        ]
+        context["include_purldb"] = all(include_purldb_conditions)
 
         return context
 
@@ -2298,7 +2300,7 @@ class IntegrationsStatusView(
         is_available = False
         error_log = ""
 
-        integration = integration_class(user=self.request.user)
+        integration = integration_class(dataspace=self.request.user.dataspace)
 
         if integration.is_configured():
             is_configured = True

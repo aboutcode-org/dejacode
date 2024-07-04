@@ -514,6 +514,8 @@ class ProductDetailsView(
 
     def get_context_data(self, **kwargs):
         user = self.request.user
+        dataspace = user.dataspace
+
         if user.is_authenticated:
             self.object.mark_all_notifications_as_read(user)
 
@@ -559,15 +561,15 @@ class ProductDetailsView(
         )
 
         if context["has_edit_productpackage"] or context["has_edit_productcomponent"]:
-            all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
+            all_licenses = License.objects.scope(dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(dataspace)
         include_scancodeio_features = all(
             [
                 scancodeio.is_configured(),
                 user.is_superuser,
-                user.dataspace.enable_package_scanning,
+                dataspace.enable_package_scanning,
                 context["is_user_dataspace"],
             ]
         )
@@ -579,7 +581,7 @@ class ProductDetailsView(
 
         context["purldb_enabled"] = all(
             [
-                PurlDB(user).is_configured(),
+                PurlDB(user.dataspace).is_configured(),
                 user.dataspace.enable_purldb_access,
                 context["is_user_dataspace"],
             ]
@@ -668,7 +670,7 @@ class ProductTabInventoryView(
         objects_by_feature = dict(sorted(objects_by_feature.items()))
 
         # 4. Inject the Scan data when activated
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(dataspace)
         display_scan_features = all(
             [
                 scancodeio.is_configured(),
@@ -692,10 +694,10 @@ class ProductTabInventoryView(
                 context["compliance_errors"] = True
 
         # 6. Add vulnerability data
-        vulnerablecode = VulnerableCode(user)
+        vulnerablecode = VulnerableCode(dataspace)
         enable_vulnerabilities = all(
             [
-                user.dataspace.enable_vulnerablecodedb_access,
+                dataspace.enable_vulnerablecodedb_access,
                 vulnerablecode.is_configured(),
             ]
         )
@@ -783,6 +785,8 @@ class ProductTabInventoryView(
         for feature_label, productpackages in feature_grouped.items():
             injected_productpackages = []
             for productpackage in productpackages:
+                if not isinstance(productpackage, ProductPackage):
+                    continue
                 scan = scans_by_uri.get(productpackage.package.download_url)
                 if scan:
                     scan["download_result_url"] = get_scan_results_as_file_url(scan)
@@ -890,7 +894,7 @@ class ProductTabImportsView(
 
         # Check the status of the "submitted" projects on ScanCode.io and update the
         # local ScanCodeProject instances accordingly.
-        scancodeio = ScanCodeIO(self.request.user)
+        scancodeio = ScanCodeIO(self.request.user.dataspace)
         for submitted_project in submitted_projects:
             self.synchronize(scancodeio=scancodeio, project=submitted_project)
 
@@ -1568,13 +1572,14 @@ class ProductExportCycloneDXBOMView(BaseProductView, ExportCycloneDXBOMView):
 @login_required
 def scan_all_packages_view(request, dataspace, name, version=""):
     user = request.user
+    user_dataspace = user.dataspace
 
-    scancodeio = ScanCodeIO(user)
+    scancodeio = ScanCodeIO(user_dataspace)
     conditions = [
         scancodeio.is_configured(),
         user.is_superuser,
-        user.dataspace.enable_package_scanning,
-        user.dataspace.name == dataspace,
+        user_dataspace.enable_package_scanning,
+        user_dataspace.name == dataspace,
     ]
 
     if not all(conditions):
@@ -1917,7 +1922,7 @@ def license_summary_view(request, dataspace, name, version=""):
 @login_required
 def check_package_version_ajax_view(request, dataspace, name, version=""):
     user = request.user
-    purldb = PurlDB(user)
+    purldb = PurlDB(user.dataspace)
 
     purldb_enabled = all(
         [
@@ -2078,11 +2083,11 @@ def import_packages_from_scancodeio_view(request, key):
 @login_required
 def scancodeio_project_status_view(request, scancodeproject_uuid):
     template = "product_portfolio/scancodeio_project_status.html"
-    user = request.user
-    base_qs = ScanCodeProject.objects.scope(user.dataspace)
+    dataspace = request.user.dataspace
+    base_qs = ScanCodeProject.objects.scope(dataspace)
     scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
 
-    scancodeio = ScanCodeIO(user)
+    scancodeio = ScanCodeIO(dataspace)
     scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
     scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 

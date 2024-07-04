@@ -687,6 +687,7 @@ class PackageSerializer(
     def create(self, validated_data):
         """Collect data, purl, and submit scan if `collect_data` is provided."""
         user = self.context["request"].user
+        dataspace = user.dataspace
 
         collect_data = validated_data.pop("collect_data", None)
         download_url = validated_data.get("download_url")
@@ -706,14 +707,14 @@ class PackageSerializer(
         package = super().create(validated_data)
 
         # Submit the scan if Package was properly created
-        scancodeio = ScanCodeIO(user)
-        if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+        scancodeio = ScanCodeIO(dataspace)
+        if scancodeio.is_configured() and dataspace.enable_package_scanning:
             # Ensure the task is executed after the transaction is successfully committed
             transaction.on_commit(
                 lambda: tasks.scancodeio_submit_scan.delay(
                     uris=download_url,
                     user_uuid=user.uuid,
-                    dataspace_uuid=user.dataspace.uuid,
+                    dataspace_uuid=dataspace.uuid,
                 )
             )
 
@@ -804,7 +805,8 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
 
 
 def collect_create_scan(download_url, user):
-    package_qs = Package.objects.filter(download_url=download_url, dataspace=user.dataspace)
+    dataspace = user.dataspace
+    package_qs = Package.objects.filter(download_url=download_url, dataspace=dataspace)
     if package_qs.exists():
         return False
 
@@ -819,12 +821,12 @@ def collect_create_scan(download_url, user):
 
     package = Package.create_from_data(user, package_data)
 
-    scancodeio = ScanCodeIO(user)
-    if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+    scancodeio = ScanCodeIO(dataspace)
+    if scancodeio.is_configured() and dataspace.enable_package_scanning:
         tasks.scancodeio_submit_scan.delay(
             uris=download_url,
             user_uuid=user.uuid,
-            dataspace_uuid=user.dataspace.uuid,
+            dataspace_uuid=dataspace.uuid,
         )
 
     return package

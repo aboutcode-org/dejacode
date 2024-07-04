@@ -28,8 +28,8 @@ class ScanCodeIO(BaseService):
     url_field_name = "scancodeio_url"
     api_key_field_name = "scancodeio_api_key"
 
-    def __init__(self, user):
-        super().__init__(user)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.project_api_url = f"{self.api_url}projects/"
 
     def get_scan_detail_url(self, project_uuid):
