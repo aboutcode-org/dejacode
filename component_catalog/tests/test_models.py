@@ -419,7 +419,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual(expected, self.component1.get_license_expression_linked())
 
-    def test_component_get_license_expression_spdx_id(self):
+    def test_component_concluded_license_expression_spdx(self):
         self.license1.spdx_license_key = "SPDX-1"
         self.license1.save()
 
@@ -427,21 +427,21 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.license_expression = expression
         self.component1.save()
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         expression = "{} WITH {}".format(self.license1.key, self.license2.key)
         self.component1.license_expression = expression
         self.component1.save()
         # WITH is replaced by AND for "LicenseRef-" exceptions
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         self.license2.spdx_license_key = "SPDX-2"
         self.license2.save()
         self.component1 = Component.objects.get(pk=self.component1.pk)
         # WITH is kept for exceptions in SPDX list
         expected = "SPDX-1 WITH SPDX-2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
     def test_component_model_license_expression_spdx_properties(self):
         self.license1.spdx_license_key = "SPDX-1"

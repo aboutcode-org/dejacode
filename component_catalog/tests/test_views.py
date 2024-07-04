@@ -976,7 +976,7 @@ class ComponentUserViewsTestCase(TestCase):
         History.log_change(self.basic_user, self.component1, "Changed version.")
         History.log_change(self.nexb_user, self.component1, "Changed notes.")
 
-        with self.assertNumQueries(31):
+        with self.assertNumQueries(32):
             self.client.get(url)
 
     def test_component_catalog_details_view_package_tab_fields_visibility(self):
@@ -1265,7 +1265,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(26):
+        with self.assertNumQueries(27):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):

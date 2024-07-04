@@ -642,12 +642,12 @@ class ProductRelationshipMixin(
         while the component/package license is set in the `license_declared`.
         """
         return self.related_component_or_package.as_spdx(
-            license_concluded=self.get_license_expression_spdx_id(),
+            license_concluded=self.concluded_license_expression_spdx,
         )
 
     def as_cyclonedx(self):
         return self.related_component_or_package.as_cyclonedx(
-            license_expression_spdx=self.get_license_expression_spdx_id(),
+            license_expression_spdx=self.concluded_license_expression_spdx,
         )
 
     @cached_property

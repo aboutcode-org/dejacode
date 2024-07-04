@@ -51,6 +51,9 @@ Release notes
   properly checked and return a validation error when incorrect.
   https://github.com/nexB/dejacode/issues/63
 
+- Use the declared_license_expression_spdx value in SPDX outputs.
+  https://github.com/nexB/dejacode/issues/63
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

@@ -187,25 +187,6 @@ class LicenseExpressionMixin:
         if license_expression:
             return format_html('<span class="license-expression">{}</span>', license_expression)
 
-    def get_license_expression_spdx_id(self):
-        """
-        Return the license_expression formatted for SPDX compatibility.
-
-        This includes a workaround for a SPDX spec limitation, where license exceptions
-        that do not exist in the SPDX list cannot be provided as "LicenseRef-" in the
-        "hasExtractedLicensingInfos".
-        The current fix is to use AND rather than WITH for any exception that is a
-        "LicenseRef-".
-
-        See discussion at https://github.com/spdx/tools-java/issues/73
-
-        Note: A new get_expression_as_spdx function is available and should be used in
-        place of this one.
-        """
-        expression = self.get_license_expression("{symbol.spdx_id}")
-        if expression:
-            return expression.replace("WITH LicenseRef-", "AND LicenseRef-")
-
     def _get_primary_license(self):
         """
         Return the primary license key of this instance or None. The primary license is
@@ -221,13 +202,27 @@ class LicenseExpressionMixin:
     primary_license = cached_property(_get_primary_license)
 
     def get_expression_as_spdx(self, expression):
+        """
+        Return the license_expression formatted for SPDX compatibility.
+
+        This includes a workaround for a SPDX spec limitation, where license exceptions
+        that do not exist in the SPDX list cannot be provided as "LicenseRef-" in the
+        "hasExtractedLicensingInfos".
+        The current fix is to use AND rather than WITH for any exception that is a
+        "LicenseRef-".
+
+        See discussion at https://github.com/spdx/tools-java/issues/73
+        """
         if not expression:
             return
 
         try:
-            return get_expression_as_spdx(expression, self.dataspace)
+            expression_as_spdx = get_expression_as_spdx(expression, self.dataspace)
         except ExpressionError as e:
             return str(e)
+
+        if expression_as_spdx:
+            return expression_as_spdx.replace("WITH LicenseRef-", "AND LicenseRef-")
 
     @property
     def concluded_license_expression_spdx(self):
@@ -820,7 +815,7 @@ def component_mixin_factory(verbose_name):
                     urls=[self.owner.homepage_url],
                 )
 
-            expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
+            expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
             licenses = []
             if expression_spdx:
                 # Using the LicenseExpression directly as the make_with_expression method
@@ -1345,13 +1340,11 @@ class Component(
         if self.notice_text:
             attribution_texts.append(self.notice_text)
 
-        license_expression_spdx = self.get_license_expression_spdx_id()
-
         return spdx.Package(
             name=self.name,
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             supplier=self.owner.as_spdx() if self.owner else "",
-            license_concluded=license_concluded or license_expression_spdx,
+            license_concluded=license_concluded or self.concluded_license_expression_spdx,
             license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
@@ -2248,13 +2241,11 @@ class Package(
         if cpe_external_ref := self.get_spdx_cpe_external_ref():
             external_refs.append(cpe_external_ref)
 
-        license_expression_spdx = self.get_license_expression_spdx_id()
-
         return spdx.Package(
             name=self.name or self.filename,
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             download_location=self.download_url,
-            license_concluded=license_concluded or license_expression_spdx,
+            license_concluded=license_concluded or self.concluded_license_expression_spdx,
             license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
@@ -2273,7 +2264,7 @@ class Package(
 
     def as_cyclonedx(self, license_expression_spdx=None):
         """Return this Package as an CycloneDX Component entry."""
-        expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
+        expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
 
         licenses = []
         if expression_spdx:
