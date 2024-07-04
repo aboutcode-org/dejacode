@@ -2424,6 +2424,10 @@ class Package(
             if packages_data:
                 return packages_data
 
+    @property
+    def is_vulnerable(self):
+        return self.affected_by_vulnerabilities.exists()
+
 
 class PackageAssignedLicense(DataspacedModel):
     package = models.ForeignKey(
@@ -2462,3 +2466,74 @@ class ComponentAssignedPackage(DataspacedModel):
 
     def __str__(self):
         return f"<{self.component}>: {self.package}"
+
+
+class Vulnerability(HistoryFieldsMixin, DataspacedModel):
+    """
+    A software vulnerability with a unique identifier and alternate aliases.
+
+    Adapted from the VulnerabeCode models at
+    https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py#L164
+    """
+
+    vulnerability_id = models.CharField(
+        unique=True,
+        max_length=20,
+        help_text=_(
+            "A unique identifier for the vulnerability, prefixed with 'VCID-'. "
+            "For example, 'VCID-2024-0001'."
+        ),
+    )
+
+    summary = models.TextField(
+        help_text=_(
+            "A brief summary of the vulnerability, outlining its nature and impact."
+        ),
+        blank=True,
+    )
+
+    aliases = JSONListField(
+        blank=True,
+        help_text=_(
+            "A list of aliases for this vulnerability, such as CVE identifiers "
+            "(e.g., 'CVE-2017-1000136')."
+        ),
+    )
+
+    references = JSONListField(
+        blank=True,
+        help_text=_(
+            "A list of references for this vulnerability. Each reference includes a "
+            "URL, an optional reference ID, scores, and the URL for further details. "
+        ),
+    )
+
+    affected_packages = models.ManyToManyField(
+        to="component_catalog.Package",
+        related_name="affected_by_vulnerabilities",
+        help_text=_("Packages that are affected by this vulnerability."),
+    )
+
+    class Meta:
+        verbose_name_plural = "Vulnerabilities"
+        unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
+
+    def __str__(self):
+        return self.vulnerability_id
+
+    @property
+    def vcid(self):
+        return self.vulnerability_id
+
+    def add_affected_packages(self, packages):
+        """Assign the ``packages`` as affected to this vulnerability."""
+        self.affected_packages.add(*packages)
+
+    @classmethod
+    def create_from_data(cls, user, data, validate=False, affected_packages=None):
+        vulnerability = super().create_from_data(user, data, validate=validate)
+
+        if affected_packages:
+            vulnerability.add_affected_packages(affected_packages)
+
+        return vulnerability
