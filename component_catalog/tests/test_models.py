@@ -2139,6 +2139,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_model_as_spdx(self):
         self.component1.license_expression = f"{self.license1.key} AND {self.license2.key}"
+        self.component1.declared_license_expression = self.license1.key
         self.component1.copyright = "copyright on component"
         self.component1.homepage_url = "https://homepage.url"
         self.component1.description = "Description"
@@ -2152,7 +2153,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "attributionTexts": [("Notice\r\nText",)],
             "downloadLocation": "NOASSERTION",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on component",
             "filesAnalyzed": False,
             "supplier": "Organization: Owner",
@@ -2173,6 +2174,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             copyright="copyright on package",
             notice_text="Notice\r\nText",
             license_expression=f"{self.license1.key} AND {self.license2.key}",
+            declared_license_expression=self.license1.key,
             sha1="5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             md5="93b885adfe0da089cdf634904fd59f71",
             cpe="cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*",
@@ -2191,7 +2193,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "SPDXID": f"SPDXRef-dejacode-package-{package1.uuid}",
             "downloadLocation": "htp://domain.com/package.zip",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on package",
             "filesAnalyzed": False,
             "versionInfo": "7.50.3-1",

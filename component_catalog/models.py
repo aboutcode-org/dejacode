@@ -1330,7 +1330,12 @@ class Component(
         return without_empty_values(component_data)
 
     def as_spdx(self, license_concluded=None):
-        """Return this Component as an SPDX Package entry."""
+        """
+        Return this Component as an SPDX Package entry.
+        An optional ``license_concluded`` can be provided to override the
+        ``license_expression`` value defined on this instance.
+        This can be a license choice applied to a Product relationship.
+        """
         external_refs = []
 
         if cpe_external_ref := self.get_spdx_cpe_external_ref():
@@ -1347,7 +1352,7 @@ class Component(
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             supplier=self.owner.as_spdx() if self.owner else "",
             license_concluded=license_concluded or license_expression_spdx,
-            license_declared=license_expression_spdx,
+            license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
             homepage=self.homepage_url,
@@ -2213,7 +2218,12 @@ class Package(
         return about_files
 
     def as_spdx(self, license_concluded=None):
-        """Return this Package as an SPDX Package entry."""
+        """
+        Return this Package as an SPDX Package entry.
+        An optional ``license_concluded`` can be provided to override the
+        ``license_expression`` value defined on this instance.
+        This can be a license choice applied to a Product relationship.
+        """
         checksums = [
             spdx.Checksum(algorithm=algorithm, value=checksum_value)
             for algorithm in ["sha1", "md5"]
@@ -2244,8 +2254,8 @@ class Package(
             name=self.name or self.filename,
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             download_location=self.download_url,
-            license_declared=license_expression_spdx,
             license_concluded=license_concluded or license_expression_spdx,
+            license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
             homepage=self.homepage_url,
