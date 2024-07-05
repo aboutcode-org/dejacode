@@ -26,6 +26,7 @@ from license_library.models import License
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
 
@@ -313,4 +314,36 @@ class CodebaseResourceFilterSet(DataspacedFilterSet):
             "product_package",
             "related_deployed_from",
             "related_deployed_to",
+        ]
+
+
+class DependencyFilterSet(DataspacedFilterSet):
+    q = SearchFilter(
+        label=_("Search"),
+        search_fields=[
+            "for_package__filename",
+            "for_package__type",
+            "for_package__namespace",
+            "for_package__name",
+            "for_package__version",
+            "resolved_to_package__filename",
+            "resolved_to_package__type",
+            "resolved_to_package__namespace",
+            "resolved_to_package__name",
+            "resolved_to_package__version",
+        ],
+    )
+    is_deployment_path = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#codebase"),
+    )
+
+    class Meta:
+        model = ProductDependency
+        fields = [
+            "scope",
+            "datasource_id",
+            "is_runtime",
+            "is_optional",
+            "is_resolved",
+            "is_direct",
         ]

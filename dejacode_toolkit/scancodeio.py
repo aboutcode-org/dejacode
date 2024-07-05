@@ -46,6 +46,10 @@ class ScanCodeIO(BaseService):
     def get_project_packages_url(self, project_uuid):
         return f"{self.project_api_url}{project_uuid}/packages/"
 
+    # TODO: Remove duplication with get_project_packages_url
+    def get_project_dependencies_url(self, project_uuid):
+        return f"{self.project_api_url}{project_uuid}/dependencies/"
+
     def get_scan_results(self, download_url, dataspace):
         scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
 
@@ -247,6 +251,24 @@ class ScanCodeIO(BaseService):
             next_url = response["next"]
 
         return packages
+
+    # TODO: Remove duplication with fetch_project_packages
+    def fetch_project_dependencies(self, project_uuid):
+        """Return the list of dependencies for the provided `project_uuid`."""
+        api_url = self.get_project_dependencies_url(project_uuid)
+        dependencies = []
+
+        next_url = api_url
+        while next_url:
+            logger.debug(f"{self.label}: fetch dependencies from project_packages_url={next_url}")
+            response = self.request_get(url=next_url)
+            if not response:
+                raise Exception("Error fetching project dependencies")
+
+            dependencies.extend(response["results"])
+            next_url = response["next"]
+
+        return dependencies
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [

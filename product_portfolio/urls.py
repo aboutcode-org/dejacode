@@ -21,6 +21,7 @@ from product_portfolio.views import ProductExportSPDXDocumentView
 from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
+from product_portfolio.views import ProductTabDependenciesView
 from product_portfolio.views import ProductTabImportsView
 from product_portfolio.views import ProductTabInventoryView
 from product_portfolio.views import ProductTreeComparisonView
@@ -92,6 +93,7 @@ urlpatterns = [
     *product_path("load_sboms", LoadSBOMsView.as_view()),
     *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
+    *product_path("tab_dependencies", ProductTabDependenciesView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
     *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),

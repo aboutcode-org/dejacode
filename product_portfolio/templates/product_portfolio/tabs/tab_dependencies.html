@@ -1,0 +1,93 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+{% load humanize %}
+
+{% spaceless %}
+<div class="row align-items-end">
+  <div class="col mb-3">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <form id="tab-dependencies-search-form" class="mt-md-0 me-sm-2">
+          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-dependencies-search-input" name="dependencies-q" placeholder="Search dependencies" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+        </form>
+      </li>
+      <li class="nav-item">
+        <div class="h6 mt-2 mb-0 smaller">{{ page_obj.paginator.count|intcomma }} results</div>
+      </li>
+    </ul>
+  </div>
+  <div class="col-auto">
+    {% include 'pagination/object_list_pagination.html' %}
+  </div>
+</div>
+
+<table class="table table-bordered table-hover table-md text-break">
+  <thead>
+    <tr>
+      <th>
+        {% trans 'For package' %}
+      </th>
+      <th>
+        {% trans 'Resolved to package' %}
+      </th>
+      <th>
+        {% trans 'Scope' %}
+      </th>
+      <th>
+        {% trans 'Is runtime' %}
+      </th>
+      <th>
+        {% trans 'Is optional' %}
+      </th>
+      <th>
+        {% trans 'Is resolved' %}
+      </th>
+      <th>
+        {% trans 'Is direct' %}
+      </th>
+    </tr>
+  </thead>
+  <tbody class="text-break">
+    {% for dependency in filter_dependency.qs %}
+      <tr class="{% cycle 'odd' '' %}">
+        <td>
+          <strong>
+            <a href="{{ dependency.for_package.get_absolute_url }}" target="_blank">{{ dependency.for_package }}</a>
+          </strong>
+        </td>
+        <td>
+          {% if dependency.resolved_to_package %}
+            <strong>
+              <a href="{{ dependency.resolved_to_package.get_absolute_url }}" target="_blank">{{ dependency.resolved_to_package }}</a>
+            </strong>
+          {% endif %}
+        </td>
+        <td>
+          {{ dependency.scope }}
+        </td>
+        <td>
+          {{ dependency.is_runtime|as_icon }}
+        </td>
+        <td>
+          {{ dependency.is_optional|as_icon }}
+        </td>
+        <td>
+          {{ dependency.is_resolved|as_icon }}
+        </td>
+        <td>
+          {{ dependency.is_direct|as_icon }}
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="10">
+          No results.
+          {% if filter_dependency.is_active %}
+            <a href="?all=true#dependencies">Clear search and filters</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endspaceless %}

@@ -1316,3 +1316,99 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             recipient=self.created_by,
             description=description,
         )
+
+
+class ProductDependency(HistoryFieldsMixin, DataspacedModel):
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        related_name="dependencies",
+        on_delete=models.CASCADE,
+    )
+    dependency_uid = models.CharField(
+        max_length=1024,
+        help_text=_("The unique identifier of this dependency."),
+    )
+    for_package = models.ForeignKey(
+        to="component_catalog.Package",
+        related_name="declared_dependencies",
+        help_text=_("The package that declares this dependency."),
+        on_delete=models.CASCADE,
+        editable=False,
+        blank=True,
+        null=True,
+    )
+    resolved_to_package = models.ForeignKey(
+        to="component_catalog.Package",
+        related_name="resolved_from_dependencies",
+        help_text=_(
+            "The resolved package for this dependency. "
+            "If empty, it indicates the dependency is unresolved."
+        ),
+        on_delete=models.SET_NULL,
+        editable=False,
+        blank=True,
+        null=True,
+    )
+    extracted_requirement = models.CharField(
+        max_length=256,
+        blank=True,
+        help_text=_("The version requirements of this dependency."),
+    )
+    scope = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text=_("The scope of this dependency, how it is used in a project."),
+    )
+    datasource_id = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text=_("The identifier for the datafile handler used to obtain this dependency."),
+    )
+    is_runtime = models.BooleanField(
+        default=False,
+        help_text=_("True if this dependency is a runtime dependency."),
+    )
+    is_optional = models.BooleanField(
+        default=False,
+        help_text=_("True if this dependency is an optional dependency"),
+    )
+    is_resolved = models.BooleanField(
+        default=False,
+        help_text=_(
+            "True if this dependency version requirement has been pinned "
+            "and this dependency points to an exact version."
+        ),
+    )
+    is_direct = models.BooleanField(
+        default=False,
+        help_text=_(
+            "True if this is a direct, first-level dependency relationship " "for a package."
+        ),
+    )
+
+    class Meta:
+        unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))
+        verbose_name = "product dependency"
+        verbose_name_plural = "product dependencies"
+        ordering = ["dependency_uid"]
+        indexes = [
+            models.Index(fields=["scope"]),
+            models.Index(fields=["is_runtime"]),
+            models.Index(fields=["is_optional"]),
+            models.Index(fields=["is_resolved"]),
+            models.Index(fields=["is_direct"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "dependency_uid"],
+                condition=~models.Q(dependency_uid=""),
+                name="%(app_label)s_%(class)s_unique_dependency_uid_within_product",
+            ),
+            models.UniqueConstraint(
+                fields=["dataspace", "uuid"],
+                name="%(app_label)s_%(class)s_unique_uuid_within_dataspace",
+            ),
+        ]
+
+    def __str__(self):
+        return self.dependency_uid

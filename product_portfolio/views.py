@@ -96,6 +96,7 @@ from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from product_portfolio.filters import CodebaseResourceFilterSet
+from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
 from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
@@ -283,6 +284,11 @@ class ProductDetailsView(
                 "owner",
             ],
         },
+        "dependencies": {
+            "fields": [
+                "dependencies",
+            ],
+        },
         "activity": {},
         "imports": {},
         "history": {
@@ -456,6 +462,50 @@ class ProductDetailsView(
         tab_context = {
             "tab_view_url": tab_view_url,
             "tab_object_name": "inventory",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    # def tab_dependencies(self):
+    #     dependencies_count = self.object.dependencies.count()
+    #     if not dependencies_count:
+    #         return
+    #
+    #     label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
+    #     template = "product_portfolio/tabs/tab_dependencies.html"
+    #
+    #     dependencies = self.object.dependencies.select_related(
+    #         "for_package",
+    #         "resolved_to_package",
+    #     )
+    #     tab_context = {
+    #         "dependencies": dependencies,
+    #     }
+    #
+    #     return {
+    #         "label": format_html(label),
+    #         "fields": [(None, tab_context, None, template)],
+    #     }
+
+    def tab_dependencies(self):
+        dependencies_count = self.object.dependencies.count()
+        if not dependencies_count:
+            return
+
+        label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_dependencies")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "dependencies",
         }
 
         return {
@@ -865,6 +915,56 @@ class ProductTabCodebaseView(
                 "has_product_component": has_any_values("product_component"),
                 "has_product_package": has_any_values("product_package"),
                 "has_deployed_paths": has_any_values("deployed_from_paths"),
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabDependenciesView(
+    LoginRequiredMixin,
+    BaseProductView,
+    PreviousNextPaginationMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_dependencies.html"
+    paginate_by = 50
+    query_dict_page_param = "dependencies-page"
+    tab_id = "dependencies"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        dependency_qs = self.object.dependencies.select_related(
+            "for_package",
+            "resolved_to_package",
+        )
+
+        filter_dependency = DependencyFilterSet(
+            self.request.GET,
+            queryset=dependency_qs,
+            dataspace=self.object.dataspace,
+            prefix="dependencies",
+        )
+
+        paginator = Paginator(filter_dependency.qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        context_data.update(
+            {
+                "filter_dependency": filter_dependency,
+                "page_obj": page_obj,
+                "search_query": self.request.GET.get("dependencies-q", ""),
             }
         )
 

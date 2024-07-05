@@ -41,6 +41,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
@@ -639,6 +640,8 @@ class ImportPackageFromScanCodeIO:
         self.created = []
         self.existing = []
         self.errors = []
+        # Use to assign dependencies to the correct Package instance
+        self.package_uid_mapping = {}
 
         self.user = user
         self.project_uuid = project_uuid
@@ -650,9 +653,11 @@ class ImportPackageFromScanCodeIO:
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")
+        self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
     def save(self):
         self.import_packages()
+        self.import_dependencies()
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
@@ -663,7 +668,12 @@ class ImportPackageFromScanCodeIO:
         for package_data in self.packages:
             self.import_package(package_data)
 
+    def import_dependencies(self):
+        for dependency_data in self.dependencies:
+            self.import_dependency(dependency_data)
+
     def import_package(self, package_data):
+        package_uid = package_data.get("package_uid")
         unique_together_lookups = {
             field: value
             for field in self.unique_together_fields
@@ -715,3 +725,30 @@ class ImportPackageFromScanCodeIO:
                 "created_by": self.user,
             },
         )
+
+        self.package_uid_mapping[package_uid] = package
+
+    def import_dependency(self, dependency_data):
+        dependency = None
+        # TODO: Check if the Dependency already exists in the local Dataspace
+        # try:
+        #     dependency = ProductDependency.objects.scope(self.user.dataspace)
+        #     .get(**unique_together_lookups)
+        #     self.existing.append(package)
+        # except (ObjectDoesNotExist, MultipleObjectsReturned):
+        #     dependency = None
+
+        dependency_data["product"] = self.product
+        for_package_uid = dependency_data["for_package_uid"]
+        dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
+        resolved_to_package_uid = dependency_data["resolved_to_package_uid"]
+        dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
+            resolved_to_package_uid
+        )
+
+        if not dependency:
+            try:
+                ProductDependency.create_from_data(self.user, dependency_data, validate=True)
+            except ValidationError as errors:
+                print(errors)
+                return
