@@ -1664,22 +1664,22 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual([], updated_fields)
 
         new_data = {
-            "name": "new name",
-            "version": "1.0",
+            "filename": "new_filename",
+            "notes": "Some notes",
             "unknown_field": "value",
         }
         updated_fields = package.update_from_data(self.user, data=new_data)
-        self.assertEqual(["version"], updated_fields)
+        self.assertEqual(["notes"], updated_fields)
         package.refresh_from_db()
         # Already has a value, not updated
-        self.assertEqual("name", package.name)
+        self.assertEqual("package.zip", package.filename)
         # Empty field, updated
-        self.assertEqual(new_data["version"], package.version)
+        self.assertEqual(new_data["notes"], package.notes)
 
         updated_fields = package.update_from_data(self.user, data=new_data, override=True)
-        self.assertEqual(["name"], updated_fields)
+        self.assertEqual(["filename"], updated_fields)
         package.refresh_from_db()
-        self.assertEqual(new_data["name"], package.name)
+        self.assertEqual(new_data["filename"], package.filename)
 
     @mock.patch("component_catalog.models.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
@@ -2555,6 +2555,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha1",
             "sha256",
             "copyright",
+            "declared_license_expression",
             "license_expression",
         ]
         self.assertEqual(expected, updated_fields)

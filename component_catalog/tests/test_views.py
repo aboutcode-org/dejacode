@@ -3474,7 +3474,7 @@ class PackageUserViewsTestCase(TestCase):
     @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
     def test_component_catalog_package_add_view_initial_data(
-            self, mock_is_configured, mock_request_get
+        self, mock_is_configured, mock_request_get
     ):
         self.client.login(username=self.super_user.username, password="secret")
         add_url = reverse("component_catalog:package_add")

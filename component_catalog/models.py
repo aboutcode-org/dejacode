@@ -2424,7 +2424,6 @@ class Package(
             if packages_data := purldb.find_packages(payload, timeout):
                 return packages_data
 
-
     def update_from_purldb(self, user):
         """
         Find this Package in the PurlDB and update empty fields with PurlDB data
