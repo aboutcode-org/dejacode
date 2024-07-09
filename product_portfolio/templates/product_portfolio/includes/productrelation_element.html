@@ -3,7 +3,7 @@
   <span class="me-2">
     {% include 'includes/object_icon.html' with object=relation.package only %}
   </span>
-  {% if relation.package.package_url in values.vulnerable_purls %}
+  {% if relation.package.package_url in vulnerable_purls %}
     <a class="me-2" href="{{ relation.package.get_absolute_url }}#vulnerabilities" target="_blank" data-bs-toggle="tooltip" title="Vulnerabilities">
       <i class="fas fa-bug vulnerability"></i>
     </a>

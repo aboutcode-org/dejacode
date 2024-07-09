@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
+from django.db.models import Count
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -48,7 +49,6 @@ from natsort import natsorted
 from notifications.signals import notify
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
-from packageurl.contrib import url2purl
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -64,14 +64,14 @@ from component_catalog.forms import PackageForm
 from component_catalog.forms import ScanSummaryToPackageForm
 from component_catalog.forms import ScanToPackageForm
 from component_catalog.forms import SetPolicyForm
+from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
-from component_catalog.license_expression_dje import get_licensing_for_formatted_render
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
-from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
@@ -88,6 +88,7 @@ from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
 from dje.utils import is_uuid4
+from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
 from dje.views import APIWrapperListView
@@ -254,7 +255,7 @@ class TabVulnerabilityMixin:
     def tab_vulnerabilities(self):
         matching_value = getattr(self.object, self.vulnerability_matching_field)
         dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
 
         # The display of vulnerabilities is controlled by the object Dataspace
         display_tab = all(
@@ -434,7 +435,7 @@ class ComponentListView(
         Header("name", _("Component name")),
         Header("version", _("Version")),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
-        Header("license_expression", _("License"), filter="licenses"),
+        Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("owner", _("Owner")),
         Header("keywords", _("Keywords"), filter="keywords"),
@@ -478,7 +479,7 @@ class ComponentListView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
 
         # The display of vulnerabilities is controlled by the objects Dataspace
         enable_vulnerabilities = all(
@@ -561,6 +562,8 @@ class ComponentDetailsView(
                 "reference_notes",
                 "licenses",
                 "licenses_summary",
+                "declared_license_expression",
+                "other_license_expression",
             ],
         },
         "hierarchy": {},
@@ -597,7 +600,6 @@ class ComponentDetailsView(
                 "ip_sensitivity_approved",
                 "affiliate_obligations",
                 "affiliate_obligation_triggers",
-                "concluded_license",
                 "legal_comments",
                 "sublicense_allowed",
                 "express_patent_grant",
@@ -630,18 +632,38 @@ class ComponentDetailsView(
             "licenses",
         )
 
-        related_children_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("child", queryset=component_prefetch_qs),
+        related_children_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("child", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                child_count=Count("child__children"),
+            )
+            .order_by(
+                "child__name",
+                "child__version",
+            )
         )
 
-        related_parents_qs = Subcomponent.objects.select_related(
-            "usage_policy",
-        ).prefetch_related(
-            "licenses",
-            Prefetch("parent", queryset=component_prefetch_qs),
+        related_parents_qs = (
+            Subcomponent.objects.select_related(
+                "usage_policy",
+            )
+            .prefetch_related(
+                "licenses",
+                Prefetch("parent", queryset=component_prefetch_qs),
+            )
+            .annotate(
+                parent_count=Count("parent__related_parents"),
+            )
+            .order_by(
+                "parent__name",
+                "parent__version",
+            )
         )
 
         return (
@@ -839,7 +861,6 @@ class ComponentDetailsView(
             TabField("ip_sensitivity_approved"),
             TabField("affiliate_obligations"),
             TabField("affiliate_obligation_triggers"),
-            TabField("concluded_license"),
             TabField("legal_comments"),
             TabField("sublicense_allowed"),
             TabField("express_patent_grant"),
@@ -848,8 +869,11 @@ class ComponentDetailsView(
         ]
 
         fields = self.get_tab_fields(tab_fields)
-        # At least 1 value need to be set for the tab to be available.
-        if not any([1 for field in fields if field[1] and field[0] != "License expression"]):
+        # At least 1 value need to be set (excepting the license_expression)
+        # for the tab to be available.
+        if not any(
+            [1 for field in fields if field[1] and field[0] != "Concluded license expression"]
+        ):
             return
 
         return {"fields": fields}
@@ -1052,7 +1076,7 @@ class PackageListView(
     table_headers = (
         Header("sortable_identifier", _("Identifier"), Package.identifier_help()),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
-        Header("license_expression", _("License"), filter="licenses"),
+        Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("filename", _("Download"), help_text="Download link"),
         Header("components", "Components", PACKAGE_COMPONENTS_HELP, "component"),
@@ -1104,7 +1128,7 @@ class PackageListView(
         if self.request.user.has_perm("component_catalog.change_component"):
             context["add_to_component_form"] = AddMultipleToComponentForm(self.request)
 
-        vulnerablecode = VulnerableCode(self.request.user)
+        vulnerablecode = VulnerableCode(self.request.user.dataspace)
         # The display of vulnerabilities is controlled by the objects Dataspace
         enable_vulnerabilities = all(
             [
@@ -1193,6 +1217,8 @@ class PackageDetailsView(
                 "reference_notes",
                 "licenses",
                 "licenses_summary",
+                "declared_license_expression",
+                "other_license_expression",
             ],
         },
         "terms": {
@@ -1226,7 +1252,6 @@ class PackageDetailsView(
         },
         "others": {
             "fields": [
-                "declared_license",
                 "parties",
                 "datasource_id",
                 "file_references",
@@ -1379,7 +1404,6 @@ class PackageDetailsView(
 
     def tab_others(self):
         tab_fields = [
-            TabField("declared_license"),
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),
@@ -1414,11 +1438,12 @@ class PackageDetailsView(
             return {"fields": [(None, productpackages, None, template)]}
 
     def tab_scan(self):
-        scancodeio = ScanCodeIO(self.request.user)
+        user_dataspace = self.request.user.dataspace
+        scancodeio = ScanCodeIO(user_dataspace)
         scan_tab_display_conditions = [
             self.object.download_url,
             scancodeio.is_configured(),
-            self.request.user.dataspace.enable_package_scanning,
+            user_dataspace.enable_package_scanning,
             self.is_user_dataspace,
         ]
 
@@ -1438,10 +1463,11 @@ class PackageDetailsView(
         return {"fields": [(None, tab_context, None, template)]}
 
     def tab_purldb(self):
+        dataspace = self.request.user.dataspace
         display_tab_purldb = [
-            PurlDB(self.request.user).is_configured(),
+            dataspace.enable_purldb_access,
+            PurlDB(dataspace).is_configured(),
             self.is_user_dataspace,
-            self.request.user.dataspace.enable_purldb_access,
         ]
 
         if not all(display_tab_purldb):
@@ -1545,17 +1571,18 @@ class PackageDetailsView(
 @login_required
 def package_scan_view(request, dataspace, uuid):
     user = request.user
-    package = get_object_or_404(Package, uuid=uuid, dataspace=user.dataspace)
+    dataspace = user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     download_url = package.download_url
 
-    scancodeio = ScanCodeIO(request.user)
-    if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
+    scancodeio = ScanCodeIO(dataspace)
+    if scancodeio.is_configured() and dataspace.enable_package_scanning:
         if is_available(download_url):
             # Run the task synchronously to prevent from race condition.
             tasks.scancodeio_submit_scan(
                 uris=download_url,
                 user_uuid=user.uuid,
-                dataspace_uuid=user.dataspace.uuid,
+                dataspace_uuid=dataspace.uuid,
             )
             scancode_msg = "The Package URL was submitted to ScanCode.io for scanning."
             messages.success(request, scancode_msg)
@@ -1567,80 +1594,51 @@ def package_scan_view(request, dataspace, uuid):
 
 
 @login_required
+@require_POST
 def package_create_ajax_view(request):
     user = request.user
+    dataspace = user.dataspace
+
     if not user.has_perm("component_catalog.add_package"):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
-    download_urls = request.POST.get("download_urls", "").strip().split()
-    if not download_urls:
+    urls = request.POST.get("download_urls", "").strip().split()
+    if not urls:
         return JsonResponse({"error_message": "Missing Download URL"}, status=400)
 
     created = []
     errors = []
     warnings = []
     scan_msg = ""
-    scoped_packages_qs = Package.objects.scope(user.dataspace)
 
-    for download_url in download_urls:
-        download_url = download_url.strip()
-        if not download_url:
-            continue
-
-        existing_packages = scoped_packages_qs.filter(download_url=download_url)
-
-        if existing_packages:
-            package_link = existing_packages[0].get_absolute_link()
-            warnings.append(
-                f"URL {download_url} already exists in your Dataspace as {package_link}"
-            )
-            continue
-
-        # Submit the `download_url` to ScanCode.io early to get results available as
-        # soon as possible.
-        # The availability of the `download_url` is checked in the task.
-        scancodeio = ScanCodeIO(request.user)
-        if scancodeio.is_configured() and user.dataspace.enable_package_scanning:
-            tasks.scancodeio_submit_scan.delay(
-                uris=download_url,
-                user_uuid=user.uuid,
-                dataspace_uuid=user.dataspace.uuid,
-            )
-            scan_msg = " and submitted to ScanCode.io for scanning"
-
+    for url in urls:
         try:
-            package_data = collect_package_data(download_url)
-        except DataCollectionException as e:
-            errors.append(str(e))
-            continue
-
-        sha1 = package_data.get("sha1")
-        if sha1:
-            sha1_match = scoped_packages_qs.filter(sha1=sha1)
-            if sha1_match:
-                package_link = sha1_match[0].get_absolute_link()
-                warnings.append(
-                    f"The package at URL {download_url} already exists in your "
-                    f"Dataspace as {package_link}"
-                )
-                continue
-
-        package_url = url2purl.get_purl(download_url)
-        if package_url:
-            package_data.update(package_url.to_dict(encode=True, empty=""))
-
-        package = Package.create_from_data(user, package_data)
-        created.append(package)
+            package = Package.create_from_url(url, user)
+            created.append(package)
+        except PackageAlreadyExistsWarning as warning:
+            warnings.append(str(warning))
+        except (DataCollectionException, Exception) as error:
+            errors.append(str(error))
 
     redirect_url = reverse("component_catalog:package_list")
     len_created = len(created)
+
+    scancodeio = ScanCodeIO(dataspace)
+    if scancodeio.is_configured() and dataspace.enable_package_scanning:
+        # The availability of the each `download_url` is checked in the task.
+        tasks.scancodeio_submit_scan.delay(
+            uris=[package.download_url for package in created if package.download_url],
+            user_uuid=user.uuid,
+            dataspace_uuid=dataspace.uuid,
+        )
+        scan_msg = " and submitted to ScanCode.io for scanning"
 
     if len_created == 1:
         redirect_url = created[0].get_absolute_url()
         messages.success(request, "The Package was successfully created.")
     elif len_created > 1:
         packages = "\n".join([package.get_absolute_link() for package in created])
-        msg = f"The following Packages were successfully created {scan_msg}:\n{packages}"
+        msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
         messages.success(request, format_html(msg))
 
     if errors:
@@ -1679,10 +1677,11 @@ def component_create_ajax_view(request):
 
 @login_required
 def send_scan_data_as_file_view(request, project_uuid, filename):
-    if not request.user.dataspace.enable_package_scanning:
+    dataspace = request.user.dataspace
+    if not dataspace.enable_package_scanning:
         raise Http404
 
-    scancodeio = ScanCodeIO(request.user)
+    scancodeio = ScanCodeIO(dataspace)
     scan_results_url = scancodeio.get_scan_results_url(project_uuid)
     scan_results = scancodeio.fetch_scan_data(scan_results_url)
     scan_summary_url = scancodeio.get_scan_summary_url(project_uuid)
@@ -1701,10 +1700,11 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
 @login_required
 def delete_scan_view(request, project_uuid):
-    if not request.user.dataspace.enable_package_scanning:
+    dataspace = request.user.dataspace
+    if not dataspace.enable_package_scanning:
         raise Http404
 
-    scancodeio = ScanCodeIO(request.user)
+    scancodeio = ScanCodeIO(dataspace)
     scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
 
     if not scan_list or scan_list.get("count") != 1:
@@ -1743,7 +1743,7 @@ class ScanListView(
             "page": self.request.GET.get("page"),
         }
 
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(dataspace)
         self.list_data = (
             scancodeio.fetch_scan_list(
                 dataspace=dataspace,
@@ -1812,18 +1812,19 @@ def send_scan_notification(request, key):
 
     run = json_data.get("run")
     scan_status = run.get("status")
+    scancodeio = ScanCodeIO(dataspace)
 
     update_package_from_scan = all(
         [
             dataspace.enable_package_scanning,
             dataspace.update_packages_from_scan,
             scan_status.lower() == "success",
+            scancodeio.is_configured(),
         ]
     )
 
     # Triggers the Package data automatic update from Scan results, if enabled.
     if update_package_from_scan:
-        scancodeio = ScanCodeIO(user)
         updated_fields = scancodeio.update_from_scan(package, user)
         if updated_fields:
             description = (
@@ -1849,54 +1850,70 @@ class ComponentAddView(
     model = Component
     form_class = ComponentForm
     permission_required = "component_catalog.add_component"
+    initial_from_package_fields = [
+        "name",
+        "version",
+        "description",
+        "primary_language",
+        "cpe",
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+        "keywords",
+        "usage_policy",
+        "copyright",
+        "holder",
+        "notice_text",
+        "dependencies",
+        "reference_notes",
+        "release_date",
+        "homepage_url",
+        "code_view_url",
+        "vcs_url",
+        "bug_tracking_url",
+        "project",
+    ]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        package_ids = self.request.GET.get("package_ids")
-        package_ids = str_to_id_list(package_ids)
+        package_ids = str_to_id_list(self.request.GET.get("package_ids", ""))
 
         packages = (
             Package.objects.scope(self.request.user.dataspace)
             .filter(id__in=package_ids)
-            .values(
-                "id",
-                "name",
-                "version",
-                "description",
-                "primary_language",
-                "cpe",
-                "license_expression",
-                "keywords",
-                "usage_policy",
-                "copyright",
-                "holder",
-                "notice_text",
-                "dependencies",
-                "reference_notes",
-                "release_date",
-                "homepage_url",
-                "project",
-            )
+            .values("id", *self.initial_from_package_fields)
         )
 
         initial = {"packages_ids": ",".join([str(entry.pop("id")) for entry in packages])}
+
         if packages:
-            for key in packages[0].keys():
-                unique_values = set()
-                for entry in packages:
-                    value = entry.get(key)
-                    if not value:
-                        continue
-                    if isinstance(value, list):
-                        value = ", ".join(value)
-                    unique_values.add(value)
-                if len(unique_values) == 1:
-                    initial[key] = list(unique_values)[0]
+            initial.update(self.extract_common_values(packages))
 
         kwargs.update({"initial": initial})
 
         return kwargs
+
+    @staticmethod
+    def extract_common_values(packages):
+        if not (packages):
+            return {}
+
+        if len(packages) == 1:
+            return remove_empty_values(packages[0])
+
+        common_values = {}
+        for key in packages[0].keys():
+            unique_values = set()
+            for entry in packages:
+                value = entry.get(key)
+                if value in EMPTY_VALUES or isinstance(value, (list, dict)):
+                    continue
+                unique_values.add(value)
+            if len(unique_values) == 1:
+                common_values[key] = list(unique_values)[0]
+
+        return common_values
 
 
 class ComponentUpdateView(
@@ -1928,6 +1945,7 @@ class PackageAddView(
         initial = super().get_initial()
 
         if purldb_entry := self.get_entry_from_purldb():
+            # Duplicate the declared_license_expression as the "concluded" license_expression
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
             model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
@@ -1948,12 +1966,12 @@ class PackageAddView(
         return initial
 
     def get_entry_from_purldb(self):
-        user = self.request.user
-        purldb = PurlDB(user)
+        dataspace = self.request.user.dataspace
+        purldb = PurlDB(dataspace)
         is_purldb_enabled = all(
             [
                 purldb.is_configured(),
-                user.dataspace.enable_purldb_access,
+                dataspace.enable_purldb_access,
             ]
         )
 
@@ -2071,7 +2089,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             """
 
     @staticmethod
-    def _get_licensing_for_formatted_render(dataspace, license_expressions):
+    def _get_dataspace_licensing(dataspace, license_expressions):
         # Get the set of unique license symbols as an optimization
         # to filter the License QuerySet to relevant objects.
         license_keys = set()
@@ -2081,17 +2099,21 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 license_keys.update(get_unique_license_keys(expression))
 
         show_policy = dataspace.show_usage_policy_in_user_views
-        licensing = get_licensing_for_formatted_render(dataspace, show_policy, license_keys)
+        licensing = get_dataspace_licensing(dataspace, license_keys)
 
         return licensing, show_policy
 
     @classmethod
     def get_license_expressions_scan_values(
-        cls, dataspace, license_expressions, input_type, license_matches, checked=False
+        cls,
+        dataspace,
+        license_expressions,
+        field_name,
+        input_type,
+        license_matches,
+        checked=False,
     ):
-        licensing, show_policy = cls._get_licensing_for_formatted_render(
-            dataspace, license_expressions
-        )
+        licensing, show_policy = cls._get_dataspace_licensing(dataspace, license_expressions)
         values = []
         for entry in license_expressions:
             license_expression = entry.get("value")
@@ -2102,7 +2124,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             count = entry.get("count")
             checked_html = "checked" if checked else ""
             select_input = (
-                f'<input type="{input_type}" name="license_expression" '
+                f'<input type="{input_type}" name="{field_name}" '
                 f'value="{license_expression}" {checked_html}>'
             )
 
@@ -2224,8 +2246,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["summary"] = self.get_key_file_summary(key_file)
 
             # Inject the matched values as a grouped list for usage in the template
-            # Limit the matched_text to 300 chars to prevent rendering issues.
-            MATCHED_MAX_LENGTH = 300
+            # Limit the matched_text to 1,000 chars to prevent rendering issues.
+            MATCHED_MAX_LENGTH = 1_000
             license_detections = key_file.get("license_detections", [])
 
             matched_texts = []
@@ -2250,7 +2272,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             key_file["matched_texts"] = matched_texts
 
             if detected_license_expression := key_file["detected_license_expression"]:
-                licensing, show_policy = self._get_licensing_for_formatted_render(
+                licensing, show_policy = self._get_dataspace_licensing(
                     self.object.dataspace, [{"value": detected_license_expression}]
                 )
                 key_file["formatted_expression"] = get_formatted_expression(
@@ -2313,10 +2335,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
             # Add the supported Package fields in the tab UI.
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
-                if scan_field == "declared_license_expression":
-                    scan_field = "license_expression"
-                value = self.detected_package_data.get(scan_field)
-                if value:
+                if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
                         value = format_html("<br>".join(([escape(entry) for entry in value])))
                     else:
@@ -2356,7 +2375,6 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         )
         license_matches = scan_summary.get("license_matches") or {}
         self.object.has_license_matches = bool(license_matches)
-
         for label, field, model_field_name, input_type in summary_fields:
             field_data = scan_summary.get(field, [])
             if field in ("declared_license_expression", "other_license_expressions"):
@@ -2366,7 +2384,12 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 else:
                     checked = False
                 values = self.get_license_expressions_scan_values(
-                    user.dataspace, field_data, input_type, license_matches, checked
+                    user.dataspace,
+                    field_data,
+                    model_field_name,
+                    input_type,
+                    license_matches,
+                    checked,
                 )
 
             elif field in ("declared_holder", "primary_language"):
@@ -2460,11 +2483,12 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
     def tab_scan(self):
         user = self.request.user
-        scancodeio = ScanCodeIO(user)
+        dataspace = user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
 
         scan = scancodeio.get_scan_results(
             download_url=self.object.download_url,
-            dataspace=user.dataspace,
+            dataspace=dataspace,
         )
 
         if not scan:

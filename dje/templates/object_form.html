@@ -53,7 +53,17 @@
 
       {% if form.fields.license_expression and licenses_data_for_builder %}
         let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
-        setup_awesomplete_builder($('#id_license_expression').get(0), null, 100,licenses_data_for_builder);
+        const licenseExpressionInputIds = [
+          'id_license_expression',
+          'id_declared_license_expression',
+          'id_other_license_expression'
+        ];
+        licenseExpressionInputIds.forEach(function(id) {
+          const licenseExpressionInput = document.getElementById(id);
+          if (licenseExpressionInput) {
+            setup_awesomplete_builder(licenseExpressionInput, null, 100, licenses_data_for_builder);
+          }
+        });
       {% endif %}
 
       {% if form.fields.keywords %}

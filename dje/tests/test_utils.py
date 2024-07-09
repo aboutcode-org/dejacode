@@ -34,6 +34,7 @@ from dje.utils import get_referer_resolver
 from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
 from dje.utils import is_available
+from dje.utils import is_purl_str
 from dje.utils import merge_relations
 from dje.utils import normalize_newlines_as_CR_plus_LF
 from dje.utils import remove_field_from_query_dict
@@ -487,3 +488,14 @@ class DJEUtilsTestCase(TestCase):
         self.assertEqual((None, None), get_previous_next([1, 2, 3, 4], 8))
         self.assertEqual(("a", "c"), get_previous_next(["a", "b", "c"], "b"))
         self.assertEqual((None, None), get_previous_next(["a", "b", "c"], 2))
+
+    def test_utils_is_purl_str(self):
+        self.assertFalse(is_purl_str(""))
+        self.assertFalse(is_purl_str("a"))
+        self.assertFalse(is_purl_str("not:a/purl"))
+
+        self.assertTrue(is_purl_str("pkg:"))
+        self.assertFalse(is_purl_str("pkg:", validate=True))
+
+        self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0"))
+        self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0", validate=True))

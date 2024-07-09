@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.core import validators
+from django.core.cache import caches
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -464,20 +465,16 @@ class LicenseSymbolMixin:
 
 
 class LicenseQuerySet(DataspacedQuerySet):
-    def for_expression(self, show_policy=False, license_keys=None):
-        select_related = ["dataspace"]
-        only = [
+    def for_expression(self, license_keys=None):
+        qs = self.only(
             "key",
+            "name",
             "short_name",
+            "spdx_license_key",
             "is_exception",
+            "usage_policy",
             "dataspace",
-        ]
-
-        if show_policy:
-            select_related.append("usage_policy")
-            only.append("usage_policy")
-
-        qs = self.select_related(*select_related).only(*only)
+        ).select_related("dataspace", "usage_policy")
 
         if license_keys:
             qs = qs.filter(key__in=license_keys)
@@ -815,6 +812,11 @@ class License(
 
     def __str__(self):
         return f"{self.short_name} ({self.key})"
+
+    def save(self, *args, **kwargs):
+        """Clear the licensing cache on License object changes."""
+        super().save(*args, **kwargs)
+        caches["licensing"].clear()
 
     def clean(self, from_api=False):
         if self.is_active is False and self.spdx_license_key:

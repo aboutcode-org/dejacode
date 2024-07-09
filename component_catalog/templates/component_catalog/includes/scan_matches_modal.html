@@ -17,14 +17,12 @@
 </div>
 
 <script>
-  $(document).ready(function () {
-    $('#scan-matches-modal').on('show.bs.modal', function (event) {
-      let modal = $(this);
-      let button = $(event.relatedTarget);
-      let matches = button.data('matches');
-      let license_key = button.data('license-key');
-      modal.find('.modal-title #detected-license-key').text(license_key);
-      modal.find('.modal-body').html($(matches));
-    });
+  document.getElementById('scan-matches-modal').addEventListener('show.bs.modal', function(event) {
+    let modal = event.target;
+    let button = event.relatedTarget;
+    let matches = button.dataset.matches;
+    let license_key = button.dataset.licenseKey;
+    modal.querySelector('.modal-title #detected-license-key').textContent = license_key;
+    modal.querySelector('.modal-body').innerHTML = matches;
   });
 </script>

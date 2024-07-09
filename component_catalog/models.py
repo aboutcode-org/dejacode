@@ -36,6 +36,7 @@ from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
 from cyclonedx.model import license as cyclonedx_license
+from license_expression import ExpressionError
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
@@ -44,12 +45,14 @@ from packageurl.contrib.django.models import PackageURLQuerySetMixin
 from packageurl.contrib.django.utils import without_empty_values
 
 from component_catalog.license_expression_dje import build_licensing
+from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from dejacode_toolkit import spdx
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
+from dejacode_toolkit.purldb import pick_purldb_entry
 from dje import urn
 from dje.copier import post_copy
 from dje.copier import post_update
@@ -65,6 +68,7 @@ from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
+from dje.utils import is_purl_str
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -91,6 +95,29 @@ COMPONENT_PACKAGE_COMMON_FIELDS = [
     "release_date",
     "version",
 ]
+
+LICENSE_EXPRESSION_HELP_TEXT = _(
+    "The License Expression assigned to a DejaCode Package or Component is an editable "
+    'value equivalent to a "concluded license" as determined by a curator who has '
+    "performed analysis to clarify or correct the declared license expression, which "
+    "may have been assigned automatically (from a scan or an associated package "
+    "definition) when the Package or Component was originally created. "
+    "A license expression defines the relationship of one or more licenses to a "
+    "software object. More than one applicable license can be expressed as "
+    '"license-key-a AND license-key-b". A choice of applicable licenses can be '
+    'expressed as "license-key-a OR license-key-b", and you can indicate the primary '
+    "(preferred) license by placing it first, on the left-hand side of the OR "
+    "relationship. The relationship words (OR, AND) can be combined as needed, "
+    "and the use of parentheses can be applied to clarify the meaning; "
+    'for example "((license-key-a AND license-key-b) OR (license-key-c))". '
+    "An exception to a license can be expressed as "
+    '"license-key WITH license-exception-key".'
+)
+
+
+class PackageAlreadyExistsWarning(Exception):
+    def __init__(self, message):
+        self.message = message
 
 
 def validate_filename(value):
@@ -160,22 +187,6 @@ class LicenseExpressionMixin:
         if license_expression:
             return format_html('<span class="license-expression">{}</span>', license_expression)
 
-    def get_license_expression_spdx_id(self):
-        """
-        Return the license_expression formatted for SPDX compatibility.
-
-        This includes a workaround for a SPDX spec limitation, where license exceptions
-        that do not exist in the SPDX list cannot be provided as "LicenseRef-" in the
-        "hasExtractedLicensingInfos".
-        The current fix is to use AND rather than WITH for any exception that is a
-        "LicenseRef-".
-
-        See discussion at https://github.com/spdx/tools-java/issues/73
-        """
-        expression = self.get_license_expression("{symbol.spdx_id}")
-        if expression:
-            return expression.replace("WITH LicenseRef-", "AND LicenseRef-")
-
     def _get_primary_license(self):
         """
         Return the primary license key of this instance or None. The primary license is
@@ -189,6 +200,33 @@ class LicenseExpressionMixin:
             return licensing.primary_license_key(self.license_expression)
 
     primary_license = cached_property(_get_primary_license)
+
+    def get_expression_as_spdx(self, expression):
+        """
+        Return the license_expression formatted for SPDX compatibility.
+
+        This includes a workaround for a SPDX spec limitation, where license exceptions
+        that do not exist in the SPDX list cannot be provided as "LicenseRef-" in the
+        "hasExtractedLicensingInfos".
+        The current fix is to use AND rather than WITH for any exception that is a
+        "LicenseRef-".
+
+        See discussion at https://github.com/spdx/tools-java/issues/73
+        """
+        if not expression:
+            return
+
+        try:
+            expression_as_spdx = get_expression_as_spdx(expression, self.dataspace)
+        except ExpressionError as e:
+            return str(e)
+
+        if expression_as_spdx:
+            return expression_as_spdx.replace("WITH LicenseRef-", "AND LicenseRef-")
+
+    @property
+    def concluded_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.license_expression)
 
     def save(self, *args, **kwargs):
         """
@@ -292,6 +330,37 @@ class LicenseExpressionMixin:
             return "table-danger"
         elif "warning" in self.compliance_alerts:
             return "table-warning"
+
+
+class LicenseFieldsMixin(models.Model):
+    declared_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from statements in the manifests or key "
+            "files of a software project, such as the NOTICE, COPYING, README, and "
+            "LICENSE files."
+        ),
+    )
+
+    other_license_expression = models.TextField(
+        blank=True,
+        help_text=_(
+            "A license expression derived from detected licenses in the non-key files "
+            "of a software project, which are often third-party software used by the "
+            "project, or test, sample and documentation files."
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def declared_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.declared_license_expression)
+
+    @property
+    def other_license_expression_spdx(self):
+        return self.get_expression_as_spdx(self.other_license_expression)
 
 
 def get_cyclonedx_properties(instance):
@@ -691,25 +760,6 @@ def component_mixin_factory(verbose_name):
             ),
         )
 
-        license_expression = models.CharField(
-            _("License expression"),
-            max_length=1024,
-            blank=True,
-            db_index=True,
-            help_text=_(
-                "On a component or a product in DejaCode, a license expression defines the "
-                "relationship of one or more licenses to that software as declared by its "
-                'licensor. More than one applicable license can be expressed as "license-key-a '
-                'AND license-key-b". A choice of applicable licenses can be expressed as '
-                '"license-key-a OR license-key-b", and you can indicate the primary (preferred) '
-                "license by placing it first, on the left-hand side of the OR relationship. "
-                "The relationship words (OR, AND) can be combined as needed, and the use of "
-                'parentheses can be applied to clarify the meaning; for example "((license-key-a '
-                'AND license-key-b) OR (license-key-c))". An exception to a license can be '
-                'expressed as “license-key WITH license-exception-key".'
-            ),
-        )
-
         class Meta:
             abstract = True
             unique_together = (("dataspace", "name", "version"), ("dataspace", "uuid"))
@@ -765,7 +815,7 @@ def component_mixin_factory(verbose_name):
                     urls=[self.owner.homepage_url],
                 )
 
-            expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
+            expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
             licenses = []
             if expression_spdx:
                 # Using the LicenseExpression directly as the make_with_expression method
@@ -819,10 +869,19 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    LicenseFieldsMixin,
     ParentChildModelMixin,
     BaseComponentMixin,
     DataspacedModel,
 ):
+    license_expression = models.CharField(
+        _("Concluded license expression"),
+        max_length=1024,
+        blank=True,
+        db_index=True,
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
+    )
+
     configuration_status = models.ForeignKey(
         to="component_catalog.ComponentStatus",
         on_delete=models.PROTECT,
@@ -1017,19 +1076,6 @@ class Component(
         help_text=_(
             "Explanation of how affiliate obligations are triggered, and what is the mitigation "
             "strategy."
-        ),
-    )
-
-    concluded_license = models.CharField(
-        max_length=1024,
-        blank=True,
-        db_index=True,
-        help_text=_(
-            "This is a memo field to record the conclusions of the legal team after full review "
-            "and scanning of the component package, and is only intended to document that "
-            "decision. The main value of the field is to clarify the company interpretation of "
-            "the license that should apply to a component when there is a choice, or when there "
-            "is ambiguity in the original component documentation."
         ),
     )
 
@@ -1279,7 +1325,12 @@ class Component(
         return without_empty_values(component_data)
 
     def as_spdx(self, license_concluded=None):
-        """Return this Component as an SPDX Package entry."""
+        """
+        Return this Component as an SPDX Package entry.
+        An optional ``license_concluded`` can be provided to override the
+        ``license_expression`` value defined on this instance.
+        This can be a license choice applied to a Product relationship.
+        """
         external_refs = []
 
         if cpe_external_ref := self.get_spdx_cpe_external_ref():
@@ -1289,14 +1340,12 @@ class Component(
         if self.notice_text:
             attribution_texts.append(self.notice_text)
 
-        license_expression_spdx = self.get_license_expression_spdx_id()
-
         return spdx.Package(
             name=self.name,
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             supplier=self.owner.as_spdx() if self.owner else "",
-            license_concluded=license_concluded or license_expression_spdx,
-            license_declared=license_expression_spdx,
+            license_concluded=license_concluded or self.concluded_license_expression_spdx,
+            license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
             homepage=self.homepage_url,
@@ -1584,6 +1633,7 @@ class Package(
     UsagePolicyMixin,
     SetPolicyFromLicenseMixin,
     LicenseExpressionMixin,
+    LicenseFieldsMixin,
     RequestMixin,
     HistoryFieldsMixin,
     ReferenceNotesMixin,
@@ -1672,21 +1722,11 @@ class Package(
     )
 
     license_expression = models.CharField(
-        _("License expression"),
+        _("Concluded license expression"),
         max_length=1024,
         blank=True,
         db_index=True,
-        help_text=_(
-            "On a package in DejaCode, a license expression defines the relationship of one or "
-            "more licenses to that software as declared by its licensor. More than one "
-            'applicable license can be expressed as "license-key-a AND license-key-b". A choice '
-            'of applicable licenses can be expressed as "license-key-a OR license-key-b", and you '
-            "can indicate the primary (preferred) license by placing it first, on the left-hand "
-            "side of the OR relationship. The relationship words (OR, AND) can be combined as "
-            "needed, and the use of parentheses can be applied to clarify the meaning; for "
-            'example "((license-key-a AND license-key-b) OR (license-key-c))". An exception to '
-            'a license can be expressed as “license-key WITH license-exception-key".'
-        ),
+        help_text=LICENSE_EXPRESSION_HELP_TEXT,
     )
 
     copyright = models.TextField(
@@ -1750,15 +1790,6 @@ class Package(
         help_text=_(
             "API URL to obtain structured data for this package such as the "
             "URL to a JSON or XML api its package repository."
-        ),
-    )
-
-    declared_license = models.TextField(
-        blank=True,
-        help_text=_(
-            "The declared license mention, tag or text as found in a package manifest. "
-            "This can be a string, a list or dict of strings possibly nested, "
-            "as found originally in the manifest."
         ),
     )
 
@@ -2180,7 +2211,12 @@ class Package(
         return about_files
 
     def as_spdx(self, license_concluded=None):
-        """Return this Package as an SPDX Package entry."""
+        """
+        Return this Package as an SPDX Package entry.
+        An optional ``license_concluded`` can be provided to override the
+        ``license_expression`` value defined on this instance.
+        This can be a license choice applied to a Product relationship.
+        """
         checksums = [
             spdx.Checksum(algorithm=algorithm, value=checksum_value)
             for algorithm in ["sha1", "md5"]
@@ -2205,14 +2241,12 @@ class Package(
         if cpe_external_ref := self.get_spdx_cpe_external_ref():
             external_refs.append(cpe_external_ref)
 
-        license_expression_spdx = self.get_license_expression_spdx_id()
-
         return spdx.Package(
             name=self.name or self.filename,
             spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
             download_location=self.download_url,
-            license_declared=license_expression_spdx,
-            license_concluded=license_concluded or license_expression_spdx,
+            license_concluded=license_concluded or self.concluded_license_expression_spdx,
+            license_declared=self.declared_license_expression_spdx,
             copyright_text=self.copyright,
             version=self.version,
             homepage=self.homepage_url,
@@ -2230,7 +2264,7 @@ class Package(
 
     def as_cyclonedx(self, license_expression_spdx=None):
         """Return this Package as an CycloneDX Component entry."""
-        expression_spdx = license_expression_spdx or self.get_license_expression_spdx_id()
+        expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
 
         licenses = []
         if expression_spdx:
@@ -2291,6 +2325,72 @@ class Package(
             f"Component {self.component_set.count()}\n"
         )
 
+    @classmethod
+    def create_from_url(cls, url, user):
+        """
+        Create a package from the given URL for the specified user.
+
+        This function processes the URL to create a package entry. It handles
+        both direct download URLs and Package URLs (purls), checking for
+        existing packages to avoid duplicates. If the package is not already
+        present, it collects necessary package data and creates a new package
+        entry.
+        """
+        url = url.strip()
+        if not url:
+            return
+
+        package_data = {}
+        scoped_packages_qs = cls.objects.scope(user.dataspace)
+
+        if is_purl_str(url):
+            download_url = purl2url.get_download_url(url)
+            package_url = PackageURL.from_string(url)
+            existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
+        else:
+            download_url = url
+            package_url = url2purl.get_purl(url)
+            existing_packages = scoped_packages_qs.filter(download_url=url)
+
+        if existing_packages:
+            package_links = [package.get_absolute_link() for package in existing_packages]
+            raise PackageAlreadyExistsWarning(
+                f"{url} already exists in your Dataspace as {', '.join(package_links)}"
+            )
+
+        # Matching in PurlDB early to avoid more processing in case of a match.
+        purldb_data = None
+        if user.dataspace.enable_purldb_access:
+            package_for_match = cls(download_url=download_url)
+            package_for_match.set_package_url(package_url)
+            purldb_entries = package_for_match.get_purldb_entries(user)
+            # Look for one ith the same exact purl in that case
+            if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
+                # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
+                if release_date := purldb_data.get("release_date"):
+                    purldb_data["release_date"] = release_date.split("T")[0]
+                package_data.update(purldb_data)
+
+        if download_url and not purldb_data:
+            package_data = collect_package_data(download_url)
+
+        if sha1 := package_data.get("sha1"):
+            if sha1_match := scoped_packages_qs.filter(sha1=sha1):
+                package_link = sha1_match[0].get_absolute_link()
+                raise PackageAlreadyExistsWarning(
+                    f"{url} already exists in your Dataspace as {package_link}"
+                )
+
+        # Duplicate the declared_license_expression into the license_expression field.
+        if declared_license_expression := package_data.get("declared_license_expression"):
+            package_data["license_expression"] = declared_license_expression
+
+        if package_url:
+            package_data.update(package_url.to_dict(encode=True, empty=""))
+
+        package = cls.create_from_data(user, package_data)
+        return package
+
     def get_purldb_entries(self, user, max_request_call=0, timeout=10):
         """
         Return the PurlDB entries that correspond to this Package instance.
@@ -2316,12 +2416,14 @@ class Package(
         if self.download_url:
             payloads.append({"download_url": self.download_url})
 
+        purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
             if max_request_call and index >= max_request_call:
                 return
 
-            if packages_data := PurlDB(user).find_packages(payload, timeout):
+            if packages_data := purldb.find_packages(payload, timeout):
                 return packages_data
+
 
     def update_from_purldb(self, user):
         """

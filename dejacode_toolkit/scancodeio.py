@@ -28,8 +28,8 @@ class ScanCodeIO(BaseService):
     url_field_name = "scancodeio_url"
     api_key_field_name = "scancodeio_api_key"
 
-    def __init__(self, user):
-        super().__init__(user)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.project_api_url = f"{self.api_url}projects/"
 
     def get_scan_detail_url(self, project_uuid):
@@ -191,7 +191,8 @@ class ScanCodeIO(BaseService):
             logger.debug(f'{self.label}: scan summary not available for package="{package}"')
             return []
 
-        # 1. Summary fields: declared_license_expression, declared_holder, primary_language
+        # 1. Summary fields: declared_license_expression, license_expression,
+        #   declared_holder, primary_language
         for summary_field, model_field in self.AUTO_UPDATE_FIELDS:
             summary_field_value = scan_summary.get(summary_field)
             if summary_field_value:
@@ -207,7 +208,7 @@ class ScanCodeIO(BaseService):
                 if scan_value and model_field not in ["package_url", "purl"]:
                     values_from_scan[model_field] = scan_value
 
-        # 3. Inferred values: copyright
+        # 3a. Inferred values: copyright
         if not values_from_scan.get("copyright", None):
             if holder := values_from_scan.get("holder"):
                 values_from_scan["copyright"] = f"Copyright {holder}"
@@ -215,6 +216,11 @@ class ScanCodeIO(BaseService):
                 values_from_scan["copyright"] = f"Copyright {package.name} project contributors"
             elif package_name := detected_package.get("name"):
                 values_from_scan["copyright"] = f"Copyright {package_name} project contributors"
+
+        # 3b. Inferred values: notice_text, generated from key fields.
+        if not values_from_scan.get("notice_text", None):
+            if notice_text := get_notice_text_from_key_files(scan_summary):
+                values_from_scan["notice_text"] = notice_text
 
         if values_from_scan:
             updated_fields = package.update_from_data(user, values_from_scan)
@@ -244,10 +250,15 @@ class ScanCodeIO(BaseService):
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [
-        ("Declared license", "declared_license_expression", "license_expression", "checkbox"),
+        (
+            "Declared license",
+            "declared_license_expression",
+            "declared_license_expression",
+            "checkbox",
+        ),
         ("Declared holder", "declared_holder", "holder", "checkbox"),
         ("Primary language", "primary_language", "primary_language", "radio"),
-        ("Other licenses", "other_license_expressions", "license_expression", "checkbox"),
+        ("Other licenses", "other_license_expressions", "other_license_expression", "checkbox"),
         ("Other holders", "other_holders", "holder", "checkbox"),
         ("Other languages", "other_languages", "primary_language", "radio"),
     ]
@@ -255,17 +266,14 @@ class ScanCodeIO(BaseService):
     # (label, scan_field)
     SCAN_PACKAGE_FIELD = [
         ("Package URL", "purl"),
-        ("License expression", "declared_license_expression"),
-        ("Other license expression", "other_license_expression"),
+        ("Declared license", "declared_license_expression"),
+        ("Other license", "other_license_expression"),
         ("Copyright", "copyright"),
         ("Holder", "holder"),
         ("Description", "description"),
         ("Primary language", "primary_language"),
         ("Homepage URL", "homepage_url"),
-        # We need to remove the validation in SetKeywordsChoicesFormMixin before enabling
-        # keywords that are not available as ComponentKeyword.
-        # Essentially using ComponentKeyword only as suggestions but not limited to.
-        # ('Keywords', 'keywords'),
+        ("Keywords", "keywords"),
         ("Release date", "release_date"),
         ("Notice text", "notice_text"),
         # ('Dependencies', 'dependencies'),
@@ -353,7 +361,10 @@ class ScanCodeIO(BaseService):
 
     # (scan_field, model_field)
     AUTO_UPDATE_FIELDS = [
+        # declared_license_expression goes in both license fields.
         ("declared_license_expression", "license_expression"),
+        ("declared_license_expression", "declared_license_expression"),
+        ("other_license_expression", "other_license_expression"),
         ("declared_holder", "holder"),
         ("primary_language", "primary_language"),
     ]
@@ -366,26 +377,24 @@ class ScanCodeIO(BaseService):
         """
         package_data_for_model = {}
 
-        for _, scan_field in cls.SCAN_PACKAGE_FIELD:
-            value = detected_package.get(scan_field)
+        for _, scan_data_field in cls.SCAN_PACKAGE_FIELD:
+            value = detected_package.get(scan_data_field)
             if not value:
                 continue
 
-            if scan_field == "dependencies":
+            if scan_data_field == "dependencies":
                 value = json.dumps(value, indent=2)
 
-            if scan_field == "other_license_expression":
-                continue
-
             # Add `package_url` alias to be used in place of `purl` depending on the context
-            if scan_field == "purl":
+            if scan_data_field == "purl":
                 package_data_for_model["package_url"] = value
 
-            elif scan_field == "declared_license_expression":
-                scan_field = "license_expression"
+            elif scan_data_field.endswith("license_expression"):
                 value = str(Licensing().dedup(value))
+                if scan_data_field == "declared_license_expression":
+                    package_data_for_model["license_expression"] = value
 
-            package_data_for_model[scan_field] = value
+            package_data_for_model[scan_data_field] = value
 
         return package_data_for_model
 
@@ -445,3 +454,20 @@ def get_package_download_url(project_data):
     input_sources = get_project_input_source(project_data)
     if len(input_sources) == 1:
         return input_sources[0].get("download_url", None)
+
+
+def get_notice_text_from_key_files(scan_summary, separator="\n\n---\n\n"):
+    """
+    Return a generate notice_text from the key files contained in the provided
+    ``scan_summary``.
+    """
+    key_files = scan_summary.get("key_files", [])
+
+    # See https://github.com/nexB/scancode-toolkit/issues/3822 about the addition
+    # of a `is_notice` attribute.
+    notice_files = [key_file for key_file in key_files if "notice" in key_file.get("name").lower()]
+
+    notice_text = separator.join(
+        [notice_file.get("content").strip() for notice_file in notice_files]
+    )
+    return notice_text

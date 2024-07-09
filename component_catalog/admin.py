@@ -324,6 +324,8 @@ class ComponentAdmin(
                     "copyright",
                     "holder",
                     "license_expression",
+                    "declared_license_expression",
+                    "other_license_expression",
                     "reference_notes",
                     "release_date",
                     "description",
@@ -394,7 +396,6 @@ class ComponentAdmin(
                     "ip_sensitivity_approved",
                     "affiliate_obligations",
                     "affiliate_obligation_triggers",
-                    "concluded_license",
                     "legal_comments",
                     "sublicense_allowed",
                     "express_patent_grant",
@@ -418,7 +419,10 @@ class ComponentAdmin(
     autocomplete_lookup_fields = {"fk": ["owner"]}
     # We have to use 'completion_level' rather than the 'completion_level_pct'
     # callable to keep the help_text available during render in the template.
-    readonly_fields = DataspacedAdmin.readonly_fields + ("urn_link", "completion_level")
+    readonly_fields = DataspacedAdmin.readonly_fields + (
+        "urn_link",
+        "completion_level",
+    )
     form = ComponentAdminForm
     inlines = [
         SubcomponentChildInline,
@@ -826,6 +830,8 @@ class PackageAdmin(
             {
                 "fields": (
                     "license_expression",
+                    "declared_license_expression",
+                    "other_license_expression",
                     "copyright",
                     "holder",
                     "author",
@@ -864,7 +870,6 @@ class PackageAdmin(
             "Others",
             {
                 "fields": (
-                    "declared_license",
                     "parties",
                     "datasource_id",
                     "file_references",
@@ -880,7 +885,10 @@ class PackageAdmin(
         ),
         get_additional_information_fieldset(),
     ]
-    readonly_fields = DataspacedAdmin.readonly_fields + ("package_url", "inferred_url")
+    readonly_fields = DataspacedAdmin.readonly_fields + (
+        "package_url",
+        "inferred_url",
+    )
     form = PackageAdminForm
     importer_class = PackageImporter
     mass_update_form = PackageMassUpdateForm

@@ -20,7 +20,16 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  setup_awesomplete_builder($('#id_scan-to-package-license_expression').get(0));
-});
+  const ScanToPackagelicenseExpressionInputIds = [
+    'id_scan-to-package-license_expression',
+    'id_scan-to-package-declared_license_expression',
+    'id_scan-to-package-other_license_expression'
+  ];
+
+  ScanToPackagelicenseExpressionInputIds.forEach(function(id) {
+    const licenseExpressionInput = document.getElementById(id);
+    if (licenseExpressionInput) {
+      setup_awesomplete_builder(licenseExpressionInput);
+    }
+  });
 </script>

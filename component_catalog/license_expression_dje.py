@@ -9,6 +9,7 @@
 from collections import defaultdict
 from itertools import chain
 
+from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.forms import widgets
 from django.urls import reverse
@@ -23,6 +24,8 @@ from license_expression import ParseError
 from dje.widgets import AwesompleteInputWidgetMixin
 from license_library.models import License
 
+licensing_cache = caches["licensing"]
+
 
 def build_licensing(licenses=None):
     """
@@ -32,6 +35,39 @@ def build_licensing(licenses=None):
     if isinstance(licenses, Licensing):
         return licenses
     return Licensing(licenses)
+
+
+def fetch_licensing_for_dataspace(dataspace, license_keys=None):
+    """
+    Return a Licensing object for the provided ``dataspace``.
+    An optional list of ``license_keys`` can be provided to limit the licenses
+    included in the Licensing object.
+    """
+    license_qs = License.objects.scope(dataspace).for_expression(license_keys)
+    licensing = build_licensing(license_qs)
+    return licensing
+
+
+def get_dataspace_licensing(dataspace, license_keys=None):
+    """
+    Return a Licensing object for the provided ``dataspace``.
+    The Licensing object is put in the cache for 5 minutes.
+    Note that the cache is not used when ``license_keys`` are provided.
+    """
+    if license_keys is not None:
+        # Bypass cache if license_keys is provided
+        return fetch_licensing_for_dataspace(dataspace, license_keys)
+
+    cache_key = str({dataspace.name})
+    # First look in the cache for an existing Licensing for this Dataspace
+    licensing = licensing_cache.get(cache_key)
+
+    if licensing is None:
+        # If not cached, compute the value and cache it
+        licensing = fetch_licensing_for_dataspace(dataspace, license_keys)
+        licensing_cache.set(cache_key, licensing, timeout=600)  # 10 minutes
+
+    return licensing
 
 
 def parse_expression(
@@ -276,6 +312,14 @@ class LicenseExpressionFormMixin:
         # or without `license_expression` value.
         return self.clean_expression_base(expression)
 
+    def clean_declared_license_expression(self):
+        expression = self.cleaned_data.get("declared_license_expression")
+        return self.clean_expression_base(expression)
+
+    def clean_other_license_expression(self):
+        expression = self.cleaned_data.get("other_license_expression")
+        return self.clean_expression_base(expression)
+
     def clean_expression_base(self, expression):
         """
         Return a normalized license expression string validated against
@@ -373,12 +417,6 @@ def get_unique_license_keys(license_expression):
     return {symbol.key for symbol in symbols}
 
 
-def get_licensing_for_formatted_render(dataspace, show_policy=False, license_keys=None):
-    license_qs = License.objects.scope(dataspace).for_expression(show_policy, license_keys)
-    licensing = build_licensing(license_qs)
-    return licensing
-
-
 def get_formatted_expression(licensing, license_expression, show_policy, show_category=False):
     normalized = parse_expression(
         license_expression, licenses=licensing, validate_known=False, validate_strict=False
@@ -386,3 +424,19 @@ def get_formatted_expression(licensing, license_expression, show_policy, show_ca
     return normalized.render_as_readable(
         as_link=True, show_policy=show_policy, show_category=show_category
     )
+
+
+def render_expression_as_html(expression, dataspace):
+    """Return the ``expression`` as rendered HTML content."""
+    show_policy = dataspace.show_usage_policy_in_user_views
+    licensing = get_dataspace_licensing(dataspace)
+
+    formatted_expression = get_formatted_expression(licensing, expression, show_policy)
+    return format_html(formatted_expression)
+
+
+def get_expression_as_spdx(expression, dataspace):
+    """Return an SPDX license expression built from the ``expression``."""
+    licensing = get_dataspace_licensing(dataspace)
+    parsed_expression = parse_expression(expression, licensing)
+    return parsed_expression.render(template="{symbol.spdx_id}")

@@ -911,7 +911,7 @@ class PullProjectDataForm(forms.Form):
         return helper
 
     def get_project_data(self, project_name_or_uuid, user):
-        scancodeio = ScanCodeIO(user)
+        scancodeio = ScanCodeIO(user.dataspace)
         for field_name in ["name", "uuid"]:
             project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
             if project_data:

@@ -381,6 +381,7 @@ SHOW_PP_IN_NAV = env.bool("SHOW_PP_IN_NAV", default=True)
 
 # An integer specifying how many objects should be displayed per page.
 PAGINATE_BY = env.int("PAGINATE_BY", default=None)
+TAB_PAGINATE_BY = env.int("TAB_PAGINATE_BY", default=100)
 
 ADMIN_FORMS_CONFIGURATION = env.dict("ADMIN_FORMS_CONFIGURATION", default={})
 
@@ -416,6 +417,12 @@ CACHES = {
         "BACKEND": CACHE_BACKEND,
         "LOCATION": REDIS_URL,
         "TIMEOUT": 900,  # 15 minutes, in seconds
+    },
+    "licensing": {
+        "BACKEND": CACHE_BACKEND,
+        "LOCATION": REDIS_URL,
+        "TIMEOUT": 300,  # 10 minutes, in seconds
+        "KEY_PREFIX": "licensing",
     },
     "vulnerabilities": {
         "BACKEND": CACHE_BACKEND,

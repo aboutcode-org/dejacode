@@ -26,4 +26,4 @@ class UsagePolicyWidgetWrapper(RelatedFieldWidgetWrapper):
                 self.object_instance.policy_from_primary_license,
             )
 
-        return rendered + value_from_license
+        return format_html("{}{}", rendered, value_from_license)

@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import EMPTY_VALUES
 from django.db import models
 from django.db.models.options import Options
 from django.http.request import HttpRequest
@@ -29,6 +30,7 @@ from django.utils.html import mark_safe
 from django.utils.http import urlencode
 
 import requests
+from packageurl import PackageURL
 
 
 def has_permission(model, user, action):
@@ -612,3 +614,31 @@ def get_cpe_vuln_link(cpe):
 def safe_filename(filename):
     """Convert provided `name` to a safe filename."""
     return re.sub("[^A-Za-z0-9.-]+", "_", filename).lower()
+
+
+def is_purl_str(url, validate=False):
+    """
+    Check if a given URL string is a Package URL (purl).
+
+    If ``validate`` is proviuded, validate the purl format using the
+    PackageURL class. If False, simply check if the string starts with
+    "pkg:".
+    """
+    if not validate:
+        return url.startswith("pkg:")
+
+    try:
+        PackageURL.from_string(purl=url)
+    except ValueError:
+        return False
+    return True
+
+
+def remove_empty_values(input_dict):
+    """
+    Return a new dict not including empty value entries from `input_dict`.
+
+    None, empty string, empty list, and empty dict/set are cleaned.
+    `0` and `False` values are kept.
+    """
+    return {key: value for key, value in input_dict.items() if value not in EMPTY_VALUES}

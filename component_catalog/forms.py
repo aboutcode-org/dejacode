@@ -14,6 +14,7 @@ from django.forms import modelform_factory
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.functional import cached_property
+from django.utils.text import Truncator
 
 import packageurl
 from crispy_forms.helper import FormHelper
@@ -82,6 +83,11 @@ class ComponentForm(
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
     save_as = True
     clone_m2m_classes = [
         ComponentAssignedPackage,
@@ -106,6 +112,8 @@ class ComponentForm(
             "holder",
             "notice_text",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "release_date",
             "description",
             "homepage_url",
@@ -130,6 +138,8 @@ class ComponentForm(
             "owner": OwnerChoiceField,
         }
         widgets = {
+            "declared_license_expression": forms.Textarea(attrs={"rows": 2}),
+            "other_license_expression": forms.Textarea(attrs={"rows": 2}),
             "copyright": forms.Textarea(attrs={"rows": 2}),
             "notice_text": forms.Textarea(attrs={"rows": 2}),
             "description": forms.Textarea(attrs={"rows": 2}),
@@ -188,6 +198,7 @@ class ComponentForm(
                 Group("name", "version", "owner"),
                 HTML("<hr>"),
                 "license_expression",
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "holder"),
                 "notice_text",
                 Group("notice_filename", "notice_url"),
@@ -267,6 +278,11 @@ class PackageForm(
     PackageFieldsValidationMixin,
     DataspacedModelForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
     save_as = True
     color_initial = True
 
@@ -299,6 +315,8 @@ class PackageForm(
             "notes",
             "usage_policy",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "copyright",
             "holder",
             "author",
@@ -320,6 +338,8 @@ class PackageForm(
             "collect_data",
         ]
         widgets = {
+            "declared_license_expression": forms.Textarea(attrs={"rows": 2}),
+            "other_license_expression": forms.Textarea(attrs={"rows": 2}),
             "description": forms.Textarea(attrs={"rows": 2}),
             "notes": forms.Textarea(attrs={"rows": 2}),
             "copyright": forms.Textarea(attrs={"rows": 2}),
@@ -337,7 +357,7 @@ class PackageForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        scancodeio = ScanCodeIO(self.user)
+        scancodeio = ScanCodeIO(self.dataspace)
         self.submit_scan_enabled = all(
             [
                 self.is_addition,
@@ -377,6 +397,7 @@ class PackageForm(
                 Group("version", "qualifiers", "subpath"),
                 HTML("<hr>"),
                 "license_expression",
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "notice_text"),
                 Group("holder", "author"),
                 HTML("<hr>"),
@@ -429,6 +450,12 @@ class PackageForm(
 
 
 class BaseScanToPackageForm(LicenseExpressionFormMixin, DataspacedModelForm):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     @property
     def helper(self):
         helper = FormHelper()
@@ -451,6 +478,8 @@ class ScanToPackageForm(BaseScanToPackageForm):
         fields = [
             "package_url",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "copyright",
             "primary_language",
             "description",
@@ -482,6 +511,12 @@ class ScanToPackageForm(BaseScanToPackageForm):
     def fields_with_initial_value(self):
         kept_fields = {}
 
+        # Duplicate the declared_license_expression into the license_expression field
+        # if currently empty on the Package instance.
+        if not self.instance.license_expression:
+            if declared_license_expression := self.initial.get("declared_license_expression"):
+                self.initial["license_expression"] = declared_license_expression
+
         for field_name, field in self.fields.items():
             if not self.initial.get(field_name):
                 continue
@@ -489,7 +524,7 @@ class ScanToPackageForm(BaseScanToPackageForm):
             instance_value = getattr(self.instance, field_name, None)
             help_text = "No current value"
             if instance_value:
-                help_text = f"Current value: {instance_value}"
+                help_text = f"Current value: {Truncator(instance_value).chars(200)}"
             field.help_text = help_text
 
             kept_fields[field_name] = field
@@ -524,6 +559,8 @@ class ScanSummaryToPackageForm(BaseScanToPackageForm):
         model = Package
         fields = [
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "primary_language",
             "holder",
         ]
@@ -542,7 +579,7 @@ class ScanSummaryToPackageForm(BaseScanToPackageForm):
             instance_value = getattr(self.instance, field_name, None)
             help_text = "No current value"
             if instance_value:
-                help_text = f"Current value: {instance_value}"
+                help_text = f"Current value: {Truncator(instance_value).chars(200)}"
             field.help_text = help_text
 
 
@@ -922,6 +959,12 @@ class ComponentAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
@@ -956,6 +999,12 @@ class PackageAdminForm(
     SetKeywordsChoicesFormMixin,
     DataspacedAdminForm,
 ):
+    expression_field_names = [
+        "license_expression",
+        "declared_license_expression",
+        "other_license_expression",
+    ]
+
     keywords = JSONListField(
         required=False,
         widget=AdminAwesompleteInputWidget(attrs=autocomplete_placeholder),
@@ -1043,7 +1092,6 @@ class ComponentMassUpdateForm(
             "ip_sensitivity_approved",
             "affiliate_obligations",
             "affiliate_obligation_triggers",
-            "concluded_license",
             "legal_comments",
             "sublicense_allowed",
             "express_patent_grant",

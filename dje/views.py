@@ -37,6 +37,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.staticfiles import finders
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.core.validators import EMPTY_VALUES
 from django.db import models
 from django.db.models import Value
 from django.db.models.functions import Concat
@@ -73,6 +74,7 @@ from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
 from component_catalog.license_expression_dje import get_license_objects
+from component_catalog.license_expression_dje import render_expression_as_html
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -807,9 +809,8 @@ class TabSetMixin:
         Return list of fields suitable for the tab templates display using a list
         of `TabField` as input.
         """
-        EMPTY_VALUES = ("", None, [])  # Used for conditions without absorbing `False` values.
-
         fields = []
+
         for tab_field in tab_fields:
             if not isinstance(tab_field, TabField):
                 fields.append(tab_field)
@@ -905,21 +906,26 @@ class TabSetMixin:
     def tab_license(self):
         """Return a mapping of data for use in the license tab display or None."""
         obj = self.object
-        licenses = get_license_objects(obj.license_expression, obj.licensing)
+        tab_fields = []
 
-        if not licenses:
-            return
+        license_fields = [
+            "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
+        ]
 
-        show_usage_policy = self.request.user.dataspace.show_usage_policy_in_user_views
-
-        licence_expression_source = "license_expression_linked"
-        if show_usage_policy:
-            licence_expression_source = "get_license_expression_linked_with_policy"
-
-        fields = [TabField("license_expression", source=licence_expression_source)]
+        for license_field in license_fields:
+            if expression := getattr(obj, license_field, None):
+                rendered_expression = render_expression_as_html(expression, obj.dataspace)
+                tab_fields.append(TabField(license_field, value=rendered_expression))
 
         if getattr(obj, "reference_notes", False):
-            fields.append(TabField("reference_notes"))
+            tab_fields.append(TabField("reference_notes"))
+
+        fields = self.get_tab_fields(tab_fields)
+        # At least 1 value need to be set for the tab to be available.
+        if not any([1 for field in fields if field[1]]):
+            return
 
         license_conditions_help = _(
             "A list of all the license conditions (obligations, restrictions, policies) that "
@@ -928,6 +934,7 @@ class TabSetMixin:
         )
 
         licenses_per_table = 4
+        licenses = get_license_objects(obj.license_expression, obj.licensing)
         licenses_tables = chunked(licenses, chunk_size=licenses_per_table)
 
         help_texts = {
@@ -945,7 +952,7 @@ class TabSetMixin:
         }
 
         return {
-            "fields": self.get_tab_fields(fields),
+            "fields": fields,
             "extra": extra,
         }
 
@@ -1840,9 +1847,11 @@ class GlobalSearchListView(AcceptAnonymousMixin, TemplateView):
                 }
             )
 
-        context["include_purldb"] = all(
-            [user_dataspace.enable_purldb_access, PurlDB(user).is_available()]
-        )
+        include_purldb_conditions = [
+            user_dataspace.enable_purldb_access,
+            PurlDB(user_dataspace).is_available(),
+        ]
+        context["include_purldb"] = all(include_purldb_conditions)
 
         return context
 
@@ -2291,7 +2300,7 @@ class IntegrationsStatusView(
         is_available = False
         error_log = ""
 
-        integration = integration_class(user=self.request.user)
+        integration = integration_class(dataspace=self.request.user.dataspace)
 
         if integration.is_configured():
             is_configured = True

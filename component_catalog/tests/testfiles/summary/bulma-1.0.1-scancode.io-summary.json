@@ -1,0 +1,857 @@
+{
+  "declared_license_expression": "mit",
+  "license_clarity_score": {
+    "score": 100,
+    "declared_license": true,
+    "identification_precision": true,
+    "has_license_text": true,
+    "declared_copyrights": true,
+    "conflicting_license_categories": false,
+    "ambiguous_compound_licensing": false
+  },
+  "declared_holder": "Jeremy Thomas",
+  "primary_language": "JavaScript",
+  "other_license_expressions": [
+    {
+      "value": null,
+      "count": 78
+    }
+  ],
+  "other_holders": [
+    {
+      "value": null,
+      "count": 95
+    }
+  ],
+  "other_languages": [
+    {
+      "value": "SCSS",
+      "count": 79
+    },
+    {
+      "value": "CSS",
+      "count": 10
+    }
+  ],
+  "license_matches": {
+    "mit": {
+      "bulma/bulma.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        }
+      ],
+      "bulma/css/bulma.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */"
+            }
+          ]
+        }
+      ],
+      "bulma/css/bulma.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-c50f9352-032a-ddb1-9025-a7ee1bf1bc68",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-dark-mode.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-dark-mode.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-c50f9352-032a-ddb1-9025-a7ee1bf1bc68",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-helpers-prefixed.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-helpers-prefixed.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-c50f9352-032a-ddb1-9025-a7ee1bf1bc68",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-helpers.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-no-helpers.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-c50f9352-032a-ddb1-9025-a7ee1bf1bc68",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-prefixed.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        },
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */"
+            }
+          ]
+        }
+      ],
+      "bulma/css/versions/bulma-prefixed.min.min.css": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-c50f9352-032a-ddb1-9025-a7ee1bf1bc68",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "MIT License |"
+            }
+          ]
+        }
+      ],
+      "bulma/LICENSE": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-86fcf017-3572-9813-b7e8-0a10ec4a120f",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "The MIT License (MIT)"
+            },
+            {
+              "license_expression": "mit",
+              "matched_text": "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
+            }
+          ]
+        }
+      ],
+      "bulma/package.json": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-3fce6ea2-8abd-6c6b-3ede-a37af7c6efee",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "  \"license\": \"MIT\","
+            }
+          ]
+        }
+      ],
+      "bulma/README.md": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-41aa7391-2954-eeff-a675-96bbbbe95fac",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "Code copyright 2023 Jeremy Thomas. Code released under [the MIT license](https://github.com/jgthms/bulma/blob/master/LICENSE)."
+            }
+          ]
+        }
+      ],
+      "bulma/sass/base/minireset.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */"
+            }
+          ]
+        }
+      ],
+      "bulma/versions/bulma-no-dark-mode.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        }
+      ],
+      "bulma/versions/bulma-no-helpers-prefixed.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        }
+      ],
+      "bulma/versions/bulma-no-helpers.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        }
+      ],
+      "bulma/versions/bulma-prefixed.scss": [
+        {
+          "license_expression": "mit",
+          "identifier": "mit-9967e727-165e-9bb5-f090-7de5e47a3929",
+          "matches": [
+            {
+              "license_expression": "mit",
+              "matched_text": "/*! bulma.io v1.0.1 | MIT License | github.com/jgthms/bulma */"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "key_files": [
+    {
+      "path": "bulma/LICENSE",
+      "type": "file",
+      "name": "LICENSE",
+      "status": "application-package",
+      "tag": "",
+      "extension": "",
+      "size": 1080,
+      "md5": "16e628e0d477a68ff9f64b315ca323fe",
+      "sha1": "d1a6c419a8de920621dd00a1494dadec7c6d295d",
+      "sha256": "fbe7d8ec18b72eded15d79ca73da5eef9e8e258f5f1aff83e4e993e69752279c",
+      "sha512": "",
+      "mime_type": "text/plain",
+      "file_type": "ASCII text",
+      "programming_language": "",
+      "is_binary": false,
+      "is_text": true,
+      "is_archive": false,
+      "is_media": false,
+      "is_legal": true,
+      "is_manifest": false,
+      "is_readme": false,
+      "is_top_level": true,
+      "is_key_file": true,
+      "detected_license_expression": "mit",
+      "detected_license_expression_spdx": "MIT",
+      "license_detections": [
+        {
+          "matches": [
+            {
+              "score": 100.0,
+              "matcher": "2-aho",
+              "end_line": 1,
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/rules/mit_26.RULE",
+              "from_file": "codebase/bulma/LICENSE",
+              "start_line": 1,
+              "matched_text": "The MIT License (MIT)",
+              "match_coverage": 100.0,
+              "matched_length": 4,
+              "rule_relevance": 100,
+              "rule_identifier": "mit_26.RULE",
+              "license_expression": "mit",
+              "spdx_license_expression": "MIT"
+            },
+            {
+              "score": 100.0,
+              "matcher": "2-aho",
+              "end_line": 21,
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.LICENSE",
+              "from_file": "codebase/bulma/LICENSE",
+              "start_line": 5,
+              "matched_text": "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
+              "match_coverage": 100.0,
+              "matched_length": 161,
+              "rule_relevance": 100,
+              "rule_identifier": "mit.LICENSE",
+              "license_expression": "mit",
+              "spdx_license_expression": "MIT"
+            }
+          ],
+          "identifier": "mit-86fcf017-3572-9813-b7e8-0a10ec4a120f",
+          "license_expression": "mit",
+          "license_expression_spdx": "MIT"
+        }
+      ],
+      "license_clues": [],
+      "percentage_of_license_text": 97.06,
+      "compliance_alert": "ok",
+      "copyrights": [
+        {
+          "end_line": 3,
+          "copyright": "Copyright (c) 2023 Jeremy Thomas",
+          "start_line": 3
+        }
+      ],
+      "holders": [
+        {
+          "holder": "Jeremy Thomas",
+          "end_line": 3,
+          "start_line": 3
+        }
+      ],
+      "authors": [],
+      "package_data": [],
+      "for_packages": [
+        "pkg:npm/bulma@1.0.1?uuid=1de014bd-4e4a-4f1a-a9d2-f1a4399597cd"
+      ],
+      "emails": [],
+      "urls": [],
+      "extra_data": {},
+      "content": "The MIT License (MIT)\n\nCopyright (c) 2023 Jeremy Thomas\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+    },
+    {
+      "path": "bulma/README.md",
+      "type": "file",
+      "name": "README.md",
+      "status": "application-package",
+      "tag": "",
+      "extension": ".md",
+      "size": 14237,
+      "md5": "315dabfc696c5a7002af4448a78f7361",
+      "sha1": "c10a9c074f22a03e405df4fe50720507d81b0a5e",
+      "sha256": "673e5347d450e9084674f9a9ee0df67656e548e736be31756fa2ec13c503d26d",
+      "sha512": "",
+      "mime_type": "text/html",
+      "file_type": "HTML document, Unicode text, UTF-8 text",
+      "programming_language": "",
+      "is_binary": false,
+      "is_text": true,
+      "is_archive": false,
+      "is_media": false,
+      "is_legal": false,
+      "is_manifest": false,
+      "is_readme": true,
+      "is_top_level": true,
+      "is_key_file": true,
+      "detected_license_expression": "mit",
+      "detected_license_expression_spdx": "MIT",
+      "license_detections": [
+        {
+          "matches": [
+            {
+              "score": 100.0,
+              "matcher": "2-aho",
+              "end_line": 139,
+              "rule_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/rules/mit_145.RULE",
+              "from_file": "codebase/bulma/README.md",
+              "start_line": 139,
+              "matched_text": "Code copyright 2023 Jeremy Thomas. Code released under [the MIT license](https://github.com/jgthms/bulma/blob/master/LICENSE).",
+              "match_coverage": 100.0,
+              "matched_length": 6,
+              "rule_relevance": 100,
+              "rule_identifier": "mit_145.RULE",
+              "license_expression": "mit",
+              "spdx_license_expression": "MIT"
+            }
+          ],
+          "identifier": "mit-41aa7391-2954-eeff-a675-96bbbbe95fac",
+          "license_expression": "mit",
+          "license_expression_spdx": "MIT"
+        }
+      ],
+      "license_clues": [],
+      "percentage_of_license_text": 0.46,
+      "compliance_alert": "ok",
+      "copyrights": [
+        {
+          "end_line": 139,
+          "copyright": "copyright 2023 Jeremy Thomas",
+          "start_line": 139
+        }
+      ],
+      "holders": [
+        {
+          "holder": "Jeremy Thomas",
+          "end_line": 139,
+          "start_line": 139
+        }
+      ],
+      "authors": [],
+      "package_data": [],
+      "for_packages": [
+        "pkg:npm/bulma@1.0.1?uuid=1de014bd-4e4a-4f1a-a9d2-f1a4399597cd"
+      ],
+      "emails": [],
+      "urls": [
+        {
+          "url": "https://bulma.io/",
+          "end_line": 1,
+          "start_line": 1
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes",
+          "end_line": 3,
+          "start_line": 3
+        },
+        {
+          "url": "https://img.shields.io/github/v/release/jgthms/bulma?logo=Bulma",
+          "end_line": 5,
+          "start_line": 5
+        },
+        {
+          "url": "https://img.shields.io/npm/v/bulma.svg",
+          "end_line": 6,
+          "start_line": 6
+        },
+        {
+          "url": "https://img.shields.io/npm/dm/bulma.svg",
+          "end_line": 7,
+          "start_line": 7
+        },
+        {
+          "url": "https://data.jsdelivr.com/v1/package/npm/bulma/badge",
+          "end_line": 8,
+          "start_line": 8
+        },
+        {
+          "url": "https://www.jsdelivr.com/package/npm/bulma",
+          "end_line": 8,
+          "start_line": 8
+        },
+        {
+          "url": "https://gitter.im/jgthms/bulma",
+          "end_line": 10,
+          "start_line": 10
+        },
+        {
+          "url": "https://badges.gitter.im/jgthms/bulma.svg",
+          "end_line": 10,
+          "start_line": 10
+        },
+        {
+          "url": "https://travis-ci.org/jgthms/bulma.svg?branch=master",
+          "end_line": 11,
+          "start_line": 11
+        },
+        {
+          "url": "https://travis-ci.org/jgthms/bulma",
+          "end_line": 11,
+          "start_line": 11
+        },
+        {
+          "url": "https://github.com/jgthms/bulma/blob/master/css/bulma.css",
+          "end_line": 55,
+          "start_line": 55
+        },
+        {
+          "url": "https://bulma.io/documentation/overview/variables",
+          "end_line": 57,
+          "start_line": 57
+        },
+        {
+          "url": "https://github.com/postcss/autoprefixer",
+          "end_line": 63,
+          "start_line": 63
+        },
+        {
+          "url": "https://caniuse.com/#feat=flexbox",
+          "end_line": 63,
+          "start_line": 63
+        },
+        {
+          "url": "https://jekyllrb.com/",
+          "end_line": 75,
+          "start_line": 75
+        },
+        {
+          "url": "https://bulma.io/documentation/start/overview",
+          "end_line": 77,
+          "start_line": 77
+        },
+        {
+          "url": "https://github.com/j5bot/bulma-attribute-selectors",
+          "end_line": 83,
+          "start_line": 83
+        },
+        {
+          "url": "https://github.com/joshuajansen/bulma-rails",
+          "end_line": 84,
+          "start_line": 84
+        },
+        {
+          "url": "https://github.com/loogn/bulmarazor",
+          "end_line": 85,
+          "start_line": 85
+        },
+        {
+          "url": "https://github.com/vue-bulma/vue-admin",
+          "end_line": 86,
+          "start_line": 86
+        },
+        {
+          "url": "https://github.com/jenil/bulmaswatch",
+          "end_line": 87,
+          "start_line": 87
+        },
+        {
+          "url": "https://github.com/Caiyeon/goldfish",
+          "end_line": 88,
+          "start_line": 88
+        },
+        {
+          "url": "https://github.com/open-tux/ember-bulma",
+          "end_line": 89,
+          "start_line": 89
+        },
+        {
+          "url": "https://bloomer.js.org/",
+          "end_line": 90,
+          "start_line": 90
+        },
+        {
+          "url": "https://github.com/kulakowka/react-bulma",
+          "end_line": 91,
+          "start_line": 91
+        },
+        {
+          "url": "https://buefy.org/",
+          "end_line": 92,
+          "start_line": 92
+        },
+        {
+          "url": "https://github.com/vouill/vue-bulma-components",
+          "end_line": 93,
+          "start_line": 93
+        },
+        {
+          "url": "https://github.com/VizuaaLOG/BulmaJS",
+          "end_line": 94,
+          "start_line": 94
+        },
+        {
+          "url": "https://github.com/postare/bulma-modal-fx",
+          "end_line": 95,
+          "start_line": 95
+        },
+        {
+          "url": "https://github.com/groenroos/bulma-stylus",
+          "end_line": 96,
+          "start_line": 96
+        },
+        {
+          "url": "https://github.com/log1x/bulma.styl",
+          "end_line": 97,
+          "start_line": 97
+        },
+        {
+          "url": "https://github.com/surprisetalk/elm-bulma",
+          "end_line": 98,
+          "start_line": 98
+        },
+        {
+          "url": "https://github.com/ahstro/elm-bulma-classes",
+          "end_line": 99,
+          "start_line": 99
+        },
+        {
+          "url": "https://bulma-customizer.bstash.io/",
+          "end_line": 100,
+          "start_line": 100
+        },
+        {
+          "url": "https://fulma.github.io/Fulma",
+          "end_line": 101,
+          "start_line": 101
+        },
+        {
+          "url": "https://github.com/fable-compiler/fable-react",
+          "end_line": 101,
+          "start_line": 101
+        },
+        {
+          "url": "https://github.com/laravel-enso/enso",
+          "end_line": 102,
+          "start_line": 102
+        },
+        {
+          "url": "https://github.com/timonweb/django-bulma",
+          "end_line": 103,
+          "start_line": 103
+        },
+        {
+          "url": "https://github.com/dansup/bulma-templates",
+          "end_line": 104,
+          "start_line": 104
+        },
+        {
+          "url": "https://github.com/couds/react-bulma-components",
+          "end_line": 105,
+          "start_line": 105
+        },
+        {
+          "url": "https://github.com/sectore/purescript-bulma",
+          "end_line": 106,
+          "start_line": 106
+        },
+        {
+          "url": "https://github.com/laravel-enso/vuedatatable",
+          "end_line": 107,
+          "start_line": 107
+        },
+        {
+          "url": "https://mubaidr.github.io/bulma-fluent",
+          "end_line": 108,
+          "start_line": 108
+        },
+        {
+          "url": "https://github.com/4d11/csskrt-csskrt",
+          "end_line": 109,
+          "start_line": 109
+        },
+        {
+          "url": "https://github.com/hipstersmoothie/bulma-pagination-react",
+          "end_line": 110,
+          "start_line": 110
+        },
+        {
+          "url": "https://github.com/jmaczan/bulma-helpers",
+          "end_line": 111,
+          "start_line": 111
+        },
+        {
+          "url": "https://github.com/hipstersmoothie/bulma-swatch-hook",
+          "end_line": 112,
+          "start_line": 112
+        },
+        {
+          "url": "https://github.com/tomhrtly/BulmaWP",
+          "end_line": 113,
+          "start_line": 113
+        },
+        {
+          "url": "https://github.com/aldi/ralma",
+          "end_line": 114,
+          "start_line": 114
+        }
+      ],
+      "extra_data": {},
+      "content": "# [Bulma](https://bulma.io)\n\nBulma is a **modern CSS framework** based on [Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes).\n\n![Github](https://img.shields.io/github/v/release/jgthms/bulma?logo=Bulma)\n[![npm](https://img.shields.io/npm/v/bulma.svg)][npm-link]\n[![npm](https://img.shields.io/npm/dm/bulma.svg)][npm-link]\n[![](https://data.jsdelivr.com/v1/package/npm/bulma/badge)](https://www.jsdelivr.com/package/npm/bulma)\n[![Awesome][awesome-badge]][awesome-link]\n[![Join the chat at https://gitter.im/jgthms/bulma](https://badges.gitter.im/jgthms/bulma.svg)](https://gitter.im/jgthms/bulma)\n[![Build Status](https://travis-ci.org/jgthms/bulma.svg?branch=master)](https://travis-ci.org/jgthms/bulma)\n\n<a href=\"https://bulma.io\"><img src=\"https://raw.githubusercontent.com/jgthms/bulma/master/docs/images/bulma-banner.png\" alt=\"Bulma: a Flexbox CSS framework\" style=\"max-width:100%;\" width=\"600\"></a>\n\n## Quick install\n\nBulma is constantly in development! Try it out now:\n\n### NPM\n\n```sh\nnpm install bulma\n```\n\n**or**\n\n### Yarn\n\n```sh\nyarn add bulma\n```\n\n### Bower\n\n```sh\nbower install bulma\n```\n\n### Import\n\nAfter installation, you can import the CSS file into your project using this snippet:\n\n```sh\n@import 'bulma/css/bulma.css'\n```\n\n### CDN\n\n[https://www.jsdelivr.com/package/npm/bulma](https://www.jsdelivr.com/package/npm/bulma)\n\nFeel free to raise an issue or submit a pull request.\n\n## CSS only\n\nBulma is a **CSS** framework. As such, the sole output is a single CSS file: [bulma.css](https://github.com/jgthms/bulma/blob/master/css/bulma.css)\n\nYou can either use that file, \"out of the box\", or download the Sass source files to customize the [variables](https://bulma.io/documentation/overview/variables/).\n\nThere is **no** JavaScript included. People generally want to use their own JS implementation (and usually already have one). Bulma can be considered \"environment agnostic\": it's just the style layer on top of the logic.\n\n## Browser Support\n\nBulma uses [autoprefixer](https://github.com/postcss/autoprefixer) to make (most) Flexbox features compatible with earlier browser versions. According to [Can I use](https://caniuse.com/#feat=flexbox), Bulma is compatible with **recent** versions of:\n\n- Chrome\n- Edge\n- Firefox\n- Opera\n- Safari\n\nInternet Explorer (10+) is only partially supported.\n\n## Documentation\n\nThe documentation resides in the [docs](docs) directory, and is built with the Ruby-based [Jekyll](https://jekyllrb.com/) tool.\n\nBrowse the [online documentation here.](https://bulma.io/documentation/start/overview/)\n\n## Related projects\n\n| Project                                                                              | Description                                                                                                      |\n| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |\n| [Bulma with Attribute Modules](https://github.com/j5bot/bulma-attribute-selectors)   | Adds support for attribute-based selectors                                                                       |\n| [Bulma with Rails](https://github.com/joshuajansen/bulma-rails)                      | Integrates Bulma with the rails asset pipeline                                                                   |\n| [BulmaRazor](https://github.com/loogn/bulmarazor)                                    | A lightweight component library based on Bulma and Blazor.                                                       |\n| [Vue Admin (dead)](https://github.com/vue-bulma/vue-admin)                           | Vue Admin framework powered by Bulma                                                                             |\n| [Bulmaswatch](https://github.com/jenil/bulmaswatch)                                  | Free themes for Bulma                                                                                            |\n| [Goldfish (read-only)](https://github.com/Caiyeon/goldfish)                          | Vault UI with Bulma, Golang, and Vue Admin                                                                       |\n| [ember-bulma](https://github.com/open-tux/ember-bulma)                               | Ember addon providing a collection of UI components for Bulma                                                    |\n| [Bloomer](https://bloomer.js.org)                                                    | A set of React components for Bulma                                                                              |\n| [React-bulma](https://github.com/kulakowka/react-bulma)                              | React.js components for Bulma                                                                                    |\n| [Buefy](https://buefy.org/)                                                          | Lightweight UI components for Vue.js based on Bulma                                                              |\n| [vue-bulma-components](https://github.com/vouill/vue-bulma-components)               | Bulma components for Vue.js with straightforward syntax                                                          |\n| [BulmaJS](https://github.com/VizuaaLOG/BulmaJS)                                      | Javascript integration for Bulma. Written in ES6 with a data-\\* API                                              |\n| [Bulma-modal-fx](https://github.com/postare/bulma-modal-fx)                          | A set of modal window effects with CSS transitions and animations for Bulma                                      |\n| [Bulma Stylus](https://github.com/groenroos/bulma-stylus)                            | Up-to-date 1:1 translation to Stylus                                                                             |\n| [Bulma.styl (read-only)](https://github.com/log1x/bulma.styl)                        | 1:1 Stylus translation of Bulma 0.6.11                                                                           |\n| [elm-bulma](https://github.com/surprisetalk/elm-bulma)                               | Bulma + Elm                                                                                                      |\n| [elm-bulma-classes](https://github.com/ahstro/elm-bulma-classes)                     | Bulma classes prepared for usage with Elm                                                                        |\n| [Bulma Customizer](https://bulma-customizer.bstash.io/)                              | Bulma Customizer &#8211; Create your own **bespoke** Bulma build                                                 |\n| [Fulma](https://fulma.github.io/Fulma/)                                              | Wrapper around Bulma for [fable-react](https://github.com/fable-compiler/fable-react)                            |\n| [Laravel Enso](https://github.com/laravel-enso/enso)                                 | SPA Admin Panel built with Bulma, VueJS and Laravel                                                              |\n| [Django Bulma](https://github.com/timonweb/django-bulma)                             | Integrates Bulma with Django                                                                                     |\n| [Bulma Templates](https://github.com/dansup/bulma-templates)                         | Free Templates for Bulma                                                                                         |\n| [React Bulma Components](https://github.com/couds/react-bulma-components)            | Another React wrap on React for Bulma.io                                                                         |\n| [purescript-bulma](https://github.com/sectore/purescript-bulma)                      | PureScript bindings for Bulma                                                                                    |\n| [Vue Datatable](https://github.com/laravel-enso/vuedatatable)                        | Bulma themed datatable based on Vue, Laravel & JSON templates                                                    |\n| [bulma-fluent](https://mubaidr.github.io/bulma-fluent/)                              | Fluent Design Theme for Bulma inspired by Microsoft’s Fluent Design System                                       |\n| [csskrt-csskrt](https://github.com/4d11/csskrt-csskrt)                               | Automatically add Bulma classes to HTML files                                                                    |\n| [bulma-pagination-react](https://github.com/hipstersmoothie/bulma-pagination-react)  | Bulma pagination as a react component                                                                            |\n| [bulma-helpers](https://github.com/jmaczan/bulma-helpers)                            | Functional / Atomic CSS classes for Bulma                                                                        |\n| [bulma-swatch-hook](https://github.com/hipstersmoothie/bulma-swatch-hook)            | Bulma swatches as a react hook and a component                                                                   |\n| [BulmaWP (read-only)](https://github.com/tomhrtly/BulmaWP)                           | Starter WordPress theme for Bulma                                                                                |\n| [Ralma](https://github.com/aldi/ralma)                                               | Stateless Ractive.js Components for Bulma                                                                        |\n| [Django Simple Bulma](https://github.com/python-discord/django-simple-bulma)         | Lightweight integration of Bulma and Bulma-Extensions for your Django app                                        |\n| [rbx](https://dfee.github.io/rbx)                                                    | Comprehensive React UI Framework written in TypeScript                                                           |\n| [Awesome Bulma Templates](https://github.com/aldi/awesome-bulma-templates)           | Free real-world Templates built with Bulma                                                                       |\n| [Trunx](https://github.com/fibo/trunx)                                               | Super Saiyan React components, son of awesome Bulma |\n| [@aybolit/bulma](https://github.com/web-padawan/aybolit/tree/master/packages/bulma)  | Web Components library inspired by Bulma and Bulma-extensions                                                    |\n| [Drulma](https://www.drupal.org/project/drulma)                                      | Drupal theme for Bulma.                                                                                          |\n| [Bulrush](https://github.com/textbook/bulrush)                                       | A Bulma-based Python Pelican blog theme                                                                          |\n| [Bulma Variable Export](https://github.com/service-paradis/bulma-variables-export)   | Access Bulma Variables in Javascript/Typescript in project using Webpack                                         |\n| [Bulmil](https://github.com/gomah/bulmil)                                            | An agnostic UI components library based on Web Components, made with Bulma & Stencil.                            |\n| [Svelte Bulma Components](https://github.com/elcobvg/svelte-bulma-components)        | Library of UI components to be used in [Svelte.js](https://svelte.technology/) or standalone.                    |\n| [Bulma Nunjucks Starterkit](https://github.com/benninkcorien/nunjucks-starter-kit)   | Starterkit for Nunjucks with Bulma.                                                                              |\n| [Bulma-Social](https://github.com/aldi/bulma-social)                                 | Social Buttons and Colors for Bulma                                                                              |\n| [Divjoy](https://divjoy.com/?kit=bulma)                                              | React codebase generator with Bulma templates                                                                    |\n| [Blazorise](https://github.com/Megabit/Blazorise)                                    | Blazor component library with the support for Bulma CSS framework                                                |\n| [Oruga-Bulma](https://github.com/oruga-ui/theme-bulma)                               | Bulma theme for [Oruga UI](https://oruga.io)                                                                     |\n| [@bulvar/bulma](https://github.com/daniil4udo/bulvar/tree/master/packages/bulma)     | Bulma with [CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) support |\n| [@angular-bulma](https://quinnjr.github.io/angular-bulma)                            | [Angular](https://angular.io/) directives and components to use in your Bulma projects                           |\n| [Bulma CSS Class Completion](https://github.com/eliutdev/bulma-css-class-completion) | CSS class name completion for the HTML class attribute based on Bulma CSS classes.                               |\n| [Crispy-Bulma](https://github.com/ckrybus/crispy-bulma)                              | Bulma template pack for django-crispy-forms                                                                      |\n| [CASE](https://case.app)                                                             | CASE is Lightweight Backend-as-a-Service with essential features: DB, Admin panel, API, JS SDK         |\n| [Reactive Bulma](https://github.com/NicolasOmar/reactive-bulma)                                                             | A component library based on React, Bulma, Typescript and Rollup         |\n\n## Copyright and license ![Github](https://img.shields.io/github/license/jgthms/bulma?logo=Github)\n\nCode copyright 2023 Jeremy Thomas. Code released under [the MIT license](https://github.com/jgthms/bulma/blob/master/LICENSE).\n\n[npm-link]: https://www.npmjs.com/package/bulma\n[awesome-link]: https://github.com/awesome-css-group/awesome-css\n[awesome-badge]: https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg\n"
+    }
+  ],
+  "key_files_packages": [
+    {
+      "purl": "pkg:npm/bulma@1.0.1",
+      "type": "npm",
+      "namespace": "",
+      "name": "bulma",
+      "version": "1.0.1",
+      "qualifiers": "",
+      "subpath": "",
+      "tag": "",
+      "primary_language": "JavaScript",
+      "description": "Modern CSS framework based on Flexbox",
+      "release_date": null,
+      "parties": [
+        {
+          "url": "https://jgthms.com",
+          "name": "Jeremy Thomas",
+          "role": "author",
+          "type": "person",
+          "email": "bbxdesign@gmail.com"
+        }
+      ],
+      "keywords": [
+        "css",
+        "sass",
+        "scss",
+        "flexbox",
+        "grid",
+        "responsive",
+        "framework"
+      ],
+      "homepage_url": "https://bulma.io",
+      "download_url": "https://registry.npmjs.org/bulma/-/bulma-1.0.1.tgz",
+      "bug_tracking_url": "https://github.com/jgthms/bulma/issues",
+      "code_view_url": "",
+      "vcs_url": "git+https://github.com/jgthms/bulma.git",
+      "repository_homepage_url": "https://www.npmjs.com/package/bulma",
+      "repository_download_url": "https://registry.npmjs.org/bulma/-/bulma-1.0.1.tgz",
+      "api_data_url": "https://registry.npmjs.org/bulma/1.0.1",
+      "size": null,
+      "md5": "",
+      "sha1": "",
+      "sha256": "",
+      "sha512": "",
+      "copyright": "",
+      "holder": "",
+      "declared_license_expression": "mit",
+      "declared_license_expression_spdx": "MIT",
+      "license_detections": [
+        {
+          "matches": [
+            {
+              "score": 100.0,
+              "matcher": "1-spdx-id",
+              "end_line": 1,
+              "rule_url": null,
+              "from_file": "codebase/bulma/package.json",
+              "start_line": 1,
+              "matched_text": "MIT",
+              "match_coverage": 100.0,
+              "matched_length": 1,
+              "rule_relevance": 100,
+              "rule_identifier": "spdx-license-identifier-mit-5da48780aba670b0860c46d899ed42a0f243ff06",
+              "license_expression": "mit",
+              "spdx_license_expression": "MIT"
+            }
+          ],
+          "identifier": "mit-a822f434-d61f-f2b1-c792-8b8cb9e7b9bf",
+          "license_expression": "mit",
+          "license_expression_spdx": "MIT"
+        }
+      ],
+      "other_license_expression": "apache-2.0",
+      "other_license_expression_spdx": "Apache-2.0",
+      "other_license_detections": [],
+      "extracted_license_statement": "- MIT\n",
+      "compliance_alert": "ok",
+      "notice_text": "",
+      "source_packages": [],
+      "extra_data": {},
+      "package_uid": "pkg:npm/bulma@1.0.1?uuid=1de014bd-4e4a-4f1a-a9d2-f1a4399597cd",
+      "datasource_ids": [
+        "npm_package_json"
+      ],
+      "datafile_paths": [
+        "bulma/package.json"
+      ],
+      "file_references": [],
+      "missing_resources": [],
+      "modified_resources": [],
+      "affected_by_vulnerabilities": []
+    }
+  ]
+}

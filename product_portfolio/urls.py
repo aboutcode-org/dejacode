@@ -22,6 +22,7 @@ from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
 from product_portfolio.views import ProductTabImportsView
+from product_portfolio.views import ProductTabInventoryView
 from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
@@ -94,6 +95,7 @@ urlpatterns = [
     *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
+    *product_path("tab_inventory", ProductTabInventoryView.as_view()),
     *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),
     path(
         "<str:dataspace>/<str:name>/<str:version>/",

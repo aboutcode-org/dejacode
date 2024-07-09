@@ -25,7 +25,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_str
 
-import requests
 from guardian.shortcuts import assign_perm
 from notifications.models import Notification
 
@@ -40,11 +39,10 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageDetailsView
 from component_catalog.views import PackageTabScanView
-from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_webhook_url
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
@@ -53,7 +51,6 @@ from dje.models import Dataspace
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
-from dje.tasks import scancodeio_submit_scan
 from dje.tests import add_perm
 from dje.tests import add_perms
 from dje.tests import create_superuser
@@ -193,7 +190,6 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, 'id="tab_hierarchy"')
 
         # Legal tab is only displayed if one a the legal field is set
-        self.assertNotContains(response, 'id="tab_legal"')
         self.component1.legal_comments = "Comments"
         self.component1.save()
         response = self.client.get(url)
@@ -382,7 +378,7 @@ class ComponentUserViewsTestCase(TestCase):
 
         # Check the tag set to True is displayed
         self.assertTrue(self.license_assigned_tag1.value)
-        # self.assertContains(response, f'{self.license_tag1.label}</strong>')
+        self.assertContains(response, f"{self.license_tag1.label}")
         self.assertContains(response, f' data-bs-content="{self.license_tag1.text}"')
 
         # Check the ordering of the tables respect the license_expression ordering
@@ -404,6 +400,16 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url)
         expected = "<td>{}</td><td>{}</td>".format(license2_str, license1_str)
         self.assertIn(no_whitespace(expected), no_whitespace(response.content))
+
+    def test_component_catalog_detail_view_license_tab_licenses_fields(self):
+        self.client.login(username="nexb_user", password="t3st")
+
+        self.component1.declared_license_expression = self.license1.key
+        self.component1.other_license_expression = self.license1.key
+        self.component1.save()
+        response = self.client.get(self.component1.get_absolute_url())
+        self.assertContains(response, "field-declared-license-expression")
+        self.assertContains(response, "field-other-license-expression")
 
     def test_return_to_component_from_license_details(self):
         # Making sure a 'Return to Component' link is available on a License
@@ -444,8 +450,8 @@ class ComponentUserViewsTestCase(TestCase):
 
         expected1 = f'<div id="component_{self.component1.id}" class="card bg-body-tertiary mb-2">'
         expected2 = f'<div id="component_{self.component2.id}" class="card bg-body-tertiary mb-2">'
-        expected3 = f"source: 'component_{self.component1.id}'"
-        expected4 = f"target: 'component_{self.component2.id}'"
+        expected3 = f"var source_id = 'component_{self.component1.id}'"
+        expected4 = f"var target_id = 'component_{self.component2.id}'"
 
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -598,7 +604,6 @@ class ComponentUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.component1.get_absolute_url()
         response = self.client.get(url)
-        self.assertNotContains(response, "jsPlumbOwnerHierarchy")
         self.assertNotContains(response, "Selected Owner")
         self.assertNotContains(response, "Child Owners")
 
@@ -608,7 +613,6 @@ class ComponentUserViewsTestCase(TestCase):
         )
 
         response = self.client.get(url)
-        self.assertContains(response, "jsPlumb")
         self.assertContains(response, "Selected Owner")
         self.assertContains(response, "Child Owners")
         self.assertContains(response, child_owner.name)
@@ -972,7 +976,7 @@ class ComponentUserViewsTestCase(TestCase):
         History.log_change(self.basic_user, self.component1, "Changed version.")
         History.log_change(self.nexb_user, self.component1, "Changed notes.")
 
-        with self.assertNumQueries(31):
+        with self.assertNumQueries(32):
             self.client.get(url)
 
     def test_component_catalog_details_view_package_tab_fields_visibility(self):
@@ -1261,7 +1265,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(26):
+        with self.assertNumQueries(27):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -1504,6 +1508,7 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="1.0",
             homepage_url="https://p1.com",
+            dependencies=[{"purl": "pkg:maven/org.apache.lucene/lucene"}],
             dataspace=self.dataspace,
         )
         p2 = Package.objects.create(
@@ -1511,6 +1516,8 @@ class PackageUserViewsTestCase(TestCase):
             name="common_name",
             version="",
             homepage_url="https://p2.com",
+            declared_license_expression="mit",
+            other_license_expression="mpl",
             dataspace=self.dataspace,
         )
         component_add_url = reverse("component_catalog:component_add")
@@ -1524,6 +1531,34 @@ class PackageUserViewsTestCase(TestCase):
             'class="urlinput form-control" aria-describedby="id_homepage_url_helptext" '
             'id="id_homepage_url">',
         )
+        self.assertContains(response, "mit")
+        self.assertContains(response, "mpl")
+        self.assertNotContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+        component_add_url = reverse("component_catalog:component_add")
+        url = f"{component_add_url}?package_ids={p1.id}"
+        response = self.client.get(url)
+        self.assertContains(response, "pkg:maven/org.apache.lucene/lucene")
+
+    def test_add_component_from_package_data_extract_common_values(self):
+        extract_common_values = ComponentAddView.extract_common_values
+
+        packages = None
+        self.assertEqual({}, extract_common_values(packages))
+
+        packages = []
+        self.assertEqual({}, extract_common_values(packages))
+
+        package1 = {"name": "common", "version": "1.0", "empty_value": ""}
+        package2 = {"name": "common", "version": "2.0", "list_value": [1], "dict_value": {"a": "b"}}
+
+        packages = [package1]
+        expected = {"name": "common", "version": "1.0"}
+        self.assertEqual(expected, extract_common_values(packages))
+
+        packages = [package1, package2]
+        expected = {"name": "common"}
+        self.assertEqual(expected, extract_common_values(packages))
 
     def test_package_list_view_usage_policy_availability(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -1634,12 +1669,15 @@ class PackageUserViewsTestCase(TestCase):
 
         self.client.login(username=self.basic_user.username, password="secret")
         response = self.client.get(package_add_url)
+        self.assertEqual(405, response.status_code)
+
+        response = self.client.post(package_add_url)
         self.assertEqual(403, response.status_code)
         expected = {"error_message": "Permission denied"}
         self.assertEqual(expected, response.json())
 
         self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(package_add_url)
+        response = self.client.post(package_add_url)
         self.assertEqual(400, response.status_code)
         expected = {"error_message": "Missing Download URL"}
         self.assertEqual(expected, response.json())
@@ -1666,7 +1704,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get("/packages/")
         messages = list(response.context["messages"])
         msg = (
-            f"URL https://dejacode.com/archive.zip already exists in your Dataspace as "
+            f"https://dejacode.com/archive.zip already exists in your Dataspace as "
             f'<a href="{self.package1.get_absolute_url()}">package1</a>'
         )
         self.assertEqual(str(messages[0]), msg)
@@ -1680,7 +1718,7 @@ class PackageUserViewsTestCase(TestCase):
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
         }
-        with mock.patch("component_catalog.views.collect_package_data") as collect:
+        with mock.patch("component_catalog.models.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 
@@ -1703,7 +1741,7 @@ class PackageUserViewsTestCase(TestCase):
         # Different URL but sha1 match in the db
         data = {"download_urls": "https://url.com/file.ext"}
         collected_data["download_url"] = data["download_urls"]
-        with mock.patch("component_catalog.views.collect_package_data") as collect:
+        with mock.patch("component_catalog.models.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 
@@ -1711,8 +1749,8 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get("/packages/")
         messages = list(response.context["messages"])
         msg = (
-            f'The package at URL {collected_data["download_url"]} already exists in'
-            f' your Dataspace as <a href="{new_package.get_absolute_url()}">{new_package}</a>'
+            f'{collected_data["download_url"]} already exists in your Dataspace as '
+            f'<a href="{new_package.get_absolute_url()}">{new_package}</a>'
         )
         self.assertEqual(str(messages[0]), msg)
         self.assertFalse(
@@ -2139,8 +2177,8 @@ class PackageUserViewsTestCase(TestCase):
 
         expected_declared_license = """
         <span class="license-expression">
-          <input type="checkbox" name="license_expression" value="l1 AND l2 WITH e" checked>
-          <a href="/licenses/Dataspace/l1/" title="L1">l1</a>
+          <input type="checkbox" name="declared_license_expression" value="l1 AND l2 WITH e"
+          checked><a href="/licenses/Dataspace/l1/" title="L1">l1</a>
           AND (<a href="/licenses/Dataspace/l2/" title="L2">l2</a>
            WITH <a href="/licenses/Dataspace/e/" title="e">e</a>)
         </span>
@@ -2152,7 +2190,7 @@ class PackageUserViewsTestCase(TestCase):
             '<input type="radio" name="primary_language" value="C++" checked> C++'
         )
         expected_other_licenses = """
-        <span class="license-expression"><input type="checkbox" name="license_expression"
+        <span class="license-expression"><input type="checkbox" name="other_license_expression"
         value="mit" > mit <span class="badge text-bg-secondary rounded-pill">3</span></span>
         """
         expected_other_holders = (
@@ -2453,12 +2491,14 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         expected1 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="apache-2.0" > apache-2.0 <span class="badge text-bg-secondary rounded-pill">3'
             "</span></span>"
         )
         expected2 = (
-            '<span class="license-expression"><input type="checkbox" name="license_expression" '
+            '<span class="license-expression"><input type="checkbox" '
+            'name="other_license_expression" '
             'value="mit" > mit <span class="badge text-bg-secondary rounded-pill">2</span></span>'
         )
         response = self.client.get(self.package1_tab_scan_url)
@@ -2602,8 +2642,8 @@ class PackageUserViewsTestCase(TestCase):
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
         expected = (
-            "Changed Package URL, License expression, Copyright, Primary language, Description, "
-            "Homepage URL, Release date and Notice text."
+            "Changed Package URL, Concluded license expression, Copyright, Primary language, "
+            "Description, Homepage URL, Release date and Notice text."
         )
         self.assertEqual(expected, history.get_change_message())
 
@@ -2698,7 +2738,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual("The Rust Project Developers", self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -2741,7 +2781,8 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(self.package1_tab_scan_url)
         expected_license_expression_html = (
             '<span class="license-expression">'
-            '<input type="checkbox" name="license_expression" value="apache-2.0 OR mit" checked> '
+            '<input type="checkbox" name="declared_license_expression" '
+            'value="apache-2.0 OR mit" checked> '
             "apache-2.0 OR mit</span>"
         )
         expected_holder_html = (
@@ -2793,7 +2834,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(expected_holder, self.package1.holder)
 
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
-        expected = "Changed License expression, Primary language and Holder."
+        expected = "Changed Concluded license expression, Primary language and Holder."
         self.assertEqual(expected, history.get_change_message())
 
         response = self.client.post(url, post_data, follow=True)
@@ -2817,7 +2858,7 @@ class PackageUserViewsTestCase(TestCase):
         }
 
         values = PackageTabScanView.get_license_expressions_scan_values(
-            self.dataspace, field_data, input_type, license_matches
+            self.dataspace, field_data, "license_expression", input_type, license_matches
         )
         self.assertEqual(1, len(values))
         self.assertIn("MATCH", values[0])
@@ -2931,255 +2972,6 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(
             'attachment; filename="package1_scan.zip"', response["content-disposition"]
         )
-
-    @mock.patch("requests.head")
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_scan")
-    def test_scancodeio_submit_scan_task(self, mock_submit_scan, mock_request_head):
-        user_uuid = self.super_user.uuid
-        dataspace_uuid = self.super_user.dataspace.uuid
-
-        mock_request_head.side_effect = requests.RequestException
-        scancodeio_submit_scan(["no_protocol.com"], user_uuid, dataspace_uuid)
-        self.assertEqual([], mock_submit_scan.mock_calls)
-
-        uris = {
-            "http://okurl.com": mock.Mock(status_code=200),
-            "https://okurl2.com": mock.Mock(status_code=200),
-            "http://private_url.com": mock.Mock(status_code=404),
-        }
-        mock_request_head.side_effect = lambda arg, allow_redirects: uris[arg]
-        scancodeio_submit_scan(list(uris.keys()), user_uuid, dataspace_uuid)
-
-        expected = [
-            mock.call("http://okurl.com", user_uuid, dataspace_uuid),
-            mock.call("https://okurl2.com", user_uuid, dataspace_uuid),
-        ]
-        self.assertEqual(expected, mock_submit_scan.mock_calls)
-
-    @mock.patch("requests.sessions.Session.get")
-    def test_scancodeio_fetch_scan_list(self, mock_session_get):
-        scancodeio = ScanCodeIO(self.basic_user)
-        self.assertIsNone(scancodeio.fetch_scan_list())
-        self.assertFalse(mock_session_get.called)
-
-        scancodeio.fetch_scan_list(user=self.basic_user)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__endswith": get_hash_uid(self.basic_user.uuid)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_list(dataspace=self.basic_user.dataspace)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {
-            "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-        }
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_list(
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-            extra_params="extra",
-        )
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {
-            "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
-            "extra_params": "extra",
-        }
-        self.assertEqual(expected, params)
-
-    @mock.patch("requests.sessions.Session.get")
-    def test_scancodeio_fetch_scan_info(self, mock_session_get):
-        uri = "https://uri"
-        scancodeio = ScanCodeIO(self.basic_user)
-
-        scancodeio.fetch_scan_info(uri=uri)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__startswith": get_hash_uid(uri)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_info(
-            uri=uri,
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-        )
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {
-            "format": "json",
-            "name__startswith": get_hash_uid(uri),
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
-        }
-        self.assertEqual(expected, params)
-
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
-    def test_scancodeio_find_project(self, mock_request_get):
-        scancodeio = ScanCodeIO(self.basic_user)
-        scancodeio.find_project(name="project_name")
-        params = mock_request_get.call_args.kwargs["params"]
-        expected = {"name": "project_name"}
-        self.assertEqual(expected, params)
-
-        project_data = {
-            "name": "project_name",
-            "url": "/api/projects/f622d852-2d6a-4fb5-ab89-a90db54a4581/",
-            "uuid": "f622d852-2d6a-4fb5-ab89-a90db54a4581",
-        }
-        mock_request_get.return_value = {
-            "count": 1,
-            "results": [
-                project_data,
-            ],
-        }
-        self.assertEqual(project_data, scancodeio.find_project(name="project_name"))
-
-        mock_request_get.return_value = {
-            "count": 0,
-            "results": [],
-        }
-        self.assertIsNone(scancodeio.find_project(name="not-existing"))
-
-        mock_request_get.return_value = {
-            "count": 2,
-            "results": [
-                project_data,
-                project_data,
-            ],
-        }
-        self.assertIsNone(scancodeio.find_project(name="project_name"))
-
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
-    def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_scan_results):
-        scancodeio = ScanCodeIO(self.basic_user)
-
-        mock_get_scan_results.return_value = None
-        mock_fetch_scan_data.return_value = None
-
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        self.assertEqual([], updated_fields)
-
-        mock_get_scan_results.return_value = {"url": "https://scancode.io/"}
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        self.assertEqual([], updated_fields)
-
-        mock_fetch_scan_data.return_value = {"error": "Summary file not available"}
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        self.assertEqual([], updated_fields)
-
-        mock_fetch_scan_data.return_value = {
-            "declared_license_expression": "mit",
-            "declared_holder": "Jeremy Thomas",
-            "primary_language": "JavaScript",
-            "key_files_packages": [
-                {
-                    "purl": "pkg:npm/bulma@0.9.4",
-                    "type": "npm",
-                    "namespace": "",
-                    "name": "bulma",
-                    "version": "0.9.4",
-                    "qualifiers": "",
-                    "subpath": "",
-                    "primary_language": "JavaScript_from_package",
-                    "description": "Modern CSS framework",
-                    "release_date": None,
-                    "homepage_url": "https://bulma.io",
-                    "bug_tracking_url": "https://github.com/jgthms/bulma/issues",
-                    "code_view_url": "",
-                    "vcs_url": "git+https://github.com/jgthms/bulma.git",
-                    "copyright": "",
-                    "license_expression": "mit",
-                    "notice_text": "",
-                    "dependencies": [],
-                    "keywords": ["css", "sass", "flexbox", "responsive", "framework"],
-                }
-            ],
-        }
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        expected = ["holder", "primary_language", "description", "homepage_url", "copyright"]
-        self.assertEqual(expected, updated_fields)
-
-        self.package1.refresh_from_db()
-        self.assertEqual("Jeremy Thomas", self.package1.holder)
-        self.assertEqual("JavaScript_from_package", self.package1.primary_language)
-        self.assertEqual("Modern CSS framework", self.package1.description)
-        self.assertEqual("https://bulma.io", self.package1.homepage_url)
-        self.assertEqual("Copyright Jeremy Thomas", self.package1.copyright)
-        # expected_keywords = ['css', 'sass', 'flexbox', 'responsive', 'framework']
-        # self.assertEqual(expected_keywords, self.package1.keywords)
-
-        self.assertEqual(self.super_user, self.package1.last_modified_by)
-        history_entry = History.objects.get_for_object(self.package1).get()
-        expected = (
-            "Automatically updated holder, primary_language, description, "
-            "homepage_url, copyright from scan results"
-        )
-        self.assertEqual(expected, history_entry.change_message)
-
-        # Inferred Copyright statement
-        mock_fetch_scan_data.return_value = {"key_files_packages": [{"name": "package1"}]}
-        self.package1.copyright = ""
-        self.package1.save()
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        self.assertEqual(["copyright"], updated_fields)
-        self.package1.refresh_from_db()
-        self.assertEqual("Copyright package1 project contributors", self.package1.copyright)
-
-        mock_fetch_scan_data.return_value = {"some_key": "some_value"}
-        self.package1.name = "bulma"
-        self.package1.copyright = ""
-        self.package1.save()
-        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
-        self.assertEqual(["copyright"], updated_fields)
-        self.package1.refresh_from_db()
-        self.assertEqual("Copyright bulma project contributors", self.package1.copyright)
-
-    def test_scancodeio_map_detected_package_data(self):
-        detected_package = {
-            "purl": "pkg:maven/aopalliance/aopalliance@1.0",
-            "primary_language": "Java",
-            "declared_license_expression": "mit AND mit",
-            "other_license_expression": "apache-20 AND apache-20",
-            "keywords": [
-                "json",
-                "Development Status :: 5 - Production/Stable",
-                "Operating System :: OS Independent",
-            ],
-            # skipped, no values
-            "description": "",
-            # skipped, not a SCAN_PACKAGE_FIELD
-            "is_key_file": 1,
-        }
-
-        expected = {
-            "package_url": "pkg:maven/aopalliance/aopalliance@1.0",
-            "purl": "pkg:maven/aopalliance/aopalliance@1.0",
-            "license_expression": "mit",
-            "primary_language": "Java",
-            # 'keywords': [
-            #     'json',
-            #     'Development Status :: 5 - Production/Stable',
-            #     'Operating System :: OS Independent',
-            # ],
-        }
-        mapped_data = ScanCodeIO.map_detected_package_data(detected_package)
-        self.assertEqual(expected, mapped_data)
-
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
-    def test_scancodeio_fetch_project_packages(self, mock_request_get):
-        scancodeio = ScanCodeIO(self.basic_user)
-
-        mock_request_get.return_value = None
-        with self.assertRaises(Exception):
-            scancodeio.fetch_project_packages(project_uuid="abcd")
-
-        mock_request_get.return_value = {
-            "next": None,
-            "results": ["p1", "p2"],
-        }
-        packages = scancodeio.fetch_project_packages(project_uuid="abcd")
-        self.assertEqual(["p1", "p2"], packages)
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerable_purls")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -3339,7 +3131,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(["pkg:pypi/django@2.1"], purls)
 
     def test_vulnerablecode_get_vulnerable_purls(self):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
         vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[])
         self.assertEqual([], vulnerable_purls)
 
@@ -3363,7 +3155,7 @@ class PackageUserViewsTestCase(TestCase):
             self.assertEqual(["pkg:pypi/django@2.1"], vulnerable_purls)
 
     def test_vulnerablecode_get_vulnerable_cpes(self):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
         vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=[])
         self.assertEqual([], vulnerable_cpes)
 
@@ -3395,7 +3187,7 @@ class PackageUserViewsTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
     def test_vulnerablecode_get_vulnerabilities_cache(self, mock_request_get):
-        vulnerablecode = VulnerableCode(self.basic_user)
+        vulnerablecode = VulnerableCode(self.dataspace)
 
         self.package1.set_package_url("pkg:pypi/django@2.1")
         self.package1.save()
@@ -3467,7 +3259,12 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(self.package1.download_url, notif.description)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.update_from_scan")
-    def test_send_scan_notification_update_package_from_scan(self, mock_update_from_scan):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    def test_send_scan_notification_update_package_from_scan(
+        self, mock_is_configured, mock_update_from_scan
+    ):
+        mock_is_configured.return_value = True
+
         self.client.login(username=self.super_user.username, password="secret")
 
         data = {
@@ -3677,7 +3474,7 @@ class PackageUserViewsTestCase(TestCase):
     @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
     def test_component_catalog_package_add_view_initial_data(
-        self, mock_is_configured, mock_request_get
+            self, mock_is_configured, mock_request_get
     ):
         self.client.login(username=self.super_user.username, password="secret")
         add_url = reverse("component_catalog:package_add")
@@ -3698,10 +3495,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
-            "keywords": [
-                "keyword1",
-                "keyword2",
-            ],
+            "keywords": ["keyword1", "keyword2"],
         }
         mock_request_get.return_value = {
             "count": 1,
@@ -3714,6 +3508,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(add_url + "?package_url=pkg:maven/abbot/abbot@1.4.0")
         expected = {
             "filename": "abbot-1.4.0.jar",
+            "keywords": ["keyword1", "keyword2"],
             "release_date": "2010-05-24T00:00:00Z",
             "type": "maven",
             "namespace": "abbot",
@@ -3722,10 +3517,7 @@ class PackageUserViewsTestCase(TestCase):
             "primary_language": "Java",
             "description": "Abbot Java GUI Test Library",
             "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
-            "keywords": [
-                "keyword1",
-                "keyword2",
-            ],
+            "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
         }
         self.assertEqual(expected, response.context["form"].initial)
 

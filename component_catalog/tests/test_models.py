@@ -35,6 +35,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
+from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit import download
 from dejacode_toolkit.download import DataCollectionException
@@ -418,7 +419,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual(expected, self.component1.get_license_expression_linked())
 
-    def test_component_get_license_expression_spdx_id(self):
+    def test_component_concluded_license_expression_spdx(self):
         self.license1.spdx_license_key = "SPDX-1"
         self.license1.save()
 
@@ -426,21 +427,55 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.license_expression = expression
         self.component1.save()
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         expression = "{} WITH {}".format(self.license1.key, self.license2.key)
         self.component1.license_expression = expression
         self.component1.save()
         # WITH is replaced by AND for "LicenseRef-" exceptions
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         self.license2.spdx_license_key = "SPDX-2"
         self.license2.save()
         self.component1 = Component.objects.get(pk=self.component1.pk)
         # WITH is kept for exceptions in SPDX list
         expected = "SPDX-1 WITH SPDX-2"
-        self.assertEqual(expected, self.component1.get_license_expression_spdx_id())
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+
+    def test_component_model_license_expression_spdx_properties(self):
+        self.license1.spdx_license_key = "SPDX-1"
+        self.license1.save()
+
+        expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        self.component1.license_expression = expression
+        self.component1.declared_license_expression = expression
+        self.component1.other_license_expression = expression
+        self.component1.save()
+
+        expected = "SPDX-1 AND LicenseRef-dejacode-license2"
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
+
+        self.component1.license_expression = "unknown"
+        self.component1.declared_license_expression = "unknown"
+        self.component1.other_license_expression = "unknown"
+        self.component1.save()
+        expected = "Unknown license key(s): unknown"
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
+
+    def test_component_model_get_expression_as_spdx(self):
+        self.license1.spdx_license_key = "SPDX-1"
+        self.license1.save()
+
+        expression_as_spdx = self.component1.get_expression_as_spdx(str(self.license1.key))
+        self.assertEqual("SPDX-1", expression_as_spdx)
+
+        expression_as_spdx = self.component1.get_expression_as_spdx("unknown")
+        self.assertEqual("Unknown license key(s): unknown", expression_as_spdx)
 
     def test_get_license_expression_key_as_link_conflict(self):
         # self.license1.key is contained in self.license2.key
@@ -1221,6 +1256,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "reference_notes",
                     "usage_policy",
                     "version",
+                    "other_license_expression",
                     "owner",
                     "release_date",
                     "description",
@@ -1247,13 +1283,13 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "is_notice_in_codebase",
                     "notice_filename",
                     "notice_url",
+                    "declared_license_expression",
                     "dependencies",
                     "codescan_identifier",
                     "website_terms_of_use",
                     "ip_sensitivity_approved",
                     "affiliate_obligations",
                     "affiliate_obligation_triggers",
-                    "concluded_license",
                     "keywords",
                     "legal_comments",
                     "sublicense_allowed",
@@ -1319,13 +1355,14 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "copyright",
                     "notice_text",
                     "author",
+                    "declared_license_expression",
                     "dependencies",
                     "repository_homepage_url",
                     "repository_download_url",
                     "api_data_url",
-                    "declared_license",
                     "datasource_id",
                     "file_references",
+                    "other_license_expression",
                     "parties",
                 ],
             ),
@@ -1643,6 +1680,72 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(["name"], updated_fields)
         package.refresh_from_db()
         self.assertEqual(new_data["name"], package.name)
+
+    @mock.patch("component_catalog.models.collect_package_data")
+    def test_package_model_create_from_url(self, mock_collect):
+        self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
+
+        download_url = "https://dejacode.com/archive.zip"
+        mock_collect.return_value = {
+            "download_url": download_url,
+            "filename": "archive.zip",
+        }
+        package = Package.create_from_url(url=download_url, user=self.user)
+        self.assertTrue(package.uuid)
+        self.assertEqual(self.user, package.created_by)
+        expected = "pkg:generic/archive.zip?download_url=https://dejacode.com/archive.zip"
+        self.assertEqual(expected, package.package_url)
+        self.assertEqual(download_url, package.download_url)
+
+        with self.assertRaises(PackageAlreadyExistsWarning) as cm:
+            Package.create_from_url(url=download_url, user=self.user)
+        self.assertIn("already exists in your Dataspace", cm.exception.message)
+
+        purl = "pkg:npm/is-npm@1.0.0"
+        mock_collect.return_value = {}
+        package = Package.create_from_url(url=purl, user=self.user)
+        self.assertTrue(package.uuid)
+        self.assertEqual(self.user, package.created_by)
+        self.assertEqual(purl, package.package_url)
+        mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_package_model_create_from_url_enable_purldb_access(
+        self, mock_is_configured, mock_get_purldb_entries
+    ):
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+        mock_is_configured.return_value = True
+        purldb_entry = {
+            "uuid": "7b947095-ab4c-45e3-8af3-6a73bd88e31d",
+            "filename": "abbot-1.4.0.jar",
+            "release_date": "2023-02-01T00:27:00Z",
+            "type": "maven",
+            "namespace": "abbot",
+            "name": "abbot",
+            "version": "1.4.0",
+            "primary_language": "Java",
+            "description": "Abbot Java GUI Test Library",
+            "keywords": ["keyword1", "keyword2"],
+            "homepage_url": "http://abbot.sf.net/",
+            "download_url": "http://repo1.maven.org/maven2/abbot/abbot/1.4.0/abbot-1.4.0.jar",
+            "size": 687192,
+            "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
+            "declared_license_expression": "bsd-new OR epl-1.0 OR apache-2.0",
+            "package_url": "pkg:maven/abbot/abbot@1.4.0",
+        }
+        mock_get_purldb_entries.return_value = [purldb_entry]
+
+        purl = "pkg:maven/abbot/abbot@1.4.0"
+        package = Package.create_from_url(url=purl, user=self.user)
+        mock_get_purldb_entries.assert_called_once()
+
+        self.assertEqual(self.user, package.created_by)
+        self.assertEqual(purldb_entry["declared_license_expression"], package.license_expression)
+
+        for field_name, value in purldb_entry.items():
+            self.assertEqual(value, getattr(package, field_name))
 
     def test_package_model_get_url_methods(self):
         package = Package(
@@ -2036,6 +2139,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_model_as_spdx(self):
         self.component1.license_expression = f"{self.license1.key} AND {self.license2.key}"
+        self.component1.declared_license_expression = self.license1.key
         self.component1.copyright = "copyright on component"
         self.component1.homepage_url = "https://homepage.url"
         self.component1.description = "Description"
@@ -2049,7 +2153,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "attributionTexts": [("Notice\r\nText",)],
             "downloadLocation": "NOASSERTION",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on component",
             "filesAnalyzed": False,
             "supplier": "Organization: Owner",
@@ -2070,6 +2174,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             copyright="copyright on package",
             notice_text="Notice\r\nText",
             license_expression=f"{self.license1.key} AND {self.license2.key}",
+            declared_license_expression=self.license1.key,
             sha1="5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             md5="93b885adfe0da089cdf634904fd59f71",
             cpe="cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*",
@@ -2088,7 +2193,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "SPDXID": f"SPDXRef-dejacode-package-{package1.uuid}",
             "downloadLocation": "htp://domain.com/package.zip",
             "licenseConcluded": "SPDX-1 AND LicenseRef-dejacode-license2",
-            "licenseDeclared": "SPDX-1 AND LicenseRef-dejacode-license2",
+            "licenseDeclared": "SPDX-1",
             "copyrightText": "copyright on package",
             "filesAnalyzed": False,
             "versionInfo": "7.50.3-1",

@@ -1,21 +1,48 @@
 {% load i18n %}
 {% load as_icon from dje_tags %}
 {% load urlize_target_blank from dje_tags %}
+{% load humanize %}
+
 {% spaceless %}
+<div class="row align-items-end">
+  <div class="col mb-3">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <form id="tab-codebase-search-form" class="mt-md-0 me-sm-2">
+          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-inventory-search-input" name="inventory-q" placeholder="Search inventory" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+        </form>
+      </li>
+      <li class="nav-item">
+        <div class="h6 mt-2 mb-0 smaller">
+          {% if page_obj.paginator.count != inventory_count %}
+            {{ page_obj.paginator.count|intcomma }} of
+            <a href="?all=true#inventory">{{ inventory_count|intcomma }} results</a>
+          {% else %}
+            {{ page_obj.paginator.count|intcomma }} results
+          {% endif %}
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="col-auto">
+    {% include 'pagination/object_list_pagination.html' %}
+  </div>
+</div>
+
 <table class="table table-bordered table-md text-break">
   <thead>
     <tr>
       <th style="min-width: 300px;">
         {% trans 'Item' %}
         {{ filter_productcomponent.form.object_type }}
-        <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
+        <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" data-bs-toggle="tooltip" data-bs-trigger="hover" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
       </th>
       <th style="min-width: 100px;">
         {% trans 'Purpose' %}
         {{ filter_productcomponent.form.purpose }}
       </th>
       <th style="min-width: 140px;">
-        {% trans 'License' %}
+        {% trans 'Concluded license' %}
       </th>
       <th style="width: 140px;">
         {% trans 'Review status' %}
@@ -32,7 +59,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for feature, relationships in values.inventory_items.items %}
+    {% for feature, relationships in inventory_items.items %}
       {% if feature %}
         <tr>
           <td colspan="100" class="sub-header"><strong>{{ feature }}</strong></td>
@@ -208,89 +235,38 @@
     {% endfor %}
   </tbody>
 </table>
+<div class="d-flex justify-content-center">
+  {% include 'pagination/object_list_pagination.html' %}
+</div>
 {% endspaceless %}
 
-{% if purldb_enabled %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('check-package-versions').addEventListener('click', function (event) {
-      event.preventDefault();
-      let checkPackageLink = this;
-      checkPackageLink.classList.add("disabled");
-
-      document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
-        row.style.display = 'none';
+  // Select all elements with the class 'toggle-details'
+  document.querySelectorAll('.toggle-details').forEach(function(toggleDetail) {
+      // Add event listener for 'click' event
+      toggleDetail.addEventListener('click', function() {
+          // Select all elements with the class 'extra-details'
+          document.querySelectorAll('.extra-details').forEach(function(extraDetail) {
+              // Toggle the display property
+              if (extraDetail.style.display === 'none' || extraDetail.style.display === '') {
+                  extraDetail.style.display = 'table-row';
+              } else {
+                  extraDetail.style.display = 'none';
+              }
+          });
       });
-
-      let newVersionRow = document.createElement('tr');
-      newVersionRow.className = 'spinner new-version';
-      newVersionRow.innerHTML = '<td colspan="100">' +
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' +
-        'Checking new Package versions...' +
-        '</td>';
-
-      document.querySelector("#tab_inventory tbody").insertBefore(newVersionRow, document.querySelector("#tab_inventory tbody").firstChild);
-      document.querySelector('button[data-bs-target="#tab_inventory"]').click();
-
-      let spinnerTd = document.querySelector("tr.spinner > td");
-
-      function handleSuccess(data) {
-        if (data['success']) {
-          spinnerTd.innerHTML =
-            'Version check completed. ' +
-            '<a id="show-all-items" href="#">Show All Items</a> / ' +
-            '<a id="show-new-version" href="#">Show New Version Alerts</a>';
-
-          document.getElementById('show-all-items').addEventListener('click', function () {
-            document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
-              if (!row.classList.contains("extra-details")) {
-                row.style.display = '';
-              }
-            });
-            return false;
-          });
-
-          document.getElementById('show-new-version').addEventListener('click', function () {
-            document.querySelectorAll("#tab_inventory tbody tr").forEach(function (row) {
-              if (!row.classList.contains("new-version")) {
-                row.style.display = 'none';
-              }
-            });
-            return false;
-          });
-
-          let upgradeAvailable = data['upgrade_available'];
-          upgradeAvailable.forEach(function (value) {
-            let td = document.querySelector(`[data-purl="${value.purl}"]`);
-            if (td) {
-              td.insertAdjacentHTML('beforeend', `
-                <div>
-                  <a class="text-success" href="/purldb/${value.latest_version_uuid}/" target="_blank">
-                    <i class="fas fa-arrow-alt-circle-up"></i> Version ${value.latest_version} available
-                  </a>
-                </div>
-              `);
-              td.parentElement.classList.add('new-version');
-              td.parentElement.style.display = '';
-            }
-          });
-        }
-      }
-
-      fetch("{{ product.get_check_package_version_url }}", { method: 'GET' })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => handleSuccess(data))
-        .catch(error => {
-          console.error('Error fetching data:', error);
-          spinnerTd.innerHTML = 'Error.';
-        });
-
-    })
   });
+
+  {% if compliance_errors %}
+    const tabInventoryLabel = document.getElementById('tab_inventory-tab');
+    if (tabInventoryLabel) {
+      var iconElement = document.createElement('i');
+      iconElement.className = 'fas fa-exclamation-circle text-danger';
+      iconElement.setAttribute('data-bs-toggle', 'tooltip');
+      iconElement.setAttribute('title', 'Compliance errors');
+      tabInventoryLabel.insertBefore(iconElement, tabInventoryLabel.firstChild);
+      // Initialize the tooltip
+      new bootstrap.Tooltip(iconElement, {container: 'body'});
+    }
+  {% endif %}
 </script>
-{% endif %}

@@ -3,6 +3,57 @@ Release notes
 
 ### Version 5.1.1-dev
 
+- Add visual indicator in hierarchy views, when an object on the far left or far right
+  also belong or have a hierarchy (relationship tree).
+  https://github.com/nexB/dejacode/issues/70
+
+- Add search and pagination on the Product Inventory tab.
+  https://github.com/nexB/dejacode/issues/3
+  https://github.com/nexB/dejacode/issues/112
+
+- Fix an issue displaying the "Delete" button in the "Edit Product Relationship"
+  modal form.
+  https://github.com/nexB/dejacode/issues/128
+
+- Add support for PURL(s) in the "Add Package" modal.
+  If the PURL type is supported by the packageurl_python library, a download URL
+  will be generated for creating the package and submitting a scan.
+  https://github.com/nexB/dejacode/issues/131
+
+- Leverage PurlDB during the "Add Package" process.
+  DejaCode will look up the PurlDB to retrieve and fetch all available data to
+  create the package.
+  https://github.com/nexB/dejacode/issues/131
+
+- Populate the Package notice_text using "*NOTICE*" file content from Scan "key files".
+  https://github.com/nexB/dejacode/issues/136
+
+- Added 2 new license related fields on the Component and Package models:
+  * declared_license_expression
+  * other_license_expression
+  https://github.com/nexB/dejacode/issues/63
+
+- Added 2 properties on the Component and Package models:
+  * declared_license_expression_spdx (computed from declared_license_expression)
+  * other_license_expression_spdx (computed from other_license_expression)
+  https://github.com/nexB/dejacode/issues/63
+
+- Removed 2 fields: Package.declared_license and Component.concluded_license
+  https://github.com/nexB/dejacode/issues/63
+
+- The new license fields are automatically populated from the Package scan
+  "Update packages automatically from scan".
+  The new license fields are pre-filled in the Package form when using the
+  "Add Package" from a PurlDB entry.
+  The new license fields are pre-filled in the Component form when using the
+  "Add Component from Package data".
+  The license expression values provided in the form for the new field is now
+  properly checked and return a validation error when incorrect.
+  https://github.com/nexB/dejacode/issues/63
+
+- Use the declared_license_expression_spdx value in SPDX outputs.
+  https://github.com/nexB/dejacode/issues/63
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

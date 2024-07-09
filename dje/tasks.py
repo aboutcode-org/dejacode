@@ -107,9 +107,10 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     if not isinstance(uris, list):
         uris = [uris]
 
+    scancodeio = ScanCodeIO(user.dataspace)
     for uri in uris:
         if is_available(uri):
-            ScanCodeIO(user).submit_scan(uri, user_uuid, dataspace_uuid)
+            scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
         else:
             logger.info(f'uri="{uri}" is not reachable.')
 
@@ -133,7 +134,7 @@ def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
     except ObjectDoesNotExist:
         return
 
-    scancodeio = ScanCodeIO(user)
+    scancodeio = ScanCodeIO(user.dataspace)
 
     # Create a Project instance on ScanCode.io without immediate execution of the
     # pipeline. This allows to get instant feedback from ScanCode.io about the Project
