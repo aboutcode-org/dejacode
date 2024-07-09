@@ -1707,7 +1707,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertTrue(package.uuid)
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purl, package.package_url)
-        mock_collect.assert_called_with("http://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+        mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
