@@ -2103,10 +2103,10 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
 
-    purldb = PurlDB(user)
+    purldb = PurlDB(user.dataspace)
     conditions = [
         purldb.is_configured(),
-        # user.is_superuser,
+        user.is_superuser,
         user.dataspace.enable_purldb_access,
         user.dataspace.name == dataspace,
     ]
@@ -2120,7 +2120,11 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     if not product.packages.count():
         raise Http404("No packages available for this product.")
 
-    transaction.on_commit(lambda: product.improve_packages_from_purldb(user))
+    transaction.on_commit(
+        lambda: tasks.improve_packages_from_purldb(
+            product_uuid=product.uuid,
+            user_uuid=user.uuid,
+        )
+    )
     messages.success(request, "Improve Packages from PurlDB in progress...")
-
     return redirect(product)
