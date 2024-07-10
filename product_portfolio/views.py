@@ -516,8 +516,10 @@ class ProductDetailsView(
         user = self.request.user
         dataspace = user.dataspace
 
-        if user.is_authenticated:
-            self.object.mark_all_notifications_as_read(user)
+        # This behavior does not works well in the context of getting informed about
+        # tasks completion on the Product.
+        # if user.is_authenticated:
+        #     self.object.mark_all_notifications_as_read(user)
 
         context = super().get_context_data(**kwargs)
 
