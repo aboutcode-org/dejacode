@@ -2528,21 +2528,17 @@ class ComponentCatalogModelsTestCase(TestCase):
         vulnerablity_data = {
             "vulnerability_id": "VCID-q4q6-yfng-aaag",
             "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
-            "aliases": [
-                "CVE-2024-27351",
-                "GHSA-vm8q-m57g-pff3",
-                "PYSEC-2024-47"
-            ],
+            "aliases": ["CVE-2024-27351", "GHSA-vm8q-m57g-pff3", "PYSEC-2024-47"],
             "references": [
                 {
                     "reference_url": "https://access.redhat.com/hydra/rest/"
-                                     "securitydata/cve/CVE-2024-27351.json",
+                    "securitydata/cve/CVE-2024-27351.json",
                     "reference_id": "",
                     "scores": [
                         {
                             "value": "7.5",
                             "scoring_system": "cvssv3",
-                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
                         }
                     ],
                 },
@@ -2550,7 +2546,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         vulnerablity1 = Vulnerability.create_from_data(
-            user=self.user, data=vulnerablity_data, affected_packages=[package1])
+            user=self.user, data=vulnerablity_data, affected_packages=[package1]
+        )
 
         self.assertEqual(package1, vulnerablity1.affected_packages.get())
         self.assertEqual(vulnerablity1, package1.affected_by_vulnerabilities.get())

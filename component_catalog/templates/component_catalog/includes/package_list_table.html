@@ -23,7 +23,7 @@
               <a href="{% inject_preserved_filters object.details_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
             </li>
           {% endif %}
-          {% if object.plain_package_url in vulnerable_purls %}
+          {% if object.is_vulnerable %}
             <li class="list-inline-item">
               {% include 'component_catalog/includes/vulnerability_icon_link.html' %}
             </li>

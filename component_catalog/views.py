@@ -250,31 +250,11 @@ def include_type(view_instance):
 
 
 class TabVulnerabilityMixin:
+    # TODO: Remove this
     vulnerability_matching_field = None
 
     def tab_vulnerabilities(self):
-        matching_value = getattr(self.object, self.vulnerability_matching_field)
-        dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
-
-        # The display of vulnerabilities is controlled by the object Dataspace
-        display_tab = all(
-            [
-                matching_value,
-                dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if not display_tab:
-            return
-
-        vulnerability_getter_function = {
-            "cpe": vulnerablecode.get_vulnerabilities_by_cpe,
-            "package_url": vulnerablecode.get_vulnerabilities_by_purl,
-        }.get(self.vulnerability_matching_field)
-
-        vulnerabilities = vulnerability_getter_function(matching_value, timeout=3)
+        vulnerabilities = self.object.affected_by_vulnerabilities.all()
         if not vulnerabilities:
             return
 
@@ -295,14 +275,10 @@ class TabVulnerabilityMixin:
 
     @staticmethod
     def get_vulnerability_fields(vulnerability, dataspace):
-        include_fixed_packages = "fixed_packages" in vulnerability.keys()
-        summary = vulnerability.get("summary")
-        references = vulnerability.get("references", [])
-
         reference_urls = []
         reference_ids = []
 
-        for reference in references:
+        for reference in vulnerability.references:
             url = reference.get("reference_url")
             reference_id = reference.get("reference_id")
             if url and reference_id:
@@ -316,20 +292,20 @@ class TabVulnerabilityMixin:
         reference_ids_joined = "\n".join(reference_ids)
 
         tab_fields = [
-            (_("Summary"), summary, "Summary of the vulnerability"),
+            (_("Summary"), vulnerability.summary, "Summary of the vulnerability"),
         ]
 
-        if vulnerability_url := vulnerability.get("resource_url"):
-            vulnerability_url_help = "Link to the VulnerableCode app."
-            url_as_link = format_html(
-                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
-                vulnerability_url=vulnerability_url,
-            )
-            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
+        # TODO: Generate from the VCID and the settings
+        # if vulnerability_url := vulnerability.resource_url:
+        #     vulnerability_url_help = "Link to the VulnerableCode app."
+        #     url_as_link = format_html(
+        #         '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
+        #         vulnerability_url=vulnerability_url,
+        #     )
+        #     tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
 
-        if include_fixed_packages:
-            fixed_packages = vulnerability.get("fixed_packages", [])
-            fixed_packages_sorted = natsorted(fixed_packages, key=itemgetter("purl"))
+        if vulnerability.fixed_packages:
+            fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
             add_package_url = reverse("component_catalog:package_add")
             vulnerability_icon = (
                 '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
@@ -1128,19 +1104,6 @@ class PackageListView(
         if self.request.user.has_perm("component_catalog.change_component"):
             context["add_to_component_form"] = AddMultipleToComponentForm(self.request)
 
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
-        # The display of vulnerabilities is controlled by the objects Dataspace
-        enable_vulnerabilities = all(
-            [
-                self.dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if enable_vulnerabilities:
-            packages = context["object_list"]
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
-
         return context
 
     def post_add_to_component(self, form_class):
@@ -1499,12 +1462,10 @@ class PackageDetailsView(
         fields = []
         vulnerabilities_count = 0
 
-        for entry in vulnerabilities:
-            unresolved = entry.get("affected_by_vulnerabilities", [])
-            for vulnerability in unresolved:
-                vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
-                fields.extend(vulnerability_fields)
-                vulnerabilities_count += 1
+        for vulnerability in vulnerabilities:
+            vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
+            fields.extend(vulnerability_fields)
+            vulnerabilities_count += 1
 
         return fields, vulnerabilities_count
 

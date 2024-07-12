@@ -1617,6 +1617,16 @@ PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "sub
 
 
 class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
+    def has_package_url(self):
+        """Return objects with Package URL defined."""
+        return self.filter(~models.Q(type="") & ~models.Q(name=""))
+
+    def with_vulnerabilties(self):
+        """Return vulnerable Packages."""
+        return self.annotate(
+            vulnerability_count=models.Count("affected_by_vulnerabilities")
+        ).filter(vulnerability_count__gt=0)
+
     def annotate_sortable_identifier(self):
         """
         Annotate the QuerySet with a `sortable_identifier` value that combines
@@ -2486,9 +2496,7 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
     )
 
     summary = models.TextField(
-        help_text=_(
-            "A brief summary of the vulnerability, outlining its nature and impact."
-        ),
+        help_text=_("A brief summary of the vulnerability, outlining its nature and impact."),
         blank=True,
     )
 
@@ -2506,6 +2514,11 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
             "A list of references for this vulnerability. Each reference includes a "
             "URL, an optional reference ID, scores, and the URL for further details. "
         ),
+    )
+
+    fixed_packages = JSONListField(
+        blank=True,
+        help_text=_("A list of packages that are not affected by this vulnerabilty."),
     )
 
     affected_packages = models.ManyToManyField(

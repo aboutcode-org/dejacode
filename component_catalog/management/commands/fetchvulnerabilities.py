@@ -37,7 +37,9 @@ class Command(DataspacedCommand):
         package_qs = Package.objects.scope(self.dataspace).has_package_url()
         self.stdout.write(f"{package_qs.count()} Packages in the queue.")
 
-        # Vulnerability.objects.all().delete()
+        # TODO: Replace this by a create_or_update
+        Vulnerability.objects.all().delete()
+
         for packages_batch in chunked(package_qs, chunk_size=10):
             entries = vulnerablecode.get_vulnerable_purls(packages_batch, purl_only=False)
             for entry in entries:

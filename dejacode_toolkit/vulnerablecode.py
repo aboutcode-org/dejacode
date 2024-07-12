@@ -69,6 +69,7 @@ class VulnerableCode(BaseService):
     def bulk_search_by_purl(
         self,
         purls,
+        purl_only,
         timeout=None,
     ):
         """Bulk search of vulnerabilities using the provided list of `purls`."""
@@ -76,7 +77,7 @@ class VulnerableCode(BaseService):
 
         data = {
             "purls": purls,
-            "purl_only": True,
+            "purl_only": purl_only,
             "plain_purl": True,
         }
 
@@ -98,7 +99,7 @@ class VulnerableCode(BaseService):
         logger.debug(f"VulnerableCode: url={url} cpes_count={len(cpes)}")
         return self.request_post(url, json=data, timeout=timeout)
 
-    def get_vulnerable_purls(self, packages):
+    def get_vulnerable_purls(self, packages, purl_only=True):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
         was found in the VulnerableCodeDB for the given list of `packages`.
@@ -108,7 +109,11 @@ class VulnerableCode(BaseService):
         if not plain_purls:
             return []
 
-        vulnerable_purls = self.bulk_search_by_purl(plain_purls, timeout=5)
+        vulnerable_purls = self.bulk_search_by_purl(
+            plain_purls,
+            purl_only=purl_only,
+            timeout=10,
+        )
         return vulnerable_purls or []
 
     def get_vulnerable_cpes(self, components):
