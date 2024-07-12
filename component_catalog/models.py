@@ -2420,7 +2420,7 @@ class Package(
             if max_request_call and index >= max_request_call:
                 return
 
-            packages_data = PurlDB(user).find_packages(payload, timeout)
+            packages_data = PurlDB(user.dataspace).find_packages(payload, timeout)
             if packages_data:
                 return packages_data
 

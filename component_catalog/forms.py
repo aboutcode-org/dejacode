@@ -357,7 +357,7 @@ class PackageForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        scancodeio = ScanCodeIO(self.user)
+        scancodeio = ScanCodeIO(self.dataspace)
         self.submit_scan_enabled = all(
             [
                 self.is_addition,
@@ -1063,6 +1063,8 @@ class ComponentMassUpdateForm(
             "copyright",
             "holder",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "reference_notes",
             "description",
             "homepage_url",
@@ -1140,6 +1142,8 @@ class PackageMassUpdateForm(
             "holder",
             "author",
             "license_expression",
+            "declared_license_expression",
+            "other_license_expression",
             "reference_notes",
             "usage_policy",
             "homepage_url",

@@ -74,7 +74,7 @@ class ScanCodeIOTestCase(TestCase):
 
     @mock.patch("requests.sessions.Session.get")
     def test_scancodeio_fetch_scan_list(self, mock_session_get):
-        scancodeio = ScanCodeIO(self.basic_user)
+        scancodeio = ScanCodeIO(self.dataspace)
         self.assertIsNone(scancodeio.fetch_scan_list())
         self.assertFalse(mock_session_get.called)
 
@@ -108,7 +108,7 @@ class ScanCodeIOTestCase(TestCase):
     @mock.patch("requests.sessions.Session.get")
     def test_scancodeio_fetch_scan_info(self, mock_session_get):
         uri = "https://uri"
-        scancodeio = ScanCodeIO(self.basic_user)
+        scancodeio = ScanCodeIO(self.dataspace)
 
         scancodeio.fetch_scan_info(uri=uri)
         params = mock_session_get.call_args.kwargs["params"]
@@ -131,7 +131,7 @@ class ScanCodeIOTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
     def test_scancodeio_find_project(self, mock_request_get):
-        scancodeio = ScanCodeIO(self.basic_user)
+        scancodeio = ScanCodeIO(self.dataspace)
         scancodeio.find_project(name="project_name")
         params = mock_request_get.call_args.kwargs["params"]
         expected = {"name": "project_name"}
@@ -170,7 +170,7 @@ class ScanCodeIOTestCase(TestCase):
     def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_scan_results):
         self.package1.license_expression = ""
         self.package1.save()
-        scancodeio = ScanCodeIO(self.basic_user)
+        scancodeio = ScanCodeIO(self.dataspace)
 
         mock_get_scan_results.return_value = None
         mock_fetch_scan_data.return_value = None
@@ -279,7 +279,7 @@ class ScanCodeIOTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
     def test_scancodeio_fetch_project_packages(self, mock_request_get):
-        scancodeio = ScanCodeIO(self.basic_user)
+        scancodeio = ScanCodeIO(self.dataspace)
 
         mock_request_get.return_value = None
         with self.assertRaises(Exception):

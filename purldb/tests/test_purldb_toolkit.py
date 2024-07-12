@@ -23,7 +23,7 @@ class PurlDBToolkitTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
     def test_purldb_toolkit_get_package_list(self, mock_request_get):
-        purldb = PurlDB(self.basic_user)
+        purldb = PurlDB(self.basic_user.dataspace)
         purldb.package_api_url = "/api/packages/"
         get_package_list = purldb.get_package_list
 
