@@ -51,9 +51,11 @@
     {% for dependency in filter_dependency.qs %}
       <tr class="{% cycle 'odd' '' %}">
         <td>
-          <strong>
-            <a href="{{ dependency.for_package.get_absolute_url }}" target="_blank">{{ dependency.for_package }}</a>
-          </strong>
+          {% if dependency.for_package %}
+            <strong>
+              <a href="{{ dependency.for_package.get_absolute_url }}" target="_blank">{{ dependency.for_package }}</a>
+            </strong>
+          {% endif %}
         </td>
         <td>
           {% if dependency.resolved_to_package %}
@@ -63,7 +65,7 @@
           {% endif %}
         </td>
         <td>
-          {{ dependency.scope }}
+          {{ dependency.scpe }}
         </td>
         <td>
           {{ dependency.is_runtime|as_icon }}

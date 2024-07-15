@@ -333,9 +333,6 @@ class DependencyFilterSet(DataspacedFilterSet):
             "resolved_to_package__version",
         ],
     )
-    is_deployment_path = BooleanChoiceFilter(
-        widget=DropDownWidget(anchor="#codebase"),
-    )
 
     class Meta:
         model = ProductDependency
