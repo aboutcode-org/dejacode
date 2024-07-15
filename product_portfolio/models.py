@@ -1386,6 +1386,8 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         ),
     )
 
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+
     class Meta:
         unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))
         verbose_name = "product dependency"
