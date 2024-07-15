@@ -2518,7 +2518,7 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
 
     fixed_packages = JSONListField(
         blank=True,
-        help_text=_("A list of packages that are not affected by this vulnerabilty."),
+        help_text=_("A list of packages that are not affected by this vulnerability."),
     )
 
     affected_packages = models.ManyToManyField(
