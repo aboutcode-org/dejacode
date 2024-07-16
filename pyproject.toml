@@ -16,26 +16,16 @@ exclude = [
 [tool.ruff.lint]
 # Rules: https://docs.astral.sh/ruff/rules/
 select = [
-    # pycodestyle
-    "E",
-    # pycodestyle warnings
-    "W",
-    # pydocstyle
-    "D",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bandit
-    # "S",
-    # flake8-simplify
-    # "SIM",
-    # isort
-    "I",
-    # McCabe complexity
-    "C901",
+    "E",  # pycodestyle
+    "W",  # pycodestyle warnings
+    "D",  # pydocstyle
+    "F",  # Pyflakes
+    "UP", # pyupgrade
+    "S",  # flake8-bandit
+    "I",  # isort
+    "C9", # McCabe complexity
 ]
-ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415"]
+ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -51,3 +41,7 @@ section-order = [
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25
+
+[tool.ruff.lint.per-file-ignores]
+# Do not run bandit on test files.
+"**/tests/*" = ["S"]

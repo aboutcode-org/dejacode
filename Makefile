@@ -56,22 +56,15 @@ valid:
 	@${ACTIVATE} ruff check --fix
 	@echo "-> Run Ruff format"
 	@${ACTIVATE} ruff format
-	@$(MAKE) doc8
 
-bandit:
-	@echo "-> Run source code security analyzer"
-	@${ACTIVATE} pip install bandit
-	@${ACTIVATE} bandit --recursive . \
-	  --exclude ./bin,./data,./dist,./docs,./include,./lib,./share,./thirdparty,./var,tests \
-	  --quiet
-
-check: doc8 bandit
-	@echo "-> Run Ruff linter validation (pycodestyle, pydocstyle, isort, and more)"
+check:
+	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
 	@${ACTIVATE} ruff check
 	@echo "-> Run Ruff format validation"
 	@${ACTIVATE} ruff format --check
 	@echo "-> Running ABOUT files validation"
 	@${ACTIVATE} about check ./thirdparty/
+	@$(MAKE) doc8
 
 check-deploy:
 	@echo "-> Check Django deployment settings"
@@ -152,4 +145,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile check doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
