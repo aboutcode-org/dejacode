@@ -40,7 +40,7 @@ from workflow.models import RequestTemplate
 
 class ExcludeFieldsSerializer(Serializer):
     exclude_fields = [
-        'request_count',
+        "request_count",
     ]
 
     def handle_field(self, obj, field):
@@ -54,88 +54,134 @@ class ExcludeFieldsSerializer(Serializer):
 
 
 class Command(BaseCommand):
-    help = ('Output the contents of the all DejaCode data for the '
-            'given Dataspace as a fixture.')
+    help = "Output the contents of the all DejaCode data for the " "given Dataspace as a fixture."
 
     def add_arguments(self, parser):
-        parser.add_argument('dataspace_name', help='Name of the Dataspace.')
+        parser.add_argument("dataspace_name", help="Name of the Dataspace.")
         parser.add_argument(
-            '--dataspace', action='store_true', dest='dataspace', default=False,
-            help='Only the given Dataspace will be dumped.')
+            "--dataspace",
+            action="store_true",
+            dest="dataspace",
+            default=False,
+            help="Only the given Dataspace will be dumped.",
+        )
         parser.add_argument(
-            '--user', action='store_true', dest='user', default=False,
-            help='Only Dataspace and User Models will be dumped.')
+            "--user",
+            action="store_true",
+            dest="user",
+            default=False,
+            help="Only Dataspace and User Models will be dumped.",
+        )
         parser.add_argument(
-            '--external', action='store_true', dest='external', default=False,
-            help='Only ExternalSource instances will be dumped.')
+            "--external",
+            action="store_true",
+            dest="external",
+            default=False,
+            help="Only ExternalSource instances will be dumped.",
+        )
         parser.add_argument(
-            '--policy', action='store_true', dest='policy', default=False,
-            help='Only UsagePolicy instances will be dumped.')
+            "--policy",
+            action="store_true",
+            dest="policy",
+            default=False,
+            help="Only UsagePolicy instances will be dumped.",
+        )
         parser.add_argument(
-            '--organization', action='store_true', dest='organization', default=False,
-            help='Only Organization Models will be dumped.')
+            "--organization",
+            action="store_true",
+            dest="organization",
+            default=False,
+            help="Only Organization Models will be dumped.",
+        )
         parser.add_argument(
-            '--license_library', action='store_true', dest='license_library', default=False,
-            help='Only License Library Models will be dumped.')
+            "--license_library",
+            action="store_true",
+            dest="license_library",
+            default=False,
+            help="Only License Library Models will be dumped.",
+        )
         parser.add_argument(
-            '--component_catalog', action='store_true', dest='component_catalog', default=False,
-            help='Only Component Catalog Models with some extra filtering will be dumped.')
+            "--component_catalog",
+            action="store_true",
+            dest="component_catalog",
+            default=False,
+            help="Only Component Catalog Models with some extra filtering will be dumped.",
+        )
         parser.add_argument(
-            '--workflow', action='store_true', dest='workflow', default=False,
-            help='Only Workflow Models will be dumped.')
+            "--workflow",
+            action="store_true",
+            dest="workflow",
+            default=False,
+            help="Only Workflow Models will be dumped.",
+        )
         parser.add_argument(
-            '--reporting', action='store_true', dest='reporting', default=False,
-            help='Only Reporting Models will be dumped.')
+            "--reporting",
+            action="store_true",
+            dest="reporting",
+            default=False,
+            help="Only Reporting Models will be dumped.",
+        )
         parser.add_argument(
-            '--product_portfolio', action='store_true', dest='product_portfolio', default=False,
-            help='Only Product Models will be dumped.')
+            "--product_portfolio",
+            action="store_true",
+            dest="product_portfolio",
+            default=False,
+            help="Only Product Models will be dumped.",
+        )
 
     def handle(self, *args, **options):
-        dataspace_name = options.get('dataspace_name')
+        dataspace_name = options.get("dataspace_name")
         try:
             dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(f'The Dataspace {dataspace_name} does not exit.')
+            raise CommandError(f"The Dataspace {dataspace_name} does not exit.")
 
         models = []
         data = []
 
-        if options.get('dataspace'):
+        if options.get("dataspace"):
             data = [dataspace]
 
-        if options.get('user'):
+        if options.get("user"):
             data = [dataspace]  # includes the dataspace
             data += list(get_user_model().objects.scope(dataspace))
 
-        if options.get('external'):
+        if options.get("external"):
             models = [ExternalSource]
 
-        if options.get('policy'):
+        if options.get("policy"):
             models = POLICY_MODELS[:]
 
-        if options.get('organization'):
+        if options.get("organization"):
             owner_limited_qs = get_owner_limited_qs(dataspace)
             data += list(owner_limited_qs)
-            subowner_limited_qs = Subowner.objects\
-                .filter(
+            subowner_limited_qs = (
+                Subowner.objects.filter(
                     parent__in=owner_limited_qs,
                     child__in=owner_limited_qs,
-                ).select_related(
-                    'parent__dataspace',
-                    'child__dataspace',
-                ).distinct()
+                )
+                .select_related(
+                    "parent__dataspace",
+                    "child__dataspace",
+                )
+                .distinct()
+            )
             data += list(subowner_limited_qs)
 
-        if options.get('license_library'):
+        if options.get("license_library"):
             models = LICENSE_LIBRARY_MODELS[:]
 
-        if options.get('product_portfolio'):
-            component_qs = Component.objects.scope(dataspace)\
-                .filter(productcomponents__isnull=False)\
+        if options.get("product_portfolio"):
+            component_qs = (
+                Component.objects.scope(dataspace)
+                .filter(productcomponents__isnull=False)
                 .exclude(id__in=get_component_limited_qs(dataspace))
-            owner_qs = Owner.objects.scope(dataspace)\
-                .filter(component__in=component_qs)\
+            )
+            owner_qs = (
+                Owner.objects.scope(dataspace)
+                .filter(component__in=component_qs)
                 .exclude(id__in=get_owner_limited_qs(dataspace))
+            )
             package_qs = Package.objects.scope(dataspace).filter(productpackages__isnull=False)
 
             data += list(owner_qs)
@@ -144,21 +190,23 @@ class Command(BaseCommand):
 
             models = PRODUCT_PORTFOLIO_MODELS[:]
 
-        if options.get('component_catalog'):
+        if options.get("component_catalog"):
             data += list(ComponentType.objects.scope(dataspace))
             data += list(ComponentStatus.objects.scope(dataspace))
             data += list(AcceptableLinkage.objects.scope(dataspace))
 
             components = get_component_limited_qs(dataspace)
-            component_ids = list(components.values_list('id', flat=True))
+            component_ids = list(components.values_list("id", flat=True))
             data += list(components)
 
-            subcomponents = Subcomponent.objects.filter(
-                parent_id__in=component_ids, child_id__in=component_ids
-            ).select_related(
-                'parent__dataspace',
-                'child__dataspace',
-            ).distinct()
+            subcomponents = (
+                Subcomponent.objects.filter(parent_id__in=component_ids, child_id__in=component_ids)
+                .select_related(
+                    "parent__dataspace",
+                    "child__dataspace",
+                )
+                .distinct()
+            )
             data += list(subcomponents)
 
             # From Django docs:
@@ -167,33 +215,39 @@ class Command(BaseCommand):
             # The handle_assigned_licenses() method is not called so we need to dump
             # ComponentAssignedLicense and SubcomponentAssignedLicense models data
             data += list(
-                ComponentAssignedLicense.objects
-                .filter(component__id__in=component_ids)
-                .select_related()
+                ComponentAssignedLicense.objects.filter(
+                    component__id__in=component_ids
+                ).select_related()
             )
             data += list(
-                SubcomponentAssignedLicense.objects
-                .filter(subcomponent__in=subcomponents)
-                .select_related()
+                SubcomponentAssignedLicense.objects.filter(
+                    subcomponent__in=subcomponents
+                ).select_related()
             )
 
             data += list(ComponentKeyword.objects.scope(dataspace))
 
             packages = (
-                Package.objects
-                .filter(componentassignedpackage__component__id__in=component_ids)
-                .select_related().distinct()
+                Package.objects.filter(componentassignedpackage__component__id__in=component_ids)
+                .select_related()
+                .distinct()
             )
             data += list(packages)
-            data += list(ComponentAssignedPackage.objects.filter(
-                component__id__in=component_ids).select_related().distinct())
-            data += list(PackageAssignedLicense.objects.filter(
-                package__in=packages).select_related().distinct())
+            data += list(
+                ComponentAssignedPackage.objects.filter(component__id__in=component_ids)
+                .select_related()
+                .distinct()
+            )
+            data += list(
+                PackageAssignedLicense.objects.filter(package__in=packages)
+                .select_related()
+                .distinct()
+            )
 
-        if options.get('workflow'):
+        if options.get("workflow"):
             models = [RequestTemplate, Question, Priority]
 
-        if options.get('reporting'):
+        if options.get("reporting"):
             models = REPORTING_MODELS[:]
 
         for model_class in models:

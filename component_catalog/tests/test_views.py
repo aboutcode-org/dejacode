@@ -4133,9 +4133,7 @@ class ComponentListViewTestCase(TestCase):
         expected = """
         <a href="{}#activity" class="r-link">
             <span class="badge text-bg-request">R</span>
-        </a>""".format(
-            self.component1.get_absolute_url()
-        )
+        </a>""".format(self.component1.get_absolute_url())
         self.assertContains(response, expected, html=True)
 
     def test_component_list_multi_send_about_files_view(self):

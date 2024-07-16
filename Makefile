@@ -59,7 +59,12 @@ doc8:
 	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ \
 	  --ignore-path docs/installation_and_sysadmin/ --quiet docs/
 
-valid: isort black doc8 check
+valid:
+	@echo "-> Run Ruff linter"
+	@${ACTIVATE} ruff check --fix
+	@echo "-> Run Ruff format"
+	@${ACTIVATE} ruff format
+	@$(MAKE) doc8
 
 bandit:
 	@echo "-> Run source code security analyzer"
@@ -69,22 +74,12 @@ bandit:
 	  --quiet
 
 check: doc8 bandit
-	@echo "-> Run flake8 (pycodestyle, pyflakes, mccabe) validation"
-	@${ACTIVATE} flake8 .
-	@echo "-> Run isort imports ordering validation"
-	@${ACTIVATE} isort --check-only .
-	@echo "-> Run black validation"
-	@${ACTIVATE} black --check ${BLACK_ARGS} .
+	@echo "-> Run Ruff linter validation (pycodestyle, pydocstyle, isort, and more)"
+	@${ACTIVATE} ruff check
+	@echo "-> Run Ruff format validation"
+	@${ACTIVATE} ruff format --check
 	@echo "-> Running ABOUT files validation"
 	@${ACTIVATE} about check ./thirdparty/
-	@$(MAKE) check-docstrings
-
-check-docstrings:
-	@echo "-> Run docstring validation"
-	@${ACTIVATE} pip install pydocstyle
-	@${ACTIVATE} pydocstyle component_catalog dejacode dejacode_toolkit dje \
-	  license_library notification organization policy product_portfolio purldb \
-	  reporting workflow
 
 check-deploy:
 	@echo "-> Check Django deployment settings"
@@ -165,4 +160,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser

@@ -1,6 +1,5 @@
 [tool.ruff]
 line-length = 100
-#target-version = "py312"
 exclude = [
     "migrations",
     "bin",
@@ -27,10 +26,10 @@ select = [
     "F",
     # pyupgrade
     "UP",
-    # flake8-bugbear
-#    "B",
+    # flake8-bandit
+    # "S",
     # flake8-simplify
-#    "SIM",
+    # "SIM",
     # isort
     "I",
     # McCabe complexity
@@ -51,5 +50,4 @@ section-order = [
 ]
 
 [tool.ruff.lint.mccabe]
-# Flag errors (`C901`) whenever the complexity level exceeds 25.
 max-complexity = 25

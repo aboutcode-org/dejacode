@@ -16,33 +16,44 @@ from dje.models import Dataspace
 
 
 class Command(BaseCommand):
-    help = 'Checks the given Dataspace for potential data problems.'
+    help = "Checks the given Dataspace for potential data problems."
     requires_system_checks = []
 
     def add_arguments(self, parser):
-        parser.add_argument('dataspace', nargs='?', help='Name of the Dataspace.')
-        parser.add_argument('--tag', '-t', action='append', dest='tags',
-                            help='Run only checks labeled with given tag.')
-        parser.add_argument('--list-tags', action='store_true', dest='list_tags',
-                            help='List available tags.')
-        parser.add_argument('--all-dataspaces', action='store_true', dest='all_dataspaces',
-                            help='Run the checks on all Dataspaces.')
+        parser.add_argument("dataspace", nargs="?", help="Name of the Dataspace.")
+        parser.add_argument(
+            "--tag",
+            "-t",
+            action="append",
+            dest="tags",
+            help="Run only checks labeled with given tag.",
+        )
+        parser.add_argument(
+            "--list-tags", action="store_true", dest="list_tags", help="List available tags."
+        )
+        parser.add_argument(
+            "--all-dataspaces",
+            action="store_true",
+            dest="all_dataspaces",
+            help="Run the checks on all Dataspaces.",
+        )
 
     def handle(self, *args, **options):
-        if options['list_tags']:
-            self.stdout.write('\n'.join(sorted(registry.tags_available())))
+        if options["list_tags"]:
+            self.stdout.write("\n".join(sorted(registry.tags_available())))
             return
 
-        dataspace = options.get('dataspace')
-        tags = options.get('tags')
+        dataspace = options.get("dataspace")
+        tags = options.get("tags")
 
-        if not dataspace and not options['all_dataspaces']:
-            raise CommandError('Enter a Dataspace.')
+        if not dataspace and not options["all_dataspaces"]:
+            raise CommandError("Enter a Dataspace.")
 
-        special_tags = ['reporting'], ['expression']
-        if options['all_dataspaces'] and tags not in special_tags:
-            raise CommandError('--all-dataspaces only usable with `--tag reporting` or '
-                               '`--tag expression`')
+        special_tags = ["reporting"], ["expression"]
+        if options["all_dataspaces"] and tags not in special_tags:
+            raise CommandError(
+                "--all-dataspaces only usable with `--tag reporting` or " "`--tag expression`"
+            )
 
         app_configs = {}
 
@@ -50,11 +61,11 @@ class Command(BaseCommand):
             try:
                 dataspace = Dataspace.objects.get(name=dataspace)
             except Dataspace.DoesNotExist:
-                raise CommandError(f'The Dataspace {dataspace} does not exit.')
+                raise CommandError(f"The Dataspace {dataspace} does not exit.")
 
             # Using `app_configs` as a workaround to provide the dataspace to
             # the check commands.
-            app_configs = {'dataspace': dataspace}
+            app_configs = {"dataspace": dataspace}
 
         if tags:
             try:
@@ -64,7 +75,7 @@ class Command(BaseCommand):
             else:
                 raise CommandError(f'No data check for the "{invalid_tag}" tag.')
         else:
-            tags = ['data', 'reporting', 'expression']  # default tags
+            tags = ["data", "reporting", "expression"]  # default tags
 
         self.check(
             app_configs=app_configs,
