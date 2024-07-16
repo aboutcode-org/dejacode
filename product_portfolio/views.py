@@ -469,27 +469,6 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
-    # def tab_dependencies(self):
-    #     dependencies_count = self.object.dependencies.count()
-    #     if not dependencies_count:
-    #         return
-    #
-    #     label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
-    #     template = "product_portfolio/tabs/tab_dependencies.html"
-    #
-    #     dependencies = self.object.dependencies.select_related(
-    #         "for_package",
-    #         "resolved_to_package",
-    #     )
-    #     tab_context = {
-    #         "dependencies": dependencies,
-    #     }
-    #
-    #     return {
-    #         "label": format_html(label),
-    #         "fields": [(None, tab_context, None, template)],
-    #     }
-
     def tab_dependencies(self):
         dependencies_count = self.object.dependencies.count()
         if not dependencies_count:

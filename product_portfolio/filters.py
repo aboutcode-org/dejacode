@@ -333,6 +333,18 @@ class DependencyFilterSet(DataspacedFilterSet):
             "resolved_to_package__version",
         ],
     )
+    is_runtime = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_optional = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_resolved = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_direct = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
 
     class Meta:
         model = ProductDependency

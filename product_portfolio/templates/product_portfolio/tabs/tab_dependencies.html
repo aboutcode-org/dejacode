@@ -35,15 +35,19 @@
       </th>
       <th>
         {% trans 'Is runtime' %}
+        {{ filter_dependency.form.is_runtime }}
       </th>
       <th>
         {% trans 'Is optional' %}
+        {{ filter_dependency.form.is_optional }}
       </th>
       <th>
         {% trans 'Is resolved' %}
+        {{ filter_dependency.form.is_resolved }}
       </th>
       <th>
         {% trans 'Is direct' %}
+        {{ filter_dependency.form.is_direct }}
       </th>
     </tr>
   </thead>
@@ -65,7 +69,7 @@
           {% endif %}
         </td>
         <td>
-          {{ dependency.scpe }}
+          {{ dependency.scope }}
         </td>
         <td>
           {{ dependency.is_runtime|as_icon }}
