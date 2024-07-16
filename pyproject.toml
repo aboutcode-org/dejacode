@@ -1,9 +1,9 @@
 [tool.ruff]
 line-length = 100
+#target-version = "py312"
 exclude = [
     "migrations",
     "bin",
-    "build",
     "data",
     "Script",
     "Lib",
@@ -18,8 +18,10 @@ exclude = [
 select = [
     # pycodestyle
     "E",
+    # pycodestyle warnings
+    "W",
     # Pyflakes
-#    "F",
+    "F",
     # pyupgrade
     "UP",
     # flake8-bugbear
@@ -28,6 +30,8 @@ select = [
 #    "SIM",
     # isort
     "I",
+    # McCabe complexity
+    "C901",
 ]
 ignore = ["UP032"]
 
@@ -42,3 +46,7 @@ section-order = [
     "first-party",
     "local-folder",
 ]
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 25.
+max-complexity = 25
