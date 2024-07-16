@@ -1381,9 +1381,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
     )
     is_direct = models.BooleanField(
         default=False,
-        help_text=_(
-            "True if this is a direct, first-level dependency relationship " "for a package."
-        ),
+        help_text=_("True if this is a direct, first-level dependency relationship for a package."),
     )
 
     objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
@@ -1399,17 +1397,6 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
             models.Index(fields=["is_optional"]),
             models.Index(fields=["is_resolved"]),
             models.Index(fields=["is_direct"]),
-        ]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["product", "dependency_uid"],
-                condition=~models.Q(dependency_uid=""),
-                name="%(app_label)s_%(class)s_unique_dependency_uid_within_product",
-            ),
-            models.UniqueConstraint(
-                fields=["dataspace", "uuid"],
-                name="%(app_label)s_%(class)s_unique_uuid_within_dataspace",
-            ),
         ]
 
     def __str__(self):
