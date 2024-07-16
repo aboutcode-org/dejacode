@@ -60,8 +60,7 @@ def regen_fixtures():
                 qs = qs.filter(name="nexB")
             else:
                 qs = qs.scope_by_name("nexB")
-            for obj in qs.iterator():
-                yield obj
+            yield from qs.iterator()
 
     serializer = NullPKSerializer()
     data = serializer.serialize(
@@ -134,16 +133,15 @@ class SearchQualityTestCase(TestCase):
             self.assertEqual(
                 len(expected_results),
                 len(test_values),
-                'Unordered expected items "%r" differ in length with results items :"%r"'
-                % (expected_results, test_values),
+                f'Unordered expected items "{expected_results}" differ in length with '
+                f'results items :"{test_values}"',
             )
             msgs = []
             for i, er in enumerate(expected_results):
                 if er != "*":
                     if er not in test_values:
                         msgs.append(
-                            'Unordered expected item "%s" missing in results: "%r"'
-                            % (er, test_values)
+                            f'Unordered expected item "{er}" missing in results: "{test_values}"'
                         )
             if msgs:
                 self.fail("\n".join(msgs))
@@ -199,7 +197,7 @@ def search_tst(query, expected_results, ordered, exact, field, rownum, notes):
     # build a reasonably unique and valid function name
     # based on the up to 50 chars from the query and a row number
     test_func_name = "test_search_%04d_" % rownum + python_safe(
-        query[:50] + "_%s" % notes if notes else ""
+        query[:50] + str(notes) if notes else ""
     )
     # these are needed to ensure we can use the tests name for selection in discovery
     search_test_func.__name__ = str(test_func_name)

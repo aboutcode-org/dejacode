@@ -154,7 +154,7 @@ def is_var(segment):
     Return the variable name if a url segment is a variable.
     Return False or None otherwise.
     """
-    if segment.startswith(("<")) and segment.endswith(">"):
+    if segment.startswith("<") and segment.endswith(">"):
         return segment.strip("<>")
 
 

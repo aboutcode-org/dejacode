@@ -4578,7 +4578,7 @@ class GrappelliRelatedViewTestCase(TestCase):
             reverse("grp_related_lookup"), self.c1.pk
         )
         response = self.client.get(url)
-        expected = [{"label": "{0}".format(self.c1), "safe": False, "value": str(self.c1.pk)}]
+        expected = [{"label": str(self.c1), "safe": False, "value": str(self.c1.pk)}]
         self.assertEqual(expected, json.loads(response.content))
 
     def test_reference_dataspace_users_access_another_dataspaces_through_grappelli_lookup(self):
@@ -4591,7 +4591,7 @@ class GrappelliRelatedViewTestCase(TestCase):
         response = self.client.get(url)
         expected = [
             {
-                "label": "{0}".format(self.other_component),
+                "label": str(self.other_component),
                 "safe": False,
                 "value": str(self.other_component.pk),
             }

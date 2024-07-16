@@ -21,7 +21,7 @@ select = [
     # Pyflakes
 #    "F",
     # pyupgrade
-#    "UP",
+    "UP",
     # flake8-bugbear
 #    "B",
     # flake8-simplify
@@ -29,6 +29,7 @@ select = [
     # isort
     "I",
 ]
+ignore = ["UP032"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
