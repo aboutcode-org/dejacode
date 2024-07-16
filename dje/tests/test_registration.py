@@ -28,9 +28,7 @@ from dje.tests import refresh_url_cache
     ADMINS=[("admin", "admin@nexb.com")],
 )
 class DejaCodeUserRegistrationTestCase(TestCase):
-    """
-    Tests for the dejacode.com registration workflow.
-    """
+    """Tests for the dejacode.com registration workflow."""
 
     def setUp(self):
         refresh_url_cache()

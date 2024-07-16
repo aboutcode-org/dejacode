@@ -86,9 +86,7 @@ class ModelMaker:
         return self.make(model, _quantity, make_m2m, **attrs)
 
     def make(self, model, _quantity=None, make_m2m=False, **attrs):
-        """
-        Create persisted instances from a given model and associated models.
-        """
+        """Create persisted instances from a given model and associated models."""
         if is_dataspace_related(model):
             attrs["dataspace"] = self.dataspace
 
@@ -130,9 +128,7 @@ class ModelMaker:
 
 
 def collect_views():
-    """
-    Yield all view and url data collected from the root urlconf.
-    """
+    """Yield all view and url data collected from the root urlconf."""
     urlconf = __import__(settings.ROOT_URLCONF, {}, {}, [""])
     views_from_urls = extract_views_from_urlpatterns(urlconf.urlpatterns)
     for func, regex, namespace, url_name in views_from_urls:
@@ -159,16 +155,12 @@ def is_var(segment):
 
 
 def to_segments(url_path):
-    """
-    Return a list o segments from a url path
-    """
+    """Return a list o segments from a url path"""
     return url_path.strip("/").split("/")
 
 
 def to_urlpath(segments):
-    """
-    Return a URL path from list of segments
-    """
+    """Return a URL path from list of segments"""
     return "/" + "/".join(segments) + "/"
 
 
@@ -233,16 +225,12 @@ def model_for_url(url_path):
 
 
 def checkable_url(view_name, *args, **kwargs):
-    """
-    Return a URL suitable for testing given a view name and crafted args.
-    """
+    """Return a URL suitable for testing given a view name and crafted args."""
     return reverse(view_name, args=args, **kwargs)
 
 
 def build_model(ds, class_):
-    """
-    Build a random model in dataspace ds. Return the saved model object.
-    """
+    """Build a random model in dataspace ds. Return the saved model object."""
     maker = ModelMaker(ds)
     return maker(class_)
 

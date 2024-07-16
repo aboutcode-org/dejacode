@@ -15,11 +15,14 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+# Rules: https://docs.astral.sh/ruff/rules/
 select = [
     # pycodestyle
     "E",
     # pycodestyle warnings
     "W",
+    # pydocstyle
+    "D",
     # Pyflakes
     "F",
     # pyupgrade
@@ -33,7 +36,7 @@ select = [
     # McCabe complexity
     "C901",
 ]
-ignore = ["UP032"]
+ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
