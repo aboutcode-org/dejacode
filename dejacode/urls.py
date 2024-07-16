@@ -48,6 +48,7 @@ from organization.api import OwnerViewSet
 from policy.api import UsagePolicyViewSet
 from product_portfolio.api import CodebaseResourceViewSet
 from product_portfolio.api import ProductComponentViewSet
+from product_portfolio.api import ProductDependencyViewSet
 from product_portfolio.api import ProductPackageViewSet
 from product_portfolio.api import ProductViewSet
 from reporting.api import ReportViewSet
@@ -69,6 +70,7 @@ api_router.register("keywords", KeywordViewSet)
 api_router.register("packages", PackageViewSet)
 api_router.register("products", ProductViewSet)
 api_router.register("product_components", ProductComponentViewSet)
+api_router.register("product_dependencies", ProductDependencyViewSet)
 api_router.register("product_packages", ProductPackageViewSet)
 api_router.register("codebase_resources", CodebaseResourceViewSet)
 api_router.register("request_templates", RequestTemplateViewSet)

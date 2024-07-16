@@ -45,6 +45,7 @@ from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 
 base_extra_kwargs = {
@@ -777,5 +778,108 @@ class CodebaseResourceViewSet(ProductRelatedViewSet):
                 # This one is different from the `default_select_prefetch` as its using the m2m
                 "deployed_to__deployed_to",
                 "product",
+            )
+        )
+
+
+class ProductDependencyFilterSet(DataspacedAPIFilterSet):
+    uuid = MultipleUUIDFilter()
+    product = NameVersionFilter(
+        name_field_name="product__name",
+        version_field_name="product__version",
+    )
+    last_modified_date = LastModifiedDateFilter()
+
+    class Meta:
+        model = ProductDependency
+        fields = (
+            "uuid",
+            "product",
+            "dependency_uid",
+            "scope",
+            "datasource_id",
+            "is_runtime",
+            "is_optional",
+            "is_resolved",
+            "is_direct",
+            "last_modified_date",
+        )
+
+
+class ProductDependencySerializer(DataspacedSerializer):
+    product = NameVersionHyperlinkedRelatedField(
+        view_name="api_v2:product-detail",
+        lookup_field="uuid",
+        allow_null=False,
+    )
+    for_package = DataspacedHyperlinkedRelatedField(
+        view_name="api_v2:package-detail",
+        lookup_field="uuid",
+        html_cutoff=10,
+        slug_field="filename",
+    )
+    resolved_to_package = DataspacedHyperlinkedRelatedField(
+        view_name="api_v2:package-detail",
+        lookup_field="uuid",
+        html_cutoff=10,
+        slug_field="filename",
+    )
+
+    class Meta:
+        model = ProductDependency
+        fields = (
+            "api_url",
+            "uuid",
+            "product",
+            "dependency_uid",
+            "for_package",
+            "resolved_to_package",
+            "extracted_requirement",
+            "scope",
+            "datasource_id",
+            "is_runtime",
+            "is_optional",
+            "is_resolved",
+            "is_direct",
+            "created_date",
+            "last_modified_date",
+        )
+        extra_kwargs = {
+            **base_extra_kwargs,
+            "api_url": {
+                "view_name": "api_v2:productdependency-detail",
+                "lookup_field": "uuid",
+            },
+        }
+
+
+class ProductDependencyViewSet(ProductRelatedViewSet):
+    queryset = ProductDependency.objects.none()
+    serializer_class = ProductDependencySerializer
+    filterset_class = ProductDependencyFilterSet
+    search_fields = (
+        "for_package__filename",
+        "for_package__type",
+        "for_package__namespace",
+        "for_package__name",
+        "for_package__version",
+        "resolved_to_package__filename",
+        "resolved_to_package__type",
+        "resolved_to_package__namespace",
+        "resolved_to_package__name",
+        "resolved_to_package__version",
+    )
+    ordering_fields = (
+        "for_package",
+        "resolved_to_package",
+    )
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "for_package__dataspace",
+                "resolved_to_package__dataspace",
             )
         )
