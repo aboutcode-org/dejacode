@@ -1,0 +1,42 @@
+[tool.ruff]
+line-length = 100
+exclude = [
+    "migrations",
+    "bin",
+    "data",
+    "Script",
+    "Lib",
+    "lib",
+    "lib64",
+    "local",
+    "var",
+    "thirdparty"
+]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+#    "E",
+    # Pyflakes
+#    "F",
+    # pyupgrade
+#    "UP",
+    # flake8-bugbear
+#    "B",
+    # flake8-simplify
+#    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+sections = { django = ["django"] }
+section-order = [
+    "future",
+    "standard-library",
+    "django",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
