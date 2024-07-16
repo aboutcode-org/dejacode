@@ -259,7 +259,7 @@ class CodebaseResourceImportForm(CleanProductMixin, BaseImportModelForm):
 
         # Workaround default `dict` value on the model
         additional_details = data.get(self.add_prefix("additional_details"))
-        if not additional_details or additional_details == dict:
+        if not additional_details:
             data[self.add_prefix("additional_details")] = "{}"
 
         try:

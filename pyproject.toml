@@ -3,6 +3,7 @@ line-length = 100
 exclude = [
     "migrations",
     "bin",
+    "build",
     "data",
     "Script",
     "Lib",
@@ -16,7 +17,7 @@ exclude = [
 [tool.ruff.lint]
 select = [
     # pycodestyle
-#    "E",
+    "E",
     # Pyflakes
 #    "F",
     # pyupgrade
