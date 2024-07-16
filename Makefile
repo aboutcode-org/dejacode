@@ -46,14 +46,6 @@ envfile:
 	@mkdir -p $(shell dirname ${ENV_FILE}) && touch ${ENV_FILE}
 	@echo "SECRET_KEY=${GET_SECRET_KEY}" > ${ENV_FILE}
 
-isort:
-	@echo "-> Apply isort changes to ensure proper imports ordering"
-	@${ACTIVATE} isort .
-
-black:
-	@echo "-> Apply black code formatter"
-	@${ACTIVATE} black ${BLACK_ARGS} .
-
 doc8:
 	@echo "-> Run doc8 validation"
 	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ \
@@ -160,4 +152,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile check bandit doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
