@@ -2170,8 +2170,16 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
     scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 
+    results = scancode_project.results
+
+    # Backward compatibility
+    is_old_results_format = any(isinstance(entry, list) for entry in results.values())
+    if is_old_results_format:
+        results = {key: {"package": value} for key, value in results.items() if value}
+
     context = {
         "scancode_project": scancode_project,
+        "results": results,
         "scan_data": scan_data,
     }
 

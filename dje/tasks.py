@@ -206,15 +206,21 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
         return
 
     scancode_project.status = ScanCodeProject.Status.SUCCESS
-    msg = f"- Imported {len(created)} package{pluralize(created)}."
-    scancode_project.append_to_log(msg)
 
-    if existing:
-        msg = f"- {len(existing)} package(s) was/were already available in the Dataspace."
+    for object_type, values in created.items():
+        msg = f"- Imported {len(values)} {object_type}{pluralize(values)}."
         scancode_project.append_to_log(msg)
 
-    if errors:
-        scancode_project.append_to_log(f"- {len(errors)} errors occurred during import.")
+    for object_type, values in existing.items():
+        msg = (
+            f"- {len(values)} {object_type}{pluralize(values)} were already "
+            f"available in the Dataspace."
+        )
+        scancode_project.append_to_log(msg)
+
+    for object_type, values in errors.items():
+        msg = f"- {len(values)} {object_type} error{pluralize(values)} " f"occurred during import."
+        scancode_project.append_to_log(msg)
 
     scancode_project.save()
     description = "\n".join(scancode_project.import_log)

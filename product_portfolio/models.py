@@ -1299,9 +1299,9 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         created, existing, errors = importer.save()
 
         self.results = {
-            "created": [str(package) for package in created],
-            "existing": [str(package) for package in existing],
-            "errors": [str(error) for error in errors],
+            "created": created,
+            "existing": existing,
+            "errors": errors,
         }
         self.save()
 

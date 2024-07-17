@@ -442,8 +442,9 @@ class ImportFromScan:
             self.validate_toolkit_options(scan_options)
 
         elif tool_name == "scanpipe":
-            runs = header.get("runs", [])
+            pass
             # TODO: Reconsider the value of this, as if there's packages data we should
+            # runs = header.get("runs", [])
             # accept the input anyway
             # self.validate_pipeline_runs(runs)
 
@@ -476,7 +477,8 @@ class ImportFromScan:
     #         "scan_single_package",
     #     )
     #
-    #     has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in valid_pipelines]
+    #     has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in
+    #     valid_pipelines]
     #
     #     if not has_a_valid_pipeline:
     #         raise ValidationError(
@@ -639,9 +641,9 @@ class ImportPackageFromScanCodeIO:
 
     def __init__(self, user, project_uuid, product, update_existing=False, scan_all_packages=False):
         self.licensing = Licensing()
-        self.created = []
-        self.existing = []
-        self.errors = []
+        self.created = defaultdict(list)
+        self.existing = defaultdict(list)
+        self.errors = defaultdict(list)
         # Use to assign dependencies to the correct Package instance
         self.package_uid_mapping = {}
 
@@ -664,7 +666,7 @@ class ImportPackageFromScanCodeIO:
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
 
-        return self.created, self.existing, self.errors
+        return dict(self.created), dict(self.existing), dict(self.errors)
 
     def import_packages(self):
         for package_data in self.packages:
@@ -684,7 +686,7 @@ class ImportPackageFromScanCodeIO:
         # Check if the Package already exists in the local Dataspace
         try:
             package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
-            self.existing.append(package)
+            self.existing["package"].append(str(package))
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             package = None
 
@@ -697,9 +699,9 @@ class ImportPackageFromScanCodeIO:
                 reference_object = qs.first()
                 try:
                     package = copy_object(reference_object, user_dataspace, self.user, update=False)
-                    self.created.append(package)
+                    self.created["package"].append(str(package))
                 except IntegrityError as error:
-                    self.errors.append(error)
+                    self.errors["package"].append(str(error))
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -712,9 +714,9 @@ class ImportPackageFromScanCodeIO:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
             except ValidationError as errors:
-                self.errors.append(errors)
+                self.errors["package"].append(str(errors))
                 return
-            self.created.append(package)
+            self.created["package"].append(str(package))
 
         ProductPackage.objects.get_or_create(
             product=self.product,
@@ -735,6 +737,7 @@ class ImportPackageFromScanCodeIO:
 
         dependency_qs = ProductDependency.objects.scope(self.user.dataspace)
         if dependency_qs.filter(product=self.product, dependency_uid=dependency_uid).exists():
+            self.existing["dependency"].append(str(dependency_uid))
             return
 
         dependency_data["product"] = self.product
@@ -746,7 +749,13 @@ class ImportPackageFromScanCodeIO:
             )
 
         try:
-            ProductDependency.create_from_data(self.user, dependency_data, validate=True)
+            dependency = ProductDependency.create_from_data(
+                user=self.user,
+                data=dependency_data,
+                validate=True,
+            )
         except ValidationError as errors:
-            # self.errors.append(errors)
+            self.errors["dependency"].append(str(errors))
             return
+
+        self.created["dependency"].append(str(dependency))
