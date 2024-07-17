@@ -583,7 +583,14 @@ class TabContentView(
     DataspaceScopeMixin,
     DetailView,
 ):
-    pass
+    tab_id = None
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        if self.tab_id:
+            context_data["tab_id"] = self.tab_id
+            context_data["tab_id_html"] = f"#tab_{self.tab_id}"
+        return context_data
 
 
 class SendAboutFilesMixin:

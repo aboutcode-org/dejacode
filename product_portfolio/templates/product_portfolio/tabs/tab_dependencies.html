@@ -15,7 +15,9 @@
         <div class="h6 mt-2 mb-0 smaller">
           {% if page_obj.paginator.count != total_count %}
             {{ page_obj.paginator.count|intcomma }} of
-            <a href="?all=true#inventory">{{ total_count }} results</a>
+            <a href="#" hx-get="{{ request.path }}?all=true#inventory" hx-target="{{ tab_id_html }}">
+              {{ total_count }} results
+            </a>
           {% else %}
             {{ page_obj.paginator.count|intcomma }} results
           {% endif %}
@@ -24,7 +26,7 @@
     </ul>
   </div>
   <div class="col-auto">
-    {% include 'pagination/object_list_pagination.html' %}
+    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
   </div>
 </div>
 
@@ -110,6 +112,6 @@
   </tbody>
 </table>
 <div class="d-flex justify-content-center">
-  {% include 'pagination/object_list_pagination.html' %}
+  {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
 </div>
 {% endspaceless %}
