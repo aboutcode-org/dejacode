@@ -19,7 +19,7 @@
       <tr>
         <th>{% trans 'Import type' %}</th>
         <th style="width:115px;">{% trans 'Status' %}</th>
-        <th>{% trans 'Input file' %}</th>
+        <th>{% trans 'Input' %}</th>
         <th colspan="2">{% trans 'Log' %}</th>
       </tr>
     </thead>
@@ -54,8 +54,16 @@
             {% endif %}
             {% include 'component_catalog/includes/scan_status.html' with status=scancode_project.status has_errors=scancode_project.has_errors only %}
           </td>
-          <td>{{ scancode_project.input_file_filename|default_if_none:"" }}</td>
-          <td colspan="2">{{ scancode_project.import_log|join:"<br>" }}</td>
+          <td>
+            {% if scancode_project.input_file %}
+              File: {{ scancode_project.input_file_filename }}
+            {% elif scancode_project.project_uuid %}
+              Project: {{ scancode_project.project_uuid }}
+            {% endif %}
+          </td>
+          <td colspan="2">
+            {{ scancode_project.import_log|join:"<br>" }}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
