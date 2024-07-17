@@ -435,7 +435,7 @@ def render_expression_as_html(expression, dataspace):
     formatted_expression = get_formatted_expression(licensing, expression, show_policy)
     return format_html(
         '<span class="license-expression">{}</span>',
-        mark_safe(formatted_expression),  # nosec
+        mark_safe(formatted_expression),
     )
 
 
