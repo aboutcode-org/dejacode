@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 ENV APP_NAME dejacode
 ENV APP_USER app
 ENV APP_DIR /opt/$APP_NAME
-ENV VIRTUAL_ENV /opt/$APP_NAME/venv
+ENV VENV_LOCATION /opt/$APP_NAME/.venv
 
 # Force Python unbuffered stdout and stderr (they are flushed to terminal immediately)
 ENV PYTHONUNBUFFERED 1
@@ -51,9 +51,9 @@ USER $APP_USER
 RUN mkdir -p /var/$APP_NAME/static/ /var/$APP_NAME/media/
 
 # Create the virtualenv
-RUN python -m venv $VIRTUAL_ENV
+RUN python -m venv $VENV_LOCATION
 # Enable the virtualenv, similar effect as "source activate"
-ENV PATH $VIRTUAL_ENV/bin:$PATH
+ENV PATH $VENV_LOCATION/bin:$PATH
 
 # Install the dependencies before the codebase COPY for proper Docker layer caching
 COPY --chown=$APP_USER:$APP_USER setup.cfg setup.py $APP_DIR/

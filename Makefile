@@ -7,16 +7,14 @@
 #
 
 PYTHON_EXE=python3.12
-MANAGE=bin/python manage.py
-ACTIVATE?=. bin/activate;
+VENV_LOCATION=.venv
+ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
+MANAGE=${VENV_LOCATION}/bin/python manage.py
 PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
 GET_SECRET_KEY=`cat /dev/urandom | head -c 50  | base64`
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
 ENV_FILE=.env
-FIXTURES_LOCATION=./dje/fixtures
 DOCS_LOCATION=./docs
-MODIFIED_PYTHON_FILES=`git ls-files -m "*.py"`
-BLACK_ARGS=--exclude="migrations|data|lib/|lib64|bin|var|dist|.cache" -l 100
 DOCKER_COMPOSE=docker compose -f docker-compose.yml
 DOCKER_EXEC=${DOCKER_COMPOSE} exec
 DB_NAME=dejacode_db
@@ -28,7 +26,7 @@ TIMESTAMP=$(shell date +"%Y-%m-%d_%H%M")
 
 virtualenv:
 	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
-	${PYTHON_EXE} -m venv .
+	${PYTHON_EXE} -m venv ${VENV_LOCATION}
 
 conf: virtualenv
 	@echo "-> Install dependencies"
@@ -72,7 +70,7 @@ check-deploy:
 
 clean:
 	@echo "-> Cleaning the Python env"
-	rm -rf bin/ lib/ lib64/ include/ build/ dist/ share/ pip-selfcheck.json pyvenv.cfg
+	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 initdb:
