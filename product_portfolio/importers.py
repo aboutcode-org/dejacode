@@ -443,7 +443,9 @@ class ImportFromScan:
 
         elif tool_name == "scanpipe":
             runs = header.get("runs", [])
-            self.validate_pipeline_runs(runs)
+            # TODO: Reconsider the value of this, as if there's packages data we should
+            # accept the input anyway
+            # self.validate_pipeline_runs(runs)
 
     @staticmethod
     def validate_toolkit_options(scan_options):
@@ -461,25 +463,25 @@ class ImportFromScan:
             options_str = " ".join(missing_options)
             raise ValidationError(f"The Scan run is missing those required options: {options_str}")
 
-    @staticmethod
-    def validate_pipeline_runs(runs):
-        """Raise a ValidationError if at least one of the supported pipeline was not run."""
-        valid_pipelines = (
-            "analyze_docker_image",
-            "analyze_root_filesystem_or_vm_image",
-            "analyze_windows_docker_image",
-            "inspect_packages",
-            "map_deploy_to_develop",
-            "scan_codebase",
-            "scan_single_package",
-        )
-
-        has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in valid_pipelines]
-
-        if not has_a_valid_pipeline:
-            raise ValidationError(
-                "This ScanPipe output does not have results from a valid pipeline."
-            )
+    # @staticmethod
+    # def validate_pipeline_runs(runs):
+    #     """Raise a ValidationError if at least one of the supported pipeline was not run."""
+    #     valid_pipelines = (
+    #         "analyze_docker_image",
+    #         "analyze_root_filesystem_or_vm_image",
+    #         "analyze_windows_docker_image",
+    #         "inspect_packages",
+    #         "map_deploy_to_develop",
+    #         "scan_codebase",
+    #         "scan_single_package",
+    #     )
+    #
+    #     has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in valid_pipelines]
+    #
+    #     if not has_a_valid_pipeline:
+    #         raise ValidationError(
+    #             "This ScanPipe output does not have results from a valid pipeline."
+    #         )
 
     def import_packages(self):
         product_packages_count = 0
@@ -673,7 +675,6 @@ class ImportPackageFromScanCodeIO:
             self.import_dependency(dependency_data)
 
     def import_package(self, package_data):
-        package_uid = package_data.get("package_uid")
         unique_together_lookups = {
             field: value
             for field in self.unique_together_fields
@@ -726,29 +727,26 @@ class ImportPackageFromScanCodeIO:
             },
         )
 
+        package_uid = package_data.get("package_uid")
         self.package_uid_mapping[package_uid] = package
 
     def import_dependency(self, dependency_data):
-        dependency = None
-        # TODO: Check if the Dependency already exists in the local Dataspace
-        # try:
-        #     dependency = ProductDependency.objects.scope(self.user.dataspace)
-        #     .get(**unique_together_lookups)
-        #     self.existing.append(package)
-        # except (ObjectDoesNotExist, MultipleObjectsReturned):
-        #     dependency = None
+        dependency_uid = dependency_data.get("dependency_uid")
+
+        dependency_qs = ProductDependency.objects.scope(self.user.dataspace)
+        if dependency_qs.filter(product=self.product, dependency_uid=dependency_uid).exists():
+            return
 
         dependency_data["product"] = self.product
-        for_package_uid = dependency_data["for_package_uid"]
-        dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
-        resolved_to_package_uid = dependency_data["resolved_to_package_uid"]
-        dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
-            resolved_to_package_uid
-        )
+        if for_package_uid := dependency_data.get("for_package_uid"):
+            dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
+        if resolved_to_package_uid := dependency_data.get("resolved_to_package_uid"):
+            dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
+                resolved_to_package_uid
+            )
 
-        if not dependency:
-            try:
-                ProductDependency.create_from_data(self.user, dependency_data, validate=True)
-            except ValidationError as errors:
-                print(errors)
-                return
+        try:
+            ProductDependency.create_from_data(self.user, dependency_data, validate=True)
+        except ValidationError as errors:
+            # self.errors.append(errors)
+            return
