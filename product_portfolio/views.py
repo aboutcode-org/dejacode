@@ -974,6 +974,7 @@ class ProductTabDependenciesView(
             {
                 "filter_dependency": filter_dependency,
                 "page_obj": page_obj,
+                "total_count": self.object.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
             }
         )

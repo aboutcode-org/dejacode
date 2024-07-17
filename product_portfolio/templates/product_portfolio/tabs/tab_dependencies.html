@@ -13,9 +13,9 @@
       </li>
       <li class="nav-item">
         <div class="h6 mt-2 mb-0 smaller">
-          {% if page_obj.paginator.count != inventory_count %}
+          {% if page_obj.paginator.count != total_count %}
             {{ page_obj.paginator.count|intcomma }} of
-            <a href="?all=true#inventory">{{ inventory_count|intcomma }} results</a>
+            <a href="?all=true#inventory">{{ total_count }} results</a>
           {% else %}
             {{ page_obj.paginator.count|intcomma }} results
           {% endif %}
