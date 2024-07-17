@@ -13,6 +13,9 @@ import tempfile
 from pathlib import Path
 
 import environ
+import ldap
+from django_auth_ldap.config import GroupOfNamesType
+from django_auth_ldap.config import LDAPSearch
 
 # The home directory of the dejacode user that owns the installation.
 PROJECT_DIR = environ.Path(__file__) - 1
@@ -684,10 +687,6 @@ if IS_TESTS:
 
 
 # LDAP Configuration
-
-import ldap
-from django_auth_ldap.config import GroupOfNamesType
-from django_auth_ldap.config import LDAPSearch
 
 # This authentication backend enables users to authenticate against an
 # LDAP server.

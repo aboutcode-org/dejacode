@@ -46,7 +46,7 @@ class DropDownWidget(LinkWidget):
         if value is None:
             value = ""
         final_attrs = self.build_attrs(self.attrs, extra_attrs=attrs)
-        output = ["<div%s>" % flatatt(final_attrs)]
+        output = [f"<div{flatatt(final_attrs)}>"]
         options = self.render_options(choices, [value], name)
         if options:
             output.append(options)
@@ -119,7 +119,7 @@ class SortDropDownWidget(DropDownRightWidget):
     """
 
 
-class BootstrapSelectMixin(object):
+class BootstrapSelectMixin:
     def __init__(self, attrs=None, choices=(), search=True, header_title="", search_placeholder=""):
         self.search = search
         self.header_title = header_title

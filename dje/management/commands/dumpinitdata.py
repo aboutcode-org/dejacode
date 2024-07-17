@@ -29,14 +29,14 @@ from workflow.models import RequestTemplate
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('dataspace_name', help='Name of the Dataspace.')
+        parser.add_argument("dataspace_name", help="Name of the Dataspace.")
 
     def handle(self, *args, **options):
-        dataspace_name = options.get('dataspace_name')
+        dataspace_name = options.get("dataspace_name")
         try:
             dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(f'The Dataspace {dataspace_name} does not exit.')
+            raise CommandError(f"The Dataspace {dataspace_name} does not exit.")
 
         models = []
         data = [

@@ -308,9 +308,7 @@ class AttributionGenerationTest(TestCase):
             <a href="#license_license1">License1</a> AND <a href="#license_license2">License2</a>
              and the third-party licenses listed below.
         </p>
-        """.format(
-            self.product1
-        )
+        """.format(self.product1)
         self.assertContains(response, expected, html=True)
         self.assertContains(response, '<h2 id="license_texts">Licenses that apply to Product1</h2>')
         self.assertContains(response, '<a href="#license_license1">License1</a>')
@@ -666,9 +664,7 @@ class AttributionGenerationTest(TestCase):
                 <li><a href="#{}">Component2 0.2</a></li>
                 <li><a href="#{}">Component3 0.3</a></li>
             </ul>
-            """.format(
-            *[get_html_id(node) for node in unique_component_nodes]
-        )
+            """.format(*[get_html_id(node) for node in unique_component_nodes])
         self.assertContains(response, expected, html=True)
 
         response = self.client.get(

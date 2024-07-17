@@ -105,7 +105,7 @@ class WorkflowModelsTestCase(TestCase):
         }
 
     def test_request_model_get_serialized_data_as_list(self):
-        self.assertEqual(type(""), type(self.request1.serialized_data))
+        self.assertIsInstance(self.request1.serialized_data, str)
 
         old_as_list = [{"input_type": "CharField", "value": "a", "label": "Project"}]
         self.request1.serialized_data = json.dumps(old_as_list)
@@ -152,7 +152,7 @@ class WorkflowModelsTestCase(TestCase):
         # Forcing a non-unicode string for the template
         self.assertEqual(
             "\u2013<br>None<br>No",
-            self.request1.get_serialized_data_as_html(html_template=str("{value}")),
+            self.request1.get_serialized_data_as_html(html_template="{value}"),
         )
 
     def test_request_model_get_involved_users(self):
