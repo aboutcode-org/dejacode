@@ -638,39 +638,70 @@ class ProductTabInventoryView(
 
         context["inventory_count"] = self.object.productinventoryitem_set.count()
 
+        licenses_prefetch = models.Prefetch(
+            "licenses", License.objects.select_related("usage_policy")
+        )
+
+        productpackage_qs = (
+            self.object.productpackages.select_related(
+                "package__dataspace",
+                "package__usage_policy",
+                "review_status",
+                "purpose",
+            )
+            .prefetch_related(
+                licenses_prefetch,
+            )
+            .order_by(
+                "feature",
+                "package__type",
+                "package__namespace",
+                "package__name",
+                "package__version",
+                "package__filename",
+            )
+        )
+
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
-            queryset=self.object.productpackages,
+            queryset=productpackage_qs,
             dataspace=self.object.dataspace,
             prefix="inventory",
             anchor="#inventory",
+        )
+
+        productcomponent_qs = (
+            self.object.productcomponents.select_related(
+                "component__dataspace",
+                "component__owner__dataspace",
+                "component__usage_policy",
+                "review_status",
+                "purpose",
+            )
+            .prefetch_related(
+                "component__packages",
+                "component__children",
+                licenses_prefetch,
+            )
+            .order_by(
+                "feature",
+                "component__name",
+                "component__version",
+                "name",
+                "version",
+            )
         )
 
         filter_productcomponent = ProductComponentFilterSet(
             self.request.GET,
-            queryset=self.object.productcomponents,
+            queryset=productcomponent_qs,
             dataspace=self.object.dataspace,
             prefix="inventory",
             anchor="#inventory",
         )
 
-        productcomponent_qs = filter_productcomponent.qs.order_by(
-            "feature",
-            "component__name",
-            "component__version",
-            "name",
-            "version",
-        )
-
-        productpackage_qs = filter_productpackage.qs.order_by(
-            "feature",
-            "package__type",
-            "package__namespace",
-            "package__name",
-            "package__version",
-            "package__filename",
-        )
-
+        productcomponent_qs = filter_productcomponent.qs
+        productpackage_qs = filter_productpackage.qs
         # 1. Combine components and packages into a single list of object
         filtered_inventory_items = list(productcomponent_qs) + list(productpackage_qs)
 
@@ -924,8 +955,8 @@ class ProductTabDependenciesView(
         context_data = super().get_context_data(**kwargs)
 
         dependency_qs = self.object.dependencies.select_related(
-            "for_package",
-            "resolved_to_package",
+            "for_package__dataspace",
+            "resolved_to_package__dataspace",
         )
 
         filter_dependency = DependencyFilterSet(

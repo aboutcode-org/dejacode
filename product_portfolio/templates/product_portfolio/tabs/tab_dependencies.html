@@ -12,7 +12,14 @@
         </form>
       </li>
       <li class="nav-item">
-        <div class="h6 mt-2 mb-0 smaller">{{ page_obj.paginator.count|intcomma }} results</div>
+        <div class="h6 mt-2 mb-0 smaller">
+          {% if page_obj.paginator.count != inventory_count %}
+            {{ page_obj.paginator.count|intcomma }} of
+            <a href="?all=true#inventory">{{ inventory_count|intcomma }} results</a>
+          {% else %}
+            {{ page_obj.paginator.count|intcomma }} results
+          {% endif %}
+        </div>
       </li>
     </ul>
   </div>
@@ -52,7 +59,7 @@
     </tr>
   </thead>
   <tbody class="text-break">
-    {% for dependency in filter_dependency.qs %}
+    {% for dependency in page_obj.object_list %}
       <tr class="{% cycle 'odd' '' %}">
         <td>
           {% if dependency.for_package %}
@@ -102,4 +109,7 @@
     {% endfor %}
   </tbody>
 </table>
+<div class="d-flex justify-content-center">
+  {% include 'pagination/object_list_pagination.html' %}
+</div>
 {% endspaceless %}
