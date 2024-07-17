@@ -21,18 +21,20 @@ from notification.models import Webhook
 
 
 class Command(DataspacedCommand):
-    help = ('Removes all the data related to a given Dataspace from '
-            'the database. '
-            'Use the option --keep-users to keep the Users.')
+    help = (
+        "Removes all the data related to a given Dataspace from "
+        "the database. "
+        "Use the option --keep-users to keep the Users."
+    )
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
-            '--keep-users',
-            action='store_true',
-            dest='keep_users',
+            "--keep-users",
+            action="store_true",
+            dest="keep_users",
             default=False,
-            help='Keeps the Users and the Dataspace.',
+            help="Keeps the Users and the Dataspace.",
         )
 
     def handle(self, *args, **options):
@@ -44,14 +46,17 @@ class Command(DataspacedCommand):
         models += REPORTING_MODELS
         models.reverse()  # The order matters, see the protected FK
 
-        models.extend([
-            # WARNING: The following Policy models order matters and needs to be after main models
-            AssociatedPolicy,
-            UsagePolicy,
-            ExternalReference,
-            ExternalSource,
-            Webhook,
-        ])
+        models.extend(
+            [
+                # WARNING: The following Policy models order matters and needs to be after
+                # main models.
+                AssociatedPolicy,
+                UsagePolicy,
+                ExternalReference,
+                ExternalSource,
+                Webhook,
+            ]
+        )
 
         # Clear the associated_product_relation_status FK values so the
         # ProductRelationStatus model can be flushed before the UsagePolicy model.
@@ -60,12 +65,12 @@ class Command(DataspacedCommand):
 
         for model_class in models:
             qs = get_unsecured_manager(model_class).filter(dataspace=dataspace)
-            if options['verbosity'] > 1:
-                self.stdout.write(f'Deleting {qs.count()} {model_class.__name__}...')
+            if options["verbosity"] > 1:
+                self.stdout.write(f"Deleting {qs.count()} {model_class.__name__}...")
             qs.delete()
 
         # This is the case where --keep-users is NOT given
-        if not options['keep_users']:
+        if not options["keep_users"]:
             get_user_model().objects.scope(dataspace).delete()
             dataspace.delete()
 

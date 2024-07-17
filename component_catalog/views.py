@@ -2337,7 +2337,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
                 if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
-                        value = format_html("<br>".join(([escape(entry) for entry in value])))
+                        value = format_html("<br>".join([escape(entry) for entry in value]))
                     else:
                         value = escape(value)
                     detected_package_fields.append((label, value))

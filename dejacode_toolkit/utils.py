@@ -11,7 +11,7 @@ import hashlib
 
 def sha1(content):
     """Return the sha1 hash of the given content."""
-    return hashlib.sha1(content).hexdigest()  # nosec
+    return hashlib.sha1(content, usedforsecurity=False).hexdigest()
 
 
 def sha256(content):
@@ -26,4 +26,4 @@ def sha512(content):
 
 def md5(content):
     """Return the md5 hash of the given content."""
-    return hashlib.md5(content).hexdigest()  # nosec
+    return hashlib.md5(content, usedforsecurity=False).hexdigest()

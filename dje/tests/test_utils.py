@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.

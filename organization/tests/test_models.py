@@ -136,10 +136,7 @@ class OwnerCopyTestCase(TestCase):
         return owner
 
     def _obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace(self, update=False):
-        """
-        Setup and test with an expected failure to test copy, update and
-        noop.
-        """
+        """Test with an expected failure to test copy, update and noop."""
         owner = self._create_simple_owner()
         expected_msg = '"Owner.dataspace" must be a "Dataspace" instance'
         try:
@@ -188,7 +185,7 @@ class OwnerCopyTestCase(TestCase):
         self._check_that_copy_succeeded(owner)
 
     def _obj_copy_basic_owner_update(self, update=False):
-        """Setup for a basic owner update operation"""
+        """Prepare for a basic owner update operation"""
         owner = self._create_simple_owner()
         # pre-create an owner with the same name in the target dataspace to
         # trigger an update

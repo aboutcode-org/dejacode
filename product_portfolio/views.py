@@ -1213,9 +1213,9 @@ class ProductTreeComparisonView(
             for name in removed_identifiers
             if added_identifiers.count(name) == 1 and removed_identifiers.count(name) == 1
         ]
-        for k, l in updated:
+        for k, v in updated:
             del removed[removed.index(k)]
-            del added[added.index(l)]
+            del added[added.index(v)]
 
         unchanged, changed = [], []
         diffs = {}
@@ -1228,7 +1228,7 @@ class ProductTreeComparisonView(
 
         rows = [("added", None, right_dict[k], None) for k in added]
         rows.extend(("removed", left_dict[k], None, None) for k in removed)
-        rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+        rows.extend(("updated", left_dict[k], right_dict[v], None) for k, v in updated)
         rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
         rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
         rows.sort(key=self.sort_by_name_version)
