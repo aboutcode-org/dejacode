@@ -23,7 +23,7 @@
   <hr>
 {% endif %}
 {% if results.existing %}
-  {% for object_type, values in results.created.items %}
+  {% for object_type, values in results.existing.items %}
     <h5>{{ values|length }} {{ object_type }} updated/existing:</h5>
     <ul class="mb-1">
       {% for entry in values %}
