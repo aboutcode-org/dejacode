@@ -1401,3 +1401,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
 
     def __str__(self):
         return self.dependency_uid
+
+    @property
+    def package_url(self):
+        return self.dependency_uid.split("?")[0]

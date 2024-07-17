@@ -34,6 +34,9 @@
   <thead>
     <tr>
       <th>
+        {% trans 'Package URL' %}
+      </th>
+      <th>
         {% trans 'For package' %}
       </th>
       <th>
@@ -43,19 +46,19 @@
         {% trans 'Scope' %}
       </th>
       <th>
-        {% trans 'Is runtime' %}
+        {% trans 'Runtime' %}
         {{ filter_dependency.form.is_runtime }}
       </th>
       <th>
-        {% trans 'Is optional' %}
+        {% trans 'Optional' %}
         {{ filter_dependency.form.is_optional }}
       </th>
       <th>
-        {% trans 'Is resolved' %}
+        {% trans 'Resolved' %}
         {{ filter_dependency.form.is_resolved }}
       </th>
       <th>
-        {% trans 'Is direct' %}
+        {% trans 'Direct' %}
         {{ filter_dependency.form.is_direct }}
       </th>
     </tr>
@@ -63,6 +66,9 @@
   <tbody class="text-break">
     {% for dependency in page_obj.object_list %}
       <tr class="{% cycle 'odd' '' %}">
+        <td title="{{ dependency.dependency_uid }}">
+          {{ dependency.package_url }}
+        </td>
         <td>
           {% if dependency.for_package %}
             <strong>
