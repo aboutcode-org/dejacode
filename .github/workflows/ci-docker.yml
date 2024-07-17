@@ -18,4 +18,4 @@ jobs:
         run: make envfile
 
       - name: Run tests
-        run: docker compose run web python ./manage.py test --verbosity=2 --noinput
+        run: docker compose run web python ./manage.py test --verbosity=2 --noinput --parallel
