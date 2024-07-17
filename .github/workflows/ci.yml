@@ -41,8 +41,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install python-ldap OS dependencies
-        run: sudo apt-get install -y libsasl2-dev libldap2-dev libssl-dev
+#      - name: Install python-ldap OS dependencies
+#        run: sudo apt-get install -y libsasl2-dev libldap2-dev libssl-dev
 
       - name: Install dependencies
         run: make dev envfile
