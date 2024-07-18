@@ -118,6 +118,7 @@ from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 
@@ -970,12 +971,19 @@ class ProductTabDependenciesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
+        help_texts = {
+            field.name: field.help_text
+            for field in ProductDependency._meta.get_fields()
+            if hasattr(field, "help_text")
+        }
+
         context_data.update(
             {
                 "filter_dependency": filter_dependency,
                 "page_obj": page_obj,
                 "total_count": self.object.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
+                "help_texts": help_texts,
             }
         )
 

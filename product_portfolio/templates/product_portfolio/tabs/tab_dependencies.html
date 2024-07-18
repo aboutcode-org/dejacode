@@ -34,31 +34,52 @@
   <thead>
     <tr>
       <th>
-        {% trans 'Package URL' %}
+          {% trans 'Package URL' %}
       </th>
       <th>
-        {% trans 'For package' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
+          {% trans 'For package' %}
+        </span>
+        {{ filter_dependency.form.for_package }}
       </th>
       <th>
-        {% trans 'Resolved to package' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.resolved_to_package }}">
+          {% trans 'Resolved to package' %}
+        </span>
+        {{ filter_dependency.form.resolved_to_package }}
       </th>
       <th>
-        {% trans 'Scope' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.scope }}">
+          {% trans 'Scope' %}
+        </span>
       </th>
       <th>
-        {% trans 'Runtime' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.extracted_requirement }}">
+          {% trans 'Extracted requirement' %}
+        </span>
+      </th>
+      <th style="min-width: 100px">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_runtime }}">
+          {% trans 'Runtime' %}
+        </span>
         {{ filter_dependency.form.is_runtime }}
       </th>
-      <th>
-        {% trans 'Optional' %}
+      <th style="min-width: 100px">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_optional }}">
+          {% trans 'Optional' %}
+        </span>
         {{ filter_dependency.form.is_optional }}
       </th>
-      <th>
-        {% trans 'Resolved' %}
+      <th style="min-width: 105px">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_resolved }}">
+          {% trans 'Resolved' %}
+        </span>
         {{ filter_dependency.form.is_resolved }}
       </th>
-      <th>
-        {% trans 'Direct' %}
+      <th style="min-width: 82px">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_direct }}">
+          {% trans 'Direct' %}
+        </span>
         {{ filter_dependency.form.is_direct }}
       </th>
     </tr>
@@ -91,6 +112,9 @@
         </td>
         <td>
           {{ dependency.scope }}
+        </td>
+        <td>
+          {{ dependency.extracted_requirement }}
         </td>
         <td>
           {{ dependency.is_runtime|as_icon }}

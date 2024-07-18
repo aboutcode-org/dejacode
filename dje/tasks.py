@@ -208,7 +208,9 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.status = ScanCodeProject.Status.SUCCESS
 
     for object_type, values in created.items():
-        msg = f"- Imported {len(values)} {object_type}{pluralize(values)}."
+        object_type_plural = f"{object_type}{pluralize(values)}"
+        object_type_plural = object_type_plural.replace("dependencys", "dependencies")
+        msg = f"- Imported {len(values)} {object_type_plural}."
         scancode_project.append_to_log(msg)
 
     for object_type, values in existing.items():

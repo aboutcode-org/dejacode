@@ -333,6 +333,12 @@ class DependencyFilterSet(DataspacedFilterSet):
             "resolved_to_package__version",
         ],
     )
+    for_package = HasRelationFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    resolved_to_package = HasRelationFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
     is_runtime = BooleanChoiceFilter(
         widget=DropDownWidget(anchor="#dependencies"),
     )
@@ -349,6 +355,8 @@ class DependencyFilterSet(DataspacedFilterSet):
     class Meta:
         model = ProductDependency
         fields = [
+            "for_package",
+            "resolved_to_package",
             "scope",
             "datasource_id",
             "is_runtime",
