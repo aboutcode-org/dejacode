@@ -365,7 +365,9 @@ class DependencyFilterSet(DataspacedFilterSet):
         model = ProductDependency
         fields = [
             "for_package",
+            "for_package__uuid",
             "resolved_to_package",
+            "resolved_to_package__uuid",
             "scope",
             "datasource_id",
             "is_runtime",

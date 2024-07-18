@@ -36,7 +36,7 @@
       <th>
           {% trans 'Package URL' %}
       </th>
-      <th>
+      <th style="min-width: 125px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
           {% trans 'For package' %}
         </span>
@@ -44,7 +44,7 @@
           {{ filter_dependency.form.for_package }}
         </div>
       </th>
-      <th>
+      <th style="min-width: 105px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.resolved_to_package }}">
           {% trans 'Resolved to package' %}
         </span>
