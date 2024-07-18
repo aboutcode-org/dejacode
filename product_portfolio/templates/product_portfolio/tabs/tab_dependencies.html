@@ -40,13 +40,17 @@
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
           {% trans 'For package' %}
         </span>
-        {{ filter_dependency.form.for_package }}
+        <div class="float-end">
+          {{ filter_dependency.form.for_package }}
+        </div>
       </th>
       <th>
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.resolved_to_package }}">
           {% trans 'Resolved to package' %}
         </span>
-        {{ filter_dependency.form.resolved_to_package }}
+        <div class="float-end">
+          {{ filter_dependency.form.resolved_to_package }}
+        </div>
       </th>
       <th>
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.scope }}">
@@ -62,25 +66,33 @@
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_runtime }}">
           {% trans 'Runtime' %}
         </span>
-        {{ filter_dependency.form.is_runtime }}
+        <div class="float-end">
+          {{ filter_dependency.form.is_runtime }}
+        </div>
       </th>
       <th style="min-width: 100px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_optional }}">
           {% trans 'Optional' %}
         </span>
-        {{ filter_dependency.form.is_optional }}
+        <div class="float-end">
+          {{ filter_dependency.form.is_optional }}
+        </div>
       </th>
       <th style="min-width: 105px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_resolved }}">
           {% trans 'Resolved' %}
         </span>
-        {{ filter_dependency.form.is_resolved }}
+        <div class="float-end">
+          {{ filter_dependency.form.is_resolved }}
+        </div>
       </th>
       <th style="min-width: 82px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_direct }}">
           {% trans 'Direct' %}
         </span>
-        {{ filter_dependency.form.is_direct }}
+        <div class="float-end">
+          {{ filter_dependency.form.is_direct }}
+        </div>
       </th>
     </tr>
   </thead>

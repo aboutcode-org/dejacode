@@ -321,6 +321,7 @@ class DependencyFilterSet(DataspacedFilterSet):
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
+            "dependency_uid",
             "for_package__filename",
             "for_package__type",
             "for_package__namespace",
@@ -331,6 +332,14 @@ class DependencyFilterSet(DataspacedFilterSet):
             "resolved_to_package__namespace",
             "resolved_to_package__name",
             "resolved_to_package__version",
+        ],
+    )
+    sort = DefaultOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            "dependency_uid",
+            "for_package",
+            "resolved_to_package",
         ],
     )
     for_package = HasRelationFilter(
