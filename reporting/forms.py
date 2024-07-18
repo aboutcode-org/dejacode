@@ -53,6 +53,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductInventoryItem
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
@@ -109,6 +110,7 @@ MODEL_WHITELIST = [
     ProductPackage,
     ProductStatus,
     ProductRelationStatus,
+    ProductDependency,
     ProductInventoryItem,
     ProductItemPurpose,
     ExternalReference,

@@ -825,6 +825,7 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         "is_direct",
         ("for_package", RelatedLookupListFilter),
         ("resolved_to_package", RelatedLookupListFilter),
+        ReportingQueryListFilter,
     )
     actions_to_remove = ["copy_to", "compare_with"]
 

@@ -63,6 +63,7 @@ CT_LIMIT = (
     | models.Q(app_label="product_portfolio", model="productcomponent")
     | models.Q(app_label="product_portfolio", model="productpackage")
     | models.Q(app_label="product_portfolio", model="productinventoryitem")
+    | models.Q(app_label="product_portfolio", model="productdependency")
     | models.Q(app_label="product_portfolio", model="codebaseresource")
 )
 
