@@ -1,5 +1,5 @@
 {% for filter in filterset.get_filters_breadcrumbs %}
-  <a href="?{% if filter.remove_url %}{{ filter.remove_url }}{% else %}all=true{% endif %}" class="text-decoration-none">
+  <a href="?{% if filter.remove_url %}{{ filter.remove_url }}{% else %}all=true{% endif %}" class="text-decoration-none me-1">
     <span class="badge text-bg-secondary rounded-pill ">
       {{ filter.label }}: "{{ filter.value|truncatechars:40 }}" <i class="fas fa-times-circle"></i>
       </span>

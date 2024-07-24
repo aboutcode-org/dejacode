@@ -24,6 +24,9 @@
         </div>
       </li>
     </ul>
+    <div class="mt-1">
+      {% include 'includes/filters_breadcrumbs.html' with filterset=filter_dependency only %}
+    </div>
   </div>
   <div class="col-auto">
     {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
