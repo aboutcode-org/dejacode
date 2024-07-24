@@ -36,9 +36,6 @@
 <table class="table table-bordered table-hover table-md text-break">
   <thead>
     <tr>
-      <th>
-          {% trans 'Package URL' %}
-      </th>
       <th style="min-width: 125px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
           {% trans 'For package' %}
@@ -54,6 +51,9 @@
         <div class="float-end">
           {{ filter_dependency.form.resolved_to_package }}
         </div>
+      </th>
+      <th>
+          {% trans 'Package URL' %}
       </th>
       <th>
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.scope }}">
@@ -83,28 +83,17 @@
       </th>
       <th style="min-width: 105px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_resolved }}">
-          {% trans 'Resolved' %}
+          {% trans 'Pinned' %}
         </span>
         <div class="float-end">
           {{ filter_dependency.form.is_resolved }}
-        </div>
-      </th>
-      <th style="min-width: 82px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_direct }}">
-          {% trans 'Direct' %}
-        </span>
-        <div class="float-end">
-          {{ filter_dependency.form.is_direct }}
         </div>
       </th>
     </tr>
   </thead>
   <tbody class="text-break">
     {% for dependency in page_obj.object_list %}
-      <tr class="{% cycle 'odd' '' %}">
-        <td title="{{ dependency.dependency_uid }}">
-          {{ dependency.package_url }}
-        </td>
+      <tr class="{% cycle 'odd' '' %}" title="{{ dependency.dependency_uid }}">
         <td>
           {% if dependency.for_package %}
             <strong>
@@ -113,6 +102,8 @@
             <div>
               {{ dependency.for_package.license_expression_html|default_if_none:"" }}
             </div>
+          {% else %}
+            Current product
           {% endif %}
         </td>
         <td>
@@ -123,7 +114,12 @@
             <div class="license-expression">
               {{ dependency.resolved_to_package.license_expression_html|default_if_none:"" }}
             </div>
+          {% else %}
+             Not resolved
           {% endif %}
+        </td>
+        <td>
+          {{ dependency.package_url }}
         </td>
         <td>
           {{ dependency.scope }}
@@ -139,9 +135,6 @@
         </td>
         <td>
           {{ dependency.is_resolved|as_icon }}
-        </td>
-        <td>
-          {{ dependency.is_direct|as_icon }}
         </td>
       </tr>
     {% empty %}
