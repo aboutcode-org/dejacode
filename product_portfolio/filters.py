@@ -8,9 +8,11 @@
 
 from django import forms
 from django.contrib import admin
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
+from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.models import ComponentKeyword
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
@@ -317,8 +319,27 @@ class CodebaseResourceFilterSet(DataspacedFilterSet):
         ]
 
 
+class PackageURLSearchFilter(SearchFilter):
+    def filter(self, qs, value):
+        if value and value.startswith("pkg:"):
+            base_lookups = purl_to_lookups(value)
+            packages_fk_fields = ["for_package", "resolved_to_package"]
+
+            combined_q = Q()
+            for package_fk in packages_fk_fields:
+                fk_lookups = {
+                    f"{package_fk}__{field}": value for field, value in base_lookups.items()
+                }
+                combined_q |= Q(**fk_lookups)
+
+            if combined_q:
+                return qs.filter(combined_q)
+
+        return super().filter(qs, value)
+
+
 class DependencyFilterSet(DataspacedFilterSet):
-    q = SearchFilter(
+    q = PackageURLSearchFilter(
         label=_("Search"),
         search_fields=[
             "dependency_uid",
