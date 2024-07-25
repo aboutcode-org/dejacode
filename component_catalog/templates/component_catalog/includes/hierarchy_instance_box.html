@@ -28,8 +28,11 @@
             <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
           </span>
         {% endif %}
-        {% if relation.package_id and relation.package.declared_dependencies.exists %}
-          <a href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ relation.package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies"><i class="fa-solid fa-share-nodes"></i></a>
+        {% if relation.package_id and relation.package.declared_dependencies.all %}
+          <a class="btn badge text-bg-primary rounded-pill ms-1"
+             href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ relation.package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies">
+            {{ relation.package.declared_dependencies.all|length }}<i class="fa-solid fa-share-nodes ms-1"></i>
+          </a>
         {% endif %}
       {% elif instance.is_active or is_product %}
         <a href="{{ instance.get_absolute_url }}#hierarchy">{{ instance }}</a>

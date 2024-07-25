@@ -1318,6 +1318,15 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         )
 
 
+class ProductDependencyQuerySet(ProductSecuredQuerySet):
+    def with_resolved_to_dependencies_count(self):
+        return self.annotate(
+            resolved_to_dependencies_count=models.Count(
+                "resolved_to_package__declared_dependencies"
+            )
+        )
+
+
 class ProductDependency(HistoryFieldsMixin, DataspacedModel):
     product = models.ForeignKey(
         to="product_portfolio.Product",
@@ -1384,7 +1393,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         help_text=_("True if this is a direct, first-level dependency relationship for a package."),
     )
 
-    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductDependencyQuerySet)()
 
     class Meta:
         unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))

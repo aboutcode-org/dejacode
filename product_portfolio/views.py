@@ -409,12 +409,17 @@ class ProductDetailsView(
             )
         )
 
+        declared_dependencies_prefetch = models.Prefetch(
+            "package__declared_dependencies", ProductDependency.objects.all()
+        )
+
         productpackage_qs = (
             self.object.productpackages.select_related(
                 "package",
             )
             .prefetch_related(
                 "package__licenses",
+                declared_dependencies_prefetch,
             )
             .order_by(
                 "feature",
@@ -642,6 +647,9 @@ class ProductTabInventoryView(
         licenses_prefetch = models.Prefetch(
             "licenses", License.objects.select_related("usage_policy")
         )
+        declared_dependencies_prefetch = models.Prefetch(
+            "package__declared_dependencies", ProductDependency.objects.all()
+        )
 
         productpackage_qs = (
             self.object.productpackages.select_related(
@@ -652,6 +660,7 @@ class ProductTabInventoryView(
             )
             .prefetch_related(
                 licenses_prefetch,
+                declared_dependencies_prefetch,
             )
             .order_by(
                 "feature",
@@ -967,7 +976,10 @@ class ProductTabDependenciesView(
             prefix="dependencies",
         )
 
-        paginator = Paginator(filter_dependency.qs, self.paginate_by)
+        # Annotate the filtered queryset with the count of declared_dependencies
+        filtered_and_annotated_qs = filter_dependency.qs.with_resolved_to_dependencies_count()
+
+        paginator = Paginator(filtered_and_annotated_qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
