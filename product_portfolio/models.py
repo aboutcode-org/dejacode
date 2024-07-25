@@ -1404,4 +1404,5 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
 
     @property
     def package_url(self):
-        return self.dependency_uid.split("?")[0]
+        if self.dependency_uid.startswith("pkg:"):
+            return self.dependency_uid.split("?")[0]

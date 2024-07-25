@@ -52,6 +52,6 @@
   </span>
 {% endif %}
 {% if relation.package_id and relation.package.declared_dependencies.exists %}
-  <a href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ relation.package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies"><i class="fa-solid fa-sitemap"></i></a>
+  <a href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ relation.package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies"><i class="fa-solid fa-share-nodes"></i></a>
 {% endif %}
 {% endspaceless %}
