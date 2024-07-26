@@ -547,6 +547,10 @@ class ProductSecuredQuerySet(DataspacedQuerySet):
         product_qs = Product.objects.get_queryset(user, perms)
         return self.filter(product__in=product_qs)
 
+    def product(self, product):
+        """Filter based on the provided ``product`` object."""
+        return self.filter(product=product)
+
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):
     def catalogs(self):

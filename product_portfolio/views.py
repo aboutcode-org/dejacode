@@ -391,8 +391,10 @@ class ProductDetailsView(
 
     def tab_hierarchy(self):
         template = "product_portfolio/tabs/tab_hierarchy.html"
+        product = self.object
+
         productcomponent_qs = (
-            self.object.productcomponents.select_related(
+            product.productcomponents.select_related(
                 "component",
             )
             .prefetch_related(
@@ -410,11 +412,12 @@ class ProductDetailsView(
         )
 
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.all()
+            "package__declared_dependencies",
+            ProductDependency.objects.product(product)
         )
 
         productpackage_qs = (
-            self.object.productpackages.select_related(
+            product.productpackages.select_related(
                 "package",
             )
             .prefetch_related(
@@ -648,7 +651,8 @@ class ProductTabInventoryView(
             "licenses", License.objects.select_related("usage_policy")
         )
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.all()
+            "package__declared_dependencies",
+            ProductDependency.objects.product(self.object)
         )
 
         productpackage_qs = (
@@ -964,9 +968,16 @@ class ProductTabDependenciesView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
 
-        dependency_qs = self.object.dependencies.select_related(
-            "for_package__dataspace",
-            "resolved_to_package__dataspace",
+        dependency_qs = (
+            self.object.dependencies
+            .prefetch_related(
+                models.Prefetch(
+                    "for_package", Package.objects.only_rendering_fields()
+                ),
+                models.Prefetch(
+                    "resolved_to_package", Package.objects.only_rendering_fields()
+                )
+            )
         )
 
         filter_dependency = DependencyFilterSet(
@@ -977,7 +988,17 @@ class ProductTabDependenciesView(
         )
 
         # Annotate the filtered queryset with the count of declared_dependencies
-        filtered_and_annotated_qs = filter_dependency.qs.with_resolved_to_dependencies_count()
+        filtered_and_annotated_qs = (
+            filter_dependency.qs
+            # TODO: This is not scoped by product
+            .with_resolved_to_dependencies_count()
+            .order_by(
+                "for_package__type",
+                "for_package__namespace",
+                "for_package__name",
+                "for_package__version",
+            )
+        )
 
         paginator = Paginator(filtered_and_annotated_qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)

@@ -1633,6 +1633,19 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
             sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
         )
 
+    def only_rendering_fields(self):
+        """
+        Minimum requirements to render a Package element in the UI.
+        """
+        return self.only(
+            "uuid",
+            *PACKAGE_URL_FIELDS,
+            "filename",
+            "license_expression",
+            "dataspace__name",
+            "dataspace__show_usage_policy_in_user_views",
+        )
+
 
 class Package(
     ExternalReferenceMixin,

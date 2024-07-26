@@ -15,7 +15,7 @@
         <div class="h6 mt-2 mb-0 smaller">
           {% if page_obj.paginator.count != total_count %}
             {{ page_obj.paginator.count|intcomma }} of
-            <a href="#" hx-get="{{ request.path }}?all=true#inventory" hx-target="{{ tab_id_html }}">
+            <a href="#" hx-get="{{ request.path }}?all=true#dependencies" hx-target="{{ tab_id_html }}">
               {{ total_count }} results
             </a>
           {% else %}
@@ -120,7 +120,7 @@
                 </a>
               {% endif %}
             </strong>
-            <div class="license-expression">
+            <div>
               {{ dependency.resolved_to_package.license_expression_html|default_if_none:"" }}
             </div>
           {% else %}
@@ -156,7 +156,9 @@
         <td colspan="10">
           No results.
           {% if filter_dependency.is_active %}
-            <a href="?all=true#dependencies">Clear search and filters</a>
+            <a href="#" hx-get="{{ request.path }}?all=true#dependencies" hx-target="{{ tab_id_html }}">
+              Clear search and filters
+            </a>
           {% endif %}
         </td>
       </tr>
