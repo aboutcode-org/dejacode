@@ -988,6 +988,10 @@ class ProductTabDependenciesView(
             for field in ProductDependency._meta.get_fields()
             if hasattr(field, "help_text")
         }
+        help_texts["declared_dependency"] = (
+            "A dependency as stated in a project manifest or lockfile, which may be "
+            "required or optional, and may be associated with specific version ranges."
+        )
 
         context_data.update(
             {

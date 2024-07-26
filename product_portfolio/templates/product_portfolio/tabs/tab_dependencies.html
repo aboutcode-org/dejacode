@@ -34,9 +34,10 @@
 </div>
 
 <table class="table table-bordered table-hover table-md text-break">
+  {% include 'includes/object_list_table_header.html' %}
   <thead>
     <tr>
-      <th style="min-width: 125px">
+      <th style="min-width: 250px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
           {% trans 'For package' %}
         </span>
@@ -44,7 +45,7 @@
           {{ filter_dependency.form.for_package }}
         </div>
       </th>
-      <th style="min-width: 105px">
+      <th style="min-width: 250px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.resolved_to_package }}">
           {% trans 'Resolved to package' %}
         </span>
@@ -53,7 +54,7 @@
         </div>
       </th>
       <th>
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="A dependency as stated in a project manifest or lockfile, which may be required or optional, and may be associated with specific version ranges.">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.declared_dependency }}">
           {% trans 'Declared dependency' %}
         </span>
       </th>
@@ -130,7 +131,7 @@
           {% if dependency.package_url %}
             {{ dependency.package_url }}
             <a href="{% url 'global_search' %}?q={{ dependency.package_url }}" target="_blank">
-              <i class="fa-solid fa-magnifying-glass"></i>
+              <i class="fa-solid fa-magnifying-glass smaller"></i>
             </a>
           {% endif %}
         </td>
