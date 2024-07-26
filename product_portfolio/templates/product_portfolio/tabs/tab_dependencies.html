@@ -53,7 +53,9 @@
         </div>
       </th>
       <th>
-          {% trans 'Package URL' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="A dependency as stated in a project manifest or lockfile, which may be required or optional, and may be associated with specific version ranges.">
+          {% trans 'Declared dependency' %}
+        </span>
       </th>
       <th>
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.scope }}">
@@ -81,7 +83,7 @@
           {{ filter_dependency.form.is_optional }}
         </div>
       </th>
-      <th style="min-width: 105px">
+      <th style="min-width: 88px">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_resolved }}">
           {% trans 'Pinned' %}
         </span>
@@ -125,7 +127,12 @@
           {% endif %}
         </td>
         <td>
-          {{ dependency.package_url|default_if_none:"" }}
+          {% if dependency.package_url %}
+            {{ dependency.package_url }}
+            <a href="{% url 'global_search' %}?q={{ dependency.package_url }}" target="_blank">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </a>
+          {% endif %}
         </td>
         <td>
           {{ dependency.scope }}

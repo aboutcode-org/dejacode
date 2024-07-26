@@ -3,7 +3,7 @@
 {% load urlize_target_blank from dje_tags %}
 <section id="owners_section">
   {% if results.object_list %}
-    <h3>
+    <h4>
       {% trans 'Owner' %}
       {% if is_reference_data %}
         <span class="badge text-bg-warning">{% trans 'Reference Data' %}</span>
@@ -16,7 +16,7 @@
           Click <a href="{% url 'organization:owner_list' %}?q={{ search_query }}">here</a> to see the full list.
         {% endif %}
       </small>
-    </h3>
+    </h4>
     <table class="table table-bordered table-striped table-md text-break">
       <thead>
         <tr>
@@ -36,6 +36,6 @@
       </tbody>
     </table>
   {% else %}
-    <h3>{% trans 'Owner' %} <small class="text-muted">No owner found.</small></h3>
+    <h4>{% trans 'Owner' %} <small class="text-muted">No owner found.</small></h4>
   {% endif %}
 </section>
