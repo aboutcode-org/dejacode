@@ -30,6 +30,7 @@ from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductInventoryItem
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
@@ -902,3 +903,35 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertFalse(scancode_project.can_start_import)
         scancode_project.status = ScanCodeProject.Status.FAILURE
         self.assertFalse(scancode_project.can_start_import)
+
+    def test_package_model_queryset_declared_dependencies_count(self):
+        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+        product3 = Product.objects.create(name="Product3", dataspace=self.dataspace)
+        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+
+        product1_qs = Package.objects.declared_dependencies_count(self.product1)
+        self.assertEqual(0, product1_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product1_qs.get(pk=package2.pk).declared_dependencies_count)
+        product2_qs = Package.objects.declared_dependencies_count(product2)
+        self.assertEqual(0, product2_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product2_qs.get(pk=package2.pk).declared_dependencies_count)
+        product3_qs = Package.objects.declared_dependencies_count(product3)
+        self.assertEqual(0, product3_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product3_qs.get(pk=package2.pk).declared_dependencies_count)
+
+        ProductDependency.objects.create(
+            product=self.product1, for_package=package1, dataspace=self.dataspace
+        )
+        ProductDependency.objects.create(
+            product=product2, for_package=package1, dataspace=self.dataspace
+        )
+        product1_qs = Package.objects.declared_dependencies_count(self.product1)
+        self.assertEqual(1, product1_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product1_qs.get(pk=package2.pk).declared_dependencies_count)
+        product2_qs = Package.objects.declared_dependencies_count(product2)
+        self.assertEqual(1, product2_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product2_qs.get(pk=package2.pk).declared_dependencies_count)
+        product3_qs = Package.objects.declared_dependencies_count(product3)
+        self.assertEqual(0, product3_qs.get(pk=package1.pk).declared_dependencies_count)
+        self.assertEqual(0, product3_qs.get(pk=package2.pk).declared_dependencies_count)
