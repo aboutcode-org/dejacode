@@ -664,7 +664,7 @@ class ImportPackageFromScanCodeIO:
         # Check if the Package already exists in the local Dataspace
         try:
             package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
-            self.existing["package"].append(package)
+            self.existing["package"].append(str(package))
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             package = None
 
@@ -677,7 +677,7 @@ class ImportPackageFromScanCodeIO:
                 reference_object = qs.first()
                 try:
                     package = copy_object(reference_object, user_dataspace, self.user, update=False)
-                    self.created["package"].append(package)
+                    self.created["package"].append(str(package))
                 except IntegrityError as error:
                     self.errors["package"].append(str(error))
 
@@ -694,7 +694,7 @@ class ImportPackageFromScanCodeIO:
             except ValidationError as errors:
                 self.errors["package"].append(str(errors))
                 return
-            self.created["package"].append(package)
+            self.created["package"].append(str(package))
 
         ProductPackage.objects.get_or_create(
             product=self.product,
@@ -706,8 +706,7 @@ class ImportPackageFromScanCodeIO:
                 "created_by": self.user,
             },
         )
-
-        package_uid = package_data.get("package_uid")
+        package_uid = package_data.get("package_uid") or package.uuid
         self.package_uid_mapping[package_uid] = package
 
     def import_dependency(self, dependency_data):
@@ -739,4 +738,4 @@ class ImportPackageFromScanCodeIO:
             self.errors["dependency"].append(str(errors))
             return
 
-        self.created["dependency"].append(dependency)
+        self.created["dependency"].append(str(dependency.dependency_uid))

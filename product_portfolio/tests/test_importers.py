@@ -983,15 +983,16 @@ class ProductImportFromScanTestCase(TestCase):
             product=self.product1,
         )
         created, existing, errors = importer.save()
-        created_package = created.get("package")[0]
-        self.assertEqual(purl, created_package.package_url)
+        created_package_package_url = created.get("package")[0]
+        created_package = self.product1.packages.get()
         self.assertEqual("bsd-new", created_package.license_expression)
+        self.assertEqual(created_package.package_url, created_package_package_url)
         self.assertEqual({}, existing)
-        self.assertEqual([purl], [package.package_url for package in self.product1.packages.all()])
         self.assertEqual({}, errors)
 
-        created_dependency = created.get("dependency")[0]
-        self.assertEqual(dependency_uid, created_dependency.dependency_uid)
+        created_dependency_uid = created.get("dependency")[0]
+        created_dependency = self.product1.dependencies.get()
+        self.assertEqual(dependency_uid, created_dependency_uid)
         self.assertEqual("pkg:pypi/aboutcode-toolkit@10", created_dependency.declared_dependency)
         self.assertEqual("aboutcode-toolkit==10", created_dependency.extracted_requirement)
         self.assertEqual("install", created_dependency.scope)

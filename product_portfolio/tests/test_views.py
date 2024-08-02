@@ -2816,8 +2816,13 @@ class ProductPortfolioViewsTestCase(TestCase):
                 self.client.post(url, data=data, follow=True)
                 scan.assert_called_once()
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
-    def test_product_portfolio_import_packages_from_scancodeio_view(self, mock_fetch_packages):
+    def test_product_portfolio_import_packages_from_scancodeio_view(
+        self,
+        mock_fetch_packages,
+        mock_fetch_dependencies,
+    ):
         self.client.login(username=self.super_user.username, password="secret")
         mock_fetch_packages.return_value = [
             {
@@ -2828,6 +2833,12 @@ class ProductPortfolioViewsTestCase(TestCase):
                 "primary_language": "Java",
             }
         ]
+        mock_fetch_dependencies.return_value = [
+            {
+                "purl": "pkg:pypi/aboutcode-toolkit@10",
+            }
+        ]
+
         scancodeproject = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
@@ -2875,12 +2886,12 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual("Load Packages from SBOMs", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
-        self.assertEqual("- Imported 1 package.", notif.description)
+        expected_message = "- Imported 1 package.\n- 1 dependency error occurred during import."
+        self.assertEqual(expected_message, notif.description)
 
         scancodeproject.refresh_from_db()
         self.assertEqual("success", scancodeproject.status)
-        expected = ["- Imported 1 package."]
-        self.assertEqual(expected, scancodeproject.import_log)
+        self.assertEqual(expected_message.split("\n"), scancodeproject.import_log)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.find_project")
     def test_product_portfolio_pull_project_data_from_scancodeio_view(self, mock_find_project):
