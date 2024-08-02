@@ -939,19 +939,12 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertContains(response, expected2)
         self.assertContains(response, expected3)
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
-    def test_product_portfolio_import_packages_from_scancodeio_importer(self, mock_fetch_packages):
+    def test_product_portfolio_import_packages_from_scancodeio_importer(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
         purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
-        dependencies = [
-            {
-                "purl": "pkg:maven/org.apache.camel/camel-catalog",
-                "scope": "compile",
-                "is_runtime": True,
-                "is_optional": False,
-                "is_resolved": False,
-                "extracted_requirement": "2.18.1",
-            }
-        ]
         mock_fetch_packages.return_value = [
             {
                 "type": "maven",
@@ -961,7 +954,26 @@ class ProductImportFromScanTestCase(TestCase):
                 "primary_language": "Java",
                 "purl": purl,
                 "declared_license_expression": "bsd-new",
-                "dependencies": dependencies,
+            }
+        ]
+
+        dependency_uid = "pkg:pypi/aboutcode-toolkit@10?uuid=9d150876-8431-4d85"
+        mock_fetch_dependencies.return_value = [
+            {
+                "purl": "pkg:pypi/aboutcode-toolkit@10",
+                "extracted_requirement": "aboutcode-toolkit==10",
+                "scope": "install",
+                "is_runtime": True,
+                "is_optional": False,
+                "is_resolved": True,
+                "is_direct": True,
+                "dependency_uid": dependency_uid,
+                "for_package_uid": None,
+                "resolved_to_package_uid": None,
+                "datafile_path": "setup.cfg",
+                "datasource_id": "pypi_setup_cfg",
+                "package_type": "pypi",
+                "affected_by_vulnerabilities": [],
             }
         ]
 
@@ -971,14 +983,25 @@ class ProductImportFromScanTestCase(TestCase):
             product=self.product1,
         )
         created, existing, errors = importer.save()
-        self.assertEqual(1, len(created))
-        created_package = created[0]
+        created_package = created.get("package")[0]
         self.assertEqual(purl, created_package.package_url)
         self.assertEqual("bsd-new", created_package.license_expression)
-        self.assertEqual(dependencies, created_package.dependencies)
-        self.assertEqual([], existing)
+        self.assertEqual({}, existing)
         self.assertEqual([purl], [package.package_url for package in self.product1.packages.all()])
-        self.assertEqual([], errors)
+        self.assertEqual({}, errors)
+
+        created_dependency = created.get("dependency")[0]
+        self.assertEqual(dependency_uid, created_dependency.dependency_uid)
+        self.assertEqual("pkg:pypi/aboutcode-toolkit@10", created_dependency.declared_dependency)
+        self.assertEqual("aboutcode-toolkit==10", created_dependency.extracted_requirement)
+        self.assertEqual("install", created_dependency.scope)
+        self.assertEqual("pypi_setup_cfg", created_dependency.datasource_id)
+        self.assertTrue(created_dependency.is_runtime)
+        self.assertFalse(created_dependency.is_optional)
+        self.assertTrue(created_dependency.is_resolved)
+        self.assertTrue(created_dependency.is_direct)
+        self.assertIsNone(created_dependency.for_package_id)
+        self.assertIsNone(created_dependency.resolved_to_package_id)
 
         importer = ImportPackageFromScanCodeIO(
             user=self.super_user,
@@ -986,6 +1009,7 @@ class ProductImportFromScanTestCase(TestCase):
             product=self.product1,
         )
         created, existing, errors = importer.save()
-        self.assertEqual([], created)
-        self.assertEqual([purl], [package.package_url for package in existing])
-        self.assertEqual([], errors)
+        self.assertEqual({}, created)
+        self.assertEqual([purl], [str(package) for package in existing["package"]])
+        self.assertEqual([dependency_uid], [str(package) for package in existing["dependency"]])
+        self.assertEqual({}, errors)
