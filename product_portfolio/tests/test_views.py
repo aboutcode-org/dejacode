@@ -2950,14 +2950,18 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancode_project.status = ScanCodeProject.Status.SUBMITTED
         scancode_project.save()
         mock_import_data.side_effect = None
-        mock_import_data.return_value = (["package1"], ["package2"], ["error1"])
+        mock_import_data.return_value = (
+            {"package": ["package1"]},
+            {"package": ["package2"]},
+            {"package": ["error1"]},
+        )
         pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
         scancode_project.refresh_from_db()
         self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
         expected = [
             "- Imported 1 package.",
-            "- 1 package(s) was/were already available in the Dataspace.",
-            "- 1 errors occurred during import.",
+            "- 1 package already available in the Dataspace.",
+            "- 1 package error occurred during import.",
         ]
         self.assertEqual(expected, scancode_project.import_log)
 

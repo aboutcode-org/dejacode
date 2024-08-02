@@ -215,8 +215,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
 
     for object_type, values in existing.items():
         msg = (
-            f"- {len(values)} {object_type}{pluralize(values)} were already "
-            f"available in the Dataspace."
+            f"- {len(values)} {object_type}{pluralize(values)} already available in the Dataspace."
         )
         scancode_project.append_to_log(msg)
 
