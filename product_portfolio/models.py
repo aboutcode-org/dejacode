@@ -1362,6 +1362,14 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         blank=True,
         null=True,
     )
+    declared_dependency = models.CharField(
+        max_length=1024,
+        blank=True,
+        help_text=_(
+            "A dependency as stated in a project manifest or lockfile, which may be "
+            "required or optional, and may be associated with specific version ranges."
+        ),
+    )
     extracted_requirement = models.CharField(
         max_length=256,
         blank=True,
@@ -1414,8 +1422,3 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
 
     def __str__(self):
         return self.dependency_uid
-
-    @property
-    def package_url(self):
-        if self.dependency_uid.startswith("pkg:"):
-            return self.dependency_uid.split("?")[0]

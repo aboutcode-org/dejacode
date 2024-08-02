@@ -128,9 +128,9 @@
           {% endif %}
         </td>
         <td>
-          {% if dependency.package_url %}
-            {{ dependency.package_url }}
-            <a href="{% url 'global_search' %}?q={{ dependency.package_url }}" target="_blank">
+          {% if dependency.declared_dependency %}
+            {{ dependency.declared_dependency }}
+            <a href="{% url 'global_search' %}?q={{ dependency.declared_dependency }}" target="_blank">
               <i class="fa-solid fa-magnifying-glass smaller"></i>
             </a>
           {% endif %}

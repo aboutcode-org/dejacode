@@ -748,6 +748,9 @@ class ImportPackageFromScanCodeIO:
                 resolved_to_package_uid
             )
 
+        if purl := dependency_data.get("purl"):
+            dependency_data["declared_dependency"] = purl
+
         try:
             dependency = ProductDependency.create_from_data(
                 user=self.user,

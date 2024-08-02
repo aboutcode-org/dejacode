@@ -1634,9 +1634,7 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
         )
 
     def only_rendering_fields(self):
-        """
-        Minimum requirements to render a Package element in the UI.
-        """
+        """Minimum requirements to render a Package element in the UI."""
         return self.only(
             "uuid",
             *PACKAGE_URL_FIELDS,

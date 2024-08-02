@@ -801,6 +801,7 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         AsLink("product"),
         AsLink("for_package"),
         AsLink("resolved_to_package"),
+        "declared_dependency",
         "extracted_requirement",
         "scope",
         "datasource_id",

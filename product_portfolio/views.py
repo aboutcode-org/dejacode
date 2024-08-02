@@ -412,8 +412,7 @@ class ProductDetailsView(
         )
 
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies",
-            ProductDependency.objects.product(product)
+            "package__declared_dependencies", ProductDependency.objects.product(product)
         )
 
         productpackage_qs = (
@@ -651,8 +650,7 @@ class ProductTabInventoryView(
             "licenses", License.objects.select_related("usage_policy")
         )
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies",
-            ProductDependency.objects.product(self.object)
+            "package__declared_dependencies", ProductDependency.objects.product(self.object)
         )
 
         productpackage_qs = (
@@ -968,16 +966,9 @@ class ProductTabDependenciesView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
 
-        dependency_qs = (
-            self.object.dependencies
-            .prefetch_related(
-                models.Prefetch(
-                    "for_package", Package.objects.only_rendering_fields()
-                ),
-                models.Prefetch(
-                    "resolved_to_package", Package.objects.only_rendering_fields()
-                )
-            )
+        dependency_qs = self.object.dependencies.prefetch_related(
+            models.Prefetch("for_package", Package.objects.only_rendering_fields()),
+            models.Prefetch("resolved_to_package", Package.objects.only_rendering_fields()),
         )
 
         filter_dependency = DependencyFilterSet(
@@ -991,8 +982,7 @@ class ProductTabDependenciesView(
         filtered_and_annotated_qs = (
             filter_dependency.qs
             # TODO: This is not scoped by product
-            .with_resolved_to_dependencies_count()
-            .order_by(
+            .with_resolved_to_dependencies_count().order_by(
                 "for_package__type",
                 "for_package__namespace",
                 "for_package__name",
@@ -1009,10 +999,6 @@ class ProductTabDependenciesView(
             for field in ProductDependency._meta.get_fields()
             if hasattr(field, "help_text")
         }
-        help_texts["declared_dependency"] = (
-            "A dependency as stated in a project manifest or lockfile, which may be "
-            "required or optional, and may be associated with specific version ranges."
-        )
 
         context_data.update(
             {

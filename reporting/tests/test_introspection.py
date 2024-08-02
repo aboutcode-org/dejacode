@@ -60,6 +60,7 @@ class ModelIntrospectorTestCase(TestCase):
             "<class 'product_portfolio.models.ProductComponent'>, "
             "<class 'product_portfolio.models.ProductPackage'>, "
             "<class 'product_portfolio.models.ProductInventoryItem'>, "
+            "<class 'product_portfolio.models.ProductDependency'>, "
             "<class 'product_portfolio.models.CodebaseResource'>"
             "]"
         )
