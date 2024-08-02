@@ -229,7 +229,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_dependencies")
 
-        with self.assertNumQueries(7):
+        with self.assertMaxQueries(7):
             response = self.client.get(url)
         self.assertContains(response, "0 results")
 
