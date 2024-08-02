@@ -103,7 +103,7 @@
               <a href="{{ dependency.for_package.get_absolute_url }}" target="_blank">{{ dependency.for_package }}</a>
             </strong>
             <div>
-              {{ dependency.for_package.license_expression_html|default_if_none:"" }}
+              {{ dependency.for_package.license_expression|default_if_none:"" }}
             </div>
           {% else %}
             Current product
@@ -121,7 +121,7 @@
               {% endif %}
             </strong>
             <div>
-              {{ dependency.resolved_to_package.license_expression_html|default_if_none:"" }}
+              {{ dependency.resolved_to_package.license_expression|default_if_none:"" }}
             </div>
           {% else %}
              Not resolved
