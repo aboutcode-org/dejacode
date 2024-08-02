@@ -1417,3 +1417,12 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
 
     def __str__(self):
         return self.dependency_uid
+
+    def save(self, *args, **kwargs):
+        """Make sure a Package dependency cannot resolve to itself."""
+        if self.for_package and self.resolved_to_package:
+            if self.for_package == self.resolved_to_package:
+                raise ValidationError(
+                    "The 'for_package' cannot be the same as 'resolved_to_package'."
+                )
+        super().save(*args, **kwargs)

@@ -904,34 +904,16 @@ class ProductPortfolioModelsTestCase(TestCase):
         scancode_project.status = ScanCodeProject.Status.FAILURE
         self.assertFalse(scancode_project.can_start_import)
 
-    def test_package_model_queryset_declared_dependencies_count(self):
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        product3 = Product.objects.create(name="Product3", dataspace=self.dataspace)
+    def test_product_dependency_model_save_validation(self):
         package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
-
-        product1_qs = Package.objects.declared_dependencies_count(self.product1)
-        self.assertEqual(0, product1_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product1_qs.get(pk=package2.pk).declared_dependencies_count)
-        product2_qs = Package.objects.declared_dependencies_count(product2)
-        self.assertEqual(0, product2_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product2_qs.get(pk=package2.pk).declared_dependencies_count)
-        product3_qs = Package.objects.declared_dependencies_count(product3)
-        self.assertEqual(0, product3_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product3_qs.get(pk=package2.pk).declared_dependencies_count)
-
-        ProductDependency.objects.create(
-            product=self.product1, for_package=package1, dataspace=self.dataspace
+        with self.assertRaises(ValidationError) as cm:
+            ProductDependency.objects.create(
+                product=self.product1,
+                for_package=package1,
+                resolved_to_package=package1,
+                dataspace=self.dataspace,
+            )
+        self.assertEqual(
+            ["The 'for_package' cannot be the same as 'resolved_to_package'."],
+            cm.exception.messages,
         )
-        ProductDependency.objects.create(
-            product=product2, for_package=package1, dataspace=self.dataspace
-        )
-        product1_qs = Package.objects.declared_dependencies_count(self.product1)
-        self.assertEqual(1, product1_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product1_qs.get(pk=package2.pk).declared_dependencies_count)
-        product2_qs = Package.objects.declared_dependencies_count(product2)
-        self.assertEqual(1, product2_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product2_qs.get(pk=package2.pk).declared_dependencies_count)
-        product3_qs = Package.objects.declared_dependencies_count(product3)
-        self.assertEqual(0, product3_qs.get(pk=package1.pk).declared_dependencies_count)
-        self.assertEqual(0, product3_qs.get(pk=package2.pk).declared_dependencies_count)
