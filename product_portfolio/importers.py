@@ -445,7 +445,7 @@ class ImportFromScan:
             if not (self.data.get("packages") or self.data.get("dependencies")):
                 raise ValidationError(
                     "This ScanCode.io output does not include packages nor dependencies data."
-              )
+                )
 
     @staticmethod
     def validate_toolkit_options(scan_options):

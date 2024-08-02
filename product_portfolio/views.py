@@ -965,29 +965,32 @@ class ProductTabDependenciesView(
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+        product = self.object
 
-        dependency_qs = self.object.dependencies.prefetch_related(
+        declared_dependencies_prefetch = models.Prefetch(
+            "resolved_to_package__declared_dependencies",
+            ProductDependency.objects.product(product),
+        )
+
+        dependency_qs = product.dependencies.prefetch_related(
             models.Prefetch("for_package", Package.objects.only_rendering_fields()),
             models.Prefetch("resolved_to_package", Package.objects.only_rendering_fields()),
+            declared_dependencies_prefetch,
         )
 
         filter_dependency = DependencyFilterSet(
             self.request.GET,
             queryset=dependency_qs,
-            dataspace=self.object.dataspace,
+            dataspace=product.dataspace,
             prefix="dependencies",
         )
 
-        # Annotate the filtered queryset with the count of declared_dependencies
-        filtered_and_annotated_qs = (
-            filter_dependency.qs
-            # TODO: This is not scoped by product
-            .with_resolved_to_dependencies_count().order_by(
-                "for_package__type",
-                "for_package__namespace",
-                "for_package__name",
-                "for_package__version",
-            )
+        filtered_and_annotated_qs = filter_dependency.qs.order_by(
+            "for_package__type",
+            "for_package__namespace",
+            "for_package__name",
+            "for_package__version",
+            "dependency_uid",
         )
 
         paginator = Paginator(filtered_and_annotated_qs, self.paginate_by)
@@ -1004,7 +1007,7 @@ class ProductTabDependenciesView(
             {
                 "filter_dependency": filter_dependency,
                 "page_obj": page_obj,
-                "total_count": self.object.dependencies.count(),
+                "total_count": product.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
                 "help_texts": help_texts,
             }
