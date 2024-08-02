@@ -847,7 +847,7 @@ class ProductImportFromScanTestCase(TestCase):
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
-        expected = "This ScanPipe output does not have results from a valid pipeline."
+        expected = "'This ScanCode.io output does not include packages nor dependencies data."
         scan_input_location = self.testfiles_path / "missing_correct_pipeline.json"
         importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
         with self.assertRaisesMessage(ValidationError, expected):

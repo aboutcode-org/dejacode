@@ -442,11 +442,10 @@ class ImportFromScan:
             self.validate_toolkit_options(scan_options)
 
         elif tool_name == "scanpipe":
-            pass
-            # TODO: Reconsider the value of this, as if there's packages data we should
-            # runs = header.get("runs", [])
-            # accept the input anyway
-            # self.validate_pipeline_runs(runs)
+            if not (self.data.get("packages") or self.data.get("dependencies")):
+                raise ValidationError(
+                    "This ScanCode.io output does not include packages nor dependencies data."
+              )
 
     @staticmethod
     def validate_toolkit_options(scan_options):
@@ -463,27 +462,6 @@ class ImportFromScan:
         if missing_options:
             options_str = " ".join(missing_options)
             raise ValidationError(f"The Scan run is missing those required options: {options_str}")
-
-    # @staticmethod
-    # def validate_pipeline_runs(runs):
-    #     """Raise a ValidationError if at least one of the supported pipeline was not run."""
-    #     valid_pipelines = (
-    #         "analyze_docker_image",
-    #         "analyze_root_filesystem_or_vm_image",
-    #         "analyze_windows_docker_image",
-    #         "inspect_packages",
-    #         "map_deploy_to_develop",
-    #         "scan_codebase",
-    #         "scan_single_package",
-    #     )
-    #
-    #     has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in
-    #     valid_pipelines]
-    #
-    #     if not has_a_valid_pipeline:
-    #         raise ValidationError(
-    #             "This ScanPipe output does not have results from a valid pipeline."
-    #         )
 
     def import_packages(self):
         product_packages_count = 0
