@@ -967,15 +967,12 @@ class ProductTabDependenciesView(
         context_data = super().get_context_data(**kwargs)
         product = self.object
 
-        declared_dependencies_prefetch = models.Prefetch(
-            "resolved_to_package__declared_dependencies",
-            ProductDependency.objects.product(product),
-        )
-
         dependency_qs = product.dependencies.prefetch_related(
             models.Prefetch("for_package", Package.objects.only_rendering_fields()),
-            models.Prefetch("resolved_to_package", Package.objects.only_rendering_fields()),
-            declared_dependencies_prefetch,
+            models.Prefetch(
+                "resolved_to_package",
+                Package.objects.only_rendering_fields().declared_dependencies_count(product),
+            ),
         )
 
         filter_dependency = DependencyFilterSet(
@@ -985,7 +982,7 @@ class ProductTabDependenciesView(
             prefix="dependencies",
         )
 
-        filtered_and_annotated_qs = filter_dependency.qs.order_by(
+        filtered_and_ordered_qs = filter_dependency.qs.order_by(
             "for_package__type",
             "for_package__namespace",
             "for_package__name",
@@ -993,7 +990,7 @@ class ProductTabDependenciesView(
             "dependency_uid",
         )
 
-        paginator = Paginator(filtered_and_annotated_qs, self.paginate_by)
+        paginator = Paginator(filtered_and_ordered_qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 

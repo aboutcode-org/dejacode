@@ -1323,13 +1323,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
 
 
 class ProductDependencyQuerySet(ProductSecuredQuerySet):
-    # TODO: Not properly scoped to product
-    def with_resolved_to_dependencies_count(self):
-        return self.annotate(
-            resolved_to_dependencies_count=models.Count(
-                "resolved_to_package__declared_dependencies"
-            )
-        )
+    pass
 
 
 class ProductDependency(HistoryFieldsMixin, DataspacedModel):

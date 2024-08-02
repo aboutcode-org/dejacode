@@ -97,7 +97,6 @@
   <tbody class="text-break">
     {% for dependency in page_obj.object_list %}
       <tr class="{% cycle 'odd' '' %}">
-        {{ dependency.uuid }}
         <td>
           {% if dependency.for_package %}
             <strong>
@@ -114,10 +113,10 @@
           {% if dependency.resolved_to_package %}
             <strong>
               <a href="{{ dependency.resolved_to_package.get_absolute_url }}" target="_blank">{{ dependency.resolved_to_package }}</a>
-              {% if dependency.resolved_to_package.declared_dependencies.all %}
+              {% if dependency.resolved_to_package.declared_dependencies_count %}
                 <a class="btn badge text-bg-primary rounded-pill ms-1"
                    href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ dependency.resolved_to_package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies">
-                  {{ dependency.resolved_to_package.declared_dependencies.all|length }}<i class="fa-solid fa-share-nodes ms-1"></i>
+                  {{ dependency.resolved_to_package.declared_dependencies_count }}<i class="fa-solid fa-share-nodes ms-1"></i>
                 </a>
               {% endif %}
             </strong>

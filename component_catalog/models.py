@@ -1644,6 +1644,19 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
             "dataspace__show_usage_policy_in_user_views",
         )
 
+    def declared_dependencies_count(self, product):
+        """
+        Annotate the QuerySet with this each Package declared_dependencies count.
+        A ``product`` context need to be provided to get the proper counts as
+        dependencies are always scoped to a Product.
+        """
+        return self.annotate(
+            declared_dependencies_count=models.Count(
+                "declared_dependencies",
+                filter=models.Q(declared_dependencies__product=product),
+            )
+        )
+
 
 class Package(
     ExternalReferenceMixin,
