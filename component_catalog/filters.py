@@ -85,6 +85,16 @@ class ComponentFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
+    # TODO: Remove duplication with Package
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownRightWidget,
+    )
 
     class Meta:
         model = Component

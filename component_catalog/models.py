@@ -129,6 +129,18 @@ def validate_filename(value):
         )
 
 
+class VulnerabilityQuerySetMixin:
+    def with_vulnerability_count(self):
+        """Annotate the QuerySet with the vulnerability_count."""
+        return self.annotate(
+            vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
+        )
+
+    def with_vulnerabilties(self):
+        """Return vulnerable Packages."""
+        return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
+
+
 class LicenseExpressionMixin:
     """Model mixin for models that store license expressions."""
 
@@ -852,7 +864,7 @@ def component_mixin_factory(verbose_name):
 BaseComponentMixin = component_mixin_factory("component")
 
 
-class ComponentQuerySet(DataspacedQuerySet):
+class ComponentQuerySet(VulnerabilityQuerySetMixin, DataspacedQuerySet):
     def with_has_hierarchy(self):
         subcomponents = Subcomponent.objects.filter(
             models.Q(child_id=OuterRef("pk")) | models.Q(parent_id=OuterRef("pk"))
@@ -1622,20 +1634,10 @@ class ComponentKeyword(DataspacedModel):
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
-class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
+class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, DataspacedQuerySet):
     def has_package_url(self):
         """Return objects with Package URL defined."""
         return self.filter(~models.Q(type="") & ~models.Q(name=""))
-
-    def with_vulnerability_count(self):
-        """Annotate the QuerySet with the vulnerability_count."""
-        return self.annotate(
-            vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
-        )
-
-    def with_vulnerabilties(self):
-        """Return vulnerable Packages."""
-        return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
     def annotate_sortable_identifier(self):
         """
@@ -2528,12 +2530,10 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
             "For example, 'VCID-2024-0001'."
         ),
     )
-
     summary = models.TextField(
         help_text=_("A brief summary of the vulnerability, outlining its nature and impact."),
         blank=True,
     )
-
     aliases = JSONListField(
         blank=True,
         help_text=_(
@@ -2541,7 +2541,6 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
             "(e.g., 'CVE-2017-1000136')."
         ),
     )
-
     references = JSONListField(
         blank=True,
         help_text=_(
@@ -2549,16 +2548,19 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
             "URL, an optional reference ID, scores, and the URL for further details. "
         ),
     )
-
     fixed_packages = JSONListField(
         blank=True,
         help_text=_("A list of packages that are not affected by this vulnerability."),
     )
-
     affected_packages = models.ManyToManyField(
         to="component_catalog.Package",
         related_name="affected_by_vulnerabilities",
-        help_text=_("Packages that are affected by this vulnerability."),
+        help_text=_("Packages affected by this vulnerability."),
+    )
+    affected_components = models.ManyToManyField(
+        to="component_catalog.Component",
+        related_name="affected_by_vulnerabilities",
+        help_text=_("Components affected by this vulnerability."),
     )
 
     class Meta:
@@ -2576,11 +2578,20 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
         """Assign the ``packages`` as affected to this vulnerability."""
         self.affected_packages.add(*packages)
 
+    def add_affected_components(self, components):
+        """Assign the ``components`` as affected to this vulnerability."""
+        self.affected_components.add(*components)
+
     @classmethod
-    def create_from_data(cls, user, data, validate=False, affected_packages=None):
+    def create_from_data(
+        cls, user, data, validate=False, affected_packages=None, affected_components=None
+    ):
         vulnerability = super().create_from_data(user, data, validate=validate)
 
         if affected_packages:
             vulnerability.add_affected_packages(affected_packages)
+
+        if affected_components:
+            vulnerability.add_affected_component(affected_components)
 
         return vulnerability

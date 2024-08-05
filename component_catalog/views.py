@@ -408,7 +408,7 @@ class ComponentListView(
     group_name_version = True
 
     table_headers = (
-        Header("name", _("Component name")),
+        Header("name", _("Component name"), filter="is_vulnerable"),
         Header("version", _("Version")),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
@@ -448,6 +448,7 @@ class ComponentListView(
                 "licenses__usage_policy",
             )
             .with_has_hierarchy()
+            .with_vulnerability_count()
             .order_by(
                 "-last_modified_date",
             )
