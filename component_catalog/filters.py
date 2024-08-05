@@ -210,6 +210,15 @@ class PackageFilterSet(DataspacedFilterSet):
         empty_label="Last modified (default)",
         widget=SortDropDownWidget,
     )
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownRightWidget,
+    )
 
     class Meta:
         model = Package

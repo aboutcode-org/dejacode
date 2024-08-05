@@ -1627,11 +1627,15 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
         """Return objects with Package URL defined."""
         return self.filter(~models.Q(type="") & ~models.Q(name=""))
 
+    def with_vulnerability_count(self):
+        """Annotate the QuerySet with the vulnerability_count."""
+        return self.annotate(
+            vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
+        )
+
     def with_vulnerabilties(self):
         """Return vulnerable Packages."""
-        return self.annotate(
-            vulnerability_count=models.Count("affected_by_vulnerabilities")
-        ).filter(vulnerability_count__gt=0)
+        return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
     def annotate_sortable_identifier(self):
         """

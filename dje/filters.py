@@ -844,16 +844,19 @@ class HasRelationFilter(django_filters.ChoiceFilter):
     def __init__(self, *args, **kwargs):
         kwargs["lookup_expr"] = "isnull"
         kwargs["empty_label"] = "Any"
-        kwargs["choices"] = (
-            ("with", _("With")),
-            ("without", _("Without")),
+        kwargs.setdefault(
+            "choices",
+            (
+                ("with", _("With")),
+                ("without", _("Without")),
+            ),
         )
         super().__init__(*args, **kwargs)
 
     def filter(self, qs, value):
-        if value == "with":
+        if value in ["with", "yes"]:
             return qs.filter(**{f"{self.field_name}__{self.lookup_expr}": False}).distinct()
-        elif value == "without":
+        elif value in ["without", "no"]:
             return qs.filter(**{f"{self.field_name}__{self.lookup_expr}": True}).distinct()
         return qs
 

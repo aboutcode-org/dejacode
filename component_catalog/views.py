@@ -1050,7 +1050,12 @@ class PackageListView(
     include_reference_dataspace = True
     put_results_in_session = True
     table_headers = (
-        Header("sortable_identifier", _("Identifier"), Package.identifier_help()),
+        Header(
+            "sortable_identifier",
+            _("Identifier"),
+            Package.identifier_help(),
+            filter="is_vulnerable",
+        ),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
@@ -1081,6 +1086,7 @@ class PackageListView(
                 "dataspace",
             )
             .annotate_sortable_identifier()
+            .with_vulnerability_count()
             .select_related(
                 "usage_policy",
             )
