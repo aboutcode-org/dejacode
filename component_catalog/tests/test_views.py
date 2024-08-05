@@ -716,27 +716,27 @@ class ComponentUserViewsTestCase(TestCase):
 
         expected = f"""
         <div class="my-1">
-            <a href="{href1}" class="text-decoration-none">
+            <a href="{href1}" class="text-decoration-none me-1">
               <span class="badge text-bg-secondary rounded-pill">
                 Type: "not_a_valid_entry" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
-            <a href="{href2}" class="text-decoration-none">
+            <a href="{href2}" class="text-decoration-none me-1">
               <span class="badge text-bg-secondary rounded-pill">
                 License: "license1" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
-            <a href="{href3}" class="text-decoration-none">
+            <a href="{href3}" class="text-decoration-none me-1">
               <span class="badge text-bg-secondary rounded-pill">
                 License: "license2" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
-            <a href="{href4}" class="text-decoration-none">
+            <a href="{href4}" class="text-decoration-none me-1">
               <span class="badge text-bg-secondary rounded-pill">
                 Search: "a" <i class="fas fa-times-circle"></i>
                 </span>
             </a>
-            <a href="{href5}" class="text-decoration-none">
+            <a href="{href5}" class="text-decoration-none me-1">
               <span class="badge text-bg-secondary rounded-pill">
                 Sort: "name" <i class="fas fa-times-circle"></i>
                 </span>
@@ -4133,9 +4133,7 @@ class ComponentListViewTestCase(TestCase):
         expected = """
         <a href="{}#activity" class="r-link">
             <span class="badge text-bg-request">R</span>
-        </a>""".format(
-            self.component1.get_absolute_url()
-        )
+        </a>""".format(self.component1.get_absolute_url())
         self.assertContains(response, expected, html=True)
 
     def test_component_list_multi_send_about_files_view(self):
@@ -4578,7 +4576,7 @@ class GrappelliRelatedViewTestCase(TestCase):
             reverse("grp_related_lookup"), self.c1.pk
         )
         response = self.client.get(url)
-        expected = [{"label": "{0}".format(self.c1), "safe": False, "value": str(self.c1.pk)}]
+        expected = [{"label": str(self.c1), "safe": False, "value": str(self.c1.pk)}]
         self.assertEqual(expected, json.loads(response.content))
 
     def test_reference_dataspace_users_access_another_dataspaces_through_grappelli_lookup(self):
@@ -4591,7 +4589,7 @@ class GrappelliRelatedViewTestCase(TestCase):
         response = self.client.get(url)
         expected = [
             {
-                "label": "{0}".format(self.other_component),
+                "label": str(self.other_component),
                 "safe": False,
                 "value": str(self.other_component.pk),
             }

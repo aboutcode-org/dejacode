@@ -1643,9 +1643,9 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
-    scan_results_url = scancodeio.get_scan_results_url(project_uuid)
+    scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
     scan_results = scancodeio.fetch_scan_data(scan_results_url)
-    scan_summary_url = scancodeio.get_scan_summary_url(project_uuid)
+    scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
     scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
 
     in_memory_zip = io.BytesIO()
@@ -2298,7 +2298,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
                 if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
-                        value = format_html("<br>".join(([escape(entry) for entry in value])))
+                        value = format_html("<br>".join([escape(entry) for entry in value]))
                     else:
                         value = escape(value)
                     detected_package_fields.append((label, value))

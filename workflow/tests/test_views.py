@@ -954,9 +954,7 @@ class RequestUserViewsTestCase(TestCase):
 
         expected = """
         <input id="id_object_id" name="object_id" type="hidden" value="{}" />
-        """.format(
-            self.component1.id
-        )
+        """.format(self.component1.id)
         self.assertContains(response, expected, html=True)
 
         expected_js = """

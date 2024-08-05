@@ -35,6 +35,7 @@ from dje.outputs import get_spdx_extracted_licenses
 from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
 from dje.tasks import scancodeio_submit_project
+from dje.tests import MaxQueryMixin
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -47,6 +48,7 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
@@ -57,7 +59,7 @@ from workflow.models import Request
 from workflow.models import RequestTemplate
 
 
-class ProductPortfolioViewsTestCase(TestCase):
+class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
@@ -127,7 +129,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        response = self.client.get(url)
+        with self.assertNumQueries(29):
+            response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
 
@@ -152,7 +155,8 @@ class ProductPortfolioViewsTestCase(TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        response = self.client.get(url)
+        with self.assertNumQueries(26):
+            response = self.client.get(url)
         self.assertContains(response, expected)
 
         self.assertIn("Inventory", response.context["tabsets"])
@@ -220,6 +224,49 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertContains(response, "Load SBOMs")
         self.assertNotContains(response, "hx-trigger")
         self.assertNotContains(response, "Imports are currently in progress.")
+
+    def test_product_portfolio_detail_view_tab_dependency_view(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_dependencies")
+
+        with self.assertMaxQueries(7):
+            response = self.client.get(url)
+        self.assertContains(response, "0 results")
+
+        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        # Unresolved package dependency
+        ProductDependency.objects.create(
+            dependency_uid=str(uuid.uuid4()),
+            product=self.product1,
+            for_package=self.package1,
+            dataspace=self.dataspace,
+        )
+        # Resolved package dependency
+        ProductDependency.objects.create(
+            dependency_uid=str(uuid.uuid4()),
+            product=self.product1,
+            for_package=self.package1,
+            resolved_to_package=package2,
+            dataspace=self.dataspace,
+        )
+        # Unresolved Product dependency
+        ProductDependency.objects.create(
+            dependency_uid=str(uuid.uuid4()),
+            product=self.product1,
+            declared_dependency="pkg:type/name",
+            dataspace=self.dataspace,
+        )
+        # Unresolved Product dependency
+        ProductDependency.objects.create(
+            dependency_uid=str(uuid.uuid4()),
+            product=self.product1,
+            resolved_to_package=package2,
+            dataspace=self.dataspace,
+        )
+
+        with self.assertMaxQueries(9):
+            response = self.client.get(url)
+        self.assertContains(response, "4 results")
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")
@@ -2609,7 +2656,6 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual(expected, extracted_licenses_as_dict)
 
     def test_product_portfolio_product_export_cyclonedx_view(self):
-        self.maxDiff = None
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1",
@@ -2816,8 +2862,13 @@ class ProductPortfolioViewsTestCase(TestCase):
                 self.client.post(url, data=data, follow=True)
                 scan.assert_called_once()
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
-    def test_product_portfolio_import_packages_from_scancodeio_view(self, mock_fetch_packages):
+    def test_product_portfolio_import_packages_from_scancodeio_view(
+        self,
+        mock_fetch_packages,
+        mock_fetch_dependencies,
+    ):
         self.client.login(username=self.super_user.username, password="secret")
         mock_fetch_packages.return_value = [
             {
@@ -2828,6 +2879,12 @@ class ProductPortfolioViewsTestCase(TestCase):
                 "primary_language": "Java",
             }
         ]
+        mock_fetch_dependencies.return_value = [
+            {
+                "purl": "pkg:pypi/aboutcode-toolkit@10",
+            }
+        ]
+
         scancodeproject = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
@@ -2875,12 +2932,12 @@ class ProductPortfolioViewsTestCase(TestCase):
         self.assertEqual("Load Packages from SBOMs", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
-        self.assertEqual("- Imported 1 package.", notif.description)
+        expected_message = "- Imported 1 package.\n- 1 dependency error occurred during import."
+        self.assertEqual(expected_message, notif.description)
 
         scancodeproject.refresh_from_db()
         self.assertEqual("success", scancodeproject.status)
-        expected = ["- Imported 1 package."]
-        self.assertEqual(expected, scancodeproject.import_log)
+        self.assertEqual(expected_message.split("\n"), scancodeproject.import_log)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.find_project")
     def test_product_portfolio_pull_project_data_from_scancodeio_view(self, mock_find_project):
@@ -2950,14 +3007,18 @@ class ProductPortfolioViewsTestCase(TestCase):
         scancode_project.status = ScanCodeProject.Status.SUBMITTED
         scancode_project.save()
         mock_import_data.side_effect = None
-        mock_import_data.return_value = (["package1"], ["package2"], ["error1"])
+        mock_import_data.return_value = (
+            {"package": ["package1"]},
+            {"package": ["package2"]},
+            {"package": ["error1"]},
+        )
         pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
         scancode_project.refresh_from_db()
         self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
         expected = [
             "- Imported 1 package.",
-            "- 1 package(s) was/were already available in the Dataspace.",
-            "- 1 errors occurred during import.",
+            "- 1 package already available in the Dataspace.",
+            "- 1 package error occurred during import.",
         ]
         self.assertEqual(expected, scancode_project.import_log)
 

@@ -48,6 +48,7 @@ from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
+from component_catalog.license_expression_dje import render_expression_as_html
 from dejacode_toolkit import spdx
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
@@ -227,6 +228,11 @@ class LicenseExpressionMixin:
     @property
     def concluded_license_expression_spdx(self):
         return self.get_expression_as_spdx(self.license_expression)
+
+    @property
+    def license_expression_html(self):
+        if self.license_expression:
+            return render_expression_as_html(self.license_expression, self.dataspace)
 
     def save(self, *args, **kwargs):
         """
@@ -1635,6 +1641,30 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
         """
         return self.annotate(
             sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
+        )
+
+    def only_rendering_fields(self):
+        """Minimum requirements to render a Package element in the UI."""
+        return self.only(
+            "uuid",
+            *PACKAGE_URL_FIELDS,
+            "filename",
+            "license_expression",
+            "dataspace__name",
+            "dataspace__show_usage_policy_in_user_views",
+        )
+
+    def declared_dependencies_count(self, product):
+        """
+        Annotate the QuerySet with this each Package declared_dependencies count.
+        A ``product`` context need to be provided to get the proper counts as
+        dependencies are always scoped to a Product.
+        """
+        return self.annotate(
+            declared_dependencies_count=models.Count(
+                "declared_dependencies",
+                filter=models.Q(declared_dependencies__product=product),
+            )
         )
 
 

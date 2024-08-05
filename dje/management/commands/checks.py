@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
@@ -441,7 +440,7 @@ def check_for_fields_value_inconsistencies(app_configs, **kwargs):
         group_list = list(group)
 
         for field_name in fields_to_check:
-            if type(tuple()) == type(field_name):
+            if isinstance(field_name, tuple):
                 field_name, method = field_name
                 inconsistencies = {str(getattr(instance, method)()) for instance in group_list}
             else:

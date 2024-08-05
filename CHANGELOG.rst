@@ -54,6 +54,10 @@ Release notes
 - Use the declared_license_expression_spdx value in SPDX outputs.
   https://github.com/nexB/dejacode/issues/63
 
+- Add new ProductDependency model to support relating Packages in the context of a
+  Product.
+  https://github.com/nexB/dejacode/issues/138
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

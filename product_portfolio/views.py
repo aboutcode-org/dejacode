@@ -96,6 +96,7 @@ from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from product_portfolio.filters import CodebaseResourceFilterSet
+from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
 from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
@@ -117,6 +118,7 @@ from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 
@@ -283,6 +285,11 @@ class ProductDetailsView(
                 "owner",
             ],
         },
+        "dependencies": {
+            "fields": [
+                "dependencies",
+            ],
+        },
         "activity": {},
         "imports": {},
         "history": {
@@ -384,8 +391,10 @@ class ProductDetailsView(
 
     def tab_hierarchy(self):
         template = "product_portfolio/tabs/tab_hierarchy.html"
+        product = self.object
+
         productcomponent_qs = (
-            self.object.productcomponents.select_related(
+            product.productcomponents.select_related(
                 "component",
             )
             .prefetch_related(
@@ -402,12 +411,17 @@ class ProductDetailsView(
             )
         )
 
+        declared_dependencies_prefetch = models.Prefetch(
+            "package__declared_dependencies", ProductDependency.objects.product(product)
+        )
+
         productpackage_qs = (
-            self.object.productpackages.select_related(
+            product.productpackages.select_related(
                 "package",
             )
             .prefetch_related(
                 "package__licenses",
+                declared_dependencies_prefetch,
             )
             .order_by(
                 "feature",
@@ -456,6 +470,29 @@ class ProductDetailsView(
         tab_context = {
             "tab_view_url": tab_view_url,
             "tab_object_name": "inventory",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def tab_dependencies(self):
+        dependencies_count = self.object.dependencies.count()
+        if not dependencies_count:
+            return
+
+        label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_dependencies")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "dependencies",
         }
 
         return {
@@ -609,39 +646,74 @@ class ProductTabInventoryView(
 
         context["inventory_count"] = self.object.productinventoryitem_set.count()
 
+        licenses_prefetch = models.Prefetch(
+            "licenses", License.objects.select_related("usage_policy")
+        )
+        declared_dependencies_prefetch = models.Prefetch(
+            "package__declared_dependencies", ProductDependency.objects.product(self.object)
+        )
+
+        productpackage_qs = (
+            self.object.productpackages.select_related(
+                "package__dataspace",
+                "package__usage_policy",
+                "review_status",
+                "purpose",
+            )
+            .prefetch_related(
+                licenses_prefetch,
+                declared_dependencies_prefetch,
+            )
+            .order_by(
+                "feature",
+                "package__type",
+                "package__namespace",
+                "package__name",
+                "package__version",
+                "package__filename",
+            )
+        )
+
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
-            queryset=self.object.productpackages,
+            queryset=productpackage_qs,
             dataspace=self.object.dataspace,
             prefix="inventory",
             anchor="#inventory",
+        )
+
+        productcomponent_qs = (
+            self.object.productcomponents.select_related(
+                "component__dataspace",
+                "component__owner__dataspace",
+                "component__usage_policy",
+                "review_status",
+                "purpose",
+            )
+            .prefetch_related(
+                "component__packages",
+                "component__children",
+                licenses_prefetch,
+            )
+            .order_by(
+                "feature",
+                "component__name",
+                "component__version",
+                "name",
+                "version",
+            )
         )
 
         filter_productcomponent = ProductComponentFilterSet(
             self.request.GET,
-            queryset=self.object.productcomponents,
+            queryset=productcomponent_qs,
             dataspace=self.object.dataspace,
             prefix="inventory",
             anchor="#inventory",
         )
 
-        productcomponent_qs = filter_productcomponent.qs.order_by(
-            "feature",
-            "component__name",
-            "component__version",
-            "name",
-            "version",
-        )
-
-        productpackage_qs = filter_productpackage.qs.order_by(
-            "feature",
-            "package__type",
-            "package__namespace",
-            "package__name",
-            "package__version",
-            "package__filename",
-        )
-
+        productcomponent_qs = filter_productcomponent.qs
+        productpackage_qs = filter_productpackage.qs
         # 1. Combine components and packages into a single list of object
         filtered_inventory_items = list(productcomponent_qs) + list(productpackage_qs)
 
@@ -865,6 +937,76 @@ class ProductTabCodebaseView(
                 "has_product_component": has_any_values("product_component"),
                 "has_product_package": has_any_values("product_package"),
                 "has_deployed_paths": has_any_values("deployed_from_paths"),
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabDependenciesView(
+    LoginRequiredMixin,
+    BaseProductView,
+    PreviousNextPaginationMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_dependencies.html"
+    paginate_by = 50
+    query_dict_page_param = "dependencies-page"
+    tab_id = "dependencies"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        product = self.object
+
+        dependency_qs = product.dependencies.prefetch_related(
+            models.Prefetch("for_package", Package.objects.only_rendering_fields()),
+            models.Prefetch(
+                "resolved_to_package",
+                Package.objects.only_rendering_fields().declared_dependencies_count(product),
+            ),
+        )
+
+        filter_dependency = DependencyFilterSet(
+            self.request.GET,
+            queryset=dependency_qs,
+            dataspace=product.dataspace,
+            prefix="dependencies",
+        )
+
+        filtered_and_ordered_qs = filter_dependency.qs.order_by(
+            "for_package__type",
+            "for_package__namespace",
+            "for_package__name",
+            "for_package__version",
+            "dependency_uid",
+        )
+
+        paginator = Paginator(filtered_and_ordered_qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        help_texts = {
+            field.name: field.help_text
+            for field in ProductDependency._meta.get_fields()
+            if hasattr(field, "help_text")
+        }
+
+        context_data.update(
+            {
+                "filter_dependency": filter_dependency,
+                "page_obj": page_obj,
+                "total_count": product.dependencies.count(),
+                "search_query": self.request.GET.get("dependencies-q", ""),
+                "help_texts": help_texts,
             }
         )
 
@@ -1134,9 +1276,9 @@ class ProductTreeComparisonView(
             for name in removed_identifiers
             if added_identifiers.count(name) == 1 and removed_identifiers.count(name) == 1
         ]
-        for k, l in updated:
+        for k, v in updated:
             del removed[removed.index(k)]
-            del added[added.index(l)]
+            del added[added.index(v)]
 
         unchanged, changed = [], []
         diffs = {}
@@ -1149,7 +1291,7 @@ class ProductTreeComparisonView(
 
         rows = [("added", None, right_dict[k], None) for k in added]
         rows.extend(("removed", left_dict[k], None, None) for k in removed)
-        rows.extend(("updated", left_dict[k], right_dict[l], None) for k, l in updated)
+        rows.extend(("updated", left_dict[k], right_dict[v], None) for k, v in updated)
         rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
         rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
         rows.sort(key=self.sort_by_name_version)
@@ -2091,8 +2233,16 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
     scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 
+    results = scancode_project.results
+
+    # Backward compatibility
+    is_old_results_format = any(isinstance(entry, list) for entry in results.values())
+    if is_old_results_format:
+        results = {key: {"package": value} for key, value in results.items() if value}
+
     context = {
         "scancode_project": scancode_project,
+        "results": results,
         "scan_data": scan_data,
     }
 

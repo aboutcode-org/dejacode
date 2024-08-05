@@ -8,9 +8,11 @@
 
 from django import forms
 from django.contrib import admin
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
+from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.models import ComponentKeyword
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
@@ -26,6 +28,7 @@ from license_library.models import License
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
 
@@ -313,4 +316,83 @@ class CodebaseResourceFilterSet(DataspacedFilterSet):
             "product_package",
             "related_deployed_from",
             "related_deployed_to",
+        ]
+
+
+class PackageURLSearchFilter(SearchFilter):
+    def filter(self, qs, value):
+        if value and value.startswith("pkg:"):
+            base_lookups = purl_to_lookups(value)
+            packages_fk_fields = ["for_package", "resolved_to_package"]
+
+            combined_q = Q()
+            for package_fk in packages_fk_fields:
+                fk_lookups = {
+                    f"{package_fk}__{field}": value for field, value in base_lookups.items()
+                }
+                combined_q |= Q(**fk_lookups)
+
+            if combined_q:
+                return qs.filter(combined_q)
+
+        return super().filter(qs, value)
+
+
+class DependencyFilterSet(DataspacedFilterSet):
+    q = PackageURLSearchFilter(
+        label=_("Search"),
+        search_fields=[
+            "dependency_uid",
+            "for_package__filename",
+            "for_package__type",
+            "for_package__namespace",
+            "for_package__name",
+            "for_package__version",
+            "resolved_to_package__filename",
+            "resolved_to_package__type",
+            "resolved_to_package__namespace",
+            "resolved_to_package__name",
+            "resolved_to_package__version",
+        ],
+    )
+    sort = DefaultOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            "dependency_uid",
+            "for_package",
+            "resolved_to_package",
+        ],
+    )
+    for_package = HasRelationFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    resolved_to_package = HasRelationFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_runtime = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_optional = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_resolved = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+    is_direct = BooleanChoiceFilter(
+        widget=DropDownWidget(anchor="#dependencies"),
+    )
+
+    class Meta:
+        model = ProductDependency
+        fields = [
+            "for_package",
+            "for_package__uuid",
+            "resolved_to_package",
+            "resolved_to_package__uuid",
+            "scope",
+            "datasource_id",
+            "is_runtime",
+            "is_optional",
+            "is_resolved",
+            "is_direct",
         ]
