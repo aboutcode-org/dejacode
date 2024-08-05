@@ -11,7 +11,7 @@
               <div>
                 <i class="fa-solid fa-briefcase me-2"></i>{% trans 'Products' %}
               </div>
-              <span class="badge {% if not product_results.paginator_count %}text-bg-secondary{% else %}{% if not product_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %}{% endif %} rounded-pill">{{ product_results.paginator_count|intcomma }}</span>
+              <span class="badge {% if not product_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %} rounded-pill">{{ product_results.paginator_count|intcomma }}</span>
             </a>
           {% endif %}
 
@@ -22,9 +22,11 @@
             <span class="badge {% if not component_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %} rounded-pill">{{ component_results.paginator_count|intcomma }}</span>
           </a>
           {% if reference_component_results %}
-            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_components" data-scroll-to="#reference_components_section">
-              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
-              <span class="badge text-bg-warning rounded-pill">{{ reference_component_results.paginator_count|intcomma }}</span>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not reference_component_results.paginator_count %}disabled{% endif %}" href="#reference_components" data-scroll-to="#reference_components_section">
+              <span class="badge text-bg-warning ms-3">{% trans 'Reference Data' %}</span>
+              <span class="badge {% if not reference_component_results.paginator_count %}text-bg-secondary{% else %}text-bg-warning{% endif %} rounded-pill">
+                {{ reference_component_results.paginator_count|intcomma }}
+              </span>
             </a>
           {% endif %}
 
@@ -35,15 +37,17 @@
             <span class="badge {% if not package_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %} rounded-pill">{{ package_results.paginator_count|intcomma }}</span>
           </a>
           {% if reference_package_results %}
-            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_packages" data-scroll-to="#reference_packages_section">
-              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
-              <span class="badge text-bg-warning rounded-pill">{{ reference_package_results.paginator_count|intcomma }}</span>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not reference_package_results.paginator_count %}disabled{% endif %}" href="#reference_packages" data-scroll-to="#reference_packages_section">
+              <span class="badge text-bg-warning ms-3">{% trans 'Reference Data' %}</span>
+              <span class="badge {% if not reference_package_results.paginator_count %}text-bg-secondary{% else %}text-bg-warning{% endif %} rounded-pill">
+                {{ reference_package_results.paginator_count|intcomma }}
+              </span>
             </a>
           {% endif %}
 
           {% if include_purldb %}
             <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#purldb" data-scroll-to="#purldb_section">
-              <span class="badge text-bg-purldb" style="font-size: 90%;">{% trans 'PurlDB' %}</span>
+              <span class="badge text-bg-purldb ms-3" style="font-size: 90%;">{% trans 'PurlDB' %}</span>
               <span id="purldb-badge-count" class="badge text-bg-purldb rounded-pill"><i class="fas fa-spinner fa-spin"></i></span>
             </a>
           {% endif %}
@@ -55,9 +59,11 @@
             <span class="badge {% if not license_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %} rounded-pill">{{ license_results.paginator_count|intcomma }}</span>
           </a>
           {% if reference_license_results %}
-            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_licenses" data-scroll-to="#reference_licenses_section">
-              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
-              <span class="badge text-bg-warning rounded-pill">{{ reference_license_results.paginator_count|intcomma }}</span>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not reference_license_results.paginator_count %}disabled{% endif %}" href="#reference_licenses" data-scroll-to="#reference_licenses_section">
+              <span class="badge text-bg-warning ms-3">{% trans 'Reference Data' %}</span>
+              <span class="badge {% if not reference_license_results.paginator_count %}text-bg-secondary{% else %}text-bg-warning{% endif %} rounded-pill">
+                {{ reference_license_results.paginator_count|intcomma }}
+              </span>
             </a>
           {% endif %}
 
@@ -68,9 +74,11 @@
             <span class="badge {% if not owner_results.paginator_count %}text-bg-secondary{% else %}text-bg-primary{% endif %} rounded-pill">{{ owner_results.paginator_count|intcomma }}</span>
           </a>
           {% if reference_owner_results %}
-            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#reference_owners" data-scroll-to="#reference_owners_section">
-              <span class="badge text-bg-warning ms-2">{% trans 'Reference Data' %}</span>
-              <span class="badge text-bg-warning rounded-pill">{{ reference_owner_results.paginator_count|intcomma }}</span>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not reference_owner_results.paginator_count %}disabled{% endif %}" href="#reference_owners" data-scroll-to="#reference_owners_section">
+              <span class="badge text-bg-warning ms-3">{% trans 'Reference Data' %}</span>
+              <span class="badge {% if not reference_owner_results.paginator_count %}text-bg-secondary{% else %}text-bg-warning{% endif %} rounded-pill">
+                {{ reference_owner_results.paginator_count|intcomma }}
+              </span>
             </a>
           {% endif %}
         </div>
