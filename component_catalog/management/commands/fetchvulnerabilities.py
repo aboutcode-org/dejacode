@@ -9,6 +9,7 @@
 
 from django.core.management.base import CommandError
 
+from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import Vulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -22,6 +23,7 @@ class Command(DataspacedCommand):
 
     def handle(self, *args, **options):
         super().handle(*args, **options)
+        # chunk_size=10 -> make this configurable and see figure out best default
 
         # TODO: Consider making the user optional on the Vulnerability model as its
         # automatically collected
@@ -36,9 +38,13 @@ class Command(DataspacedCommand):
 
         package_qs = Package.objects.scope(self.dataspace).has_package_url()
         self.stdout.write(f"{package_qs.count()} Packages in the queue.")
+        # TODO:
+        component_qs = Component.objects.scope(self.dataspace).exclude(cpe="")
+        self.stdout.write(f"{component_qs.count()} Components in the queue.")
 
         # TODO: Replace this by a create_or_update
         Vulnerability.objects.all().delete()
+        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
 
         for packages_batch in chunked(package_qs, chunk_size=10):
             entries = vulnerablecode.get_vulnerable_purls(packages_batch, purl_only=False)
@@ -57,7 +63,15 @@ class Command(DataspacedCommand):
                 if not affected_packages:
                     raise CommandError("Could not find package!")
 
+                # django.db.utils.IntegrityError: duplicate key value violates unique
+                # constraint "component_catalog_vulnerability_vulnerability_id_key"
+                # DETAIL:  Key (vulnerability_id)=(VCID-311z-mwbu-aaac) already exists.
+
                 for vulnerability in affected_by_vulnerabilities:
+                    if vulnerability_qs.filter(
+                        vulnerability_id=vulnerability["vulnerability_id"]
+                    ).exists():
+                        continue  # -> TODO: Update from data in that case?
                     Vulnerability.create_from_data(
                         user=user,
                         data=vulnerability,
