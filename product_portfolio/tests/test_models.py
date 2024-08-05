@@ -917,3 +917,29 @@ class ProductPortfolioModelsTestCase(TestCase):
             ["The 'for_package' cannot be the same as 'resolved_to_package'."],
             cm.exception.messages,
         )
+
+    def test_product_dependency_prackage_queryset_declared_dependencies_count(self):
+        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        ProductDependency.objects.create(
+            product=self.product1,
+            for_package=package1,
+            resolved_to_package=package2,
+            dataspace=self.dataspace,
+        )
+        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+        ProductDependency.objects.create(
+            product=product2,
+            for_package=package1,
+            resolved_to_package=package2,
+            dataspace=self.dataspace,
+        )
+
+        self.assertEqual(2, package1.declared_dependencies.count())
+        self.assertEqual(0, package1.resolved_from_dependencies.count())
+        self.assertEqual(0, package2.declared_dependencies.count())
+        self.assertEqual(2, package2.resolved_from_dependencies.count())
+
+        qs = Package.objects.declared_dependencies_count(product=self.product1)
+        annotated_package1 = qs.filter(pk=package1.pk)[0]
+        self.assertEqual(1, annotated_package1.declared_dependencies_count)

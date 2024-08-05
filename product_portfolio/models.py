@@ -1322,10 +1322,6 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         )
 
 
-class ProductDependencyQuerySet(ProductSecuredQuerySet):
-    pass
-
-
 class ProductDependency(HistoryFieldsMixin, DataspacedModel):
     product = models.ForeignKey(
         to="product_portfolio.Product",
@@ -1400,7 +1396,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         help_text=_("True if this is a direct, first-level dependency relationship for a package."),
     )
 
-    objects = DataspacedManager.from_queryset(ProductDependencyQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
 
     class Meta:
         unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))
