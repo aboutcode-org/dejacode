@@ -250,31 +250,37 @@ def include_type(view_instance):
 
 
 class TabVulnerabilityMixin:
-    # TODO: Remove this
-    vulnerability_matching_field = None
-
     def tab_vulnerabilities(self):
         vulnerabilities = self.object.affected_by_vulnerabilities.all()
         if not vulnerabilities:
             return
 
-        fields, vulnerabilities_count = self.get_vulnerabilities_tab_fields(vulnerabilities)
-
-        if fields:
+        vulnerablecode = VulnerableCode(self.object.dataspace)
+        if fields := self.get_vulnerabilities_tab_fields(vulnerabilities, vulnerablecode):
             label = (
                 f"Vulnerabilities"
-                f' <span class="badge badge-vulnerability">{vulnerabilities_count}</span>'
+                f' <span class="badge badge-vulnerability">{len(vulnerabilities)}</span>'
             )
+
             return {
                 "fields": fields,
                 "label": format_html(label),
             }
 
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        raise NotImplementedError
+    def get_vulnerabilities_tab_fields(self, vulnerabilities, vulnerablecode):
+        dataspace = self.object.dataspace
+        fields = []
+
+        for vulnerability in vulnerabilities:
+            vulnerability_fields = self.get_vulnerability_fields(
+                vulnerability, dataspace, vulnerablecode
+            )
+            fields.extend(vulnerability_fields)
+
+        return fields
 
     @staticmethod
-    def get_vulnerability_fields(vulnerability, dataspace):
+    def get_vulnerability_fields(vulnerability, dataspace, vulnerablecode):
         reference_urls = []
         reference_ids = []
 
@@ -295,14 +301,14 @@ class TabVulnerabilityMixin:
             (_("Summary"), vulnerability.summary, "Summary of the vulnerability"),
         ]
 
-        # TODO: Generate from the VCID and the settings
-        # if vulnerability_url := vulnerability.resource_url:
-        #     vulnerability_url_help = "Link to the VulnerableCode app."
-        #     url_as_link = format_html(
-        #         '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
-        #         vulnerability_url=vulnerability_url,
-        #     )
-        #     tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
+        if vulnerablecode_url := vulnerablecode.service_url:
+            vulnerability_url = f"{vulnerablecode_url}vulnerabilities/{vulnerability.vcid}"
+            vulnerability_url_help = "Link to the VulnerableCode app."
+            url_as_link = format_html(
+                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
+                vulnerability_url=vulnerability_url,
+            )
+            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
 
         if vulnerability.fixed_packages:
             fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
@@ -454,25 +460,6 @@ class ComponentListView(
             )
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
-
-        # The display of vulnerabilities is controlled by the objects Dataspace
-        enable_vulnerabilities = all(
-            [
-                self.dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if enable_vulnerabilities:
-            context["vulnerable_cpes"] = vulnerablecode.get_vulnerable_cpes(
-                components=context["object_list"],
-            )
-
-        return context
-
 
 class ComponentDetailsView(
     AcceptAnonymousMixin,
@@ -487,7 +474,6 @@ class ComponentDetailsView(
     add_to_product_perm = "product_portfolio.add_productcomponent"
     show_previous_and_next_object_links = True
     include_reference_dataspace = True
-    vulnerability_matching_field = "cpe"
     tabset = {
         "essentials": {
             "fields": [
@@ -855,18 +841,6 @@ class ComponentDetailsView(
 
         return {"fields": fields}
 
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        dataspace = self.object.dataspace
-        fields = []
-        vulnerabilities_count = 0
-
-        for vulnerability in vulnerabilities:
-            vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
-            fields.extend(vulnerability_fields)
-            vulnerabilities_count += 1
-
-        return fields, vulnerabilities_count
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -1161,7 +1135,6 @@ class PackageDetailsView(
     template_name = "component_catalog/package_details.html"
     form_class = PackageAddToProductForm
     add_to_product_perm = "product_portfolio.add_productpackage"
-    vulnerability_matching_field = "package_url"
     tabset = {
         "essentials": {
             "fields": [
@@ -1463,18 +1436,6 @@ class PackageDetailsView(
         }
 
         return {"fields": [(None, context, None, template)]}
-
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        dataspace = self.object.dataspace
-        fields = []
-        vulnerabilities_count = 0
-
-        for vulnerability in vulnerabilities:
-            vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
-            fields.extend(vulnerability_fields)
-            vulnerabilities_count += 1
-
-        return fields, vulnerabilities_count
 
     @staticmethod
     def readable_date(date):
