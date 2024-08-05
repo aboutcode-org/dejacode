@@ -64,6 +64,7 @@ from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import ExternalReferenceMixin
 from dje.models import History
+from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
@@ -2514,12 +2515,16 @@ class ComponentAssignedPackage(DataspacedModel):
         return f"<{self.component}>: {self.package}"
 
 
-class Vulnerability(HistoryFieldsMixin, DataspacedModel):
+class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
 
     Adapted from the VulnerabeCode models at
     https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py#L164
+
+    Note that this model implements the HistoryDateFieldsMixin but not the
+    HistoryUserFieldsMixin as the Vulnerability records are usually created
+    automatically on object addition or during schedule tasks.
     """
 
     vulnerability_id = models.CharField(
@@ -2584,14 +2589,26 @@ class Vulnerability(HistoryFieldsMixin, DataspacedModel):
 
     @classmethod
     def create_from_data(
-        cls, user, data, validate=False, affected_packages=None, affected_components=None
+        cls, dataspace, data, validate=False, affected_packages=None, affected_components=None
     ):
-        vulnerability = super().create_from_data(user, data, validate=validate)
+        # TODO: Remove duplication with super()
+        model_fields = cls.model_fields()
+        cleaned_data = {
+            field_name: value
+            for field_name, value in data.items()
+            if field_name in model_fields and value not in EMPTY_VALUES
+        }
+
+        instance = cls(dataspace=dataspace, **cleaned_data)
+
+        if validate:
+            instance.full_clean()
+        instance.save()
 
         if affected_packages:
-            vulnerability.add_affected_packages(affected_packages)
+            instance.add_affected_packages(affected_packages)
 
         if affected_components:
-            vulnerability.add_affected_component(affected_components)
+            instance.add_affected_component(affected_components)
 
-        return vulnerability
+        return instance

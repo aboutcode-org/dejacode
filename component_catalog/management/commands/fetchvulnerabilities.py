@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-
 from django.core.management.base import CommandError
 
 from component_catalog.models import Component
@@ -14,7 +13,6 @@ from component_catalog.models import Package
 from component_catalog.models import Vulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
-from dje.models import DejacodeUser
 from dje.utils import chunked
 
 
@@ -23,11 +21,8 @@ class Command(DataspacedCommand):
 
     def handle(self, *args, **options):
         super().handle(*args, **options)
-        # chunk_size=10 -> make this configurable and see figure out best default
+        # TODO: chunk_size=10 -> make this configurable and see figure out best default
 
-        # TODO: Consider making the user optional on the Vulnerability model as its
-        # automatically collected
-        user = DejacodeUser.objects.scope(self.dataspace).all()[0]
         vulnerablecode = VulnerableCode(self.dataspace)
 
         if not self.dataspace.enable_vulnerablecodedb_access:
@@ -63,17 +58,12 @@ class Command(DataspacedCommand):
                 if not affected_packages:
                     raise CommandError("Could not find package!")
 
-                # django.db.utils.IntegrityError: duplicate key value violates unique
-                # constraint "component_catalog_vulnerability_vulnerability_id_key"
-                # DETAIL:  Key (vulnerability_id)=(VCID-311z-mwbu-aaac) already exists.
-
                 for vulnerability in affected_by_vulnerabilities:
-                    if vulnerability_qs.filter(
-                        vulnerability_id=vulnerability["vulnerability_id"]
-                    ).exists():
+                    vulnerability_id = vulnerability["vulnerability_id"]
+                    if vulnerability_qs.filter(vulnerability_id=vulnerability_id).exists():
                         continue  # -> TODO: Update from data in that case?
                     Vulnerability.create_from_data(
-                        user=user,
+                        dataspace=self.dataspace,
                         data=vulnerability,
                         affected_packages=affected_packages,
                     )
