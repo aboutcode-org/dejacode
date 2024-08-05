@@ -63,6 +63,7 @@ from product_portfolio.inlines import ProductPackageInline
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
@@ -791,3 +792,50 @@ class CodebaseResourceAdmin(ProductRelatedAdminMixin):
             # so the preserve filters is are properly handled.
             request.path += f"?product={obj.product_id}"
         return super().response_add(request, obj, post_url_continue)
+
+
+@admin.register(ProductDependency, site=dejacode_site)
+class ProductDependencyAdmin(ProductRelatedAdminMixin):
+    list_display = (
+        "dependency_uid",
+        AsLink("product"),
+        AsLink("for_package"),
+        AsLink("resolved_to_package"),
+        "declared_dependency",
+        "extracted_requirement",
+        "scope",
+        "datasource_id",
+        "is_runtime",
+        "is_optional",
+        "is_resolved",
+        "is_direct",
+        "get_dataspace",
+    )
+    raw_id_fields = [
+        "product",
+        "for_package",
+        "resolved_to_package",
+    ]
+    autocomplete_lookup_fields = {"fk": raw_id_fields}
+    search_fields = ("path",)
+    list_filter = (
+        ("product", RelatedLookupListFilter),
+        "is_runtime",
+        "is_optional",
+        "is_resolved",
+        "is_direct",
+        ("for_package", RelatedLookupListFilter),
+        ("resolved_to_package", RelatedLookupListFilter),
+        ReportingQueryListFilter,
+    )
+    actions_to_remove = ["copy_to", "compare_with"]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "for_package__dataspace",
+                "resolved_to_package__dataspace",
+            )
+        )

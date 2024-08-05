@@ -2,7 +2,7 @@
 {% load humanize %}
 <section id="licenses_section">
   {% if results.object_list %}
-    <h3>
+    <h4>
       {% trans 'License' %}
       {% if is_reference_data %}
         <span class="badge text-bg-warning">{% trans 'Reference Data' %}</span>
@@ -15,7 +15,7 @@
           Click <a href="{% url 'license_library:license_list' %}?q={{ search_query }}">here</a> to see the full list.
         {% endif %}
       </small>
-    </h3>
+    </h4>
     <table class="table table-bordered table-striped table-md text-break">
       <thead>
         <tr>
@@ -37,6 +37,6 @@
       </tbody>
     </table>
   {% else %}
-    <h3>{% trans 'License' %} <small class="text-muted">No licenses found.</small></h3>
+    <h4>{% trans 'License' %} <small class="text-muted">No licenses found.</small></h4>
   {% endif %}
 </section>

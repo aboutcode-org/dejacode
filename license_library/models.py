@@ -472,8 +472,11 @@ class LicenseQuerySet(DataspacedQuerySet):
             "short_name",
             "spdx_license_key",
             "is_exception",
-            "usage_policy",
-            "dataspace",
+            "usage_policy__label",
+            "usage_policy__icon",
+            "usage_policy__color_code",
+            "dataspace__name",
+            "dataspace__show_usage_policy_in_user_views",
         ).select_related("dataspace", "usage_policy")
 
         if license_keys:

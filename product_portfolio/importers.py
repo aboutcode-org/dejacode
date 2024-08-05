@@ -41,6 +41,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
@@ -441,8 +442,10 @@ class ImportFromScan:
             self.validate_toolkit_options(scan_options)
 
         elif tool_name == "scanpipe":
-            runs = header.get("runs", [])
-            self.validate_pipeline_runs(runs)
+            if not (self.data.get("packages") or self.data.get("dependencies")):
+                raise ValidationError(
+                    "This ScanCode.io output does not include packages nor dependencies data."
+                )
 
     @staticmethod
     def validate_toolkit_options(scan_options):
@@ -459,26 +462,6 @@ class ImportFromScan:
         if missing_options:
             options_str = " ".join(missing_options)
             raise ValidationError(f"The Scan run is missing those required options: {options_str}")
-
-    @staticmethod
-    def validate_pipeline_runs(runs):
-        """Raise a ValidationError if at least one of the supported pipeline was not run."""
-        valid_pipelines = (
-            "analyze_docker_image",
-            "analyze_root_filesystem_or_vm_image",
-            "analyze_windows_docker_image",
-            "inspect_packages",
-            "map_deploy_to_develop",
-            "scan_codebase",
-            "scan_single_package",
-        )
-
-        has_a_valid_pipeline = [True for run in runs if run.get("pipeline_name") in valid_pipelines]
-
-        if not has_a_valid_pipeline:
-            raise ValidationError(
-                "This ScanPipe output does not have results from a valid pipeline."
-            )
 
     def import_packages(self):
         product_packages_count = 0
@@ -636,9 +619,11 @@ class ImportPackageFromScanCodeIO:
 
     def __init__(self, user, project_uuid, product, update_existing=False, scan_all_packages=False):
         self.licensing = Licensing()
-        self.created = []
-        self.existing = []
-        self.errors = []
+        self.created = defaultdict(list)
+        self.existing = defaultdict(list)
+        self.errors = defaultdict(list)
+        # Use to assign dependencies to the correct Package instance
+        self.package_uid_mapping = {}
 
         self.user = user
         self.project_uuid = project_uuid
@@ -650,18 +635,24 @@ class ImportPackageFromScanCodeIO:
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")
+        self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
     def save(self):
         self.import_packages()
+        self.import_dependencies()
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
 
-        return self.created, self.existing, self.errors
+        return dict(self.created), dict(self.existing), dict(self.errors)
 
     def import_packages(self):
         for package_data in self.packages:
             self.import_package(package_data)
+
+    def import_dependencies(self):
+        for dependency_data in self.dependencies:
+            self.import_dependency(dependency_data)
 
     def import_package(self, package_data):
         unique_together_lookups = {
@@ -673,7 +664,7 @@ class ImportPackageFromScanCodeIO:
         # Check if the Package already exists in the local Dataspace
         try:
             package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
-            self.existing.append(package)
+            self.existing["package"].append(str(package))
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             package = None
 
@@ -686,9 +677,9 @@ class ImportPackageFromScanCodeIO:
                 reference_object = qs.first()
                 try:
                     package = copy_object(reference_object, user_dataspace, self.user, update=False)
-                    self.created.append(package)
+                    self.created["package"].append(str(package))
                 except IntegrityError as error:
-                    self.errors.append(error)
+                    self.errors["package"].append(str(error))
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -701,9 +692,9 @@ class ImportPackageFromScanCodeIO:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
             except ValidationError as errors:
-                self.errors.append(errors)
+                self.errors["package"].append(str(errors))
                 return
-            self.created.append(package)
+            self.created["package"].append(str(package))
 
         ProductPackage.objects.get_or_create(
             product=self.product,
@@ -715,3 +706,36 @@ class ImportPackageFromScanCodeIO:
                 "created_by": self.user,
             },
         )
+        package_uid = package_data.get("package_uid") or package.uuid
+        self.package_uid_mapping[package_uid] = package
+
+    def import_dependency(self, dependency_data):
+        dependency_uid = dependency_data.get("dependency_uid")
+
+        dependency_qs = ProductDependency.objects.scope(self.user.dataspace)
+        if dependency_qs.filter(product=self.product, dependency_uid=dependency_uid).exists():
+            self.existing["dependency"].append(str(dependency_uid))
+            return
+
+        dependency_data["product"] = self.product
+        if for_package_uid := dependency_data.get("for_package_uid"):
+            dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
+        if resolved_to_package_uid := dependency_data.get("resolved_to_package_uid"):
+            dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
+                resolved_to_package_uid
+            )
+
+        if purl := dependency_data.get("purl"):
+            dependency_data["declared_dependency"] = purl
+
+        try:
+            dependency = ProductDependency.create_from_data(
+                user=self.user,
+                data=dependency_data,
+                validate=True,
+            )
+        except ValidationError as errors:
+            self.errors["dependency"].append(str(errors))
+            return
+
+        self.created["dependency"].append(str(dependency.dependency_uid))

@@ -309,11 +309,16 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_render_expression_as_html(self):
         expression_as_html = render_expression_as_html(str(self.license1.key), self.dataspace)
-        expected = '<a href="/licenses/Starship/apache-2.0/" title="Apache 2.0">apache-2.0</a>'
+        expected = (
+            '<span class="license-expression">'
+            '<a href="/licenses/Starship/apache-2.0/" title="Apache 2.0">apache-2.0</a>'
+            "</span>"
+        )
         self.assertEqual(expected, expression_as_html)
 
         expression_as_html = render_expression_as_html("unknown", self.dataspace)
-        self.assertEqual("unknown", expression_as_html)
+        expected = '<span class="license-expression">unknown</span>'
+        self.assertEqual(expected, expression_as_html)
 
 
 def _print_sequence_diff(left, right):
