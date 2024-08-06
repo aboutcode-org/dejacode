@@ -95,7 +95,6 @@ from dje.views import APIWrapperListView
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedFilterView
 from dje.views import DataspacedUpdateView
-from dje.views import FieldLastLoop
 from dje.views import FieldSeparator
 from dje.views import Header
 from dje.views import LicenseDataForBuilderMixin
@@ -250,151 +249,94 @@ def include_type(view_instance):
 
 
 class TabVulnerabilityMixin:
+    template = "component_catalog/tabs/tab_vulnerabilities.html"
+
     def tab_vulnerabilities(self):
-        vulnerabilities = self.object.affected_by_vulnerabilities.all()
-        if not vulnerabilities:
+        vulnerabilities_qs = self.object.affected_by_vulnerabilities.all()
+        if not vulnerabilities_qs:
             return
 
         vulnerablecode = VulnerableCode(self.object.dataspace)
-        if fields := self.get_vulnerabilities_tab_fields(vulnerabilities, vulnerablecode):
-            label = (
-                f"Vulnerabilities"
-                f' <span class="badge badge-vulnerability">{len(vulnerabilities)}</span>'
-            )
-
-            return {
-                "fields": fields,
-                "label": format_html(label),
-            }
-
-    def get_vulnerabilities_tab_fields(self, vulnerabilities, vulnerablecode):
-        dataspace = self.object.dataspace
-        fields = []
-
-        for vulnerability in vulnerabilities:
-            vulnerability_fields = self.get_vulnerability_fields(
-                vulnerability, dataspace, vulnerablecode
-            )
-            fields.extend(vulnerability_fields)
-
-        return fields
-
-    @staticmethod
-    def get_vulnerability_fields(vulnerability, dataspace, vulnerablecode):
-        reference_urls = []
-        reference_ids = []
-
-        for reference in vulnerability.references:
-            url = reference.get("reference_url")
-            reference_id = reference.get("reference_id")
-            if url and reference_id:
-                reference_ids.append(f'<a href="{url}" target="_blank">{reference_id}</a>')
-            elif reference_id:
-                reference_ids.append(reference_id)
-            elif url:
-                reference_urls.append(url)
-
-        reference_urls_joined = "\n".join(reference_urls)
-        reference_ids_joined = "\n".join(reference_ids)
-
-        tab_fields = [
-            (_("Summary"), vulnerability.summary, "Summary of the vulnerability"),
-        ]
-
-        if vulnerablecode_url := vulnerablecode.service_url:
-            vulnerability_url = f"{vulnerablecode_url}vulnerabilities/{vulnerability.vcid}"
-            vulnerability_url_help = "Link to the VulnerableCode app."
-            url_as_link = format_html(
-                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
-                vulnerability_url=vulnerability_url,
-            )
-            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
-
-        if vulnerability.fixed_packages:
-            fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
-            add_package_url = reverse("component_catalog:package_add")
-            vulnerability_icon = (
-                '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
-                ' data-boundary="viewport">'
-                '<i class="fas fa-bug vulnerability ms-1"></i>'
-                "</span>"
-            )
-            no_vulnerabilities_icon = (
-                '<span class="fa-stack fa-small text-muted-light ms-1"'
-                ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
-                ' data-boundary="viewport">'
-                '  <i class="fas fa-bug fa-stack-1x"></i>'
-                '  <i class="fas fa-ban fa-stack-2x"></i>'
-                "</span>"
-            )
-
-            fixed_packages_values = []
-            for fixed_package in fixed_packages_sorted:
-                purl = fixed_package.get("purl")
-                is_vulnerable = fixed_package.get("is_vulnerable")
-                package_instances = Package.objects.scope(dataspace).for_package_url(purl)
-
-                for package in package_instances:
-                    absolute_url = package.get_absolute_url()
-                    display_value = package.get_html_link(href=absolute_url)
-                    if is_vulnerable:
-                        display_value += package.get_html_link(
-                            href=f"{absolute_url}#vulnerabilities",
-                            value=format_html(vulnerability_icon),
-                        )
-                    else:
-                        display_value += no_vulnerabilities_icon
-                    fixed_packages_values.append(display_value)
-
-                if not package_instances:
-                    display_value = purl.replace("pkg:", "")
-                    if is_vulnerable:
-                        display_value += vulnerability_icon
-                    else:
-                        display_value += no_vulnerabilities_icon
-                    # Warning: do not add spaces between HTML elements as this content
-                    # is displayed in a <pre>
-                    display_value += (
-                        f'<a href="{add_package_url}?package_url={purl}"'
-                        f'   target="_blank" class="ms-1">'
-                        f'<span data-bs-toggle="tooltip" title="Add Package"'
-                        f'      data-boundary="viewport">'
-                        f'<i class="fas fa-plus-circle"></i>'
-                        f"</span>"
-                        f"</a>"
-                    )
-                    fixed_packages_values.append(display_value)
-
-            tab_fields.append(
-                (
-                    _("Fixed packages"),
-                    format_html("\n".join(fixed_packages_values)),
-                    "The identifiers of Package Versions that have been reported to fix a "
-                    "specific vulnerability and collected in VulnerableCodeDB.",
-                ),
-            )
-
-        tab_fields.extend(
-            [
-                (
-                    _("Reference IDs"),
-                    format_html(reference_ids_joined),
-                    "Reference IDs to the reported vulnerability, such as a DSA "
-                    "(Debian Security Advisory) ID or a CVE (Common Vulnerabilities "
-                    "and Exposures) ID, when available.",
-                ),
-                (
-                    _("Reference URLs"),
-                    urlize_target_blank(reference_urls_joined),
-                    "The URLs collected in VulnerableCodeDB that give you quick "
-                    "access to public websites that provide details about a "
-                    "vulnerability.",
-                ),
-                FieldLastLoop,
-            ]
+        label = (
+            f"Vulnerabilities"
+            f' <span class="badge badge-vulnerability">{len(vulnerabilities_qs)}</span>'
         )
 
-        return tab_fields
+        vulnerabilities = []
+        for vulnerability in vulnerabilities_qs:
+            fixed_packages_html = self.get_fixed_packages_html(vulnerability, self.object.dataspace)
+            vulnerability.fixed_packages_html = fixed_packages_html
+            vulnerabilities.append(vulnerability)
+
+        context = {
+            "vulnerabilities": vulnerabilities,
+            "vulnerablecode_url": vulnerablecode.service_url,
+        }
+
+        return {
+            "fields": [(None, context, None, self.template)],
+            "label": format_html(label),
+        }
+
+    def get_fixed_packages_html(self, vulnerability, dataspace):
+        if not vulnerability.fixed_packages:
+            return
+
+        fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
+        add_package_url = reverse("component_catalog:package_add")
+        vulnerability_icon = (
+            '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
+            ' data-boundary="viewport">'
+            '<i class="fas fa-bug vulnerability mx-1"></i>'
+            "</span>"
+        )
+        no_vulnerabilities_icon = (
+            '<span class="fa-stack fa-small text-muted-light ms-1"'
+            ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
+            ' data-boundary="viewport">'
+            '  <i class="fas fa-bug fa-stack-1x"></i>'
+            '  <i class="fas fa-ban fa-stack-2x"></i>'
+            "</span>"
+        )
+
+        fixed_packages_values = []
+        for fixed_package in fixed_packages_sorted:
+            purl = fixed_package.get("purl")
+            is_vulnerable = fixed_package.get("is_vulnerable")
+            package_instances = Package.objects.scope(dataspace).for_package_url(purl)
+
+            for package in package_instances:
+                absolute_url = package.get_absolute_url()
+                display_value = package.get_html_link(href=absolute_url)
+                if is_vulnerable:
+                    display_value += package.get_html_link(
+                        href=f"{absolute_url}#vulnerabilities",
+                        value=format_html(vulnerability_icon),
+                    )
+                else:
+                    display_value += no_vulnerabilities_icon
+                fixed_packages_values.append(display_value)
+
+            if not package_instances:
+                display_value = purl.replace("pkg:", "")
+                if is_vulnerable:
+                    display_value += vulnerability_icon
+                else:
+                    display_value += no_vulnerabilities_icon
+                # Warning: do not add spaces between HTML elements as this content
+                # is displayed in a <pre>
+                display_value += (
+                    f'<a href="{add_package_url}?package_url={purl}"'
+                    f'   target="_blank">'
+                    f'<span data-bs-toggle="tooltip" title="Add Package"'
+                    f'      data-boundary="viewport">'
+                    f'<i class="fas fa-plus-circle"></i>'
+                    f"</span>"
+                    f"</a>"
+                )
+                fixed_packages_values.append(display_value)
+
+        return format_html("\n".join(fixed_packages_values))
 
 
 class ComponentListView(
