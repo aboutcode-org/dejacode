@@ -47,6 +47,7 @@ class BaseService:
         if not dataspace:
             raise ValueError("Dataspace must be provided.")
 
+        self.dataspace = dataspace
         self.service_url = None
         self.service_api_key = None
         self.basic_auth_user = None
