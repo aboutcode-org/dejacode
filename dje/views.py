@@ -583,7 +583,14 @@ class TabContentView(
     DataspaceScopeMixin,
     DetailView,
 ):
-    pass
+    tab_id = None
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        if self.tab_id:
+            context_data["tab_id"] = self.tab_id
+            context_data["tab_id_html"] = f"#tab_{self.tab_id}"
+        return context_data
 
 
 class SendAboutFilesMixin:
@@ -1219,6 +1226,150 @@ class ObjectDetailsView(
         return context
 
 
+def object_copy_get(request, m2m_formset_class):
+    user_dataspace = request.user.dataspace
+    model_class = get_model_class_from_path(request.path)
+    requested_ids = request.GET.get("ids", "")
+
+    # In case the view is not requested with the proper parameters
+    if not requested_ids:
+        raise Http404
+
+    opts = model_class._meta
+    preserved_filters = get_preserved_filters(
+        request, model_class, parameter_name="_changelist_filters"
+    )
+    changelist_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
+    redirect_url = add_preserved_filters(
+        {"preserved_filters": preserved_filters, "opts": opts}, changelist_url
+    )
+
+    # Ids of objects to be copied
+    ids = requested_ids.split(",")
+
+    # Limit the copy to 100 Objects at the time, as it's the number of
+    # Objects we display per page, default value for the list_per_page
+    # of the ModelAdmin
+    COPY_NB_OBJECT_LIMIT = 100
+    if len(ids) > COPY_NB_OBJECT_LIMIT:
+        msg = (
+            f"Maximum of objects that can be copied at once is "
+            f"limited to {COPY_NB_OBJECT_LIMIT} (by system-wide settings)"
+        )
+        messages.warning(request, msg)
+        return redirect(redirect_url)
+
+    # Let's find the Source Dataspace using the first id
+    # This block will redirect the user to the list if the
+    # first id of the list do not exist
+    try:
+        source_object = model_class.objects.get(id=ids[0])
+    except ObjectDoesNotExist:
+        return redirect(redirect_url)
+
+    # No custom permission for 'copy', we use the 'add' one
+    if not has_permission(source_object, request.user, "add"):
+        messages.error(request, _("Sorry you do not have rights to execute this action"))
+        return redirect(redirect_url)
+
+    source = source_object.dataspace
+    # As a non-Reference Dataspace User, I can only use the Reference
+    # data as the source and my Dataspace as the target
+    # As a Reference User, I can choose both, source and target.
+    if user_dataspace.is_reference:
+        # The following is only used when the User is in the Reference
+        targets_from_request = request.GET.getlist("target")
+        # If the target has been set, then we can continue
+        if targets_from_request:
+            data = {"target": targets_from_request}
+            choice_form = MultiDataspaceChoiceForm(source, request.user, data=data)
+            if not choice_form.is_valid():
+                return redirect(redirect_url)
+            targets = choice_form.cleaned_data["target"]
+        # else, we build a form to offer the choice to the user,
+        # choices do not include the current source
+        else:
+            initial = {
+                "ids": requested_ids,
+                "_changelist_filters": dict(parse_qsl(preserved_filters)).get(
+                    "_changelist_filters"
+                ),
+            }
+            is_popup = request.GET.get(IS_POPUP_VAR, False)
+            if is_popup:
+                initial["_popup"] = is_popup
+            choice_form = MultiDataspaceChoiceForm(source, request.user, initial=initial)
+            return render(
+                request,
+                "admin/object_copy_dataspace_form.html",
+                {
+                    "form": choice_form,
+                    "opts": opts,
+                    "is_popup": is_popup,
+                    "preserved_filters": preserved_filters,
+                },
+            )
+    elif not source.is_reference:
+        # As a non-Reference User my only "external" source of data allowed
+        # is the Reference Dataspace
+        return redirect(redirect_url)
+    else:
+        targets = [user_dataspace]
+
+    # At this stage, we have the Source and Target Dataspaces
+    # Let's see which objects are eligible for copy, or offer the update
+    copy_candidates = []
+    update_candidates = []
+
+    # Building a QuerySet based on the given ids, if an non-authorized or
+    # non-existing id was injected it will be ignored thanks to the
+    # id__in and the dataspace scoping.
+    queryset = model_class.objects.scope(source).filter(id__in=ids)
+
+    for target in targets:
+        for source_instance in queryset:
+            matched_object = get_object_in(source_instance, target)
+            if matched_object:
+                # Inject the source_instance for future usage in the template
+                update_candidates.append((matched_object, source_instance))
+            else:
+                copy_candidates.append((source_instance, target))
+
+    initial = {
+        "source": source,
+        "targets": targets,
+        "ct": ContentType.objects.get_for_model(model_class).id,
+    }
+    form = CopyConfigurationForm(request.user, initial=initial)
+
+    # Many2Many exclude on copy/update
+    m2m_initial = [
+        {"ct": ContentType.objects.get_for_model(m2m_field.remote_field.through).id}
+        for m2m_field in model_class._meta.many_to_many
+    ]
+
+    # Also handle relational fields if explicitly declared on the Model using the
+    # get_extra_relational_fields method.
+    for field_name in model_class.get_extra_relational_fields():
+        related_model = model_class._meta.get_field(field_name).related_model
+        if related_model().get_exclude_candidates_fields():
+            ct = ContentType.objects.get_for_model(related_model)
+            m2m_initial.append({"ct": ct.id})
+
+    return render(
+        request,
+        "admin/object_copy.html",
+        {
+            "copy_candidates": copy_candidates,
+            "update_candidates": update_candidates,
+            "form": form,
+            "m2m_formset": m2m_formset_class(initial=m2m_initial),
+            "opts": source_object._meta,
+            "preserved_filters": preserved_filters,
+        },
+    )
+
+
 @login_required
 def object_copy_view(request):
     """
@@ -1232,164 +1383,22 @@ def object_copy_view(request):
     This result as an extra step of presenting the target Dataspace list of
     choices.
     """
-    user_dataspace = request.user.dataspace
     # Declared here as it required in GET and POST cases.
-    M2MConfigurationFormSet = formset_factory(
+    m2m_formset_class = formset_factory(
         wraps(M2MCopyConfigurationForm)(partial(M2MCopyConfigurationForm, user=request.user)),
         extra=0,
     )
-
-    model_class = get_model_class_from_path(request.path)
 
     # Default entry point of the view, requested using a GET
     # At that stage, we are only looking at what the User requested,
     # making sure everything is in order, present him what is going to
     # happens and ask for his confirmation.
     if request.method == "GET":
-        requested_ids = request.GET.get("ids", "")
-
-        # In case the view is not requested with the proper parameters
-        if not requested_ids:
-            raise Http404
-
-        opts = model_class._meta
-        preserved_filters = get_preserved_filters(
-            request, model_class, parameter_name="_changelist_filters"
-        )
-        changelist_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
-        redirect_url = add_preserved_filters(
-            {"preserved_filters": preserved_filters, "opts": opts}, changelist_url
-        )
-
-        # Ids of objects to be copied
-        ids = requested_ids.split(",")
-
-        # Limit the copy to 100 Objects at the time, as it's the number of
-        # Objects we display per page, default value for the list_per_page
-        # of the ModelAdmin
-        COPY_NB_OBJECT_LIMIT = 100
-        if len(ids) > COPY_NB_OBJECT_LIMIT:
-            msg = (
-                f"Maximum of objects that can be copied at once is "
-                f"limited to {COPY_NB_OBJECT_LIMIT} (by system-wide settings)"
-            )
-            messages.warning(request, msg)
-            return redirect(redirect_url)
-
-        # Let's find the Source Dataspace using the first id
-        # This block will redirect the user to the list if the
-        # first id of the list do not exist
-        try:
-            source_object = model_class.objects.get(id=ids[0])
-        except ObjectDoesNotExist:
-            return redirect(redirect_url)
-
-        # No custom permission for 'copy', we use the 'add' one
-        if not has_permission(source_object, request.user, "add"):
-            messages.error(request, _("Sorry you do not have rights to execute this action"))
-            return redirect(redirect_url)
-
-        source = source_object.dataspace
-        # As a non-Reference Dataspace User, I can only use the Reference
-        # data as the source and my Dataspace as the target
-        # As a Reference User, I can choose both, source and target.
-        if user_dataspace.is_reference:
-            # The following is only used when the User is in the Reference
-            targets_from_request = request.GET.getlist("target")
-            # If the target has been set, then we can continue
-            if targets_from_request:
-                data = {"target": targets_from_request}
-                choice_form = MultiDataspaceChoiceForm(source, request.user, data=data)
-                if not choice_form.is_valid():
-                    return redirect(redirect_url)
-                targets = choice_form.cleaned_data["target"]
-            # else, we build a form to offer the choice to the user,
-            # choices do not include the current source
-            else:
-                initial = {
-                    "ids": requested_ids,
-                    "_changelist_filters": dict(parse_qsl(preserved_filters)).get(
-                        "_changelist_filters"
-                    ),
-                }
-                is_popup = request.GET.get(IS_POPUP_VAR, False)
-                if is_popup:
-                    initial["_popup"] = is_popup
-                choice_form = MultiDataspaceChoiceForm(source, request.user, initial=initial)
-                return render(
-                    request,
-                    "admin/object_copy_dataspace_form.html",
-                    {
-                        "form": choice_form,
-                        "opts": opts,
-                        "is_popup": is_popup,
-                        "preserved_filters": preserved_filters,
-                    },
-                )
-        elif not source.is_reference:
-            # As a non-Reference User my only "external" source of data allowed
-            # is the Reference Dataspace
-            return redirect(redirect_url)
-        else:
-            targets = [user_dataspace]
-
-        # At this stage, we have the Source and Target Dataspaces
-        # Let's see which objects are eligible for copy, or offer the update
-        copy_candidates = []
-        update_candidates = []
-
-        # Building a QuerySet based on the given ids, if an non-authorized or
-        # non-existing id was injected it will be ignored thanks to the
-        # id__in and the dataspace scoping.
-        queryset = model_class.objects.scope(source).filter(id__in=ids)
-
-        for target in targets:
-            for source_instance in queryset:
-                matched_object = get_object_in(source_instance, target)
-                if matched_object:
-                    # Inject the source_instance for future usage in the template
-                    update_candidates.append((matched_object, source_instance))
-                else:
-                    copy_candidates.append((source_instance, target))
-
-        initial = {
-            "source": source,
-            "targets": targets,
-            "ct": ContentType.objects.get_for_model(model_class).id,
-        }
-        form = CopyConfigurationForm(request.user, initial=initial)
-
-        # Many2Many exclude on copy/update
-        m2m_initial = [
-            {"ct": ContentType.objects.get_for_model(m2m_field.remote_field.through).id}
-            for m2m_field in model_class._meta.many_to_many
-        ]
-
-        # Also handle relational fields if explicitly declared on the Model using the
-        # get_extra_relational_fields method.
-        for field_name in model_class.get_extra_relational_fields():
-            related_model = model_class._meta.get_field(field_name).related_model
-            if related_model().get_exclude_candidates_fields():
-                ct = ContentType.objects.get_for_model(related_model)
-                m2m_initial.append({"ct": ct.id})
-
-        m2m_formset = M2MConfigurationFormSet(initial=m2m_initial)
-
-        return render(
-            request,
-            "admin/object_copy.html",
-            {
-                "copy_candidates": copy_candidates,
-                "update_candidates": update_candidates,
-                "form": form,
-                "m2m_formset": m2m_formset,
-                "opts": source_object._meta,
-                "preserved_filters": preserved_filters,
-            },
-        )
+        return object_copy_get(request, m2m_formset_class)
 
     # Second section of the view, following the POST
     if request.method == "POST":
+        model_class = get_model_class_from_path(request.path)
         config_form = CopyConfigurationForm(request.user, request.POST)
 
         if not config_form.is_valid():
@@ -1407,7 +1416,7 @@ def object_copy_view(request):
         exclude_update = {model_class: config_form.cleaned_data.get("exclude_update")}
 
         # Append the m2m copy configuration
-        for m2m_form in M2MConfigurationFormSet(request.POST):
+        for m2m_form in m2m_formset_class(request.POST):
             if not m2m_form.is_valid():
                 continue
             m2m_model_class = m2m_form.model_class

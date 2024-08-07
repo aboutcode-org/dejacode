@@ -2,13 +2,13 @@
 {% load humanize %}
 <section id="products_section">
   {% if results.object_list %}
-    <h3>
+    <h4>
       {% trans 'Product' %}
       <small class="text-muted">
         {{ results.paginator_count|intcomma }} result{{ results.paginator_count|pluralize }} for this search.
         Click <a href="{% url 'product_portfolio:product_list' %}?q={{ search_query }}">here</a> to see the full list.
       </small>
-    </h3>
+    </h4>
     <table class="table table-bordered table-striped table-md text-break">
       <thead>
         <tr>
@@ -32,6 +32,6 @@
       </tbody>
     </table>
   {% else %}
-    <h3>{% trans 'Product' %} <small class="text-muted">No products found.</small></h3>
+    <h4>{% trans 'Product' %} <small class="text-muted">No products found.</small></h4>
   {% endif %}
 </section>

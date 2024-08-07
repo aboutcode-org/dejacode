@@ -386,7 +386,7 @@ class ComponentAdminViewsTestCase(TestCase):
 
         # Making sure we have unicode char in the name
         package1 = Package.objects.create(
-            filename="\u02A0package1.zip", dataspace=self.component1.dataspace
+            filename="\u02a0package1.zip", dataspace=self.component1.dataspace
         )
         assigned_package1 = ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.component1.dataspace
@@ -414,7 +414,7 @@ class ComponentAdminViewsTestCase(TestCase):
 
         # Replacing the existing file by a another one
         package2 = Package.objects.create(
-            filename="\u02A0package2.zip", dataspace=self.component1.dataspace
+            filename="\u02a0package2.zip", dataspace=self.component1.dataspace
         )
         params["componentassignedpackage_set-0-package"] = package2.id
         self.client.post(url, params)
@@ -1124,9 +1124,7 @@ class ComponentAdminViewsTestCase(TestCase):
             <td>license1</td>
             <td>license1 AND license2</td>
             <td><input type="checkbox" name="checked_id_{}" class="enabler"></td>
-        </tr>""".format(
-            self.component1.get_admin_url(), self.component1.id
-        )
+        </tr>""".format(self.component1.get_admin_url(), self.component1.id)
         self.assertContains(response, expected, html=True)
 
         self.assertIsNone(self.component1.usage_policy)
@@ -1333,9 +1331,7 @@ class ComponentAdminViewsTestCase(TestCase):
                 </a> in changelist
             </strong>
         </li>
-        """.format(
-            subcomponent_relation.id
-        )
+        """.format(subcomponent_relation.id)
         self.assertContains(response, expected, html=True)
 
     def test_component_admin_form_subcomponent_inline_clean_license_expression(self):
@@ -1710,9 +1706,7 @@ class ComponentAdminViewsTestCase(TestCase):
             <td>license1</td>
             <td>license1 AND license2</td>
             <td><input type="checkbox" name="checked_id_{}" class="enabler"></td>
-        </tr>""".format(
-            p1.get_admin_url(), p1.filename, p1.id
-        )
+        </tr>""".format(p1.get_admin_url(), p1.filename, p1.id)
         self.assertContains(response, expected, html=True)
 
         self.assertIsNone(p1.usage_policy)

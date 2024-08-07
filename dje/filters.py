@@ -57,16 +57,22 @@ class FilterSetUtilsMixin:
     def get_query_no_sort(self):
         return remove_field_from_query_dict(self.data, "sort")
 
+    def get_filter_breadcrumb(self, field_name, data_field_name, value):
+        return {
+            "label": self.filters[field_name].label,
+            "value": value,
+            "remove_url": remove_field_from_query_dict(self.data, data_field_name, value),
+        }
+
     def get_filters_breadcrumbs(self):
-        return [
-            {
-                "label": self.filters[field_name].label,
-                "value": value,
-                "remove_url": remove_field_from_query_dict(self.data, field_name, value),
-            }
-            for field_name in self.form.changed_data
-            for value in self.data.getlist(field_name)
-        ]
+        breadcrumbs = []
+
+        for field_name in self.form.changed_data:
+            data_field_name = f"{self.form_prefix}-{field_name}" if self.form_prefix else field_name
+            for value in self.data.getlist(data_field_name):
+                breadcrumbs.append(self.get_filter_breadcrumb(field_name, data_field_name, value))
+
+        return breadcrumbs
 
 
 class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
@@ -204,7 +210,7 @@ class SearchRankFilter(SearchFilter):
 
 class MatchOrderedSearchFilter(SearchRankFilter):
     """
-    Start with a case-insensitive containment search on the `name` field,
+    Start with a case-insensitive containment search on the `match_order_fields` fields,
     ordering based on the match type using annotations.
 
     If that simple search Return nothing, fallback to the SearchRankFilter

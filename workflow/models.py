@@ -108,8 +108,7 @@ class RequestQuerySet(DataspacedQuerySet):
             self.scope(user.dataspace)
             .filter(
                 # If a product_context is set, Limit to authorized Products
-                Q(product_context__isnull=True)
-                | Q(product_context__in=product_qs),
+                Q(product_context__isnull=True) | Q(product_context__in=product_qs),
             )
             .exclude(
                 # If a Product type content_object is set, excludes non-authorized Products

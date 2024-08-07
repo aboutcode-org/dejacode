@@ -7,16 +7,14 @@
 #
 
 PYTHON_EXE=python3.12
-MANAGE=bin/python manage.py
-ACTIVATE?=. bin/activate;
+VENV_LOCATION=.venv
+ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
+MANAGE=${VENV_LOCATION}/bin/python manage.py
 PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
 GET_SECRET_KEY=`cat /dev/urandom | head -c 50  | base64`
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
 ENV_FILE=.env
-FIXTURES_LOCATION=./dje/fixtures
 DOCS_LOCATION=./docs
-MODIFIED_PYTHON_FILES=`git ls-files -m "*.py"`
-BLACK_ARGS=--exclude="migrations|data|lib/|lib64|bin|var|dist|.cache" -l 100
 DOCKER_COMPOSE=docker compose -f docker-compose.yml
 DOCKER_EXEC=${DOCKER_COMPOSE} exec
 DB_NAME=dejacode_db
@@ -28,7 +26,7 @@ TIMESTAMP=$(shell date +"%Y-%m-%d_%H%M")
 
 virtualenv:
 	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
-	${PYTHON_EXE} -m venv .
+	${PYTHON_EXE} -m venv ${VENV_LOCATION}
 
 conf: virtualenv
 	@echo "-> Install dependencies"
@@ -46,45 +44,25 @@ envfile:
 	@mkdir -p $(shell dirname ${ENV_FILE}) && touch ${ENV_FILE}
 	@echo "SECRET_KEY=${GET_SECRET_KEY}" > ${ENV_FILE}
 
-isort:
-	@echo "-> Apply isort changes to ensure proper imports ordering"
-	@${ACTIVATE} isort .
-
-black:
-	@echo "-> Apply black code formatter"
-	@${ACTIVATE} black ${BLACK_ARGS} .
-
 doc8:
 	@echo "-> Run doc8 validation"
 	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ \
 	  --ignore-path docs/installation_and_sysadmin/ --quiet docs/
 
-valid: isort black doc8 check
+valid:
+	@echo "-> Run Ruff format"
+	@${ACTIVATE} ruff format
+	@echo "-> Run Ruff linter"
+	@${ACTIVATE} ruff check --fix
 
-bandit:
-	@echo "-> Run source code security analyzer"
-	@${ACTIVATE} pip install bandit
-	@${ACTIVATE} bandit --recursive . \
-	  --exclude ./bin,./data,./dist,./docs,./include,./lib,./share,./thirdparty,./var,tests \
-	  --quiet
-
-check: doc8 bandit
-	@echo "-> Run flake8 (pycodestyle, pyflakes, mccabe) validation"
-	@${ACTIVATE} flake8 .
-	@echo "-> Run isort imports ordering validation"
-	@${ACTIVATE} isort --check-only .
-	@echo "-> Run black validation"
-	@${ACTIVATE} black --check ${BLACK_ARGS} .
+check:
+	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
+	@${ACTIVATE} ruff check
+	@echo "-> Run Ruff format validation"
+	@${ACTIVATE} ruff format --check
 	@echo "-> Running ABOUT files validation"
 	@${ACTIVATE} about check ./thirdparty/
-	@$(MAKE) check-docstrings
-
-check-docstrings:
-	@echo "-> Run docstring validation"
-	@${ACTIVATE} pip install pydocstyle
-	@${ACTIVATE} pydocstyle component_catalog dejacode dejacode_toolkit dje \
-	  license_library notification organization policy product_portfolio purldb \
-	  reporting workflow
+	@$(MAKE) doc8
 
 check-deploy:
 	@echo "-> Check Django deployment settings"
@@ -92,7 +70,7 @@ check-deploy:
 
 clean:
 	@echo "-> Cleaning the Python env"
-	rm -rf bin/ lib/ lib64/ include/ build/ dist/ share/ pip-selfcheck.json pyvenv.cfg
+	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 initdb:
@@ -165,4 +143,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile check bandit isort black doc8 valid check-docstrings check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile check doc8 valid check-deploy clean initdb postgresdb migrate run test docs build psql bash shell log createsuperuser

@@ -36,4 +36,5 @@ local
 /dist/
 /.cache/
 /.python-version
-/enterprise.egg-info/
+/.venv/
+/.*cache/

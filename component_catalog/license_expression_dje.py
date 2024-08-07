@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.forms import widgets
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from boolean.boolean import PARSE_ERRORS
 from license_expression import ExpressionError
@@ -432,7 +433,10 @@ def render_expression_as_html(expression, dataspace):
     licensing = get_dataspace_licensing(dataspace)
 
     formatted_expression = get_formatted_expression(licensing, expression, show_policy)
-    return format_html(formatted_expression)
+    return format_html(
+        '<span class="license-expression">{}</span>',
+        mark_safe(formatted_expression),
+    )
 
 
 def get_expression_as_spdx(expression, dataspace):

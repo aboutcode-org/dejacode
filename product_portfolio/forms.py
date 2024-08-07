@@ -599,7 +599,7 @@ class BaseProductImportFormView(forms.Form):
         initial=False,
         help_text=_(
             "If checked, the discovered packages from the manifest that are already "
-            "existing in your Dataspace will be updated with ScanCode data"
+            "existing in your Dataspace will be updated with ScanCode data. "
             "Note that only the empty fields will be updated. "
             "By default (un-checked), existing packages will be assign to the product "
             "without any modification."
@@ -894,7 +894,7 @@ class PullProjectDataForm(forms.Form):
         initial=False,
         help_text=_(
             "If checked, the discovered packages from the Project that are already "
-            "existing in your Dataspace will be updated with ScanCode.io data."
+            "existing in your Dataspace will be updated with ScanCode.io data. "
             "Note that only the empty fields will be updated. "
             "By default (un-checked), existing packages will be assign to the product "
             "without any modification."

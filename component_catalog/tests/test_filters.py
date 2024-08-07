@@ -17,7 +17,8 @@ from component_catalog.filters import PackageFilterSet
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
-from component_catalog.models import Package
+from component_catalog.tests import make_component
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -28,7 +29,7 @@ from policy.models import UsagePolicy
 
 class ComponentFilterSetTest(TestCase):
     def setUp(self):
-        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace = Dataspace.objects.create(name="Reference")
         self.other_dataspace = Dataspace.objects.create(name="Other")
         self.nexb_user = create_superuser("nexb_user", self.dataspace)
         self.basic_user = create_user("basic_user", self.dataspace)
@@ -123,10 +124,8 @@ class ComponentFilterSetTest(TestCase):
         filterset = ComponentFilterSet(dataspace=self.dataspace)
         self.assertEqual([], list(filterset.filters["primary_language"].field.choices))
 
-        c1 = Component.objects.create(
-            name="c1", dataspace=self.dataspace, primary_language="Python"
-        )
-        c2 = Component.objects.create(name="c2", dataspace=self.dataspace, primary_language="Java")
+        c1 = make_component(self.dataspace, name="c1", primary_language="Python")
+        c2 = make_component(self.dataspace, name="c2", primary_language="Java")
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)
         self.assertEqual([c1, c2], list(filterset.qs))
@@ -146,13 +145,13 @@ class ComponentFilterSetTest(TestCase):
             ["licenses", "primary_language", "usage_policy"], ComponentFilterSet.related_only
         )
 
-        c1 = Component.objects.create(
+        c1 = make_component(
+            self.dataspace,
             name="c1",
-            dataspace=self.dataspace,
             license_expression=self.license1.key,
             primary_language="Python",
         )
-        c2 = Component.objects.create(name="c2", dataspace=self.dataspace, primary_language="Java")
+        c2 = make_component(self.dataspace, name="c2", primary_language="Java")
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)
         self.assertEqual([c1, c2], list(filterset.qs))
@@ -210,9 +209,9 @@ class ComponentFilterSearchTestCase(TestCase):
     fixtures = [join(testfiles_location, "search", "component_dataset.json")]
 
     def test_component_filterset_search_filter(self):
-        nexb_dataspace = Dataspace.objects.get(name="nexB")
+        dataspace = Dataspace.objects.get(name="Reference")
         data = {"q": ""}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         expected = [
             "jblogbackup 1.0",
             "jblogbackup 1.1",
@@ -227,7 +226,7 @@ class ComponentFilterSearchTestCase(TestCase):
         self.assertEqual(expected, [str(component) for component in component_filterset.qs])
 
         data = {"q": "logback"}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         expected = [
             "logback 0.9.9",
             "logback 1.0.0",
@@ -241,57 +240,57 @@ class ComponentFilterSearchTestCase(TestCase):
         self.assertEqual(expected, [str(component) for component in component_filterset.qs])
 
     def test_component_filterset_sort_keeps_default_ordering_from_model(self):
-        nexb_dataspace = Dataspace.objects.get(name="nexB")
+        dataspace = Dataspace.objects.get(name="Reference")
         data = {}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": ""}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": "invalid"}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": "name"}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual(("name", "version"), component_filterset.qs.query.order_by)
 
         data = {"sort": "version"}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual(("version", "name"), component_filterset.qs.query.order_by)
 
         data = {"sort": "primary_language"}
-        component_filterset = ComponentFilterSet(dataspace=nexb_dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual(
             ("primary_language", "name", "version"), component_filterset.qs.query.order_by
         )
 
 
 class PackageFilterSearchTestCase(TestCase):
-    def setUp(self):
-        self.nexb_dataspace = Dataspace.objects.create(name="nexB")
+    def sorted_results(self, qs):
+        return sorted([str(package) for package in qs])
 
-        def create_package(**kwargs):
-            return Package.objects.create(**kwargs, dataspace=self.nexb_dataspace)
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="Reference")
 
         filename = {
             "filename": "setup.exe",
         }
-        create_package(**filename)
+        make_package(self.dataspace, **filename)
 
         simple_purl = {
             "type": "deb",
             "name": "curl",
         }
-        create_package(**simple_purl)
+        make_package(self.dataspace, **simple_purl)
 
         simple_purl2 = {
             **simple_purl,
             "type": "git",
         }
-        create_package(**simple_purl2)
+        make_package(self.dataspace, **simple_purl2)
 
         complete_purl = {
             "type": "deb",
@@ -301,60 +300,66 @@ class PackageFilterSearchTestCase(TestCase):
             "qualifiers": "arch=i386",
             "subpath": "googleapis/api/annotations",
         }
-        create_package(**complete_purl)
+        make_package(self.dataspace, **complete_purl)
 
     def test_package_filterset_search_filter(self):
-        def sorted_results(qs):
-            return sorted([str(package) for package in qs])
-
         data = {"q": ""}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
             "pkg:git/curl",
             "pkg:deb/curl",
             "setup.exe",
         ]
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
         data = {"q": "deb/curl"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             "pkg:deb/curl",
             "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
         ]
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
         data = {"q": "pkg:deb/curl"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
         data = {"q": "deb/debian/curl@7.50.3-1"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             "pkg:deb/debian/curl@7.50.3-1?arch=i386#googleapis/api/annotations",
         ]
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
         data = {"q": "pkg:deb/debian/curl@7.50.3-1"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
         data = {"q": "git/curl"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             "pkg:git/curl",
         ]
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
         data = {"q": "pkg:git/curl"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
         data = {"q": "setup.exe"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             "setup.exe",
         ]
-        self.assertEqual(sorted(expected), sorted_results(filterset.qs))
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
         data = {"q": "pkg:setup.exe"}
-        filterset = PackageFilterSet(dataspace=self.nexb_dataspace, data=data)
-        self.assertEqual([], sorted_results(filterset.qs))
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertEqual([], self.sorted_results(filterset.qs))
+
+    def test_package_filterset_search_match_order_on_purl_fields(self):
+        make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        make_package(self.dataspace, package_url="pkg:pypi/django@4.0", filename="Django-4.0.zip")
+
+        data = {"q": "django"}
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        expected = ["pkg:pypi/django@4.0", "pkg:pypi/django@5.0"]
+        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))

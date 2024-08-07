@@ -3,7 +3,7 @@
   "model": "dje.dataspace",
   "fields": {
     "uuid": "f26d21dc-d781-4727-84c3-1f7edc14b919",
-    "name": "nexB",
+    "name": "Reference",
     "homepage_url": "http://www.nexb.com/",
     "contact_info": "http://www.nexb.com/",
     "notes": "Creators/maintainers of the system software",
@@ -25,7 +25,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "53fa7229-617b-4dfa-9eee-8c09e9380046",
     "created_date": "2014-07-01T00:00:00Z",
@@ -65,7 +65,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "03df48a9-60df-43b6-9c04-4a4c9015f309",
     "created_date": "2014-07-01T00:00:00Z",
@@ -105,7 +105,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "fed79fab-5d00-4994-a2d1-ad35164b736a",
     "created_date": "2014-07-01T00:00:00Z",
@@ -145,7 +145,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "4a037d63-f479-41f7-985e-436b8039160a",
     "created_date": "2014-07-01T00:00:00Z",
@@ -185,7 +185,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "663fe571-6042-48cd-95ec-6cf57316a591",
     "created_date": "2015-08-04T15:08:45.738Z",
@@ -225,7 +225,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "d47238fd-09aa-45e9-aafa-9d8c3fe10b93",
     "created_date": "2014-07-01T00:00:00Z",
@@ -265,7 +265,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "31368d10-b832-4c77-87d3-2d300989d30e",
     "created_date": "2014-07-01T00:00:00Z",
@@ -305,7 +305,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "0a8bfdd1-7c48-4ac7-99f1-9e6c46e1bb81",
     "created_date": "2014-07-01T00:00:00Z",
@@ -345,7 +345,7 @@
   "model": "component_catalog.component",
   "fields": {
     "dataspace": [
-      "nexB"
+      "Reference"
     ],
     "uuid": "9b1c732d-081b-44ae-a366-ac0182281422",
     "created_date": "2017-06-13T10:05:03.727Z",

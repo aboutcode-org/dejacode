@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- encoding: utf-8 -*-
 
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.

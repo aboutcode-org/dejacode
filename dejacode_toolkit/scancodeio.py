@@ -35,16 +35,9 @@ class ScanCodeIO(BaseService):
     def get_scan_detail_url(self, project_uuid):
         return f"{self.project_api_url}{project_uuid}/"
 
-    def get_scan_results_url(self, project_uuid):
+    def get_scan_action_url(self, project_uuid, action_name):
         detail_url = self.get_scan_detail_url(project_uuid)
-        return f"{detail_url}results/"
-
-    def get_scan_summary_url(self, project_uuid):
-        detail_url = self.get_scan_detail_url(project_uuid)
-        return f"{detail_url}summary/"
-
-    def get_project_packages_url(self, project_uuid):
-        return f"{self.project_api_url}{project_uuid}/packages/"
+        return f"{detail_url}{action_name}/"
 
     def get_scan_results(self, download_url, dataspace):
         scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
@@ -231,22 +224,30 @@ class ScanCodeIO(BaseService):
 
         return updated_fields
 
-    def fetch_project_packages(self, project_uuid):
-        """Return the list of packages for the provided `project_uuid`."""
-        project_packages_url = self.get_project_packages_url(project_uuid)
-        packages = []
+    def fetch_results(self, api_url):
+        results = []
 
-        next_url = project_packages_url
+        next_url = api_url
         while next_url:
-            logger.debug(f"{self.label}: fetch packages from project_packages_url={next_url}")
+            logger.debug(f"{self.label}: fetch results from api_url={next_url}")
             response = self.request_get(url=next_url)
             if not response:
-                raise Exception("Error fetching project packages")
+                raise Exception("Error fetching results")
 
-            packages.extend(response["results"])
+            results.extend(response["results"])
             next_url = response["next"]
 
-        return packages
+        return results
+
+    def fetch_project_packages(self, project_uuid):
+        """Return the list of packages for the provided `project_uuid`."""
+        api_url = self.get_scan_action_url(project_uuid, "packages")
+        return self.fetch_results(api_url)
+
+    def fetch_project_dependencies(self, project_uuid):
+        """Return the list of dependencies for the provided `project_uuid`."""
+        api_url = self.get_scan_action_url(project_uuid, "dependencies")
+        return self.fetch_results(api_url)
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [
