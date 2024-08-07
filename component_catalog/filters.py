@@ -159,13 +159,22 @@ class PackageSearchFilter(MatchOrderedSearchFilter):
 class PackageFilterSet(DataspacedFilterSet):
     q = PackageSearchFilter(
         label=_("Search"),
-        match_order_fields=["filename"],
-        search_fields=[
-            "filename",
+        match_order_fields=[
             "type",
             "namespace",
             "name",
             "version",
+            "filename",
+            "download_url",
+            "sha1",
+            "md5",
+        ],
+        search_fields=[
+            "type",
+            "namespace",
+            "name",
+            "version",
+            "filename",
             "download_url",
             "sha1",
             "md5",

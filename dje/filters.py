@@ -210,7 +210,7 @@ class SearchRankFilter(SearchFilter):
 
 class MatchOrderedSearchFilter(SearchRankFilter):
     """
-    Start with a case-insensitive containment search on the `name` field,
+    Start with a case-insensitive containment search on the `match_order_fields` fields,
     ordering based on the match type using annotations.
 
     If that simple search Return nothing, fallback to the SearchRankFilter
