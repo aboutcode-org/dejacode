@@ -463,6 +463,24 @@ class CPEMixin(models.Model):
             )
 
 
+class VulnerabilityMixin(models.Model):
+    """Add the `vulnerability` many to many field."""
+
+    # TODO: This is required for reporting but collides with the Vulnerability model
+    # definition.
+    affected_by_vulnerabilities = models.ManyToManyField(
+        to="component_catalog.Vulnerability",
+        help_text=_("Vulnerabilities affecting this object."),
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_vulnerable(self):
+        return self.affected_by_vulnerabilities.exists()
+
+
 class URLFieldsMixin(models.Model):
     homepage_url = models.URLField(
         _("Homepage URL"),
@@ -888,6 +906,7 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerabilityMixin,
     LicenseFieldsMixin,
     ParentChildModelMixin,
     BaseComponentMixin,
@@ -1687,6 +1706,7 @@ class Package(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerabilityMixin,
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
@@ -2470,10 +2490,6 @@ class Package(
             packages_data = PurlDB(user.dataspace).find_packages(payload, timeout)
             if packages_data:
                 return packages_data
-
-    @property
-    def is_vulnerable(self):
-        return self.affected_by_vulnerabilities.exists()
 
 
 class PackageAssignedLicense(DataspacedModel):
