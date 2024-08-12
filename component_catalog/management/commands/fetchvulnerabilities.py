@@ -7,6 +7,7 @@
 #
 
 from django.core.management.base import CommandError
+from django.utils import timezone
 
 from component_catalog.models import Component
 from component_catalog.models import Package
@@ -62,6 +63,9 @@ def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
                     data=vulnerability,
                     affected_packages=affected_packages,
                 )
+
+    dataspace.vulnerabilities_updated_at = timezone.now()
+    dataspace.save(update_fields=["vulnerabilities_updated_at"])
 
 
 class Command(DataspacedCommand):

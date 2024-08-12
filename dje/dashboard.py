@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -16,6 +17,7 @@ from grappelli.dashboard import modules
 class DejaCodeDashboard(Dashboard):
     def init_with_context(self, context):
         user = context["request"].user
+        dataspace = user.dataspace
 
         self.children.append(
             modules.ModelList(
@@ -33,7 +35,7 @@ class DejaCodeDashboard(Dashboard):
         )
 
         administration_models = ["dje.*"]
-        if user.dataspace.is_reference:
+        if dataspace.is_reference:
             administration_models.extend(
                 [
                     "django.contrib.*",
@@ -187,5 +189,25 @@ class DejaCodeDashboard(Dashboard):
                     collapsible=True,
                     column=3,
                     children=imports,
+                )
+            )
+
+        data_updates = []
+        if dataspace.enable_vulnerablecodedb_access:
+            updated_at = dataspace.vulnerabilities_updated_at
+            data_updates.append(
+                {
+                    "title": _(f"Vulnerabilities: {naturaltime(updated_at)}"),
+                    "description": updated_at,
+                }
+            )
+
+        if data_updates:
+            self.children.append(
+                modules.LinkList(
+                    _("Data updates"),
+                    collapsible=True,
+                    column=3,
+                    children=data_updates,
                 )
             )

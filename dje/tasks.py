@@ -18,6 +18,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.defaultfilters import pluralize
+from django.utils import timezone
 
 from django_rq import job
 
@@ -245,12 +246,11 @@ def update_vulnerabilies():
     )
 
     # Cancel all scheduled jobs
-    list_of_scheduled_job = list(s.get_jobs())
-    for jon in list_of_scheduled_job:
-        s.cancel(jon)
+    list_of_scheduled_job = list(scheduler.get_jobs())
+    for job in list_of_scheduled_job:
+        scheduler.cancel(job)
     """
     Dataspace = apps.get_model("dje", "Dataspace")
     dataspace = Dataspace.objects.get(name="nexB")
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    dataspace.notes = f"Notes from tasks {now}"
-    dataspace.save()
+    dataspace.vulnerabilities_updated_at = timezone.now()
+    dataspace.save(update_fields=["vulnerabilities_updated_at"])

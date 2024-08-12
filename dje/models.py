@@ -342,6 +342,14 @@ class Dataspace(models.Model):
         ),
     )
 
+    vulnerabilities_updated_at = models.DateTimeField(
+        _("Last vulnerability data update"),
+        auto_now=False,
+        null=True,
+        blank=True,
+        help_text=_("The date and time when the local vulnerability database was last updated. "),
+    )
+
     objects = DataspaceManager()
 
     class Meta:
@@ -771,7 +779,7 @@ class DataspacedModel(models.Model):
 
         if updated_fields:
             self.last_modified_by = user
-            self.save()
+            self.save(update_fields=updated_fields)
 
         return updated_fields
 
