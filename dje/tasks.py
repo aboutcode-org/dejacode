@@ -226,3 +226,31 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.save()
     description = "\n".join(scancode_project.import_log)
     scancode_project.notify(verb=notification_verb, description=description)
+
+
+@job("default", timeout=1200)
+def update_vulnerabilies():
+    """
+    import django_rq
+    from dje.tasks import update_vulnerabilies
+
+    scheduler = django_rq.get_scheduler('default')
+    scheduler.cron(
+        cron_string="* * * * *",
+        func=update_vulnerabilies,
+        repeat=None,
+        result_ttl=300,
+        ttl=200,
+        use_local_timezone=True,
+    )
+
+    # Cancel all scheduled jobs
+    list_of_scheduled_job = list(s.get_jobs())
+    for jon in list_of_scheduled_job:
+        s.cancel(jon)
+    """
+    Dataspace = apps.get_model("dje", "Dataspace")
+    dataspace = Dataspace.objects.get(name="nexB")
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    dataspace.notes = f"Notes from tasks {now}"
+    dataspace.save()
