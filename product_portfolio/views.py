@@ -23,9 +23,9 @@ from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db import models
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import Http404
@@ -64,7 +64,6 @@ from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
-from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
@@ -303,9 +302,7 @@ class ProductDetailsView(
     }
 
     def get_queryset(self):
-        licenses_prefetch = models.Prefetch(
-            "licenses", License.objects.select_related("usage_policy")
-        )
+        licenses_prefetch = Prefetch("licenses", License.objects.select_related("usage_policy"))
 
         productcomponent_qs = ProductComponent.objects.select_related(
             "component__dataspace",
@@ -340,8 +337,8 @@ class ProductDetailsView(
                 "licenses__usage_policy",
                 "scancodeprojects",
                 LicenseAssignedTag.prefetch_for_license_tab(),
-                models.Prefetch("productcomponents", queryset=productcomponent_qs),
-                models.Prefetch("productpackages", queryset=productpackage_qs),
+                Prefetch("productcomponents", queryset=productcomponent_qs),
+                Prefetch("productpackages", queryset=productpackage_qs),
             )
         )
 
@@ -411,7 +408,7 @@ class ProductDetailsView(
             )
         )
 
-        declared_dependencies_prefetch = models.Prefetch(
+        declared_dependencies_prefetch = Prefetch(
             "package__declared_dependencies", ProductDependency.objects.product(product)
         )
 
@@ -643,26 +640,34 @@ class ProductTabInventoryView(
 
         user = self.request.user
         dataspace = user.dataspace
-
         context["inventory_count"] = self.object.productinventoryitem_set.count()
 
-        licenses_prefetch = models.Prefetch(
-            "licenses", License.objects.select_related("usage_policy")
+        license_qs = License.objects.select_related("usage_policy")
+        declared_dependencies_qs = ProductDependency.objects.product(self.object)
+        package_qs = (
+            Package.objects.select_related(
+                "dataspace",
+                "usage_policy",
+            )
+            .prefetch_related(Prefetch("declared_dependencies", declared_dependencies_qs))
+            .with_vulnerability_count()  # TODO Check count is not cross product
         )
-        declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.product(self.object)
+        component_qs = (
+            Component.objects.select_related(
+                "dataspace",
+                "owner__dataspace",
+                "usage_policy",
+            ).with_vulnerability_count()  # TODO Check count is not cross product
         )
 
         productpackage_qs = (
             self.object.productpackages.select_related(
-                "package__dataspace",
-                "package__usage_policy",
                 "review_status",
                 "purpose",
             )
             .prefetch_related(
-                licenses_prefetch,
-                declared_dependencies_prefetch,
+                Prefetch("licenses", license_qs),
+                Prefetch("package", package_qs),
             )
             .order_by(
                 "feature",
@@ -684,16 +689,14 @@ class ProductTabInventoryView(
 
         productcomponent_qs = (
             self.object.productcomponents.select_related(
-                "component__dataspace",
-                "component__owner__dataspace",
-                "component__usage_policy",
                 "review_status",
                 "purpose",
             )
             .prefetch_related(
+                Prefetch("component", component_qs),
+                Prefetch("licenses", license_qs),
                 "component__packages",
                 "component__children",
-                licenses_prefetch,
             )
             .order_by(
                 "feature",
@@ -764,24 +767,6 @@ class ProductTabInventoryView(
             )
             if "error" in compliance_alerts:
                 context["compliance_errors"] = True
-
-        # 6. Add vulnerability data
-        vulnerablecode = VulnerableCode(dataspace)
-        enable_vulnerabilities = all(
-            [
-                dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-        if enable_vulnerabilities:
-            # Re-use the inventory mapping to prevent duplicated queries
-            packages = [
-                inventory_item.package
-                for inventory_item in object_list
-                if isinstance(inventory_item, ProductPackage)
-            ]
-
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         context.update(
             {
@@ -968,8 +953,8 @@ class ProductTabDependenciesView(
         product = self.object
 
         dependency_qs = product.dependencies.prefetch_related(
-            models.Prefetch("for_package", Package.objects.only_rendering_fields()),
-            models.Prefetch(
+            Prefetch("for_package", Package.objects.only_rendering_fields()),
+            Prefetch(
                 "resolved_to_package",
                 Package.objects.only_rendering_fields().declared_dependencies_count(product),
             ),

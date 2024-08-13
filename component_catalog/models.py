@@ -468,10 +468,10 @@ class VulnerabilityMixin(models.Model):
 
     # TODO: This is required for reporting but collides with the Vulnerability model
     # definition.
-    affected_by_vulnerabilities = models.ManyToManyField(
-        to="component_catalog.Vulnerability",
-        help_text=_("Vulnerabilities affecting this object."),
-    )
+    # affected_by_vulnerabilities = models.ManyToManyField(
+    #     to="component_catalog.Vulnerability",
+    #     help_text=_("Vulnerabilities affecting this object."),
+    # )
 
     class Meta:
         abstract = True
