@@ -57,7 +57,7 @@ def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
             for vulnerability in affected_by_vulnerabilities:
                 vulnerability_id = vulnerability["vulnerability_id"]
                 if vulnerability_qs.filter(vulnerability_id=vulnerability_id).exists():
-                    continue  # -> TODO: Update from data in that case?
+                    continue  # -> TODO: Update from data in that case? No
                 Vulnerability.create_from_data(
                     dataspace=dataspace,
                     data=vulnerability,

@@ -466,12 +466,11 @@ class CPEMixin(models.Model):
 class VulnerabilityMixin(models.Model):
     """Add the `vulnerability` many to many field."""
 
-    # TODO: This is required for reporting but collides with the Vulnerability model
-    # definition.
-    # affected_by_vulnerabilities = models.ManyToManyField(
-    #     to="component_catalog.Vulnerability",
-    #     help_text=_("Vulnerabilities affecting this object."),
-    # )
+    affected_by_vulnerabilities = models.ManyToManyField(
+        to="component_catalog.Vulnerability",
+        related_name="affected_%(class)ss",
+        help_text=_("Vulnerabilities affecting this object."),
+    )
 
     class Meta:
         abstract = True
@@ -2572,16 +2571,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     fixed_packages = JSONListField(
         blank=True,
         help_text=_("A list of packages that are not affected by this vulnerability."),
-    )
-    affected_packages = models.ManyToManyField(
-        to="component_catalog.Package",
-        related_name="affected_by_vulnerabilities",
-        help_text=_("Packages affected by this vulnerability."),
-    )
-    affected_components = models.ManyToManyField(
-        to="component_catalog.Component",
-        related_name="affected_by_vulnerabilities",
-        help_text=_("Components affected by this vulnerability."),
     )
 
     class Meta:

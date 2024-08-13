@@ -54,7 +54,6 @@ CT_LIMIT = (
     | models.Q(app_label="component_catalog", model="component")
     | models.Q(app_label="component_catalog", model="subcomponent")
     | models.Q(app_label="component_catalog", model="package")
-    | models.Q(app_label="component_catalog", model="vulnerability")
     | models.Q(app_label="organization", model="owner")
     | models.Q(app_label="workflow", model="request")
     | models.Q(app_label="license_library", model="licensetag")
