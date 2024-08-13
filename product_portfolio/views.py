@@ -67,6 +67,7 @@ from dejacode_toolkit.utils import sha1
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
+from dje.filters import HasCountFilter
 from dje.models import DejacodeUser
 from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
@@ -441,6 +442,12 @@ class ProductDetailsView(
             productcomponent_qs = is_deployed_filter.filter(productcomponent_qs, is_deployed)
             productpackage_qs = is_deployed_filter.filter(productpackage_qs, is_deployed)
 
+        is_vulnerable = self.request.GET.get("hierarchy-is_vulnerable")
+        if is_vulnerable:
+            is_vulnerable_filter = HasCountFilter(field_name="vulnerability")
+            productcomponent_qs = is_vulnerable_filter.filter(productcomponent_qs, is_vulnerable)
+            productpackage_qs = is_vulnerable_filter.filter(productpackage_qs, is_vulnerable)
+
         if not (productcomponent_qs or productpackage_qs or is_deployed):
             return
 
@@ -454,6 +461,7 @@ class ProductDetailsView(
             "verbose_name_plural": self.model._meta.verbose_name_plural,
             "relations_feature_grouped": dict(sorted(relations_feature_grouped.items())),
             "is_deployed": is_deployed,
+            "is_vulnerable": is_vulnerable,
         }
 
         return {"fields": [(None, context, None, template)]}

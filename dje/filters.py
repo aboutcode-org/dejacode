@@ -868,8 +868,8 @@ class HasCountFilter(HasRelationFilter):
     """
 
     def filter(self, qs, value):
-        if value == "with":
+        if value in ["with", "yes"]:
             return qs.filter(**{f"{self.field_name}_count__gt": 0}).distinct()
-        elif value == "without":
+        elif value in ["without", "no"]:
             return qs.filter(**{f"{self.field_name}_count__exact": 0}).distinct()
         return qs
