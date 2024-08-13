@@ -82,7 +82,7 @@ class Command(DataspacedCommand):
         parser.add_argument(
             "--timeout",
             type=int,
-            default=10,
+            default=30,
             help="Request timeout in seconds",
         )
 
