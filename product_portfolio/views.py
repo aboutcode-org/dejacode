@@ -399,10 +399,12 @@ class ProductDetailsView(
             )
             .annotate(
                 children_count=Count("component__children"),
+                vulnerability_count=Count("component__affected_by_vulnerabilities"),
             )
             .order_by(
                 "feature",
-                "component",
+                "component__name",
+                "component__version",
                 "name",
                 "version",
             )
@@ -420,9 +422,16 @@ class ProductDetailsView(
                 "package__licenses",
                 declared_dependencies_prefetch,
             )
+            .annotate(
+                vulnerability_count=Count("package__affected_by_vulnerabilities"),
+            )
             .order_by(
                 "feature",
-                "package",
+                "package__type",
+                "package__namespace",
+                "package__name",
+                "package__version",
+                "package__filename",
             )
         )
 
