@@ -659,15 +659,13 @@ class ProductTabInventoryView(
                 "usage_policy",
             )
             .prefetch_related(Prefetch("declared_dependencies", declared_dependencies_qs))
-            .with_vulnerability_count()  # TODO Check count is not cross product
+            .with_vulnerability_count()
         )
-        component_qs = (
-            Component.objects.select_related(
-                "dataspace",
-                "owner__dataspace",
-                "usage_policy",
-            ).with_vulnerability_count()  # TODO Check count is not cross product
-        )
+        component_qs = Component.objects.select_related(
+            "dataspace",
+            "owner__dataspace",
+            "usage_policy",
+        ).with_vulnerability_count()
 
         productpackage_qs = (
             self.object.productpackages.select_related(
@@ -961,12 +959,15 @@ class ProductTabDependenciesView(
         context_data = super().get_context_data(**kwargs)
         product = self.object
 
+        for_package_qs = Package.objects.only_rendering_fields().with_vulnerability_count()
+        resolved_to_package_qs = (
+            Package.objects.only_rendering_fields()
+            .declared_dependencies_count(product)
+            .with_vulnerability_count()
+        )
         dependency_qs = product.dependencies.prefetch_related(
-            Prefetch("for_package", Package.objects.only_rendering_fields()),
-            Prefetch(
-                "resolved_to_package",
-                Package.objects.only_rendering_fields().declared_dependencies_count(product),
-            ),
+            Prefetch("for_package", for_package_qs),
+            Prefetch("resolved_to_package", resolved_to_package_qs),
         )
 
         filter_dependency = DependencyFilterSet(

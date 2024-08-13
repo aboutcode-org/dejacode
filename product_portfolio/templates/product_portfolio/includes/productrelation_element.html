@@ -3,21 +3,13 @@
   <span class="me-2">
     {% include 'includes/object_icon.html' with object=relation.package only %}
   </span>
-  {% if relation.package.vulnerability_count %}
-    <span class="me-1">
-      {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=relation.package.get_absolute_url count=relation.package.vulnerability_count %}
-    </span>
-  {% endif %}
-  <strong><a href="{{ relation.package.get_absolute_url }}" target="_blank">{{ relation.package }}</a></strong>
-{% elif relation.component %}
+  <strong>
+    <a href="{{ relation.package.get_absolute_url }}" target="_blank">{{ relation.package }}</a>
+  </strong>
+  {% elif relation.component %}
   <span class="me-1">
     {% include 'includes/object_icon.html' with object=relation.component only %}
   </span>
-  {% if relation.component.vulnerability_count %}
-    <span class="me-1">
-      {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=relation.component.get_absolute_url count=relation.component.vulnerability_count %}
-    </span>
-  {% endif %}
   {% if relation.component.is_active %}
     <strong><a href="{{ relation.component.get_absolute_url }}" target="_blank">{{ relation.component }}</a></strong>
   {% else %}
@@ -54,6 +46,16 @@
         {% endif %}
   >
     <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit object"><i class="far fa-edit fa-sm"></i></button>
+  </span>
+{% endif %}
+{% if relation.package.vulnerability_count %}
+  <span class="ms-1">
+    {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=relation.package.get_absolute_url count=relation.package.vulnerability_count %}
+  </span>
+{% endif %}
+{% if relation.component.vulnerability_count %}
+  <span class="ms-1">
+    {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=relation.component.get_absolute_url count=relation.component.vulnerability_count %}
   </span>
 {% endif %}
 {% if relation.package_id and relation.package.declared_dependencies.all %}
