@@ -539,7 +539,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
 
         expected = f"""
-        <a href="{self.package1.details_url}#vulnerabilities" class="vulnerability" 
+        <a href="{self.package1.details_url}#vulnerabilities" class="vulnerability"
            data-bs-toggle="tooltip" title="Vulnerabilities">
           <i class="fas fa-bug"></i>1
         </a>

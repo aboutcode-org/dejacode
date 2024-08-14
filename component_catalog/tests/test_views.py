@@ -39,6 +39,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.tests import make_vulnerability
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageDetailsView
@@ -1144,6 +1145,11 @@ class PackageUserViewsTestCase(TestCase):
         self.package1.save()
         self.package1_tab_scan_url = self.package1.get_url("tab_scan")
 
+        self.vulnerability1 = make_vulnerability(
+            self.dataspace,
+            vulnerability_id="VCID-0000-0001",
+            affected_packages=[self.package1],
+        )
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=self.package1, dataspace=self.dataspace
         )
@@ -2973,27 +2979,19 @@ class PackageUserViewsTestCase(TestCase):
             'attachment; filename="package1_scan.zip"', response["content-disposition"]
         )
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerable_purls")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_package_list_view_vulnerabilities(self, mock_is_configured, mock_vulnerable_purls):
-        purl = "pkg:pypi/django@2.1"
-        mock_is_configured.return_value = True
-
-        self.package1.set_package_url(purl)
-        self.package1.save()
-
-        self.dataspace.enable_vulnerablecodedb_access = True
-        self.dataspace.save()
-
-        mock_vulnerable_purls.return_value = [purl]
-
+    def test_package_list_view_vulnerabilities(self):
         self.client.login(username=self.super_user.username, password="secret")
         package_list_url = reverse("component_catalog:package_list")
         response = self.client.get(package_list_url)
 
         self.assertContains(response, self.package1.identifier)
         self.assertContains(response, "#vulnerabilities")
-        expected = '<i class="fas fa-bug vulnerability"></i>'
+        expected = f"""
+        <a href="{self.package1.details_url}#vulnerabilities" class="vulnerability"
+           data-bs-toggle="tooltip" title="Vulnerabilities">
+          <i class="fas fa-bug"></i>1
+        </a>
+        """
         self.assertContains(response, expected, html=True)
 
     def test_package_details_view_get_vulnerability_fields(self):
