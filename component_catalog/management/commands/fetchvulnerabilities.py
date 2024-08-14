@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
 from django.utils import timezone
 
@@ -14,30 +15,36 @@ from component_catalog.models import Package
 from component_catalog.models import Vulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
-from dje.utils import chunked
+from dje.utils import chunked_queryset
 
 # TODO: Retry failures
 # ERROR VulnerableCode [Exception] HTTPSConnectionPool(host='public.vulnerablecode.io',
 # port=443): Read timed out. (read timeout=10)
 
 
+# TODO: Add support for Component
 def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
+    created_vulnerabilities = 0
     dataspace = vulnerablecode.dataspace
-    package_qs = Package.objects.scope(dataspace).has_package_url()
-    logger.write(f"{package_qs.count()} Packages in the queue.")
-
-    # TODO: Add support for Component
-    component_qs = Component.objects.scope(dataspace).exclude(cpe="")
-    logger.write(f"{component_qs.count()} Components in the queue.")
-
-    # TODO: Replace this by a create_or_update
-    Vulnerability.objects.all().delete()
     vulnerability_qs = Vulnerability.objects.scope(dataspace)
+    package_qs = (
+        Package.objects.scope(dataspace)
+        .has_package_url()
+        .exclude(type="sourceforge")
+        .order_by("-last_modified_date")
+    )
+    component_qs = (
+        Component.objects.scope(dataspace).exclude(cpe="").order_by("-last_modified_date")
+    )
 
-    for packages_batch in chunked(package_qs, chunk_size=batch_size):
-        entries = vulnerablecode.get_vulnerable_purls(
-            packages_batch, purl_only=False, timeout=timeout
-        )
+    package_count = package_qs.count()
+    logger.write(f"{package_count} Packages in the queue.")
+    component_count = component_qs.count()
+    logger.write(f"{component_count} Components in the queue.")
+
+    for index, batch in enumerate(chunked_queryset(package_qs, chunk_size=batch_size), start=1):
+        logger.write(f"Progress: {intcomma(index*batch_size)}/{intcomma(package_count)}")
+        entries = vulnerablecode.get_vulnerable_purls(batch, purl_only=False, timeout=timeout)
         for entry in entries:
             affected_by_vulnerabilities = entry.get("affected_by_vulnerabilities")
             if not affected_by_vulnerabilities:
@@ -48,21 +55,23 @@ def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
                 namespace=entry.get("namespace") or "",
                 name=entry.get("name"),
                 version=entry.get("version") or "",
+                # TODO: get_vulnerable_purls converts to plain purl, review this
                 # qualifiers=entry.get("qualifiers") or {},
-                subpath=entry.get("subpath") or "",
+                # subpath=entry.get("subpath") or "",
             )
             if not affected_packages:
                 raise CommandError("Could not find package!")
 
-            for vulnerability in affected_by_vulnerabilities:
-                vulnerability_id = vulnerability["vulnerability_id"]
-                if vulnerability_qs.filter(vulnerability_id=vulnerability_id).exists():
-                    continue  # -> TODO: Update from data in that case? No
-                Vulnerability.create_from_data(
-                    dataspace=dataspace,
-                    data=vulnerability,
-                    affected_packages=affected_packages,
-                )
+            for vulnerability_data in affected_by_vulnerabilities:
+                vulnerability_id = vulnerability_data["vulnerability_id"]
+                vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+                if not vulnerability:
+                    vulnerability = Vulnerability.create_from_data(
+                        dataspace=dataspace,
+                        data=vulnerability,
+                    )
+                    created_vulnerabilities += 1
+                vulnerability.add_affected_packages(affected_packages)
 
     dataspace.vulnerabilities_updated_at = timezone.now()
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
@@ -76,7 +85,7 @@ class Command(DataspacedCommand):
         parser.add_argument(
             "--batch-size",
             type=int,
-            default=50,
+            default=100,
             help="Specifies the number of objects per requests to the VulnerableCode service",
         )
         parser.add_argument(

@@ -76,6 +76,12 @@ def chunked(iterable, chunk_size):
         yield iterable[index:end]
 
 
+def chunked_queryset(queryset, chunk_size):
+    """A generator function that yields chunks of data from the queryset."""
+    for start in range(0, queryset.count(), chunk_size):
+        yield list(queryset[start : start + chunk_size])
+
+
 def extract_name_version(name_version_str):
     """
     Return a name and a version extracted from the following syntax: 'name:version'
