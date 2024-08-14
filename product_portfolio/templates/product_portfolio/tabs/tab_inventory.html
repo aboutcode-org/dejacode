@@ -36,9 +36,11 @@
         {% trans 'Item' %}
         {{ filter_productcomponent.form.object_type }}
         <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" data-bs-toggle="tooltip" data-bs-trigger="hover" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
-        <div class="float-end">
-          {{ filter_productcomponent.form.is_vulnerable }}
-        </div>
+        {% if product.dataspace.enable_vulnerablecodedb_access %}
+          <div class="float-end">
+            {{ filter_productcomponent.form.is_vulnerable }}
+          </div>
+        {% endif %}
       </th>
       <th style="min-width: 100px;">
         {% trans 'Purpose' %}

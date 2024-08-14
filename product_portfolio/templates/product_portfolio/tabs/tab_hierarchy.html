@@ -10,9 +10,11 @@
       <li class="nav-item">
         <a class="nav-link{% if values.is_deployed == 'no' %} active{% endif %}" href="?hierarchy-is_deployed=no#hierarchy">Internal Use Only <small>(Deployed=No)</small></a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link{% if values.is_vulnerable == 'yes' %} active{% endif %}" href="?hierarchy-is_vulnerable=yes#hierarchy"><i class="fas fa-bug me-1"></i>Affected by vulnerabilities</a>
-      </li>
+      {% if product.dataspace.enable_vulnerablecodedb_access %}
+        <li class="nav-item">
+          <a class="nav-link{% if values.is_vulnerable == 'yes' %} active{% endif %}" href="?hierarchy-is_vulnerable=yes#hierarchy"><i class="fas fa-bug me-1"></i>Affected by vulnerabilities</a>
+        </li>
+      {% endif %}
     </ul>
   </div>
 </div>
