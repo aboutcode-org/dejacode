@@ -77,7 +77,7 @@ def chunked(iterable, chunk_size):
 
 
 def chunked_queryset(queryset, chunk_size):
-    """A generator function that yields chunks of data from the queryset."""
+    """Yield chunks of data from the queryset."""
     for start in range(0, queryset.count(), chunk_size):
         yield list(queryset[start : start + chunk_size])
 
