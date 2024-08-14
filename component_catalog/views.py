@@ -1504,6 +1504,10 @@ def package_create_ajax_view(request):
         )
         scan_msg = " and submitted to ScanCode.io for scanning"
 
+    if dataspace.enable_vulnerablecodedb_access:
+        for package in created:
+            package.fetch_vulnerabilities()
+
     if len_created == 1:
         redirect_url = created[0].get_absolute_url()
         messages.success(request, "The Package was successfully created.")

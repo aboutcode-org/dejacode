@@ -33,6 +33,13 @@
                 </small>
               </div>
             {% endif %}
+            {% if user.dataspace.enable_vulnerablecodedb_access %}
+              <div class="mt-3">
+                <small class="form-text text-muted mt-3">
+                  <strong>VulnerableCodeDB access is enabled in your Dataspace</strong>, DejaCode will look up the VulnerableCode to retrieve and fetch all vulnerabilities for the package.
+                </small>
+              </div>
+            {% endif %}
             <div id="package-add-error" class="alert alert-danger mt-3" role="alert" style="display: none;"></div>
           </div>
         </div>

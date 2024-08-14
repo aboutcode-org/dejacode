@@ -142,6 +142,56 @@ class VulnerabilityQuerySetMixin:
         return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
 
+class VulnerableObjectMixin:
+    def get_entry_from_vulnerablecode(self):
+        from dejacode_toolkit.vulnerablecode import VulnerableCode
+
+        dataspace = self.dataspace
+        vulnerablecode = VulnerableCode(dataspace)
+
+        is_vulnerablecode_enabled = all(
+            [
+                vulnerablecode.is_configured(),
+                dataspace.enable_vulnerablecodedb_access,
+            ]
+        )
+        if not is_vulnerablecode_enabled:
+            return
+
+        if not self.package_url:
+            return
+
+        # TODO: Make this compatible with Component as well
+        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
+            self.package_url, timeout=10
+        )
+        if vulnerable_packages:
+            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
+            return affected_by_vulnerabilities
+
+    def fetch_vulnerabilities(self):
+        """Get and save."""
+        affected_by_vulnerabilities = self.get_entry_from_vulnerablecode()
+        if affected_by_vulnerabilities:
+            self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
+
+    def create_vulnerabilities(self, vulnerabilities_data):
+        vulnerabilities = []
+        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
+
+        for vulnerability_data in vulnerabilities_data:
+            vulnerability_id = vulnerability_data["vulnerability_id"]
+            vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+            if not vulnerability:
+                vulnerability = Vulnerability.create_from_data(
+                    dataspace=self.dataspace,
+                    data=vulnerability,
+                )
+            vulnerabilities.append(vulnerability)
+
+        self.affected_by_vulnerabilities.add(*vulnerabilities)
+
+
 class LicenseExpressionMixin:
     """Model mixin for models that store license expressions."""
 
@@ -905,6 +955,7 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerableObjectMixin,
     VulnerabilityMixin,
     LicenseFieldsMixin,
     ParentChildModelMixin,
@@ -1705,6 +1756,7 @@ class Package(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerableObjectMixin,
     VulnerabilityMixin,
     URLFieldsMixin,
     HashFieldsMixin,
@@ -2543,7 +2595,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
 
     vulnerability_id = models.CharField(
-        unique=True,
         max_length=20,
         help_text=_(
             "A unique identifier for the vulnerability, prefixed with 'VCID-'. "
