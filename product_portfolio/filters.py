@@ -32,7 +32,6 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
 
-
 is_vulnerable_filter = HasRelationFilter(
     label=_("Is Vulnerable"),
     field_name="component__affected_by_vulnerabilities",

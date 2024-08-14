@@ -27,7 +27,6 @@ from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from license_library.models import License
 
-
 is_vulnerable_filter = HasRelationFilter(
     label=_("Is Vulnerable"),
     field_name="affected_by_vulnerabilities",

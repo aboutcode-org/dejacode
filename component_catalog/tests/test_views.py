@@ -42,7 +42,6 @@ from component_catalog.models import Subcomponent
 from component_catalog.tests import make_vulnerability
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
-from component_catalog.views import PackageDetailsView
 from component_catalog.views import PackageTabScanView
 from dejacode_toolkit.scancodeio import get_webhook_url
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -1038,31 +1037,12 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerabilities_by_cpe")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_component_details_view_tab_vulnerabilities(
-        self, mock_is_configured, mock_get_vulnerabilities_by_cpe
-    ):
-        mock_is_configured.return_value = True
-
-        self.nexb_dataspace.enable_vulnerablecodedb_access = True
-        self.nexb_dataspace.save()
-
-        self.component1.cpe = "cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*"
-        self.component1.save()
-
-        mock_get_vulnerabilities_by_cpe.return_value = [
-            {
-                "vulnerability_id": "VULCOID-5U6",
-                "summary": "django.contrib.sessions in Django before 1.2.7",
-                "references": [
-                    {
-                        "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2011-4136",
-                        "reference_id": "CVE-2011-4136",
-                    }
-                ],
-            }
-        ]
+    def test_component_details_view_tab_vulnerabilities(self):
+        vulnerability1 = make_vulnerability(
+            self.nexb_dataspace,
+            vulnerability_id="VCID-0000-0001",
+            affected_components=[self.component1],
+        )
 
         self.client.login(username="nexb_user", password="t3st")
         response = self.client.get(self.component1.details_url)
@@ -1074,11 +1054,7 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        expected = (
-            '<a href="https://nvd.nist.gov/vuln/detail/CVE-2011-4136" target="_blank">'
-            "CVE-2011-4136</a>"
-        )
-        self.assertContains(response, expected)
+        self.assertContains(response, vulnerability1.vcid)
 
     def test_component_catalog_component_create_ajax_view(self):
         component_create_ajax_url = reverse("component_catalog:component_add_ajax")
@@ -2993,74 +2969,6 @@ class PackageUserViewsTestCase(TestCase):
         </a>
         """
         self.assertContains(response, expected, html=True)
-
-    def test_package_details_view_get_vulnerability_fields(self):
-        self.package1.set_package_url("pkg:nginx/nginx@1.11.1")
-        self.package1.save()
-        copy_object(self.package1, Dataspace.objects.create(name="Other"), self.basic_user)
-
-        get_vulnerability_fields = PackageDetailsView.get_vulnerability_fields
-        fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
-        self.assertEqual(fields[0], ("Summary", None, "Summary of the vulnerability"))
-
-        vulnerability_url = "http://public.vulnerablecode.io/vulnerabilities/VCID-pk3r-ga7k-aaap"
-        vulnerability = {
-            "vulnerability_id": "VCID-pk3r-ga7k-aaap",
-            "summary": "SQL Injection",
-            "resource_url": vulnerability_url,
-            "references": [
-                {
-                    "reference_id": "",
-                    "reference_url": "http://www.openwall.com/lists/oss-security/2022/01/18/4",
-                    "scores": [],
-                },
-                {
-                    "reference_id": "CVE-2022-23305",
-                    "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23305",
-                    "scores": [],
-                },
-            ],
-            "fixed_packages": [
-                {"purl": "pkg:nginx/nginx@1.11.1"},
-                {"purl": "pkg:nginx/nginx@1.10.1"},
-            ],
-        }
-        fields = get_vulnerability_fields(
-            vulnerability=vulnerability,
-            dataspace=self.dataspace,
-        )
-        self.assertEqual(fields[0], ("Summary", "SQL Injection", "Summary of the vulnerability"))
-        self.assertEqual(fields[1][0], "VulnerableCode URL")
-        url_as_link = f'<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>'
-        self.assertEqual(fields[1][1], url_as_link)
-        self.assertEqual(fields[2][0], "Fixed packages")
-        fixed_package_values = fields[2][1]
-        self.assertIn("nginx/nginx@1.10.1", fixed_package_values)
-        self.assertIn(
-            '<a href="/packages/add/?package_url=pkg:nginx/nginx@1.10.1"',
-            fixed_package_values,
-        )
-        self.assertIn(
-            f'<a href="{self.package1.get_absolute_url()}">pkg:nginx/nginx@1.11.1</a>',
-            fixed_package_values,
-        )
-        self.assertEqual(
-            fields[3][0:2],
-            (
-                "Reference IDs",
-                '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
-                "CVE-2022-23305"
-                "</a>",
-            ),
-        )
-        self.assertEqual(
-            fields[4][0:2],
-            (
-                "Reference URLs",
-                '<a target="_blank" href="http://www.openwall.com/lists/oss-security/2022/01/18/4" '
-                'rel="nofollow">http://www.openwall.com/lists/oss-security/2022/01/18/4</a>',
-            ),
-        )
 
     def test_package_details_view_tab_vulnerabilities(self):
         self.client.login(username=self.super_user.username, password="secret")
