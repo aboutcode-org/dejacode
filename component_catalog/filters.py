@@ -28,6 +28,17 @@ from dje.widgets import SortDropDownWidget
 from license_library.models import License
 
 
+is_vulnerable_filter = HasRelationFilter(
+    label=_("Is Vulnerable"),
+    field_name="affected_by_vulnerabilities",
+    choices=(
+        ("yes", _("Affected by vulnerabilities")),
+        ("no", _("No vulnerabilities found")),
+    ),
+    widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
+)
+
+
 class ComponentFilterSet(DataspacedFilterSet):
     related_only = [
         "licenses",
@@ -85,16 +96,7 @@ class ComponentFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
-    # TODO: Remove duplication with Package
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
-        field_name="affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
-        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
-    )
+    is_vulnerable = is_vulnerable_filter
 
     class Meta:
         model = Component
@@ -229,15 +231,7 @@ class PackageFilterSet(DataspacedFilterSet):
         empty_label="Last modified (default)",
         widget=SortDropDownWidget,
     )
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
-        field_name="affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
-        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
-    )
+    is_vulnerable = is_vulnerable_filter
 
     class Meta:
         model = Package

@@ -33,6 +33,19 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
 
 
+is_vulnerable_filter = HasRelationFilter(
+    label=_("Is Vulnerable"),
+    field_name="component__affected_by_vulnerabilities",
+    choices=(
+        ("yes", _("Affected by vulnerabilities")),
+        ("no", _("No vulnerabilities found")),
+    ),
+    widget=DropDownWidget(
+        anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+    ),
+)
+
+
 class ProductFilterSet(DataspacedFilterSet):
     q = MatchOrderedSearchFilter(
         label=_("Search"),
@@ -200,18 +213,7 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
-    # TODO: Remove duplication with Package
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
-        field_name="component__affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
-        widget=DropDownWidget(
-            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
-        ),
-    )
+    is_vulnerable = is_vulnerable_filter
 
     class Meta:
         model = ProductComponent
@@ -252,18 +254,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
-    # TODO: Remove duplication with Package
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
-        field_name="package__affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
-        widget=DropDownWidget(
-            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
-        ),
-    )
+    is_vulnerable = is_vulnerable_filter
 
     @staticmethod
     def do_nothing(queryset, name, value):
