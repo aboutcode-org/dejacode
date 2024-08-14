@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -23,4 +23,5 @@ class DataspacedCommand(BaseCommand):
         try:
             self.dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(f'The Dataspace "{dataspace_name}" does not exit.')
+            raise CommandError(
+                f'The Dataspace "{dataspace_name}" does not exit.')

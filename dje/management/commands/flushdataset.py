@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -66,7 +66,8 @@ class Command(DataspacedCommand):
         for model_class in models:
             qs = get_unsecured_manager(model_class).filter(dataspace=dataspace)
             if options["verbosity"] > 1:
-                self.stdout.write(f"Deleting {qs.count()} {model_class.__name__}...")
+                self.stdout.write(
+                    f"Deleting {qs.count()} {model_class.__name__}...")
             qs.delete()
 
         # This is the case where --keep-users is NOT given

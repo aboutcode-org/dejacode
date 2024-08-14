@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -114,7 +114,8 @@ def get_license_objects(expression, licenses=None):
     """
     licensing = build_licensing(licenses)
     # note: we use the simple tokenizer since we support only keys here.
-    parsed = licensing.parse(expression, validate=False, strict=False, simple=True)
+    parsed = licensing.parse(expression, validate=False,
+                             strict=False, simple=True)
     symbols = licensing.license_symbols(parsed, unique=True, decompose=True)
     return [symbol.wrapped for symbol in symbols if isinstance(symbol, LicenseSymbolLike)]
 
@@ -272,7 +273,8 @@ class LicenseExpressionFormMixin:
         if not self.relation_fk_field:
             return {}
 
-        related_model = self._meta.model._meta.get_field(self.relation_fk_field).related_model
+        related_model = self._meta.model._meta.get_field(
+            self.relation_fk_field).related_model
         related_model_name = related_model._meta.model_name
         # Those 2 attrs are required to properly setup the license_expression_builder
         attrs = {
@@ -377,7 +379,8 @@ def validate_expression_on_relations(component):
     # has been stored as a valid expression made only of license keys.
 
     licensing = build_licensing(licenses=component.licenses.for_expression())
-    relations = chain(component.related_parents.all(), component.productcomponents.all())
+    relations = chain(component.related_parents.all(),
+                      component.productcomponents.all())
 
     errors = defaultdict(list)
     for relation in relations:
@@ -413,7 +416,8 @@ def combine_license_expressions(expressions, simplify=False):
 
 def get_unique_license_keys(license_expression):
     licensing = build_licensing()
-    parsed = licensing.parse(license_expression, validate=False, strict=False, simple=True)
+    parsed = licensing.parse(
+        license_expression, validate=False, strict=False, simple=True)
     symbols = licensing.license_symbols(parsed, unique=True, decompose=True)
     return {symbol.key for symbol in symbols}
 
@@ -432,7 +436,8 @@ def render_expression_as_html(expression, dataspace):
     show_policy = dataspace.show_usage_policy_in_user_views
     licensing = get_dataspace_licensing(dataspace)
 
-    formatted_expression = get_formatted_expression(licensing, expression, show_policy)
+    formatted_expression = get_formatted_expression(
+        licensing, expression, show_policy)
     return format_html(
         '<span class="license-expression">{}</span>',
         mark_safe(formatted_expression),

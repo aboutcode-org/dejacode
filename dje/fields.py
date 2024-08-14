@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -126,7 +126,8 @@ class SmartFileField(forms.FileField):
             raise forms.ValidationError(
                 _(
                     "File size must be under {}. Current file size is {}.".format(
-                        filesizeformat(self.max_upload_size), filesizeformat(uploaded_file.size)
+                        filesizeformat(self.max_upload_size), filesizeformat(
+                            uploaded_file.size)
                     )
                 )
             )
@@ -160,7 +161,8 @@ class SmartFileField(forms.FileField):
 
         for status, reason in scan_response.values():
             if status == "FOUND":
-                raise forms.ValidationError(_("This file is infected. Upload aborted."))
+                raise forms.ValidationError(
+                    _("This file is infected. Upload aborted."))
             elif status == "ERROR":
                 raise forms.ValidationError(_("File upload error."))
 

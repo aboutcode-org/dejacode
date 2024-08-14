@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -24,7 +24,8 @@ class Command(DataspacedCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument("username", help="Your username, for History entries.")
+        parser.add_argument(
+            "username", help="Your username, for History entries.")
         parser.add_argument(
             "--overwrite",
             action="store_true",
@@ -99,7 +100,8 @@ class Command(DataspacedCommand):
                 update_count += 1
 
                 if options["verbosity"] > 1:
-                    self.stdout.write(f"Set {package_url} from {package.download_url}")
+                    self.stdout.write(
+                        f"Set {package_url} from {package.download_url}")
 
         msg = (
             f"{update_count:,d} Package(s) updated with a Package URL in "
@@ -108,4 +110,5 @@ class Command(DataspacedCommand):
         self.stdout.write(self.style.SUCCESS(msg))
         self.stdout.write("Pre-update: " + pre_update_summary)
         self.stdout.write("Post-update: " + self.get_purl_summary(packages))
-        self.stdout.write(f"Number of errors encountered when updating Packages: " f"{error_count}")
+        self.stdout.write(
+            f"Number of errors encountered when updating Packages: " f"{error_count}")

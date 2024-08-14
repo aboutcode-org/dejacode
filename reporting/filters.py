@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -52,7 +52,8 @@ class ReportingQueryListFilter(admin.SimpleListFilter):
                 self.parameter_name: query._get_pk_val(),
             }
 
-            ordering_from_query = query.get_order_list_for_url(request, model_admin)
+            ordering_from_query = query.get_order_list_for_url(
+                request, model_admin)
             if ordering_from_query:
                 param_dict[ORDER_VAR] = ".".join(ordering_from_query)
 
@@ -127,5 +128,6 @@ class ReportFilterSet(DataspacedFilterSet):
         content_type_filter = self.filters["query__content_type"]
         content_type_filter.label = _("Object type")
         content_type_filter.extra["to_field_name"] = "model"
-        content_type_filter.extra["widget"] = DropDownAsListWidget(label="Object type")
+        content_type_filter.extra["widget"] = DropDownAsListWidget(
+            label="Object type")
         content_type_filter.field.label_from_instance = lambda obj: obj.model

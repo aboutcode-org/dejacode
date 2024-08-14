@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -36,7 +36,8 @@ class Command(BaseCommand):
         try:
             dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(f"The Dataspace {dataspace_name} does not exit.")
+            raise CommandError(
+                f"The Dataspace {dataspace_name} does not exit.")
 
         models = []
         data = [
@@ -45,14 +46,16 @@ class Command(BaseCommand):
         ]
 
         # Owners
-        license_ids = License.objects.scope(dataspace).values_list("id", flat=True)
+        license_ids = License.objects.scope(
+            dataspace).values_list("id", flat=True)
         data += list(Owner.objects.scope(dataspace).filter(license__id__in=license_ids))
         # Licenses
         models.extend(LICENSE_LIBRARY_MODELS)
         # Components
         models.extend([ComponentKeyword, ComponentStatus])
         # Products
-        models.extend([ProductStatus, ProductRelationStatus, ProductItemPurpose])
+        models.extend(
+            [ProductStatus, ProductRelationStatus, ProductItemPurpose])
         # Workflow
         models.extend([RequestTemplate, Question, Priority])
         # Reporting

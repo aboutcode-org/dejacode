@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -23,9 +23,11 @@ from reporting.models import Report
 
 class ReportSerializer(DataspacedSerializer):
     absolute_url = serializers.SerializerMethodField()
-    content_type = serializers.StringRelatedField(source="query.content_type.model")
+    content_type = serializers.StringRelatedField(
+        source="query.content_type.model")
     query = serializers.StringRelatedField(source="query.name")
-    column_template = serializers.StringRelatedField(source="column_template.name")
+    column_template = serializers.StringRelatedField(
+        source="column_template.name")
     results = serializers.SerializerMethodField()
 
     class Meta:

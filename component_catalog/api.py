@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -100,7 +100,8 @@ class LicenseChoicesExpressionMixin:
             return []
 
         all_licenses = License.objects.scope(obj.dataspace)
-        choice_licenses = get_license_objects(obj.license_choices_expression, all_licenses)
+        choice_licenses = get_license_objects(
+            obj.license_choices_expression, all_licenses)
 
         return [
             {"key": license.key, "short_name": license.short_name} for license in choice_licenses
@@ -176,7 +177,8 @@ class KeywordsField(ListField):
         user = self.context["request"].user
         dataspace = user.dataspace
 
-        qs = ComponentKeyword.objects.scope(dataspace).filter(label__in=keywords)
+        qs = ComponentKeyword.objects.scope(
+            dataspace).filter(label__in=keywords)
         existing_labels = qs.values_list("label", flat=True)
 
         for label in keywords:
@@ -190,7 +192,8 @@ class KeywordsField(ListField):
     def run_child_validation(self, data):
         result = super().run_child_validation(data)
         if result:
-            result = [value for value in result if value != ""]  # Clean empty string
+            # Clean empty string
+            result = [value for value in result if value != ""]
             self.create_missing_keywords(keywords=result)
         return result
 
@@ -251,11 +254,13 @@ class ComponentSerializer(
         many=True,
         read_only=True,
     )
-    licenses_summary = serializers.SerializerMethodField(source="get_licenses_summary")
+    licenses_summary = serializers.SerializerMethodField(
+        source="get_licenses_summary")
     license_choices_expression = serializers.SerializerMethodField(
         source="get_license_choices_expression"
     )
-    license_choices = serializers.SerializerMethodField(source="get_license_choices")
+    license_choices = serializers.SerializerMethodField(
+        source="get_license_choices")
 
     class Meta:
         model = Component
@@ -594,11 +599,13 @@ class PackageSerializer(
     keywords = KeywordsField(
         required=False,
     )
-    licenses_summary = serializers.SerializerMethodField(source="get_licenses_summary")
+    licenses_summary = serializers.SerializerMethodField(
+        source="get_licenses_summary")
     license_choices_expression = serializers.SerializerMethodField(
         source="get_license_choices_expression"
     )
-    license_choices = serializers.SerializerMethodField(source="get_license_choices")
+    license_choices = serializers.SerializerMethodField(
+        source="get_license_choices")
     usage_policy = DataspacedSlugRelatedField(
         slug_field="label",
         allow_null=True,
@@ -700,7 +707,8 @@ class PackageSerializer(
 
             package_url = url2purl.get_purl(download_url)
             if package_url:
-                collected_data.update(package_url.to_dict(encode=True, empty=""))
+                collected_data.update(
+                    package_url.to_dict(encode=True, empty=""))
 
             validated_data.update(collected_data)
 
@@ -806,7 +814,8 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
 
 def collect_create_scan(download_url, user):
     dataspace = user.dataspace
-    package_qs = Package.objects.filter(download_url=download_url, dataspace=dataspace)
+    package_qs = Package.objects.filter(
+        download_url=download_url, dataspace=dataspace)
     if package_qs.exists():
         return False
 

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -59,16 +59,21 @@ class BaseService:
 
         # Take the integration settings from the Dataspace when defined
         if dataspace_configuration:
-            self.service_url = getattr(dataspace_configuration, self.url_field_name)
-            self.service_api_key = getattr(dataspace_configuration, self.api_key_field_name)
+            self.service_url = getattr(
+                dataspace_configuration, self.url_field_name)
+            self.service_api_key = getattr(
+                dataspace_configuration, self.api_key_field_name)
 
         # Fallback on the global application settings
         if not self.service_url:
-            self.service_url = get_settings(f"{self.settings_prefix}_URL", default="")
-            self.service_api_key = get_settings(f"{self.settings_prefix}_API_KEY")
+            self.service_url = get_settings(
+                f"{self.settings_prefix}_URL", default="")
+            self.service_api_key = get_settings(
+                f"{self.settings_prefix}_API_KEY")
             # Basic Authentication only available with configuration through settings
             self.basic_auth_user = get_settings(f"{self.settings_prefix}_USER")
-            self.basic_auth_password = get_settings(f"{self.settings_prefix}_PASSWORD")
+            self.basic_auth_password = get_settings(
+                f"{self.settings_prefix}_PASSWORD")
 
         self.api_url = f'{self.service_url.rstrip("/")}/api/'
 
@@ -76,7 +81,8 @@ class BaseService:
         session = requests.Session()
 
         if self.service_api_key:
-            session.headers.update({"Authorization": f"Token {self.service_api_key}"})
+            session.headers.update(
+                {"Authorization": f"Token {self.service_api_key}"})
 
         basic_auth_enabled = self.basic_auth_user and self.basic_auth_password
         if basic_auth_enabled:

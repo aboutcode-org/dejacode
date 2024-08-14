@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -376,7 +376,8 @@ class ProductViewSet(
         """
         product = self.get_object()
 
-        form = ImportFromScanForm(user=request.user, data=request.POST, files=request.FILES)
+        form = ImportFromScanForm(
+            user=request.user, data=request.POST, files=request.FILES)
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -389,7 +390,8 @@ class ProductViewSet(
             msg = "Nothing imported."
         else:
             msg = "Imported from Scan: "
-            msg += ", ".join([f"{value} {key}" for key, value in created_counts.items()])
+            msg += ", ".join([f"{value} {key}" for key,
+                             value in created_counts.items()])
         return Response({"status": msg})
 
     @action(detail=True, methods=["post"], serializer_class=PullProjectDataSerializer)
@@ -439,7 +441,8 @@ class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSe
 
         if license_expression and related_object and related_object.license_expression:
             try:
-                expression = clean_related_expression(license_expression, related_object)
+                expression = clean_related_expression(
+                    license_expression, related_object)
             except ValidationError as e:
                 errors = {"license_expression": [e.message]}
                 raise serializers.ValidationError(errors, code="invalid")

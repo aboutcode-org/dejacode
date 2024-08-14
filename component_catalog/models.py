@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -2153,7 +2153,7 @@ class Package(
     def as_about(self, extra=None):
         """
         Return ABOUT file data as a dict.
-        https://github.com/nexB/aboutcode-toolkit/blob/develop/SPECIFICATION.rst
+        https://github.com/aboutcode-org/aboutcode-toolkit/blob/develop/SPECIFICATION.rst
 
         Optionally provided `extra` dict will be added to the returned data.
 

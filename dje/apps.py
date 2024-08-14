@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -46,4 +46,5 @@ class DejaCodeConfig(AppConfig):
 
             from dje.notification import notify_on_user_added_or_updated
 
-            post_save.connect(notify_on_user_added_or_updated, sender=get_user_model())
+            post_save.connect(notify_on_user_added_or_updated,
+                              sender=get_user_model())

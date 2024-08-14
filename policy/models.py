@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -96,7 +96,8 @@ class UsagePolicy(ColoredIconMixin, DataspacedModel):
     )
 
     class Meta:
-        unique_together = (("dataspace", "content_type", "label"), ("dataspace", "uuid"))
+        unique_together = (("dataspace", "content_type",
+                           "label"), ("dataspace", "uuid"))
         ordering = ["content_type", "label"]
         verbose_name_plural = _("usage policies")
 
@@ -182,7 +183,8 @@ class UsagePolicyMixin(models.Model):
         if license_instance.usage_policy:
             return license_instance.usage_policy.get_associated_policy_to_model(self)
 
-    policy_from_primary_license = cached_property(get_policy_from_primary_license)
+    policy_from_primary_license = cached_property(
+        get_policy_from_primary_license)
 
 
 class SetPolicyFromLicenseMixin:

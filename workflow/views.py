@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -133,7 +133,8 @@ def request_add_view(request, template_uuid):
 def request_edit_view(request, request_uuid):
     """Edit a Request."""
     qs = Request.objects.for_edit_view(request.user)
-    request_instance = get_object_or_404(qs, uuid=request_uuid, dataspace=request.user.dataspace)
+    request_instance = get_object_or_404(
+        qs, uuid=request_uuid, dataspace=request.user.dataspace)
     request_template = request_instance.request_template
 
     has_change_permission = request.user.has_perm("workflow.change_request")
@@ -171,7 +172,8 @@ def request_edit_view(request, request_uuid):
                 f"an email notification to the requester and the assignee."
             )
             extra = {"description": f"Updated: {updated_labels}."}
-            send_request_notification(request, instance, created=False, extra=extra)
+            send_request_notification(
+                request, instance, created=False, extra=extra)
 
         request_instance.events.create(
             user=request.user,
@@ -195,7 +197,8 @@ def request_edit_view(request, request_uuid):
         return redirect(request_instance)
 
     return render(
-        request, "workflow/request_form.html", {"form": form, "request_instance": request_instance}
+        request, "workflow/request_form.html", {
+            "form": form, "request_instance": request_instance}
     )
 
 
@@ -237,7 +240,8 @@ def request_details_view(request, request_uuid):
     A superuser can access everything.
     """
     qs = Request.objects.for_details_view(user=request.user)
-    request_instance = get_object_or_404(qs, uuid=request_uuid, dataspace=request.user.dataspace)
+    request_instance = get_object_or_404(
+        qs, uuid=request_uuid, dataspace=request.user.dataspace)
 
     if not request_instance.has_details_permission(request.user):
         raise Http404("No match for the given request.")
@@ -277,7 +281,8 @@ def request_details_view(request, request_uuid):
             dataspace=request_instance.dataspace,
         )
         send_request_comment_notification(request, comment)
-        messages.success(request, f"Comment for Request {request_instance} added.")
+        messages.success(
+            request, f"Comment for Request {request_instance} added.")
         return redirect(request_instance)
 
     delete_comment_uuid = request.POST.get("delete_comment_uuid")
@@ -302,7 +307,8 @@ def request_details_view(request, request_uuid):
                 event_type=RequestEvent.ATTACHMENT,
                 dataspace=request.user.dataspace,
             )
-            messages.success(request, f'Attachment "{file_instance.filename}" added.')
+            messages.success(
+                request, f'Attachment "{file_instance.filename}" added.')
             return redirect(request_instance)
         else:
             msg = "File upload error."
@@ -318,7 +324,8 @@ def request_details_view(request, request_uuid):
     attachments = []
     for attachment in request_instance.attachments.all():
         if attachment.exists():
-            attachment.can_delete = attachment.has_delete_permission(request.user)
+            attachment.can_delete = attachment.has_delete_permission(
+                request.user)
             attachments.append(attachment)
 
     comments_and_events = []
@@ -348,7 +355,8 @@ def request_details_view(request, request_uuid):
 
     content_object = request_instance.content_object
     if content_object and content_object._meta.model.__name__ == "Product":
-        context["status_summary"] = get_productrelation_review_status_summary(content_object)
+        context["status_summary"] = get_productrelation_review_status_summary(
+            content_object)
 
     request_instance.mark_all_notifications_as_read(request.user)
 

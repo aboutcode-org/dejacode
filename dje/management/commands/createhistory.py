@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -42,7 +42,8 @@ class Command(BaseCommand):
             history_count = 0
 
             for obj in model.objects.all():
-                history = History.objects.get_for_object(obj, action_flag=History.ADDITION)
+                history = History.objects.get_for_object(
+                    obj, action_flag=History.ADDITION)
 
                 if not history.exists():
                     History.log_addition(user, obj)

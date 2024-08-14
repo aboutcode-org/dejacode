@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -92,7 +92,7 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
                 "a file to use in other applications by clicking the "
                 '"Download License Policies as YAML" button. '
                 "For an example of how to use this file in an open source tool, see "
-                "https://github.com/nexB/scancode-toolkit/wiki/License-Policy-Plugin "
+                "https://github.com/aboutcode-org/scancode-toolkit/wiki/License-Policy-Plugin "
                 "for a detailed explanation."
             )
         )
@@ -152,7 +152,8 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
             "explicit_end": False,
         }
 
-        yaml_dump = yaml.safe_dump({"license_policies": licenses}, **dump_kwargs)
+        yaml_dump = yaml.safe_dump(
+            {"license_policies": licenses}, **dump_kwargs)
 
         response = HttpResponse(yaml_dump, content_type="application/x-yaml")
         response["Content-Disposition"] = 'attachment; filename="license_policies.yml"'

@@ -10471,7 +10471,7 @@
         "http://creativecommons.org/licenses/publicdomain/",
         "http://en.wikipedia.org/wiki/Public_domain",
         "http://www.linfo.org/publicdomain.html",
-        "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/public-domain.LICENSE",
+        "https://github.com/aboutcode-org/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/public-domain.LICENSE",
         "https://scancode-licensedb.aboutcode.org/public-domain"
       ]
     }

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -323,7 +323,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     @cached_property
     def all_packages(self):
         return Package.objects.filter(
-            models.Q(id__in=self.packages.all()) | models.Q(component__in=self.components.all())
+            models.Q(id__in=self.packages.all()) | models.Q(
+                component__in=self.components.all())
         ).distinct()
 
     def get_merged_descendant_ids(self):
@@ -351,7 +352,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         unique_features = set(self.get_feature_values(self.productcomponents))
         unique_features.update(self.get_feature_values(self.productpackages))
         options = format_html_join(
-            "", "<option>{}</option>", ((feature,) for feature in sorted(unique_features))
+            "", "<option>{}</option>", ((feature,)
+                                        for feature in sorted(unique_features))
         )
         return format_html('<datalist id="feature_datalist">{}</datalist>', options)
 
@@ -432,8 +434,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             other_assigned_versions = self.find_assigned_other_versions(obj)
             if len(other_assigned_versions) == 1:
                 existing_relation = other_assigned_versions[0]
-                other_version_object = getattr(existing_relation, object_model_name)
-                existing_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                other_version_object = getattr(
+                    existing_relation, object_model_name)
+                existing_relation.update(
+                    **{object_model_name: obj, "last_modified_by": user})
                 message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
                 History.log_change(user, self, message)
                 return "updated", existing_relation
@@ -444,7 +448,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             "created_by": user,
             "last_modified_by": user,
         }
-        created_relation = relationship_model.objects.create(**filters, **defaults)
+        created_relation = relationship_model.objects.create(
+            **filters, **defaults)
         History.log_addition(user, created_relation)
         History.log_change(user, self, f'Added {object_model_name} "{obj}"')
         return "created", created_relation
@@ -599,7 +604,8 @@ class ProductRelationshipMixin(
     feature = models.CharField(
         blank=True,
         max_length=70,
-        help_text=_("Use this field to group components that are used together in a product."),
+        help_text=_(
+            "Use this field to group components that are used together in a product."),
     )
 
     issue_ref = models.CharField(
@@ -776,7 +782,8 @@ class ProductComponent(ProductRelationshipMixin):
         db_index=True,
         max_length=50,
         blank=True,
-        help_text=_("The primary programming language associated with the component."),
+        help_text=_(
+            "The primary programming language associated with the component."),
     )
 
     objects = DataspacedManager.from_queryset(ProductComponentQuerySet)()
@@ -797,7 +804,8 @@ class ProductComponent(ProductRelationshipMixin):
             return str(self.component)
         if self.name or self.version:
             return f"{self.name} {self.version}"
-        return "(Component data missing)"  # a value is required for the changelist link
+        # a value is required for the changelist link
+        return "(Component data missing)"
 
     @property
     def permission_protected_fields(self):
@@ -897,7 +905,8 @@ class ProductComponentAssignedLicense(DataspacedModel):
     )
 
     class Meta:
-        unique_together = (("productcomponent", "license"), ("dataspace", "uuid"))
+        unique_together = (("productcomponent", "license"),
+                           ("dataspace", "uuid"))
         ordering = ("productcomponent__name", "license__name")
         verbose_name = _("productcomponent assigned license")
 
@@ -917,7 +926,8 @@ class ProductPackageAssignedLicense(DataspacedModel):
     )
 
     class Meta:
-        unique_together = (("productpackage", "license"), ("dataspace", "uuid"))
+        unique_together = (("productpackage", "license"),
+                           ("dataspace", "uuid"))
         ordering = ("productpackage", "license__name")
         verbose_name = _("productpackage assigned license")
 
@@ -1019,10 +1029,12 @@ class CodebaseResource(
 
     def clean(self, from_api=False):
         if self.product_component_id and self.product_component.product_id != self.product_id:
-            raise ValidationError(f"{self.product_component} is not available on {self.product}.")
+            raise ValidationError(
+                f"{self.product_component} is not available on {self.product}.")
 
         if self.product_package_id and self.product_package.product_id != self.product_id:
-            raise ValidationError(f"{self.product_package} is not available on {self.product}.")
+            raise ValidationError(
+                f"{self.product_package} is not available on {self.product}.")
 
         super().clean(from_api)
 
@@ -1064,7 +1076,8 @@ class CodebaseResourceUsage(
 
     def clean(self, from_api=False):
         if self.deployed_from_id == self.deployed_to_id:
-            raise ValidationError("A codebase resource cannot deploy to itself.")
+            raise ValidationError(
+                "A codebase resource cannot deploy to itself.")
 
 
 class ProductInventoryItem(ProductRelationshipMixin):
@@ -1198,9 +1211,11 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     """Wrap a ScanCode.io Project."""
 
     class ProjectType(models.TextChoices):
-        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
+        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _(
+            "Import from Manifest")
         LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
-        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
+        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _(
+            "Pull from ScanCode.io")
 
     class Status(models.TextChoices):
         SUBMITTED = "submitted"
@@ -1369,12 +1384,14 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
     scope = models.CharField(
         max_length=64,
         blank=True,
-        help_text=_("The scope of this dependency, how it is used in a project."),
+        help_text=_(
+            "The scope of this dependency, how it is used in a project."),
     )
     datasource_id = models.CharField(
         max_length=64,
         blank=True,
-        help_text=_("The identifier for the datafile handler used to obtain this dependency."),
+        help_text=_(
+            "The identifier for the datafile handler used to obtain this dependency."),
     )
     is_runtime = models.BooleanField(
         default=False,
@@ -1393,13 +1410,15 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
     )
     is_direct = models.BooleanField(
         default=False,
-        help_text=_("True if this is a direct, first-level dependency relationship for a package."),
+        help_text=_(
+            "True if this is a direct, first-level dependency relationship for a package."),
     )
 
     objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
 
     class Meta:
-        unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))
+        unique_together = (("product", "dependency_uid"),
+                           ("dataspace", "uuid"))
         verbose_name = "product dependency"
         verbose_name_plural = "product dependencies"
         ordering = ["dependency_uid"]

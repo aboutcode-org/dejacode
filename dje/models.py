@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -222,7 +222,8 @@ class Dataspace(models.Model):
 
     hide_empty_fields_in_component_details_view = models.BooleanField(
         default=False,
-        help_text=_("When true (checked), hide empty fields in the component details view."),
+        help_text=_(
+            "When true (checked), hide empty fields in the component details view."),
     )
 
     set_usage_policy_on_new_component_from_licenses = models.BooleanField(
@@ -240,7 +241,8 @@ class Dataspace(models.Model):
         _("Logo URL"),
         max_length=1024,
         blank=True,
-        help_text=_("URL to a Dataspace Logo. If set, it will be included in reports."),
+        help_text=_(
+            "URL to a Dataspace Logo. If set, it will be included in reports."),
     )
 
     full_name = models.CharField(
@@ -600,7 +602,8 @@ def secure_queryset_relational_fields(queryset, user):
         related_manager = fk_field.related_model._default_manager
         if is_secured(related_manager):
             queryset = queryset.filter(
-                models.Q(**{fk_field.name + "__in": related_manager.get_queryset(user)})
+                models.Q(
+                    **{fk_field.name + "__in": related_manager.get_queryset(user)})
                 | models.Q(**{fk_field.name + "__isnull": True})
             )
 
@@ -670,7 +673,8 @@ class DataspacedModel(models.Model):
         has_valid_manager = any(
             [
                 isinstance(cls._default_manager, enforced_manager),
-                issubclass(cls._default_manager._queryset_class, enforced_queryset),
+                issubclass(cls._default_manager._queryset_class,
+                           enforced_queryset),
             ]
         )
 
@@ -937,7 +941,8 @@ class DataspacedModel(models.Model):
                 (field.name, capfirst(field.verbose_name))
                 for field in cls().get_exclude_candidates_fields()
             ),
-            key=operator.itemgetter(1),  # Sorts the choices by their verbose_name
+            # Sorts the choices by their verbose_name
+            key=operator.itemgetter(1),
         )
 
     def unique_filters_for(self, target):
@@ -1071,7 +1076,8 @@ class DataspacedModel(models.Model):
 
         or_queries = []
         involved_lookup_fields = []
-        uniques_lookups = [fields for fields in self._meta.unique_together if "uuid" not in fields]
+        uniques_lookups = [
+            fields for fields in self._meta.unique_together if "uuid" not in fields]
 
         for fields in uniques_lookups:
             lookup_kwargs = {}
@@ -1090,7 +1096,8 @@ class DataspacedModel(models.Model):
         if not or_queries:
             return
 
-        qs = self.__class__._default_manager.filter(reduce(operator.or_, or_queries))
+        qs = self.__class__._default_manager.filter(
+            reduce(operator.or_, or_queries))
 
         if qs.scope(self.dataspace).exists():
             return  # Skip validation if the object already exists in my own Dataspace
@@ -1110,7 +1117,8 @@ class DataspacedModel(models.Model):
                 )
                 msg += f" {copy_link}"
                 if hasattr(reference_object, "get_absolute_url"):
-                    reference_object = reference_object.get_absolute_link(target="_blank")
+                    reference_object = reference_object.get_absolute_link(
+                        target="_blank")
             else:
                 copy_link = reference_object.get_api_copy_to_my_dataspace_url()
                 msg += (
@@ -1323,7 +1331,8 @@ class ParentChildRelationshipModel(DataspacedModel):
             return
 
         if self.parent == self.child:
-            raise ValidationError("This Object cannot be his own child or parent.")
+            raise ValidationError(
+                "This Object cannot be his own child or parent.")
 
         if self.parent.is_descendant_of(self.child):
             raise ValidationError(
@@ -1452,7 +1461,8 @@ class DejacodeUserManager(BaseUserManager, DataspacedManager.from_queryset(Dejac
         Create and saves a user with the given username, email, password
         and dataspace. Force the is_active to False.
         """
-        user = self.create_user(username, email, password, dataspace, **extra_fields)
+        user = self.create_user(username, email, password,
+                                dataspace, **extra_fields)
         user.is_active = False
         user.save(using=self._db)
         return user
@@ -1595,7 +1605,8 @@ class DejacodeUser(AbstractUser):
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Wrap the method in a task."""
-        send_mail_task.delay(subject, message, from_email, [self.email], **kwargs)
+        send_mail_task.delay(subject, message, from_email,
+                             [self.email], **kwargs)
 
     def regenerate_api_key(self):
         """
@@ -1800,7 +1811,8 @@ class History(models.Model):
 class ExternalSource(DataspacedModel):
     label = models.CharField(
         max_length=50,
-        help_text=_("A Label is a concise name of the external source as it " "is commonly known."),
+        help_text=_(
+            "A Label is a concise name of the external source as it " "is commonly known."),
     )
 
     notes = models.TextField(
@@ -1903,13 +1915,15 @@ class ExternalReference(HistoryFieldsMixin, DataspacedModel):
     external_id = models.CharField(
         max_length=500,
         blank=True,
-        help_text=_("Value of the identifier used on the source to reference the object."),
+        help_text=_(
+            "Value of the identifier used on the source to reference the object."),
     )
 
     external_url = models.URLField(
         max_length=1024,
         blank=True,
-        help_text=_("A URL to the component, or component metadata, in the external source."),
+        help_text=_(
+            "A URL to the component, or component metadata, in the external source."),
     )
 
     objects = ExternalReferenceManager()
@@ -1929,7 +1943,8 @@ class ExternalReference(HistoryFieldsMixin, DataspacedModel):
 external_references_prefetch = models.Prefetch(
     "external_references",
     queryset=(
-        ExternalReference.objects.select_related("content_type").prefetch_related("content_object")
+        ExternalReference.objects.select_related(
+            "content_type").prefetch_related("content_object")
     ),
 )
 

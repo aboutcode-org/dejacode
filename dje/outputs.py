@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -59,7 +59,8 @@ def get_spdx_extracted_licenses(spdx_packages):
     all_licenses = set()
     for entry in spdx_packages:
         if isinstance(entry, ProductRelationshipMixin):
-            all_licenses.update(entry.related_component_or_package.licenses.all())
+            all_licenses.update(
+                entry.related_component_or_package.licenses.all())
         else:
             all_licenses.update(entry.licenses.all())
 
@@ -160,7 +161,8 @@ def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
         schema_dict = json.loads(sf.read())
 
     order_from_schema = list(schema_dict.get("properties", {}).keys())
-    ordered_dict = {key: bom_as_dict.get(key) for key in order_from_schema if key in bom_as_dict}
+    ordered_dict = {key: bom_as_dict.get(
+        key) for key in order_from_schema if key in bom_as_dict}
 
     return json.dumps(ordered_dict, indent=2)
 

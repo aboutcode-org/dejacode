@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -96,7 +96,8 @@ urlpatterns = [
     *product_path("tab_dependencies", ProductTabDependenciesView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
-    *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),
+    *product_path("pull_project_data",
+                  PullProjectDataFromScanCodeIOView.as_view()),
     path(
         "<str:dataspace>/<str:name>/<str:version>/",
         ProductDetailsView.as_view(),

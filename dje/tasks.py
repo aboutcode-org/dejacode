@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -80,7 +80,8 @@ def call_management_command(name, *args, **options):
 def package_collect_data(instance_id):
     """Run Package.collect_data() as an asynchronous task."""
     Package = apps.get_model("component_catalog", "package")
-    logger.info(f"Entering package_collect_data task for Package.id={instance_id}")
+    logger.info(
+        f"Entering package_collect_data task for Package.id={instance_id}")
     package = Package.objects.get(id=instance_id)
     logger.info(f"Package Download URL: {package.download_url}")
     package.collect_data()
@@ -100,7 +101,8 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     )
 
     try:
-        user = DejacodeUser.objects.get(uuid=user_uuid, dataspace__uuid=dataspace_uuid)
+        user = DejacodeUser.objects.get(
+            uuid=user_uuid, dataspace__uuid=dataspace_uuid)
     except ObjectDoesNotExist:
         return
 
@@ -164,7 +166,8 @@ def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
     # properly saved and committed in order to avoid any race conditions.
     if runs := response.get("runs"):
         logger.info("Start the pipeline run")
-        transaction.on_commit(lambda: scancodeio.start_pipeline(run_url=runs[0]["url"]))
+        transaction.on_commit(
+            lambda: scancodeio.start_pipeline(run_url=runs[0]["url"]))
 
 
 @job("default", timeout=1200)
@@ -202,14 +205,16 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     except Exception as e:
         scancode_project.status = ScanCodeProject.Status.FAILURE
         scancode_project.append_to_log(message=str(e), save=True)
-        scancode_project.notify(verb=notification_verb, description="Import failed.")
+        scancode_project.notify(verb=notification_verb,
+                                description="Import failed.")
         return
 
     scancode_project.status = ScanCodeProject.Status.SUCCESS
 
     for object_type, values in created.items():
         object_type_plural = f"{object_type}{pluralize(values)}"
-        object_type_plural = object_type_plural.replace("dependencys", "dependencies")
+        object_type_plural = object_type_plural.replace(
+            "dependencys", "dependencies")
         msg = f"- Imported {len(values)} {object_type_plural}."
         scancode_project.append_to_log(msg)
 

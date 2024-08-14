@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -59,4 +59,5 @@ class DejaCodeLDAPBackend(LDAPBackend):
         try:
             return model.objects.get(**kwargs), False
         except model.DoesNotExist:
-            raise _LDAPUser.AuthenticationFailed("User does not exist in Django auth system")
+            raise _LDAPUser.AuthenticationFailed(
+                "User does not exist in Django auth system")

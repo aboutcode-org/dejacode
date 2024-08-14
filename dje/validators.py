@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -34,7 +34,8 @@ generic_uri_validator = validators.RegexValidator(
 
 def validate_list(value):
     if not isinstance(value, list):
-        raise ValidationError(_('Enter a valid list: ["item1", "item2"]'), code="invalid_list")
+        raise ValidationError(
+            _('Enter a valid list: ["item1", "item2"]'), code="invalid_list")
 
 
 class SpecialCharacterPasswordValidator:

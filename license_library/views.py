@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -66,8 +66,10 @@ class LicenseListView(
     include_reference_dataspace = True
     put_results_in_session = True
     table_headers = (
-        Header("name", _("License name"), help_text=LICENSE_NAME_HELP, filter="in_spdx_list"),
-        Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
+        Header("name", _("License name"),
+               help_text=LICENSE_NAME_HELP, filter="in_spdx_list"),
+        Header("usage_policy", _("Policy"),
+               filter="usage_policy", condition=include_policy),
         Header("category", _("Category"), filter="category"),
         Header(
             "category__license_type",
@@ -88,7 +90,8 @@ class LicenseListView(
     def get_queryset(self):
         # This QuerySet is not evaluated, but used in the following Prefetch().
         assigned_tags_qs = (
-            LicenseAssignedTag.objects.filter(license_tag__show_in_license_list_view=True)
+            LicenseAssignedTag.objects.filter(
+                license_tag__show_in_license_list_view=True)
             # Warning: This ordering needs to be the same as in license_tags_to_display
             .order_by("license_tag__label")
         )
@@ -138,7 +141,8 @@ class LicenseListView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        categories = LicenseCategory.objects.scope(self.dataspace).values_list("id", "text")
+        categories = LicenseCategory.objects.scope(
+            self.dataspace).values_list("id", "text")
         add_client_data(self.request, license_categories=dict(categories))
 
         context["text_search"] = self.request.GET.get("text_search", "")
@@ -279,8 +283,10 @@ class LicenseDetailsView(
             ),
             TabField("is_exception", condition=bool),
             TabField("guidance", value_func=force_escape, condition=bool),
-            TabField("guidance_url", value_func=urlize_target_blank, condition=bool),
-            TabField("reference_notes", value_func=urlize_target_blank, condition=bool),
+            TabField("guidance_url", value_func=urlize_target_blank,
+                     condition=bool),
+            TabField("reference_notes",
+                     value_func=urlize_target_blank, condition=bool),
         ]
 
         if obj.attribution_required:
@@ -290,7 +296,8 @@ class LicenseDetailsView(
                 "of the product where the licensed software is being used, or both."
             )
             tab_fields.append(
-                (_("Attribution required"), True, help_text, "includes/boolean_icon.html")
+                (_("Attribution required"), True,
+                 help_text, "includes/boolean_icon.html")
             )
 
         if obj.redistribution_required:
@@ -301,7 +308,8 @@ class LicenseDetailsView(
                 "any modifications to it."
             )
             tab_fields.append(
-                (_("Redistribution required"), True, help_text, "includes/boolean_icon.html")
+                (_("Redistribution required"), True,
+                 help_text, "includes/boolean_icon.html")
             )
 
         if obj.change_tracking_required:
@@ -311,7 +319,8 @@ class LicenseDetailsView(
                 "in the source code, the associated product documentation, or both."
             )
             tab_fields.append(
-                (_("Change tracking required"), True, help_text, "includes/boolean_icon.html")
+                (_("Change tracking required"), True,
+                 help_text, "includes/boolean_icon.html")
             )
 
         tab_fields.extend(
@@ -326,12 +335,14 @@ class LicenseDetailsView(
                 TabField("license_profile"),
                 TabField("license_style"),
                 TabField("owner", source="owner.get_absolute_link"),
-                (_("SPDX short identifier"), obj.spdx_link, ght(opts, "spdx_license_key"), None),
+                (_("SPDX short identifier"), obj.spdx_link,
+                 ght(opts, "spdx_license_key"), None),
                 TabField("keywords"),
                 TabField("standard_notice"),
                 TabField("special_obligations", value_func=force_escape),
                 TabField("publication_year"),
-                TabField("language", source="get_language_display", condition=bool),
+                TabField("language", source="get_language_display",
+                         condition=bool),
                 (_("URN"), self.object.urn_link, URN_HELP_TEXT, None),
                 TabField("dataspace"),
             ]
@@ -366,7 +377,8 @@ class LicenseDetailsView(
         if self.license_tagset:
             return {
                 "fields": [
-                    (None, self.license_tagset, None, "license_library/tabs/tab_tagset.html")
+                    (None, self.license_tagset, None,
+                     "license_library/tabs/tab_tagset.html")
                 ]
             }
 
@@ -389,7 +401,8 @@ class LicenseDetailsView(
         instance = self.object
         if instance.usage_policy_id and instance.usage_policy.guidelines:
             tab_fields = [
-                TabField("usage_policy", source="get_usage_policy_display_with_icon"),
+                TabField("usage_policy",
+                         source="get_usage_policy_display_with_icon"),
                 (
                     _("Usage policy guidelines"),
                     getattr(self.object.usage_policy, "guidelines", ""),
@@ -405,14 +418,16 @@ class LicenseDetailsView(
 
         if self.use_annotator:
             context_data["use_annotator"] = True
-            annotations_qs = self.object.annotations.order_by("range_start_offset")
+            annotations_qs = self.object.annotations.order_by(
+                "range_start_offset")
 
             add_client_data(
                 self.request,
                 license_pk=self.object.pk,
                 api_url=reverse("api_v2:api-root"),
                 # Force the QuerySet into a proper list to be handled in JavaScript.
-                annotation_pks=list(annotations_qs.values_list("pk", flat=True)),
+                annotation_pks=list(
+                    annotations_qs.values_list("pk", flat=True)),
             )
 
         return context_data

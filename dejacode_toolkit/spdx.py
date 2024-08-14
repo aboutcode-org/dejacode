@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -129,10 +129,12 @@ class CreationInfo:
         creators = []
 
         if self.person_name:
-            creators.append(f"Person: {self.person_name} ({self.person_email})")
+            creators.append(
+                f"Person: {self.person_name} ({self.person_email})")
 
         if self.organization_name:
-            creators.append(f"Organization: {self.organization_name} ({self.organization_email})")
+            creators.append(
+                f"Organization: {self.organization_name} ({self.organization_email})")
 
         if self.tool:
             creators.append(f"Tool: {self.tool}")
@@ -218,7 +220,8 @@ class ExtractedLicensingInfo:
             "seeAlsos": self.see_alsos,
         }
 
-        optional_data = {key: value for key, value in optional_data.items() if value}
+        optional_data = {key: value for key,
+                         value in optional_data.items() if value}
         return {**required_data, **optional_data}
 
 
@@ -293,7 +296,8 @@ class Package:
             "attributionTexts": self.attribution_texts,
         }
 
-        optional_data = {key: value for key, value in optional_data.items() if value}
+        optional_data = {key: value for key,
+                         value in optional_data.items() if value}
         return {**required_data, **optional_data}
 
     @staticmethod
@@ -347,7 +351,8 @@ class File:
             "attributionTexts": self.attribution_texts,
         }
 
-        optional_data = {key: value for key, value in optional_data.items() if value}
+        optional_data = {key: value for key,
+                         value in optional_data.items() if value}
         return {**required_data, **optional_data}
 
 
@@ -398,7 +403,8 @@ class Document:
     comment: str = ""
 
     files: List[File] = field(default_factory=list)
-    extracted_licenses: List[ExtractedLicensingInfo] = field(default_factory=list)
+    extracted_licenses: List[ExtractedLicensingInfo] = field(
+        default_factory=list)
     relationships: List[Relationship] = field(default_factory=list)
 
     def as_dict(self):
@@ -423,7 +429,8 @@ class Document:
             ]
 
         if self.relationships:
-            data["relationships"] = [relationship.as_dict() for relationship in self.relationships]
+            data["relationships"] = [relationship.as_dict()
+                                     for relationship in self.relationships]
 
         if self.comment:
             data["comment"] = self.comment

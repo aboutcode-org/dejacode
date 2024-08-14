@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -137,7 +137,8 @@ def check_for_primary_language_unknown(app_configs, **kwargs):
         errors.append(
             Error(
                 "Primary language unknown",
-                hint='<{} pk={}> "{}"'.format(model_class.__name__, obj.pk, obj.primary_language),
+                hint='<{} pk={}> "{}"'.format(
+                    model_class.__name__, obj.pk, obj.primary_language),
                 obj=obj,
             )
         )
@@ -176,7 +177,8 @@ def check_for_component_without_assigned_license(app_configs, **kwargs):
     model_class = Component
     dataspace = app_configs["dataspace"]
 
-    qs = model_class.objects.scope(dataspace).filter(componentassignedlicense__isnull=True)
+    qs = model_class.objects.scope(dataspace).filter(
+        componentassignedlicense__isnull=True)
 
     for obj in qs:
         errors.append(
@@ -198,7 +200,8 @@ def check_for_orphan_package(app_configs, **kwargs):
     model_class = Package
     dataspace = app_configs["dataspace"]
 
-    qs = model_class.objects.scope(dataspace).filter(componentassignedpackage__isnull=True)
+    qs = model_class.objects.scope(dataspace).filter(
+        componentassignedpackage__isnull=True)
 
     for obj in qs:
         errors.append(
@@ -246,7 +249,8 @@ def check_for_packages_with_double_slash(app_configs, **kwargs):
     model_class = Package
     dataspace = app_configs["dataspace"]
 
-    qs = model_class.objects.scope(dataspace).filter(download_url__iregex=r"^.*://.*//")
+    qs = model_class.objects.scope(dataspace).filter(
+        download_url__iregex=r"^.*://.*//")
 
     for obj in qs:
         errors.append(
@@ -268,7 +272,8 @@ def check_for_packages_with_duplicated_url(app_configs, **kwargs):
     dataspace = app_configs["dataspace"]
 
     qs = model_class.objects.scope(dataspace)
-    url_list = qs.values_list("download_url", flat=True).order_by("download_url")
+    url_list = qs.values_list(
+        "download_url", flat=True).order_by("download_url")
     duplicates = [x for x, y in Counter(url_list).items() if y > 1]
 
     errors.append(
@@ -298,7 +303,8 @@ def check_for_case_inconsistencies(app_configs, **kwargs):
                 errors.append(
                     Info(
                         "Case inconsistencies",
-                        hint='<{}> "{}"'.format(model_class.__name__, str(list(inconsistencies))),
+                        hint='<{}> "{}"'.format(
+                            model_class.__name__, str(list(inconsistencies))),
                     )
                 )
 
@@ -368,7 +374,8 @@ def check_for_license_expression_choice_inconsistencies(app_configs, **kwargs):
             except ValidationError as e:
                 errors.append(
                     Error(
-                        "License expression error. {}".format(str(e).replace("<br>", " -- ")),
+                        "License expression error. {}".format(
+                            str(e).replace("<br>", " -- ")),
                         hint="<{} dataspace={} pk={}>".format(
                             model_class.__name__, obj.dataspace, obj.pk
                         ),
@@ -399,11 +406,13 @@ def check_for_license_expression_validity(app_configs, **kwargs):
 
         for obj in qs:
             try:
-                parse_expression(obj.license_expression, licenses=licensing, validate_known=False)
+                parse_expression(obj.license_expression,
+                                 licenses=licensing, validate_known=False)
             except Exception as e:
                 errors.append(
                     Error(
-                        "License expression error. {}".format(str(e).replace("<br>", " -- ")),
+                        "License expression error. {}".format(
+                            str(e).replace("<br>", " -- ")),
                         hint="<{} dataspace={} pk={}>".format(
                             model_class.__name__, obj.dataspace, obj.pk
                         ),
@@ -442,9 +451,11 @@ def check_for_fields_value_inconsistencies(app_configs, **kwargs):
         for field_name in fields_to_check:
             if isinstance(field_name, tuple):
                 field_name, method = field_name
-                inconsistencies = {str(getattr(instance, method)()) for instance in group_list}
+                inconsistencies = {str(getattr(instance, method)())
+                                   for instance in group_list}
             else:
-                inconsistencies = {getattr(instance, field_name) for instance in group_list}
+                inconsistencies = {getattr(instance, field_name)
+                                   for instance in group_list}
 
             if len(inconsistencies) > 1:
                 msg = f"{field_name}: {list(inconsistencies)}"
@@ -503,7 +514,8 @@ def check_for_reporting_query_with_no_filters(app_configs, **kwargs):
         errors.append(
             Warning(
                 "No Query filters set",
-                hint="<{} dataspace={} pk={}>".format(model_class.__name__, obj.dataspace, obj.pk),
+                hint="<{} dataspace={} pk={}>".format(
+                    model_class.__name__, obj.dataspace, obj.pk),
                 obj=obj,
             )
         )

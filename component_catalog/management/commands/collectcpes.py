@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -60,7 +60,8 @@ class Command(DataspacedCommand):
                 cpe_names.append(cpe_name)
 
         cpes_count = len(cpe_names)
-        self.stdout.write(f"Building an index of {cpes_count} CPEs for matching...")
+        self.stdout.write(
+            f"Building an index of {cpes_count} CPEs for matching...")
         cpe_index = self.build_cpe_index(cpe_names)
 
         component_updated_count = 0
@@ -80,7 +81,8 @@ class Command(DataspacedCommand):
 
                 if version_match:
                     component_updated_count += 1
-                    Component.objects.filter(id=component.id).update(cpe=version_match)
+                    Component.objects.filter(
+                        id=component.id).update(cpe=version_match)
 
         msg = f"{component_updated_count} Component(s) updated."
         self.stdout.write(self.style.SUCCESS(msg))

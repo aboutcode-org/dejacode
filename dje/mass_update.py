@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -98,7 +98,8 @@ class BaseMassUpdateForm(ModelForm):
                     self.cleaned_data[name] = field.clean(raw_value)
                     # Field attribute clean method, only if enabled
                     if hasattr(self, f"clean_{name}"):
-                        self.cleaned_data[name] = getattr(self, f"clean_{name}")()
+                        self.cleaned_data[name] = getattr(
+                            self, f"clean_{name}")()
             except ValidationError as e:
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:
@@ -149,7 +150,8 @@ class DejacodeMassUpdateForm(BaseMassUpdateForm):
 
         form_field = self.fields[field.name]
         content_type = ContentType.objects.get_for_model(self._meta.model)
-        form_field.queryset = form_field.queryset.filter(content_type=content_type)
+        form_field.queryset = form_field.queryset.filter(
+            content_type=content_type)
 
 
 def not_required(field, **kwargs):
@@ -169,21 +171,25 @@ def mass_update_action(modeladmin, request, queryset):
     preserved_filters = modeladmin.get_preserved_filters(request)
 
     # Allows to specified a custom mass update Form in the ModelAdmin
-    mass_update_form = getattr(modeladmin, "mass_update_form", BaseMassUpdateForm)
+    mass_update_form = getattr(
+        modeladmin, "mass_update_form", BaseMassUpdateForm)
     MassUpdateForm = modelform_factory(
         modeladmin.model,
         form=mass_update_form,
         exclude=get_protected_fields(modeladmin.model, request.user),
         formfield_callback=not_required,
     )
-    MassUpdateForm.admin_site = modeladmin.admin_site  # required by the ForeignKeyRawIdWidget
+    # required by the ForeignKeyRawIdWidget
+    MassUpdateForm.admin_site = modeladmin.admin_site
 
     if "apply" in request.POST:
         form = MassUpdateForm(request.POST, dataspace=dataspace)
         if form.is_valid():
-            changelist_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
+            changelist_url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_changelist")
             redirect_url = add_preserved_filters(
-                {"preserved_filters": preserved_filters, "opts": opts}, changelist_url
+                {"preserved_filters": preserved_filters,
+                    "opts": opts}, changelist_url
             )
 
             updated = 0
@@ -200,7 +206,8 @@ def mass_update_action(modeladmin, request, queryset):
                         field_object.many_to_many
                         and not field_object.remote_field.through._meta.auto_created
                     ):
-                        set_intermediate_explicit_m2m(record, field_object, value)
+                        set_intermediate_explicit_m2m(
+                            record, field_object, value)
                     else:
                         setattr(record, field_name, value)
                 # This have no impact if the model does not declare this field.
@@ -220,7 +227,8 @@ def mass_update_action(modeladmin, request, queryset):
                 messages.info(request, _(f"Updated {updated} records"))
 
             if errors:
-                messages.error(request, _(f'{len(errors)} error(s): {", ".join(errors)}'))
+                messages.error(request, _(
+                    f'{len(errors)} error(s): {", ".join(errors)}'))
 
             action_end.send(
                 sender=modeladmin.model,
@@ -238,7 +246,8 @@ def mass_update_action(modeladmin, request, queryset):
         }
         form = MassUpdateForm(initial=initial, dataspace=dataspace)
 
-    adminform = AdminForm(form, modeladmin.get_fieldsets(request), {}, [], model_admin=modeladmin)
+    adminform = AdminForm(form, modeladmin.get_fieldsets(
+        request), {}, [], model_admin=modeladmin)
 
     with suppress(AttributeError):
         form.extra_init(request, modeladmin)

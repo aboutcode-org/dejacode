@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -338,7 +338,8 @@ class LicenseAnnotationSerializer(DataspacedSerializer):
             # If the tag is not valid, it's ignored
             with suppress(LicenseAssignedTag.DoesNotExist):
                 license_assigned_tag = LicenseAssignedTag.objects.get(
-                    license_tag__label=data["tags"][0],  # We only support 1 tag per Annotation
+                    # We only support 1 tag per Annotation
+                    license_tag__label=data["tags"][0],
                     license__id=data["license"],
                 )
                 ret["assigned_tag_id"] = license_assigned_tag.id

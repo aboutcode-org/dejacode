@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -56,7 +56,8 @@ class FormSetMixin(ContextMixin):
     def get_success_url(self):
         """Return the URL to redirect to after processing a valid formset."""
         if not self.success_url:
-            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
         return str(self.success_url)  # success_url may be lazy
 
     def formset_valid(self, formset):

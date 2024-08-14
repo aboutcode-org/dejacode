@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -165,10 +165,12 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         super().__init__(*args, **kwargs)
 
         self.filters["review_status"].extra["to_field_name"] = "label"
-        self.filters["review_status"].extra["widget"] = DropDownWidget(anchor=self.anchor)
+        self.filters["review_status"].extra["widget"] = DropDownWidget(
+            anchor=self.anchor)
 
         self.filters["purpose"].extra["to_field_name"] = "label"
-        self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
+        self.filters["purpose"].extra["widget"] = DropDownWidget(
+            anchor=self.anchor)
 
         self.filters["is_modified"].extra["widget"] = DropDownWidget(
             anchor=self.anchor, right_align=True
