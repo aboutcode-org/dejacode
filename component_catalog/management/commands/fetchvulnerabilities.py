@@ -68,7 +68,7 @@ def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
                 if not vulnerability:
                     vulnerability = Vulnerability.create_from_data(
                         dataspace=dataspace,
-                        data=vulnerability,
+                        data=vulnerability_data,
                     )
                     created_vulnerabilities += 1
                 vulnerability.add_affected_packages(affected_packages)
@@ -85,7 +85,7 @@ class Command(DataspacedCommand):
         parser.add_argument(
             "--batch-size",
             type=int,
-            default=100,
+            default=50,
             help="Specifies the number of objects per requests to the VulnerableCode service",
         )
         parser.add_argument(
