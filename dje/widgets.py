@@ -29,7 +29,9 @@ class DropDownWidget(LinkWidget):
     </div>
     """
 
-    def __init__(self, attrs=None, choices=(), anchor=None, right_align=False, label=None, link_content=None):
+    def __init__(
+        self, attrs=None, choices=(), anchor=None, right_align=False, label=None, link_content=None
+    ):
         self.anchor = anchor
         self.right_align = right_align
         self.label = label

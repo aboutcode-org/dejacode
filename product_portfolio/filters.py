@@ -209,9 +209,7 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             ("no", _("No vulnerabilities found")),
         ),
         widget=DropDownWidget(
-            anchor="#inventory",
-            right_align=True,
-            link_content='<i class="fas fa-bug"></i>'
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
 
@@ -263,9 +261,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("no", _("No vulnerabilities found")),
         ),
         widget=DropDownWidget(
-            anchor="#inventory",
-            right_align=True,
-            link_content='<i class="fas fa-bug"></i>'
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
 

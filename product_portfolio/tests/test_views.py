@@ -28,6 +28,7 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
+from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
@@ -83,6 +84,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        self.vulnerability1 = make_vulnerability(
+            self.dataspace,
+            vulnerability_id="VCID-0000-0001",
+            affected_packages=[self.package1],
+        )
 
     @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")
     def test_product_portfolio_security_detail_view_no_cross_dataspace_access(self):
@@ -524,31 +530,21 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerable_purls")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_product_detail_view_inventory_tab_display_vulnerabilities(
-        self, mock_is_configured, mock_vulnerable_purls
-    ):
-        purl = "pkg:pypi/django@2.1"
-        mock_is_configured.return_value = True
-
-        self.package1.set_package_url(purl)
-        self.package1.save()
+    def test_product_detail_view_inventory_tab_display_vulnerabilities(self):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-
-        self.dataspace.enable_vulnerablecodedb_access = True
-        self.dataspace.save()
-
-        mock_vulnerable_purls.return_value = [purl]
-
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
 
-        expected = '<i class="fas fa-bug vulnerability"></i></a>'
-        self.assertContains(response, expected)
+        expected = f"""
+        <a href="{self.package1.details_url}#vulnerabilities" class="vulnerability" 
+           data-bs-toggle="tooltip" title="Vulnerabilities">
+          <i class="fas fa-bug"></i>1
+        </a>
+        """
+        self.assertContains(response, expected, html=True)
 
     def test_product_portfolio_detail_view_feature_field_grouping_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")

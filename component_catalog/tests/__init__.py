@@ -8,6 +8,7 @@
 
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import Vulnerability
 
 
 def make_package(dataspace, package_url=None, **data):
@@ -23,3 +24,17 @@ def make_component(dataspace, **data):
         dataspace=dataspace,
         **data,
     )
+
+
+def make_vulnerability(dataspace, affected_packages=None, affected_components=None, **data):
+    vulnerability = Vulnerability.objects.create(
+        dataspace=dataspace,
+        **data,
+    )
+
+    if affected_packages:
+        vulnerability.add_affected_packages(affected_packages)
+    if affected_components:
+        vulnerability.add_affected_components(affected_components)
+
+    return vulnerability
