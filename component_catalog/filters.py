@@ -93,7 +93,7 @@ class ComponentFilterSet(DataspacedFilterSet):
             ("yes", _("Affected by vulnerabilities")),
             ("no", _("No vulnerabilities found")),
         ),
-        widget=DropDownRightWidget,
+        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
 
     class Meta:
@@ -236,7 +236,7 @@ class PackageFilterSet(DataspacedFilterSet):
             ("yes", _("Affected by vulnerabilities")),
             ("no", _("No vulnerabilities found")),
         ),
-        widget=DropDownRightWidget,
+        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
 
     class Meta:
