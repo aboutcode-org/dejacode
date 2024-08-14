@@ -779,7 +779,7 @@ class DataspacedModel(models.Model):
 
         if updated_fields:
             self.last_modified_by = user
-            self.save(update_fields=updated_fields)
+            self.save(update_fields=[*updated_fields, "last_modified_by"])
 
         return updated_fields
 

@@ -3062,37 +3062,7 @@ class PackageUserViewsTestCase(TestCase):
             ),
         )
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerabilities_by_purl")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_package_details_view_tab_vulnerabilities(
-        self, mock_is_configured, mock_get_vulnerabilities_by_purl
-    ):
-        purl = "pkg:pypi/django@2.1"
-        mock_is_configured.return_value = True
-
-        self.package1.set_package_url(purl)
-        self.package1.save()
-
-        self.dataspace.enable_vulnerablecodedb_access = True
-        self.dataspace.save()
-
-        mock_get_vulnerabilities_by_purl.return_value = [
-            {
-                "purl": "pkg:pypi/django@2.1",
-                "affected_by_vulnerabilities": [
-                    {
-                        "summary": "SQL Injection",
-                        "references": [
-                            {
-                                "reference_id": "CVE-2022-23305",
-                                "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23305",
-                            }
-                        ],
-                    },
-                ],
-            }
-        ]
-
+    def test_package_details_view_tab_vulnerabilities(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(self.package1.details_url)
 
@@ -3103,12 +3073,7 @@ class PackageUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        expected = (
-            '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
-            "CVE-2022-23305"
-            "</a>"
-        )
-        self.assertContains(response, expected)
+        self.assertContains(response, self.vulnerability1.vcid)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])

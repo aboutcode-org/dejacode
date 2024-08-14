@@ -2546,7 +2546,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         vulnerablity1 = Vulnerability.create_from_data(
-            user=self.user, data=vulnerablity_data, affected_packages=[package1]
+            dataspace=self.user.dataspace, data=vulnerablity_data, affected_packages=[package1]
         )
 
         self.assertEqual(package1, vulnerablity1.affected_packages.get())
