@@ -23,7 +23,8 @@
     "enable_package_scanning": false,
     "update_packages_from_scan": false,
     "enable_purldb_access": false,
-    "enable_vulnerablecodedb_access": false
+    "enable_vulnerablecodedb_access": false,
+    "vulnerabilities_updated_at": null
   }
 },
 {

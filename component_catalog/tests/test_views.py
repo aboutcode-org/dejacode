@@ -1161,7 +1161,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(16):
             self.client.get(reverse("component_catalog:package_list"))
 
     def test_package_views_urls(self):
@@ -1271,7 +1271,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(27):
+        with self.assertNumQueries(29):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -3955,7 +3955,7 @@ class ComponentListViewTestCase(TestCase):
 
     def test_component_catalog_list_view_num_queries(self):
         self.client.login(username="nexb_user", password="t3st")
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(17):
             self.client.get(reverse("component_catalog:component_list"))
 
     def test_component_catalog_list_view_default(self):

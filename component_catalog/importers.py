@@ -182,6 +182,7 @@ class ComponentImportForm(
             "packages",
             "completion_level",
             "request_count",
+            "affected_by_vulnerabilities",
             # JSONField not supported
             "dependencies",
         )
@@ -261,6 +262,7 @@ class PackageImportForm(
             "file_references",
             "request_count",
             "parties",
+            "affected_by_vulnerabilities",
         ]
 
     def __init__(self, *args, **kwargs):
