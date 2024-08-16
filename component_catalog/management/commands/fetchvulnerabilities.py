@@ -17,7 +17,7 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
 from dje.utils import chunked_queryset
 
-# TODO: Retry failures
+# TODO: Retry failures -> log those
 # ERROR VulnerableCode [Exception] HTTPSConnectionPool(host='public.vulnerablecode.io',
 # port=443): Read timed out. (read timeout=10)
 

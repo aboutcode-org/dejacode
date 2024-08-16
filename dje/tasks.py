@@ -251,6 +251,7 @@ def update_vulnerabilies():
         scheduler.cancel(job)
     """
     Dataspace = apps.get_model("dje", "Dataspace")
-    dataspace = Dataspace.objects.get(name="nexB")
-    dataspace.vulnerabilities_updated_at = timezone.now()
-    dataspace.save(update_fields=["vulnerabilities_updated_at"])
+    dataspace_qs = Dataspace.objects.filter(enable_vulnerablecodedb_access=True)
+    for dataspace in dataspace_qs:
+        dataspace.vulnerabilities_updated_at = timezone.now()
+        dataspace.save(update_fields=["vulnerabilities_updated_at"])
