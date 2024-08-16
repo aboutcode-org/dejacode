@@ -3,7 +3,7 @@ DejaCode
 
 DejaCode is a complete enterprise-level application to automate open source license
 compliance and ensure software supply chain integrity, powered by
-`ScanCode <https://github.com/nexB/scancode-toolkit>`_,
+`ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
 the industry-leading code scanner.
 
 - Run scans and track all the open source and third-party products and components used
@@ -30,7 +30,7 @@ Getting started
 The DejaCode documentation is available here: https://dejacode.readthedocs.io/
 
 If you have questions please ask them in
-`Discussions <https://github.com/nexB/dejacode/discussions>`_.
+`Discussions <https://github.com/aboutcode-org/dejacode/discussions>`_.
 
 If you want to contribute to DejaCode, start with our
 `Contributing <https://dejacode.readthedocs.io/en/latest/contributing.html>`_ page.
@@ -75,8 +75,8 @@ You can learn more about this option by contacting us at
 https://www.nexb.com/contact-us/
 
 
-.. |ci-tests| image:: https://github.com/nexB/dejacode/actions/workflows/ci.yml/badge.svg?branch=main
-    :target: https://github.com/nexB/dejacode/actions/workflows/ci.yml
+.. |ci-tests| image:: https://github.com/aboutcode-org/dejacode/actions/workflows/ci.yml/badge.svg?branch=main
+    :target: https://github.com/aboutcode-org/dejacode/actions/workflows/ci.yml
     :alt: CI Tests Status
 
 .. |docs-rtd| image:: https://readthedocs.org/projects/dejacode/badge/?version=latest
