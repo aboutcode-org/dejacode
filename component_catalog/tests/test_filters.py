@@ -19,6 +19,7 @@ from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
+from component_catalog.tests import make_vulnerability
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -199,6 +200,22 @@ class ComponentFilterSetTest(TestCase):
             [("Python", "Python")], list(filterset.filters["primary_language"].field.choices)
         )
 
+    def test_component_filterset_is_vulnerable_filter(self):
+        component1 = make_component(self.dataspace, name="component1", is_vulnerable=True)
+        # make_vulnerability(self.dataspace, affected_components=[component1])
+        self.assertTrue(component1.is_vulnerable)
+
+        filterset = ComponentFilterSet(dataspace=self.dataspace)
+        self.assertQuerySetEqual(filterset.qs, [component1])
+
+        data = {"is_vulnerable": "yes"}
+        filterset = ComponentFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [component1])
+
+        data = {"is_vulnerable": "no"}
+        filterset = ComponentFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [])
+
 
 class ComponentFilterSearchTestCase(TestCase):
     testfiles_location = join(dirname(__file__), "testfiles")
@@ -363,3 +380,18 @@ class PackageFilterSearchTestCase(TestCase):
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         expected = ["pkg:pypi/django@4.0", "pkg:pypi/django@5.0"]
         self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
+
+    def test_package_filterset_is_vulnerable_filter(self):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0", is_vulnerable=True)
+        self.assertTrue(package1.is_vulnerable)
+
+        filterset = PackageFilterSet(dataspace=self.dataspace)
+        self.assertIn(package1, filterset.qs)
+
+        data = {"is_vulnerable": "yes"}
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [package1])
+
+        data = {"is_vulnerable": "no"}
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertNotIn(package1, filterset.qs)
