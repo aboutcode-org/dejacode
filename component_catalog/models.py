@@ -137,7 +137,7 @@ class VulnerabilityQuerySetMixin:
             vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
         )
 
-    def with_vulnerabilties(self):
+    def vulnerable(self):
         """Return vulnerable Packages."""
         return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
@@ -2634,6 +2634,20 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     @property
     def vcid(self):
         return self.vulnerability_id
+
+    def add_affected(self, instances):
+        """
+        Assign the ``instances`` (Package or Component) as affected to this
+        vulnerability.
+        """
+        if not isinstance(instances, list):
+            instances = [instances]
+
+        for instance in instances:
+            if isinstance(instance, Package):
+                self.affected_packages.add(instance)
+            if isinstance(instance, Component):
+                self.affected_components.add(instance)
 
     def add_affected_packages(self, packages):
         """Assign the ``packages`` as affected to this vulnerability."""

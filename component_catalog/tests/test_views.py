@@ -1038,10 +1038,7 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, expected, html=True)
 
     def test_component_details_view_tab_vulnerabilities(self):
-        vulnerability1 = make_vulnerability(
-            self.nexb_dataspace,
-            affected_components=[self.component1],
-        )
+        vulnerability1 = make_vulnerability(self.nexb_dataspace, affecting=self.component1)
 
         self.client.login(username="nexb_user", password="t3st")
         response = self.client.get(self.component1.details_url)
@@ -1120,10 +1117,7 @@ class PackageUserViewsTestCase(TestCase):
         self.package1.save()
         self.package1_tab_scan_url = self.package1.get_url("tab_scan")
 
-        self.vulnerability1 = make_vulnerability(
-            self.dataspace,
-            affected_packages=[self.package1],
-        )
+        self.vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=self.package1, dataspace=self.dataspace
         )

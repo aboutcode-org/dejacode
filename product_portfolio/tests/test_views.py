@@ -28,6 +28,7 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
@@ -83,11 +84,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             name="Component1", version="1.0", dataspace=self.dataspace
         )
 
-        self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        self.vulnerability1 = make_vulnerability(
-            self.dataspace,
-            affected_packages=[self.package1],
-        )
+        self.package1 = make_package(self.dataspace, filename="package1")
+        self.vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
 
     @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")
     def test_product_portfolio_security_detail_view_no_cross_dataspace_access(self):

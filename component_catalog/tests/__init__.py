@@ -21,7 +21,7 @@ def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
     package.save()
 
     if is_vulnerable:
-        make_vulnerability(dataspace, affected_packages=[package])
+        make_vulnerability(dataspace, affecting=package)
 
     return package
 
@@ -34,12 +34,12 @@ def make_component(dataspace, is_vulnerable=False, **data):
     )
 
     if is_vulnerable:
-        make_vulnerability(dataspace, affected_components=[component])
+        make_vulnerability(dataspace, affecting=component)
 
     return component
 
 
-def make_vulnerability(dataspace, affected_packages=None, affected_components=None, **data):
+def make_vulnerability(dataspace, affecting=None, **data):
     """Create a vulnerability for test purposes."""
     if "vulnerability_id" not in data:
         data["vulnerability_id"] = f"VCID-0000-{random.randint(1, 9999):04}"
@@ -49,9 +49,7 @@ def make_vulnerability(dataspace, affected_packages=None, affected_components=No
         **data,
     )
 
-    if affected_packages:
-        vulnerability.add_affected_packages(affected_packages)
-    if affected_components:
-        vulnerability.add_affected_components(affected_components)
+    if affecting:
+        vulnerability.add_affected(affecting)
 
     return vulnerability

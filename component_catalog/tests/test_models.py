@@ -37,7 +37,8 @@ from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
-from component_catalog.models import Vulnerability
+from component_catalog.tests import make_package
+from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import download
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
@@ -2523,31 +2524,19 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_url)
 
+    def test_package_model_vulnerability_queryset_mixin(self):
+        package1 = make_package(self.dataspace, filename="package1", is_vulnerable=True)
+        package2 = make_package(self.dataspace, filename="package2")
+
+        qs = Package.objects.with_vulnerability_count()
+        self.assertEqual(1, qs.get(pk=package1.pk).vulnerability_count)
+        self.assertEqual(0, qs.get(pk=package2.pk).vulnerability_count)
+
+        qs = Package.objects.vulnerable()
+        self.assertQuerySetEqual(qs, [package1])
+
     def test_vulnerability_model_affected_packages_m2m(self):
-        package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
-        vulnerablity_data = {
-            "vulnerability_id": "VCID-q4q6-yfng-aaag",
-            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
-            "aliases": ["CVE-2024-27351", "GHSA-vm8q-m57g-pff3", "PYSEC-2024-47"],
-            "references": [
-                {
-                    "reference_url": "https://access.redhat.com/hydra/rest/"
-                    "securitydata/cve/CVE-2024-27351.json",
-                    "reference_id": "",
-                    "scores": [
-                        {
-                            "value": "7.5",
-                            "scoring_system": "cvssv3",
-                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                        }
-                    ],
-                },
-            ],
-        }
-
-        vulnerablity1 = Vulnerability.create_from_data(
-            dataspace=self.user.dataspace, data=vulnerablity_data, affected_packages=[package1]
-        )
-
+        package1 = make_package(self.dataspace, filename="package")
+        vulnerablity1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
         self.assertEqual(package1, vulnerablity1.affected_packages.get())
         self.assertEqual(vulnerablity1, package1.affected_by_vulnerabilities.get())
