@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -36,10 +36,13 @@ class OwnerAdminViewsTestCase(TestCase):
             "other_user", "test2@test.com", "t3st", self.dataspace2
         )
 
-        self.dataspace_target = Dataspace.objects.create(name="target_dataspace")
+        self.dataspace_target = Dataspace.objects.create(
+            name="target_dataspace")
 
-        self.owner1 = Owner.objects.create(name="org1", dataspace=self.dataspace1)
-        self.owner2 = Owner.objects.create(name="org2", dataspace=self.dataspace1)
+        self.owner1 = Owner.objects.create(
+            name="org1", dataspace=self.dataspace1)
+        self.owner2 = Owner.objects.create(
+            name="org2", dataspace=self.dataspace1)
 
         self.person1 = Owner.objects.create(
             name="person1", type="Person", dataspace=self.dataspace1
@@ -118,16 +121,20 @@ class OwnerAdminViewsTestCase(TestCase):
 
         # Making sure each field was copied along
         self.assertEqual(oracle_in_dataspace1.name, oracle_in_dataspace2.name)
-        self.assertEqual(oracle_in_dataspace1.contact_info, oracle_in_dataspace2.contact_info)
-        self.assertEqual(oracle_in_dataspace1.notes, oracle_in_dataspace2.notes)
-        self.assertEqual(oracle_in_dataspace1.homepage_url, oracle_in_dataspace2.homepage_url)
+        self.assertEqual(oracle_in_dataspace1.contact_info,
+                         oracle_in_dataspace2.contact_info)
+        self.assertEqual(oracle_in_dataspace1.notes,
+                         oracle_in_dataspace2.notes)
+        self.assertEqual(oracle_in_dataspace1.homepage_url,
+                         oracle_in_dataspace2.homepage_url)
 
         # Let's change some data on oracle_in_dataspace1
         oracle_in_dataspace1.notes = "New Notes"
         oracle_in_dataspace1.save()
 
         # Copy again with update
-        copy_object(oracle_in_dataspace1, self.dataspace2, self.user, update=True)
+        copy_object(oracle_in_dataspace1, self.dataspace2,
+                    self.user, update=True)
 
         # Refresh the both instances
         oracle_in_dataspace1 = Owner.objects.get(
@@ -138,11 +145,13 @@ class OwnerAdminViewsTestCase(TestCase):
         )
 
         # Making sure the notes were updated
-        self.assertEqual(oracle_in_dataspace1.notes, oracle_in_dataspace2.notes)
+        self.assertEqual(oracle_in_dataspace1.notes,
+                         oracle_in_dataspace2.notes)
 
     def test_copy_owner_with_m2m(self):
         owner_count = Owner.objects.count()
-        copied_object = copy_object(self.owner1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.owner1, self.dataspace_target, self.user)
 
         # Only self.owner1 and its relation was copied
         # We do copy child owner m2m only, not parents.
@@ -155,7 +164,8 @@ class OwnerAdminViewsTestCase(TestCase):
             self.assertTrue(m2m_obj.end_date)
             self.assertTrue(m2m_obj.notes)
 
-        copied_object2 = copy_object(self.owner2, self.dataspace_target, self.user)
+        copied_object2 = copy_object(
+            self.owner2, self.dataspace_target, self.user)
 
         self.assertEqual(owner_count + 4, Owner.objects.count())
         history = History.objects.get_for_object(copied_object2).get()
@@ -190,10 +200,13 @@ class OwnerAdminViewsTestCase(TestCase):
         error2 = "<li>Owner with this Dataspace and Name already exists.</li>"
         self.assertContains(response, error1)
         self.assertContains(response, error2)
-        expected = {NON_FIELD_ERRORS: ["Owner with this Dataspace and Name already exists."]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        expected = {NON_FIELD_ERRORS: [
+            "Owner with this Dataspace and Name already exists."]}
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
-        alternate_owner = Owner.objects.create(name="other_owner", dataspace=self.dataspace2)
+        alternate_owner = Owner.objects.create(
+            name="other_owner", dataspace=self.dataspace2)
         # Edit an Owner that belongs to another Dataspace
         # Note that the Dataspace of test user needs to be the Reference
         url = alternate_owner.get_admin_url()
@@ -210,13 +223,15 @@ class OwnerAdminViewsTestCase(TestCase):
         self.assertContains(response, dataspace_readonly)
 
         # Creating a new Owner in Dataspace2
-        new_owner2 = Owner.objects.create(name="AAA", dataspace=self.dataspace2)
+        new_owner2 = Owner.objects.create(
+            name="AAA", dataspace=self.dataspace2)
         data["name"] = new_owner2.name
         # Trying to update with a name that already exists in Dataspace2
         response = self.client.post(url, data)
         self.assertContains(response, error1)
         self.assertContains(response, error2)
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_owner_admin_form_clean_whitespace(self):
         self.client.login(username="test", password="t3st")
@@ -274,7 +289,8 @@ class OwnerAdminViewsTestCase(TestCase):
         org = Owner.objects.create(name="SomeOrg", dataspace=self.dataspace1)
         self.client.login(username="test", password="t3st")
         url = reverse("admin:organization_owner_changelist")
-        data = {"_selected_action": org.id, "action": "delete_selected", "select_across": 0}
+        data = {"_selected_action": org.id,
+                "action": "delete_selected", "select_across": 0}
 
         response = self.client.post(url, data)
         self.assertContains(response, "<h2>Are you sure you want to delete")
@@ -325,7 +341,8 @@ class OwnerAdminViewsTestCase(TestCase):
         self.client.login(username="test", password="t3st")
         url = reverse("admin:organization_owner_changelist")
         response = self.client.get(url)
-        license_link = "<li>{}</li>".format(license1.get_admin_link(target="_blank"))
+        license_link = "<li>{}</li>".format(
+            license1.get_admin_link(target="_blank"))
         self.assertContains(response, license_link)
 
         from component_catalog.models import Component
@@ -334,7 +351,8 @@ class OwnerAdminViewsTestCase(TestCase):
             name="Component1", owner=self.owner1, dataspace=self.owner1.dataspace
         )
         response = self.client.get(url)
-        component_link = "<li>{}</li>".format(component1.get_admin_link(target="_blank"))
+        component_link = "<li>{}</li>".format(
+            component1.get_admin_link(target="_blank"))
         self.assertContains(response, component_link)
 
     def test_dataspace_readonly_field_value_on_addition(self):
@@ -464,10 +482,13 @@ class SubownerTestCase(TestCase):
         )
 
         self.dataspace2 = Dataspace.objects.create(name="TestOrg")
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.dataspace1)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.dataspace1)
 
-        self.owner1 = Owner.objects.create(name="org1", dataspace=self.dataspace1)
-        self.owner2 = Owner.objects.create(name="org2", dataspace=self.dataspace1)
+        self.owner1 = Owner.objects.create(
+            name="org1", dataspace=self.dataspace1)
+        self.owner2 = Owner.objects.create(
+            name="org2", dataspace=self.dataspace1)
 
         self.person1 = Owner.objects.create(
             name="person1", type="Person", dataspace=self.dataspace1
@@ -507,7 +528,8 @@ class SubownerTestCase(TestCase):
             dataspace=self.owner1.dataspace,
         )
 
-        self.dataspace_target = Dataspace.objects.create(name="target_dataspace")
+        self.dataspace_target = Dataspace.objects.create(
+            name="target_dataspace")
 
     def test_copy_owner_type_person_common(self):
         person = Owner.objects.create(
@@ -557,12 +579,14 @@ class SubownerTestCase(TestCase):
             "dje-externalreference-content_type-object_id-INITIAL_FORMS": 0,
         }
         response = self.client.post(url, params)
-        self.assertContains(response, "The Start date must be older than the End date.")
+        self.assertContains(
+            response, "The Start date must be older than the End date.")
 
     def test_owner_copy_with_subowner_m2m(self):
         # Note that the Owner copy is copying the children Subowner only.
         owner_count = Owner.objects.count()
-        copied_object = copy_object(self.owner1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.owner1, self.dataspace_target, self.user)
 
         self.assertEqual(owner_count + 3, Owner.objects.count())
 
@@ -577,7 +601,8 @@ class SubownerTestCase(TestCase):
         owner2 = Owner.objects.create(name="o2", dataspace=self.dataspace2)
         self.assertNotEqual(owner1.dataspace, owner2.dataspace)
 
-        subowner = Subowner(parent=owner1, child=owner2, dataspace=owner1.dataspace)
+        subowner = Subowner(parent=owner1, child=owner2,
+                            dataspace=owner1.dataspace)
         with self.assertRaises(ValueError):
             subowner.save()
 

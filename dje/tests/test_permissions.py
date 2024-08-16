@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -146,7 +146,8 @@ class DejaCodePermissionTestCase(TestCase):
         }
 
         tabsets = get_all_tabsets()
-        tabs = {model_name: list(tabset.keys()) for model_name, tabset in tabsets.items()}
+        tabs = {model_name: list(tabset.keys())
+                for model_name, tabset in tabsets.items()}
         self.assertEqual(expected, tabs)
 
     def test_permissions_get_tabset_for_model(self):
@@ -223,7 +224,8 @@ class DejaCodePermissionTestCase(TestCase):
         self.assertEqual([None], get_authorized_tabs(Owner, self.basic_user))
 
         self.basic_user.groups.add(group1)
-        self.assertEqual(["licenses"], get_authorized_tabs(Owner, self.basic_user))
+        self.assertEqual(["licenses"], get_authorized_tabs(
+            Owner, self.basic_user))
 
         self.basic_user.groups.add(Group.objects.create(name="Group2"))
         configuration.tab_permissions = {
@@ -232,7 +234,8 @@ class DejaCodePermissionTestCase(TestCase):
         }
         configuration.save()
         self.assertEqual(
-            sorted(["components", "licenses"]), sorted(get_authorized_tabs(Owner, self.basic_user))
+            sorted(["components", "licenses"]), sorted(
+                get_authorized_tabs(Owner, self.basic_user))
         )
 
         # Superuser users see all the tabs

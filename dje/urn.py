@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -131,7 +131,8 @@ def parse(urn):
     segments = urn_parts[3:]
     keys = URN_SCHEMAS[object_name]
     if len(keys) != len(segments):
-        raise URNValidationError(f'Invalid number of segments in URN: "{urn}".')
+        raise URNValidationError(
+            f'Invalid number of segments in URN: "{urn}".')
 
     fields = dict(zip(keys, segments))
     return object_name, fields

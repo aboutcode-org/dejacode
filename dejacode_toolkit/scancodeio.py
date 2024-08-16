@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -63,10 +63,12 @@ class ScanCodeIO(BaseService):
             "execute_now": True,
         }
 
-        webhook_url = get_webhook_url("notifications:send_scan_notification", user_uuid)
+        webhook_url = get_webhook_url(
+            "notifications:send_scan_notification", user_uuid)
         data["webhook_url"] = webhook_url
 
-        logger.debug(f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
+        logger.debug(
+            f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
         return self.request_post(url=self.project_api_url, json=data)
 
     def submit_project(
@@ -115,7 +117,8 @@ class ScanCodeIO(BaseService):
     def fetch_scan_by_project_names(self, names):
         payload = {"names": ",".join(names)}
 
-        logger.debug(f'{self.label}: fetch scan fetch_scan_by_project_names payload="{payload}"')
+        logger.debug(
+            f'{self.label}: fetch scan fetch_scan_by_project_names payload="{payload}"')
         return self.request_get(url=self.project_api_url, params=payload)
 
     def find_project(self, **kwargs):
@@ -162,7 +165,8 @@ class ScanCodeIO(BaseService):
         Only blank/null fields are updated. Fields with existing values are skipped.
         An entry is logged in the `package` history using the provided `user`.
         """
-        logger.debug(f'{self.label}: Start "update from scan" for package="{package}"')
+        logger.debug(
+            f'{self.label}: Start "update from scan" for package="{package}"')
 
         History = apps.get_model("dje", "History")
         values_from_scan = {}  # {'model_field': 'value_from_scan'}
@@ -174,14 +178,16 @@ class ScanCodeIO(BaseService):
         )
 
         if not scan_results:
-            logger.debug(f'{self.label}: scan not available for package="{package}"')
+            logger.debug(
+                f'{self.label}: scan not available for package="{package}"')
             return []
 
         summary_url = scan_results.get("url").split("?")[0] + "summary/"
         scan_summary = self.fetch_scan_data(summary_url)
 
         if not scan_summary:
-            logger.debug(f'{self.label}: scan summary not available for package="{package}"')
+            logger.debug(
+                f'{self.label}: scan summary not available for package="{package}"')
             return []
 
         # 1. Summary fields: declared_license_expression, license_expression,
@@ -196,7 +202,8 @@ class ScanCodeIO(BaseService):
         detected_package = {}
         if key_files_packages:
             detected_package = key_files_packages[0]
-            detected_package_data = self.map_detected_package_data(detected_package)
+            detected_package_data = self.map_detected_package_data(
+                detected_package)
             for model_field, scan_value in detected_package_data.items():
                 if scan_value and model_field not in ["package_url", "purl"]:
                     values_from_scan[model_field] = scan_value
@@ -229,7 +236,8 @@ class ScanCodeIO(BaseService):
 
         next_url = api_url
         while next_url:
-            logger.debug(f"{self.label}: fetch results from api_url={next_url}")
+            logger.debug(
+                f"{self.label}: fetch results from api_url={next_url}")
             response = self.request_get(url=next_url)
             if not response:
                 raise Exception("Error fetching results")
@@ -259,7 +267,8 @@ class ScanCodeIO(BaseService):
         ),
         ("Declared holder", "declared_holder", "holder", "checkbox"),
         ("Primary language", "primary_language", "primary_language", "radio"),
-        ("Other licenses", "other_license_expressions", "other_license_expression", "checkbox"),
+        ("Other licenses", "other_license_expressions",
+         "other_license_expression", "checkbox"),
         ("Other holders", "other_holders", "holder", "checkbox"),
         ("Other languages", "other_languages", "primary_language", "radio"),
     ]
@@ -464,9 +473,10 @@ def get_notice_text_from_key_files(scan_summary, separator="\n\n---\n\n"):
     """
     key_files = scan_summary.get("key_files", [])
 
-    # See https://github.com/nexB/scancode-toolkit/issues/3822 about the addition
+    # See https://github.com/aboutcode-org/scancode-toolkit/issues/3822 about the addition
     # of a `is_notice` attribute.
-    notice_files = [key_file for key_file in key_files if "notice" in key_file.get("name").lower()]
+    notice_files = [
+        key_file for key_file in key_files if "notice" in key_file.get("name").lower()]
 
     notice_text = separator.join(
         [notice_file.get("content").strip() for notice_file in notice_files]

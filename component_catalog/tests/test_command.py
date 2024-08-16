@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -35,7 +35,8 @@ class ComponentCatalogManagementCommandsTestCase(TestCase):
         with self.assertRaises(CommandError) as error:
             management.call_command("updatecompletionlevels", stdout=output)
         self.assertEqual(
-            "Error: the following arguments are required: dataspace", str(error.exception)
+            "Error: the following arguments are required: dataspace", str(
+                error.exception)
         )
 
         management.call_command(
@@ -67,7 +68,8 @@ class ComponentCatalogManagementCommandsTestCase(TestCase):
             self.dataspace.name,
             self.super_user.username,
         ]
-        management.call_command("setpurls", *options, stdout=output, no_color=True)
+        management.call_command("setpurls", *options,
+                                stdout=output, no_color=True)
         package.refresh_from_db()
 
         expected_output = [
@@ -93,7 +95,8 @@ class ComponentCatalogManagementCommandsTestCase(TestCase):
             "--overwrite",
             "--save",
         ]
-        management.call_command("setpurls", *options, stdout=output, no_color=True)
+        management.call_command("setpurls", *options,
+                                stdout=output, no_color=True)
         package.refresh_from_db()
         expected_output[1] = "Pre-update: 1 Packages, 1 (100%) with a Package URL, 0 without."
         self.assertEqual("\n".join(expected_output), output.getvalue().strip())

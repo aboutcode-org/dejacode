@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -70,11 +70,13 @@ class OutputsTestCase(TestCase):
         )
 
     def test_outputs_get_cyclonedx_bom(self):
-        bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
+        bom = outputs.get_cyclonedx_bom(
+            instance=self.product1, user=self.super_user)
         self.assertIsInstance(bom, cyclonedx_bom.Bom)
 
     def test_outputs_get_cyclonedx_bom_json(self):
-        bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
+        bom = outputs.get_cyclonedx_bom(
+            instance=self.product1, user=self.super_user)
         bom_json = outputs.get_cyclonedx_bom_json(bom)
         self.assertIn('"bomFormat": "CycloneDX"', bom_json)
 

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -29,7 +29,8 @@ def get_response(api_url, headers, params):
     """Return the JSON response from calling `api_url` with `headers` and `params`."""
     response = requests.get(api_url, headers=headers, params=params)
     if response.status_code != requests.codes.ok:
-        raise Exception("Failed API call HTTP request: {}".format(response.status_code))
+        raise Exception(
+            "Failed API call HTTP request: {}".format(response.status_code))
     return response.json()
 
 

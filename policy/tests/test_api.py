@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -35,7 +35,8 @@ class UsagePolicyAPITestCase(TestCase):
         self.component1 = self.component_ct.model_class().objects.create(
             name="component1", version="1.0", dataspace=self.dataspace
         )
-        self.license_ct = ContentType.objects.get(app_label="license_library", model="license")
+        self.license_ct = ContentType.objects.get(
+            app_label="license_library", model="license")
 
         self.license_ct = ContentType.objects.get_for_model(License)
         self.component_ct = ContentType.objects.get_for_model(Component)
@@ -80,8 +81,10 @@ class UsagePolicyAPITestCase(TestCase):
         self.assertContains(response, self.component_policy_detail_url)
         self.assertNotContains(response, self.other_component_policy)
         self.assertEqual(2, response.data["count"])
-        self.assertEqual(self.license_policy.label, response.data["results"][0]["label"])
-        self.assertEqual(self.component_policy.label, response.data["results"][1]["label"])
+        self.assertEqual(self.license_policy.label,
+                         response.data["results"][0]["label"])
+        self.assertEqual(self.component_policy.label,
+                         response.data["results"][1]["label"])
 
         # results field only available on details view
         self.assertNotIn("results", response.data["results"][0].keys())
@@ -102,9 +105,13 @@ class UsagePolicyAPITestCase(TestCase):
         self.assertIn(self.license_policy_detail_url, response.data["api_url"])
         self.assertEqual(str(self.license_policy.uuid), response.data["uuid"])
         self.assertEqual(self.license_policy.label, response.data["label"])
-        self.assertEqual(self.license_policy.guidelines, response.data["guidelines"])
-        self.assertEqual(self.license_policy.content_type.model, response.data["content_type"])
-        self.assertEqual(self.license_policy.compliance_alert, response.data["compliance_alert"])
+        self.assertEqual(self.license_policy.guidelines,
+                         response.data["guidelines"])
+        self.assertEqual(self.license_policy.content_type.model,
+                         response.data["content_type"])
+        self.assertEqual(self.license_policy.compliance_alert,
+                         response.data["compliance_alert"])
 
     def test_api_usagepolicy_endpoint_tab_permission(self):
-        self.assertEqual((TabPermission,), UsagePolicyViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         UsagePolicyViewSet.extra_permissions)

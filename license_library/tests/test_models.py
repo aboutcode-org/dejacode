@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -35,7 +35,8 @@ class LicenseModelsTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.other_dataspace = Dataspace.objects.create(name="other")
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.category = LicenseCategory.objects.create(
             label="1: Category 1", text="Some text", dataspace=self.dataspace
         )
@@ -51,7 +52,8 @@ class LicenseModelsTestCase(TestCase):
         self.license_tag_group = LicenseTagGroup.objects.create(
             name="Group 1", dataspace=self.dataspace
         )
-        self.license_status = LicenseStatus.objects.create(code="status", dataspace=self.dataspace)
+        self.license_status = LicenseStatus.objects.create(
+            code="status", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="license-1",
             name="License1",
@@ -87,8 +89,10 @@ class LicenseModelsTestCase(TestCase):
         self.assigned_tag4 = LicenseAssignedTag.objects.create(
             license=self.license1, license_tag=self.tag4, value=True, dataspace=self.dataspace
         )
-        self.group1 = LicenseTagGroup.objects.create(name="Group1", seq=2, dataspace=self.dataspace)
-        self.group2 = LicenseTagGroup.objects.create(name="Group2", seq=1, dataspace=self.dataspace)
+        self.group1 = LicenseTagGroup.objects.create(
+            name="Group1", seq=2, dataspace=self.dataspace)
+        self.group2 = LicenseTagGroup.objects.create(
+            name="Group2", seq=1, dataspace=self.dataspace)
         LicenseTagGroupAssignedTag.objects.create(
             license_tag_group=self.group1, license_tag=self.tag1, seq=9, dataspace=self.dataspace
         )
@@ -100,7 +104,8 @@ class LicenseModelsTestCase(TestCase):
         )
 
     def test_save_fk_in_difference_dataspace(self):
-        license1 = License(key="license1", name="License1", dataspace=self.dataspace)
+        license1 = License(key="license1", name="License1",
+                           dataspace=self.dataspace)
 
         # Owner from other dataspace is not allowed
         license1.owner = self.other_owner
@@ -129,7 +134,8 @@ class LicenseModelsTestCase(TestCase):
         )
 
         self.assertEqual(
-            '"Tag1" in "1: LicenseProfile 1": True', str(self.license_profile_assigned)
+            '"Tag1" in "1: LicenseProfile 1": True', str(
+                self.license_profile_assigned)
         )
 
         expected = """
@@ -145,7 +151,8 @@ class LicenseModelsTestCase(TestCase):
 
     def test_license_unique_filters_for(self):
         selector = self.license1.unique_filters_for(self.other_dataspace)
-        expected = {"key": self.license1.key, "dataspace": self.other_dataspace}
+        expected = {"key": self.license1.key,
+                    "dataspace": self.other_dataspace}
         self.assertEqual(expected, selector)
 
     def test_license_library_models_get_identifier_fields(self):
@@ -176,7 +183,8 @@ class LicenseModelsTestCase(TestCase):
             [
                 (
                     "Group1",
-                    [["Tag3", False, "Text for tag3", []], ["Tag1", True, "Text for tag1", []]],
+                    [["Tag3", False, "Text for tag3", []], [
+                        "Tag1", True, "Text for tag1", []]],
                 )
             ]
         )
@@ -188,7 +196,8 @@ class LicenseModelsTestCase(TestCase):
             [
                 (
                     "Group1",
-                    [["Tag3", False, "Text for tag3", []], ["Tag1", True, "Text for tag1", []]],
+                    [["Tag3", False, "Text for tag3", []], [
+                        "Tag1", True, "Text for tag1", []]],
                 ),
                 ("(No Group)", [["Tag4", True, "Text for tag4", []]]),
             ]
@@ -204,7 +213,8 @@ class LicenseModelsTestCase(TestCase):
                 ("Group2", [["Tag2", None, "Text for tag2", []]]),
                 (
                     "Group1",
-                    [["Tag3", False, "Text for tag3", []], ["Tag1", True, "Text for tag1", []]],
+                    [["Tag3", False, "Text for tag3", []], [
+                        "Tag1", True, "Text for tag1", []]],
                 ),
             ]
         )
@@ -223,7 +233,8 @@ class LicenseModelsTestCase(TestCase):
 
         self.assigned_tag1.value = False
         self.assigned_tag1.save()
-        self.assertEqual("False", self.license1.get_tag_value_from_label(label))
+        self.assertEqual(
+            "False", self.license1.get_tag_value_from_label(label))
 
         self.assigned_tag1.value = None
         self.assigned_tag1.save()
@@ -234,21 +245,26 @@ class LicenseModelsTestCase(TestCase):
 
     def test_license_model_get_license_tab_displayed_tags(self):
         self.assertTrue(self.assigned_tag4.value)
-        self.assertFalse(self.assigned_tag4.license_tag.licensetaggroupassignedtag_set.exists())
+        self.assertFalse(
+            self.assigned_tag4.license_tag.licensetaggroupassignedtag_set.exists())
 
         expected = [("Tag1", True, "Text for tag1")]
-        self.assertEqual(expected, self.license1.get_license_tab_displayed_tags())
+        self.assertEqual(
+            expected, self.license1.get_license_tab_displayed_tags())
 
         LicenseTagGroupAssignedTag.objects.create(
             license_tag_group=self.group1, license_tag=self.tag4, seq=0, dataspace=self.dataspace
         )
-        expected = [("Tag4", True, "Text for tag4"), ("Tag1", True, "Text for tag1")]
-        self.assertEqual(expected, self.license1.get_license_tab_displayed_tags())
+        expected = [("Tag4", True, "Text for tag4"),
+                    ("Tag1", True, "Text for tag1")]
+        self.assertEqual(
+            expected, self.license1.get_license_tab_displayed_tags())
 
         self.assigned_tag4.value = False
         self.assigned_tag4.save()
         expected = [("Tag1", True, "Text for tag1")]
-        self.assertEqual(expected, self.license1.get_license_tab_displayed_tags())
+        self.assertEqual(
+            expected, self.license1.get_license_tab_displayed_tags())
 
     def test_license_assigned_tag_model_prefetch_for_license_tab(self):
         # Checking the proper seq order inherited from the groups
@@ -258,7 +274,8 @@ class LicenseModelsTestCase(TestCase):
             self.assigned_tag1,
             self.assigned_tag4,
         ]
-        self.assertEqual(expected, list(LicenseAssignedTag.prefetch_for_license_tab().queryset))
+        self.assertEqual(expected, list(
+            LicenseAssignedTag.prefetch_for_license_tab().queryset))
 
     def test_license_model_attribution_required_property(self):
         self.assertFalse(self.license1.attribution_required)
@@ -369,7 +386,8 @@ class LicenseModelsTestCase(TestCase):
         )
 
         for model_class, expected in input_data:
-            results = [f.name for f in model_class().get_exclude_candidates_fields()]
+            results = [f.name for f in model_class(
+            ).get_exclude_candidates_fields()]
             self.assertEqual(sorted(expected), sorted(results))
 
     def test_license_model_where_used_property(self):
@@ -403,7 +421,8 @@ class LicenseModelsTestCase(TestCase):
         self.license1.spdx_license_key = "Apache-2.0"
         self.license1.save()
 
-        self.assertEqual("https://spdx.org/licenses/Apache-2.0.html", self.license1.spdx_url)
+        self.assertEqual(
+            "https://spdx.org/licenses/Apache-2.0.html", self.license1.spdx_url)
         expected = (
             '<a href="https://spdx.org/licenses/Apache-2.0.html" target="_blank">Apache-2.0</a>'
         )
@@ -412,11 +431,13 @@ class LicenseModelsTestCase(TestCase):
         self.license1.spdx_license_key = "LicenseRef-Apache-2.0"
         self.license1.save()
         self.assertIsNone(self.license1.spdx_url)
-        self.assertEqual(self.license1.spdx_license_key, self.license1.spdx_link)
+        self.assertEqual(self.license1.spdx_license_key,
+                         self.license1.spdx_link)
 
     def test_license_model_spdx_id_property(self):
         self.assertEqual("", self.license1.spdx_license_key)
-        self.assertEqual("LicenseRef-dejacode-license-1", self.license1.spdx_id)
+        self.assertEqual("LicenseRef-dejacode-license-1",
+                         self.license1.spdx_id)
 
         self.license1.spdx_license_key = "Apache-2.0"
         self.license1.save()
@@ -488,7 +509,8 @@ class LicenseChoiceModelTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
     def test_license_choice_model_str(self):
-        license_choice = LicenseChoice(from_expression="mit OR bsd", to_expression="mit")
+        license_choice = LicenseChoice(
+            from_expression="mit OR bsd", to_expression="mit")
         self.assertEqual("mit OR bsd -> mit", str(license_choice))
 
     def test_license_choice_manager_get_substitutions(self):
@@ -514,31 +536,40 @@ class LicenseChoiceModelTestCase(TestCase):
         get_choices_expression = LicenseChoice.objects.get_choices_expression
 
         # Without choice substitutions
-        self.assertEqual("", get_choices_expression(expression="", dataspace=self.dataspace))
-        self.assertEqual("", get_choices_expression(expression=None, dataspace=self.dataspace))
+        self.assertEqual("", get_choices_expression(
+            expression="", dataspace=self.dataspace))
+        self.assertEqual("", get_choices_expression(
+            expression=None, dataspace=self.dataspace))
 
-        choices = get_choices_expression(expression="bsd OR gpl", dataspace=self.dataspace)
+        choices = get_choices_expression(
+            expression="bsd OR gpl", dataspace=self.dataspace)
         self.assertEqual("bsd OR gpl", choices)
 
         LicenseChoice.objects.create(
             from_expression="bsd", to_expression="mit AND apache", dataspace=self.dataspace
         )
-        choices = get_choices_expression(expression="bsd OR gps-2.0", dataspace=self.dataspace)
+        choices = get_choices_expression(
+            expression="bsd OR gps-2.0", dataspace=self.dataspace)
         self.assertEqual("(mit AND apache) OR gps-2.0", choices)
 
         # With choice substitutions
-        self.assertEqual("", get_choices_expression(expression="", dataspace=self.dataspace))
-        self.assertEqual("", get_choices_expression(expression=None, dataspace=self.dataspace))
+        self.assertEqual("", get_choices_expression(
+            expression="", dataspace=self.dataspace))
+        self.assertEqual("", get_choices_expression(
+            expression=None, dataspace=self.dataspace))
 
         LicenseChoice.objects.create(
             from_expression="gps-2.0-plus",
             to_expression="gps-2.0 OR gps-2.0-plus OR gps-3.0 OR gps-3.0-plus",
             dataspace=self.dataspace,
         )
-        choices = get_choices_expression(expression="gps-2.0-plus", dataspace=self.dataspace)
-        self.assertEqual("gps-2.0 OR gps-2.0-plus OR gps-3.0 OR gps-3.0-plus", choices)
+        choices = get_choices_expression(
+            expression="gps-2.0-plus", dataspace=self.dataspace)
+        self.assertEqual(
+            "gps-2.0 OR gps-2.0-plus OR gps-3.0 OR gps-3.0-plus", choices)
 
-        choices = get_choices_expression(expression="gps-2.0-plus-ekiga", dataspace=self.dataspace)
+        choices = get_choices_expression(
+            expression="gps-2.0-plus-ekiga", dataspace=self.dataspace)
         self.assertEqual("gps-2.0-plus-ekiga", choices)
 
     def test_license_choice_manager_get_choices_expression_and_sequence(self):
@@ -557,10 +588,12 @@ class LicenseChoiceModelTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        choices = get_choices_expression(expression="dual-bsd-gpl", dataspace=self.dataspace)
+        choices = get_choices_expression(
+            expression="dual-bsd-gpl", dataspace=self.dataspace)
         self.assertEqual("bsd-new", choices)
 
         choice1.seq = 2
         choice1.save()
-        choices = get_choices_expression(expression="dual-bsd-gpl", dataspace=self.dataspace)
+        choices = get_choices_expression(
+            expression="dual-bsd-gpl", dataspace=self.dataspace)
         self.assertEqual("bsd-new OR gps-2.0", choices)

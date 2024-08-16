@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -39,7 +39,8 @@ class DJEValidatorsTestCase(TestCase):
             try:
                 generic_uri_validator(value)
             except ValidationError:
-                self.fail("{} raised when validating '{}'".format(ValidationError.__name__, value))
+                self.fail("{} raised when validating '{}'".format(
+                    ValidationError.__name__, value))
 
         for value in invalid_values:
             try:
@@ -48,5 +49,6 @@ class DJEValidatorsTestCase(TestCase):
                 pass
             else:
                 self.fail(
-                    "{} not raised when validating '{}'".format(ValidationError.__name__, value)
+                    "{} not raised when validating '{}'".format(
+                        ValidationError.__name__, value)
                 )

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -20,7 +20,8 @@ class ListDisplayItem:
         self.name = name
         self.__name__ = name
         # Ideally we should use label_for_field but the Model is required
-        self.short_description = kwargs.get("short_description", name.replace("_", " "))
+        self.short_description = kwargs.get(
+            "short_description", name.replace("_", " "))
         self.html_class = kwargs.get("html_class")
         kwargs.setdefault("admin_order_field", name)
         self.__dict__.update(kwargs)

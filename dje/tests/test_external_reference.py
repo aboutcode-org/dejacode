@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -24,7 +24,8 @@ class ExternalReferenceModelTestCase(TestCase):
         self.nexb_user = get_user_model().objects.create_superuser(
             "nexb_user", "test@test.com", "t3st", self.nexb_dataspace
         )
-        self.owner1 = Owner.objects.create(name="DejaCode", dataspace=self.nexb_dataspace)
+        self.owner1 = Owner.objects.create(
+            name="DejaCode", dataspace=self.nexb_dataspace)
         self.owner2 = Owner.objects.create(
             name="Apache Software Foundation", dataspace=self.nexb_dataspace
         )
@@ -43,14 +44,16 @@ class ExternalReferenceModelTestCase(TestCase):
         )
 
     def test_external_reference_manager_get_content_object(self):
-        returned = ExternalReference.objects.get_content_object(self.ext_source1, "dejacode")
+        returned = ExternalReference.objects.get_content_object(
+            self.ext_source1, "dejacode")
         self.assertEqual(self.owner1, returned)
 
     def test_external_reference_manager_get_for_content_object(self):
         expected = ExternalReference.objects.filter(
             content_type=ContentType.objects.get_for_model(self.owner1), object_id=self.owner1.pk
         )
-        returned = ExternalReference.objects.get_for_content_object(self.owner1)
+        returned = ExternalReference.objects.get_for_content_object(
+            self.owner1)
         self.assertEqual(list(expected), list(returned))
 
         ExternalReference.objects.create(
@@ -63,7 +66,8 @@ class ExternalReferenceModelTestCase(TestCase):
         expected = ExternalReference.objects.filter(
             content_type=ContentType.objects.get_for_model(self.owner1), object_id=self.owner1.pk
         )
-        returned = ExternalReference.objects.get_for_content_object(self.owner1)
+        returned = ExternalReference.objects.get_for_content_object(
+            self.owner1)
         self.assertEqual(2, len(returned))
         self.assertEqual(list(expected), list(returned))
 
@@ -80,7 +84,8 @@ class ExternalReferenceModelTestCase(TestCase):
         # The ext_ref is deleted as well
         content_object = self.ext_ref1.content_object
         content_object.delete()
-        self.assertFalse(ExternalReference.objects.filter(pk=self.ext_ref1.pk).exists())
+        self.assertFalse(ExternalReference.objects.filter(
+            pk=self.ext_ref1.pk).exists())
 
 
 class ExternalReferenceAdminTestCase(TestCase):
@@ -89,7 +94,8 @@ class ExternalReferenceAdminTestCase(TestCase):
         self.nexb_user = get_user_model().objects.create_superuser(
             "nexb_user", "test@test.com", "t3st", self.nexb_dataspace
         )
-        self.owner1 = Owner.objects.create(name="DejaCode", dataspace=self.nexb_dataspace)
+        self.owner1 = Owner.objects.create(
+            name="DejaCode", dataspace=self.nexb_dataspace)
         self.owner2 = Owner.objects.create(
             name="Apache Software Foundation", dataspace=self.nexb_dataspace
         )

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -39,11 +39,13 @@ class UsersTestCase(TestCase):
     def setUp(self):
         self.nexb_dataspace = Dataspace.objects.create(name="nexB")
         self.other_dataspace = Dataspace.objects.create(name="other_dataspace")
-        self.different_dataspace = Dataspace.objects.create(name="different_dataspace")
+        self.different_dataspace = Dataspace.objects.create(
+            name="different_dataspace")
 
         self.nexb_user = create_superuser("nexb_user", self.nexb_dataspace)
         self.other_user = create_superuser("other_user", self.other_dataspace)
-        self.different_user = create_superuser("different_user", self.different_dataspace)
+        self.different_user = create_superuser(
+            "different_user", self.different_dataspace)
 
     def test_limit_qs_to_dataspace(self):
         self.client.login(username="other_user", password="secret")
@@ -76,7 +78,8 @@ class UsersTestCase(TestCase):
 
         response = self.client.get(url)
         self.assertContains(response, "<label>Dataspace</label>")
-        self.assertContains(response, "selected='selected'>other_dataspace</option>")
+        self.assertContains(
+            response, "selected='selected'>other_dataspace</option>")
         self.assertContains(response, "nexB</option>")
         self.assertNotContains(response, "different_dataspace</option>")
 
@@ -146,7 +149,8 @@ class UsersTestCase(TestCase):
         owner = create("Owner", self.nexb_dataspace)
         url = owner.get_admin_url()
         response = self.client.get(url)
-        self.assertContains(response, "<h1>403 Forbidden</h1>", status_code=403)
+        self.assertContains(
+            response, "<h1>403 Forbidden</h1>", status_code=403)
 
         self.client.login(username="nexb_user", password="secret")
         response = self.client.get(url)
@@ -190,8 +194,10 @@ class UsersTestCase(TestCase):
             "password": "p4ssW0rd",
         }
         response = self.client.post(login_url, data)
-        self.assertContains(response, "Please enter a correct username and password.")
-        self.assertContains(response, "Note that both fields may be case-sensitive.")
+        self.assertContains(
+            response, "Please enter a correct username and password.")
+        self.assertContains(
+            response, "Note that both fields may be case-sensitive.")
 
     def test_login_with_email(self):
         login_url = resolve_url("login")
@@ -209,10 +215,12 @@ class UsersTestCase(TestCase):
     def test_delete_user_from_admin_view(self):
         self.assertTrue(self.other_user.is_active)
         self.client.login(username="nexb_user", password="secret")
-        url = reverse("admin:dje_dejacodeuser_delete", args=(self.other_user.pk,))
+        url = reverse("admin:dje_dejacodeuser_delete",
+                      args=(self.other_user.pk,))
         data = {"post": "yes"}
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse("admin:dje_dejacodeuser_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:dje_dejacodeuser_changelist"))
         self.other_user.refresh_from_db()
         self.assertFalse(self.other_user.is_active)
         self.assertFalse(self.other_user.has_usable_password())
@@ -295,7 +303,8 @@ class UsersTestCase(TestCase):
         with override_settings(ANONYMOUS_USERS_DATASPACE=self.nexb_dataspace):
             response = self.client.get("/")
             # Not using assertRedirects for compatibility across all settings
-            self.assertEqual(response.url, resolve_url(settings.LOGIN_REDIRECT_URL))
+            self.assertEqual(response.url, resolve_url(
+                settings.LOGIN_REDIRECT_URL))
             self.assertEqual(302, response.status_code)
 
     def test_save_new_user_from_admin_view_registration(self):
@@ -309,7 +318,8 @@ class UsersTestCase(TestCase):
 
         response = self.client.post(url, data, follow=True)
         expected = {"email": ["This field is required."]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         data["email"] = "user@mail.com"
         response = self.client.post(url, data, follow=True)
@@ -326,16 +336,21 @@ class UsersTestCase(TestCase):
         self.assertFalse(user.has_usable_password())
         self.assertEqual(len(mail.outbox), 1)
 
-        self.assertEqual("[DejaCode] Please activate your account", mail.outbox[0].subject)
+        self.assertEqual(
+            "[DejaCode] Please activate your account", mail.outbox[0].subject)
         body = mail.outbox[0].body
         self.assertTrue("/account/activate/" in body)
-        self.assertTrue("DejaCode {} account".format(user.dataspace.name) in body)
+        self.assertTrue("DejaCode {} account".format(
+            user.dataspace.name) in body)
         self.assertTrue("Username: {}".format(user.username) in body)
-        self.assertTrue("{} days to activate".format(settings.ACCOUNT_ACTIVATION_DAYS) in body)
+        self.assertTrue("{} days to activate".format(
+            settings.ACCOUNT_ACTIVATION_DAYS) in body)
 
         # Call the url to activate the account
-        activation_key = signing.dumps(obj=data["username"], salt=REGISTRATION_SALT)
-        activation_url = reverse("django_registration_activate", args=[activation_key])
+        activation_key = signing.dumps(
+            obj=data["username"], salt=REGISTRATION_SALT)
+        activation_url = reverse(
+            "django_registration_activate", args=[activation_key])
         response = self.client.get(activation_url, follow=True)
         password_reset_form_url = response.redirect_chain[-1][0]
 
@@ -370,7 +385,8 @@ class UsersTestCase(TestCase):
         self.assertTrue(self.other_user.has_usable_password())
         self.assertTrue(self.other_user.is_active)
 
-        url = reverse("admin:dje_dejacodeuser_send_activation_email", args=[self.other_user.id])
+        url = reverse("admin:dje_dejacodeuser_send_activation_email", args=[
+                      self.other_user.id])
         response = self.client.get(url, follow=True)
         expected = "An activation email will be sent shortly to the email address."
         self.assertContains(response, expected)
@@ -380,7 +396,8 @@ class UsersTestCase(TestCase):
         self.assertFalse(self.other_user.has_usable_password())
         self.assertEqual(len(mail.outbox), 1)
 
-        self.assertEqual("[DejaCode] Please activate your account", mail.outbox[0].subject)
+        self.assertEqual(
+            "[DejaCode] Please activate your account", mail.outbox[0].subject)
         body = mail.outbox[0].body
 
         # Grep the key form the email body
@@ -389,10 +406,14 @@ class UsersTestCase(TestCase):
             if line.startswith("http"):
                 activation_key = line.rstrip("/").rpartition("/")[-1]
 
-        activation_url = reverse("django_registration_activate", args=[activation_key])
-        self.assertTrue("DejaCode {} account".format(self.other_user.dataspace.name) in body)
-        self.assertTrue("Username: {}".format(self.other_user.username) in body)
-        self.assertTrue("{} days to activate".format(settings.ACCOUNT_ACTIVATION_DAYS) in body)
+        activation_url = reverse(
+            "django_registration_activate", args=[activation_key])
+        self.assertTrue("DejaCode {} account".format(
+            self.other_user.dataspace.name) in body)
+        self.assertTrue("Username: {}".format(
+            self.other_user.username) in body)
+        self.assertTrue("{} days to activate".format(
+            settings.ACCOUNT_ACTIVATION_DAYS) in body)
 
         response = self.client.get(activation_url, follow=True)
         self.assertContains(response, "DejaCode Password Assistance")
@@ -401,11 +422,13 @@ class UsersTestCase(TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = reverse("admin:dje_dejacodeuser_add")
         response = self.client.get(url)
-        self.assertContains(response, reverse("admin:auth_group_permission_details"))
+        self.assertContains(response, reverse(
+            "admin:auth_group_permission_details"))
 
     def test_user_admin_form_scope_homepage_layout_choices(self):
         self.client.login(username=self.nexb_user.username, password="secret")
-        url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
+        url = reverse("admin:dje_dejacodeuser_change",
+                      args=[self.nexb_user.pk])
 
         card_layout_nexb = create("CardLayout", self.nexb_dataspace)
         card_layout_other = create("CardLayout", self.other_dataspace)
@@ -449,7 +472,8 @@ class UsersPasswordTestCase(TestCase):
         self.client.login(username="user", password="secret")
         url = reverse("password_change")
         response = self.client.get(url)
-        self.assertContains(response, password_validation.password_validators_help_text_html())
+        self.assertContains(
+            response, password_validation.password_validators_help_text_html())
 
         data = {
             "old_password": "secret",
@@ -506,7 +530,8 @@ class UsersPasswordTestCase(TestCase):
         call_command(cmd, self.user.username, stdout=out)
 
         self.assertIn("Changing password for user 'user'", out.getvalue())
-        self.assertIn("Password changed successfully for user 'user'", out.getvalue())
+        self.assertIn(
+            "Password changed successfully for user 'user'", out.getvalue())
 
         self._check_change_password_email_notification()
 
@@ -533,7 +558,8 @@ class UsersPasswordTestCase(TestCase):
 
     def test_admin_set_user_password_view_is_not_allowed(self):
         self.client.login(username="user", password="secret")
-        change_password_url = reverse("admin:auth_user_password_change", args=(self.user.pk,))
+        change_password_url = reverse(
+            "admin:auth_user_password_change", args=(self.user.pk,))
         data = {
             "password1": self.weak_password,
             "password2": self.weak_password,
@@ -575,11 +601,14 @@ class UsersPasswordTestCase(TestCase):
         self.assertTrue(
             "Click the link below to reset your password using our secure server:" in body
         )
-        self.assertTrue("Your username, in case you've forgotten: user" in body)
+        self.assertTrue(
+            "Your username, in case you've forgotten: user" in body)
 
-        reset_confirm_url = DejaCodeActivationView.get_password_reset_confirm_url(self.user)
+        reset_confirm_url = DejaCodeActivationView.get_password_reset_confirm_url(
+            self.user)
         response = self.client.get(reset_confirm_url, follow=True)
-        self.assertContains(response, password_validation.password_validators_help_text_html())
+        self.assertContains(
+            response, password_validation.password_validators_help_text_html())
 
         password_reset_form_url = response.redirect_chain[-1][0]
         data = {
@@ -595,7 +624,8 @@ class UsersPasswordTestCase(TestCase):
         }
         self.assertEqual(expected, response.context["form"].errors)
 
-        self.assertTemplateUsed(response, "registration/password_reset_confirm.html")
+        self.assertTemplateUsed(
+            response, "registration/password_reset_confirm.html")
 
         data["new_password2"] = data["new_password1"] = self.strong_password
         response = self.client.post(password_reset_form_url, data)
@@ -615,7 +645,8 @@ class DejaCodeUserModelTestCase(TestCase):
         inactive = create_user("inactive", self.dataspace)
         inactive.is_active = False
         inactive.save()
-        self.different_user = create_superuser("different_user", self.dataspace)
+        self.different_user = create_superuser(
+            "different_user", self.dataspace)
 
         actives_qs = get_user_model().objects.actives()
         self.assertIn(active, actives_qs)
@@ -665,7 +696,8 @@ class DejaCodeUserModelTestCase(TestCase):
         configuration = create("DataspaceConfiguration", self.dataspace)
         configuration.homepage_layout = card_layout_from_dataspace
         configuration.save()
-        self.assertEqual(card_layout_from_dataspace, user.get_homepage_layout())
+        self.assertEqual(card_layout_from_dataspace,
+                         user.get_homepage_layout())
 
         card_layout_from_user = create("CardLayout", self.dataspace)
         user.homepage_layout = card_layout_from_user

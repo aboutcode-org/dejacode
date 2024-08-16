@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -28,12 +28,16 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.alternate_dataspace = Dataspace.objects.create(name="alternate")
         self.user = create_superuser("nexb_user", self.dataspace)
-        self.alternate_user = create_superuser("alternate_user", self.alternate_dataspace)
+        self.alternate_user = create_superuser(
+            "alternate_user", self.alternate_dataspace)
 
-        self.product1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
-        self.product_changelist_url = reverse("admin:product_portfolio_product_changelist")
+        self.product1 = Product.objects.create(
+            name="Product1", dataspace=self.dataspace)
+        self.product_changelist_url = reverse(
+            "admin:product_portfolio_product_changelist")
 
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Owner1", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="l-1", name="L1", short_name="L1", dataspace=self.dataspace, owner=self.owner1
         )
@@ -45,7 +49,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
             name="c1", version="1.0", dataspace=self.dataspace
         )
 
-        self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        self.package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
 
     def test_product_admin_form_clean_license_expression(self):
         self.client.login(username=self.user.username, password="secret")
@@ -78,7 +83,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         )
         url = alternate_p1.get_admin_url()
 
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
 
@@ -100,7 +106,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.client.login(username=self.user.username, password="secret")
         response = self.client.get(self.product_changelist_url)
         expected = [("", "---------"), ("mass_update", "Mass update")]
-        self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
+        self.assertEqual(
+            expected, response.context_data["action_form"].fields["action"].choices)
 
         with self.assertRaises(NoReverseMatch):
             reverse("admin:product_portfolio_product_copy")
@@ -166,13 +173,15 @@ class ProductPortfolioAdminsTestCase(TestCase):
         error_msg = "Product with this Name and Version already exists."
         self.assertContains(response, error_msg)
         expected = {NON_FIELD_ERRORS: [error_msg]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         url = self.product1.get_admin_url()
         data["_saveasnew"] = "Save as new"
         response = self.client.post(url, data)
         self.assertContains(response, error_msg)
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         data["version"] = "1.0"
         response = self.client.post(url, data)
@@ -244,7 +253,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertTrue(self.component1.licenses.exists())
         self.assertTrue(pc.licenses.exists())
-        self.assertEqual(self.component1.license_expression, pc.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         pc.license_expression)
         pc.delete()
 
     def test_productcomponent_admin_license_expression_widget(self):
@@ -283,7 +293,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertTrue(self.package1.licenses.exists())
         self.assertTrue(pc.licenses.exists())
-        self.assertEqual(self.package1.license_expression, pc.license_expression)
+        self.assertEqual(self.package1.license_expression,
+                         pc.license_expression)
         pc.delete()
 
     def test_productpackage_admin_license_expression_widget(self):
@@ -305,7 +316,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
 
         response = self.client.post(url, data)
         expected = {"license_expression": ["Unknown license key(s): invalid"]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         # Component FK set, validates against component.license_expression
         self.component1.license_expression = self.license1.key
@@ -318,7 +330,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertTrue(self.component1.licenses.exists())
         self.assertTrue(pc.licenses.exists())
-        self.assertEqual(self.component1.license_expression, pc.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         pc.license_expression)
 
         pc.delete()
         data["license_expression"] = self.license2.key
@@ -326,7 +339,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         expected = {
             "license_expression": ["Unknown license key(s): l-2<br>Available licenses: l-1"]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_productpackage_admin_license_expression_validation(self):
         self.client.login(username=self.user.username, password="secret")
@@ -340,7 +354,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
 
         response = self.client.post(url, data)
         expected = {"license_expression": ["Unknown license key(s): invalid"]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         self.package1.license_expression = self.license1.key
         self.package1.save()
@@ -351,7 +366,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.assertEqual(self.license1.key, pp.license_expression)
         self.assertTrue(self.package1.licenses.exists())
         self.assertTrue(pp.licenses.exists())
-        self.assertEqual(self.package1.license_expression, pp.license_expression)
+        self.assertEqual(self.package1.license_expression,
+                         pp.license_expression)
 
         pp.delete()
         data["license_expression"] = self.license2.key
@@ -359,7 +375,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         expected = {
             "license_expression": ["Unknown license key(s): l-2<br>Available licenses: l-1"]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_productcomponent_admin_changelist_component_completeness_list_filter(self):
         self.client.login(username=self.user.username, password="secret")
@@ -406,7 +423,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.assertNotIn(expected2, actions)
 
         self.assertFalse(self.alternate_user.dataspace.is_reference)
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(url)
         actions_choices = response.context_data["action_form"].fields["action"].choices
         actions = [name for name, _ in actions_choices]
@@ -436,7 +454,8 @@ class ProductPortfolioAdminsTestCase(TestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-        new_product = Product.unsecured_objects.get(name=self.product1.name, version="new version")
+        new_product = Product.unsecured_objects.get(
+            name=self.product1.name, version="new version")
         self.assertEqual(1, new_product.productcomponents.count())
         self.assertEqual(1, new_product.productpackages.count())
 

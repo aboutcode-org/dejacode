@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -40,7 +40,8 @@ class WorkflowModelsTestCase(TestCase):
         self.component_ct = ContentType.objects.get(
             app_label="component_catalog", model="component"
         )
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
 
         self.request_template1 = RequestTemplate.objects.create(
             name="Template1",
@@ -107,14 +108,16 @@ class WorkflowModelsTestCase(TestCase):
     def test_request_model_get_serialized_data_as_list(self):
         self.assertIsInstance(self.request1.serialized_data, str)
 
-        old_as_list = [{"input_type": "CharField", "value": "a", "label": "Project"}]
+        old_as_list = [{"input_type": "CharField",
+                        "value": "a", "label": "Project"}]
         self.request1.serialized_data = json.dumps(old_as_list)
         self.request1.save()
         self.request1.refresh_from_db()
         self.assertEqual({}, self.request1.get_serialized_data())
         self.assertEqual([], self.request1.get_serialized_data_as_list())
 
-        self.request1.serialized_data = json.dumps(self.example_serialized_data)
+        self.request1.serialized_data = json.dumps(
+            self.example_serialized_data)
         self.request1.save()
         self.request1.refresh_from_db()
         expected = [
@@ -125,7 +128,8 @@ class WorkflowModelsTestCase(TestCase):
         self.assertEqual(expected, self.request1.get_serialized_data_as_list())
 
         # ValueError: No JSON object could be decoded
-        self.request1.serialized_data = str(self.example_serialized_data)[10:30]
+        self.request1.serialized_data = str(
+            self.example_serialized_data)[10:30]
         self.request1.save()
         self.request1.refresh_from_db()
         self.assertEqual([], self.request1.get_serialized_data_as_list())
@@ -134,7 +138,8 @@ class WorkflowModelsTestCase(TestCase):
         self.assertEqual("", self.request1.serialized_data)
         self.assertEqual("", self.request1.get_serialized_data_as_html())
 
-        self.request1.serialized_data = json.dumps(self.example_serialized_data)
+        self.request1.serialized_data = json.dumps(
+            self.example_serialized_data)
         self.request1.save()
         self.request1.refresh_from_db()
 
@@ -142,7 +147,8 @@ class WorkflowModelsTestCase(TestCase):
         self.assertEqual(expected, self.request1.get_serialized_data_as_html())
 
     def test_request_model_get_serialized_data_as_html_unicode_content(self):
-        self.request1.serialized_data = json.dumps({self.question1.label: "\u2013"})
+        self.request1.serialized_data = json.dumps(
+            {self.question1.label: "\u2013"})
         self.request1.save()
         self.request1.refresh_from_db()
 
@@ -169,7 +175,8 @@ class WorkflowModelsTestCase(TestCase):
         self.assertEqual(expected, self.request1.get_involved_users())
 
         comment_user = create_user("comment_user", self.nexb_dataspace)
-        self.request1.comments.create(user=comment_user, text="Com", dataspace=self.nexb_dataspace)
+        self.request1.comments.create(
+            user=comment_user, text="Com", dataspace=self.nexb_dataspace)
         expected = {
             self.request1.requester,
             self.request1.assignee,
@@ -250,7 +257,8 @@ class WorkflowModelsTestCase(TestCase):
             requester=self.super_user,
         )
         self.assertEqual(self.request_template1, request.request_template)
-        self.assertEqual(self.request_template1.content_type, request.content_type)
+        self.assertEqual(self.request_template1.content_type,
+                         request.content_type)
         self.assertEqual(self.request_template1.dataspace, request.dataspace)
         self.assertEqual(self.request_template1.dataspace, request.dataspace)
         self.assertEqual(self.super_user, request.requester)
@@ -272,28 +280,34 @@ class WorkflowModelsTestCase(TestCase):
         self.assertEqual(self.super_user, request.assignee)
 
     def test_copy_request_template(self):
-        copied_object = copy_object(self.request_template1, self.alt_dataspace, self.super_user)
+        copied_object = copy_object(
+            self.request_template1, self.alt_dataspace, self.super_user)
 
         self.assertEqual(self.alt_dataspace, copied_object.dataspace)
         self.assertEqual(self.request_template1.uuid, copied_object.uuid)
         self.assertEqual(self.request_template1.name, copied_object.name)
-        self.assertEqual(self.request_template1.description, copied_object.description)
+        self.assertEqual(self.request_template1.description,
+                         copied_object.description)
         # Check the many2many copy
-        self.assertEqual(self.request_template1.questions.count(), copied_object.questions.count())
+        self.assertEqual(self.request_template1.questions.count(),
+                         copied_object.questions.count())
 
     def test_request_manager_unassigned(self):
         self.assertIsNone(self.request1.assignee)
         self.assertEqual(
-            [self.request1, self.request2], list(Request.objects.unassigned().order_by("id"))
+            [self.request1, self.request2], list(
+                Request.objects.unassigned().order_by("id"))
         )
 
     def test_request_manager_assigned_to(self):
         self.request1.assignee = self.super_user
         self.request1.save()
-        self.assertEqual([self.request1], list(Request.objects.assigned_to(self.super_user)))
+        self.assertEqual([self.request1], list(
+            Request.objects.assigned_to(self.super_user)))
 
     def test_request_manager_followed_by(self):
-        self.assertEqual([], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual(
+            [], list(Request.objects.followed_by(self.basic_user)))
 
         comment1 = RequestComment.objects.create(
             request=self.request1,
@@ -301,23 +315,28 @@ class WorkflowModelsTestCase(TestCase):
             text="Comment1",
             dataspace=self.nexb_dataspace,
         )
-        self.assertEqual([self.request1], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual([self.request1], list(
+            Request.objects.followed_by(self.basic_user)))
 
         comment1.delete()
-        self.assertEqual([], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual(
+            [], list(Request.objects.followed_by(self.basic_user)))
         attachment1 = RequestAttachment.objects.create(
             request=self.request1,
             uploader=self.basic_user,
             file="filename.ext",
             dataspace=self.nexb_dataspace,
         )
-        self.assertEqual([self.request1], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual([self.request1], list(
+            Request.objects.followed_by(self.basic_user)))
 
         attachment1.delete()
-        self.assertEqual([], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual(
+            [], list(Request.objects.followed_by(self.basic_user)))
         self.request1.assignee = self.basic_user
         self.request1.save()
-        self.assertEqual([self.request1], list(Request.objects.followed_by(self.basic_user)))
+        self.assertEqual([self.request1], list(
+            Request.objects.followed_by(self.basic_user)))
 
     def test_request_queryset_status_methods(self):
         self.request1.status = Request.Status.OPEN
@@ -393,7 +412,8 @@ class WorkflowModelsTestCase(TestCase):
 
         self.assertIn(self.request2, manager(self.product1))
         self.assertIn(self.request2, manager(self.product1, self.super_user))
-        self.assertNotIn(self.request2, manager(self.product1, self.basic_user))
+        self.assertNotIn(self.request2, manager(
+            self.product1, self.basic_user))
 
         assign_perm("view_product", self.basic_user, self.product1)
         self.assertIn(self.request2, manager(self.product1, self.basic_user))
@@ -405,13 +425,15 @@ class WorkflowModelsTestCase(TestCase):
         self.request2.save()
 
         self.assertIn(self.request2, manager(self.product1, self.super_user))
-        self.assertNotIn(self.request2, manager(self.product1, self.basic_user))
+        self.assertNotIn(self.request2, manager(
+            self.product1, self.basic_user))
 
         assign_perm("view_product", self.basic_user, self.product1)
         self.assertIn(self.request2, manager(self.product1, self.basic_user))
 
     def test_secure_queryset_relational_fields(self):
-        alt_rt = copy_object(self.request_template1, self.alt_dataspace, self.super_user)
+        alt_rt = copy_object(self.request_template1,
+                             self.alt_dataspace, self.super_user)
         alt_request = Request.objects.create(
             title="Alternate",
             request_template=alt_rt,
@@ -485,17 +507,21 @@ class WorkflowModelsTestCase(TestCase):
         self.product1 = refresh_product(self.product1)
         self.assertEqual(1, self.product1.request_count)
 
-        self.assertIn(self.request2, self.product1.get_requests(self.super_user))
-        self.assertNotIn(self.request2, self.product1.get_requests(self.basic_user))
+        self.assertIn(
+            self.request2, self.product1.get_requests(self.super_user))
+        self.assertNotIn(
+            self.request2, self.product1.get_requests(self.basic_user))
         assign_perm("view_product", self.basic_user, self.product1)
-        self.assertIn(self.request2, self.product1.get_requests(self.basic_user))
+        self.assertIn(
+            self.request2, self.product1.get_requests(self.basic_user))
 
         Request.objects.all().delete()
         self.assertEqual(0, self.product1.count_requests())
         self.product1 = refresh_product(self.product1)
         self.assertEqual(0, self.product1.request_count)
 
-        component1 = Component.objects.create(name="c1", dataspace=self.nexb_dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.nexb_dataspace)
         self.assertIsNone(component1.request_count)
         self.assertEqual(0, component1.count_requests())
         request1 = Request.objects.create(
@@ -514,7 +540,8 @@ class WorkflowModelsTestCase(TestCase):
         request1.save()
 
         # Updating the content_object where the current one does not exist anymore
-        component2 = Component.objects.create(name="c2", dataspace=self.nexb_dataspace)
+        component2 = Component.objects.create(
+            name="c2", dataspace=self.nexb_dataspace)
         request1.content_object = component2
         request1.save()
 
@@ -527,7 +554,8 @@ class WorkflowModelsTestCase(TestCase):
             ),
             ("> quote", "<blockquote>\n<p>quote</p>\n</blockquote>"),
             ("<script>", "&lt;script&gt;"),
-            ('<a href="ok" target="_blank">', '<p><a href="ok" rel="nofollow"></a></p>'),
+            ('<a href="ok" target="_blank">',
+             '<p><a href="ok" rel="nofollow"></a></p>'),
             ('<a onclick="evil()">', "<p><a></a></p>"),
             (
                 "<<script>script>evil()<</script>/script>",
@@ -539,7 +567,8 @@ class WorkflowModelsTestCase(TestCase):
             self.assertEqual(expected, RequestComment(text=text).as_html())
 
     def test_request_content_object_update_request_count_on_delete(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.nexb_dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.nexb_dataspace)
         request1 = Request.objects.create(
             title="Title1",
             request_template=self.request_template1,

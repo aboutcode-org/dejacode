@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -113,7 +113,8 @@ class SPDXTestCase(TestCase):
         creation_info = spdx.CreationInfo()
         with self.assertRaises(ValueError) as error:
             creation_info.as_dict()
-        assert "Missing values to build `creators` list." == str(error.exception)
+        assert "Missing values to build `creators` list." == str(
+            error.exception)
 
     def test_spdx_checksum_as_dict(self):
         checksum = spdx.Checksum(**self.checksum_sha1_data)
@@ -133,7 +134,8 @@ class SPDXTestCase(TestCase):
         assert expected == external_ref.as_dict()
 
     def test_spdx_extracted_licensing_info_as_dict(self):
-        licensing_info = spdx.ExtractedLicensingInfo(**self.licensing_info_data)
+        licensing_info = spdx.ExtractedLicensingInfo(
+            **self.licensing_info_data)
         expected = {
             "licenseId": "LicenseRef-1",
             "extractedText": "License Text",
@@ -309,7 +311,8 @@ class SPDXTestCase(TestCase):
         assert '{\n  "spdxVersion": "SPDX-2.3",' == document.as_json()[0:30]
 
     def test_spdx_document_safe_document_name(self):
-        assert "upper_1_2_3_" == spdx.Document.safe_document_name("UPPER@1-2-3^&*")
+        assert "upper_1_2_3_" == spdx.Document.safe_document_name(
+            "UPPER@1-2-3^&*")
 
     def test_spdx_document_validate(self):
         document = spdx.Document(**self.document_data)

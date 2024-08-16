@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -29,7 +29,8 @@ class BooleanSelect(Select):
 
     def render(self, name, value, attrs=None, renderer=None):
         try:
-            value = {True: "2", "True": "2", False: "3", "False": "3", "2": "2", "3": "3"}[value]
+            value = {True: "2", "True": "2", False: "3",
+                     "False": "3", "2": "2", "3": "3"}[value]
         except KeyError:
             value = "0"
         return super().render(name, value, attrs, renderer)
@@ -54,7 +55,8 @@ class NullBooleanSelect(Select):
     """
 
     def __init__(self, attrs=None, choices=()):
-        choices = (("0", _("All")), ("1", _("Unknown")), ("2", _("Yes")), ("3", _("No")))
+        choices = (("0", _("All")), ("1", _("Unknown")),
+                   ("2", _("Yes")), ("3", _("No")))
         super().__init__(attrs, choices)
 
     def render(self, name, value, attrs=None, renderer=None):

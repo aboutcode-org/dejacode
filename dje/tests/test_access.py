@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -257,7 +257,8 @@ def create_ds_and_users(dataspace_name):
     ds = Dataspace.objects.create(name=dataspace_name)
     user = create_test_user(ds, "regular_user_" + dataspace_name)
     staff = create_test_user(ds, "staff_user_" + dataspace_name, is_staff=True)
-    superu = create_test_user(ds, "super_user_" + dataspace_name, is_staff=True, is_super=True)
+    superu = create_test_user(
+        ds, "super_user_" + dataspace_name, is_staff=True, is_super=True)
     super_not_staff = create_test_user(
         ds, "super_not_staff_user_" + dataspace_name, is_staff=False, is_super=True
     )
@@ -280,8 +281,10 @@ class CrossDataspaceAccessControlTestCase(TestCase):
             self.supnsano,
             self.iano,
         ) = create_ds_and_users(DEMO_DATASPACE)
-        self.d1, self.ud1, self.sd1, self.supd1, self.supnsd1, self.id1 = create_ds_and_users("d1")
-        self.d2, self.ud2, self.sd2, self.supd2, self.supnsd2, self.id2 = create_ds_and_users("d2")
+        self.d1, self.ud1, self.sd1, self.supd1, self.supnsd1, self.id1 = create_ds_and_users(
+            "d1")
+        self.d2, self.ud2, self.sd2, self.supd2, self.supnsd2, self.id2 = create_ds_and_users(
+            "d2")
 
     def check_view_access(self, user, dataspace, test_url, http_code, context):
         """
@@ -305,10 +308,13 @@ class CrossDataspaceAccessControlTestCase(TestCase):
         )
 
         response = self.client.get(test_url)
-        if type(http_code) in [list, tuple]:  # Support for multiple possible http_code
-            self.assertIn(response.status_code, list(http_code), msg.format(**locals()))
+        # Support for multiple possible http_code
+        if type(http_code) in [list, tuple]:
+            self.assertIn(response.status_code, list(
+                http_code), msg.format(**locals()))
         else:
-            self.assertEqual(response.status_code, http_code, msg.format(**locals()))
+            self.assertEqual(response.status_code, http_code,
+                             msg.format(**locals()))
 
     @tag("slow")
     @override_settings(ANONYMOUS_USERS_DATASPACE=DEMO_DATASPACE)
@@ -332,7 +338,8 @@ class CrossDataspaceAccessControlTestCase(TestCase):
             )
 
             # anonymous
-            self.check_view_access(None, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                None, self.d1, test_url, http_code=302, context=test_context)
 
             self.check_view_access(
                 self.uano, self.d1, test_url, http_code=302, context=test_context
@@ -350,8 +357,10 @@ class CrossDataspaceAccessControlTestCase(TestCase):
                 self.supnsano, self.d1, test_url, http_code=302, context=test_context
             )
 
-            self.check_view_access(self.unx, self.d1, test_url, http_code=302, context=test_context)
-            self.check_view_access(self.inx, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.unx, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.inx, self.d1, test_url, http_code=302, context=test_context)
             self.check_view_access(
                 self.supnsnx, self.d1, test_url, http_code=302, context=test_context
             )
@@ -361,8 +370,10 @@ class CrossDataspaceAccessControlTestCase(TestCase):
                 self.supnx, self.d1, test_url, http_code=[200, 302, 404], context=test_context
             )
 
-            self.check_view_access(self.ud2, self.d1, test_url, http_code=302, context=test_context)
-            self.check_view_access(self.id2, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.ud2, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.id2, self.d1, test_url, http_code=302, context=test_context)
             self.check_view_access(
                 self.sd2, self.d1, test_url, http_code=[403, 404, 302], context=test_context
             )
@@ -373,8 +384,10 @@ class CrossDataspaceAccessControlTestCase(TestCase):
                 self.supnsd2, self.d1, test_url, http_code=302, context=test_context
             )
 
-            self.check_view_access(self.id1, self.d1, test_url, http_code=302, context=test_context)
-            self.check_view_access(self.ud1, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.id1, self.d1, test_url, http_code=302, context=test_context)
+            self.check_view_access(
+                self.ud1, self.d1, test_url, http_code=302, context=test_context)
             self.check_view_access(
                 self.supd1, self.d1, test_url, http_code=200, context=test_context
             )
@@ -462,9 +475,12 @@ class LoginAttemptsTrackingTestCase(TestCase):
         subject = "[DejaCode] Login attempt on locked account requires review!"
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(subject, mail.outbox[0].subject)
-        self.assertIn('Review access entry for username "fake" at', mail.outbox[0].body)
-        self.assertIn('"fake" is NOT an existing DejaCode user.', mail.outbox[0].body)
-        self.assertIn("Suggestion: This looks like a malicious login attempt.", mail.outbox[0].body)
+        self.assertIn('Review access entry for username "fake" at',
+                      mail.outbox[0].body)
+        self.assertIn('"fake" is NOT an existing DejaCode user.',
+                      mail.outbox[0].body)
+        self.assertIn(
+            "Suggestion: This looks like a malicious login attempt.", mail.outbox[0].body)
 
         # 3rd attempt, no email notification
         self.client.post(login_url, data=credentials)
@@ -481,7 +497,8 @@ class LoginAttemptsTrackingTestCase(TestCase):
             'Review access entry for username "fake" at'
         )
         self.assertIn(expected, payload["text"])
-        self.assertIn('"fake" is NOT an existing DejaCode user.', payload["text"])
+        self.assertIn('"fake" is NOT an existing DejaCode user.',
+                      payload["text"])
 
         credentials["username"] = user.username
         response = self.client.post(login_url, data=credentials)
@@ -489,9 +506,11 @@ class LoginAttemptsTrackingTestCase(TestCase):
         response = self.client.post(login_url, data=credentials)
         self.assertEqual(403, response.status_code)
         self.assertIn(
-            '"real_user" is an existing DejaCode user in Dataspace "nexB"', mail.outbox[2].body
+            '"real_user" is an existing DejaCode user in Dataspace "nexB"', mail.outbox[
+                2].body
         )
-        self.assertIn("Suggestion: The user forgot his password.", mail.outbox[2].body)
+        self.assertIn("Suggestion: The user forgot his password.",
+                      mail.outbox[2].body)
 
     @override_settings(REFERENCE_DATASPACE="nexB")
     def test_axes_reference_access_attempt_admin(self):

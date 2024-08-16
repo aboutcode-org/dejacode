@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -94,7 +94,8 @@ class RootAPITestCase(TestCase):
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         response = self.client.post(owner_list_url)
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        response = self.client.put(owner_detail_url, data=put_data, content_type="application/json")
+        response = self.client.put(
+            owner_detail_url, data=put_data, content_type="application/json")
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         response = self.client.patch(
             owner_detail_url, data=patch_data, content_type="application/json"
@@ -114,7 +115,8 @@ class RootAPITestCase(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         response = self.client.post(owner_list_url)
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        response = self.client.put(owner_detail_url, data=put_data, content_type="application/json")
+        response = self.client.put(
+            owner_detail_url, data=put_data, content_type="application/json")
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         response = self.client.patch(
             owner_detail_url, data=patch_data, content_type="application/json"
@@ -141,14 +143,16 @@ class RootAPITestCase(TestCase):
         response = self.client.post(owner_list_url, data={"name": "Owner2"})
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
-        response = self.client.put(owner_detail_url, data=put_data, content_type="application/json")
+        response = self.client.put(
+            owner_detail_url, data=put_data, content_type="application/json")
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         response = self.client.patch(
             owner_detail_url, data=patch_data, content_type="application/json"
         )
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         add_perm(self.admin_user, "change_owner")
-        response = self.client.put(owner_detail_url, data=put_data, content_type="application/json")
+        response = self.client.put(
+            owner_detail_url, data=put_data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         response = self.client.patch(
             owner_detail_url, data=patch_data, content_type="application/json"
@@ -170,7 +174,8 @@ class RootAPITestCase(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         response = self.client.post(owner_list_url, data={"name": "Owner3"})
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
-        response = self.client.put(owner_detail_url, data=put_data, content_type="application/json")
+        response = self.client.put(
+            owner_detail_url, data=put_data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         response = self.client.patch(
             owner_detail_url, data=patch_data, content_type="application/json"
@@ -183,17 +188,20 @@ class RootAPITestCase(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         response = self.client.generic("BAD_METHOD", self.root_api_url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
 
         owner_list_url = reverse("api_v2:owner-list")
         owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         owner_detail_url = reverse("api_v2:owner-detail", args=[owner.uuid])
 
         response = self.client.generic("BAD_METHOD", owner_list_url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
 
         response = self.client.generic("BAD_METHOD", owner_detail_url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
 
     def test_root_api_available_endpoints(self):
         self.client.login(username="super_user", password="secret")
@@ -221,8 +229,10 @@ class RootAPITestCase(TestCase):
     def test_api_owner_detail_endpoint_cross_dataspace(self):
         owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         owner_detail_url = reverse("api_v2:owner-detail", args=[owner.uuid])
-        alternate_owner = Owner.objects.create(name="Owner", dataspace=self.alternate_dataspace)
-        alternate_owner_detail_url = reverse("api_v2:owner-detail", args=[alternate_owner.uuid])
+        alternate_owner = Owner.objects.create(
+            name="Owner", dataspace=self.alternate_dataspace)
+        alternate_owner_detail_url = reverse(
+            "api_v2:owner-detail", args=[alternate_owner.uuid])
 
         self.client.login(username="super_user", password="secret")
         response = self.client.get(owner_detail_url)
@@ -232,13 +242,17 @@ class RootAPITestCase(TestCase):
 
     @override_settings(REFERENCE_DATASPACE="alternate")
     def test_api_owner_endpoint_allow_reference_access(self):
-        alternate_owner = Owner.objects.create(name="Alternate", dataspace=self.alternate_dataspace)
-        alternate_owner_detail_url = reverse("api_v2:owner-detail", args=[alternate_owner.uuid])
-        alternate_owner2 = Owner.objects.create(name="Alt2", dataspace=self.alternate_dataspace)
+        alternate_owner = Owner.objects.create(
+            name="Alternate", dataspace=self.alternate_dataspace)
+        alternate_owner_detail_url = reverse(
+            "api_v2:owner-detail", args=[alternate_owner.uuid])
+        alternate_owner2 = Owner.objects.create(
+            name="Alt2", dataspace=self.alternate_dataspace)
 
         owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         owner_detail_url = reverse("api_v2:owner-detail", args=[owner.uuid])
-        copied_owner = copy_object(alternate_owner2, self.dataspace, self.super_user)
+        copied_owner = copy_object(
+            alternate_owner2, self.dataspace, self.super_user)
         copied_owner.name = "Copied"
         copied_owner.save()
 
@@ -259,8 +273,10 @@ class RootAPITestCase(TestCase):
         response = self.client.get(owner_list_url, data=payload)
         json_content = json.loads(response.content)
         self.assertEqual(2, json_content["count"])
-        self.assertEqual(alternate_owner2.name, json_content["results"][0]["name"])
-        self.assertEqual(alternate_owner.name, json_content["results"][1]["name"])
+        self.assertEqual(alternate_owner2.name,
+                         json_content["results"][0]["name"])
+        self.assertEqual(alternate_owner.name,
+                         json_content["results"][1]["name"])
 
         with override_settings(REFERENCE_DATASPACE=None):
             response = self.client.get(owner_list_url, data=payload)
@@ -281,7 +297,8 @@ class RootAPITestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
         with override_settings(REFERENCE_DATASPACE=None):
-            response = self.client.get(alternate_owner_detail_url, data=payload)
+            response = self.client.get(
+                alternate_owner_detail_url, data=payload)
         self.assertEqual(404, response.status_code)
 
         # `combine` value allows to return data from both Dataspaces
@@ -289,8 +306,10 @@ class RootAPITestCase(TestCase):
         response = self.client.get(owner_list_url, data=payload)
         json_content = json.loads(response.content)
         self.assertEqual(4, json_content["count"])
-        self.assertEqual(alternate_owner2.name, json_content["results"][0]["name"])
-        self.assertEqual(alternate_owner.name, json_content["results"][1]["name"])
+        self.assertEqual(alternate_owner2.name,
+                         json_content["results"][0]["name"])
+        self.assertEqual(alternate_owner.name,
+                         json_content["results"][1]["name"])
         self.assertEqual(copied_owner.name, json_content["results"][2]["name"])
         self.assertEqual(owner.name, json_content["results"][3]["name"])
 
@@ -306,7 +325,8 @@ class RootAPITestCase(TestCase):
         response = self.client.get(owner_list_url, data=payload)
         json_content = json.loads(response.content)
         self.assertEqual(3, json_content["count"])
-        self.assertEqual(alternate_owner.name, json_content["results"][0]["name"])
+        self.assertEqual(alternate_owner.name,
+                         json_content["results"][0]["name"])
         self.assertEqual(copied_owner.name, json_content["results"][1]["name"])
         self.assertEqual(owner.name, json_content["results"][2]["name"])
 
@@ -331,7 +351,8 @@ class RootAPITestCase(TestCase):
 
     def test_api_char_field_trim_whitespace(self):
         self.client.login(username="super_user", password="secret")
-        response = self.client.post(reverse("api_v2:owner-list"), data={"name": "  New Owner  "})
+        response = self.client.post(
+            reverse("api_v2:owner-list"), data={"name": "  New Owner  "})
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         owner = Owner.objects.latest("id")
         self.assertEqual("New Owner", owner.name)
@@ -366,13 +387,16 @@ class RootAPITestCase(TestCase):
         # Edit
         url = reverse("api_v2:owner-detail", args=[owner3.uuid])
         patch_data = json.dumps({"uuid": str(generated_uuid)})
-        response = self.client.patch(url, data=patch_data, content_type="application/json")
+        response = self.client.patch(
+            url, data=patch_data, content_type="application/json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        self.assertIn("duplicate key value violates unique constraint", response.data[0])
+        self.assertIn(
+            "duplicate key value violates unique constraint", response.data[0])
 
         generated_uuid = uuid.uuid4()
         patch_data = json.dumps({"uuid": str(generated_uuid)})
-        response = self.client.patch(url, data=patch_data, content_type="application/json")
+        response = self.client.patch(
+            url, data=patch_data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         owner3.refresh_from_db()
         self.assertEqual(generated_uuid, owner3.uuid)
@@ -432,9 +456,11 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         self.base_user = create_user("base_user", self.dataspace)
         self.super_user = create_superuser("super_user", self.dataspace)
 
-        self.external_reference_list_url = reverse("api_v2:externalreference-list")
+        self.external_reference_list_url = reverse(
+            "api_v2:externalreference-list")
 
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace, type="Person")
+        self.owner1 = Owner.objects.create(
+            name="Owner1", dataspace=self.dataspace, type="Person")
 
         self.ext_source1 = ExternalSource.objects.create(
             label="ExternalSource1", dataspace=self.dataspace
@@ -486,17 +512,23 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, self.ext_ref1_detail_url)
         self.assertIn(self.ext_ref1_detail_url, response.data["api_url"])
         self.assertEqual(str(self.ext_ref1.uuid), response.data["uuid"])
-        self.assertEqual(self.ext_source1.label, response.data["external_source"])
+        self.assertEqual(self.ext_source1.label,
+                         response.data["external_source"])
         self.assertIn(
-            reverse("api_v2:owner-detail", args=[self.ext_ref1.content_object.uuid]),
+            reverse("api_v2:owner-detail",
+                    args=[self.ext_ref1.content_object.uuid]),
             response.data["content_object"],
         )
         self.assertEqual(
-            str(self.ext_ref1.content_object), response.data["content_object_display_name"]
+            str(
+                self.ext_ref1.content_object), response.data["content_object_display_name"]
         )
-        self.assertEqual(self.ext_ref1.content_type.model, response.data["content_type"])
-        self.assertEqual(self.ext_ref1.external_url, response.data["external_url"])
-        self.assertEqual(self.ext_ref1.external_id, response.data["external_id"])
+        self.assertEqual(self.ext_ref1.content_type.model,
+                         response.data["content_type"])
+        self.assertEqual(self.ext_ref1.external_url,
+                         response.data["external_url"])
+        self.assertEqual(self.ext_ref1.external_id,
+                         response.data["external_id"])
         self.assertEqual(32, len(response.data["created_date"]))
         self.assertEqual(32, len(response.data["last_modified_date"]))
 
@@ -516,8 +548,10 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         )
         self.assertEqual(expected, response.content)
 
-        new_owner = Owner.objects.create(name="new_owner", dataspace=self.dataspace)
-        owner_detail_url = reverse("api_v2:owner-detail", args=[new_owner.uuid])
+        new_owner = Owner.objects.create(
+            name="new_owner", dataspace=self.dataspace)
+        owner_detail_url = reverse(
+            "api_v2:owner-detail", args=[new_owner.uuid])
 
         data = {
             "content_object": owner_detail_url,
@@ -531,10 +565,12 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
 
         new_ext_ref = ExternalReference.objects.latest("id")
         self.assertEqual(new_ext_ref.content_object, new_owner)
-        self.assertEqual(new_ext_ref.content_type, ContentType.objects.get_for_model(new_owner))
+        self.assertEqual(new_ext_ref.content_type,
+                         ContentType.objects.get_for_model(new_owner))
         self.assertEqual(new_ext_ref.object_id, new_owner.id)
         self.assertEqual(new_ext_ref.dataspace, self.dataspace)
-        self.assertEqual(new_ext_ref.external_url, "https://github.com/nexB/dejacode")
+        self.assertEqual(new_ext_ref.external_url,
+                         "https://github.com/nexB/dejacode")
         self.assertEqual(new_ext_ref.external_id, "dejacode")
 
         # Non-supported object_type
@@ -548,10 +584,12 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         alternate_source = ExternalSource.objects.create(
             label="AlternateSource", dataspace=self.alternate_dataspace
         )
-        alternate_owner = Owner.objects.create(name="Owner", dataspace=self.alternate_dataspace)
+        alternate_owner = Owner.objects.create(
+            name="Owner", dataspace=self.alternate_dataspace)
 
         data["external_source"] = alternate_source
-        data["content_object"] = reverse("api_v2:owner-detail", args=[alternate_owner.uuid])
+        data["content_object"] = reverse(
+            "api_v2:owner-detail", args=[alternate_owner.uuid])
 
         response = self.client.post(self.external_reference_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -564,8 +602,10 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
     def test_api_external_reference_endpoint_update_put(self):
         self.client.login(username="super_user", password="secret")
 
-        component = Component.objects.create(name="c1", dataspace=self.dataspace)
-        external_source2 = ExternalSource.objects.create(label="Source2", dataspace=self.dataspace)
+        component = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
+        external_source2 = ExternalSource.objects.create(
+            label="Source2", dataspace=self.dataspace)
 
         put_data = json.dumps(
             {
@@ -582,14 +622,16 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
 
         self.ext_ref1.refresh_from_db()
         self.assertEqual(self.ext_ref1.content_object, component)
-        self.assertEqual(self.ext_ref1.content_type, ContentType.objects.get_for_model(component))
+        self.assertEqual(self.ext_ref1.content_type,
+                         ContentType.objects.get_for_model(component))
         self.assertEqual(self.ext_ref1.object_id, component.id)
         self.assertEqual(self.ext_ref1.external_url, "https://some.url")
         self.assertEqual(self.ext_ref1.external_id, "new_id")
 
     def test_api_external_reference_serializer_on_content_object_recreate(self):
         self.client.login(username="super_user", password="secret")
-        owner1_detail_url = reverse("api_v2:owner-detail", args=[self.owner1.uuid])
+        owner1_detail_url = reverse(
+            "api_v2:owner-detail", args=[self.owner1.uuid])
         response = self.client.get(owner1_detail_url)
         external_references = response.data["external_references"]
         self.assertEqual(3, len(external_references))
@@ -611,7 +653,8 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(external_reference1_data, response.data)
 
     def test_api_external_reference_endpoint_tab_permission(self):
-        self.assertEqual((TabPermission,), ExternalReferenceViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         ExternalReferenceViewSet.extra_permissions)
 
         self.assertFalse(self.dataspace.tab_permissions_enabled)
         response = self.client.get(self.external_reference_list_url)

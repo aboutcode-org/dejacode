@@ -27,7 +27,7 @@ Software Bill of Materials (SBOMs).
 
 Alternatively, you can conveniently download one of the provided examples from
 the following
-`GitHub repository <https://github.com/nexB/dejacode/tree/main/docs/sboms/>`_.
+`GitHub repository <https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/>`_.
 
 On the Product details page, from the :guilabel:`Scan` dropdown, select
 :guilabel:`Load Packages from SBOMs`:

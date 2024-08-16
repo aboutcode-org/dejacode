@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -51,13 +51,17 @@ class HTMLValidationTestCase(TestCase):
             "license_library:license_list",
             ("license_library:license_details", "nexB", "license1"),
             "component_catalog:component_list",
-            ("component_catalog:component_details", "nexB", "AES", "12th September 2011"),
+            ("component_catalog:component_details",
+             "nexB", "AES", "12th September 2011"),
             ("component_catalog:component_details", "nexB", "Zlib", "1.2.5"),
             "component_catalog:package_list",
-            ("component_catalog:package_details", "nexB", "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"),
+            ("component_catalog:package_details", "nexB",
+             "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"),
             "product_portfolio:product_list",
-            ("product_portfolio:product_details", "nexB", "Starship Widget Framework", "7.1"),
-            ("product_portfolio:product_attribution", "nexB", "Starship Widget Framework", "7.1"),
+            ("product_portfolio:product_details",
+             "nexB", "Starship Widget Framework", "7.1"),
+            ("product_portfolio:product_attribution",
+             "nexB", "Starship Widget Framework", "7.1"),
             "organization:owner_list",
             ("organization:owner_details", "nexB", "Test Organization"),
             "password_reset",
@@ -75,7 +79,8 @@ class HTMLValidationTestCase(TestCase):
         from workflow.models import RequestTemplate
 
         request_template = RequestTemplate.objects.all()[:1].get()
-        ct = ContentType.objects.get(app_label="component_catalog", model="component")
+        ct = ContentType.objects.get(
+            app_label="component_catalog", model="component")
         request = Request.objects.create(
             title="Title",
             request_template=request_template,

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -73,7 +73,8 @@ class UsagePolicyModelsTestCase(TestCase):
         self.assertEqual("#FFFFFF", self.component.get_usage_policy_color())
 
     def test_usage_policy_get_object_set(self):
-        self.assertEqual(list(self.component_policy.get_object_set()), [self.component])
+        self.assertEqual(
+            list(self.component_policy.get_object_set()), [self.component])
 
     def test_usage_policy_get_icon_as_html(self):
         self.assertEqual(
@@ -97,11 +98,13 @@ class UsagePolicyModelsTestCase(TestCase):
 
     def test_usage_policy_get_associated_policy_to_model(self):
         # No associated with same content_type
-        self.assertIsNone(self.license_policy.get_associated_policy_to_model(License))
+        self.assertIsNone(
+            self.license_policy.get_associated_policy_to_model(License))
 
         # None when no associated policy
         self.assertFalse(self.license_policy.to_policies.exists())
-        self.assertIsNone(self.license_policy.get_associated_policy_to_model(Component))
+        self.assertIsNone(
+            self.license_policy.get_associated_policy_to_model(Component))
 
         # 1 proper association from License to Component
         AssociatedPolicy.objects.create(
@@ -112,7 +115,8 @@ class UsagePolicyModelsTestCase(TestCase):
         self.assertEqual(1, self.license_policy.to_policies.count())
         self.assertEqual(1, self.component_policy.from_policies.count())
         self.assertEqual(
-            self.component_policy, self.license_policy.get_associated_policy_to_model(Component)
+            self.component_policy, self.license_policy.get_associated_policy_to_model(
+                Component)
         )
 
         # Associating a second License policy to Component
@@ -125,7 +129,8 @@ class UsagePolicyModelsTestCase(TestCase):
         )
         self.assertEqual(2, self.license_policy.to_policies.count())
         self.assertEqual(1, self.component_policy2.from_policies.count())
-        self.assertIsNone(self.component_policy.get_associated_policy_to_model(License))
+        self.assertIsNone(
+            self.component_policy.get_associated_policy_to_model(License))
 
     def test_associated_policy_model_save(self):
         with self.assertRaises(AssertionError):
@@ -199,4 +204,5 @@ class UsagePolicyModelsTestCase(TestCase):
 
         self.component = Component.objects.get(id=self.component.id)
         self.assertEqual(["error"], self.component.compliance_alerts)
-        self.assertEqual("table-danger", self.component.compliance_table_class())
+        self.assertEqual(
+            "table-danger", self.component.compliance_table_class())

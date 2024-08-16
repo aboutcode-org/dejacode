@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -266,7 +266,8 @@ class LicenseProfileAssignedTag(DataspacedModel):
 
     class Meta:
         ordering = ["license_tag__label"]
-        unique_together = (("license_profile", "license_tag"), ("dataspace", "uuid"))
+        unique_together = (("license_profile", "license_tag"),
+                           ("dataspace", "uuid"))
         verbose_name = _("license profile assigned tag")
 
     def __str__(self):
@@ -388,7 +389,8 @@ class LicenseTagGroupAssignedTag(DataspacedModel):
 
     class Meta:
         ordering = ("license_tag_group__seq", "seq")
-        unique_together = (("license_tag_group", "license_tag"), ("dataspace", "uuid"))
+        unique_together = (
+            ("license_tag_group", "license_tag"), ("dataspace", "uuid"))
 
     def __str__(self):
         # WARNING: This is very un-efficient without the proper select/prefetch_related on the QS.
@@ -494,7 +496,8 @@ class LicenseQuerySet(DataspacedQuerySet):
         )
 
         return list(
-            self.annotate(screen_name=screen_name_annotation).values_list("screen_name", "key")
+            self.annotate(screen_name=screen_name_annotation).values_list(
+                "screen_name", "key")
         )
 
 
@@ -526,14 +529,16 @@ class License(
     name = models.CharField(
         db_index=True,
         max_length=100,
-        help_text=_("The full name of the license, as provided by the original authors."),
+        help_text=_(
+            "The full name of the license, as provided by the original authors."),
     )
 
     short_name = models.CharField(
         db_index=True,
         max_length=50,
         verbose_name=_("Short Name"),
-        help_text=_("Most commonly used name for the license, often abbreviated."),
+        help_text=_(
+            "Most commonly used name for the license, often abbreviated."),
     )
 
     keywords = models.CharField(
@@ -581,14 +586,16 @@ class License(
         _("FAQ URL"),
         max_length=1024,
         blank=True,
-        help_text=_("URL of a page with Frequently Asked Questions about this license."),
+        help_text=_(
+            "URL of a page with Frequently Asked Questions about this license."),
     )
 
     osi_url = models.URLField(
         _("OSI URL"),
         max_length=1024,
         blank=True,
-        help_text=_("URL on the OSI website http://opensource.org for OSI-approved licenses."),
+        help_text=_(
+            "URL on the OSI website http://opensource.org for OSI-approved licenses."),
     )
 
     other_urls = models.TextField(
@@ -612,7 +619,8 @@ class License(
     publication_year = models.CharField(
         max_length=4,
         blank=True,
-        help_text=_("Year this license was first published, in four-digits format."),
+        help_text=_(
+            "Year this license was first published, in four-digits format."),
     )
 
     spdx_license_key = models.CharField(
@@ -793,7 +801,8 @@ class License(
         max_length=10,
         choices=license_library_app.languages,
         blank=True,
-        help_text=_("The language for this license, stored in standard language ID format."),
+        help_text=_(
+            "The language for this license, stored in standard language ID format."),
     )
 
     objects = DataspacedManager.from_queryset(LicenseQuerySet)()
@@ -810,7 +819,8 @@ class License(
         )
         ordering = ["-popularity", "name"]
         permissions = (
-            ("change_usage_policy_on_license", "Can change the usage_policy of license"),
+            ("change_usage_policy_on_license",
+             "Can change the usage_policy of license"),
         )
 
     def __str__(self):
@@ -823,7 +833,8 @@ class License(
 
     def clean(self, from_api=False):
         if self.is_active is False and self.spdx_license_key:
-            raise ValidationError("A deprecated license must not have an SPDX license key.")
+            raise ValidationError(
+                "A deprecated license must not have an SPDX license key.")
         super().clean(from_api)
 
     def _get_unique_checks(self, exclude=None):
@@ -897,7 +908,8 @@ class License(
         ).order_by("license_tag__licensetaggroupassignedtag")
 
         return [
-            (assigned_tag.license_tag.label, assigned_tag.value, assigned_tag.license_tag.text)
+            (assigned_tag.license_tag.label,
+             assigned_tag.value, assigned_tag.license_tag.text)
             for assigned_tag in assigned_tag_qs
             # equivalent to "filter(value=True)" without triggering another Query
             if assigned_tag.value
@@ -934,7 +946,8 @@ class License(
 
         # Building a dictionary with the assigned tags of the current License
         license_tags_dict = {
-            t.license_tag.label: (t.value, t.license_tag.text, t.licenseannotation_set.all())
+            t.license_tag.label: (
+                t.value, t.license_tag.text, t.licenseannotation_set.all())
             for t in license_assigned_tags
         }
 
@@ -954,13 +967,15 @@ class License(
                 # list of tags that are not assigned into a LicenseTagGroup
                 value, text, annotations = license_tags_dict.pop(label)
                 group_name = assigned_tag.license_tag_group.name
-                license_tagset.setdefault(group_name, []).append([label, value, text, annotations])
+                license_tagset.setdefault(group_name, []).append(
+                    [label, value, text, annotations])
 
         # If there is still entries in license_tags_dict, that mean those tags
         # are not assigned into a LicenseTagGroup, we are adding those in the
         # result if the include_no_group is True
         if include_no_group and license_tags_dict:
-            leftover_tags = [[label] + list(values) for label, values in license_tags_dict.items()]
+            leftover_tags = [
+                [label] + list(values) for label, values in license_tags_dict.items()]
             license_tagset.update({"(No Group)": leftover_tags})
 
         return license_tagset
@@ -971,7 +986,8 @@ class License(
 
     def get_tag_value_from_label(self, label):
         try:
-            assigned_tag = LicenseAssignedTag.objects.get(license=self, license_tag__label=label)
+            assigned_tag = LicenseAssignedTag.objects.get(
+                license=self, license_tag__label=label)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return ""  # Empty string rather than Error when no value available
         return str(assigned_tag.value)
@@ -1176,7 +1192,8 @@ class LicenseAnnotation(DataspacedModel):
         target_filter = {"dataspace": target}
 
         try:
-            license = License.objects.get(uuid=self.license.uuid, **target_filter)
+            license = License.objects.get(
+                uuid=self.license.uuid, **target_filter)
         except License.DoesNotExist:
             # Filter using the key if uuid doesn't match
             license_filter = {"license__key": self.license.key}
@@ -1203,7 +1220,8 @@ class LicenseChoiceManager(DataspacedManager):
         licensing = build_licensing()
 
         return [
-            {licensing.parse(choice.from_expression): licensing.parse(choice.to_expression)}
+            {licensing.parse(choice.from_expression)
+                             : licensing.parse(choice.to_expression)}
             for choice in self.scope(dataspace).all()
         ]
 

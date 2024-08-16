@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -101,14 +101,16 @@ class RequestQuerySet(DataspacedQuerySet):
         if not user:
             return self.none()
 
-        product_ct = ContentType.objects.get_by_natural_key("product_portfolio", "product")
+        product_ct = ContentType.objects.get_by_natural_key(
+            "product_portfolio", "product")
         product_qs = product_ct.model_class().objects.get_queryset(user=user)
 
         return (
             self.scope(user.dataspace)
             .filter(
                 # If a product_context is set, Limit to authorized Products
-                Q(product_context__isnull=True) | Q(product_context__in=product_qs),
+                Q(product_context__isnull=True) | Q(
+                    product_context__in=product_qs),
             )
             .exclude(
                 # If a Product type content_object is set, excludes non-authorized Products
@@ -334,7 +336,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
     title = models.CharField(
         max_length=255,
         db_index=True,
-        help_text=_("The Request Title is a concise statement of the Request purpose and content."),
+        help_text=_(
+            "The Request Title is a concise statement of the Request purpose and content."),
     )
 
     cc_emails = ArrayField(
@@ -379,7 +382,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         previous_object_id = None
         is_addition = self.pk
         if is_addition:
-            previous_object_id = self.__class__.objects.get(pk=self.pk).object_id
+            previous_object_id = self.__class__.objects.get(
+                pk=self.pk).object_id
 
         super().save(*args, **kwargs)
 
@@ -391,7 +395,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         # of the previous object instance too. Warning: The previous object may not exist anymore.
         if previous_object_id and previous_object_id != self.object_id:
             try:
-                previous_object = self.content_type.get_object_for_this_type(id=previous_object_id)
+                previous_object = self.content_type.get_object_for_this_type(
+                    id=previous_object_id)
             except ObjectDoesNotExist:
                 return
             previous_object.update_request_count()
@@ -440,7 +445,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
                 value = data["value"]
                 if data["input_type"] == "BooleanField":
                     value = "Yes" if bool(data.get("value")) == 1 else "No"
-                line = str(html_template).format(label=data["label"], value=escape(value))
+                line = str(html_template).format(
+                    label=data["label"], value=escape(value))
             except KeyError:
                 return 'Error in the "Serialized data" value.'
             else:
@@ -632,8 +638,10 @@ class RequestComment(AbstractRequestEvent):
         from workflow.api import RequestCommentSerializer
         from workflow.api import RequestSerializer
 
-        comment_serializer = RequestCommentSerializer(self, context={"request": None})
-        request_serializer = RequestSerializer(self.request, context={"request": None})
+        comment_serializer = RequestCommentSerializer(
+            self, context={"request": None})
+        request_serializer = RequestSerializer(
+            self.request, context={"request": None})
 
         data = comment_serializer.data
         data["request"] = request_serializer.data
@@ -680,7 +688,8 @@ class RequestTemplate(HistoryFieldsMixin, DataspacedModel):
         on_delete=models.PROTECT,
         verbose_name=_("object type"),
         limit_choices_to=CONTENT_TYPES,
-        help_text=_("You can define one Request Template for each application object."),
+        help_text=_(
+            "You can define one Request Template for each application object."),
     )
 
     is_active = models.BooleanField(
@@ -792,7 +801,8 @@ class Question(DataspacedModel):
 
     is_required = models.BooleanField(
         default=False,
-        help_text=_("Indicate if the requestor must enter a value in the answer"),
+        help_text=_(
+            "Indicate if the requestor must enter a value in the answer"),
     )
 
     position = models.PositiveSmallIntegerField()
@@ -848,7 +858,8 @@ class RequestMixin(models.Model):
 
         if strored_count != true_count:
             # Use the unsecured_manager to bypass the security system and get the proper count
-            get_unsecured_manager(model_class).filter(pk=self.pk).update(request_count=true_count)
+            get_unsecured_manager(model_class).filter(
+                pk=self.pk).update(request_count=true_count)
             msg = f"Updated <{model_class.__name__} id={self.pk}>.request_count={true_count}"
             logger.debug(msg)
             return True
@@ -905,5 +916,6 @@ class RequestAttachment(HistoryDateFieldsMixin, DataspacedModel):
         can delete an Attachment.
         """
         return user == self.uploader or (
-            user.is_staff and user.has_perm("workflow.delete_requestattachment")
+            user.is_staff and user.has_perm(
+                "workflow.delete_requestattachment")
         )

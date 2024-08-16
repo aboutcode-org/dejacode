@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -118,13 +118,15 @@ class PurlDBViewsTestCase(TestCase):
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
         self.nexb_user = create_superuser("nexb_user", self.nexb_dataspace)
         self.basic_user = create_user("basic_user", self.nexb_dataspace)
-        self.alternate_user = create_superuser("alternate_user", self.alternate_dataspace)
+        self.alternate_user = create_superuser(
+            "alternate_user", self.alternate_dataspace)
         self.license1 = License.objects.create(
             key="mit",
             name="MIT",
             short_name="MIT",
             dataspace=self.nexb_dataspace,
-            owner=Owner.objects.create(name="Owner1", dataspace=self.nexb_dataspace),
+            owner=Owner.objects.create(
+                name="Owner1", dataspace=self.nexb_dataspace),
         )
 
     def test_purldb_views_availability(self):
@@ -135,13 +137,17 @@ class PurlDBViewsTestCase(TestCase):
         response = self.client.get(list_url)
         self.assertRedirects(response, "/login/?next=/purldb/")
         response = self.client.get(details_url)
-        self.assertRedirects(response, "/login/?next=/purldb/{}/".format(purldb_uuid))
+        self.assertRedirects(
+            response, "/login/?next=/purldb/{}/".format(purldb_uuid))
 
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(list_url)
-        self.assertContains(response, "<h1>403 Forbidden</h1>", status_code=403)
+        self.assertContains(
+            response, "<h1>403 Forbidden</h1>", status_code=403)
         response = self.client.get(details_url)
-        self.assertContains(response, "<h1>403 Forbidden</h1>", status_code=403)
+        self.assertContains(
+            response, "<h1>403 Forbidden</h1>", status_code=403)
 
         self.client.login(username=self.basic_user.username, password="secret")
         response = self.client.get(list_url)
@@ -199,7 +205,8 @@ class PurlDBViewsTestCase(TestCase):
         self.client.login(username=self.nexb_user.username, password="secret")
 
         response = self.client.get(list_url + "?sort=-name&type=pypi")
-        self.assertContains(response, 'data-bs-target="#purldb-filterset-modal"')
+        self.assertContains(
+            response, 'data-bs-target="#purldb-filterset-modal"')
         self.assertContains(response, 'id="purldb-filterset-modal"')
         self.assertContains(
             response, '<option value="-name" selected>Name (descending)</option>', html=True
@@ -225,7 +232,8 @@ class PurlDBViewsTestCase(TestCase):
         self.assertContains(response, '<input type="text" name="purl"')
 
     def test_purldb_details_view_content(self):
-        details_url = reverse("purldb:purldb_details", args=[purldb_entry["uuid"]])
+        details_url = reverse("purldb:purldb_details",
+                              args=[purldb_entry["uuid"]])
         self.client.login(username=self.nexb_user.username, password="secret")
 
         response = self.client.get(details_url)
@@ -279,7 +287,8 @@ class PurlDBViewsTestCase(TestCase):
         response = self.client.get(search_table_url)
         self.assertEqual(302, response.status_code)
 
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(search_table_url)
         self.assertEqual(403, response.status_code)
 

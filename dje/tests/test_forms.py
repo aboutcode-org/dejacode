@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -31,7 +31,8 @@ class DJEFormsTestCase(TestCase):
         )
         self.assertEqual(expected, label)
 
-        label = TabPermissionsForm.get_choice_label(tab_name="activity", tab_fields=None)
+        label = TabPermissionsForm.get_choice_label(
+            tab_name="activity", tab_fields=None)
         expected = "Activity"
         self.assertEqual(expected, label)
 
@@ -45,7 +46,8 @@ class DJEFormsTestCase(TestCase):
             "external_references",
             "history",
         ]
-        tab_labels = list(tab_name for tab_name, _ in tab_form.fields["owner"].choices)
+        tab_labels = list(tab_name for tab_name,
+                          _ in tab_form.fields["owner"].choices)
         self.assertEqual(expected, tab_labels)
 
     def test_tabs_permission_formset_serialize_perms(self):
@@ -68,7 +70,8 @@ class DJEFormsTestCase(TestCase):
         self.assertEqual(0, DataspaceConfiguration.objects.count())
         TabPermissionsFormSet().save(self.dataspace1)
 
-        configuration = DataspaceConfiguration.objects.get(dataspace=self.dataspace1)
+        configuration = DataspaceConfiguration.objects.get(
+            dataspace=self.dataspace1)
         self.assertEqual({}, configuration.tab_permissions)
 
         data = {
@@ -82,7 +85,8 @@ class DJEFormsTestCase(TestCase):
         formset = TabPermissionsFormSet(data)
         self.assertTrue(formset.is_valid())
         formset.save(self.dataspace1)
-        configuration = DataspaceConfiguration.objects.get(dataspace=self.dataspace1)
+        configuration = DataspaceConfiguration.objects.get(
+            dataspace=self.dataspace1)
         expected = {"Legal": {"package": ["license", "components"]}}
         self.assertEqual(expected, configuration.tab_permissions)
 
@@ -112,7 +116,8 @@ class DJEFormsTestCase(TestCase):
         dataspaced_models = CopyDefaultsForm.get_all_dataspaced_models()
         self.assertEqual(9, len(dataspaced_models))
         self.assertEqual(7, len(dataspaced_models.get("Component Catalog")))
-        self.assertIn("Subcomponent", str(dataspaced_models.get("Component Catalog")))
+        self.assertIn("Subcomponent", str(
+            dataspaced_models.get("Component Catalog")))
 
     def test_copy_defaults_formset_serialize_perms(self):
         self.assertEqual({}, CopyDefaultsFormSet().serialize())
@@ -133,7 +138,8 @@ class DJEFormsTestCase(TestCase):
         self.assertEqual(0, DataspaceConfiguration.objects.count())
         CopyDefaultsFormSet().save(self.dataspace1)
 
-        configuration = DataspaceConfiguration.objects.get(dataspace=self.dataspace1)
+        configuration = DataspaceConfiguration.objects.get(
+            dataspace=self.dataspace1)
         self.assertEqual({}, configuration.copy_defaults)
 
         data = {
@@ -146,7 +152,8 @@ class DJEFormsTestCase(TestCase):
         formset = CopyDefaultsFormSet(data)
         self.assertTrue(formset.is_valid())
         formset.save(self.dataspace1)
-        configuration = DataspaceConfiguration.objects.get(dataspace=self.dataspace1)
+        configuration = DataspaceConfiguration.objects.get(
+            dataspace=self.dataspace1)
         expected = {"DejaCode": {"external source": ["homepage_url"]}}
         self.assertEqual(expected, configuration.copy_defaults)
 
@@ -163,5 +170,6 @@ class DJEFormsTestCase(TestCase):
         initial = [{"app_name": "DejaCode"}]
         formset = CopyDefaultsFormSet(initial=initial)
         formset.load(self.dataspace1)
-        expected = [{"app_name": "DejaCode", "external source": ["homepage_url"]}]
+        expected = [{"app_name": "DejaCode",
+                     "external source": ["homepage_url"]}]
         self.assertEqual(expected, formset.initial)

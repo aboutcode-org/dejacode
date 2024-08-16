@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -50,7 +50,8 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.root_api_url = reverse("api_v2:api-root")
         self.annotation_list_url = reverse("api_v2:licenseannotation-list")
 
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",
@@ -121,11 +122,14 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.client.login(username=self.admin_user.username, password="secret")
         response = self.client.get(self.annotation_list_url)
         self.assertEqual(200, response.status_code)
-        response = self.client.post(self.annotation_list_url, json_data, "application/json")
+        response = self.client.post(
+            self.annotation_list_url, json_data, "application/json")
         self.assertEqual(403, response.status_code)
-        response = self.client.put(self.annotation1_detail_url, json_data, "application/json")
+        response = self.client.put(
+            self.annotation1_detail_url, json_data, "application/json")
         self.assertEqual(403, response.status_code)
-        response = self.client.patch(self.annotation1_detail_url, json_data, "application/json")
+        response = self.client.patch(
+            self.annotation1_detail_url, json_data, "application/json")
         self.assertEqual(403, response.status_code)
         response = self.client.delete(self.annotation1_detail_url)
         self.assertEqual(403, response.status_code)
@@ -133,11 +137,14 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(self.annotation_list_url)
         self.assertEqual(200, response.status_code)
-        response = self.client.post(self.annotation_list_url, json_data, "application/json")
+        response = self.client.post(
+            self.annotation_list_url, json_data, "application/json")
         self.assertEqual(201, response.status_code)
-        response = self.client.put(self.annotation1_detail_url, json_data, "application/json")
+        response = self.client.put(
+            self.annotation1_detail_url, json_data, "application/json")
         self.assertEqual(200, response.status_code)
-        response = self.client.patch(self.annotation1_detail_url, json_data, "application/json")
+        response = self.client.patch(
+            self.annotation1_detail_url, json_data, "application/json")
         self.assertEqual(200, response.status_code)
         response = self.client.delete(self.annotation1_detail_url)
         self.assertEqual(204, response.status_code)
@@ -179,21 +186,26 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.client.login(username=self.super_user.username, password="secret")
 
         response = self.client.post(
-            self.annotation_list_url, json.dumps(self.base_post_data), "application/json"
+            self.annotation_list_url, json.dumps(
+                self.base_post_data), "application/json"
         )
 
         # Making sure the data is added in the Database
-        self.assertEqual(annotations_count + 1, LicenseAnnotation.objects.count())
+        self.assertEqual(annotations_count + 1,
+                         LicenseAnnotation.objects.count())
         new_annotation = LicenseAnnotation.objects.latest("id")
         self.assertEqual(self.base_post_data["text"], new_annotation.text)
         self.assertEqual(self.base_post_data["quote"], new_annotation.quote)
-        self.assertEqual(self.base_post_data["license"], new_annotation.license_id)
+        self.assertEqual(
+            self.base_post_data["license"], new_annotation.license_id)
         self.assertEqual(244, new_annotation.range_start_offset)
         self.assertEqual(265, new_annotation.range_end_offset)
-        self.assertEqual(self.license_assigned_tag1, new_annotation.assigned_tag)
+        self.assertEqual(self.license_assigned_tag1,
+                         new_annotation.assigned_tag)
 
         # Making sure the History entry on the License was created
-        history = History.objects.get_for_object(self.license1, action_flag=History.CHANGE).get()
+        history = History.objects.get_for_object(
+            self.license1, action_flag=History.CHANGE).get()
         self.assertEqual(
             'Added a license annotation for tag: "Tag 1: True".', history.get_change_message()
         )
@@ -231,7 +243,8 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.assertEqual("Permission is granted", self.annotation1.quote)
         self.assertEqual(244, self.annotation1.range_start_offset)
 
-        history = History.objects.get_for_object(self.license1, action_flag=History.CHANGE).get()
+        history = History.objects.get_for_object(
+            self.license1, action_flag=History.CHANGE).get()
         self.assertEqual(
             'Changed a license annotation for tag: "Tag 1: True".', history.get_change_message()
         )
@@ -241,9 +254,11 @@ class LicenseAnnotationAPITestCase(TestCase):
         self.client.login(username=self.super_user.username, password="secret")
 
         self.client.delete(self.annotation1_detail_url)
-        self.assertEqual(annotations_count - 1, LicenseAnnotation.objects.count())
+        self.assertEqual(annotations_count - 1,
+                         LicenseAnnotation.objects.count())
 
-        history = History.objects.get_for_object(self.license1, action_flag=History.CHANGE).get()
+        history = History.objects.get_for_object(
+            self.license1, action_flag=History.CHANGE).get()
         self.assertEqual(
             'Deleted a license annotation for tag: "Tag 1: True".', history.get_change_message()
         )
@@ -267,7 +282,8 @@ class LicenseAnnotationAPITestCase(TestCase):
 
         data = {"license": "mit"}
         response = self.client.get(self.annotation_list_url, data=data)
-        expected = {"license": [ErrorDetail(string="Enter a number.", code="invalid")]}
+        expected = {"license": [ErrorDetail(
+            string="Enter a number.", code="invalid")]}
         self.assertEqual(expected, response.data)
 
         data = {"license": annotation2.license_id}
@@ -294,14 +310,16 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
 
         self.license_list_url = reverse("api_v2:license-list")
 
-        self.owner1 = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
 
         self.category1 = LicenseCategory.objects.create(
             label="1: Category 1",
             text="Some text",
             dataspace=self.dataspace,
         )
-        self.license_style1 = LicenseStyle.objects.create(name="style1", dataspace=self.dataspace)
+        self.license_style1 = LicenseStyle.objects.create(
+            name="style1", dataspace=self.dataspace)
         self.license_status1 = LicenseStatus.objects.create(
             code="status1", text="Approved", dataspace=self.dataspace
         )
@@ -314,12 +332,14 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
             dataspace=self.dataspace,
             is_active=True,
         )
-        self.license1_detail_url = reverse("api_v2:license-detail", args=[self.license1.uuid])
+        self.license1_detail_url = reverse(
+            "api_v2:license-detail", args=[self.license1.uuid])
 
         self.license2 = License.objects.create(
             key="l2", name="L2", short_name="L2", owner=self.owner1, dataspace=self.dataspace
         )
-        self.license2_detail_url = reverse("api_v2:license-detail", args=[self.license2.uuid])
+        self.license2_detail_url = reverse(
+            "api_v2:license-detail", args=[self.license2.uuid])
 
         self.license_tag1 = LicenseTag.objects.create(
             label="Tag 1", text="Text for tag1", dataspace=self.dataspace
@@ -357,11 +377,15 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
             dataspace=self.dataspace,
         )
 
-        ext_source1 = ExternalSource.objects.create(label="GitHub", dataspace=self.dataspace)
+        ext_source1 = ExternalSource.objects.create(
+            label="GitHub", dataspace=self.dataspace)
 
-        ExternalReference.objects.create_for_content_object(self.license1, ext_source1, "REF1")
-        ExternalReference.objects.create_for_content_object(self.license1, ext_source1, "REF2")
-        ExternalReference.objects.create_for_content_object(self.license1, ext_source1, "REF3")
+        ExternalReference.objects.create_for_content_object(
+            self.license1, ext_source1, "REF1")
+        ExternalReference.objects.create_for_content_object(
+            self.license1, ext_source1, "REF2")
+        ExternalReference.objects.create_for_content_object(
+            self.license1, ext_source1, "REF3")
 
     def test_api_license_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -415,7 +439,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
         license3 = License.objects.create(
             key="l3", name="L3", short_name="L3", owner=self.owner1, dataspace=self.dataspace
         )
-        license3_detail_url = reverse("api_v2:license-detail", args=[license3.uuid])
+        license3_detail_url = reverse(
+            "api_v2:license-detail", args=[license3.uuid])
 
         filters = "?key={}&key={}".format(self.license1.key, license3.key)
         response = self.client.get(self.license_list_url + filters)
@@ -447,16 +472,19 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_tags, expected_tags)
         self.assertEqual(3, len(response.data["external_references"]))
         self.assertEqual(self.license1.urn, response.data["urn"])
-        self.assertEqual(self.license1.spdx_license_key, response.data["spdx_license_key"])
+        self.assertEqual(self.license1.spdx_license_key,
+                         response.data["spdx_license_key"])
         self.assertEqual(self.license1.spdx_url, response.data["spdx_url"])
 
         self.assertEqual(self.owner1.name, response.data["owner_abcd"]["name"])
-        self.assertEqual(str(self.owner1.uuid), response.data["owner_abcd"]["uuid"])
+        self.assertEqual(str(self.owner1.uuid),
+                         response.data["owner_abcd"]["uuid"])
 
         self.license1.spdx_license_key = "LicenseRef-Apache-2.0"
         self.license1.save()
         response = self.client.get(self.license1_detail_url)
-        self.assertEqual(self.license1.spdx_license_key, response.data["spdx_license_key"])
+        self.assertEqual(self.license1.spdx_license_key,
+                         response.data["spdx_license_key"])
         self.assertIsNone(response.data["spdx_url"])
 
     def test_api_license_endpoint_create_minimal(self):
@@ -529,7 +557,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
         data["is_active"] = False
         response = self.client.post(self.license_list_url, data=data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"non_field_errors": ["A deprecated license must not have an SPDX license key."]}
+        expected = {"non_field_errors": [
+            "A deprecated license must not have an SPDX license key."]}
         self.assertEqual(expected, response.data)
 
         data["is_active"] = True
@@ -602,9 +631,11 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
             if field_name in ["last_modified_date", "license_profile"]:
                 continue
             if field_name == "license_status":
-                self.assertEqual(self.license_status1, getattr(license, field_name))
+                self.assertEqual(self.license_status1,
+                                 getattr(license, field_name))
                 continue
-            self.assertEqual(str(value), str(getattr(license, field_name)), msg=field_name)
+            self.assertEqual(str(value), str(
+                getattr(license, field_name)), msg=field_name)
 
         expected = 'Added License: "Beer-Ware License (beerware)"'
         self.assertEqual(expected, mail.outbox[0].subject)
@@ -631,7 +662,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
             self.license_list_url, data=json.dumps(data), content_type="application/json"
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"tags": [{"label": ["Object with label=Non existing does not exist."]}]}
+        expected = {
+            "tags": [{"label": ["Object with label=Non existing does not exist."]}]}
         self.assertEqual(expected, response.data)
 
         data["tags"][0]["label"] = self.license_tag1.label
@@ -647,7 +679,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.license_tag1, assigned_tag.license_tag)
 
         data["tags"][0]["value"] = True
-        created_license_detail_url = reverse("api_v2:license-detail", args=[created_license.uuid])
+        created_license_detail_url = reverse(
+            "api_v2:license-detail", args=[created_license.uuid])
         response = self.client.put(
             created_license_detail_url, data=json.dumps(data), content_type="application/json"
         )

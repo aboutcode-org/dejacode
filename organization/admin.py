@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -49,8 +49,10 @@ class OwnerAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
         AsNaturalTime("last_modified_date", short_description="Last modified"),
         "name",
         "alias",
-        AsURL("homepage_url", short_description="Homepage URL", html_class="word-break"),
-        AsURL("contact_info", short_description="Contact information", html_class="word-break"),
+        AsURL("homepage_url", short_description="Homepage URL",
+              html_class="word-break"),
+        AsURL("contact_info", short_description="Contact information",
+              html_class="word-break"),
         "get_license_links",
         "get_components_links",
         "type_label",

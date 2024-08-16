@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -32,16 +32,21 @@ class RequestFilterTest(TestCase):
             "basic_user", self.nexb_dataspace, workflow_email_notification=True
         )
         self.other_user = create_superuser("other_user", self.other_dataspace)
-        self.requester_user = create_user("requester_user", self.nexb_dataspace)
+        self.requester_user = create_user(
+            "requester_user", self.nexb_dataspace)
 
-        self.priority1 = Priority.objects.create(label="Urgent", dataspace=self.nexb_dataspace)
-        self.priority2 = Priority.objects.create(label="Low", dataspace=self.nexb_dataspace)
-        self.other_priority = Priority.objects.create(label="Top", dataspace=self.other_dataspace)
+        self.priority1 = Priority.objects.create(
+            label="Urgent", dataspace=self.nexb_dataspace)
+        self.priority2 = Priority.objects.create(
+            label="Low", dataspace=self.nexb_dataspace)
+        self.other_priority = Priority.objects.create(
+            label="Top", dataspace=self.other_dataspace)
 
         self.component_ct = ContentType.objects.get(
             app_label="component_catalog", model="component"
         )
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
 
         self.request_template1 = RequestTemplate.objects.create(
             name="Template1",
@@ -122,10 +127,14 @@ class RequestFilterTest(TestCase):
         self.assertNotContains(response, self.requester_user.username)
         self.assertNotContains(response, self.other_user.username)
 
-        self.assertContains(response, "?requester={}".format(self.nexb_user.username))
-        self.assertContains(response, "?requester={}".format(self.basic_user.username))
-        self.assertNotContains(response, "?requester={}".format(self.requester_user.username))
-        self.assertNotContains(response, "?requester={}".format(self.other_user.username))
+        self.assertContains(
+            response, "?requester={}".format(self.nexb_user.username))
+        self.assertContains(
+            response, "?requester={}".format(self.basic_user.username))
+        self.assertNotContains(response, "?requester={}".format(
+            self.requester_user.username))
+        self.assertNotContains(
+            response, "?requester={}".format(self.other_user.username))
 
     def test_request_filterset_related_only_values_filter(self):
         self.assertEqual(
@@ -135,14 +144,17 @@ class RequestFilterTest(TestCase):
 
         scoped_qs = Request.objects.scope(self.nexb_dataspace)
 
-        filterset = RequestFilterSet(dataspace=self.nexb_dataspace, queryset=scoped_qs)
+        filterset = RequestFilterSet(
+            dataspace=self.nexb_dataspace, queryset=scoped_qs)
         self.assertEqual([self.request2, self.request1], list(filterset.qs))
         self.assertEqual(
-            [self.basic_user, self.nexb_user], list(filterset.filters["requester"].queryset)
+            [self.basic_user, self.nexb_user], list(
+                filterset.filters["requester"].queryset)
         )
         self.assertEqual([], list(filterset.filters["assignee"].queryset))
         self.assertEqual(
-            [self.priority2, self.priority1], list(filterset.filters["priority"].queryset)
+            [self.priority2, self.priority1], list(
+                filterset.filters["priority"].queryset)
         )
         self.assertEqual(
             [BLANK_CHOICE_DASH[0], ("open", "Open"), ("closed", "Closed")],
@@ -150,21 +162,26 @@ class RequestFilterTest(TestCase):
         )
 
         filterset = RequestFilterSet(
-            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={"q": "no_match"}
+            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={
+                "q": "no_match"}
         )
         self.assertEqual([], list(filterset.qs))
         self.assertEqual([], list(filterset.filters["requester"].queryset))
         self.assertEqual([], list(filterset.filters["assignee"].queryset))
         self.assertEqual([], list(filterset.filters["priority"].queryset))
-        self.assertEqual(BLANK_CHOICE_DASH, list(filterset.filters["status"].field.choices))
+        self.assertEqual(BLANK_CHOICE_DASH, list(
+            filterset.filters["status"].field.choices))
 
         filterset = RequestFilterSet(
-            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={"q": self.request1.title}
+            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={
+                "q": self.request1.title}
         )
         self.assertEqual([self.request1], list(filterset.qs))
-        self.assertEqual([self.nexb_user], list(filterset.filters["requester"].queryset))
+        self.assertEqual([self.nexb_user], list(
+            filterset.filters["requester"].queryset))
         self.assertEqual([], list(filterset.filters["assignee"].queryset))
-        self.assertEqual([self.priority1], list(filterset.filters["priority"].queryset))
+        self.assertEqual([self.priority1], list(
+            filterset.filters["priority"].queryset))
         self.assertEqual(
             [BLANK_CHOICE_DASH[0], ("open", "Open")],
             list(filterset.filters["status"].field.choices),
@@ -172,12 +189,15 @@ class RequestFilterTest(TestCase):
 
         # The current filter value does not apply to itself
         filterset = RequestFilterSet(
-            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={"status": self.request1.status}
+            dataspace=self.nexb_dataspace, queryset=scoped_qs, data={
+                "status": self.request1.status}
         )
         self.assertEqual([self.request1], list(filterset.qs))
-        self.assertEqual([self.nexb_user], list(filterset.filters["requester"].queryset))
+        self.assertEqual([self.nexb_user], list(
+            filterset.filters["requester"].queryset))
         self.assertEqual([], list(filterset.filters["assignee"].queryset))
-        self.assertEqual([self.priority1], list(filterset.filters["priority"].queryset))
+        self.assertEqual([self.priority1], list(
+            filterset.filters["priority"].queryset))
         self.assertEqual(
             [BLANK_CHOICE_DASH[0], ("open", "Open"), ("closed", "Closed")],
             list(filterset.filters["status"].field.choices),
@@ -191,15 +211,18 @@ class RequestFilterTest(TestCase):
         self.assertEqual(3, len(request_filter.qs))
 
         data = {"q": ""}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(3, len(request_filter.qs))
 
         data = {"q": self.request1.notes}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
 
         data = {"q": "wrong value"}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(0, len(request_filter.qs))
 
         product1 = self.product_ct.model_class().objects.create(
@@ -209,13 +232,16 @@ class RequestFilterTest(TestCase):
         self.request1.save()
 
         data = {"q": product1.name}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
         data = {"q": product1.version}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
         data = {"q": str(product1)}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
 
         component1 = self.component_ct.model_class().objects.create(
@@ -225,19 +251,23 @@ class RequestFilterTest(TestCase):
         self.request1.save()
 
         data = {"q": component1.name}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
         data = {"q": component1.version}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
         data = {"q": str(component1)}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(1, len(request_filter.qs))
 
     def test_request_filter_sort_default_by_recent_activity(self):
         request_filter = RequestFilterSet(dataspace=self.nexb_dataspace)
         expected = "Recent activity (default)"
-        self.assertEqual(expected, request_filter.filters["sort"].extra["empty_label"])
+        self.assertEqual(
+            expected, request_filter.filters["sort"].extra["empty_label"])
         self.assertEqual(self.other_request, request_filter.qs[0])
 
         self.request1.save()
@@ -250,17 +280,21 @@ class RequestFilterTest(TestCase):
     def test_request_filter_sort_by_newest(self):
         request_filter = RequestFilterSet(dataspace=self.nexb_dataspace)
         expected = ("-created_date", "Newest")
-        self.assertIn(expected, request_filter.filters["sort"].extra["choices"])
+        self.assertIn(
+            expected, request_filter.filters["sort"].extra["choices"])
         self.assertEqual(self.other_request, request_filter.qs[0])
 
-        Request.objects.filter(id=self.request1.id).update(created_date=timezone.now())
+        Request.objects.filter(id=self.request1.id).update(
+            created_date=timezone.now())
         data = {"sort": "-created_date"}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(self.request1, request_filter.qs[0])
 
     def test_request_filter_following(self):
         data = {"following": "yes"}
-        request_filter = RequestFilterSet(data=data, dataspace=self.nexb_dataspace)
+        request_filter = RequestFilterSet(
+            data=data, dataspace=self.nexb_dataspace)
         self.assertEqual(3, len(request_filter.qs))
 
         mock_request = mock.Mock()

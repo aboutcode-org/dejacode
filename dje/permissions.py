@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -12,7 +12,8 @@ from guardian.shortcuts import get_perms_for_model
 
 def get_protected_fields(model_class, user):
     """Return the list of protected fields names for the given `user`."""
-    protected_fields = getattr(model_class(), "permission_protected_fields", {})
+    protected_fields = getattr(
+        model_class(), "permission_protected_fields", {})
 
     return [
         field_name

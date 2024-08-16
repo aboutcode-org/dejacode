@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -152,7 +152,8 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
             "explicit_end": False,
         }
 
-        yaml_dump = yaml.safe_dump({"license_policies": licenses}, **dump_kwargs)
+        yaml_dump = yaml.safe_dump(
+            {"license_policies": licenses}, **dump_kwargs)
 
         response = HttpResponse(yaml_dump, content_type="application/x-yaml")
         response["Content-Disposition"] = 'attachment; filename="license_policies.yml"'

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -49,7 +49,8 @@ class URNTestCase(TestCase):
         self.assertEqual("urn:dje:component:name+space:version+space", u1)
 
     def test_urn_build_component_leading_and_trailing_spaces_are_trimmed_and_ignored(self):
-        u1 = urn.build(" component ", name=" name space    ", version="""  version space """)
+        u1 = urn.build(" component ", name=" name space    ",
+                       version="""  version space """)
         self.assertEqual("urn:dje:component:name+space:version+space", u1)
 
     def test_urn_build_component_with_semicolon_are_properly_quoted(self):
@@ -85,7 +86,8 @@ class URNTestCase(TestCase):
         self.assertEqual(parsed, urn.parse(u))
 
     def test_urn_parse_build_is_idempotent(self):
-        u1 = urn.build("component", owner__name="org%", name="name%", version="version%")
+        u1 = urn.build("component", owner__name="org%",
+                       name="name%", version="version%")
         m, f = urn.parse(u1)
         u3 = urn.build(m, **f)
         self.assertEqual(u1, u3)
@@ -95,7 +97,8 @@ class URNTestCase(TestCase):
         expected = "urn:dje:owner:V%C3%A1zquez+Ara%C3%BAjo"
         self.assertEqual(expected, u1)
 
-        self.assertEqual(("owner", {"name": "V\xe1zquez Ara\xfajo"}), urn.parse(u1))
+        self.assertEqual(
+            ("owner", {"name": "V\xe1zquez Ara\xfajo"}), urn.parse(u1))
 
         u1 = urn.build("owner", name="V\xe1zquez Ara\xfajo")
         self.assertEqual(expected, u1)

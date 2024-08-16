@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -24,7 +24,8 @@ class OwnerModelsTestCase(TestCase):
         self.user = get_user_model().objects.create_user(
             "test", "test@test.com", "t3st", self.dataspace
         )
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.other_owner = Owner.objects.create(
             name="Other Organization", dataspace=self.other_dataspace
         )
@@ -33,7 +34,8 @@ class OwnerModelsTestCase(TestCase):
         self.assertEqual((self.user.username,), self.user.natural_key())
 
     def test_user_get_by_natural_key(self):
-        self.assertEqual(get_user_model().objects.get_by_natural_key("test"), self.user)
+        self.assertEqual(
+            get_user_model().objects.get_by_natural_key("test"), self.user)
 
     def test_owner_unique_filters_for(self):
         selector = self.owner.unique_filters_for(self.other_dataspace)
@@ -76,8 +78,10 @@ class OwnerCopyTestCase(TestCase):
             "other_user", "test2@test.com", "t3st", self.dataspace2
         )
 
-        self.owner1 = Owner.objects.create(name="owner1", dataspace=self.dataspace1)
-        self.owner2 = Owner.objects.create(name="owner2", dataspace=self.dataspace1)
+        self.owner1 = Owner.objects.create(
+            name="owner1", dataspace=self.dataspace1)
+        self.owner2 = Owner.objects.create(
+            name="owner2", dataspace=self.dataspace1)
 
         self.person1 = Owner.objects.create(
             name="person1", type="Person", dataspace=self.dataspace1
@@ -121,7 +125,8 @@ class OwnerCopyTestCase(TestCase):
             dataspace=self.owner2.dataspace,
         )
 
-        self.target_dataspace = Dataspace.objects.create(name="target_dataspace")
+        self.target_dataspace = Dataspace.objects.create(
+            name="target_dataspace")
 
     def _create_simple_owner(self):
         self.assertEqual(4, Owner.objects.count())
@@ -154,10 +159,12 @@ class OwnerCopyTestCase(TestCase):
         self._obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace()
 
     def test_obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace_update(self):
-        self._obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace(update=True)
+        self._obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace(
+            update=True)
 
     def test_obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace_noop(self):
-        self._obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace(None)
+        self._obj_copy_basic_for_owner_fails_if_target_is_not_an_dataspace(
+            None)
 
     def _check_that_copy_succeeded(self, owner):
         copied_owner_name = Owner.objects.get(
@@ -206,7 +213,8 @@ class OwnerCopyTestCase(TestCase):
         # for a noop no new owner should be created and no update of the data should take place
         self.assertEqual(6, Owner.objects.count())
 
-        target_owner = Owner.objects.get(dataspace=self.target_dataspace, name="owner_common")
+        target_owner = Owner.objects.get(
+            dataspace=self.target_dataspace, name="owner_common")
         # our owner fields should NOT have been updated
         self.assertEqual("joe@nxb.com", target_owner.contact_info)
         self.assertEqual("notes2", target_owner.notes)
@@ -218,7 +226,8 @@ class OwnerCopyTestCase(TestCase):
         # for an update no new owner should be created
         self.assertEqual(6, Owner.objects.count())
 
-        target_owner = Owner.objects.get(dataspace=self.target_dataspace, name="owner_common")
+        target_owner = Owner.objects.get(
+            dataspace=self.target_dataspace, name="owner_common")
         # our owner fields should be updated
         self.assertEqual("li@nxb.com", target_owner.contact_info)
         self.assertEqual("notes", target_owner.notes)

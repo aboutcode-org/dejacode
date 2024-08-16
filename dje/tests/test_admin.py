@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -37,22 +37,26 @@ class DataspacedModelAdminTestCase(TestCase):
         self.super_user = create_superuser("super_user", self.dataspace)
         self.other_user = create_superuser("other", self.other_dataspace)
 
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Owner1", dataspace=self.dataspace)
 
     def test_admin_history_view_dataspace_security(self):
-        url_history = reverse("admin:organization_owner_history", args=[self.owner1.pk])
+        url_history = reverse(
+            "admin:organization_owner_history", args=[self.owner1.pk])
 
         # Not logged-in
         self.assertEqual(302, self.client.get(url_history).status_code)
 
-        self.assertTrue(self.client.login(username=self.super_user.username, password="secret"))
+        self.assertTrue(self.client.login(
+            username=self.super_user.username, password="secret"))
         self.assertEqual(200, self.client.get(url_history).status_code)
 
         self.assertTrue(self.client.login(username="other", password="secret"))
         self.assertEqual(403, self.client.get(url_history).status_code)
 
     def test_admin_history_view_content(self):
-        url_history = reverse("admin:organization_owner_history", args=[self.owner1.pk])
+        url_history = reverse(
+            "admin:organization_owner_history", args=[self.owner1.pk])
         self.client.login(username=self.super_user.username, password="secret")
 
         response = self.client.get(url_history)
@@ -84,7 +88,8 @@ class DataspacedModelAdminTestCase(TestCase):
             ("f1:a", [("f1__icontains", "a")]),
             ("f1=a", [("f1__iexact", "a")]),
             ("f1^a", [("f1__istartswith", "a")]),
-            ("a f2=b", [("f1__icontains", "a"), ("f2__icontains", "a"), ("f2__iexact", "b")]),
+            ("a f2=b", [("f1__icontains", "a"),
+             ("f2__icontains", "a"), ("f2__iexact", "b")]),
             ("f1:a f2:b", [("f1__icontains", "a"), ("f2__icontains", "b")]),
             ("f1=a f2^b", [("f1__iexact", "a"), ("f2__istartswith", "b")]),
             ("a", [("f1__icontains", "a"), ("f2__icontains", "a")]),
@@ -128,11 +133,13 @@ class DataspacedModelAdminTestCase(TestCase):
         self.assertContains(response, "column-homepage_url")
 
     def test_dataspace_admin_changeform_readonly_fields(self):
-        dataspace_change_url = reverse("admin:dje_dataspace_change", args=[self.other_dataspace.pk])
+        dataspace_change_url = reverse("admin:dje_dataspace_change", args=[
+                                       self.other_dataspace.pk])
         self.assertFalse(self.other_user.dataspace.is_reference)
         self.client.login(username=self.other_user.username, password="secret")
         response = self.client.get(dataspace_change_url)
-        self.assertContains(response, '<div class="grp-readonly">other_dataspace</div>', html=True)
+        self.assertContains(
+            response, '<div class="grp-readonly">other_dataspace</div>', html=True)
 
         self.assertTrue(self.super_user.dataspace.is_reference)
         self.assertTrue(self.super_user.is_superuser)
@@ -160,7 +167,8 @@ class DataspacedModelAdminTestCase(TestCase):
 
     def test_dataspace_admin_changeform_update_packages_from_scan_field_validation(self):
         self.client.login(username=self.other_user.username, password="secret")
-        url = reverse("admin:dje_dataspace_change", args=[self.other_dataspace.pk])
+        url = reverse("admin:dje_dataspace_change",
+                      args=[self.other_dataspace.pk])
 
         data = {
             "name": self.other_dataspace.name,
@@ -278,9 +286,11 @@ class DataspacedModelAdminTestCase(TestCase):
 
     def test_dataspace_admin_changelist_missing_in_filter_proper(self):
         # Same UUID, not a diff
-        copied_owner1 = copy_object(self.owner1, self.other_dataspace, self.super_user)
+        copied_owner1 = copy_object(
+            self.owner1, self.other_dataspace, self.super_user)
         owner2 = Owner.objects.create(name="Owner2", dataspace=self.dataspace)
-        other_owner3 = Owner.objects.create(name="Owner3", dataspace=self.other_dataspace)
+        other_owner3 = Owner.objects.create(
+            name="Owner3", dataspace=self.other_dataspace)
 
         url = reverse("admin:organization_owner_changelist")
         self.client.login(username=self.super_user.username, password="secret")
@@ -342,16 +352,19 @@ class PermissionsTestCase(TestCase):
         self.assertTrue(self.staff_user.is_staff)
         license_library_url = reverse("license_library:license_list")
         dashboard_url = reverse("admin:index")
-        license_changelist_url = reverse("admin:license_library_license_changelist")
+        license_changelist_url = reverse(
+            "admin:license_library_license_changelist")
 
         self.client.login(username=self.super_user.username, password="t3st")
-        self.assertTrue(self.super_user.has_perm("license_library.change_license"))
+        self.assertTrue(self.super_user.has_perm(
+            "license_library.change_license"))
         response = self.client.get(license_library_url)
         self.assertContains(response, dashboard_url)
         self.assertContains(response, license_changelist_url)
 
         self.client.login(username=self.staff_user.username, password="t3st")
-        self.assertFalse(self.staff_user.has_perm("license_library.change_license"))
+        self.assertFalse(self.staff_user.has_perm(
+            "license_library.change_license"))
         response = self.client.get(license_library_url)
         self.assertContains(response, dashboard_url)
         self.assertNotContains(response, license_changelist_url)
@@ -363,7 +376,8 @@ class PermissionsTestCase(TestCase):
         change_license_group.permissions.add(change_license_perm)
         self.staff_user.groups.add(change_license_group)
         self.staff_user = get_user_model().objects.get(username=self.staff_user.username)
-        self.assertTrue(self.staff_user.has_perm("license_library.change_license"))
+        self.assertTrue(self.staff_user.has_perm(
+            "license_library.change_license"))
         response = self.client.get(license_library_url)
         self.assertContains(response, dashboard_url)
         self.assertContains(response, license_changelist_url)
@@ -440,8 +454,10 @@ class PermissionsTestCase(TestCase):
         self.assertNotContains(response, "mass_update")
 
     def test_dataspace_modeladmin_permissions(self):
-        dataspace_change_url = reverse("admin:dje_dataspace_change", args=[self.dataspace.pk])
-        dataspace_delete_url = reverse("admin:dje_dataspace_delete", args=[self.dataspace.pk])
+        dataspace_change_url = reverse(
+            "admin:dje_dataspace_change", args=[self.dataspace.pk])
+        dataspace_delete_url = reverse(
+            "admin:dje_dataspace_delete", args=[self.dataspace.pk])
         dataspace_changelist_url = reverse("admin:dje_dataspace_changelist")
         dataspace_add_url = reverse("admin:dje_dataspace_add")
 
@@ -504,15 +520,18 @@ class GroupAdminTestCase(TestCase):
         response = self.client.get(self.add_url)
         permissions_field = response.context_data["adminform"].form.fields["permissions"]
 
-        codenames = permissions_field.queryset.values_list("codename", flat=True)
+        codenames = permissions_field.queryset.values_list(
+            "codename", flat=True)
         self.assertIn("add_component", codenames)
         self.assertIn("change_component", codenames)
         self.assertIn("delete_component", codenames)
 
-        models = permissions_field.queryset.values_list("content_type__model", flat=True)
+        models = permissions_field.queryset.values_list(
+            "content_type__model", flat=True)
         self.assertIn("component", models)
 
-        app_labels = permissions_field.queryset.values_list("content_type__app_label", flat=True)
+        app_labels = permissions_field.queryset.values_list(
+            "content_type__app_label", flat=True)
         for app_label in set(app_labels):
             self.assertIn(app_label, GroupAdmin.allowed_app_label)
 
@@ -569,6 +588,8 @@ class GroupAdminTestCase(TestCase):
         response = self.client.get(export_url)
         self.assertEqual("text/csv", response["Content-Type"])
         self.assertEqual(
-            'attachment; filename="dejacode_group_permission.csv"', response["Content-Disposition"]
+            'attachment; filename="dejacode_group_permission.csv"', response[
+                "Content-Disposition"]
         )
-        self.assertEqual(b",change_license\r\nchange license,X\r\n", response.content)
+        self.assertEqual(
+            b",change_license\r\nchange license,X\r\n", response.content)

@@ -228,7 +228,7 @@ the availability of these integrations exclusively to the designated Dataspace.
 SCANCODEIO
 ----------
 
-Provide the URL and API key of your `ScanCode.io <https://github.com/nexB/scancode.io>`_
+Provide the URL and API key of your `ScanCode.io <https://github.com/aboutcode-org/scancode.io>`_
 instance.
 
 .. code-block:: python
@@ -245,7 +245,7 @@ instance.
 PURLDB
 ------
 
-Provide the URL and API key of your `PurlDB <https://github.com/nexB/purldb>`_ instance.
+Provide the URL and API key of your `PurlDB <https://github.com/aboutcode-org/purldb>`_ instance.
 
 .. code-block:: python
 
@@ -262,7 +262,7 @@ VULNERABLECODE
 --------------
 
 You can either run your own instance of
-`VulnerableCode <https://github.com/nexB/vulnerablecode>`_
+`VulnerableCode <https://github.com/aboutcode-org/vulnerablecode>`_
 or connect to the public one https://public.vulnerablecode.io/.
 
 .. note:: Providing an API key is optional when using the public VulnerableCode instance.

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -66,7 +66,8 @@ class RequestUserViewsTestCase(TestCase):
         self.component_ct = ContentType.objects.get(
             app_label="component_catalog", model="component"
         )
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
 
         self.component1 = self.component_ct.model_class().objects.create(
             name="c1", dataspace=self.nexb_dataspace
@@ -110,7 +111,8 @@ class RequestUserViewsTestCase(TestCase):
             dataspace=self.nexb_user.dataspace,
         )
 
-        self.priority1 = Priority.objects.create(label="Urgent", dataspace=self.nexb_dataspace)
+        self.priority1 = Priority.objects.create(
+            label="Urgent", dataspace=self.nexb_dataspace)
 
         self.request1 = Request.objects.create(
             title="Title1",
@@ -158,7 +160,8 @@ class RequestUserViewsTestCase(TestCase):
         url = reverse("workflow:request_list")
         # As AnonymousUser first
         response = self.client.get(url)
-        self.assertRedirects(response, "{}?next={}".format(reverse("login"), url))
+        self.assertRedirects(
+            response, "{}?next={}".format(reverse("login"), url))
         self.client.login(username="nexb_user", password="secret")
         response = self.client.get(url)
         self.assertContains(response, "#{}".format(self.request1.id))
@@ -213,7 +216,8 @@ class RequestUserViewsTestCase(TestCase):
             response, '<div class="alert alert-success alert-dismissible" role="alert">'
         )
         self.assertContains(response, "<strong>Success:</strong>")
-        self.assertContains(response, "Comment for Request {} added.".format(self.request1))
+        self.assertContains(
+            response, "Comment for Request {} added.".format(self.request1))
         self.assertContains(response, "A comment content")
 
         # Again with a Request that does not belong to the user
@@ -390,7 +394,8 @@ class RequestUserViewsTestCase(TestCase):
         }
         response = self.client.post(url, data, follow=True)
         self.assertContains(response, "request was successfully submitted as")
-        self.assertEqual(Request.objects.latest("id").object_id, self.component1.id)
+        self.assertEqual(Request.objects.latest(
+            "id").object_id, self.component1.id)
         self.component1.refresh_from_db()
         self.assertEqual(1, self.component1.request_count)
 
@@ -409,7 +414,8 @@ class RequestUserViewsTestCase(TestCase):
         self.client.login(username=self.nexb_user.username, password="secret")
         url = self.request_template1.get_absolute_url()
 
-        self.assertEqual("component", self.request_template1.content_type.model)
+        self.assertEqual(
+            "component", self.request_template1.content_type.model)
         self.request_template1.include_product = True
         self.request_template1.save()
         product1 = self.product_ct.model_class().objects.create(
@@ -432,7 +438,8 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.post(url, data, follow=True)
         self.assertContains(response, "request was successfully submitted as")
-        self.assertEqual(Request.objects.latest("id").object_id, self.component1.id)
+        self.assertEqual(Request.objects.latest(
+            "id").object_id, self.component1.id)
         self.component1.refresh_from_db()
         self.assertEqual(1, self.component1.request_count)
 
@@ -452,7 +459,8 @@ class RequestUserViewsTestCase(TestCase):
             ]
         )
         self.assertEqual(
-            expected_messages, sorted([entry.change_message for entry in history_entries])
+            expected_messages, sorted(
+                [entry.change_message for entry in history_entries])
         )
         self.assertEqual(self.nexb_user, product1.last_modified_by)
 
@@ -498,8 +506,10 @@ class RequestUserViewsTestCase(TestCase):
             name="product2", dataspace=self.other_dataspace
         )
         response = self.client.get(url)
-        expected = '<option value="{}">{}</option>'.format(product1.id, product1.name)
-        not_expected = '<option value="{}">{}</option>'.format(product2.id, product2.name)
+        expected = '<option value="{}">{}</option>'.format(
+            product1.id, product1.name)
+        not_expected = '<option value="{}">{}</option>'.format(
+            product2.id, product2.name)
 
         self.assertContains(response, expected)
         self.assertNotContains(response, not_expected)
@@ -601,7 +611,8 @@ class RequestUserViewsTestCase(TestCase):
         self.request_template1.default_assignee = self.nexb_user
         self.request_template1.save()
         response = self.client.get(url)
-        self.assertEqual(self.nexb_user, response.context["form"].fields["assignee"].initial)
+        self.assertEqual(
+            self.nexb_user, response.context["form"].fields["assignee"].initial)
 
     def test_workflow_request_add_view_assignee_has_product_context_object_permission(self):
         self.client.login(username="nexb_user", password="secret")
@@ -627,7 +638,8 @@ class RequestUserViewsTestCase(TestCase):
         }
         response = self.client.post(url, data)
         self.assertFalse(self.basic_user.has_perm("view_product", product1))
-        expected = {"assignee": ["basic_user does not have the permission to view product1"]}
+        expected = {"assignee": [
+            "basic_user does not have the permission to view product1"]}
         self.assertEqual(expected, response.context["form"].errors)
 
         self.assertTrue(self.nexb_user.has_perm("view_product", product1))
@@ -664,7 +676,8 @@ class RequestUserViewsTestCase(TestCase):
         }
         response = self.client.post(url, data)
         self.assertFalse(self.basic_user.has_perm("view_product", product1))
-        expected = {"assignee": ["basic_user does not have the permission to view product1"]}
+        expected = {"assignee": [
+            "basic_user does not have the permission to view product1"]}
         self.assertEqual(expected, response.context["form"].errors)
 
         self.assertTrue(self.nexb_user.has_perm("view_product", product1))
@@ -690,7 +703,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.post(url, data, follow=True)
 
         self.assertContains(response, "request was successfully submitted as")
-        self.assertContains(response, f'<a href="{url}">Add a new "Template1" Request</a>')
+        self.assertContains(
+            response, f'<a href="{url}">Add a new "Template1" Request</a>')
         request_instance = Request.objects.get(
             content_type=self.component_ct.id,
             serialized_data__icontains="Content1",
@@ -735,7 +749,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.post(url, data, follow=True)
         form = response.context["form"]
         self.assertFalse(form.is_valid())
-        expected = {"object_id": ["Invalid value."], "applies_to": ["Invalid value."]}
+        expected = {"object_id": ["Invalid value."],
+                    "applies_to": ["Invalid value."]}
         self.assertEqual(expected, response.context["form"].errors)
 
     def test_workflow_request_add_view_submit_form_with_content_object_from_other_dataspace(self):
@@ -752,7 +767,8 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.post(url, data, follow=True)
         form = response.context["form"]
         self.assertFalse(form.is_valid())
-        expected = {"object_id": ["Invalid value."], "applies_to": ["Invalid value."]}
+        expected = {"object_id": ["Invalid value."],
+                    "applies_to": ["Invalid value."]}
         self.assertEqual(expected, response.context["form"].errors)
 
     def test_workflow_request_add_view_submit_form_with_junk_applies_to(self):
@@ -828,8 +844,10 @@ class RequestUserViewsTestCase(TestCase):
             "save_draft": "Save Draft",
         }
         response = self.client.post(url, data, follow=True)
-        self.assertContains(response, "Your request was saved as a draft and self-assigned to you.")
-        self.assertContains(response, f'<a href="{url}">Add a new "Template1" Request</a>')
+        self.assertContains(
+            response, "Your request was saved as a draft and self-assigned to you.")
+        self.assertContains(
+            response, f'<a href="{url}">Add a new "Template1" Request</a>')
         request_instance = Request.objects.latest("id")
         self.assertTrue(request_instance.is_draft)
         self.assertEqual(self.nexb_user, request_instance.requester)
@@ -877,7 +895,8 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(1, len(mail.outbox))
 
     def test_workflow_request_add_view_submit_notification(self):
-        self.client.login(username=self.requester_user.username, password="secret")
+        self.client.login(
+            username=self.requester_user.username, password="secret")
         url = self.request_template1.get_absolute_url()
 
         self.requester_user.is_staff = True
@@ -967,7 +986,8 @@ class RequestUserViewsTestCase(TestCase):
 
     def test_workflow_request_add_view_with_non_existing_content_object(self):
         self.client.login(username="nexb_user", password="secret")
-        url = "{}?content_object_id={}".format(self.request_template1.get_absolute_url(), 99999)
+        url = "{}?content_object_id={}".format(
+            self.request_template1.get_absolute_url(), 99999)
 
         response = self.client.get(url)
         expected = '<input id="id_object_id" name="object_id" type="hidden" />'
@@ -1259,7 +1279,8 @@ class RequestUserViewsTestCase(TestCase):
         self.client.login(username="basic_user", password="secret")
         url = reverse("workflow:request_list")
 
-        response = self.client.get("{}?requester={}".format(url, self.basic_user.username))
+        response = self.client.get(
+            "{}?requester={}".format(url, self.basic_user.username))
         self.assertContains(response, "{}".format(self.some_request.uuid))
         self.assertNotContains(response, "{}".format(self.request1.uuid))
 
@@ -1313,7 +1334,8 @@ class RequestUserViewsTestCase(TestCase):
 
     def test_workflow_request_details_view_add_request_of_same_type(self):
         url = self.request1.get_absolute_url()
-        self.client.login(username=self.requester_user.username, password="secret")
+        self.client.login(
+            username=self.requester_user.username, password="secret")
         response = self.client.get(url)
 
         new_request_url = self.request1.request_template.get_absolute_url()
@@ -1334,7 +1356,8 @@ class RequestUserViewsTestCase(TestCase):
         data = {"closed_reason": "REASON"}
 
         self.assertNotEqual(self.request1.requester, self.requester_user)
-        self.client.login(username=self.requester_user.username, password="secret")
+        self.client.login(
+            username=self.requester_user.username, password="secret")
         response = self.client.get(url)
         self.assertNotContains(response, expected)
 
@@ -1354,7 +1377,8 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(1, self.request1.events.count())
         self.assertEqual(self.request1.status, Request.Status.CLOSED)
         self.assertEqual(self.request1.last_modified_by, self.nexb_user)
-        self.assertContains(response, "Request {} closed".format(self.request1))
+        self.assertContains(
+            response, "Request {} closed".format(self.request1))
         self.assertEqual(1, len(mail.outbox))
 
         event = self.request1.events.latest("id")
@@ -1376,7 +1400,8 @@ class RequestUserViewsTestCase(TestCase):
         filename = os.path.basename(__file__)
         response = self._post_file_data(url, __file__)
 
-        self.assertContains(response, "Attachment &quot;{}&quot; added.".format(filename))
+        self.assertContains(
+            response, "Attachment &quot;{}&quot; added.".format(filename))
         expected = """
         <a href="#attachments" title="View attachments" data-scroll-to="#attachments_section">
             <i class="fas fa-file"></i>
@@ -1385,7 +1410,8 @@ class RequestUserViewsTestCase(TestCase):
         """
         self.assertContains(response, expected, html=True)
         self.assertEqual(1, self.request1.attachments.count())
-        self.assertEqual(self.nexb_user, self.request1.attachments.latest("id").uploader)
+        self.assertEqual(
+            self.nexb_user, self.request1.attachments.latest("id").uploader)
         event = self.request1.events.latest("id")
 
         self.assertEqual(self.nexb_user, event.user)
@@ -1466,15 +1492,18 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.get(url)
         attachment = self.request1.attachments.latest("id")
-        attachment_url = reverse("workflow:send_attachment", args=[attachment.uuid])
+        attachment_url = reverse(
+            "workflow:send_attachment", args=[attachment.uuid])
         self.assertContains(response, attachment_url)
         response = self.client.get(attachment_url)
-        self.assertTrue(attachment.request.has_details_permission(self.nexb_user))
+        self.assertTrue(
+            attachment.request.has_details_permission(self.nexb_user))
         self.assertEqual(200, response.status_code)
         self.assertEqual("text/x-python", response.get("content-type"))
         expected = 'attachment; filename="test_views.py"'
         self.assertEqual(expected, response.get("content-disposition"))
-        self.assertEqual(attachment_file_path.read_bytes(), response.getvalue())
+        self.assertEqual(attachment_file_path.read_bytes(),
+                         response.getvalue())
 
         self.nexb_user.dataspace = self.other_dataspace
         self.nexb_user.save()
@@ -1487,14 +1516,16 @@ class RequestUserViewsTestCase(TestCase):
 
         attachment.request.is_private = True
         attachment.request.save()
-        self.assertFalse(attachment.request.has_details_permission(self.basic_user))
+        self.assertFalse(
+            attachment.request.has_details_permission(self.basic_user))
         self.client.login(username=self.basic_user.username, password="secret")
         response = self.client.get(attachment_url)
         self.assertEqual(404, response.status_code)
 
         self.client.logout()
         response = self.client.get(attachment_url)
-        self.assertRedirects(response, f'{reverse("login")}?next={attachment_url}')
+        self.assertRedirects(
+            response, f'{reverse("login")}?next={attachment_url}')
 
     def test_workflow_request_details_view_product_context_links(self):
         self.client.login(username=self.nexb_user.username, password="secret")
@@ -1511,7 +1542,8 @@ class RequestUserViewsTestCase(TestCase):
 
         assign_perm("view_product", self.nexb_user, product1)
 
-        expected1 = '<a href="{}" target="_blank">product1</a>'.format(product1.get_absolute_url())
+        expected1 = '<a href="{}" target="_blank">product1</a>'.format(
+            product1.get_absolute_url())
         expected2 = (
             f'<a href="{product1.get_absolute_url()}#inventory" target="_blank">View Inventory</a>'
         )
@@ -1519,11 +1551,13 @@ class RequestUserViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
-        self.assertFalse(self.nexb_user.has_perm("product_portfolio.change_productcomponent"))
+        self.assertFalse(self.nexb_user.has_perm(
+            "product_portfolio.change_productcomponent"))
 
         self.nexb_user = add_perm(self.nexb_user, "change_productcomponent")
         self.client.get(url)
-        self.assertTrue(self.nexb_user.has_perm("product_portfolio.change_productcomponent"))
+        self.assertTrue(self.nexb_user.has_perm(
+            "product_portfolio.change_productcomponent"))
 
     def test_workflow_request_details_view_product_summary(self):
         self.client.login(username=self.nexb_user.username, password="secret")
@@ -1537,7 +1571,8 @@ class RequestUserViewsTestCase(TestCase):
         self.request1.content_object = product1
         self.request1.save()
 
-        status1 = ProductRelationStatus.objects.create(label="s1", dataspace=self.nexb_dataspace)
+        status1 = ProductRelationStatus.objects.create(
+            label="s1", dataspace=self.nexb_dataspace)
         ProductComponent.objects.create(
             product=product1,
             component=self.component1,
@@ -1547,7 +1582,8 @@ class RequestUserViewsTestCase(TestCase):
         ProductComponent.objects.create(
             product=product1, name="c2", review_status=status1, dataspace=self.nexb_dataspace
         )
-        package1 = Package.objects.create(filename="p1", dataspace=self.nexb_dataspace)
+        package1 = Package.objects.create(
+            filename="p1", dataspace=self.nexb_dataspace)
         ProductPackage.objects.create(
             product=product1, package=package1, review_status=status1, dataspace=self.nexb_dataspace
         )
@@ -1637,7 +1673,8 @@ class RequestInComponentCatalogTestCase(TestCase):
         self.component_ct = ContentType.objects.get(
             app_label="component_catalog", model="component"
         )
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
 
         self.component1 = Component.objects.create(
             dataspace=self.nexb_dataspace,

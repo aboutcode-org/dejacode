@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -51,7 +51,8 @@ class TwoFactorAuthenticationTestCase(TestCase):
 
     def test_two_factor_authentication_enable_2fa(self):
         response = self.client.get(self.tfa_enable_url)
-        self.assertRedirects(response, f"{self.login_url}?next={self.tfa_enable_url}")
+        self.assertRedirects(
+            response, f"{self.login_url}?next={self.tfa_enable_url}")
 
         self.client.login(username=self.user.username, password="secret")
 
@@ -90,7 +91,8 @@ class TwoFactorAuthenticationTestCase(TestCase):
         bin_key = response.context_data["form"].bin_key
         valid_token = self._get_valid_token(bin_key)
         data = {"token": valid_token}
-        response = self.client.post(self.tfa_enable_url, data=data, follow=True)
+        response = self.client.post(
+            self.tfa_enable_url, data=data, follow=True)
         self.assertContains(response, "Two-factor authentication enabled")
         self.assertTrue(django_otp.user_has_device(self.user))
         devices = list(django_otp.devices_for_user(self.user))
@@ -101,7 +103,8 @@ class TwoFactorAuthenticationTestCase(TestCase):
 
     def test_two_factor_authentication_disable_2fa(self):
         response = self.client.get(self.tfa_disable_url)
-        self.assertRedirects(response, f"{self.login_url}?next={self.tfa_disable_url}")
+        self.assertRedirects(
+            response, f"{self.login_url}?next={self.tfa_disable_url}")
 
         self.client.login(username=self.user.username, password="secret")
 
@@ -151,7 +154,8 @@ class TwoFactorAuthenticationTestCase(TestCase):
             "otp_token": valid_token,
             "otp_device": device_form_value,
         }
-        response = self.client.post(self.tfa_disable_url, data=data, follow=True)
+        response = self.client.post(
+            self.tfa_disable_url, data=data, follow=True)
         self.assertContains(response, "Two-factor authentication disabled")
         self.assertFalse(django_otp.user_has_device(self.user))
 

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -30,7 +30,8 @@ class CommandsTestCase(TestCase):
     fixture_by_app = OrderedDict(
         [
             ("user", join(testfiles_location, "test_dataset_user_only.json")),
-            ("organization", join(testfiles_location, "test_dataset_organization_only.json")),
+            ("organization", join(testfiles_location,
+             "test_dataset_organization_only.json")),
             ("license_library", join(testfiles_location, "test_dataset_ll_only.json")),
             ("component_catalog", join(testfiles_location, "test_dataset_cc_only.json")),
             ("product_portfolio", join(testfiles_location, "test_dataset_pp_only.json")),
@@ -125,7 +126,8 @@ class CommandsTestCase(TestCase):
 
         # Re-execute the command without options
         output = StringIO()
-        management.call_command("flushdataset", "nexB", stdout=output, no_color=True)
+        management.call_command("flushdataset", "nexB",
+                                stdout=output, no_color=True)
         self.assertEqual(expected, output.getvalue())
         self.assertEqual(0, get_user_model().objects.count())
         self.assertEqual(0, Dataspace.objects.count())
@@ -142,7 +144,8 @@ class CommandsTestCase(TestCase):
     def test_management_command_clonedataset(self):
         output = StringIO()
         Dataspace.objects.create(name="Alternate")
-        management.call_command("clonedataset", "nexB", "Alternate", "nexb_user", stdout=output)
+        management.call_command("clonedataset", "nexB",
+                                "Alternate", "nexb_user", stdout=output)
 
         models = ALL_MODELS_NO_PP + REPORTING_MODELS + POLICY_MODELS
         for model in models:

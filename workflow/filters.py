@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -80,6 +80,7 @@ class RequestFilterSet(DataspacedFilterSet):
         self.filters["assignee"].extra["to_field_name"] = "username"
         self.filters["priority"].extra["to_field_name"] = "label"
 
-        self.filters["request_template"].extra["widget"] = DropDownAsListWidget(label="Form")
+        self.filters["request_template"].extra["widget"] = DropDownAsListWidget(
+            label="Form")
         for filter_name in ["status", "requester", "assignee", "priority"]:
             self.filters[filter_name].extra["widget"] = DropDownAsListWidget()

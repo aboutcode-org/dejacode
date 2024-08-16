@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -28,7 +28,8 @@ class PurlDBToolkitTestCase(TestCase):
         get_package_list = purldb.get_package_list
 
         get_package_list()
-        mock_request_get.assert_called_with("/api/packages/", params={}, timeout=None)
+        mock_request_get.assert_called_with(
+            "/api/packages/", params={}, timeout=None)
 
         get_package_list(
             page_size=1,
@@ -71,7 +72,9 @@ class PurlDBToolkitTestCase(TestCase):
         self.assertEqual(entry1, pick_purldb_entry([entry1]))
         self.assertIsNone(pick_purldb_entry([entry1, entry2]))
 
-        self.assertEqual(entry1, pick_purldb_entry([entry1, entry2], purl=purl1))
-        self.assertEqual(entry2, pick_purldb_entry([entry1, entry2], purl=purl2))
+        self.assertEqual(entry1, pick_purldb_entry(
+            [entry1, entry2], purl=purl1))
+        self.assertEqual(entry2, pick_purldb_entry(
+            [entry1, entry2], purl=purl2))
         self.assertIsNone(pick_purldb_entry([entry1, entry1], purl=purl1))
         self.assertIsNone(pick_purldb_entry([entry1, entry2], purl=purl3))

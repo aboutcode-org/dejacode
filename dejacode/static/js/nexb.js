@@ -3,7 +3,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 */
@@ -11,12 +11,8 @@ define([
     'jquery',
     'ember',
     'underscore.string',
-    'ember-template-compiler'
-], function (
-    $,
-    Ember,
-    _s
-) {
+    'ember-template-compiler',
+], function ($, Ember, _s) {
     var App = Ember.Application.create();
     window.App = App;
 
@@ -31,7 +27,7 @@ define([
             var viewArgs = this.get('viewArgs') || {};
             var args = {
                 template: controller.get('templateFunction'),
-                controller: controller
+                controller: controller,
             };
             args = $.extend(viewArgs, args);
             return this.get('viewBaseClass').extend(args);
@@ -44,11 +40,11 @@ define([
         },
         appendPropertyViewToBody: function (property) {
             this.get(property).create().append();
-        }
+        },
     });
 
     var FocusedTextField = Ember.TextField.extend({
-        didInsertElement: function() {
+        didInsertElement: function () {
             var that = this;
             // Connect ``focusoutCallback()``
             this.$().focusout(function () {
@@ -59,7 +55,7 @@ define([
                 this.$().focus();
             });
         },
-        focusoutCallback: function () {}
+        focusoutCallback: function () {},
     });
 
     var InlineForm = TemplatedViewController.extend({
@@ -69,7 +65,7 @@ define([
             var viewArgs = this.get('viewArgs') || {};
             var args = {
                 template: controller.get('templateFunction'),
-                controller: controller
+                controller: controller,
             };
             var args2 = {
                 tagName: 'div',
@@ -81,7 +77,7 @@ define([
                     }
                     return '';
                 }.property('controller.predeleted'),
-                isVisibleBinding: 'controller.isVisible'
+                isVisibleBinding: 'controller.isVisible',
             };
             args = $.extend(viewArgs, args, args2);
             return this.get('viewBaseClass').extend(args);
@@ -104,11 +100,15 @@ define([
                 attributeBindings: ['name', 'style'],
                 name: function () {
                     var controller = this.get('controller');
-                    return _s.sprintf('%s-%s-DELETE', controller.get('formsetPrefix'), controller.get('formsetIndex'));
+                    return _s.sprintf(
+                        '%s-%s-DELETE',
+                        controller.get('formsetPrefix'),
+                        controller.get('formsetIndex')
+                    );
                 }.property(),
                 // Do not display this checkbox since there are other UI
                 // controls that delegate to this checkbox
-                style: 'display: none;'
+                style: 'display: none;',
             });
         }.property(),
 
@@ -122,7 +122,11 @@ define([
 
         // Id
         idName: function () {
-            return _s.sprintf('%s-%s-id', this.get('formsetPrefix'), this.get('formsetIndex'));
+            return _s.sprintf(
+                '%s-%s-id',
+                this.get('formsetPrefix'),
+                this.get('formsetIndex')
+            );
         }.property('formsetPrefix', 'formsetIndex'),
         idValue: function () {
             return this.get('initialData.pk');
@@ -140,11 +144,11 @@ define([
             } else {
                 form.set('predeleted', true);
             }
-        }
+        },
     });
 
     var ContentTypeAwareInlineForm = InlineForm.extend({
-        contentTypeBinding: 'controller.contentType'
+        contentTypeBinding: 'controller.contentType',
     });
 
     var Inline = TemplatedViewController.extend({
@@ -155,7 +159,9 @@ define([
             if (initialInlineData) {
                 initialInlineData.forEach(function (item, index, enumerable) {
                     var initialData = item;
-                    forms.pushObject(that.createForm({initialData: initialData}));
+                    forms.pushObject(
+                        that.createForm({ initialData: initialData })
+                    );
                 });
             }
             this.set('forms', forms);
@@ -178,7 +184,7 @@ define([
             // {{#each forms}}
             //     {{view this.view}}
             // {{/each}}
-            return Ember.Object.create({form: form});
+            return Ember.Object.create({ form: form });
         },
         getInitialInlineData: function () {
             throw new Error('Subclass must implement');
@@ -197,7 +203,7 @@ define([
             return initialForms;
         },
         createForm: function (args) {
-            args = $.extend({controller: this}, args);
+            args = $.extend({ controller: this }, args);
             return this.getFormClass().create(args);
         },
         setFormsetIndexes: function () {
@@ -230,16 +236,20 @@ define([
             return _s.sprintf('%s-INITIAL_FORMS', this.get('formsetPrefix'));
         }.property(),
         initialFormCount: null,
-        hasErrors: null
+        hasErrors: null,
     });
 
     var ContentTypeAwareInline = Inline.extend({
         contentType: null,
         contentTypeMatchesContentTypeOfInitialForms: function () {
             var initialForms = this.getInitialForms();
-            if (! Ember.isEmpty(initialForms)) {
-                var contentTypeIdOfInitialForms = initialForms[0].initialData.content_type_id;
-                var contentTypeOfInitialForms = App.client_data.content_type_map[contentTypeIdOfInitialForms];
+            if (!Ember.isEmpty(initialForms)) {
+                var contentTypeIdOfInitialForms =
+                    initialForms[0].initialData.content_type_id;
+                var contentTypeOfInitialForms =
+                    App.client_data.content_type_map[
+                        contentTypeIdOfInitialForms
+                    ];
                 return contentTypeOfInitialForms === this.get('contentType');
             }
             return false;
@@ -249,7 +259,7 @@ define([
             if (this.get('contentType')) {
                 var initialForms = this.getInitialForms();
 
-                if (! this.contentTypeMatchesContentTypeOfInitialForms()) {
+                if (!this.contentTypeMatchesContentTypeOfInitialForms()) {
                     initialForms.forEach(function (item, index, enumerable) {
                         var form = item;
                         form.set('predeleted', true);
@@ -271,7 +281,7 @@ define([
             }
 
             this.get('forms').setObjects(forms);
-        }.observes('contentType')
+        }.observes('contentType'),
     });
 
     var DraggableRowsInlineMixin = Ember.Mixin.create({
@@ -301,17 +311,20 @@ define([
                         forcePlaceholderSize: true,
                         tolerance: 'pointer',
                         containment: view.$('.grp-table'),
-                        start: function(event, ui) {
+                        start: function (event, ui) {
                             var index = view.getIndexOfItem(ui.item);
                             view.set('originalIndex', index);
                             console.log(_s.sprintf('originalIndex: %s', index));
                         },
-                        stop: function(event, ui) {
+                        stop: function (event, ui) {
                             var index = view.getIndexOfItem(ui.item);
                             view.set('newIndex', index);
                             console.log(_s.sprintf('newIndex: %s', index));
 
-                            controller.setSortableProperty(view.get('originalIndex'), view.get('newIndex'));
+                            controller.setSortableProperty(
+                                view.get('originalIndex'),
+                                view.get('newIndex')
+                            );
 
                             // Clear index members
                             view.set('originalIndex', null);
@@ -320,14 +333,14 @@ define([
                             // HACK: Taken from Grappelli:
                             // Toggle div.table twice to remove webkits border-spacing bug
                             view.$('div.grp-table').toggle().toggle();
-                        }
+                        },
                     });
-                }
-            })
+                },
+            });
         }.property(),
         sortablePropertyName: null,
         getFormsInDraggedOrder: function (originalIndex, newIndex) {
-            if (! this.get('sortablePropertyName')) {
+            if (!this.get('sortablePropertyName')) {
                 throw new Error('sortablePropertyName is not defined');
             }
 
@@ -358,7 +371,7 @@ define([
                 var form = item;
                 form.set(inline.get('sortablePropertyName'), index);
             });
-        }
+        },
     });
 
     var FieldSelectorView = Ember.ContainerView.extend({
@@ -371,19 +384,33 @@ define([
 
             var ret = [];
 
-            if (! controller.get('isVisible')) {
+            if (!controller.get('isVisible')) {
                 return ret;
             }
 
-            if (! Ember.isEmpty(selectedFields)) {
+            if (!Ember.isEmpty(selectedFields)) {
                 var model = contentType;
                 selectedFields.forEach(function (item, index, enumerable) {
                     var selection = item;
                     if (selection && model) {
-                        var select = that.makeSelect(model, that.getPositionIndex(), selection).create();
+                        var select = that
+                            .makeSelect(
+                                model,
+                                that.getPositionIndex(),
+                                selection
+                            )
+                            .create();
                         ret.pushObject(select);
-                        if (_.has(App.client_data.model_data[model].meta, selection)) {
-                            model = App.client_data.model_data[model].meta[selection].model;
+                        if (
+                            _.has(
+                                App.client_data.model_data[model].meta,
+                                selection
+                            )
+                        ) {
+                            model =
+                                App.client_data.model_data[model].meta[
+                                    selection
+                                ].model;
                         } else {
                             model = null;
                         }
@@ -393,12 +420,17 @@ define([
                 // If ``model`` (which is represented by the last selected field) is defined then it is a foreign key.
                 // If the last selected field is a foreign key, then there is one more select to add.
                 if (model) {
-                    ret.pushObject(this.makeSelect(model, this.getPositionIndex()).create());
+                    ret.pushObject(
+                        this.makeSelect(model, this.getPositionIndex()).create()
+                    );
                 }
             } else {
                 // It may be that no content type is selected
                 if (contentType) {
-                    var select = this.makeSelect(contentType, this.getPositionIndex()).create();
+                    var select = this.makeSelect(
+                        contentType,
+                        this.getPositionIndex()
+                    ).create();
                     ret.pushObject(select);
                 }
             }
@@ -415,7 +447,7 @@ define([
             return index;
         },
         setNextPositionIndex: function (newValue) {
-            this.set('nextPositionIndex', newValue+1);
+            this.set('nextPositionIndex', newValue + 1);
         },
         makeSelect: function (modelName, positionIndex, selection) {
             var view = this;
@@ -427,13 +459,18 @@ define([
                 optionValuePath: 'content.value',
                 prompt: '---------',
                 selection: function () {
-                    if (! selection) {
+                    if (!selection) {
                         return null;
                     }
 
-                    var array = this.get('content').filterBy('value', selection);
+                    var array = this.get('content').filterBy(
+                        'value',
+                        selection
+                    );
                     if (array.length !== 1) {
-                        console.log(_s.sprintf('Error with the value: %s', selection));
+                        console.log(
+                            _s.sprintf('Error with the value: %s', selection)
+                        );
                         return;
                     }
                     return array[0];
@@ -444,27 +481,62 @@ define([
                     // Remove child views after this one
                     var lastIndex = view.get('length') - 1;
                     if (lastIndex > this.get('positionIndex')) {
-                        view.removeAt(this.get('positionIndex')+1, lastIndex-this.get('positionIndex'));
+                        view.removeAt(
+                            this.get('positionIndex') + 1,
+                            lastIndex - this.get('positionIndex')
+                        );
                         view.setNextPositionIndex(this.get('positionIndex'));
                     }
 
-                    if (selection && _.has(App.client_data.model_data[modelName].meta, selection.value) && App.client_data.model_data[modelName].meta[selection.value].model) {
-                        var relatedModel = App.client_data.model_data[modelName].meta[selection.value].model;
-                        console.log(_s.sprintf('relatedModel is %s', relatedModel));
-                        view.pushObject(view.makeSelect(relatedModel, view.getPositionIndex()).create());
+                    if (
+                        selection &&
+                        _.has(
+                            App.client_data.model_data[modelName].meta,
+                            selection.value
+                        ) &&
+                        App.client_data.model_data[modelName].meta[
+                            selection.value
+                        ].model
+                    ) {
+                        var relatedModel =
+                            App.client_data.model_data[modelName].meta[
+                                selection.value
+                            ].model;
+                        console.log(
+                            _s.sprintf('relatedModel is %s', relatedModel)
+                        );
+                        view.pushObject(
+                            view
+                                .makeSelect(
+                                    relatedModel,
+                                    view.getPositionIndex()
+                                )
+                                .create()
+                        );
                     }
 
                     var selectedFields = [];
-                    view.get('childViews').forEach(function (item, index, enumerable) {
+                    view.get('childViews').forEach(function (
+                        item,
+                        index,
+                        enumerable
+                    ) {
                         var childView = item;
                         var selection = childView.get('selection.value');
                         selectedFields.pushObject(selection);
                     });
-                    view.get('controller').get('selectedFields').setObjects(selectedFields);
-                    console.log(_s.sprintf('selectedFields: %s', view.get('controller').get('selectedFields')));
-                }.observes('selection')
+                    view.get('controller')
+                        .get('selectedFields')
+                        .setObjects(selectedFields);
+                    console.log(
+                        _s.sprintf(
+                            'selectedFields: %s',
+                            view.get('controller').get('selectedFields')
+                        )
+                    );
+                }.observes('selection'),
             });
-        }
+        },
     });
 
     return {
@@ -476,6 +548,6 @@ define([
         Inline: Inline,
         ContentTypeAwareInline: ContentTypeAwareInline,
         DraggableRowsInlineMixin: DraggableRowsInlineMixin,
-        FieldSelectorView: FieldSelectorView
-    }
+        FieldSelectorView: FieldSelectorView,
+    };
 });

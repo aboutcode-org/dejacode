@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -58,7 +58,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
         usage_policy_field = response.context_data["adminform"].form.fields["usage_policy"]
         self.assertIn(self.component_policy, usage_policy_field.queryset)
         self.assertNotIn(self.license_policy, usage_policy_field.queryset)
-        self.assertNotIn(self.other_component_policy, usage_policy_field.queryset)
+        self.assertNotIn(self.other_component_policy,
+                         usage_policy_field.queryset)
 
         self.assertContains(response, self.component_policy.label)
         self.assertNotContains(response, self.license_policy.label)
@@ -75,9 +76,11 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
 
     def test_mass_update_usage_policy_scope_to_content_type(self):
         self.client.login(username="test", password="secret")
-        component = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         url = reverse("admin:component_catalog_component_changelist")
-        data = {"_selected_action": [component.pk], "action": "mass_update", "select_across": 0}
+        data = {"_selected_action": [component.pk],
+                "action": "mass_update", "select_across": 0}
 
         response = self.client.post(url, data)
         self.assertContains(response, self.component_policy.label)
@@ -91,7 +94,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
             name="c1", dataspace=self.dataspace, usage_policy=self.component_policy
         )
 
-        url = reverse("admin:policy_usagepolicy_delete", args=[self.component_policy.pk])
+        url = reverse("admin:policy_usagepolicy_delete",
+                      args=[self.component_policy.pk])
 
         response = self.client.post(url, {"post": "yes"})
         expected = "would require deleting the following protected related objects"
@@ -107,7 +111,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
         )
 
         self.assertTrue(self.component_policy.get_object_set().exists())
-        self.assertNotEqual(self.license_ct, self.component_policy.content_type)
+        self.assertNotEqual(
+            self.license_ct, self.component_policy.content_type)
 
         data = {
             "label": self.component_policy.label,
@@ -125,7 +130,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
                 "to a least one instance."
             ]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         component.delete()
         self.assertFalse(self.component_policy.get_object_set().exists())
@@ -170,7 +176,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
         self.assertContains(response, url)
 
         # Link in UsagePolicy changelist
-        response = self.client.get(reverse("admin:policy_usagepolicy_changelist"))
+        response = self.client.get(
+            reverse("admin:policy_usagepolicy_changelist"))
         self.assertContains(response, url)
 
         self.assertFalse(License.objects.count())
@@ -179,7 +186,8 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
         expected = b"license_policies: []\n"
         self.assertEqual(expected, response.content)
 
-        owner = Owner.objects.create(name="Owner ABC", dataspace=self.dataspace)
+        owner = Owner.objects.create(
+            name="Owner ABC", dataspace=self.dataspace)
         License.objects.create(
             key="l1",
             name="L1",

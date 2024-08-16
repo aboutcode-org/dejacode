@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -26,7 +26,8 @@ class LicenseMassUpdateTestCase(TestCase):
             "test", "test@test.com", "t3st", self.dataspace, data_email_notification=True
         )
 
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",
@@ -42,7 +43,8 @@ class LicenseMassUpdateTestCase(TestCase):
             owner=self.owner,
         )
 
-        self.license_changelist_url = reverse("admin:license_library_license_changelist")
+        self.license_changelist_url = reverse(
+            "admin:license_library_license_changelist")
         self.base_data = {
             "_selected_action": [self.license1.pk, self.license2.pk],
             "action": "mass_update",
@@ -56,16 +58,20 @@ class LicenseMassUpdateTestCase(TestCase):
 
     def test_mass_update_form_view(self):
         self.client.login(username="test", password="t3st")
-        response = self.client.post(self.license_changelist_url, self.base_data)
-        self.assertContains(response, "<h1>Mass update Licenses</h1>", html=True)
+        response = self.client.post(
+            self.license_changelist_url, self.base_data)
+        self.assertContains(
+            response, "<h1>Mass update Licenses</h1>", html=True)
         self.assertContains(response, "owner")
         # The following should not be part of the mass update
         self.assertNotContains(response, "id_name")
         self.assertNotContains(response, '"id_key"')
         self.assertNotContains(response, "id_license_profile")
         # The list of selected object on the right
-        self.assertContains(response, self.license1.get_admin_link(), html=True)
-        self.assertContains(response, self.license2.get_admin_link(), html=True)
+        self.assertContains(
+            response, self.license1.get_admin_link(), html=True)
+        self.assertContains(
+            response, self.license2.get_admin_link(), html=True)
 
     def test_mass_update_preserve_filters_in_form_view(self):
         self.client.login(username="test", password="t3st")
@@ -76,10 +82,12 @@ class LicenseMassUpdateTestCase(TestCase):
 
         # Selected records links
         self.assertContains(
-            response, '<a href="{}{}">'.format(self.license1.get_admin_url(), preserved_filters)
+            response, '<a href="{}{}">'.format(
+                self.license1.get_admin_url(), preserved_filters)
         )
         self.assertContains(
-            response, '<a href="{}{}">'.format(self.license2.get_admin_url(), preserved_filters)
+            response, '<a href="{}{}">'.format(
+                self.license2.get_admin_url(), preserved_filters)
         )
         # Button
         self.assertContains(
@@ -89,11 +97,14 @@ class LicenseMassUpdateTestCase(TestCase):
             ),
         )
         # Breadcrumbs
-        self.assertContains(response, '<li><a href="{}">Licenses</a></li>'.format(url_with_params))
+        self.assertContains(
+            response, '<li><a href="{}">Licenses</a></li>'.format(url_with_params))
 
         # Submit the mass update
-        response = self.client.post(url_with_params, self.action_data, follow=True)
-        self.assertContains(response, '<li class="grp-info">Updated 2 records</li>', html=True)
+        response = self.client.post(
+            url_with_params, self.action_data, follow=True)
+        self.assertContains(
+            response, '<li class="grp-info">Updated 2 records</li>', html=True)
         self.assertRedirects(response, url_with_params)
 
     def test_mass_update_fk_fields_scope_to_dataspace(self):
@@ -102,10 +113,13 @@ class LicenseMassUpdateTestCase(TestCase):
 
         # Create another dataspace with data for further testing
         other_dataspace = Dataspace.objects.create(name="Other")
-        license_style = LicenseStyle.objects.create(name="style1", dataspace=self.dataspace)
-        other_style = LicenseStyle.objects.create(name="other_style", dataspace=other_dataspace)
+        license_style = LicenseStyle.objects.create(
+            name="style1", dataspace=self.dataspace)
+        other_style = LicenseStyle.objects.create(
+            name="other_style", dataspace=other_dataspace)
 
-        response = self.client.post(self.license_changelist_url, self.base_data)
+        response = self.client.post(
+            self.license_changelist_url, self.base_data)
         # Make sure the organization in the user owner org are available but
         # not the others.
         self.assertContains(response, license_style.name)
@@ -120,8 +134,10 @@ class LicenseMassUpdateTestCase(TestCase):
         self.license2.save()
         self.assertIsNone(self.license1.last_modified_by)
 
-        response = self.client.post(self.license_changelist_url, self.action_data, follow=True)
-        self.assertContains(response, '<li class="grp-info">Updated 2 records</li>', html=True)
+        response = self.client.post(
+            self.license_changelist_url, self.action_data, follow=True)
+        self.assertContains(
+            response, '<li class="grp-info">Updated 2 records</li>', html=True)
         # Making sure the values were set
         self.license1.refresh_from_db()
         self.license2.refresh_from_db()
@@ -134,7 +150,8 @@ class LicenseMassUpdateTestCase(TestCase):
         self.client.post(self.license_changelist_url, self.action_data)
 
         history = History.objects.get_for_object(self.license1).get()
-        self.assertEqual("Mass update applied on is_active.", history.change_message)
+        self.assertEqual("Mass update applied on is_active.",
+                         history.change_message)
 
     @override_settings(
         EMAIL_HOST_USER="user",
@@ -145,12 +162,14 @@ class LicenseMassUpdateTestCase(TestCase):
     )
     def test_email_notification_mass_update_queryset(self):
         self.client.login(username="test", password="t3st")
-        response = self.client.post(self.license_changelist_url, self.action_data)
+        response = self.client.post(
+            self.license_changelist_url, self.action_data)
         self.assertEqual(302, response.status_code)
 
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual("Multiple Licenses updated", mail.outbox[0].subject)
         body = mail.outbox[0].body
-        self.assertTrue("Changes details:\n\n* is_active\nNew value: True" in body)
+        self.assertTrue(
+            "Changes details:\n\n* is_active\nNew value: True" in body)
         self.assertTrue(str(self.license1) in body)
         self.assertTrue(str(self.license2) in body)

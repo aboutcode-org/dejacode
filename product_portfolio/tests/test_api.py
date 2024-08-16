@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -61,11 +61,15 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         self.product_list_url = reverse("api_v2:product-list")
 
-        self.product1 = Product.objects.create(name="p1", dataspace=self.dataspace)
-        self.product1_detail_url = reverse("api_v2:product-detail", args=[self.product1.uuid])
+        self.product1 = Product.objects.create(
+            name="p1", dataspace=self.dataspace)
+        self.product1_detail_url = reverse(
+            "api_v2:product-detail", args=[self.product1.uuid])
 
-        self.product2 = Product.objects.create(name="p2", dataspace=self.dataspace)
-        self.product2_detail_url = reverse("api_v2:product-detail", args=[self.product2.uuid])
+        self.product2 = Product.objects.create(
+            name="p2", dataspace=self.dataspace)
+        self.product2_detail_url = reverse(
+            "api_v2:product-detail", args=[self.product2.uuid])
 
     def test_api_product_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -174,10 +178,13 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.super_user, p1.last_modified_by)
 
     def test_api_product_endpoint_create_update_keywords(self):
-        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
-        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(
+            label="Keyword2", dataspace=self.dataspace)
         # For scoping sanity check
-        ComponentKeyword.objects.create(label=keyword1.label, dataspace=self.alternate_dataspace)
+        ComponentKeyword.objects.create(
+            label=keyword1.label, dataspace=self.alternate_dataspace)
 
         self.client.login(username="super_user", password="secret")
         data = {
@@ -197,7 +204,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(201, response.status_code)
         new_keyword = ComponentKeyword.objects.get(label="non-existing")
         self.assertTrue(new_keyword)
-        self.assertEqual([new_keyword.label], Product.unsecured_objects.get(name="Prod2").keywords)
+        self.assertEqual([new_keyword.label],
+                         Product.unsecured_objects.get(name="Prod2").keywords)
 
         # No keywords
         data = {
@@ -215,24 +223,28 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         }
         response = self.client.post(self.product_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
-        self.assertEqual([], Product.unsecured_objects.get(name=data["name"]).keywords)
+        self.assertEqual([], Product.unsecured_objects.get(
+            name=data["name"]).keywords)
 
         # Update
         data = json.dumps({"keywords": [keyword1.label]})
         p3_api_url = reverse("api_v2:product-detail", args=[p3.uuid])
-        response = self.client.patch(p3_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p3_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p3 = Product.unsecured_objects.get(name="Prod3")
         self.assertEqual([keyword1.label], p3.keywords)
 
         data = json.dumps({"keywords": [keyword2.label]})
-        response = self.client.patch(p3_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p3_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p3 = Product.unsecured_objects.get(name="Prod3")
         self.assertEqual([keyword2.label], p3.keywords)
 
         data = json.dumps({"keywords": [keyword1.label, keyword2.label]})
-        response = self.client.patch(p3_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p3_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p3 = Product.unsecured_objects.get(name="Prod3")
         self.assertEqual([keyword1.label, keyword2.label], p3.keywords)
@@ -255,7 +267,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         # Object permissions are added for the creator at save time
         added_product = Product.unsecured_objects.latest("id")
         expected = sorted(["change_product", "view_product", "delete_product"])
-        self.assertEqual(expected, sorted(get_perms(self.admin_user, added_product)))
+        self.assertEqual(expected, sorted(
+            get_perms(self.admin_user, added_product)))
 
     def test_api_product_endpoint_create_full(self):
         self.client.login(username="super_user", password="secret")
@@ -299,7 +312,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertTrue(product.created_date)
 
         for field_name, value in data.items():
-            self.assertEqual(str(value), str(getattr(product, field_name)), msg=field_name)
+            self.assertEqual(str(value), str(
+                getattr(product, field_name)), msg=field_name)
 
         # No email notifications on Product.
         self.assertEqual(0, len(mail.outbox))
@@ -355,7 +369,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -375,16 +390,19 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        expected = {"status": "SBOM file submitted to ScanCode.io for inspection."}
+        expected = {
+            "status": "SBOM file submitted to ScanCode.io for inspection."}
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
     def test_api_product_endpoint_import_manifests_action(self):
-        url = reverse("api_v2:product-import-manifests", args=[self.product1.uuid])
+        url = reverse("api_v2:product-import-manifests",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -404,16 +422,19 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        expected = {"status": "Manifest file submitted to ScanCode.io for inspection."}
+        expected = {
+            "status": "Manifest file submitted to ScanCode.io for inspection."}
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
     def test_api_product_endpoint_import_from_scan_action(self):
-        url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
+        url = reverse("api_v2:product-import-from-scan",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -453,11 +474,13 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
     @mock.patch("product_portfolio.forms.PullProjectDataForm.get_project_data")
     def test_api_product_endpoint_pull_scancodeio_project_data_action(self, mock_get_project_data):
-        url = reverse("api_v2:product-pull-scancodeio-project-data", args=[self.product1.uuid])
+        url = reverse("api_v2:product-pull-scancodeio-project-data",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
-        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED,
+                         response.status_code)
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
@@ -487,7 +510,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, ScanCodeProject.objects.count())
 
     def test_api_product_endpoint_aboutcode_files_action(self):
-        url = reverse("api_v2:product-aboutcode-files", args=[self.product1.uuid])
+        url = reverse("api_v2:product-aboutcode-files",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
@@ -504,7 +528,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("application/zip", response["Content-Type"])
 
     def test_api_product_endpoint_spdx_document_action(self):
-        url = reverse("api_v2:product-spdx-document", args=[self.product1.uuid])
+        url = reverse("api_v2:product-spdx-document",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
@@ -521,7 +546,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_api_product_endpoint_cyclonedx_sbom_action(self):
-        url = reverse("api_v2:product-cyclonedx-sbom", args=[self.product1.uuid])
+        url = reverse("api_v2:product-cyclonedx-sbom",
+                      args=[self.product1.uuid])
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
@@ -557,25 +583,31 @@ class ProductRelatedAPITestCase(TestCase):
         self.super_user = create_superuser("super_user", self.dataspace)
 
         self.product_list_url = reverse("api_v2:product-list")
-        self.productcomponent_list_url = reverse("api_v2:productcomponent-list")
+        self.productcomponent_list_url = reverse(
+            "api_v2:productcomponent-list")
         self.productpackage_list_url = reverse("api_v2:productpackage-list")
 
         self.product1 = Product.objects.create(
             name="Starship Widget Framework", dataspace=self.dataspace
         )
-        self.product1_detail_url = reverse("api_v2:product-detail", args=[self.product1.uuid])
+        self.product1_detail_url = reverse(
+            "api_v2:product-detail", args=[self.product1.uuid])
 
-        self.product2 = Product.objects.create(name="p2", dataspace=self.dataspace)
-        self.product2_detail_url = reverse("api_v2:product-detail", args=[self.product2.uuid])
+        self.product2 = Product.objects.create(
+            name="p2", dataspace=self.dataspace)
+        self.product2_detail_url = reverse(
+            "api_v2:product-detail", args=[self.product2.uuid])
 
         self.component1 = Component.objects.create(
             name="c1", version="1.0", dataspace=self.dataspace
         )
-        self.component1_detail_url = reverse("api_v2:component-detail", args=[self.component1.uuid])
+        self.component1_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component1.uuid])
         self.component2 = Component.objects.create(
             name="c2", version="2.0", dataspace=self.dataspace
         )
-        self.component2_detail_url = reverse("api_v2:component-detail", args=[self.component2.uuid])
+        self.component2_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component2.uuid])
 
         self.pc_status1 = ProductRelationStatus.objects.create(
             label="S1", text="Status1", dataspace=self.dataspace
@@ -602,15 +634,19 @@ class ProductRelatedAPITestCase(TestCase):
             "api_v2:productcomponent-detail", args=[self.pc2_valid.uuid]
         )
 
-        self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        self.package1_detail_url = reverse("api_v2:package-detail", args=[self.package1.uuid])
+        self.package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
+        self.package1_detail_url = reverse(
+            "api_v2:package-detail", args=[self.package1.uuid])
 
         self.pp1 = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        self.pp1_detail_url = reverse("api_v2:productpackage-detail", args=[self.pp1.uuid])
+        self.pp1_detail_url = reverse(
+            "api_v2:productpackage-detail", args=[self.pp1.uuid])
 
-        self.owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner1", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",
@@ -626,7 +662,8 @@ class ProductRelatedAPITestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        self.codebase_resource_list_url = reverse("api_v2:codebaseresource-list")
+        self.codebase_resource_list_url = reverse(
+            "api_v2:codebaseresource-list")
         self.codebase_resource1 = CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
         )
@@ -678,7 +715,8 @@ class ProductRelatedAPITestCase(TestCase):
         self.client.login(username="super_user", password="secret")
         self.assertEqual(3, ProductComponent.objects.count())
 
-        data = {"product": "{}:{}".format(self.product2.name, self.product2.version)}
+        data = {"product": "{}:{}".format(
+            self.product2.name, self.product2.version)}
         response = self.client.get(self.productcomponent_list_url, data)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.product2_detail_url)
@@ -687,7 +725,8 @@ class ProductRelatedAPITestCase(TestCase):
         p1_c2 = ProductComponent.objects.create(
             product=self.product1, component=self.component2, dataspace=self.dataspace
         )
-        data = {"component": "{}:{}".format(self.component2.name, self.component2.version)}
+        data = {"component": "{}:{}".format(
+            self.component2.name, self.component2.version)}
         response = self.client.get(self.productcomponent_list_url, data)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.product1_detail_url)
@@ -806,7 +845,8 @@ class ProductRelatedAPITestCase(TestCase):
             "component": self.component2_detail_url,
             "license_expression": "non-existing-license",
         }
-        expected = {"license_expression": ["Unknown license key(s): non-existing-license"]}
+        expected = {"license_expression": [
+            "Unknown license key(s): non-existing-license"]}
         response = self.client.post(self.productcomponent_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual(expected, response.data)
@@ -908,7 +948,8 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertIn(self.product2_detail_url, data.pop("product"))
         self.assertIn(self.component2_detail_url, data.pop("component"))
         for field_name, value in data.items():
-            self.assertEqual(str(value), str(getattr(pc, field_name)), msg=field_name)
+            self.assertEqual(str(value), str(
+                getattr(pc, field_name)), msg=field_name)
 
         # No email notifications on ProductComponent.
         self.assertEqual(0, len(mail.outbox))
@@ -992,16 +1033,20 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertIsNone(ProductComponent.objects.latest("id").review_status)
 
-        self.admin_user = add_perm(self.admin_user, "change_review_status_on_productcomponent")
+        self.admin_user = add_perm(
+            self.admin_user, "change_review_status_on_productcomponent")
         response = self.client.post(self.productcomponent_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
-        self.assertEqual(self.pc_status1, ProductComponent.objects.latest("id").review_status)
+        self.assertEqual(
+            self.pc_status1, ProductComponent.objects.latest("id").review_status)
 
     def test_api_productrelation_endpoints_tab_permission(self):
         from dje.api_custom import TabPermission  # Prevent circular import
 
-        self.assertEqual((TabPermission,), ProductComponentViewSet.extra_permissions)
-        self.assertEqual((TabPermission,), ProductPackageViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         ProductComponentViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         ProductPackageViewSet.extra_permissions)
 
     def test_api_productpackage_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -1159,15 +1204,18 @@ class ProductRelatedAPITestCase(TestCase):
         self.client.login(username="super_user", password="secret")
         response = self.client.get(self.codebase_resource1_detail_url)
         self.assertContains(response, self.product1_detail_url)
-        self.assertIn(self.codebase_resource1_detail_url, response.data["api_url"])
+        self.assertIn(self.codebase_resource1_detail_url,
+                      response.data["api_url"])
         self.assertIn(self.product1_detail_url, response.data["product"])
         self.assertIn(self.codebase_resource1.path, response.data["path"])
-        self.assertEqual(str(self.codebase_resource1.uuid), response.data["uuid"])
+        self.assertEqual(str(self.codebase_resource1.uuid),
+                         response.data["uuid"])
         self.assertEqual(
             [codebase_resource3.path],
             response.data["deployed_from"],
         )
-        self.assertEqual([self.codebase_resource2.path], response.data["deployed_to"])
+        self.assertEqual([self.codebase_resource2.path],
+                         response.data["deployed_to"])
 
     def test_api_secured_codebaseresource_detail_endpoint(self):
         self.client.login(username="base_user", password="secret")
@@ -1181,8 +1229,10 @@ class ProductRelatedAPITestCase(TestCase):
         assign_perm("view_product", self.admin_user, self.product1)
         response = self.client.get(self.codebase_resource1_detail_url)
         self.assertContains(response, self.product1_detail_url)
-        self.assertIn(self.codebase_resource1_detail_url, response.data["api_url"])
-        self.assertEqual(str(self.codebase_resource1.uuid), response.data["uuid"])
+        self.assertIn(self.codebase_resource1_detail_url,
+                      response.data["api_url"])
+        self.assertEqual(str(self.codebase_resource1.uuid),
+                         response.data["uuid"])
 
     def test_api_codebaseresource_endpoint_create_minimal(self):
         self.client.login(username="super_user", password="secret")
@@ -1231,7 +1281,8 @@ class ProductRelatedAPITestCase(TestCase):
         }
         response = self.client.post(self.codebase_resource_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"deployed_to": ["Object with path=not_a_list does not exist."]}
+        expected = {"deployed_to": [
+            "Object with path=not_a_list does not exist."]}
         self.assertEqual(expected, response.data)
 
         data["deployed_to"] = self.codebase_resource1.path
@@ -1251,7 +1302,8 @@ class ProductRelatedAPITestCase(TestCase):
         )
         response = self.client.post(self.codebase_resource_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"deployed_to": ["Object with path=not_available does not exist."]}
+        expected = {"deployed_to": [
+            "Object with path=not_available does not exist."]}
         self.assertEqual(expected, response.data)
 
         data["deployed_to"] = [
@@ -1319,7 +1371,8 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertEqual(resource.deployed_to_paths, data.pop("deployed_to"))
 
         for field_name, value in data.items():
-            self.assertEqual(str(value), str(getattr(resource, field_name)), msg=field_name)
+            self.assertEqual(str(value), str(
+                getattr(resource, field_name)), msg=field_name)
 
         # No email notifications on CodebaseResource.
         self.assertEqual(0, len(mail.outbox))
@@ -1327,4 +1380,5 @@ class ProductRelatedAPITestCase(TestCase):
     def test_api_codebaseresource_endpoints_tab_permission(self):
         from dje.api_custom import TabPermission  # Prevent circular import
 
-        self.assertEqual((TabPermission,), CodebaseResourceViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         CodebaseResourceViewSet.extra_permissions)

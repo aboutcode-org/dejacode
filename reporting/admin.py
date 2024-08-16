@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -89,7 +89,8 @@ class QueryAdmin(DataspacedAdmin):
         ("Preview", {"fields": ("get_preview",)}),
     )
     readonly_fields = DataspacedAdmin.readonly_fields + ("get_preview",)
-    list_display = ("name", "description", "content_type", "operator", "get_dataspace")
+    list_display = ("name", "description", "content_type",
+                    "operator", "get_dataspace")
     list_filter = DataspacedAdmin.list_filter + (
         "content_type",
         MissingInFilter,
@@ -160,7 +161,8 @@ class QueryAdmin(DataspacedAdmin):
 
         params = {ReportingQueryListFilter.parameter_name: query_instance.id}
 
-        order_list = query_instance.get_order_list_for_url(request, model_admin)
+        order_list = query_instance.get_order_list_for_url(
+            request, model_admin)
         if order_list:
             params[ORDER_VAR] = ".".join(order_list)
 
@@ -300,11 +302,14 @@ class QueryAdmin(DataspacedAdmin):
                 filter_formset_prefix=filter_formset.prefix,
                 filter_formset_initial_form_count=filter_formset.initial_form_count(),
                 filter_formset_has_errors=any(filter_formset.errors),
-                filter_formset_all_errors=flatten_errors(filter_formset.errors),
+                filter_formset_all_errors=flatten_errors(
+                    filter_formset.errors),
                 order_field_formset_prefix=order_field_formset.prefix,
                 order_field_formset_initial_form_count=order_field_formset.initial_form_count(),
-                filters=self.get_filters_as_dicts(request, filter_formset.forms),
-                order_fields=self.get_order_fields_as_dicts(request, order_field_formset.forms),
+                filters=self.get_filters_as_dicts(
+                    request, filter_formset.forms),
+                order_fields=self.get_order_fields_as_dicts(
+                    request, order_field_formset.forms),
             )
 
         return response
@@ -313,7 +318,8 @@ class QueryAdmin(DataspacedAdmin):
 @admin.register(ColumnTemplate, site=dejacode_site)
 class ColumnTemplateAdmin(DataspacedAdmin):
     form = ColumnTemplateForm
-    list_display = ("name", "description", "content_type", "get_field_names", "get_dataspace")
+    list_display = ("name", "description", "content_type",
+                    "get_field_names", "get_dataspace")
     list_filter = DataspacedAdmin.list_filter + (
         "content_type",
         MissingInFilter,
@@ -336,7 +342,8 @@ class ColumnTemplateAdmin(DataspacedAdmin):
 
     @admin.display(description=_("Assigned fields"))
     def get_field_names(self, instance):
-        field_names = [assigned_field.field_name for assigned_field in instance.fields.all()]
+        field_names = [
+            assigned_field.field_name for assigned_field in instance.fields.all()]
         return format_html("<br>".join(field_names))
 
     def get_queryset(self, request):

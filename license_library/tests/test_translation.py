@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -24,7 +24,8 @@ class LocaleTranslationTestCase(TestCase):
             "test", "test@test.com", "t3st", self.dataspace
         )
 
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",

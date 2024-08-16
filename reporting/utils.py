@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -11,7 +11,8 @@ from django.core.exceptions import FieldDoesNotExist
 
 def rename_field_in_reporting_models(apps, to_replace, replace_by):
     """Suitable for a data migration following a field rename migrations.RenameField()"""
-    ColumnTemplateAssignedField = apps.get_model("reporting", "ColumnTemplateAssignedField")
+    ColumnTemplateAssignedField = apps.get_model(
+        "reporting", "ColumnTemplateAssignedField")
     Filter = apps.get_model("reporting", "Filter")
     OrderField = apps.get_model("reporting", "OrderField")
 

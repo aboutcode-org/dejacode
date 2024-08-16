@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -41,7 +41,8 @@ class AttributionGenerationTest(TestCase):
         )
         self.admin_user = create_admin("admin_user", self.dataspace)
 
-        self.owner1 = Owner.objects.create(name="Test Organization", dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Test Organization", dataspace=self.dataspace)
 
         self.license1 = License.objects.create(
             key="license1",
@@ -84,7 +85,8 @@ class AttributionGenerationTest(TestCase):
             name="Component3", version="0.3", dataspace=self.dataspace
         )
 
-        license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        license_expression = "{} AND {}".format(
+            self.license1.key, self.license2.key)
         self.product1 = Product.objects.create(
             name="Product1", dataspace=self.dataspace, license_expression=license_expression
         )
@@ -140,7 +142,8 @@ class AttributionGenerationTest(TestCase):
             dataspace=self.dataspace, name="License", content_type=license_ct
         )
 
-        productcomponent_ct = ContentType.objects.get_for_model(ProductComponent)
+        productcomponent_ct = ContentType.objects.get_for_model(
+            ProductComponent)
         self.pc_query = Query.objects.create(
             dataspace=self.dataspace, name="ProductComponent", content_type=productcomponent_ct
         )
@@ -150,7 +153,8 @@ class AttributionGenerationTest(TestCase):
             dataspace=self.dataspace, name="Component", content_type=component_ct
         )
 
-        self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        self.package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         self.pp1 = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
@@ -186,14 +190,17 @@ class AttributionGenerationTest(TestCase):
             self.assertNotIn(self.license_query, query_qs)
             self.assertIn(query, query_qs)
 
-            form = AttributionConfigurationForm(request, data={param: self.license_query.id})
+            form = AttributionConfigurationForm(
+                request, data={param: self.license_query.id})
             self.assertFalse(form.is_valid())
             expected = {
-                param: ["Select a valid choice. That choice is not one of the available choices."]
+                param: [
+                    "Select a valid choice. That choice is not one of the available choices."]
             }
             self.assertEqual(expected, form.errors)
 
-            form = AttributionConfigurationForm(request, data={param: query.id})
+            form = AttributionConfigurationForm(
+                request, data={param: query.id})
             self.assertTrue(form.is_valid())
 
     def test_attribution_generation_configuration_queries_validation(self):
@@ -214,14 +221,16 @@ class AttributionGenerationTest(TestCase):
             )
 
             self.assertFalse(query.is_valid())
-            form = AttributionConfigurationForm(request, data={param: query.id})
+            form = AttributionConfigurationForm(
+                request, data={param: query.id})
             self.assertFalse(form.is_valid())
             expected = {NON_FIELD_ERRORS: ["Query not valid."]}
             self.assertEqual(expected, form.errors)
 
             filtr.delete()
             self.assertTrue(query.is_valid())
-            form = AttributionConfigurationForm(request, data={param: query.id})
+            form = AttributionConfigurationForm(
+                request, data={param: query.id})
             self.assertTrue(form.is_valid())
 
     def test_attribution_generation_configuration_single_query_validation(self):
@@ -249,7 +258,8 @@ class AttributionGenerationTest(TestCase):
         self.c3.save()
 
         # No filter in query, nothing is returned
-        results_list = apply_query(productcomponents, self.pc_query, self.nexb_user)
+        results_list = apply_query(
+            productcomponents, self.pc_query, self.nexb_user)
         self.assertEqual([], results_list)
 
         Filter.objects.create(
@@ -260,18 +270,21 @@ class AttributionGenerationTest(TestCase):
             value=True,
         )
 
-        results_list = apply_query(productcomponents, self.pc_query, self.nexb_user)
+        results_list = apply_query(
+            productcomponents, self.pc_query, self.nexb_user)
         self.assertNotIn(self.pc1, results_list)
         self.assertNotIn(self.pc2, results_list)
         self.assertTrue(self.pc3.component.is_active)
         self.assertIn(self.pc3, results_list)
 
         # Admin user with no Product object permission
-        results_list = apply_query(productcomponents, self.pc_query, self.admin_user)
+        results_list = apply_query(
+            productcomponents, self.pc_query, self.admin_user)
         self.assertEqual([], results_list)
 
         assign_perm("change_product", self.admin_user, self.pc3.product)
-        results_list = apply_query(productcomponents, self.pc_query, self.nexb_user)
+        results_list = apply_query(
+            productcomponents, self.pc_query, self.nexb_user)
         self.assertNotIn(self.pc1, results_list)
         self.assertNotIn(self.pc2, results_list)
         self.assertIn(self.pc3, results_list)
@@ -282,13 +295,15 @@ class AttributionGenerationTest(TestCase):
 
         self.assertIsNone(self.product1.owner)
         response = self.client.get(url, data={"submit": 1})
-        self.assertContains(response, "<h1>Attribution for {}</h1>".format(self.product1))
+        self.assertContains(
+            response, "<h1>Attribution for {}</h1>".format(self.product1))
 
         self.product1.owner = self.owner1
         self.product1.save()
         response = self.client.get(url, data={"submit": 1})
         self.assertContains(
-            response, "<h1>Attribution for {} by {}</h1>".format(self.product1, self.owner1)
+            response, "<h1>Attribution for {} by {}</h1>".format(
+                self.product1, self.owner1)
         )
 
     def test_attribution_generation_configuration_licensing_in_product_section(self):
@@ -298,7 +313,8 @@ class AttributionGenerationTest(TestCase):
         self.product1.notice_text = "NOTICE_TEXT"
         self.product1.save()
         self.assertEqual(2, self.product1.licenses.count())
-        self.assertEqual("license1 AND license2", self.product1.license_expression)
+        self.assertEqual("license1 AND license2",
+                         self.product1.license_expression)
 
         url = self.product1.get_attribution_url()
         response = self.client.get(url, data={"submit": 1})
@@ -310,9 +326,12 @@ class AttributionGenerationTest(TestCase):
         </p>
         """.format(self.product1)
         self.assertContains(response, expected, html=True)
-        self.assertContains(response, '<h2 id="license_texts">Licenses that apply to Product1</h2>')
-        self.assertContains(response, '<a href="#license_license1">License1</a>')
-        self.assertContains(response, '<a href="#license_license2">License2</a>')
+        self.assertContains(
+            response, '<h2 id="license_texts">Licenses that apply to Product1</h2>')
+        self.assertContains(
+            response, '<a href="#license_license1">License1</a>')
+        self.assertContains(
+            response, '<a href="#license_license2">License2</a>')
         self.assertContains(response, "<pre>FULLTEXT_FOR_LICENSE1</pre>")
         self.assertContains(response, "<pre>FULLTEXT_FOR_LICENSE2</pre>")
 
@@ -336,12 +355,14 @@ class AttributionGenerationTest(TestCase):
             <li><a href="#{}">{}</a></li>
             <li><a href="#{}">{}</a></li>
         </ul>""".format(
-            get_html_id(node1), self.c1, get_html_id(node2), self.c2, get_html_id(node3), self.c3
+            get_html_id(node1), self.c1, get_html_id(
+                node2), self.c2, get_html_id(node3), self.c3
         )
 
         self.assertContains(response, expected, html=True)
 
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+        product2 = Product.objects.create(
+            name="Product2", dataspace=self.dataspace)
         self.assertEqual(0, product2.productcomponents.count())
         url = product2.get_attribution_url()
         response = self.client.get(url, data={"submit": 1})
@@ -363,16 +384,19 @@ class AttributionGenerationTest(TestCase):
         self.pc2.component.license_expression = ""
         self.pc2.component.save()
 
-        self.assertEqual(list(self.pc1.licenses.all()), list(self.pc1.component.licenses.all()))
+        self.assertEqual(list(self.pc1.licenses.all()),
+                         list(self.pc1.component.licenses.all()))
         self.assertTrue(
             Licensing().is_equivalent(
                 self.pc1.license_expression, self.pc1.component.license_expression
             )
         )
 
-        response = self.client.get(url, data={"submit": 1, "all_license_texts": "on"})
+        response = self.client.get(
+            url, data={"submit": 1, "all_license_texts": "on"})
         self.assertContains(
-            response, "<h2>The following licenses are used in {}:</h2>".format(self.product1)
+            response, "<h2>The following licenses are used in {}:</h2>".format(
+                self.product1)
         )
         self.assertContains(
             response,
@@ -382,15 +406,19 @@ class AttributionGenerationTest(TestCase):
         )
         self.assertContains(
             response,
-            '<a href="#license_{}">{}</a>'.format(self.license1.key, self.license1.short_name),
+            '<a href="#license_{}">{}</a>'.format(
+                self.license1.key, self.license1.short_name),
         )
 
-        self.assertNotContains(response, "The original component is licensed under")
+        self.assertNotContains(
+            response, "The original component is licensed under")
 
         self.pc1.component.license_expression = f"{self.license1.key}"
         self.pc1.component.save()
-        response = self.client.get(url, data={"submit": 1, "all_license_texts": "on"})
-        self.assertContains(response, "The original component is licensed under")
+        response = self.client.get(
+            url, data={"submit": 1, "all_license_texts": "on"})
+        self.assertContains(
+            response, "The original component is licensed under")
 
     def test_attribution_generation_configuration_include_all_license_texts(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -404,7 +432,8 @@ class AttributionGenerationTest(TestCase):
         self.pc1.save()
         self.assertEqual(1, self.pc1.licenses.count())
 
-        self.c1.license_expression = "{} AND {}".format(self.license1.key, self.license3.key)
+        self.c1.license_expression = "{} AND {}".format(
+            self.license1.key, self.license3.key)
         self.c1.save()
 
         expected = """
@@ -420,7 +449,8 @@ class AttributionGenerationTest(TestCase):
         self.assertNotContains(response, "FULLTEXT_FOR_LICENSE3")
         self.assertNotContains(response, expected, html=True)
 
-        response = self.client.get(url, data={"submit": 1, "all_license_texts": "on"})
+        response = self.client.get(
+            url, data={"submit": 1, "all_license_texts": "on"})
         self.assertContains(response, "FULLTEXT_FOR_LICENSE1")
         self.assertContains(response, "FULLTEXT_FOR_LICENSE2")
         self.assertContains(response, "FULLTEXT_FOR_LICENSE3")
@@ -447,15 +477,18 @@ class AttributionGenerationTest(TestCase):
         expected = '<a href="#license_{}">{}</a>'.format(
             special_license.key, special_license.short_name
         )
-        self.assertEqual(expected, self.sub1.get_license_expression_attribution())
+        self.assertEqual(
+            expected, self.sub1.get_license_expression_attribution())
         response = self.client.get(
-            url, data={"submit": 1, "all_license_texts": False, "subcomponent_hierarchy": "on"}
+            url, data={"submit": 1, "all_license_texts": False,
+                       "subcomponent_hierarchy": "on"}
         )
 
         self.assertContains(response, expected, html=True)
         self.assertContains(
             response,
-            '<h3 id="license_{}">{}</h3>'.format(special_license.key, special_license.short_name),
+            '<h3 id="license_{}">{}</h3>'.format(
+                special_license.key, special_license.short_name),
             html=True,
         )
 
@@ -463,7 +496,8 @@ class AttributionGenerationTest(TestCase):
         self.client.login(username="nexb_user", password="t3st")
 
         url = self.product1.get_attribution_url()
-        response = self.client.get(url, data={"submit": 1, "subcomponent_hierarchy": False})
+        response = self.client.get(
+            url, data={"submit": 1, "subcomponent_hierarchy": False})
 
         node1 = AttributionNode(
             model_name="component",
@@ -611,7 +645,8 @@ class AttributionGenerationTest(TestCase):
         }
 
         self.assertEqual(expected, response.context["hierarchy"])
-        expected = '<li><a href="#{}">{}</a></li>'.format(get_html_id(node6), self.sub3.child)
+        expected = '<li><a href="#{}">{}</a></li>'.format(
+            get_html_id(node6), self.sub3.child)
         self.assertContains(response, expected, html=True)
 
         expected = """
@@ -650,7 +685,8 @@ class AttributionGenerationTest(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.product1.get_attribution_url()
         response = self.client.get(
-            url, data={"submit": 1, "subcomponent_hierarchy": True, "toc_as_nested_list": False}
+            url, data={"submit": 1, "subcomponent_hierarchy": True,
+                       "toc_as_nested_list": False}
         )
         self.assertFalse(response.context["toc_as_nested_list"])
 
@@ -668,7 +704,8 @@ class AttributionGenerationTest(TestCase):
         self.assertContains(response, expected, html=True)
 
         response = self.client.get(
-            url, data={"submit": 1, "subcomponent_hierarchy": True, "toc_as_nested_list": True}
+            url, data={"submit": 1, "subcomponent_hierarchy": True,
+                       "toc_as_nested_list": True}
         )
         self.assertTrue(response.context["toc_as_nested_list"])
 
@@ -704,7 +741,8 @@ class AttributionGenerationTest(TestCase):
             get_html_id(hierarchy["Feature3"][0][0]),
             get_html_id(hierarchy["Feature3"][0][1][""][0][0]),
             get_html_id(hierarchy["Feature3"][0][1][""][0][1][""][0][0]),
-            get_html_id(hierarchy["Feature3"][0][1][""][0][1][""][0][1][""][0][0]),
+            get_html_id(hierarchy["Feature3"][0][1][""]
+                        [0][1][""][0][1][""][0][0]),
             get_html_id(hierarchy["Feature3"][1][0]),
             get_html_id(hierarchy["Feature1"][0][0]),
         )
@@ -715,7 +753,8 @@ class AttributionGenerationTest(TestCase):
         url = self.product1.get_attribution_url()
 
         response = self.client.get(
-            url, data={"submit": 1, "group_by_feature": True, "toc_as_nested_list": False}
+            url, data={"submit": 1, "group_by_feature": True,
+                       "toc_as_nested_list": False}
         )
 
         expected = (
@@ -741,12 +780,14 @@ class AttributionGenerationTest(TestCase):
             response, '<li class="feature"><strong>Feature3</strong></li>', html=True
         )
 
-        self.assertEqual(["Feature1", "Feature3"], list(response.context["hierarchy"].keys()))
+        self.assertEqual(["Feature1", "Feature3"], list(
+            response.context["hierarchy"].keys()))
 
     def test_attribution_generation_configuration_component_query(self):
         self.client.login(username="nexb_user", password="t3st")
         url = self.product1.get_attribution_url()
-        data = {"submit": 1, "subcomponent_hierarchy": True, "include_packages": True}
+        data = {"submit": 1, "subcomponent_hierarchy": True,
+                "include_packages": True}
 
         response = self.client.get(url, data=data)
         displayed_nodes = [
@@ -790,13 +831,16 @@ class AttributionGenerationTest(TestCase):
         url = self.product1.get_attribution_url()
 
         response = self.client.get(url, data={})
-        self.assertTemplateUsed(response, "product_portfolio/attribution_configuration.html")
+        self.assertTemplateUsed(
+            response, "product_portfolio/attribution_configuration.html")
 
         response = self.client.get(url, data={"_list_filters": "leftover"})
-        self.assertTemplateUsed(response, "product_portfolio/attribution_configuration.html")
+        self.assertTemplateUsed(
+            response, "product_portfolio/attribution_configuration.html")
 
         response = self.client.get(url, data={"submit": 1})
-        self.assertTemplateUsed(response, "product_portfolio/attribution/base.html")
+        self.assertTemplateUsed(
+            response, "product_portfolio/attribution/base.html")
 
     def test_attribution_generation_component_duplication(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -853,23 +897,28 @@ class AttributionGenerationTest(TestCase):
         url = self.product1.get_attribution_url()
         self.client.login(username=self.admin_user.username, password="secret")
         self.assertEqual(404, self.client.get(url).status_code)
-        self.assertEqual(404, self.client.get(url, data={"submit": 1}).status_code)
+        self.assertEqual(404, self.client.get(
+            url, data={"submit": 1}).status_code)
 
         assign_perm("view_product", self.admin_user, self.pc3.product)
         self.assertEqual(200, self.client.get(url).status_code)
-        self.assertEqual(200, self.client.get(url, data={"submit": 1}).status_code)
+        self.assertEqual(200, self.client.get(
+            url, data={"submit": 1}).status_code)
 
     def test_attribution_generation_configuration_include_homepage_url(self):
         self.client.login(username="nexb_user", password="t3st")
         url = self.product1.get_attribution_url()
 
-        response = self.client.get(url, data={"submit": 1, "include_homepage_url": True})
+        response = self.client.get(
+            url, data={"submit": 1, "include_homepage_url": True})
         self.assertNotContains(response, "Homepage")
 
         self.c1.homepage_url = "http://component1.com"
         self.c1.save()
-        response = self.client.get(url, data={"submit": 1, "include_homepage_url": True})
-        expected = 'Homepage: <a href="{0}" rel="nofollow">{0}</a>'.format(self.c1.homepage_url)
+        response = self.client.get(
+            url, data={"submit": 1, "include_homepage_url": True})
+        expected = 'Homepage: <a href="{0}" rel="nofollow">{0}</a>'.format(
+            self.c1.homepage_url)
         self.assertContains(response, expected)
 
         response = self.client.get(url, data={"submit": 1})
@@ -882,12 +931,14 @@ class AttributionGenerationTest(TestCase):
         self.pc1.save()
         standard_notice = "Standard notice for License 1"
 
-        response = self.client.get(url, data={"submit": 1, "include_standard_notice": True})
+        response = self.client.get(
+            url, data={"submit": 1, "include_standard_notice": True})
         self.assertNotContains(response, standard_notice)
 
         self.license1.standard_notice = standard_notice
         self.license1.save()
-        response = self.client.get(url, data={"submit": 1, "include_standard_notice": True})
+        response = self.client.get(
+            url, data={"submit": 1, "include_standard_notice": True})
         self.assertContains(response, standard_notice)
 
         response = self.client.get(url, data={"submit": 1})
@@ -911,7 +962,8 @@ class AttributionGenerationTest(TestCase):
         self.assertNotContains(response, expected3)
         self.assertNotContains(response, expected4)
 
-        response = self.client.get(url, data={"submit": 1, "include_packages": True})
+        response = self.client.get(
+            url, data={"submit": 1, "include_packages": True})
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
         self.assertContains(response, expected3)
@@ -960,7 +1012,8 @@ class AttributionGenerationTest(TestCase):
         )
 
         response = self.client.get(url, data={"submit": 1})
-        self.assertContains(response, f'<h3 class="component-name">{custom_component}</h3>')
+        self.assertContains(
+            response, f'<h3 class="component-name">{custom_component}</h3>')
         self.assertContains(
             response, '<p>This component is licensed under <a href="#license_custom">Custom</a></p>'
         )

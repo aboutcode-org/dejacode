@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -63,7 +63,8 @@ class ComponentAdminViewsTestCase(TestCase):
             "test", "test@test.com", "secret", self.dataspace1
         )
         self.admin_user = create_admin("admin_user", self.dataspace1)
-        self.alternate_super_user = create_superuser("alternate_user", self.alternate_dataspace)
+        self.alternate_super_user = create_superuser(
+            "alternate_user", self.alternate_dataspace)
 
         self.type1 = ComponentType.objects.create(
             label="Type1", notes="notes", dataspace=self.dataspace1
@@ -179,16 +180,19 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertContains(response, "Component1</a>")
         # View on site link
-        self.assertContains(response, '<div class="grp-text"><span>View</span></div>')
+        self.assertContains(
+            response, '<div class="grp-text"><span>View</span></div>')
         self.assertContains(
             response,
-            '<a href="{}" target="_blank">View</a>'.format(self.component1.get_absolute_url()),
+            '<a href="{}" target="_blank">View</a>'.format(
+                self.component1.get_absolute_url()),
         )
         # Details view
         url = self.component1.get_admin_url()
         response = self.client.get(url)
         # Check if the Inlines are present
-        self.assertContains(response, '<h2 class="grp-collapse-handler">Child Components</h2>')
+        self.assertContains(
+            response, '<h2 class="grp-collapse-handler">Child Components</h2>')
         self.assertContains(
             response,
             '<a href="{}" class="grp-state-focus" target="_blank">View</a>'.format(
@@ -216,24 +220,30 @@ class ComponentAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, '<p class="errornote">Please correct the error below.</p>')
+        self.assertContains(
+            response, '<p class="errornote">Please correct the error below.</p>')
         self.assertContains(
             response, "Component with this Dataspace, Name and Version already exists."
         )
         expected = {
-            NON_FIELD_ERRORS: ["Component with this Dataspace, Name and Version already exists."]
+            NON_FIELD_ERRORS: [
+                "Component with this Dataspace, Name and Version already exists."]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         # Removing one of the required field and POST again
         del data["name"]
         response = self.client.post(url, data)
-        self.assertContains(response, '<p class="errornote">Please correct the error below.</p>')
-        self.assertContains(response, '<ul class="errorlist"><li>This field is required.</li>')
+        self.assertContains(
+            response, '<p class="errornote">Please correct the error below.</p>')
+        self.assertContains(
+            response, '<ul class="errorlist"><li>This field is required.</li>')
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_component_admin_form_clean_validate_against_reference_data(self):
-        self.client.login(username=self.alternate_super_user, password="secret")
+        self.client.login(username=self.alternate_super_user,
+                          password="secret")
         url = reverse("admin:component_catalog_component_add")
 
         data = {
@@ -263,39 +273,48 @@ class ComponentAdminViewsTestCase(TestCase):
             "version": [error],
             "name": [error],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_component_admin_changelist_reference_data_link(self):
         url = reverse("admin:component_catalog_component_changelist")
 
-        reference_params = "?{}={}".format(DataspaceFilter.parameter_name, self.dataspace1.id)
+        reference_params = "?{}={}".format(
+            DataspaceFilter.parameter_name, self.dataspace1.id)
         reference_link = '<a href="{}" class="reference-data-link">View Reference Data</a>'.format(
             reference_params
         )
         my_dataspace_link = '<a href="?" class="reference-data-link">View My Data</a>'
 
-        self.client.login(username=self.alternate_super_user, password="secret")
+        self.client.login(username=self.alternate_super_user,
+                          password="secret")
         response = self.client.get(url)
         self.assertContains(response, reference_link)
         self.assertNotContains(response, my_dataspace_link)
-        self.assertFalse(getattr(response.context_data["cl"], "my_dataspace_link", None))
+        self.assertFalse(
+            getattr(response.context_data["cl"], "my_dataspace_link", None))
         self.assertEqual(
-            reference_params, getattr(response.context_data["cl"], "reference_params", None)
+            reference_params, getattr(
+                response.context_data["cl"], "reference_params", None)
         )
 
         # Not displayed in popup mode
         response = self.client.get("{}?{}=1".format(url, IS_POPUP_VAR))
         self.assertNotContains(response, reference_link)
         self.assertNotContains(response, my_dataspace_link)
-        self.assertFalse(getattr(response.context_data["cl"], "my_dataspace_link", None))
-        self.assertFalse(getattr(response.context_data["cl"], "reference_params", None))
+        self.assertFalse(
+            getattr(response.context_data["cl"], "my_dataspace_link", None))
+        self.assertFalse(
+            getattr(response.context_data["cl"], "reference_params", None))
 
         response = self.client.get("{}{}".format(url, reference_params))
         self.assertNotContains(response, reference_link)
         self.assertContains(response, my_dataspace_link)
-        self.assertTrue(getattr(response.context_data["cl"], "my_dataspace_link", None))
-        self.assertFalse(getattr(response.context_data["cl"], "reference_params", None))
+        self.assertTrue(
+            getattr(response.context_data["cl"], "my_dataspace_link", None))
+        self.assertFalse(
+            getattr(response.context_data["cl"], "reference_params", None))
 
         with override_settings(REFERENCE_DATASPACE=""):
             response = self.client.get(url)
@@ -308,7 +327,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertNotContains(response, my_dataspace_link)
 
         url = reverse("admin:component_catalog_subcomponent_changelist")
-        self.client.login(username=self.alternate_super_user, password="secret")
+        self.client.login(username=self.alternate_super_user,
+                          password="secret")
         response = self.client.get("{}{}".format(url, reference_params))
         self.assertNotContains(response, "copy_to")
 
@@ -407,10 +427,12 @@ class ComponentAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, params, follow=True)
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
         component = Component.objects.get(pk=self.component1.pk)
         # Save went through, nothing changed so far.
-        self.assertEqual(package1, component.componentassignedpackage_set.get().package)
+        self.assertEqual(
+            package1, component.componentassignedpackage_set.get().package)
 
         # Replacing the existing file by a another one
         package2 = Package.objects.create(
@@ -419,13 +441,15 @@ class ComponentAdminViewsTestCase(TestCase):
         params["componentassignedpackage_set-0-package"] = package2.id
         self.client.post(url, params)
         component.refresh_from_db()
-        self.assertEqual(package2, component.componentassignedpackage_set.get().package)
+        self.assertEqual(
+            package2, component.componentassignedpackage_set.get().package)
 
     def test_component_admin_form_inline_formsets_data_tampered(self):
         self.client.login(username="test", password="secret")
         url = self.component1.get_admin_url()
 
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.component1.dataspace)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.component1.dataspace)
         assigned_package1 = ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.component1.dataspace
         )
@@ -489,7 +513,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_activity_log_activated(self):
         self.client.login(username="test", password="secret")
-        response = self.client.get(reverse("admin:component_catalog_component_changelist"))
+        response = self.client.get(
+            reverse("admin:component_catalog_component_changelist"))
         self.assertContains(response, "activity_log_link")
 
     def test_component_admin_changelist_list_display_as_popup(self):
@@ -544,9 +569,11 @@ class ComponentAdminViewsTestCase(TestCase):
             response, "Component with this Dataspace, Name and Version already exists."
         )
         expected = {
-            NON_FIELD_ERRORS: ["Component with this Dataspace, Name and Version already exists."]
+            NON_FIELD_ERRORS: [
+                "Component with this Dataspace, Name and Version already exists."]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_component_admin_add_is_active_true_by_default(self):
         self.client.login(username="test", password="secret")
@@ -587,7 +614,8 @@ class ComponentAdminViewsTestCase(TestCase):
                 "sufficient to make it unique."
             ],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         url = self.component2.get_admin_url()
         response = self.client.post(url, data)
@@ -624,7 +652,8 @@ class ComponentAdminViewsTestCase(TestCase):
                 "or !#\"',&()+_-."
             ]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_component_curation_level_validation(self):
         self.client.login(username="test", password="secret")
@@ -641,11 +670,13 @@ class ComponentAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "Ensure this value is less than or equal to 100.")
+        self.assertContains(
+            response, "Ensure this value is less than or equal to 100.")
 
         data["curation_level"] = 99
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
 
     def test_component_save_as_proper(self):
         # Setting some value for further validation
@@ -686,7 +717,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.component1.owner, new_component.owner)
         self.assertEqual(self.component1.type, new_component.type)
         self.assertEqual(self.component1.is_active, new_component.is_active)
-        self.assertEqual(self.component1.configuration_status, new_component.configuration_status)
+        self.assertEqual(self.component1.configuration_status,
+                         new_component.configuration_status)
 
     def test_component_save_as_with_failing_validation(self):
         self.client.login(username="test", password="secret")
@@ -721,7 +753,8 @@ class ComponentAdminViewsTestCase(TestCase):
             response, "Component with this Dataspace, Name and Version already exists."
         )
         expected = {
-            NON_FIELD_ERRORS: ["Component with this Dataspace, Name and Version already exists."]
+            NON_FIELD_ERRORS: [
+                "Component with this Dataspace, Name and Version already exists."]
         }
         self.assertEqual(expected, context_data["adminform"].form.errors)
         # We are now on a form that works like an ADDITION form
@@ -769,8 +802,10 @@ class ComponentAdminViewsTestCase(TestCase):
         # Making sure the values of the Original Component were preserved
         self.assertEqual(self.component1.owner, self.owner1)
 
-        er1 = ExternalReference.objects.get_for_content_object(self.component1).get()
-        er2 = ExternalReference.objects.get_for_content_object(new_component).get()
+        er1 = ExternalReference.objects.get_for_content_object(
+            self.component1).get()
+        er2 = ExternalReference.objects.get_for_content_object(
+            new_component).get()
         # Making sure a new ExternalReference was created
         self.assertNotEqual(er1.id, er2.id)
 
@@ -805,7 +840,8 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
         # Started with 2 children, one was deleted.
-        self.assertEqual(Component.objects.latest("id").related_children.count(), 1)
+        self.assertEqual(Component.objects.latest(
+            "id").related_children.count(), 1)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_component_save_as_deactivated_for_dataspace(self):
@@ -830,7 +866,8 @@ class ComponentAdminViewsTestCase(TestCase):
     def test_component_save_as_with_inlines(self):
         self.client.login(username="test", password="secret")
 
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         assigned_package = ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
@@ -842,7 +879,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.component1.save()
 
         url = self.component1.get_admin_url()
-        response = self.client.get(url)  # Make a GET request to get the csrf token
+        # Make a GET request to get the csrf token
+        response = self.client.get(url)
 
         # We need to set a different Component.name to avoid raising validation errors
         new_name = "THIS IS A NEW NAME"
@@ -866,14 +904,17 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
 
-        new_component = Component.objects.get(name=new_name, dataspace=self.dataspace1)
+        new_component = Component.objects.get(
+            name=new_name, dataspace=self.dataspace1)
         self.assertRedirects(response, new_component.get_admin_url())
         self.assertEqual(1, new_component.packages.count())
         self.assertEqual(package_count, Package.objects.count())
-        self.assertEqual(assigned_package_count + 1, ComponentAssignedPackage.objects.count())
+        self.assertEqual(assigned_package_count + 1,
+                         ComponentAssignedPackage.objects.count())
         # The assigned license was copied too
         self.assertEqual(1, new_component.licenses.count())
-        self.assertEqual(self.component1.license_expression, new_component.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         new_component.license_expression)
 
     def test_add_to_product_action_proper_component(self):
         self.client.login(username=self.user.username, password="secret")
@@ -881,8 +922,10 @@ class ComponentAdminViewsTestCase(TestCase):
         self.component1.license_expression = self.license1.key
         self.component1.save()
 
-        ids = ",".join([str(self.component1.pk), str(self.component2.pk), str(self.component3.pk)])
-        add_to_product_url = reverse("admin:component_catalog_component_add_to_product")
+        ids = ",".join([str(self.component1.pk), str(
+            self.component2.pk), str(self.component3.pk)])
+        add_to_product_url = reverse(
+            "admin:component_catalog_component_add_to_product")
 
         # Simulate displaying the page
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
@@ -892,11 +935,13 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(
             add_to_product_url, {"product": self.product1.pk, "ids": ids}, follow=True
         )
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
         self.assertEqual(3, self.product1.productcomponents.count())
 
         # pc.license_expression is taken from the Component
-        pc = ProductComponent.objects.get(product=self.product1, component=self.component1)
+        pc = ProductComponent.objects.get(
+            product=self.product1, component=self.component1)
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertEqual(self.user, pc.created_by)
         self.assertEqual(self.user, pc.last_modified_by)
@@ -908,13 +953,15 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertTrue(pc.created_date)
 
         expected = "3 component(s) added to MyProduct."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         response = self.client.post(
             add_to_product_url, {"product": self.product1.pk, "ids": ids}, follow=True
         )
         expected = "0 component(s) added to MyProduct. 3 component(s) were already assigned."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         self.product1.refresh_from_db()
         history_entries = History.objects.get_for_object(self.product1)
@@ -926,7 +973,8 @@ class ComponentAdminViewsTestCase(TestCase):
             ]
         )
         self.assertEqual(
-            expected_messages, sorted([entry.change_message for entry in history_entries])
+            expected_messages, sorted(
+                [entry.change_message for entry in history_entries])
         )
         self.assertEqual(self.user, self.product1.last_modified_by)
 
@@ -937,7 +985,8 @@ class ComponentAdminViewsTestCase(TestCase):
         )
 
         ids = str(package1.pk)
-        add_to_product_url = reverse("admin:component_catalog_package_add_to_product")
+        add_to_product_url = reverse(
+            "admin:component_catalog_package_add_to_product")
 
         # Simulate displaying the page
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
@@ -947,11 +996,13 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(
             add_to_product_url, {"product": self.product1.pk, "ids": ids}, follow=True
         )
-        self.assertRedirects(response, reverse("admin:component_catalog_package_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_package_changelist"))
         self.assertEqual(1, self.product1.productpackages.count())
 
         # pc.license_expression is taken from the Package
-        pp = ProductPackage.objects.get(product=self.product1, package=package1)
+        pp = ProductPackage.objects.get(
+            product=self.product1, package=package1)
         self.assertEqual(self.license1.key, pp.license_expression)
         self.assertEqual(self.user, pp.created_by)
         self.assertEqual(self.user, pp.last_modified_by)
@@ -963,41 +1014,51 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertTrue(pp.created_date)
 
         expected = "1 package(s) added to MyProduct."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         response = self.client.post(
             add_to_product_url, {"product": self.product1.pk, "ids": ids}, follow=True
         )
         expected = "0 package(s) added to MyProduct. 1 package(s) were already assigned."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         self.product1.refresh_from_db()
         history_entries = History.objects.get_for_object(self.product1)
         expected_messages = ['Added package "p1.zip"']
-        self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
+        self.assertEqual(expected_messages, [
+                         entry.change_message for entry in history_entries])
         self.assertEqual(self.user, self.product1.last_modified_by)
 
     def test_add_to_product_action_permission(self):
         self.client.login(username=self.user.username, password="secret")
 
-        ids = ",".join([str(self.component1.pk), str(self.component2.pk), str(self.component3.pk)])
-        add_to_product_url = reverse("admin:component_catalog_component_add_to_product")
-        component_changelist_url = reverse("admin:component_catalog_component_changelist")
+        ids = ",".join([str(self.component1.pk), str(
+            self.component2.pk), str(self.component3.pk)])
+        add_to_product_url = reverse(
+            "admin:component_catalog_component_add_to_product")
+        component_changelist_url = reverse(
+            "admin:component_catalog_component_changelist")
 
         self.user.is_superuser = False
         self.user.save()
 
-        self.assertFalse(self.user.has_perm("product_portfolio.add_productcomponent"))
+        self.assertFalse(self.user.has_perm(
+            "product_portfolio.add_productcomponent"))
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
         self.assertEqual(404, response.status_code)
         self.user = add_perm(self.user, "change_component")
-        self.assertNotContains(self.client.get(component_changelist_url), "add_to_product")
+        self.assertNotContains(self.client.get(
+            component_changelist_url), "add_to_product")
 
         self.user = add_perm(self.user, "add_productcomponent")
-        self.assertTrue(self.user.has_perm("product_portfolio.add_productcomponent"))
+        self.assertTrue(self.user.has_perm(
+            "product_portfolio.add_productcomponent"))
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
         self.assertEqual(200, response.status_code)
-        self.assertContains(self.client.get(component_changelist_url), "add_to_product")
+        self.assertContains(self.client.get(
+            component_changelist_url), "add_to_product")
 
     def test_add_to_product_action_omitting_ids_returns_404(self):
         self.client.login(username="test", password="secret")
@@ -1007,7 +1068,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_add_to_product_action_submitting_no_product_shows_error(self):
         self.client.login(username="test", password="secret")
-        ids = ",".join([str(self.component1.pk), str(self.component2.pk), str(self.component3.pk)])
+        ids = ",".join([str(self.component1.pk), str(
+            self.component2.pk), str(self.component3.pk)])
         url = reverse("admin:component_catalog_component_add_to_product")
         response = self.client.post(url, {"ids": ids})
         self.assertEqual(200, response.status_code)
@@ -1019,12 +1081,16 @@ class ComponentAdminViewsTestCase(TestCase):
             product=self.product1, component=self.component1, dataspace=self.component1.dataspace
         )
 
-        ids = ",".join([str(self.component1.pk), str(self.component2.pk), str(self.component3.pk)])
+        ids = ",".join([str(self.component1.pk), str(
+            self.component2.pk), str(self.component3.pk)])
         url = reverse("admin:component_catalog_component_add_to_product")
-        response = self.client.post(url, {"product": self.product1.pk, "ids": ids})
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        response = self.client.post(
+            url, {"product": self.product1.pk, "ids": ids})
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
         self.assertTrue(
-            ProductComponent.objects.get(product=self.product1, component=self.component1)
+            ProductComponent.objects.get(
+                product=self.product1, component=self.component1)
         )
 
     def test_add_to_product_action_checks_dataspace(self):
@@ -1035,17 +1101,21 @@ class ComponentAdminViewsTestCase(TestCase):
         self.client.login(username="test", password="secret")
         ids = ",".join([str(component.pk)])
         url = reverse("admin:component_catalog_component_add_to_product")
-        response = self.client.post(url, {"product": self.product1.pk, "ids": ids}, follow=True)
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        response = self.client.post(
+            url, {"product": self.product1.pk, "ids": ids}, follow=True)
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
         self.assertEqual(
             "The dataspace of the selected objects did not match your dataspace.",
             list(response.context["messages"])[0].message,
         )
 
     def test_add_to_product_action_product_secured_qs(self):
-        component = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace1)
+        component = Component.objects.create(
+            name="c", version="1.0", dataspace=self.dataspace1)
         ids = ",".join([str(component.pk)])
-        add_to_product_url = reverse("admin:component_catalog_component_add_to_product")
+        add_to_product_url = reverse(
+            "admin:component_catalog_component_add_to_product")
 
         self.admin_user = add_perm(self.admin_user, "change_component")
         self.admin_user = add_perm(self.admin_user, "add_productcomponent")
@@ -1053,13 +1123,16 @@ class ComponentAdminViewsTestCase(TestCase):
         self.client.login(username=self.admin_user.username, password="secret")
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
         self.assertEqual(200, response.status_code)
-        self.assertEqual(0, response.context_data["form"].fields["product"]._queryset.count())
+        self.assertEqual(
+            0, response.context_data["form"].fields["product"]._queryset.count())
 
         assign_perm("view_product", self.admin_user, self.product1)
         assign_perm("change_product", self.admin_user, self.product1)
         response = self.client.get("{}?ids={}".format(add_to_product_url, ids))
-        self.assertEqual(1, response.context_data["form"].fields["product"]._queryset.count())
-        self.assertIn(self.product1, response.context_data["form"].fields["product"]._queryset)
+        self.assertEqual(
+            1, response.context_data["form"].fields["product"]._queryset.count())
+        self.assertIn(
+            self.product1, response.context_data["form"].fields["product"]._queryset)
 
     def test_add_package_page_has_no_inlines_when_it_is_a_popup(self):
         self.client.login(username="test", password="secret")
@@ -1074,7 +1147,9 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url + params, data={"filename": "AAA"})
         self.assertEqual(response.status_code, 302)
 
-        params = "?" + urllib.parse.urlencode({"_changelist_filters": "_to_field=id&_popup=1"})
+        params = "?" + \
+            urllib.parse.urlencode(
+                {"_changelist_filters": "_to_field=id&_popup=1"})
         response = self.client.get(url + params)
         self.assertNotContains(response, "Associated Components")
         response = self.client.post(url + params, data={"filename": "BBB"})
@@ -1108,10 +1183,12 @@ class ComponentAdminViewsTestCase(TestCase):
             self.license1.key, self.license2.key
         )
         self.component1.save()
-        self.assertEqual(component_policy, self.component1.get_policy_from_primary_license())
+        self.assertEqual(component_policy,
+                         self.component1.get_policy_from_primary_license())
 
         ids = str(self.component1.pk)
-        set_policy_url = reverse("admin:component_catalog_component_set_policy")
+        set_policy_url = reverse(
+            "admin:component_catalog_component_set_policy")
 
         response = self.client.get("{}?ids={}".format(set_policy_url, ids))
         self.assertEqual(200, response.status_code)
@@ -1133,7 +1210,8 @@ class ComponentAdminViewsTestCase(TestCase):
             "ids": ids,
         }
         response = self.client.post(set_policy_url, data)
-        self.assertRedirects(response, reverse("admin:component_catalog_component_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_component_changelist"))
         self.component1 = Component.objects.get(id=self.component1.id)
         self.assertEqual(component_policy, self.component1.usage_policy)
 
@@ -1162,7 +1240,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_component_external_reference_inline_in_changeform(self):
         self.client.login(username="test", password="secret")
-        ext_source1 = ExternalSource.objects.create(label="GitHub", dataspace=self.dataspace1)
+        ext_source1 = ExternalSource.objects.create(
+            label="GitHub", dataspace=self.dataspace1)
         url = self.component1.get_admin_url()
         data = {
             "name": self.component1.name,
@@ -1181,7 +1260,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
-        self.assertTrue(ExternalReference.objects.get_for_content_object(self.component1).exists())
+        self.assertTrue(ExternalReference.objects.get_for_content_object(
+            self.component1).exists())
 
     def test_component_external_reference_inline_dataspace_scope(self):
         self.client.login(username="test", password="secret")
@@ -1202,7 +1282,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_error_when_duplicate_component_assigned_package(self):
         self.client.login(username="test", password="secret")
-        package1 = Package.objects.create(filename="file.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="file.zip", dataspace=self.dataspace1)
         url = reverse("admin:component_catalog_component_add")
         params = {
             "name": "My Component",
@@ -1258,12 +1339,14 @@ class ComponentAdminViewsTestCase(TestCase):
         expected_errors = [["Unknown license key(s): invalid"]]
         self.assertEqual(expected_errors, response.context_data["errors"])
 
-        data["license_expression"] = "{} AND {}".format(self.license1.key, self.license2.key)
+        data["license_expression"] = "{} AND {}".format(
+            self.license1.key, self.license2.key)
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
 
         # Lower-case operators are normalized
-        data["license_expression"] = "{} and {}".format(self.license1.key, self.license2.key)
+        data["license_expression"] = "{} and {}".format(
+            self.license1.key, self.license2.key)
         data["name"] = "SomethingElse"
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
@@ -1368,7 +1451,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.component1.save()
         data["related_children-0-license_expression"] = self.license2.key
         response = self.client.post(url, data)
-        expected_errors = [["Unknown license key(s): license2<br>Available licenses: license1"]]
+        expected_errors = [
+            ["Unknown license key(s): license2<br>Available licenses: license1"]]
         self.assertEqual(expected_errors, response.context_data["errors"])
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
@@ -1383,18 +1467,23 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertContains(response, "awesomplete-1.1.5.css")
         self.assertContains(response, "awesomplete-1.1.5.min.js")
         self.assertContains(response, "license_expression_builder.js")
-        expected = [("License1 (license1)", "license1"), ("License2 (license2)", "license2")]
-        self.assertEqual(expected, response.context["client_data"]["license_data"])
+        expected = [("License1 (license1)", "license1"),
+                    ("License2 (license2)", "license2")]
+        self.assertEqual(
+            expected, response.context["client_data"]["license_data"])
 
-        copied_component = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_component = copy_object(
+            self.component1, self.dataspace_target, self.user)
         response = self.client.get(copied_component.get_admin_url())
         self.assertEqual([], response.context["client_data"]["license_data"])
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         copied_license.short_name = "Copied"
         copied_license.save()
         response = self.client.get(copied_component.get_admin_url())
         expected = [("Copied (license1)", "license1")]
-        self.assertEqual(expected, response.context["client_data"]["license_data"])
+        self.assertEqual(
+            expected, response.context["client_data"]["license_data"])
 
         self.assertContains(response, 'related_model_name="Component" ')
         self.assertContains(response, 'related_api_url="/api/v2/components/"')
@@ -1429,7 +1518,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, sub.license_expression)
         self.assertTrue(self.component1.licenses.exists())
         self.assertTrue(sub.licenses.exists())
-        self.assertEqual(self.component1.license_expression, sub.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         sub.license_expression)
         self.assertEqual(self.component1.reference_notes, sub.reference_notes)
         sub.delete()
 
@@ -1445,7 +1535,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
         response = self.client.post(url, data)
         expected = {"license_expression": ["Unknown license key(s): invalid"]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         data["license_expression"] = self.license1.key
         response = self.client.post(url, data)
@@ -1464,7 +1555,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(self.license1.key, sub.license_expression)
         self.assertTrue(self.component1.licenses.exists())
         self.assertTrue(sub.licenses.exists())
-        self.assertEqual(self.component1.license_expression, sub.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         sub.license_expression)
 
         sub.delete()
         data["license_expression"] = self.license2.key
@@ -1474,7 +1566,8 @@ class ComponentAdminViewsTestCase(TestCase):
                 "Unknown license key(s): license2<br>" "Available licenses: license1"
             ]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_subcomponent_mass_update_action(self):
         self.client.login(username="test", password="secret")
@@ -1485,9 +1578,12 @@ class ComponentAdminViewsTestCase(TestCase):
             "select_across": 0,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "<h1>Mass update Subcomponent relationships</h1>")
-        self.assertContains(response, '<label for="id_purpose">Purpose:</label>')
-        self.assertContains(response, '<label for="id_usage_policy">Usage policy:</label>')
+        self.assertContains(
+            response, "<h1>Mass update Subcomponent relationships</h1>")
+        self.assertContains(
+            response, '<label for="id_purpose">Purpose:</label>')
+        self.assertContains(
+            response, '<label for="id_usage_policy">Usage policy:</label>')
 
     def test_subcomponent_changelist_parent_related_lookup_list_filter(self):
         self.client.login(username="test", password="secret")
@@ -1553,19 +1649,23 @@ class ComponentAdminViewsTestCase(TestCase):
 
         url = reverse("admin:component_catalog_component_changelist")
         response = self.client.get(url + "?_filter_lookup=1")
-        self.assertNotContains(response, reverse("admin:component_catalog_component_add"))
+        self.assertNotContains(response, reverse(
+            "admin:component_catalog_component_add"))
 
     def test_package_changelist_component_hierarchy_related_lookup_list_filter(self):
         self.client.login(username="test", password="secret")
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
-        package2 = Package.objects.create(filename="p2.zip", dataspace=self.dataspace1)
+        package2 = Package.objects.create(
+            filename="p2.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component2, package=package2, dataspace=self.dataspace1
         )
-        package3 = Package.objects.create(filename="p3.zip", dataspace=self.dataspace1)
+        package3 = Package.objects.create(
+            filename="p3.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component3, package=package3, dataspace=self.dataspace1
         )
@@ -1577,19 +1677,22 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(3, response.context_data["cl"].result_count)
 
-        response = self.client.get(url, {"component__id__exact": self.component1.id})
+        response = self.client.get(
+            url, {"component__id__exact": self.component1.id})
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(package1, response.context_data["cl"].queryset)
         self.assertNotIn(package2, response.context_data["cl"].queryset)
         self.assertNotIn(package3, response.context_data["cl"].queryset)
 
-        response = self.client.get(url, {"component__id__exact": self.component2.id})
+        response = self.client.get(
+            url, {"component__id__exact": self.component2.id})
         self.assertEqual(2, response.context_data["cl"].result_count)
         self.assertIn(package1, response.context_data["cl"].queryset)
         self.assertIn(package2, response.context_data["cl"].queryset)
         self.assertNotIn(package3, response.context_data["cl"].queryset)
 
-        response = self.client.get(url, {"component__id__exact": self.component3.id})
+        response = self.client.get(
+            url, {"component__id__exact": self.component3.id})
         self.assertEqual(2, response.context_data["cl"].result_count)
         self.assertNotIn(package1, response.context_data["cl"].queryset)
         self.assertIn(package2, response.context_data["cl"].queryset)
@@ -1612,12 +1715,14 @@ class ComponentAdminViewsTestCase(TestCase):
     def test_package_changelist_has_component_list_filter(self):
         self.client.login(username="test", password="secret")
 
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
 
-        package2 = Package.objects.create(filename="p2.zip", dataspace=self.dataspace1)
+        package2 = Package.objects.create(
+            filename="p2.zip", dataspace=self.dataspace1)
 
         url = reverse("admin:component_catalog_package_changelist")
         response = self.client.get(url)
@@ -1658,14 +1763,16 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(p2, response.context_data["cl"].result_list)
 
-        response = self.client.get(changelist_url + "?q=download_url=https://url.com/p2.zip")
+        response = self.client.get(
+            changelist_url + "?q=download_url=https://url.com/p2.zip")
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(p2, response.context_data["cl"].result_list)
 
     def test_package_changelist_set_policy_action_proper(self):
         self.client.login(username=self.user.username, password="secret")
-        p1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        p1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
 
         license_policy = UsagePolicy.objects.create(
             label="LicensePolicy",
@@ -1688,7 +1795,8 @@ class ComponentAdminViewsTestCase(TestCase):
         self.license1.usage_policy = license_policy
         self.license1.save()
 
-        p1.license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        p1.license_expression = "{} AND {}".format(
+            self.license1.key, self.license2.key)
         p1.save()
         self.assertEqual(package_policy, p1.get_policy_from_primary_license())
 
@@ -1715,13 +1823,15 @@ class ComponentAdminViewsTestCase(TestCase):
             "ids": ids,
         }
         response = self.client.post(set_policy_url, data)
-        self.assertRedirects(response, reverse("admin:component_catalog_package_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:component_catalog_package_changelist"))
         p1 = Package.objects.get(id=p1.id)
         self.assertEqual(package_policy, p1.usage_policy)
 
     def test_package_changelist_set_purl_action(self):
         self.client.login(username=self.user.username, password="secret")
-        package = Package.objects.create(dataspace=self.dataspace1, filename="p1.zip")
+        package = Package.objects.create(
+            dataspace=self.dataspace1, filename="p1.zip")
         package.download_url = "http://repo1.maven.org/maven2/jdbm/jdbm/0.20-dev/"
         package.save()
         self.assertEqual("", package.package_url)
@@ -1745,7 +1855,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_package_admin_changeform_usage_policy_widget_wrapper(self):
         self.client.login(username="test", password="secret")
-        p1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        p1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
 
         license_policy = UsagePolicy.objects.create(
             label="LicensePolicy",
@@ -1782,7 +1893,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_package_admin_changeform_usage_policy_on_license_expression_changed(self):
         self.client.login(username="test", password="secret")
-        p1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        p1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
 
         license_policy = UsagePolicy.objects.create(
             label="LicensePolicy",
@@ -1830,16 +1942,20 @@ class ComponentAdminViewsTestCase(TestCase):
             "The changed license assignment does not match the currently assigned usage "
             'policy: "PackagePolicy2" != "PackagePolicy" from license1'
         )
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
     def test_package_changeform_inline_component_trigger_update_completion_level(self):
         self.client.login(username="test", password="secret")
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         url = package1.get_admin_url()
 
         self.assertEqual(0, package1.componentassignedpackage_set.count())
-        self.assertEqual(0, self.component1.componentassignedpackage_set.count())
-        self.assertEqual(0, self.component2.componentassignedpackage_set.count())
+        self.assertEqual(
+            0, self.component1.componentassignedpackage_set.count())
+        self.assertEqual(
+            0, self.component2.componentassignedpackage_set.count())
         self.assertEqual(15, self.component1.compute_completion_level())
         self.component1.update_completion_level()
         self.component1.refresh_from_db()
@@ -1857,21 +1973,25 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
         self.assertEqual(1, package1.componentassignedpackage_set.count())
-        self.assertEqual(1, self.component1.componentassignedpackage_set.count())
+        self.assertEqual(
+            1, self.component1.componentassignedpackage_set.count())
         self.component1.refresh_from_db()
         self.assertEqual(22, self.component1.completion_level)
 
         # Edition
         data["componentassignedpackage_set-INITIAL_FORMS"] = "1"
         data["componentassignedpackage_set-0-id"] = package1.componentassignedpackage_set.get().id
-        data["componentassignedpackage_set-0-component"] = (self.component2.id,)
+        data["componentassignedpackage_set-0-component"] = (
+            self.component2.id,)
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
         self.assertEqual(1, package1.componentassignedpackage_set.count())
-        self.assertEqual(0, self.component1.componentassignedpackage_set.count())
+        self.assertEqual(
+            0, self.component1.componentassignedpackage_set.count())
         self.component1.refresh_from_db()
         self.assertEqual(15, self.component1.completion_level)
-        self.assertEqual(1, self.component2.componentassignedpackage_set.count())
+        self.assertEqual(
+            1, self.component2.componentassignedpackage_set.count())
         self.component2.refresh_from_db()
         self.assertEqual(22, self.component2.completion_level)
 
@@ -1880,13 +2000,15 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
         self.assertEqual(0, package1.componentassignedpackage_set.count())
-        self.assertEqual(0, self.component2.componentassignedpackage_set.count())
+        self.assertEqual(
+            0, self.component2.componentassignedpackage_set.count())
         self.component2.refresh_from_db()
         self.assertEqual(15, self.component2.completion_level)
 
     def test_package_changeform_inline_remove_component_value_and_save_as(self):
         self.client.login(username="test", password="secret")
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         url = package1.get_admin_url()
 
         data = {
@@ -1906,7 +2028,8 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_package_changeform_unique_constraint_validation(self):
         self.client.login(username="test", password="secret")
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         add_url = reverse("admin:component_catalog_package_add")
 
         data = {
@@ -1926,7 +2049,8 @@ class ComponentAdminViewsTestCase(TestCase):
         expected = f"<li>{error}</li>"
         self.assertContains(response, expected, html=True)
         errors = {"__all__": [error]}
-        self.assertEqual(errors, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            errors, response.context_data["adminform"].form.errors)
 
         package1.download_url = "http://url.com/p1.zip"
         package1.save()
@@ -1937,7 +2061,8 @@ class ComponentAdminViewsTestCase(TestCase):
         expected = f"<li>{error}</li>"
         self.assertContains(response, expected, html=True)
         errors = {"__all__": [error]}
-        self.assertEqual(errors, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            errors, response.context_data["adminform"].form.errors)
 
         # Making sure the validation is scoped by dataspace
         other_package = Package.objects.create(
@@ -1968,21 +2093,25 @@ class ComponentAdminViewsTestCase(TestCase):
         errors = {
             "filename": ["Enter a valid filename: slash, backslash, or colon are not allowed."]
         }
-        self.assertEqual(errors, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            errors, response.context_data["adminform"].form.errors)
 
         data["filename"] = "pack\\age.zip"
         response = self.client.post(add_url, data)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(errors, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            errors, response.context_data["adminform"].form.errors)
 
         data["filename"] = "pack:age.zip"
         response = self.client.post(add_url, data)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(errors, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            errors, response.context_data["adminform"].form.errors)
 
     def test_component_changelist_advanced_search_on_empty_space(self):
         self.client.login(username="test", password="secret")
-        changelist_url = reverse("admin:component_catalog_component_changelist")
+        changelist_url = reverse(
+            "admin:component_catalog_component_changelist")
         # '?q=+' + means empty space
         response = self.client.get(changelist_url + "?q=+")
         self.assertEqual(200, response.status_code)
@@ -1991,11 +2120,13 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_component_changelist_advanced_search_with_apostrophe(self):
         self.client.login(username="test", password="secret")
-        changelist_url = reverse("admin:component_catalog_component_changelist")
+        changelist_url = reverse(
+            "admin:component_catalog_component_changelist")
 
         self.component1.name = "Programmer's Notepad"
         self.component1.save()
-        response = self.client.get(changelist_url + "?q=Programmer%27s+Notepad")
+        response = self.client.get(
+            changelist_url + "?q=Programmer%27s+Notepad")
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(self.component1, response.context_data["cl"].queryset)
@@ -2007,21 +2138,26 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_component_changelist_search_distinct_applied_on_m2m_fields(self):
         self.client.login(username="test", password="secret")
-        changelist_url = reverse("admin:component_catalog_component_changelist")
+        changelist_url = reverse(
+            "admin:component_catalog_component_changelist")
 
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="package1.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace1)
+        package2 = Package.objects.create(
+            filename="package2.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package2, dataspace=self.dataspace1
         )
 
         self.assertEqual(2, self.component1.packages.count())
-        self.assertIn("packages__filename", ComponentAdmin.search_fields)  # m2m field in search
+        # m2m field in search
+        self.assertIn("packages__filename", ComponentAdmin.search_fields)
 
-        response = self.client.get(changelist_url + f"?q={self.component1.name}")
+        response = self.client.get(
+            changelist_url + f"?q={self.component1.name}")
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.context_data["cl"].result_count)
 
@@ -2079,8 +2215,10 @@ class ComponentAdminViewsTestCase(TestCase):
         self.component1.license_expression = self.license1.key
         self.component1.save()
 
-        self.assertEqual(component_policy, self.component1.get_policy_from_primary_license())
-        self.assertEqual(component_policy, self.component1.policy_from_primary_license)
+        self.assertEqual(component_policy,
+                         self.component1.get_policy_from_primary_license())
+        self.assertEqual(component_policy,
+                         self.component1.policy_from_primary_license)
         self.assertIsNone(self.component1.usage_policy)
 
         response = self.client.get(self.component1.get_admin_url())
@@ -2136,12 +2274,14 @@ class ComponentAdminViewsTestCase(TestCase):
             "dje-externalreference-content_type-object_id-INITIAL_FORMS": 0,
         }
 
-        response = self.client.post(self.component1.get_admin_url(), data, follow=True)
+        response = self.client.post(
+            self.component1.get_admin_url(), data, follow=True)
         expected = (
             "The changed license assignment does not match the currently assigned usage "
             'policy: "ComponentPolicy2" != "ComponentPolicy" from license1'
         )
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
     def test_subcomponent_admin_changelist_available_actions(self):
         self.client.login(username="test", password="secret")
@@ -2153,7 +2293,8 @@ class ComponentAdminViewsTestCase(TestCase):
             ("set_policy", "Set usage policy from components"),
             ("mass_update", "Mass update"),
         ]
-        self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
+        self.assertEqual(
+            expected, response.context_data["action_form"].fields["action"].choices)
 
         with self.assertRaises(NoReverseMatch):
             reverse("admin:component_catalog_subcomponent_copy")
@@ -2163,17 +2304,20 @@ class ComponentAdminViewsTestCase(TestCase):
 
     def test_component_admin_delete_confirmation_include_associated_packages(self):
         self.client.login(username="test", password="secret")
-        delete_url = reverse("admin:component_catalog_component_delete", args=[self.component1.pk])
+        delete_url = reverse("admin:component_catalog_component_delete", args=[
+                             self.component1.pk])
         self.assertFalse(self.component1.packages.exists())
         response = self.client.get(delete_url)
         expected = "Would you also like to delete Packages associated with this Component"
         self.assertNotContains(response, expected)
 
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="package1.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace1)
+        package2 = Package.objects.create(
+            filename="package2.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package2, dataspace=self.dataspace1
         )
@@ -2188,31 +2332,38 @@ class ComponentAdminViewsTestCase(TestCase):
         }
         response = self.client.post(delete_url, data=data, follow=True)
         self.assertContains(response, "was deleted successfully.")
-        self.assertFalse(Component.objects.filter(pk=self.component1.pk).exists())
-        self.assertFalse(Package.objects.filter(pk__in=[package1.pk, package2.pk]).exists())
+        self.assertFalse(Component.objects.filter(
+            pk=self.component1.pk).exists())
+        self.assertFalse(Package.objects.filter(
+            pk__in=[package1.pk, package2.pk]).exists())
 
-        package3 = Package.objects.create(filename="package3.zip", dataspace=self.dataspace1)
+        package3 = Package.objects.create(
+            filename="package3.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component2, package=package3, dataspace=self.dataspace1
         )
         data = {
             "post": "yes",
         }
-        delete_url = reverse("admin:component_catalog_component_delete", args=[self.component2.pk])
+        delete_url = reverse("admin:component_catalog_component_delete", args=[
+                             self.component2.pk])
         response = self.client.post(delete_url, data=data, follow=True)
         self.assertContains(response, "was deleted successfully.")
-        self.assertFalse(Component.objects.filter(pk=self.component2.pk).exists())
+        self.assertFalse(Component.objects.filter(
+            pk=self.component2.pk).exists())
         self.assertTrue(Package.objects.filter(pk=package3.pk).exists())
 
     def test_component_admin_delete_selected_action_include_associated_packages(self):
         self.client.login(username="test", password="secret")
         url = reverse("admin:component_catalog_component_changelist")
 
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="package1.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace1)
+        package2 = Package.objects.create(
+            filename="package2.zip", dataspace=self.dataspace1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package2, dataspace=self.dataspace1
         )
@@ -2236,8 +2387,10 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data, follow=True)
         msg = '<li class="grp-success">Successfully deleted 1 component.</li>'
         self.assertContains(response, msg)
-        self.assertFalse(Component.objects.filter(pk=self.component1.pk).exists())
-        self.assertFalse(Package.objects.filter(pk__in=[package1.pk, package2.pk]).exists())
+        self.assertFalse(Component.objects.filter(
+            pk=self.component1.pk).exists())
+        self.assertFalse(Package.objects.filter(
+            pk__in=[package1.pk, package2.pk]).exists())
 
     def test_component_changeform_primary_language_autocomplete_field(self):
         self.client.login(username="test", password="secret")
@@ -2285,7 +2438,8 @@ class ComponentAdminViewsTestCase(TestCase):
         for term in search_queries:
             response = self.client.get(url + f"&term={term}")
             results = json.loads(response.content.decode())
-            self.assertEqual("pkg:pypi/djangoproject/django@3.1", results[0].get("label"))
+            self.assertEqual("pkg:pypi/djangoproject/django@3.1",
+                             results[0].get("label"))
 
     def test_component_admin_get_initial_from_related_instance(self):
         release_date = datetime.datetime(2018, 6, 21, 3, 38, 24, 139528)
@@ -2329,15 +2483,19 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.get(component_add_url)
         self.assertNotContains(response, expected)
 
-        response = self.client.get(component_add_url, HTTP_REFERER=package1.get_admin_url())
+        response = self.client.get(
+            component_add_url, HTTP_REFERER=package1.get_admin_url())
         self.assertContains(response, expected)
 
     def test_component_admin_form_acceptable_linkages(self):
         self.client.login(username="test", password="secret")
 
-        AcceptableLinkage.objects.create(label="linkage1", dataspace=self.dataspace1)
-        AcceptableLinkage.objects.create(label="linkage2", dataspace=self.dataspace1)
-        AcceptableLinkage.objects.create(label="linkage3", dataspace=self.dataspace_target)
+        AcceptableLinkage.objects.create(
+            label="linkage1", dataspace=self.dataspace1)
+        AcceptableLinkage.objects.create(
+            label="linkage2", dataspace=self.dataspace1)
+        AcceptableLinkage.objects.create(
+            label="linkage3", dataspace=self.dataspace_target)
 
         expected_choices = [
             ("linkage1", "linkage1"),
@@ -2347,12 +2505,14 @@ class ComponentAdminViewsTestCase(TestCase):
         component_add_url = reverse("admin:component_catalog_component_add")
         response = self.client.get(component_add_url)
         form = response.context_data["adminform"].form
-        self.assertEqual(expected_choices, form.fields["acceptable_linkages"].choices)
+        self.assertEqual(expected_choices,
+                         form.fields["acceptable_linkages"].choices)
 
         component_edit_url = self.component1.get_admin_url()
         response = self.client.get(component_edit_url)
         form = response.context_data["adminform"].form
-        self.assertEqual(expected_choices, form.fields["acceptable_linkages"].choices)
+        self.assertEqual(expected_choices,
+                         form.fields["acceptable_linkages"].choices)
 
         # Edit
         data = {
@@ -2383,7 +2543,8 @@ class ComponentAdminViewsTestCase(TestCase):
         data["acceptable_linkages"] = ["linkage1", "linkage2"]
         response = self.client.post(component_add_url, data)
         added_component = Component.objects.latest("id")
-        self.assertEqual(data["acceptable_linkages"], added_component.acceptable_linkages)
+        self.assertEqual(data["acceptable_linkages"],
+                         added_component.acceptable_linkages)
 
     def test_component_admin_form_configuration_setting(self):
         self.client.login(username="test", password="secret")
@@ -2443,7 +2604,8 @@ class PackageDataCollectionTestCase(TransactionTestCase):
         expected = "Save and collect data"
         self.assertContains(response, expected)
 
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         response = self.client.get(package1.get_admin_url())
         self.assertContains(response, expected)
 
@@ -2468,11 +2630,13 @@ class PackageDataCollectionTestCase(TransactionTestCase):
         expected = (
             f'The SHA1, MD5, and Size fields collection from {data["download_url"]} is in progress.'
         )
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         package1 = Package.objects.get(filename=data["filename"])
         self.assertEqual("93b885adfe0da089cdf634904fd59f71", package1.md5)
-        self.assertEqual("5ba93c9db0cff93f52b521d7420e43f6eda2784f", package1.sha1)
+        self.assertEqual(
+            "5ba93c9db0cff93f52b521d7420e43f6eda2784f", package1.sha1)
         self.assertEqual(1, package1.size)
 
         data["download_url"] = "ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2"
@@ -2480,22 +2644,26 @@ class PackageDataCollectionTestCase(TransactionTestCase):
         expected = (
             'The SHA1, MD5, and Size fields collection is not supported for the "ftp" scheme.'
         )
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         data["download_url"] = "git://github.com:nexB/aboutcode-toolkit.git"
         response = self.client.post(add_url, data, follow=True)
         expected = (
             'The SHA1, MD5, and Size fields collection is not supported for the "git" scheme.'
         )
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
 
 class ComponentKeywordAdminViewsTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.other_dataspace = Dataspace.objects.create(name="otherOO")
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
-        self.owner2 = Owner.objects.create(name="Organization2", dataspace=self.other_dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
+        self.owner2 = Owner.objects.create(
+            name="Organization2", dataspace=self.other_dataspace)
         self.component = Component.objects.create(
             owner=self.owner, name="a", dataspace=self.dataspace
         )
@@ -2530,7 +2698,8 @@ class ComponentKeywordAdminViewsTestCase(TestCase):
         data = {"label": "A Keyword"}
         response = self.client.post(url, data)
         self.assertRedirects(
-            response, reverse("admin:component_catalog_componentkeyword_changelist")
+            response, reverse(
+                "admin:component_catalog_componentkeyword_changelist")
         )
 
         # Post the same label again
@@ -2539,9 +2708,11 @@ class ComponentKeywordAdminViewsTestCase(TestCase):
             response, "<li>Component keyword with this Dataspace and Label already exists.</li>"
         )
         expected = {
-            NON_FIELD_ERRORS: ["Component keyword with this Dataspace and Label already exists."]
+            NON_FIELD_ERRORS: [
+                "Component keyword with this Dataspace and Label already exists."]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
 
 class ComponentCopyTestCase(TestCase):
@@ -2558,7 +2729,8 @@ class ComponentCopyTestCase(TestCase):
         self.status1 = ComponentStatus.objects.create(
             label="Status1", default_on_addition=False, dataspace=self.dataspace1
         )
-        self.owner1 = Owner.objects.create(name="owner1", dataspace=self.dataspace1)
+        self.owner1 = Owner.objects.create(
+            name="owner1", dataspace=self.dataspace1)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",
@@ -2654,8 +2826,10 @@ class ComponentCopyTestCase(TestCase):
 
     def test_copy_component_type(self):
         component_type_original_count = ComponentType.objects.count()
-        copied_object = copy_object(self.type1, self.dataspace_target, self.user)
-        self.assertEqual(component_type_original_count + 1, ComponentType.objects.count())
+        copied_object = copy_object(
+            self.type1, self.dataspace_target, self.user)
+        self.assertEqual(component_type_original_count +
+                         1, ComponentType.objects.count())
         self.assertEqual("Type1", copied_object.label)
         self.assertEqual("notes", copied_object.notes)
 
@@ -2663,7 +2837,8 @@ class ComponentCopyTestCase(TestCase):
         from workflow.models import Request
         from workflow.models import RequestTemplate
 
-        component_ct = ContentType.objects.get(app_label="component_catalog", model="component")
+        component_ct = ContentType.objects.get(
+            app_label="component_catalog", model="component")
         request_template1 = RequestTemplate.objects.create(
             name="T1", description="Desc1", dataspace=self.dataspace1, content_type=component_ct
         )
@@ -2679,12 +2854,14 @@ class ComponentCopyTestCase(TestCase):
         self.component1.refresh_from_db()
         self.assertEqual(1, self.component1.request_count)
 
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
         self.assertIsNone(copied_object.request_count)
         self.assertEqual(0, copied_object.count_requests())
 
     def test_copy_component_common(self):
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
 
         # Making sure the Type was copied too.
         self.assertEqual(self.component1.type.uuid, copied_object.type.uuid)
@@ -2695,8 +2872,10 @@ class ComponentCopyTestCase(TestCase):
 
     def test_copy_component_no_default_status(self):
         # There is no default status set in the target dataspace
-        self.assertFalse(ComponentStatus.objects.get_default_on_addition_qs(self.dataspace_target))
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        self.assertFalse(
+            ComponentStatus.objects.get_default_on_addition_qs(self.dataspace_target))
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
         self.assertFalse(copied_object.configuration_status)
 
     def test_copy_component_with_default_status(self):
@@ -2707,7 +2886,8 @@ class ComponentCopyTestCase(TestCase):
             default_on_addition=True,
             dataspace=self.dataspace_target,
         )
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
         self.assertEqual(default_in_target, copied_object.configuration_status)
 
     def test_copy_component_with_assigned_licenses(self):
@@ -2715,7 +2895,8 @@ class ComponentCopyTestCase(TestCase):
         self.component1.save()
         self.assertEqual(1, self.component1.licenses.count())
 
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
         copied_license = copied_object.licenses.all()[0]
         self.assertEqual(self.license1.key, copied_license.key)
         # Object are not the same DB entry but they share the same UUID
@@ -2734,7 +2915,8 @@ class ComponentCopyTestCase(TestCase):
         # No license in the the target
         self.assertFalse(License.objects.scope(self.dataspace_target).exists())
 
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
         copied_license = copied_object.licenses.all()[0]
         self.assertEqual(self.license1.key, copied_license.key)
         # Object are not the same DB entry but they share the same UUID
@@ -2748,8 +2930,10 @@ class ComponentCopyTestCase(TestCase):
 
     def test_copy_update_component_with_license_expression_and_assigned_licenses(self):
         self.assertFalse(self.component1.license_expression)
-        copied_component = copy_object(self.component1, self.dataspace_target, self.user)
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_component = copy_object(
+            self.component1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
 
         # Same referenced license in both expression
         self.component1.license_expression = self.license1.key
@@ -2780,7 +2964,8 @@ class ComponentCopyTestCase(TestCase):
         self.assertEqual(1, updated_component.licenses.count())
         copied_license = updated_component.licenses.all()[0]
         self.assertEqual(license2.uuid, copied_license.uuid)
-        self.assertEqual(self.component1.license_expression, updated_component.license_expression)
+        self.assertEqual(self.component1.license_expression,
+                         updated_component.license_expression)
 
         license3 = License.objects.create(
             key="l3", name="l3", short_name="l3", dataspace=self.dataspace1, owner=self.owner1
@@ -2793,20 +2978,26 @@ class ComponentCopyTestCase(TestCase):
             self.component1, self.dataspace_target, self.user, update=True
         )
         self.assertEqual(1, updated_component.licenses.count())
-        self.assertEqual(license3.uuid, updated_component.licenses.all()[0].uuid)
-        self.assertEqual(self.component1.license_expression, updated_component.license_expression)
+        self.assertEqual(
+            license3.uuid, updated_component.licenses.all()[0].uuid)
+        self.assertEqual(self.component1.license_expression,
+                         updated_component.license_expression)
 
     def test_copy_update_subcomponent_with_license_expression_and_uuid_conflict(self):
-        self.assertFalse(Component.objects.scope(self.dataspace_target).exists())
-        self.assertFalse(Subcomponent.objects.scope(self.dataspace_target).exists())
+        self.assertFalse(Component.objects.scope(
+            self.dataspace_target).exists())
+        self.assertFalse(Subcomponent.objects.scope(
+            self.dataspace_target).exists())
 
         self.sub_component1.license_expression = self.license1.key
         self.sub_component1.save()
 
-        copy_object(self.sub_component1.parent, self.dataspace_target, self.user)
+        copy_object(self.sub_component1.parent,
+                    self.dataspace_target, self.user)
         copied_sub = Subcomponent.objects.latest("id")
         self.assertEqual(self.dataspace_target, copied_sub.dataspace)
-        self.assertEqual(self.sub_component1.license_expression, copied_sub.license_expression)
+        self.assertEqual(self.sub_component1.license_expression,
+                         copied_sub.license_expression)
         self.assertEqual(self.license1.uuid, copied_sub.licenses.get().uuid)
         self.assertEqual(
             self.sub_component1.subcomponentassignedlicense_set.get().uuid,
@@ -2814,13 +3005,15 @@ class ComponentCopyTestCase(TestCase):
         )
 
         # Same UUID: update runs fine
-        copy_object(self.sub_component1.parent, self.dataspace_target, self.user, update=True)
+        copy_object(self.sub_component1.parent,
+                    self.dataspace_target, self.user, update=True)
 
         copied_assigned_license = copied_sub.subcomponentassignedlicense_set.get()
         copied_assigned_license.uuid = uuid.uuid4()
         copied_assigned_license.save()
 
-        copy_object(self.sub_component1.parent, self.dataspace_target, self.user, update=True)
+        copy_object(self.sub_component1.parent,
+                    self.dataspace_target, self.user, update=True)
 
     def test_object_copy_component_with_fields_exclude_propagation(self):
         # We want to make sure that a child Component copied during a Component
@@ -2891,8 +3084,10 @@ class ComponentCopyTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>Errors for the following Components.</h2>", html=True)
-        self.assertContains(response, "duplicate key value violates unique constraint")
+        self.assertContains(
+            response, "<h2>Errors for the following Components.</h2>", html=True)
+        self.assertContains(
+            response, "duplicate key value violates unique constraint")
 
     def test_copy_component_with_assigned_licenses_m2m_not_in_target(self):
         self.client.login(username="test", password="secret")
@@ -2917,8 +3112,10 @@ class ComponentCopyTestCase(TestCase):
         copied_object = Component.objects.get(
             uuid=self.component1.uuid, dataspace=self.dataspace_target
         )
-        self.assertEqual(self.component1.license_expression, copied_object.license_expression)
-        self.assertEqual(self.component1.licenses.count(), copied_object.licenses.count())
+        self.assertEqual(self.component1.license_expression,
+                         copied_object.license_expression)
+        self.assertEqual(self.component1.licenses.count(),
+                         copied_object.licenses.count())
 
     def test_copy_component_with_parentchild1(self):
         children_count = self.component3.get_children().count()
@@ -2928,7 +3125,8 @@ class ComponentCopyTestCase(TestCase):
         self.assertTrue(children_count)
         self.assertTrue(parents_count)
 
-        copied_object = copy_object(self.component3, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component3, self.dataspace_target, self.user)
 
         # We do not copied parents along Component copy
         self.assertFalse(copied_object.get_parents())
@@ -2960,7 +3158,8 @@ class ComponentCopyTestCase(TestCase):
         )
 
         copy_object(self.component1, self.dataspace_target, self.user)
-        self.assertEqual(component_type_original_count + 1, ComponentType.objects.count())
+        self.assertEqual(component_type_original_count +
+                         1, ComponentType.objects.count())
         self.assertEqual(owner_original_count + 1, Owner.objects.count())
 
     def test_copy_component_with_uuid_matching_type(self):
@@ -2984,7 +3183,8 @@ class ComponentCopyTestCase(TestCase):
         self.assertEqual(owner_original_count + 1, Owner.objects.count())
 
     def test_copy_component_with_assigned_package(self):
-        package1 = Package.objects.create(filename="file.zip", dataspace=self.component2.dataspace)
+        package1 = Package.objects.create(
+            filename="file.zip", dataspace=self.component2.dataspace)
         ComponentAssignedPackage.objects.create(
             component=self.component2, package=package1, dataspace=self.component2.dataspace
         )
@@ -2992,7 +3192,8 @@ class ComponentCopyTestCase(TestCase):
         package_original_count = Package.objects.count()
         assigned_package_original_count = ComponentAssignedPackage.objects.count()
 
-        copied_object = copy_object(self.component2, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.component2, self.dataspace_target, self.user)
 
         self.assertTrue(copied_object.packages.all())
         self.assertEqual(package_original_count + 1, Package.objects.count())
@@ -3005,13 +3206,16 @@ class ComponentCopyTestCase(TestCase):
         self.component1.save()
 
         # Let's copy self.component1 in the target
-        copied_object = copy_object(self.component1, self.dataspace_target, self.user)
-        self.assertEqual(copied_object.licenses.count(), self.component1.licenses.count())
+        copied_object = copy_object(
+            self.component1, self.dataspace_target, self.user)
+        self.assertEqual(copied_object.licenses.count(),
+                         self.component1.licenses.count())
         # The License, LicenseTag, LicenseAssignedTag were copied along.
         copied_assigned_tag = LicenseAssignedTag.objects.get(
             uuid=self.license_assigned_tag1.uuid, dataspace=self.dataspace_target
         )
-        self.assertEqual(self.license_assigned_tag1.value, copied_assigned_tag.value)
+        self.assertEqual(self.license_assigned_tag1.value,
+                         copied_assigned_tag.value)
 
         # Changing the reference License and AssignedTag
         self.license1.name = "NEW NAME"
@@ -3020,7 +3224,8 @@ class ComponentCopyTestCase(TestCase):
         self.license_assigned_tag1.save()
 
         # Copy again with update
-        copy_object(self.component1, self.dataspace_target, self.user, update=True)
+        copy_object(self.component1, self.dataspace_target,
+                    self.user, update=True)
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -3036,7 +3241,8 @@ class ComponentCopyTestCase(TestCase):
     def test_copy_package_excluding_identifier(self):
         self.client.login(username="test", password="secret")
 
-        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
+        package1 = Package.objects.create(
+            filename="p1.zip", dataspace=self.dataspace1)
         url = reverse("admin:component_catalog_package_copy")
 
         data = {
@@ -3054,4 +3260,5 @@ class ComponentCopyTestCase(TestCase):
         self.assertContains(
             response, '<li class="grp-error">1 object was not copied/updated.</li>', html=True
         )
-        self.assertContains(response, "<li>['package_url or filename required']</li>", html=True)
+        self.assertContains(
+            response, "<li>['package_url or filename required']</li>", html=True)

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -50,7 +50,8 @@ UserModel = get_user_model()
 
 def Group(*fields):
     return Div(
-        *[Div(Field(field), css_class="col") for index, field in enumerate(fields)],
+        *[Div(Field(field), css_class="col")
+          for index, field in enumerate(fields)],
         css_class="row",
     )
 
@@ -79,8 +80,10 @@ class DejaCodeAuthenticationForm(AuthenticationForm):
         helper.form_tag = False
 
         fields = [
-            Field("username", css_class="input-block-level mb-3", placeholder=_("Username")),
-            Field("password", css_class="input-block-level mb-3", placeholder=_("Password")),
+            Field("username", css_class="input-block-level mb-3",
+                  placeholder=_("Username")),
+            Field("password", css_class="input-block-level mb-3",
+                  placeholder=_("Password")),
             Div(
                 StrictSubmit("submit", _("Sign in"), css_class="btn-warning"),
                 css_class="d-grid",
@@ -122,8 +125,10 @@ class ScopeAndProtectRelationships:
 
                 related_model = field.queryset.model
                 if is_content_type_related(related_model):
-                    content_type = ContentType.objects.get_for_model(self._meta.model)
-                    field.queryset = field.queryset.filter(content_type=content_type)
+                    content_type = ContentType.objects.get_for_model(
+                        self._meta.model)
+                    field.queryset = field.queryset.filter(
+                        content_type=content_type)
 
 
 class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
@@ -150,7 +155,8 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
                 if field:
                     field.widget.attrs.update({"class": "bg-primary-subtle"})
 
-        self.save_as_new = self.save_as and (self.data or {}).get("save_as_new")
+        self.save_as_new = self.save_as and (
+            self.data or {}).get("save_as_new")
 
     def _get_validation_exclusions(self):
         """
@@ -277,7 +283,8 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit)
         changed_fields = ", ".join(self.changed_data)
-        History.log_change(instance, instance, f"Profile updated: {changed_fields}.")
+        History.log_change(instance, instance,
+                           f"Profile updated: {changed_fields}.")
         return instance
 
     @property
@@ -289,7 +296,8 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
 
         homepage_layout_field = None
         if self.fields["homepage_layout"].queryset:
-            homepage_layout_field = Field("homepage_layout", wrapper_class="col-md-6 mt-3")
+            homepage_layout_field = Field(
+                "homepage_layout", wrapper_class="col-md-6 mt-3")
 
         # Using a pure HTML so the `dataspace` field is not really part
         # of the form, for security purposes.
@@ -342,7 +350,8 @@ class DataspaceAdminForm(forms.ModelForm):
         """Add validation for `update_packages_from_scan` field."""
         cleaned_data = super().clean()
         enable_package_scanning = cleaned_data.get("enable_package_scanning")
-        update_packages_from_scan = cleaned_data.get("update_packages_from_scan")
+        update_packages_from_scan = cleaned_data.get(
+            "update_packages_from_scan")
 
         if update_packages_from_scan and not enable_package_scanning:
             msg = "Package scanning needs to be enabled to use the automatic updates."
@@ -403,7 +412,8 @@ class DataspaceChoiceForm(forms.Form):
         super().__init__(*args, **kwargs)
         if not user.dataspace.is_reference:
             raise SuspiciousOperation
-        self.fields["target"].queryset = Dataspace.objects.exclude(id=source.id)
+        self.fields["target"].queryset = Dataspace.objects.exclude(
+            id=source.id)
 
 
 class MultiDataspaceChoiceForm(DataspaceChoiceForm):
@@ -419,7 +429,8 @@ class BaseCopyConfigurationForm(forms.Form):
     """Base Form of the copy process, handle the copy configuration (excludes)."""
 
     ct = forms.CharField(required=True, widget=forms.widgets.HiddenInput)
-    exclude_copy = forms.MultipleChoiceField(required=False, widget=forms.CheckboxSelectMultiple())
+    exclude_copy = forms.MultipleChoiceField(
+        required=False, widget=forms.CheckboxSelectMultiple())
     exclude_update = forms.MultipleChoiceField(
         required=False, widget=forms.CheckboxSelectMultiple()
     )
@@ -485,8 +496,10 @@ class CopyConfigurationForm(BaseCopyConfigurationForm):
             self.fields["source"].queryset = all_dataspaces
             self.fields["targets"].queryset = all_dataspaces
         else:
-            self.fields["source"].queryset = Dataspace.objects.filter(pk=reference_dataspace.pk)
-            self.fields["targets"].queryset = Dataspace.objects.filter(pk=self.user.dataspace.pk)
+            self.fields["source"].queryset = Dataspace.objects.filter(
+                pk=reference_dataspace.pk)
+            self.fields["targets"].queryset = Dataspace.objects.filter(
+                pk=self.user.dataspace.pk)
 
     def submit(self, copy_candidates, selected_for_update, exclude_copy, exclude_update):
         copied, updated, errors = [], [], []
@@ -548,7 +561,8 @@ class DataspaceConfigurationFormSetMixin:
         if not self.initial:
             return
 
-        configuration = dataspace.get_configuration(self.dataspace_configuration_field)
+        configuration = dataspace.get_configuration(
+            self.dataspace_configuration_field)
         if not configuration:
             if default:
                 configuration = default
@@ -645,7 +659,8 @@ class WarningDict(ErrorDict):
     def as_ul(self):
         if not self:
             return ""
-        list_items = "".join(["<li>{}{}</li>".format(k, str(v)) for k, v in self.items()])
+        list_items = "".join(["<li>{}{}</li>".format(k, str(v))
+                             for k, v in self.items()])
         return format_html(f'<ul class="warninglist">{list_items}</ul>')
 
 
@@ -658,7 +673,8 @@ class WarningList(ErrorList):
     def as_ul(self):
         if not self:
             return ""
-        list_items = "".join(["<li>{}</li>".format(conditional_escape(str(e))) for e in self])
+        list_items = "".join(
+            ["<li>{}</li>".format(conditional_escape(str(e))) for e in self])
         return format_html(f'<ul class="warninglist">{list_items}</ul>')
 
 
@@ -773,7 +789,8 @@ class TabPermissionsForm(forms.Form):
                 label=label,
                 required=False,
                 choices=[
-                    (tab_name, self.get_choice_label(tab_name, tab_fields.get("fields")))
+                    (tab_name, self.get_choice_label(
+                        tab_name, tab_fields.get("fields")))
                     for tab_name, tab_fields in tabset.items()
                 ],
                 widget=forms.CheckboxSelectMultiple(attrs={"class": "inline"}),

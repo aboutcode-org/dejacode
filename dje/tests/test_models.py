@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -37,7 +37,8 @@ class DataspacedModelTestCase(TestCase):
             "alternate", "test@test.com", "t3st", self.alternate_dataspace
         )
 
-        self.source_nexb = ExternalSource.objects.create(label="nexb", dataspace=self.dataspace)
+        self.source_nexb = ExternalSource.objects.create(
+            label="nexb", dataspace=self.dataspace)
         self.source_alternate = ExternalSource.objects.create(
             label="alternate", dataspace=self.alternate_dataspace
         )
@@ -84,7 +85,8 @@ class DataspacedModelTestCase(TestCase):
             self.assertFalse(other_dataspace.is_reference)
 
     def test_dataspace_get_by_natural_key(self):
-        self.assertEqual(Dataspace.objects.get_by_natural_key("nexB"), self.dataspace)
+        self.assertEqual(Dataspace.objects.get_by_natural_key(
+            "nexB"), self.dataspace)
 
     def test_dataspace_natural_key(self):
         self.assertEqual((self.dataspace.name,), self.dataspace.natural_key())
@@ -118,7 +120,8 @@ class DataspacedModelTestCase(TestCase):
         self.assertIn(self.source_nexb, qs)
         self.assertNotIn(self.source_alternate, qs)
 
-        qs = ExternalSource.objects.scope(self.dataspace, include_reference=True)
+        qs = ExternalSource.objects.scope(
+            self.dataspace, include_reference=True)
         self.assertIn(self.source_nexb, qs)
         self.assertNotIn(self.source_alternate, qs)
 
@@ -126,7 +129,8 @@ class DataspacedModelTestCase(TestCase):
         self.assertNotIn(self.source_nexb, qs)
         self.assertIn(self.source_alternate, qs)
 
-        qs = ExternalSource.objects.scope(self.alternate_dataspace, include_reference=True)
+        qs = ExternalSource.objects.scope(
+            self.alternate_dataspace, include_reference=True)
         self.assertIn(self.source_nexb, qs)
         self.assertIn(self.source_alternate, qs)
 
@@ -135,7 +139,8 @@ class DataspacedModelTestCase(TestCase):
         self.assertIn(self.source_nexb, qs)
         self.assertNotIn(self.source_alternate, qs)
 
-        qs = ExternalSource.objects.scope_by_name(self.alternate_dataspace.name)
+        qs = ExternalSource.objects.scope_by_name(
+            self.alternate_dataspace.name)
         self.assertNotIn(self.source_nexb, qs)
         self.assertIn(self.source_alternate, qs)
 
@@ -158,14 +163,16 @@ class DataspacedModelTestCase(TestCase):
         third_user = get_user_model().objects.create_user(
             "third", "test@test.com", "t3st", third_dataspace
         )
-        source_third = ExternalSource.objects.create(label="third", dataspace=third_dataspace)
+        source_third = ExternalSource.objects.create(
+            label="third", dataspace=third_dataspace)
 
         qs = ExternalSource.objects.scope_for_user_in_admin(self.nexb_user)
         self.assertIn(self.source_nexb, qs)
         self.assertIn(self.source_alternate, qs)
         self.assertIn(source_third, qs)
 
-        qs = ExternalSource.objects.scope_for_user_in_admin(self.alternate_user)
+        qs = ExternalSource.objects.scope_for_user_in_admin(
+            self.alternate_user)
         self.assertIn(self.source_nexb, qs)
         self.assertIn(self.source_alternate, qs)
         self.assertNotIn(source_third, qs)
@@ -177,13 +184,15 @@ class DataspacedModelTestCase(TestCase):
 
     def test_dataspace_related_manager_is_secured_and_get_unsecured_manager(self):
         self.assertFalse(is_secured(Owner.objects))
-        self.assertEqual("organization.Owner.objects", str(get_unsecured_manager(Owner)))
+        self.assertEqual("organization.Owner.objects",
+                         str(get_unsecured_manager(Owner)))
 
         from product_portfolio.models import Product
 
         self.assertTrue(is_secured(Product.objects))
         self.assertEqual(
-            "product_portfolio.Product.unsecured_objects", str(get_unsecured_manager(Product))
+            "product_portfolio.Product.unsecured_objects", str(
+                get_unsecured_manager(Product))
         )
 
     def test_external_reference_model_local_foreign_fields_property(self):
@@ -195,7 +204,8 @@ class DataspacedModelTestCase(TestCase):
             "external_source",
         ]
         # 'content_object' is not returned as not a concrete field by GenericForeignKey
-        self.assertEqual(expected, [f.name for f in ExternalReference().local_foreign_fields])
+        self.assertEqual(
+            expected, [f.name for f in ExternalReference().local_foreign_fields])
 
     def test_dataspace_get_configuration(self):
         self.assertIsNone(self.dataspace.get_configuration())
@@ -206,11 +216,13 @@ class DataspacedModelTestCase(TestCase):
             dataspace=self.dataspace, tab_permissions={"Enabled": True}
         )
         self.assertEqual(configuration, self.dataspace.get_configuration())
-        self.assertEqual({"Enabled": True}, self.dataspace.get_configuration("tab_permissions"))
+        self.assertEqual({"Enabled": True},
+                         self.dataspace.get_configuration("tab_permissions"))
         # DataspaceConfiguration exists but `copy_defaults` is NULL
         self.assertIsNone(self.dataspace.get_configuration("copy_defaults"))
 
-        self.assertIsNone(self.dataspace.get_configuration("non_available_field"))
+        self.assertIsNone(
+            self.dataspace.get_configuration("non_available_field"))
 
     def test_dataspace_has_configuration(self):
         self.assertFalse(self.dataspace.has_configuration)
@@ -238,5 +250,6 @@ class DataspacedModelTestCase(TestCase):
         self.assertTrue(self.dataspace.tab_permissions_enabled)
 
     def test_dataspaced_model_clean_extra_spaces_in_identifier_fields(self):
-        owner = Owner.objects.create(name="contains  extra     spaces", dataspace=self.dataspace)
+        owner = Owner.objects.create(
+            name="contains  extra     spaces", dataspace=self.dataspace)
         self.assertEqual("contains extra spaces", owner.name)

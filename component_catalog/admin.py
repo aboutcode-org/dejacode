@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -151,7 +151,8 @@ class LicenseExpressionBuilderAdminMixin:
     def change_view(self, request, object_id, form_url="", extra_context=None):
         response = super().change_view(request, object_id, form_url, extra_context)
 
-        context_data = response.context_data if hasattr(response, "context_data") else None
+        context_data = response.context_data if hasattr(
+            response, "context_data") else None
         instance = context_data.get("original") if context_data else None
         self.setup_license_builder(request, instance)
 
@@ -170,7 +171,8 @@ class ComponentTypeAdmin(DataspacedAdmin):
         "notes",
     )
 
-    short_description = _("A component type provides a label to filter and sort components.")
+    short_description = _(
+        "A component type provides a label to filter and sort components.")
 
     long_description = _(
         "Your dataspace has the specific component types that meet the "
@@ -189,7 +191,8 @@ class BaseStatusAdmin(DataspacedAdmin):
         "label",
         "text",
     )
-    fieldsets = (("", {"fields": ("label", "text", "default_on_addition", "dataspace", "uuid")}),)
+    fieldsets = (
+        ("", {"fields": ("label", "text", "default_on_addition", "dataspace", "uuid")}),)
 
 
 @admin.register(ComponentStatus, site=dejacode_site)
@@ -209,7 +212,8 @@ class ComponentStatusAdmin(BaseStatusAdmin):
 class ComponentKeywordAdmin(DataspacedAdmin):
     list_display = ("label", "description")
     search_fields = ("label", "description")
-    fieldsets = (("", {"fields": ("label", "description", "dataspace", "uuid")}),)
+    fieldsets = (
+        ("", {"fields": ("label", "description", "dataspace", "uuid")}),)
     list_filter = DataspacedAdmin.list_filter + (MissingInFilter,)
 
     short_description = _(
@@ -237,7 +241,8 @@ class AcceptableLinkageAdmin(DataspacedAdmin):
     )
     list_display = ("label", "description")
     search_fields = ("label", "description")
-    fieldsets = (("", {"fields": ("label", "description", "dataspace", "uuid")}),)
+    fieldsets = (
+        ("", {"fields": ("label", "description", "dataspace", "uuid")}),)
 
     def get_readonly_fields(self, request, obj=None):
         """Force `label` as readonly on edit."""
@@ -273,7 +278,8 @@ class ComponentAdmin(
         AsLink("owner"),
         AsJoinList("keywords", "<br>", short_description="Keywords"),
         "configuration_status",
-        AsLinkList("packages", "component", qs_limit=5, html_class="width300 word-break"),
+        AsLinkList("packages", "component", qs_limit=5,
+                   html_class="width300 word-break"),
         "cpe",
         "project",
         "is_active",
@@ -492,10 +498,13 @@ class ComponentAdmin(
 
         for model_class, ids in errors.items():
             opts = model_class._meta
-            url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
-            href = "{}?{}".format(url, urlencode({"id__in": ",".join(str(id_) for id_ in ids)}))
+            url = reverse(
+                f"admin:{opts.app_label}_{opts.model_name}_changelist")
+            href = "{}?{}".format(url, urlencode(
+                {"id__in": ",".join(str(id_) for id_ in ids)}))
             changelist_links.append(
-                CHANGELIST_LINK_TEMPLATE.format(href, len(ids), opts.verbose_name_plural)
+                CHANGELIST_LINK_TEMPLATE.format(
+                    href, len(ids), opts.verbose_name_plural)
             )
 
         if changelist_links:
@@ -522,7 +531,8 @@ class ComponentAdmin(
         urls = [
             path(
                 "add_to_product/",
-                self.admin_site.admin_view(ComponentAddToProductAdminView.as_view()),
+                self.admin_site.admin_view(
+                    ComponentAddToProductAdminView.as_view()),
                 name="{}_{}_add_to_product".format(*info),
             ),
             path(
@@ -546,7 +556,8 @@ class ComponentAdmin(
     def get_actions(self, request):
         actions = super().get_actions(request)
         is_another_dataspace = DataspaceFilter.parameter_name in request.GET
-        has_perm = request.user.has_perm("product_portfolio.add_productcomponent")
+        has_perm = request.user.has_perm(
+            "product_portfolio.add_productcomponent")
         if (is_another_dataspace or not has_perm) and "add_to_product" in actions:
             del actions["add_to_product"]
         if is_another_dataspace and "set_policy" in actions:
@@ -584,7 +595,8 @@ class ComponentAdmin(
         inline_formset.
         If not, the FormDataOutdated is raised to be catch in the changeform_view.
         """
-        inline_formsets = super().get_inline_formsets(request, formsets, inline_instances, obj)
+        inline_formsets = super().get_inline_formsets(
+            request, formsets, inline_instances, obj)
 
         for inline_formset in inline_formsets:
             if not inline_formset.formset.is_bound:
@@ -700,7 +712,8 @@ class SubcomponentAdmin(LicenseExpressionBuilderAdminMixin, DataspacedAdmin):
         urls = [
             path(
                 "set_policy/",
-                self.admin_site.admin_view(SetSubcomponentPolicyView.as_view()),
+                self.admin_site.admin_view(
+                    SetSubcomponentPolicyView.as_view()),
                 name="{}_{}_set_policy".format(*info),
             ),
         ]
@@ -727,7 +740,8 @@ class HideInlinesInPopupMixin:
         is_popup = any(
             [
                 IS_POPUP_VAR in request.GET,
-                IS_POPUP_VAR in QueryDict(request.GET.get("_changelist_filters")),
+                IS_POPUP_VAR in QueryDict(
+                    request.GET.get("_changelist_filters")),
             ]
         )
 
@@ -926,7 +940,8 @@ class PackageAdmin(
         urls = [
             path(
                 "add_to_product/",
-                self.admin_site.admin_view(PackageAddToProductAdminView.as_view()),
+                self.admin_site.admin_view(
+                    PackageAddToProductAdminView.as_view()),
                 name="{}_{}_add_to_product".format(*info),
             ),
             path(
@@ -1020,7 +1035,8 @@ class PackageAdmin(
                 package.last_modified_by = request.user
                 package.save()
                 message = f'Data collected for: {", ".join(update_fields)}.'
-                History.log_change(request.user, package, message, serialized_data)
+                History.log_change(request.user, package,
+                                   message, serialized_data)
                 update_count += 1
 
         not_updated = count - update_count

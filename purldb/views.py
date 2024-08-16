@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -80,7 +80,8 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
 
     package_url = sorted_data.get("purl")
     if package_url:
-        tab_fields.append(("Package URL", package_url, Package.package_url_help()))
+        tab_fields.append(("Package URL", package_url,
+                          Package.package_url_help()))
 
     for field_name, value in sorted_data.items():
         if not value or field_name in exclude:
@@ -94,7 +95,8 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
         if field_name == "declared_license_expression":
             show_policy = dataspace.show_usage_policy_in_user_views
             licensing = get_dataspace_licensing(dataspace)
-            value = format_html(get_formatted_expression(licensing, value, show_policy))
+            value = format_html(get_formatted_expression(
+                licensing, value, show_policy))
         elif field_name == "dependencies":
             value = json.dumps(value, indent=2)
         elif field_name == "size":
@@ -110,7 +112,8 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
 
     source_packages_help = 'A list of source Package URLs (aka. "purl") for this package.'
     extra_fields = [
-        ("source_packages", "Source packages", source_packages_help, saneyaml.dump),
+        ("source_packages", "Source packages",
+         source_packages_help, saneyaml.dump),
     ]
 
     for field_name, label, help_text, value_func in extra_fields:
@@ -137,8 +140,10 @@ def inject_license_expression_formatted(dataspace, object_list):
     for obj in object_list:
         expression = obj.get("declared_license_expression")
         if expression:
-            formatted_expression = get_formatted_expression(licensing, expression, show_policy)
-            obj["license_expression_formatted"] = format_html(formatted_expression)
+            formatted_expression = get_formatted_expression(
+                licensing, expression, show_policy)
+            obj["license_expression_formatted"] = format_html(
+                formatted_expression)
 
     return object_list
 
@@ -261,12 +266,15 @@ class PurlDBDetailsView(
 
         session_uuids = self.request.session.get(PURLDB_SESSION_KEY)
         if session_uuids:
-            previous_uuid, next_uuid = get_previous_next(session_uuids, purldb_obj["uuid"])
+            previous_uuid, next_uuid = get_previous_next(
+                session_uuids, purldb_obj["uuid"])
             view_name = "purldb:purldb_details"
             if previous_uuid:
-                context["previous_object_url"] = reverse(view_name, args=[previous_uuid])
+                context["previous_object_url"] = reverse(
+                    view_name, args=[previous_uuid])
             if next_uuid:
-                context["next_object_url"] = reverse(view_name, args=[next_uuid])
+                context["next_object_url"] = reverse(
+                    view_name, args=[next_uuid])
 
         return context
 
@@ -285,7 +293,8 @@ class PurlDBSearchTableView(
 
         dataspace = self.request.user.dataspace
         search_query = self.request.GET.get("q")
-        purldb_json = PurlDB(dataspace).get_package_list(search_query, page_size=20)
+        purldb_json = PurlDB(dataspace).get_package_list(
+            search_query, page_size=20)
 
         if not (purldb_json and purldb_json.get("results", None)):
             raise Http404

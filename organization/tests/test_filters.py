@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -31,7 +31,8 @@ class HistoryActionTimeListFilterTestCaseMixin:
     class_under_test = None
 
     def add_history_entry(self, owner, action_flag, days_back):
-        history_entry = History.objects.log_action(self.nexb_user, owner, action_flag)
+        history_entry = History.objects.log_action(
+            self.nexb_user, owner, action_flag)
         (
             History.objects.filter(pk=history_entry.pk).update(
                 action_time=self.fake_now - datetime.timedelta(days=days_back)
@@ -42,7 +43,8 @@ class HistoryActionTimeListFilterTestCaseMixin:
         # filter setup
         request = Mock()
         model_admin = Mock()
-        self.filter = self.class_under_test(request, self.get_lookup_params(), Owner, model_admin)
+        self.filter = self.class_under_test(
+            request, self.get_lookup_params(), Owner, model_admin)
 
         # test data
         self.nexb_dataspace = Dataspace.objects.create(name="nexB")
@@ -96,7 +98,8 @@ class HistoryActionTimeListFilterTestCaseMixin:
         # Setup
         request = Mock()
         model_admin = Mock()
-        filter = self.class_under_test(request, {"created_date": "any_date"}, Owner, model_admin)
+        filter = self.class_under_test(
+            request, {"created_date": "any_date"}, Owner, model_admin)
 
         self.assertEqual(None, filter.get_history_objects())
 
@@ -104,7 +107,8 @@ class HistoryActionTimeListFilterTestCaseMixin:
         # Setup
         request = Mock()
         model_admin = Mock()
-        filter = self.class_under_test(request, {"created_date": "any_date"}, Owner, model_admin)
+        filter = self.class_under_test(
+            request, {"created_date": "any_date"}, Owner, model_admin)
         qs = Owner.objects.all()
 
         self.assertEqual(None, filter.queryset(request, qs))
@@ -172,7 +176,8 @@ class HistoryCreatedActionTimeListFilterTestCase(
 
         # test
         expected_choices = [
-            {"display": "Any Date", "query_string": "created_date=any_date", "selected": False},
+            {"display": "Any Date",
+                "query_string": "created_date=any_date", "selected": False},
             {"display": "Today", "query_string": "created_date=today", "selected": False},
             {
                 "display": "Past 7 days",
@@ -184,7 +189,8 @@ class HistoryCreatedActionTimeListFilterTestCase(
                 "query_string": "created_date=past_30_days",
                 "selected": False,
             },
-            {"display": "This year", "query_string": "created_date=this_year", "selected": False},
+            {"display": "This year",
+                "query_string": "created_date=this_year", "selected": False},
         ]
         self.assertEqual(expected_choices, list(self.filter.choices(cl)))
 
@@ -251,7 +257,8 @@ class HistoryModifiedActionTimeListFilterTestCase(
 
         # test
         expected_choices = [
-            {"display": "Any Date", "query_string": "modified_date=any_date", "selected": False},
+            {"display": "Any Date",
+                "query_string": "modified_date=any_date", "selected": False},
             {"display": "Today", "query_string": "modified_date=today", "selected": False},
             {
                 "display": "Past 7 days",
@@ -263,7 +270,8 @@ class HistoryModifiedActionTimeListFilterTestCase(
                 "query_string": "modified_date=past_30_days",
                 "selected": False,
             },
-            {"display": "This year", "query_string": "modified_date=this_year", "selected": False},
+            {"display": "This year",
+                "query_string": "modified_date=this_year", "selected": False},
         ]
         self.assertEqual(expected_choices, list(self.filter.choices(cl)))
 
@@ -308,20 +316,28 @@ class CreatedByListFilterTestCase(TestCase):
         self.user5.last_name = "Jefferson"
         self.user5.save()
 
-        self.owner1 = Owner.objects.create(name="org1", dataspace=self.nexb_dataspace)
-        self.owner2 = Owner.objects.create(name="org2", dataspace=self.nexb_dataspace)
-        self.owner3 = Owner.objects.create(name="org3", dataspace=self.other_dataspace)
-        self.owner4 = Owner.objects.create(name="org4", dataspace=self.nexb_dataspace)
-        self.owner5 = Owner.objects.create(name="org5", dataspace=self.other_dataspace)
+        self.owner1 = Owner.objects.create(
+            name="org1", dataspace=self.nexb_dataspace)
+        self.owner2 = Owner.objects.create(
+            name="org2", dataspace=self.nexb_dataspace)
+        self.owner3 = Owner.objects.create(
+            name="org3", dataspace=self.other_dataspace)
+        self.owner4 = Owner.objects.create(
+            name="org4", dataspace=self.nexb_dataspace)
+        self.owner5 = Owner.objects.create(
+            name="org5", dataspace=self.other_dataspace)
 
         # nexb_user created owner1
-        History.objects.log_action(self.nexb_user, self.owner1, History.ADDITION)
+        History.objects.log_action(
+            self.nexb_user, self.owner1, History.ADDITION)
 
         # nexb_user created owner4
-        History.objects.log_action(self.nexb_user, self.owner4, History.ADDITION)
+        History.objects.log_action(
+            self.nexb_user, self.owner4, History.ADDITION)
 
         # other_user created owner2
-        History.objects.log_action(self.other_user, self.owner2, History.ADDITION)
+        History.objects.log_action(
+            self.other_user, self.owner2, History.ADDITION)
 
         # user3 created owner3
         History.objects.log_action(self.user3, self.owner3, History.ADDITION)
@@ -337,7 +353,8 @@ class CreatedByListFilterTestCase(TestCase):
         model_admin = Mock()
         filter = CreatedByListFilter(request, {}, Owner, model_admin)
 
-        expected = [(self.nexb_user.pk, "George Bush"), (self.other_user.pk, "Bill Clinton")]
+        expected = [(self.nexb_user.pk, "George Bush"),
+                    (self.other_user.pk, "Bill Clinton")]
         self.assertEqual(expected, filter.lookup_choices)
 
     def test_lookups_does_not_return_users_who_have_not_created_an_object(self):
@@ -349,7 +366,8 @@ class CreatedByListFilterTestCase(TestCase):
         filter = CreatedByListFilter(request, {}, Owner, model_admin)
 
         self.assertEqual(0, History.objects.filter(user=self.user4).count())
-        self.assertTrue((self.user4.pk, "George Washington") not in filter.lookup_choices)
+        self.assertTrue((self.user4.pk, "George Washington")
+                        not in filter.lookup_choices)
 
     def test_lookups_does_not_return_duplicate_users(self):
         # Setup
@@ -363,11 +381,13 @@ class CreatedByListFilterTestCase(TestCase):
         self.assertEqual(
             2,
             History.objects.filter(
-                user=self.nexb_user, content_type=ContentType.objects.get_for_model(Owner)
+                user=self.nexb_user, content_type=ContentType.objects.get_for_model(
+                    Owner)
             ).count(),
         )
         self.assertEqual(
-            1, len([c for c in filter.lookup_choices if c == (self.nexb_user.pk, "George Bush")])
+            1, len([c for c in filter.lookup_choices if c ==
+                   (self.nexb_user.pk, "George Bush")])
         )
 
     def test_lookups_respects_dataspace_filter(self):
@@ -388,8 +408,10 @@ class CreatedByListFilterTestCase(TestCase):
         model_admin = Mock()
         filter = CreatedByListFilter(request, {}, Owner, model_admin)
 
-        self.assertEqual(0, filter.lookup_choices.index((self.nexb_user.pk, "George Bush")))
-        self.assertEqual(1, filter.lookup_choices.index((self.other_user.pk, "Bill Clinton")))
+        self.assertEqual(0, filter.lookup_choices.index(
+            (self.nexb_user.pk, "George Bush")))
+        self.assertEqual(1, filter.lookup_choices.index(
+            (self.other_user.pk, "Bill Clinton")))
 
     def test_lookups_checks_objects_were_created_in_the_same_dataspace_as_the_one_being_viewed(
         self,
@@ -407,7 +429,8 @@ class CreatedByListFilterTestCase(TestCase):
 
         # The Dataspace being viewed is nexb_organization.
         # The Dataspace in which owner5 was created is other_dataspace.
-        self.assertTrue((self.user5.pk, "Thomas Jefferson") not in filter.lookup_choices)
+        self.assertTrue((self.user5.pk, "Thomas Jefferson")
+                        not in filter.lookup_choices)
 
     def test_queryset_for_nexb_user(self):
         # Setup

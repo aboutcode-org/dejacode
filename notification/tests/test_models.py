@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -27,7 +27,8 @@ class NotificationModelsTestCase(TestCase):
         )
 
     def test_notification_webhook_model_str(self):
-        self.assertEqual("request.added => http://1.2.3.4/", str(self.webhook1))
+        self.assertEqual("request.added => http://1.2.3.4/",
+                         str(self.webhook1))
 
     def test_notification_webhook_model_dict(self):
         expected = {

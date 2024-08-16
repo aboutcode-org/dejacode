@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -31,7 +31,8 @@ class Command(BaseCommand):
     help = "Copy all the data for the reference dataspace into the target one."
 
     def add_arguments(self, parser):
-        parser.add_argument("reference", help="Name of the reference Dataspace.")
+        parser.add_argument(
+            "reference", help="Name of the reference Dataspace.")
         parser.add_argument("target", help="Name of the target Dataspace.")
         parser.add_argument("username", help="Your username.")
         parser.add_argument(
@@ -110,14 +111,16 @@ class Command(BaseCommand):
             else:
                 reference_qs = model.objects.scope(reference)
 
-            msg = "{}: copying {} objects...".format(model.__name__, reference_qs.count())
+            msg = "{}: copying {} objects...".format(
+                model.__name__, reference_qs.count())
             self.stdout.write(msg)
 
             for instance in reference_qs:
                 try:
                     copy_object(instance, target, user, **copy_kwargs)
                 except IntegrityError as e:
-                    errors.append(f'{instance.__class__.__name__} pk={instance.pk} error="{e}"')
+                    errors.append(
+                        f'{instance.__class__.__name__} pk={instance.pk} error="{e}"')
 
             # Verification
             target_qs = model.objects.scope(target)

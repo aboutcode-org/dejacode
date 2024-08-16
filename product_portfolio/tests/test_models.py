@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -45,7 +45,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.super_user = create_superuser("nexb_user", self.dataspace)
         self.admin_user = create_admin("admin_user", self.dataspace)
-        self.product1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", dataspace=self.dataspace)
         self.codebase_resource1 = CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
         )
@@ -65,7 +66,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         status1 = ProductStatus.objects.create(
             label="S1", text="Status1", default_on_addition=True, dataspace=self.dataspace
         )
-        status2 = ProductStatus.objects.create(label="S2", text="Status2", dataspace=self.dataspace)
+        status2 = ProductStatus.objects.create(
+            label="S2", text="Status2", dataspace=self.dataspace)
 
         # No status given at creation time, the default is set
         p1 = Product.objects.create(name="P1", dataspace=self.dataspace)
@@ -95,13 +97,16 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual([], list(Product.objects.get_queryset()))
         self.assertEqual(0, Product.objects.count())
 
-        self.assertEqual(1, Product.objects.get_queryset(self.super_user).count())
-        self.assertIn(self.product1, Product.objects.get_queryset(self.super_user))
+        self.assertEqual(1, Product.objects.get_queryset(
+            self.super_user).count())
+        self.assertIn(
+            self.product1, Product.objects.get_queryset(self.super_user))
 
     def test_product_model_is_active(self):
         qs = Product.objects.get_queryset(self.super_user)
         self.assertIn(self.product1, qs)
-        qs = Product.objects.get_queryset(self.super_user, include_inactive=True)
+        qs = Product.objects.get_queryset(
+            self.super_user, include_inactive=True)
         self.assertIn(self.product1, qs)
 
         self.product1.is_active = False
@@ -109,13 +114,17 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         qs = Product.objects.get_queryset(self.super_user)
         self.assertNotIn(self.product1, qs)
-        qs = Product.objects.get_queryset(self.super_user, include_inactive=True)
+        qs = Product.objects.get_queryset(
+            self.super_user, include_inactive=True)
         self.assertIn(self.product1, qs)
 
     def test_product_model_all_packages(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=component1, package=package1, dataspace=self.dataspace
         )
@@ -125,7 +134,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=component1, dataspace=self.dataspace
         )
-        package3 = Package.objects.create(filename="package3", dataspace=self.dataspace)
+        package3 = Package.objects.create(
+            filename="package3", dataspace=self.dataspace)
         ProductPackage.objects.create(
             product=self.product1, package=package3, dataspace=self.dataspace
         )
@@ -149,7 +159,8 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         expected = ["f1", "f2"]
         pc_queryset = self.product1.productcomponents
-        self.assertEqual(expected, list(self.product1.get_feature_values(pc_queryset)))
+        self.assertEqual(expected, list(
+            self.product1.get_feature_values(pc_queryset)))
 
         expected = (
             '<datalist id="feature_datalist">'
@@ -159,13 +170,15 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual(expected, self.product1.get_feature_datalist())
 
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         ProductPackage.objects.create(
             product=self.product1, package=package1, feature="f0", dataspace=self.dataspace
         )
         expected = ["f0"]
         pp_queryset = self.product1.productpackages
-        self.assertEqual(expected, list(self.product1.get_feature_values(pp_queryset)))
+        self.assertEqual(expected, list(
+            self.product1.get_feature_values(pp_queryset)))
 
         expected = (
             '<datalist id="feature_datalist">'
@@ -199,12 +212,17 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_productcomponent_model_str_method(self):
         component1 = Component(name="p1", version="1.0")
         self.assertEqual(
-            "(Component data missing)", str(ProductComponent(component=None, name="", version=""))
+            "(Component data missing)", str(
+                ProductComponent(component=None, name="", version=""))
         )
-        self.assertEqual("p1 1.0", str(ProductComponent(component=component1, name="", version="")))
-        self.assertEqual("c2 ", str(ProductComponent(component=None, name="c2", version="")))
-        self.assertEqual(" v2", str(ProductComponent(component=None, name="", version="v2")))
-        self.assertEqual("c2 v2", str(ProductComponent(component=None, name="c2", version="v2")))
+        self.assertEqual("p1 1.0", str(ProductComponent(
+            component=component1, name="", version="")))
+        self.assertEqual("c2 ", str(ProductComponent(
+            component=None, name="c2", version="")))
+        self.assertEqual(" v2", str(ProductComponent(
+            component=None, name="", version="v2")))
+        self.assertEqual("c2 v2", str(ProductComponent(
+            component=None, name="c2", version="v2")))
 
     def test_product_model_save_license_expression_handle_assigned_licenses(self):
         expression = "{} AND {}".format(self.license1.key, self.license2.key)
@@ -251,9 +269,11 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         with self.assertRaises(ValueError) as cm:
             self.product1.assign_objects([status1], self.super_user)
-        self.assertEqual("Unsupported object model: productrelationstatus", str(cm.exception))
+        self.assertEqual(
+            "Unsupported object model: productrelationstatus", str(cm.exception))
 
-        created, updated, unchanged = self.product1.assign_objects([], self.super_user)
+        created, updated, unchanged = self.product1.assign_objects(
+            [], self.super_user)
         self.assertEqual(0, created)
         self.assertEqual(0, updated)
         self.assertEqual(0, unchanged)
@@ -263,12 +283,14 @@ class ProductPortfolioModelsTestCase(TestCase):
             license_expression=self.license1.key,
             dataspace=self.dataspace,
         )
-        created, updated, unchanged = self.product1.assign_objects([component1], self.super_user)
+        created, updated, unchanged = self.product1.assign_objects(
+            [component1], self.super_user)
         self.assertEqual(1, created)
         self.assertEqual(0, updated)
         self.assertEqual(0, unchanged)
 
-        pc = ProductComponent.objects.get(product=self.product1, component=component1)
+        pc = ProductComponent.objects.get(
+            product=self.product1, component=component1)
         self.assertEqual(self.license1.key, pc.license_expression)
         self.assertEqual(status1, pc.review_status)
         self.assertEqual(self.super_user, pc.created_by)
@@ -284,22 +306,27 @@ class ProductPortfolioModelsTestCase(TestCase):
             ]
         )
         self.assertEqual(
-            expected_messages, sorted([entry.change_message for entry in history_entries])
+            expected_messages, sorted(
+                [entry.change_message for entry in history_entries])
         )
         self.assertEqual(self.super_user, self.product1.last_modified_by)
 
     def test_product_model_assign_object_replace_version_component(self):
-        component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
-        component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c", version="1.0", dataspace=self.dataspace)
+        component2 = Component.objects.create(
+            name="c", version="2.0", dataspace=self.dataspace)
 
         # Assign component1
-        status, relation = self.product1.assign_object(component1, self.super_user)
+        status, relation = self.product1.assign_object(
+            component1, self.super_user)
         self.assertEqual("created", status)
         self.assertTrue(relation)
         self.assertQuerySetEqual([component1], self.product1.components.all())
 
         # Re-assign component1, relation already exists.
-        status, relation = self.product1.assign_object(component1, self.super_user)
+        status, relation = self.product1.assign_object(
+            component1, self.super_user)
         self.assertEqual("unchanged", status)
         self.assertIsNone(relation)
         self.assertQuerySetEqual([component1], self.product1.components.all())
@@ -312,10 +339,12 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertQuerySetEqual([component1], self.product1.components.all())
 
         # Assign component2
-        status, p1_c2 = self.product1.assign_object(component2, self.super_user)
+        status, p1_c2 = self.product1.assign_object(
+            component2, self.super_user)
         self.assertEqual("created", status)
         self.assertTrue(p1_c2)
-        self.assertQuerySetEqual([component1, component2], self.product1.components.all())
+        self.assertQuerySetEqual(
+            [component1, component2], self.product1.components.all())
 
         # Replacing the current single existing version.
         p1_c2.delete()
@@ -328,7 +357,8 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         history_entries = History.objects.get_for_object(self.product1)
         expected_message = 'Updated component "c 1.0" to "c 2.0"'
-        self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
+        self.assertEqual(expected_message, history_entries.latest(
+            "action_time").change_message)
 
     def test_product_model_assign_object_replace_version_package(self):
         package_data = {
@@ -342,18 +372,21 @@ class ProductPortfolioModelsTestCase(TestCase):
         package2 = Package.objects.create(**package_data, version="2.0")
 
         # Assign package1
-        status, relation = self.product1.assign_object(package1, self.super_user)
+        status, relation = self.product1.assign_object(
+            package1, self.super_user)
         self.assertEqual("created", status)
         self.assertTrue(relation)
         self.assertQuerySetEqual([package1], self.product1.packages.all())
 
         # Re-assign package1, relation already exists.
-        status, relation = self.product1.assign_object(package1, self.super_user)
+        status, relation = self.product1.assign_object(
+            package1, self.super_user)
         self.assertEqual("unchanged", status)
         self.assertIsNone(relation)
         self.assertQuerySetEqual([package1], self.product1.packages.all())
         # With replace_version
-        status, relation = self.product1.assign_object(package1, self.super_user, replace_version=1)
+        status, relation = self.product1.assign_object(
+            package1, self.super_user, replace_version=1)
         self.assertEqual("unchanged", status)
         self.assertIsNone(relation)
         self.assertQuerySetEqual([package1], self.product1.packages.all())
@@ -362,41 +395,56 @@ class ProductPortfolioModelsTestCase(TestCase):
         status, p1_p2 = self.product1.assign_object(package2, self.super_user)
         self.assertEqual("created", status)
         self.assertTrue(p1_p2)
-        self.assertQuerySetEqual([package1, package2], self.product1.packages.all())
+        self.assertQuerySetEqual(
+            [package1, package2], self.product1.packages.all())
 
         # Replacing the current single existing version.
         p1_p2.delete()
-        status, p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        status, p1_p2 = self.product1.assign_object(
+            package2, self.super_user, replace_version=True)
         self.assertEqual("updated", status)
         self.assertTrue(p1_p2)
         self.assertQuerySetEqual([package2], self.product1.packages.all())
 
         history_entries = History.objects.get_for_object(self.product1)
         expected_message = 'Updated package "pkg:deb/debian/curl@1.0" to "pkg:deb/debian/curl@2.0"'
-        self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
+        self.assertEqual(expected_message, history_entries.latest(
+            "action_time").change_message)
 
     def test_product_model_find_assigned_other_versions_component(self):
-        component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
-        component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
-        component3 = Component.objects.create(name="c", version="3.0", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c", version="1.0", dataspace=self.dataspace)
+        component2 = Component.objects.create(
+            name="c", version="2.0", dataspace=self.dataspace)
+        component3 = Component.objects.create(
+            name="c", version="3.0", dataspace=self.dataspace)
 
         # No other version assigned
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component1))
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component2))
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component3))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(component3))
 
         # 1 other version assigned
         _, p1_c1 = self.product1.assign_object(component1, self.super_user)
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(component1))
-        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
-        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component3))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual(
+            [p1_c1], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual(
+            [p1_c1], self.product1.find_assigned_other_versions(component3))
 
         # 2 other versions assigned
         _, p1_c2 = self.product1.assign_object(component2, self.super_user)
-        self.assertQuerySetEqual([p1_c2], self.product1.find_assigned_other_versions(component1))
-        self.assertQuerySetEqual([p1_c1], self.product1.find_assigned_other_versions(component2))
         self.assertQuerySetEqual(
-            [p1_c1, p1_c2], self.product1.find_assigned_other_versions(component3)
+            [p1_c2], self.product1.find_assigned_other_versions(component1))
+        self.assertQuerySetEqual(
+            [p1_c1], self.product1.find_assigned_other_versions(component2))
+        self.assertQuerySetEqual(
+            [p1_c1, p1_c2], self.product1.find_assigned_other_versions(
+                component3)
         )
 
     def test_product_model_find_assigned_other_versions_package(self):
@@ -412,22 +460,31 @@ class ProductPortfolioModelsTestCase(TestCase):
         package3 = Package.objects.create(**package_data, version="3.0")
 
         # No other version assigned
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package1))
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package2))
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package3))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(package3))
 
         # 1 other version assigned
         _, p1_p1 = self.product1.assign_object(package1, self.super_user)
-        self.assertQuerySetEqual([], self.product1.find_assigned_other_versions(package1))
-        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
-        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package3))
+        self.assertQuerySetEqual(
+            [], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual(
+            [p1_p1], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual(
+            [p1_p1], self.product1.find_assigned_other_versions(package3))
 
         # 2 other versions assigned
         _, p1_p2 = self.product1.assign_object(package2, self.super_user)
-        self.assertQuerySetEqual([p1_p2], self.product1.find_assigned_other_versions(package1))
-        self.assertQuerySetEqual([p1_p1], self.product1.find_assigned_other_versions(package2))
         self.assertQuerySetEqual(
-            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(package3)
+            [p1_p2], self.product1.find_assigned_other_versions(package1))
+        self.assertQuerySetEqual(
+            [p1_p1], self.product1.find_assigned_other_versions(package2))
+        self.assertQuerySetEqual(
+            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(
+                package3)
         )
 
         # Only PURL fields are used as lookups as the filename and download_url
@@ -435,13 +492,15 @@ class ProductPortfolioModelsTestCase(TestCase):
         package_data["filename"] = "different_filename"
         package4 = Package.objects.create(**package_data, version="4.0")
         self.assertQuerySetEqual(
-            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(package4)
+            [p1_p1, p1_p2], self.product1.find_assigned_other_versions(
+                package4)
         )
 
     def test_product_model_field_changes_mixin(self):
         self.assertFalse(Product().has_changed("name"))
 
-        product = Product.objects.get_queryset(self.super_user).get(name="Product1")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Product1")
         self.assertFalse(product.has_changed("name"))
         self.assertFalse(product.has_changed("configuration_status_id"))
 
@@ -454,10 +513,12 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertTrue(product.has_changed("name"))
 
     def test_product_model_actions_on_status_change(self):
-        product = Product.objects.get_queryset(self.super_user).get(name="Product1")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Product1")
         self.assertIsNone(product.configuration_status)
 
-        product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
         request_template1 = RequestTemplate.objects.create(
             name="Template1",
             description="Description",
@@ -478,7 +539,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         product.save()
         self.assertEqual(1, request_template1.requests.count())
         request = request_template1.requests.get()
-        self.assertEqual("Review Product Product1 in status1 status", request.title)
+        self.assertEqual(
+            "Review Product Product1 in status1 status", request.title)
 
         product.refresh_from_db()
         self.assertEqual(1, product.request_count)
@@ -504,15 +566,19 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertNotIn(self.license2, p1.licenses.all())
 
     def test_productcomponent_model_manager_queryset_product_secured(self):
-        ProductComponent.objects.create(product=self.product1, name="p1", dataspace=self.dataspace)
+        ProductComponent.objects.create(
+            product=self.product1, name="p1", dataspace=self.dataspace)
 
         self.assertEqual(1, ProductComponent.objects.count())
         self.assertEqual(0, ProductComponent.objects.product_secured().count())
-        self.assertEqual(1, ProductComponent.objects.product_secured(self.super_user).count())
+        self.assertEqual(1, ProductComponent.objects.product_secured(
+            self.super_user).count())
 
-        self.assertEqual(0, ProductComponent.objects.product_secured(self.admin_user).count())
+        self.assertEqual(0, ProductComponent.objects.product_secured(
+            self.admin_user).count())
         assign_perm("view_product", self.admin_user, self.product1)
-        self.assertEqual(1, ProductComponent.objects.product_secured(self.admin_user).count())
+        self.assertEqual(1, ProductComponent.objects.product_secured(
+            self.admin_user).count())
 
         perms = ("view_product", "change_product")
         qs = ProductComponent.objects.product_secured(self.admin_user, perms)
@@ -532,7 +598,8 @@ class ProductPortfolioModelsTestCase(TestCase):
             product=self.product1, name="p3", feature="f1", dataspace=self.dataspace
         )
 
-        grouped = ProductComponent.objects.order_by("feature").group_by("feature")
+        grouped = ProductComponent.objects.order_by(
+            "feature").group_by("feature")
         self.assertEqual(list(grouped.keys()), ["f1", "f2"])
         self.assertEqual([pc2], grouped["f2"])
         self.assertIn(pc1, grouped["f1"])
@@ -545,7 +612,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertIn(pc3, grouped["f1"])
 
     def test_productcomponent_model_standard_notice_property(self):
-        license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        license_expression = "{} AND {}".format(
+            self.license1.key, self.license2.key)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             name="p1",
@@ -564,11 +632,13 @@ class ProductPortfolioModelsTestCase(TestCase):
         pc1 = ProductComponent.objects.get(pk=pc1.pk)
         self.assertEqual(
             pc1.standard_notice,
-            "{}\n\n{}".format(self.license1.standard_notice, self.license2.standard_notice),
+            "{}\n\n{}".format(self.license1.standard_notice,
+                              self.license2.standard_notice),
         )
 
     def test_productcomponent_model_compliance_table_class(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             component=component1,
@@ -593,7 +663,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual("table-danger", pc1.compliance_table_class())
 
     def test_productcomponent_model_get_status_from_item_policy(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             component=component1,
@@ -625,7 +696,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         status2 = ProductRelationStatus.objects.create(
             label="S2", text="Status2", dataspace=self.dataspace
         )
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             component=component1,
@@ -664,19 +736,22 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertTrue(pc1.is_custom_component)
 
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1.component = component1
         pc1.save()
         self.assertFalse(pc1.is_custom_component)
 
     def test_productrelation_model_related_component_or_package_property(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1, component=component1, dataspace=self.dataspace
         )
         self.assertEqual(component1, pc1.related_component_or_package)
 
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         pp1 = ProductPackage.objects.create(
             product=self.product1, package=package1, dataspace=self.dataspace
         )
@@ -686,8 +761,10 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual("/path1/", self.codebase_resource1.__str__())
 
     def test_codebaseresource_model_clean(self):
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        component1 = Component.objects.create(name="p1", dataspace=self.dataspace)
+        product2 = Product.objects.create(
+            name="Product2", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="p1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=product2, component=component1, dataspace=self.dataspace
         )
@@ -695,9 +772,11 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.codebase_resource1.product_component = pc1
         with self.assertRaises(ValidationError) as cm:
             self.codebase_resource1.clean()
-        self.assertEqual(["p1 is not available on Product1."], cm.exception.messages)
+        self.assertEqual(["p1 is not available on Product1."],
+                         cm.exception.messages)
 
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         pp1 = ProductPackage.objects.create(
             product=product2, package=package1, dataspace=self.dataspace
         )
@@ -706,7 +785,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.codebase_resource1.product_package = pp1
         with self.assertRaises(ValidationError) as cm:
             self.codebase_resource1.clean()
-        self.assertEqual(["package1 is not available on Product1."], cm.exception.messages)
+        self.assertEqual(
+            ["package1 is not available on Product1."], cm.exception.messages)
 
     def test_codebaseresource_model_deployed_from_paths_property(self):
         CodebaseResourceUsage.objects.create(
@@ -716,7 +796,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
         self.assertEqual([], list(self.codebase_resource1.deployed_from_paths))
         self.assertEqual(
-            [self.codebase_resource1.path], list(self.codebase_resource2.deployed_from_paths)
+            [self.codebase_resource1.path], list(
+                self.codebase_resource2.deployed_from_paths)
         )
 
     def test_codebaseresource_model_deployed_to_paths_property(self):
@@ -726,7 +807,8 @@ class ProductPortfolioModelsTestCase(TestCase):
             dataspace=self.dataspace,
         )
         self.assertEqual(
-            [self.codebase_resource2.path], list(self.codebase_resource1.deployed_to_paths)
+            [self.codebase_resource2.path], list(
+                self.codebase_resource1.deployed_to_paths)
         )
         self.assertEqual([], list(self.codebase_resource2.deployed_to_paths))
 
@@ -747,7 +829,8 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         with self.assertRaises(ValidationError) as cm:
             resource_usage.clean()
-        self.assertEqual(["A codebase resource cannot deploy to itself."], cm.exception.messages)
+        self.assertEqual(
+            ["A codebase resource cannot deploy to itself."], cm.exception.messages)
 
     def test_codebaseresourceusage_model_delete(self):
         resource_usage = CodebaseResourceUsage.objects.create(
@@ -760,18 +843,22 @@ class ProductPortfolioModelsTestCase(TestCase):
             self.codebase_resource2.delete()
 
         self.codebase_resource1.delete()
-        self.assertFalse(CodebaseResourceUsage.objects.filter(pk=resource_usage.pk).exists())
+        self.assertFalse(CodebaseResourceUsage.objects.filter(
+            pk=resource_usage.pk).exists())
 
     def test_product_model_get_about_files(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=component1, package=package1, dataspace=self.dataspace
         )
         ProductComponent.objects.create(
             product=self.product1, component=component1, dataspace=self.dataspace
         )
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         ProductPackage.objects.create(
             product=self.product1, package=package2, dataspace=self.dataspace
         )
@@ -787,11 +874,13 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(expected, self.product1.get_about_files())
 
     def test_product_portfolio_product_inventory_item_model(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         ProductComponent.objects.create(
             product=self.product1, component=component1, dataspace=self.dataspace
         )
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         ProductPackage.objects.create(
             product=self.product1, package=package1, dataspace=self.dataspace
         )
@@ -807,13 +896,16 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertIsNone(item.component_id)
 
     def test_product_model_get_spdx_packages(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1, component=component1, dataspace=self.dataspace
         )
 
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         pp1 = ProductPackage.objects.create(
             product=self.product1, package=package1, dataspace=self.dataspace
         )
@@ -905,7 +997,8 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertFalse(scancode_project.can_start_import)
 
     def test_product_dependency_model_save_validation(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
         with self.assertRaises(ValidationError) as cm:
             ProductDependency.objects.create(
                 product=self.product1,
@@ -919,15 +1012,18 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
 
     def test_product_dependency_prackage_queryset_declared_dependencies_count(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         ProductDependency.objects.create(
             product=self.product1,
             for_package=package1,
             resolved_to_package=package2,
             dataspace=self.dataspace,
         )
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+        product2 = Product.objects.create(
+            name="Product2", dataspace=self.dataspace)
         ProductDependency.objects.create(
             product=product2,
             for_package=package1,

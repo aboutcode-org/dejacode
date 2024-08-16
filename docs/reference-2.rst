@@ -88,7 +88,7 @@ Your system administrator can configure DejaCode to provide the necessary creden
 to access a VulnerableCodeDB.
 
 For more information about the open source VulnerableCode project, see
-https://github.com/nexB/vulnerablecode
+https://github.com/aboutcode-org/vulnerablecode
 
 .. note:: Refer to :ref:`user_tutorial_2` for package creation and maintenance
   procedures.

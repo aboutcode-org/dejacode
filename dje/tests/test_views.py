@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -41,7 +41,8 @@ class DJEViewsTestCase(TestCase):
         self.user = create_user("user", self.dataspace1)
         self.super_user = create_superuser("test", self.dataspace1)
         self.alternate_user = create_user("alternate", self.dataspace2)
-        self.owner1 = Owner.objects.create(name="Organization", dataspace=self.dataspace1)
+        self.owner1 = Owner.objects.create(
+            name="Organization", dataspace=self.dataspace1)
 
     def test_admin_login_template(self):
         response = self.client.get(reverse("admin:index"), follow=True)
@@ -55,7 +56,8 @@ class DJEViewsTestCase(TestCase):
     def test_home_view(self):
         home_url = reverse("home")
         response = self.client.get(home_url)
-        self.assertRedirects(response, "{}?next={}".format(reverse("login"), home_url))
+        self.assertRedirects(response, "{}?next={}".format(
+            reverse("login"), home_url))
 
         self.client.login(username="test", password="secret")
         response = self.client.get(home_url)
@@ -73,7 +75,8 @@ class DJEViewsTestCase(TestCase):
 
         Request = apps.get_model("workflow", "Request")
         RequestTemplate = apps.get_model("workflow", "RequestTemplate")
-        component_ct = ContentType.objects.get(app_label="component_catalog", model="component")
+        component_ct = ContentType.objects.get(
+            app_label="component_catalog", model="component")
 
         request_template1 = RequestTemplate.objects.create(
             name="T1", dataspace=self.dataspace1, content_type=component_ct
@@ -100,7 +103,8 @@ class DJEViewsTestCase(TestCase):
 
         owner_ct = ContentType.objects.get_for_model(Owner)
         query = create("Query", self.dataspace1, content_type=owner_ct)
-        create("Filter", self.dataspace1, query=query, field_name="id", lookup="gte", value=0)
+        create("Filter", self.dataspace1, query=query,
+               field_name="id", lookup="gte", value=0)
 
         card1 = create(
             "Card", dataspace=self.dataspace1, title="Card1", query=query, number_of_results=1
@@ -288,7 +292,8 @@ class DJEViewsTestCase(TestCase):
         self.assertContains(response, "Profile updated.")
 
         expected = "Profile updated."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
         history = History.objects.get_for_object(self.user).get()
         expected = "Profile updated: first_name, last_name, data_email_notification."
@@ -307,22 +312,26 @@ class DJEViewsTestCase(TestCase):
         self.assertEqual(40, len(new_key))
         self.assertEqual(initial_key, new_key)
 
-        response = self.client.post(url, data={"regenerate-api-key": "yes"}, follow=True)
+        response = self.client.post(
+            url, data={"regenerate-api-key": "yes"}, follow=True)
         self.user.refresh_from_db()
         new_key = str(self.user.auth_token.key)
         self.assertEqual(40, len(new_key))
         self.assertNotEqual(initial_key, new_key)
 
         expected = "Your API key was regenerated."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        self.assertEqual(expected, list(
+            response.context["messages"])[0].message)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace", TEMPLATE_DATASPACE=None)
     def test_clone_dataset_view(self):
         template_dataspace = Dataspace.objects.create(name="Template")
         self.client.login(username=self.super_user.username, password="secret")
-        clone_url = reverse("admin:dje_dataspace_clonedataset", args=[self.dataspace2.pk])
+        clone_url = reverse("admin:dje_dataspace_clonedataset", args=[
+                            self.dataspace2.pk])
         changelist_url = reverse("admin:dje_dataspace_changelist")
-        change_url = reverse("admin:dje_dataspace_change", args=[self.dataspace2.pk])
+        change_url = reverse("admin:dje_dataspace_change",
+                             args=[self.dataspace2.pk])
 
         # TEMPLATE_DATASPACE not defined
         response = self.client.get(clone_url)
@@ -341,7 +350,8 @@ class DJEViewsTestCase(TestCase):
             self.assertRedirects(response, changelist_url)
             self.assertContains(response, expected)
 
-        self.assertEqual("[DejaCode] Dataspace cloning completed", mail.outbox[0].subject)
+        self.assertEqual(
+            "[DejaCode] Dataspace cloning completed", mail.outbox[0].subject)
         self.assertTrue("Cloning process initiated at" in mail.outbox[0].body)
         self.assertTrue("Data copy completed." in mail.outbox[0].body)
 
@@ -356,10 +366,14 @@ class DJEViewsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertContains(response, f"{self.user.username}&nbsp;(Dataspa…)")
 
-        self.assertContains(response, 'href="#components" data-scroll-to="#components_section"')
-        self.assertContains(response, 'href="#packages" data-scroll-to="#packages_section"')
-        self.assertContains(response, 'href="#licenses" data-scroll-to="#licenses_section"')
-        self.assertContains(response, 'href="#owners" data-scroll-to="#owners_section"')
+        self.assertContains(
+            response, 'href="#components" data-scroll-to="#components_section"')
+        self.assertContains(
+            response, 'href="#packages" data-scroll-to="#packages_section"')
+        self.assertContains(
+            response, 'href="#licenses" data-scroll-to="#licenses_section"')
+        self.assertContains(
+            response, 'href="#owners" data-scroll-to="#owners_section"')
         self.assertNotContains(
             response, 'href="#reference_components" data-scroll-to="#reference_components_section"'
         )
@@ -373,17 +387,23 @@ class DJEViewsTestCase(TestCase):
             response, 'href="#reference_owners" data-scroll-to="#reference_owners_section"'
         )
 
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(global_search_url)
         self.assertEqual(200, response.status_code)
         response = self.client.get(global_search_url, data={"q": "apache"})
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, f"{self.alternate_user.username}&nbsp;(Alterna…)")
+        self.assertContains(
+            response, f"{self.alternate_user.username}&nbsp;(Alterna…)")
 
-        self.assertContains(response, 'href="#components" data-scroll-to="#components_section"')
-        self.assertContains(response, 'href="#packages" data-scroll-to="#packages_section"')
-        self.assertContains(response, 'href="#licenses" data-scroll-to="#licenses_section"')
-        self.assertContains(response, 'href="#owners" data-scroll-to="#owners_section"')
+        self.assertContains(
+            response, 'href="#components" data-scroll-to="#components_section"')
+        self.assertContains(
+            response, 'href="#packages" data-scroll-to="#packages_section"')
+        self.assertContains(
+            response, 'href="#licenses" data-scroll-to="#licenses_section"')
+        self.assertContains(
+            response, 'href="#owners" data-scroll-to="#owners_section"')
         self.assertContains(
             response, 'href="#reference_components" data-scroll-to="#reference_components_section"'
         )
@@ -401,7 +421,8 @@ class DJEViewsTestCase(TestCase):
     def test_global_search_list_view_product_availability(self):
         self.client.login(username=self.user.username, password="secret")
         global_search_url = reverse("global_search")
-        product1 = Product.objects.create(name="Product1", dataspace=self.dataspace1)
+        product1 = Product.objects.create(
+            name="Product1", dataspace=self.dataspace1)
 
         self.assertFalse(self.user.has_perm("product_portfolio.view_product"))
         expected1 = "products_section"
@@ -421,7 +442,8 @@ class DJEViewsTestCase(TestCase):
         self.assertTrue(response.context.get("include_products"))
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
-        self.assertEqual(0, len(response.context.get("product_results").object_list))
+        self.assertEqual(
+            0, len(response.context.get("product_results").object_list))
 
         assign_perm("view_product", self.user, product1)
         self.user = add_perm(self.user, "view_product")
@@ -430,16 +452,19 @@ class DJEViewsTestCase(TestCase):
         self.assertTrue(response.context.get("include_products"))
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
-        self.assertIn(product1, response.context.get("product_results").object_list)
+        self.assertIn(product1, response.context.get(
+            "product_results").object_list)
 
         self.alternate_user = add_perm(self.alternate_user, "view_product")
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(global_search_url, data=data)
         self.assertEqual(200, response.status_code)
         self.assertTrue(response.context.get("include_products"))
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
-        self.assertEqual(0, len(response.context.get("product_results").object_list))
+        self.assertEqual(
+            0, len(response.context.get("product_results").object_list))
 
     def test_tab_set_mixin_get_tabsets(self):
         from component_catalog.views import ComponentDetailsView
@@ -482,11 +507,13 @@ class DJEViewsTestCase(TestCase):
         }
         configuration.save()
         self.assertEqual(
-            sorted(["Owner", "Notice"]), sorted(list(tabset_view.get_tabsets().keys()))
+            sorted(["Owner", "Notice"]), sorted(
+                list(tabset_view.get_tabsets().keys()))
         )
 
     def test_manage_tab_permissions_view(self):
-        url = reverse("admin:dje_dataspace_tab_permissions", args=[self.dataspace1.pk])
+        url = reverse("admin:dje_dataspace_tab_permissions",
+                      args=[self.dataspace1.pk])
         data = {
             "form-TOTAL_FORMS": "2",
             "form-INITIAL_FORMS": "2",
@@ -498,9 +525,11 @@ class DJEViewsTestCase(TestCase):
 
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.post(url, data)
-        self.assertEqual("Tab permissions updated.", list(response.context["messages"])[0].message)
+        self.assertEqual("Tab permissions updated.", list(
+            response.context["messages"])[0].message)
         expected = {"Legal": {"package": ["license", "components"]}}
-        self.assertEqual(expected, self.dataspace1.configuration.tab_permissions)
+        self.assertEqual(
+            expected, self.dataspace1.configuration.tab_permissions)
 
         history = History.objects.get(
             content_type_id=get_content_type_for_model(self.dataspace1).pk,
@@ -510,7 +539,8 @@ class DJEViewsTestCase(TestCase):
         self.assertEqual(expected, history.change_message)
 
     def test_manage_copy_defaults_view(self):
-        url = reverse("admin:dje_dataspace_copy_defaults", args=[self.dataspace1.pk])
+        url = reverse("admin:dje_dataspace_copy_defaults",
+                      args=[self.dataspace1.pk])
 
         data = {
             "form-TOTAL_FORMS": "1",
@@ -547,7 +577,8 @@ class DJEViewsTestCase(TestCase):
             self.assertContains(response, expected, html=True)
 
         response = self.client.post(url, data)
-        self.assertEqual("Copy defaults updated.", list(response.context["messages"])[0].message)
+        self.assertEqual("Copy defaults updated.", list(
+            response.context["messages"])[0].message)
         self.dataspace1.refresh_from_db()
         expected = {"DejaCode": {"external source": ["homepage_url"]}}
         self.assertEqual(expected, self.dataspace1.configuration.copy_defaults)
@@ -585,5 +616,7 @@ class DJEViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, '<h5 class="card-header">PurlDB</h5>')
-        self.assertContains(response, '<h5 class="card-header">ScanCode.io</h5>')
-        self.assertContains(response, '<h5 class="card-header">VulnerableCode</h5>')
+        self.assertContains(
+            response, '<h5 class="card-header">ScanCode.io</h5>')
+        self.assertContains(
+            response, '<h5 class="card-header">VulnerableCode</h5>')

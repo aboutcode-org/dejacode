@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -20,7 +20,8 @@ class Command(BaseCommand):
     requires_system_checks = []
 
     def add_arguments(self, parser):
-        parser.add_argument("dataspace", nargs="?", help="Name of the Dataspace.")
+        parser.add_argument("dataspace", nargs="?",
+                            help="Name of the Dataspace.")
         parser.add_argument(
             "--tag",
             "-t",
@@ -69,11 +70,13 @@ class Command(BaseCommand):
 
         if tags:
             try:
-                invalid_tag = next(tag for tag in tags if not registry.tag_exists(tag))
+                invalid_tag = next(
+                    tag for tag in tags if not registry.tag_exists(tag))
             except StopIteration:
                 pass  # no invalid tags
             else:
-                raise CommandError(f'No data check for the "{invalid_tag}" tag.')
+                raise CommandError(
+                    f'No data check for the "{invalid_tag}" tag.')
         else:
             tags = ["data", "reporting", "expression"]  # default tags
 

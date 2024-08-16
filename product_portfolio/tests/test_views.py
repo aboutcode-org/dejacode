@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -65,7 +65,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
         self.super_user = create_superuser("nexb_user", self.dataspace)
         self.basic_user = create_user("basic_user", self.dataspace)
-        self.alternate_user = create_superuser("alternate_user", self.alternate_dataspace)
+        self.alternate_user = create_superuser(
+            "alternate_user", self.alternate_dataspace)
 
         self.product1 = Product.objects.create(
             name="Product1 With Space", version="1.0", dataspace=self.dataspace
@@ -82,7 +83,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             name="Component1", version="1.0", dataspace=self.dataspace
         )
 
-        self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
+        self.package1 = Package.objects.create(
+            filename="package1", dataspace=self.dataspace)
 
     @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")
     def test_product_portfolio_security_detail_view_no_cross_dataspace_access(self):
@@ -92,7 +94,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(self.alternate_product.get_absolute_url())
         self.assertEqual(response.status_code, 404)
 
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(self.product1.get_absolute_url())
         self.assertEqual(response.status_code, 404)
         response = self.client.get(self.alternate_product.get_absolute_url())
@@ -233,7 +236,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response = self.client.get(url)
         self.assertContains(response, "0 results")
 
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         # Unresolved package dependency
         ProductDependency.objects.create(
             dependency_uid=str(uuid.uuid4()),
@@ -347,9 +351,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_detail_view_review_status_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")
 
-        status1 = ProductRelationStatus.objects.create(label="s1", dataspace=self.dataspace)
-        status2 = ProductRelationStatus.objects.create(label="s2", dataspace=self.dataspace)
-        component2 = Component.objects.create(name="component2", dataspace=self.dataspace)
+        status1 = ProductRelationStatus.objects.create(
+            label="s1", dataspace=self.dataspace)
+        status2 = ProductRelationStatus.objects.create(
+            label="s2", dataspace=self.dataspace)
+        component2 = Component.objects.create(
+            name="component2", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             component=self.component1,
@@ -391,7 +398,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected2)
 
-        response = self.client.get(url, data={"inventory-review_status": status1.label})
+        response = self.client.get(
+            url, data={"inventory-review_status": status1.label})
         pc_filterset = response.context["inventory_items"][""]
         self.assertIn(pc1, pc_filterset)
         self.assertNotIn(pc2, pc_filterset)
@@ -400,7 +408,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_detail_view_inventory_tab_filters(self):
         self.client.login(username=self.super_user.username, password="secret")
 
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         pp1 = ProductPackage.objects.create(
             product=self.product1, package=self.package1, is_modified=True, dataspace=self.dataspace
         )
@@ -441,7 +450,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             name="L1",
             short_name="L1",
             usage_policy=license_policy,
-            owner=Owner.objects.create(name="Owner1", dataspace=self.dataspace),
+            owner=Owner.objects.create(
+                name="Owner1", dataspace=self.dataspace),
             dataspace=self.dataspace,
         )
         pc = ProductComponent.objects.create(
@@ -455,7 +465,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.component1.save()
         self.assertEqual("error", pc.inventory_item_compliance_alert)
 
-        self.assertTrue(self.super_user.dataspace.show_usage_policy_in_user_views)
+        self.assertTrue(
+            self.super_user.dataspace.show_usage_policy_in_user_views)
         url = self.product1.get_url("tab_inventory")
         response = self.client.get(url)
         self.assertContains(response, "Compliance errors")
@@ -790,7 +801,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, 'id="tab-codebase-search-input"')
         self.assertContains(response, "0 results")
-        self.assertContains(response, '<span class="page-link">Page 1 of 1</span>')
+        self.assertContains(
+            response, '<span class="page-link">Page 1 of 1</span>')
         self.assertContains(response, "No results.")
 
         CodebaseResource.objects.create(
@@ -812,7 +824,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         data = {"codebase-is_deployment_path": "yes"}
         response = self.client.get(tab_codebase_view_url, data=data)
-        self.assertContains(response, '<a href="?all=true#codebase">Clear search and filters</a>')
+        self.assertContains(
+            response, '<a href="?all=true#codebase">Clear search and filters</a>')
         self.assertContains(response, "0 results")
         self.assertNotContains(response, "/path1/")
         self.assertNotContains(response, "/path2/")
@@ -875,7 +888,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertNotContains(response, edit_modal)
         self.assertNotContains(response, delete_button)
 
-        add_perms(self.basic_user, ["change_product", "change_productcomponent"])
+        add_perms(self.basic_user, [
+                  "change_product", "change_productcomponent"])
         response = self.client.get(url)
         self.assertContains(response, edit_link)
         self.assertContains(response, edit_modal)
@@ -911,9 +925,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         add_url = reverse("admin:product_portfolio_product_add")
         changelist_url = reverse("admin:product_portfolio_product_changelist")
-        import_component_url = reverse("admin:product_portfolio_productcomponent_import")
-        import_package_url = reverse("admin:product_portfolio_productpackage_import")
-        import_codebaseresource_url = reverse("admin:product_portfolio_codebaseresource_import")
+        import_component_url = reverse(
+            "admin:product_portfolio_productcomponent_import")
+        import_package_url = reverse(
+            "admin:product_portfolio_productpackage_import")
+        import_codebaseresource_url = reverse(
+            "admin:product_portfolio_codebaseresource_import")
         expected3 = (
             f'<a href="{import_component_url}" class="dropdown-item">Import product components</a>'
         )
@@ -1064,7 +1081,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             dataspace=self.dataspace,
         )
 
-        response = self.client.get(resolve_url("product_portfolio:product_list"))
+        response = self.client.get(resolve_url(
+            "product_portfolio:product_list"))
         expected = f"""
         <a href="{self.product1.get_absolute_url()}#activity" class="r-link">
             <span class="badge text-bg-request">R</span>
@@ -1083,7 +1101,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.product1.save()
         self.assertIn(l1, self.product1.licenses.all())
 
-        response = self.client.get(resolve_url("product_portfolio:product_list"))
+        response = self.client.get(resolve_url(
+            "product_portfolio:product_list"))
         expected = (
             f'<td><span class="license-expression">'
             f'<a href="{l1.get_absolute_url()}" title="{l1.short_name}">{l1.key}</a>'
@@ -1184,14 +1203,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         purpose = ProductItemPurpose.objects.create(
             label="Core", text="t", dataspace=self.dataspace
         )
-        c1 = Component.objects.create(name="C", version="1.0", dataspace=self.dataspace)
+        c1 = Component.objects.create(
+            name="C", version="1.0", dataspace=self.dataspace)
         p1_c1 = ProductComponent.objects.create(
             product=self.product1, component=c1, dataspace=self.dataspace
         )
         p2_c1 = ProductComponent.objects.create(
             product=self.product2, component=c1, dataspace=self.dataspace
         )
-        pkg1 = Package.objects.create(filename="pkg1", dataspace=self.dataspace)
+        pkg1 = Package.objects.create(
+            filename="pkg1", dataspace=self.dataspace)
         p1_pkg1 = ProductPackage.objects.create(
             product=self.product1, package=pkg1, dataspace=self.dataspace
         )
@@ -1251,24 +1272,28 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product2, component=c1, dataspace=self.dataspace
         )
-        ProductPackage.objects.create(product=self.product2, package=pkg1, dataspace=self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product2, package=pkg1, dataspace=self.dataspace)
         response = self.client.get(url)
         self.assertContains(response, "<td>Added</td>")
         self.assertContains(response, "Added (2)")
 
-        c2 = Component.objects.create(name=c1.name, version="2.0", dataspace=self.dataspace)
+        c2 = Component.objects.create(
+            name=c1.name, version="2.0", dataspace=self.dataspace)
         pkg2 = Package.objects.create(
             filename=pkg1.filename, version="1.1", dataspace=self.dataspace
         )
         ProductComponent.objects.create(
             product=self.product1, component=c2, dataspace=self.dataspace
         )
-        ProductPackage.objects.create(product=self.product1, package=pkg2, dataspace=self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product1, package=pkg2, dataspace=self.dataspace)
         response = self.client.get(url)
         self.assertContains(response, "<td>Updated</td>")
         self.assertContains(response, "Updated (2)")
 
-        c3 = Component.objects.create(name="C", version="3.0", dataspace=self.dataspace)
+        c3 = Component.objects.create(
+            name="C", version="3.0", dataspace=self.dataspace)
         p1_c3 = ProductComponent.objects.create(
             product=self.product1, component=c3, dataspace=self.dataspace
         )
@@ -1294,7 +1319,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         self.assertEqual(expected_type, response.headers.get("Content-Type"))
         expected_disposition = "attachment; filename=product_comparison.xlsx"
-        self.assertEqual(expected_disposition, response.headers.get("Content-Disposition"))
+        self.assertEqual(expected_disposition,
+                         response.headers.get("Content-Disposition"))
 
     def test_product_portfolio_product_tree_comparison_view_package_identifier(self):
         self.client.login(username="nexb_user", password="secret")
@@ -1372,7 +1398,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
     @override_settings(REFERENCE_DATASPACE="nexB")
     def test_product_portfolio_list_view_alternate_user_access(self):
-        self.client.login(username=self.alternate_user.username, password="secret")
+        self.client.login(
+            username=self.alternate_user.username, password="secret")
         response = self.client.get(self.alternate_product.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         response = self.client.get(self.product1.get_absolute_url())
@@ -1395,7 +1422,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, about_files_url)
 
         response = self.client.get(about_files_url)
-        package_qs = Package.objects.filter(component__in=self.product1.components.all())
+        package_qs = Package.objects.filter(
+            component__in=self.product1.components.all())
         self.assertEqual(0, package_qs.count())
         self.assertEqual(404, response.status_code)
 
@@ -1416,7 +1444,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         # 2 Components assigned to same Package, only Package data is included
-        component2 = Component.objects.create(name="Component2", dataspace=self.dataspace)
+        component2 = Component.objects.create(
+            name="Component2", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=component2, package=self.package1, dataspace=self.dataspace
         )
@@ -1537,7 +1566,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         configuration_status = ProductStatus.objects.create(
             label="Status1", dataspace=self.dataspace
         )
-        keyword = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
+        keyword = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
 
         data = {
             "name": "Name",
@@ -1558,7 +1588,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         }
 
         response = self.client.post(add_url, data, follow=True)
-        product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Name", version="1.0")
         self.assertEqual(owner1, product.owner)
         self.assertEqual(configuration_status, product.configuration_status)
         self.assertEqual(l1.key, product.license_expression)
@@ -1577,7 +1608,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         configuration_status = ProductStatus.objects.create(
             label="Status1", dataspace=self.dataspace
         )
-        keyword = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
+        keyword = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
 
         data = {
             "name": "Name",
@@ -1598,7 +1630,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         }
 
         response = self.client.post(change_url, data, follow=True)
-        product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Name", version="1.0")
         self.assertEqual(owner1, product.owner)
         self.assertEqual(configuration_status, product.configuration_status)
         self.assertEqual(l1.key, product.license_expression)
@@ -1606,24 +1639,29 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = "Product &quot;Name 1.0&quot; was successfully updated."
         self.assertContains(response, expected)
 
-        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(
+            label="Keyword2", dataspace=self.dataspace)
         data["keywords"] = keyword2.label
         change_url = product.get_change_url()
         response = self.client.post(change_url, data, follow=True)
         self.assertContains(response, expected)
-        product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Name", version="1.0")
         self.assertEqual([keyword2.label], product.keywords)
 
         data["keywords"] = f"{keyword.label}, {keyword2.label}"
         response = self.client.post(change_url, data, follow=True)
         self.assertContains(response, expected)
-        product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
-        self.assertEqual(sorted([keyword.label, keyword2.label]), sorted(product.keywords))
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Name", version="1.0")
+        self.assertEqual(
+            sorted([keyword.label, keyword2.label]), sorted(product.keywords))
 
         data["keywords"] = ""
         response = self.client.post(change_url, data, follow=True)
         self.assertContains(response, expected)
-        product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
+        product = Product.objects.get_queryset(
+            self.super_user).get(name="Name", version="1.0")
         self.assertEqual(0, len(product.keywords))
 
     def test_product_portfolio_product_update_view_no_changes(self):
@@ -1690,7 +1728,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
         )
-        initial_product_count = Product.objects.get_queryset(self.super_user).count()
+        initial_product_count = Product.objects.get_queryset(
+            self.super_user).count()
 
         data = {
             "name": self.product1.name,
@@ -1703,7 +1742,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         new_count = Product.objects.get_queryset(self.super_user).count()
         self.assertEqual(new_count, initial_product_count + 1)
-        cloned_product = Product.objects.get_queryset(self.super_user).latest("id")
+        cloned_product = Product.objects.get_queryset(
+            self.super_user).latest("id")
         self.assertRedirects(response, cloned_product.get_absolute_url())
         self.assertContains(response, "was successfully cloned.")
 
@@ -1749,9 +1789,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = '<input type="submit" class="btn btn-danger" value="Confirm deletion">'
         self.assertContains(response, expected, html=True)
         response = self.client.post(delete_url, follow=True)
-        self.assertRedirects(response, reverse("product_portfolio:product_list"))
+        self.assertRedirects(response, reverse(
+            "product_portfolio:product_list"))
         self.assertContains(response, "was successfully deleted.")
-        self.assertFalse(Product.objects.get_queryset(self.basic_user).exists())
+        self.assertFalse(Product.objects.get_queryset(
+            self.basic_user).exists())
         self.assertFalse(ProductComponent.objects.exists())
         self.assertFalse(ProductPackage.objects.exists())
 
@@ -1763,8 +1805,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.super_user = add_perms(self.super_user, perms)
 
         owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
-        status = ProductStatus.objects.create(label="Status1", dataspace=self.dataspace)
-        keyword = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
+        status = ProductStatus.objects.create(
+            label="Status1", dataspace=self.dataspace)
+        keyword = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1",
             name="L1",
@@ -1774,11 +1818,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             dataspace=self.dataspace,
         )
 
-        alternate_owner = Owner.objects.create(name="Owner1", dataspace=self.alternate_dataspace)
+        alternate_owner = Owner.objects.create(
+            name="Owner1", dataspace=self.alternate_dataspace)
         alternate_status = ProductStatus.objects.create(
             label="Status1", dataspace=self.alternate_dataspace
         )
-        ComponentKeyword.objects.create(label="Alternate", dataspace=self.alternate_dataspace)
+        ComponentKeyword.objects.create(
+            label="Alternate", dataspace=self.alternate_dataspace)
 
         form = ProductForm(user=self.super_user)
 
@@ -1789,7 +1835,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         self.assertEqual(1, len(form.fields["configuration_status"].queryset))
         self.assertIn(status, form.fields["configuration_status"].queryset)
-        self.assertNotIn(alternate_status, form.fields["configuration_status"].queryset)
+        self.assertNotIn(alternate_status,
+                         form.fields["configuration_status"].queryset)
 
         # NameVersionValidationFormMixin
         data = {
@@ -1798,7 +1845,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         }
         form = ProductForm(user=self.super_user, data=data)
         self.assertFalse(form.is_valid())
-        errors = {"__all__": ["Product with this Name and Version already exists."]}
+        errors = {"__all__": [
+            "Product with this Name and Version already exists."]}
         self.assertEqual(errors, form.errors)
 
         # Save
@@ -1827,7 +1875,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(license1.key, product.license_expression)
 
         expected = ["view_product"]
-        self.assertEqual(expected, list(get_user_perms(self.super_user, product)))
+        self.assertEqual(expected, list(
+            get_user_perms(self.super_user, product)))
 
         perms = ["change_product", "delete_product"]
         self.super_user = add_perms(self.super_user, perms)
@@ -1847,7 +1896,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         alternate_purpose = ProductItemPurpose.objects.create(
             label="Core", text="t", dataspace=self.alternate_dataspace
         )
-        status = ProductRelationStatus.objects.create(label="Status1", dataspace=self.dataspace)
+        status = ProductRelationStatus.objects.create(
+            label="Status1", dataspace=self.dataspace)
         alternate_status = ProductRelationStatus.objects.create(
             label="Status1", dataspace=self.alternate_dataspace
         )
@@ -1856,7 +1906,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         form = ProductPackageForm(self.super_user, instance=productpackage)
         self.assertEqual(1, len(form.fields["review_status"].queryset))
         self.assertIn(status, form.fields["review_status"].queryset)
-        self.assertNotIn(alternate_status, form.fields["review_status"].queryset)
+        self.assertNotIn(alternate_status,
+                         form.fields["review_status"].queryset)
 
         self.assertEqual(1, len(form.fields["purpose"].queryset))
         self.assertIn(purpose, form.fields["purpose"].queryset)
@@ -1866,7 +1917,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         form = ProductPackageForm(self.basic_user, instance=productpackage)
         self.assertIn('<select name="review_status" disabled', str(form))
 
-        self.basic_user = add_perms(self.basic_user, ["change_review_status_on_productpackage"])
+        self.basic_user = add_perms(
+            self.basic_user, ["change_review_status_on_productpackage"])
         form = ProductPackageForm(self.basic_user, instance=productpackage)
         expected = (
             '<select name="review_status" aria-describedby="id_review_status_helptext" '
@@ -1879,7 +1931,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "package": productpackage.package.pk,
             "purpose": purpose.pk,
         }
-        form = ProductPackageForm(self.super_user, instance=productpackage, data=data)
+        form = ProductPackageForm(
+            self.super_user, instance=productpackage, data=data)
         self.assertTrue(form.is_valid())
         productpackage = form.save()
         self.assertEqual(purpose, productpackage.purpose)
@@ -1922,10 +1975,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         productpackage.refresh_from_db()
         self.assertEqual(purpose, productpackage.purpose)
 
-        history_entries = History.objects.get_for_object(productpackage.product)
+        history_entries = History.objects.get_for_object(
+            productpackage.product)
         expected_messages = ['Changed package "package1" purpose, is_deployed']
-        self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
-        self.assertEqual(self.basic_user, productpackage.product.last_modified_by)
+        self.assertEqual(expected_messages, [
+                         entry.change_message for entry in history_entries])
+        self.assertEqual(
+            self.basic_user, productpackage.product.last_modified_by)
 
         response = self.client.get(f"{edit_url}?delete=1")
         self.assertRedirects(response, product_url + "#inventory")
@@ -1935,10 +1991,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Package relationship {productpackage} successfully deleted."
         self.assertContains(response, msg)
-        self.assertFalse(ProductPackage.objects.filter(pk=productpackage.pk).exists())
-        history_entries = History.objects.get_for_object(productpackage.product)
+        self.assertFalse(ProductPackage.objects.filter(
+            pk=productpackage.pk).exists())
+        history_entries = History.objects.get_for_object(
+            productpackage.product)
         expected_messages = 'Deleted package "package1"'
-        self.assertEqual(expected_messages, history_entries.latest("id").change_message)
+        self.assertEqual(expected_messages,
+                         history_entries.latest("id").change_message)
 
         wrong_url = reverse(
             "product_portfolio:edit_productrelation_ajax", args=["wrong_url", productpackage.uuid]
@@ -1966,7 +2025,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         assign_perm("view_product", self.basic_user, self.product1)
         assign_perm("change_product", self.basic_user, self.product1)
-        add_perms(self.basic_user, ["change_product", "change_productcomponent"])
+        add_perms(self.basic_user, [
+                  "change_product", "change_productcomponent"])
         response = self.client.get(edit_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("text/html; charset=utf-8", response["content-type"])
@@ -1985,10 +2045,14 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         productcomponent.refresh_from_db()
         self.assertEqual(purpose, productcomponent.purpose)
 
-        history_entries = History.objects.get_for_object(productcomponent.product)
-        expected_messages = ['Changed component "Component1 1.0" purpose, is_deployed']
-        self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
-        self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
+        history_entries = History.objects.get_for_object(
+            productcomponent.product)
+        expected_messages = [
+            'Changed component "Component1 1.0" purpose, is_deployed']
+        self.assertEqual(expected_messages, [
+                         entry.change_message for entry in history_entries])
+        self.assertEqual(
+            self.basic_user, productcomponent.product.last_modified_by)
 
         response = self.client.get(f"{edit_url}?delete=1")
         self.assertRedirects(response, product_url + "#inventory")
@@ -1998,10 +2062,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
-        self.assertFalse(ProductComponent.objects.filter(pk=productcomponent.pk).exists())
-        history_entries = History.objects.get_for_object(productcomponent.product)
+        self.assertFalse(ProductComponent.objects.filter(
+            pk=productcomponent.pk).exists())
+        history_entries = History.objects.get_for_object(
+            productcomponent.product)
         expected_messages = 'Deleted component "Component1 1.0"'
-        self.assertEqual(expected_messages, history_entries.latest("id").change_message)
+        self.assertEqual(expected_messages,
+                         history_entries.latest("id").change_message)
 
     def test_product_portfolio_edit_productrelation_ajax_view_custom_component(self):
         purpose = ProductItemPurpose.objects.create(
@@ -2023,7 +2090,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         assign_perm("view_product", self.basic_user, self.product1)
         assign_perm("change_product", self.basic_user, self.product1)
-        add_perms(self.basic_user, ["change_product", "change_productcomponent"])
+        add_perms(self.basic_user, [
+                  "change_product", "change_productcomponent"])
         response = self.client.get(edit_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("text/html; charset=utf-8", response["content-type"])
@@ -2045,13 +2113,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(data["copyright"], productcomponent.copyright)
         self.assertEqual(data["owner"], productcomponent.owner)
 
-        history_entries = History.objects.get_for_object(productcomponent.product)
+        history_entries = History.objects.get_for_object(
+            productcomponent.product)
         expected_messages = [
             'Changed custom component "(Component data missing)" name, version, owner,'
             " copyright, purpose, is_deployed"
         ]
-        self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
-        self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
+        self.assertEqual(expected_messages, [
+                         entry.change_message for entry in history_entries])
+        self.assertEqual(
+            self.basic_user, productcomponent.product.last_modified_by)
 
         response = self.client.get(f"{edit_url}?delete=1")
         self.assertRedirects(response, product_url + "#inventory")
@@ -2061,11 +2132,14 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
-        self.assertFalse(ProductComponent.objects.filter(pk=productcomponent.pk).exists())
+        self.assertFalse(ProductComponent.objects.filter(
+            pk=productcomponent.pk).exists())
 
-        history_entries = History.objects.get_for_object(productcomponent.product)
+        history_entries = History.objects.get_for_object(
+            productcomponent.product)
         expected_messages = 'Deleted custom component "(Component data missing)"'
-        self.assertEqual(expected_messages, history_entries.latest("id").change_message)
+        self.assertEqual(expected_messages,
+                         history_entries.latest("id").change_message)
 
     def test_product_portfolio_add_customcomponent_ajax_view(self):
         add_customcomponent_url = self.product1.get_add_customcomponent_ajax_url()
@@ -2103,10 +2177,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(data["copyright"], productcomponent.copyright)
         self.assertEqual(data["owner"], productcomponent.owner)
 
-        history_entries = History.objects.get_for_object(productcomponent.product)
+        history_entries = History.objects.get_for_object(
+            productcomponent.product)
         expected_messages = ['Added custom component "custom1 "']
-        self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
-        self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
+        self.assertEqual(expected_messages, [
+                         entry.change_message for entry in history_entries])
+        self.assertEqual(
+            self.basic_user, productcomponent.product.last_modified_by)
 
     def test_product_portfolio_product_manage_grid_configuration(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -2127,8 +2204,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.get(manage_url)
         configuration_form = response.context["grid_configuration_form"]
-        self.assertEqual(default_fields, configuration_form.initial["displayed_fields"])
-        self.assertEqual(default_fields, ProductGridConfigurationForm.get_fields_name())
+        self.assertEqual(
+            default_fields, configuration_form.initial["displayed_fields"])
+        self.assertEqual(
+            default_fields, ProductGridConfigurationForm.get_fields_name())
         self.assertNotIn(session_key, self.client.session)
 
         displayed_fields = [
@@ -2147,7 +2226,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         data["displayed_fields"] = ["not_existing"]
         response = self.client.post(manage_url, data, follow=True)
         self.assertNotContains(response, "Grid configuration updated.")
-        self.assertEqual(default_fields, configuration_form.initial["displayed_fields"])
+        self.assertEqual(
+            default_fields, configuration_form.initial["displayed_fields"])
 
         # To modify the session and then save it, it must be stored in a variable first
         # (because a new SessionStore is created every time this property is accessed)
@@ -2157,7 +2237,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         session.save()
         response = self.client.get(manage_url)
         configuration_form = response.context["grid_configuration_form"]
-        self.assertEqual(["notes"], configuration_form.initial["displayed_fields"])
+        self.assertEqual(
+            ["notes"], configuration_form.initial["displayed_fields"])
 
     def test_product_portfolio_product_details_view_manage_components_permissions(self):
         product_url = self.product1.get_absolute_url()
@@ -2260,7 +2341,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         add_perms(self.basic_user, ["add_component"])
         response = self.client.get(manage_url)
         component_add_form = response.context["component_add_form"]
-        self.assertEqual("ComponentAjaxForm", type(component_add_form).__name__)
+        self.assertEqual("ComponentAjaxForm", type(
+            component_add_form).__name__)
         self.assertContains(response, modal_id)
         self.assertContains(response, modal_open_link)
 
@@ -2285,7 +2367,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, "Product changes saved.")
         self.assertRedirects(response, manage_url)
 
-        pc1 = ProductComponent.objects.get(product=self.product1, component=self.component1)
+        pc1 = ProductComponent.objects.get(
+            product=self.product1, component=self.component1)
         self.assertEqual(data["form-0-notes"], pc1.notes)
 
         history_entry = History.objects.get_for_object(self.product1).get()
@@ -2305,7 +2388,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         manage_url = self.product1.get_manage_components_url()
 
-        component2 = Component.objects.create(name="component2", dataspace=self.dataspace)
+        component2 = Component.objects.create(
+            name="component2", dataspace=self.dataspace)
         pc1 = ProductComponent.objects.create(
             product=self.product1,
             component=self.component1,
@@ -2459,7 +2543,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, "Product changes saved.")
         self.assertRedirects(response, manage_url)
 
-        pp1 = ProductPackage.objects.get(product=self.product1, package=self.package1)
+        pp1 = ProductPackage.objects.get(
+            product=self.product1, package=self.package1)
         self.assertEqual(data["form-0-notes"], pp1.notes)
 
         history_entry = History.objects.get_for_object(self.product1).get()
@@ -2479,7 +2564,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         manage_url = self.product1.get_manage_packages_url()
 
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
+        package2 = Package.objects.create(
+            filename="package2", dataspace=self.dataspace)
         pp1 = ProductPackage.objects.create(
             product=self.product1,
             package=self.package1,
@@ -2771,13 +2857,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         # }
         # self.assertDictEqual(expected, bom_as_dict)
 
-        self.assertEqual("http://cyclonedx.org/schema/bom-1.6.schema.json", bom_as_dict["$schema"])
+        self.assertEqual(
+            "http://cyclonedx.org/schema/bom-1.6.schema.json", bom_as_dict["$schema"])
 
         # Old spec version
-        response = self.client.get(export_cyclonedx_url, data={"spec_version": "1.5"})
+        response = self.client.get(export_cyclonedx_url, data={
+                                   "spec_version": "1.5"})
         self.assertIn('"specVersion": "1.5"', str(response.getvalue()))
 
-        response = self.client.get(export_cyclonedx_url, data={"spec_version": "10.10"})
+        response = self.client.get(export_cyclonedx_url, data={
+                                   "spec_version": "10.10"})
         self.assertEqual(404, response.status_code)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
@@ -2894,7 +2983,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         view_name = "product_portfolio:import_packages_from_scancodeio"
         webhook_url = scancodeio.get_webhook_url(view_name, "wrong_uuid")
-        self.assertIn("/products/import_packages_from_scancodeio/", webhook_url)
+        self.assertIn(
+            "/products/import_packages_from_scancodeio/", webhook_url)
         response = self.client.get(webhook_url)
         self.assertEqual(405, response.status_code)
 
@@ -2909,22 +2999,28 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
                 "status": "success",
             },
         }
-        response = self.client.post(webhook_url, data=data, content_type="application/json")
+        response = self.client.post(
+            webhook_url, data=data, content_type="application/json")
         self.assertEqual(404, response.status_code)
 
-        webhook_url = scancodeio.get_webhook_url(view_name, self.super_user.uuid)
-        response = self.client.post(webhook_url, data=data, content_type="application/json")
+        webhook_url = scancodeio.get_webhook_url(
+            view_name, self.super_user.uuid)
+        response = self.client.post(
+            webhook_url, data=data, content_type="application/json")
         self.assertEqual(404, response.status_code)
 
         data["project"]["uuid"] = scancodeproject.project_uuid
 
         with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.post(webhook_url, data=data, content_type="application/json")
+            response = self.client.post(
+                webhook_url, data=data, content_type="application/json")
 
         self.assertEqual(200, response.status_code)
         purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
-        self.assertEqual([purl], [package.package_url for package in self.product1.packages.all()])
-        self.assertEqual(b'{"message": "Received, packages import started."}', response.content)
+        self.assertEqual(
+            [purl], [package.package_url for package in self.product1.packages.all()])
+        self.assertEqual(
+            b'{"message": "Received, packages import started."}', response.content)
 
         notif = Notification.objects.get()
         self.assertTrue(notif.unread)
@@ -2937,7 +3033,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         scancodeproject.refresh_from_db()
         self.assertEqual("success", scancodeproject.status)
-        self.assertEqual(expected_message.split("\n"), scancodeproject.import_log)
+        self.assertEqual(expected_message.split(
+            "\n"), scancodeproject.import_log)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.find_project")
     def test_product_portfolio_pull_project_data_from_scancodeio_view(self, mock_find_project):
@@ -2972,10 +3069,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "uuid": project_uuid,
         }
         response = self.client.post(url, data=form_data, follow=True)
-        self.assertRedirects(response, f"{self.product1.get_absolute_url()}#imports")
+        self.assertRedirects(
+            response, f"{self.product1.get_absolute_url()}#imports")
         project = ScanCodeProject.objects.get(project_uuid=project_uuid)
         self.assertEqual(self.product1, project.product)
-        self.assertEqual(ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO, project.type)
+        self.assertEqual(
+            ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO, project.type)
         self.assertFalse(project.update_existing_packages)
         self.assertEqual(ScanCodeProject.Status.SUBMITTED, project.status)
         self.assertEqual(self.super_user, project.created_by)
@@ -2990,9 +3089,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         mock_import_data.side_effect = Exception("Error")
-        pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
+        pull_project_data_from_scancodeio(
+            scancodeproject_uuid=scancode_project.uuid)
         scancode_project.refresh_from_db()
-        self.assertEqual(ScanCodeProject.Status.FAILURE, scancode_project.status)
+        self.assertEqual(ScanCodeProject.Status.FAILURE,
+                         scancode_project.status)
         self.assertEqual(["Error"], scancode_project.import_log)
         notif = Notification.objects.get()
         self.assertTrue(notif.unread)
@@ -3012,9 +3113,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             {"package": ["package2"]},
             {"package": ["error1"]},
         )
-        pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
+        pull_project_data_from_scancodeio(
+            scancodeproject_uuid=scancode_project.uuid)
         scancode_project.refresh_from_db()
-        self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
+        self.assertEqual(ScanCodeProject.Status.SUCCESS,
+                         scancode_project.status)
         expected = [
             "- Imported 1 package.",
             "- 1 package already available in the Dataspace.",
@@ -3028,7 +3131,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual("Import packages from ScanCode.io", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
-        self.assertEqual("\n".join(scancode_project.import_log), notif.description)
+        self.assertEqual(
+            "\n".join(scancode_project.import_log), notif.description)
 
     def test_pull_project_data_from_scancodeio_task_can_start_import(self):
         scancode_project = ScanCodeProject.objects.create(
@@ -3040,7 +3144,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         with self.assertLogs(tasks_logger) as cm:
-            pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
+            pull_project_data_from_scancodeio(
+                scancodeproject_uuid=scancode_project.uuid)
 
         expected = [
             f"INFO:dje.tasks:Entering pull_project_data_from_scancodeio task with "

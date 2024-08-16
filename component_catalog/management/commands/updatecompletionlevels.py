@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -21,7 +21,8 @@ class Command(DataspacedCommand):
         super().handle(*args, **options)
 
         components = Component.objects.scope(self.dataspace)
-        updated_count = sum(1 for component in components if component.update_completion_level())
+        updated_count = sum(
+            1 for component in components if component.update_completion_level())
 
         msg = f"{updated_count} Component(s) updated."
         self.stdout.write(self.style.SUCCESS(msg))

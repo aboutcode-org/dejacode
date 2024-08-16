@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -28,7 +28,8 @@ from reporting.models import Report
 class ReportingAdminViewsTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
-        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Owner", dataspace=self.dataspace)
         self.user = get_user_model().objects.create_superuser(
             "test", "test@test.com", "t3st", self.dataspace
         )
@@ -91,7 +92,8 @@ class ReportingAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(302, response.status_code)
         filter1.refresh_from_db()
-        self.assertEqual("licenseassignedtag__license_tag__text", filter1.field_name)
+        self.assertEqual(
+            "licenseassignedtag__license_tag__text", filter1.field_name)
 
     def test_save_new_query_get_filters_as_dicts(self):
         self.client.login(username="test", password="t3st")
@@ -118,7 +120,8 @@ class ReportingAdminViewsTestCase(TestCase):
             "name": ["This field is required."],
             "content_type": ["This field is required."],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_save_new_query_validate_lookup_type_when_invalid_query_form(self):
         self.client.login(username="test", password="t3st")
@@ -144,7 +147,8 @@ class ReportingAdminViewsTestCase(TestCase):
         expected = {
             "name": ["This field is required."],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_save_new_query_get_order_fields_as_dicts(self):
         self.client.login(username="test", password="t3st")
@@ -189,7 +193,8 @@ class ReportingAdminViewsTestCase(TestCase):
             "name": ["This field is required."],
             "content_type": ["This field is required."],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_save_new_column_template_invalid_field_name(self):
         self.client.login(username="test", password="t3st")
@@ -270,7 +275,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 "The column template has an object type of component."
             ],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_save_report_missing_required_field_values(self):
         self.client.login(username="test", password="t3st")
@@ -288,7 +294,8 @@ class ReportingAdminViewsTestCase(TestCase):
             "query": ["This field is required."],
             "name": ["This field is required."],
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_save_report_with_an_existing_name(self):
         self.client.login(username="test", password="t3st")
@@ -300,8 +307,10 @@ class ReportingAdminViewsTestCase(TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
-        expected = {NON_FIELD_ERRORS: ["Report with this Dataspace and Name already exists."]}
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        expected = {NON_FIELD_ERRORS: [
+            "Report with this Dataspace and Name already exists."]}
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
     def test_raise_error_for_invalid_Filter_field(self):
         query = Query.objects.create(
@@ -338,7 +347,8 @@ class ReportingAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
         expected = [{NON_FIELD_ERRORS: ["Invalid field value"]}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
     def test_raise_error_for_invalid_boolean_field_with_iexact_filter(self):
         # A boolean field fails with iexact on Postgres.
@@ -361,8 +371,10 @@ class ReportingAdminViewsTestCase(TestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
-        expected = [{NON_FIELD_ERRORS: ['Lookup "iexact" on Boolean field is not supported']}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        expected = [
+            {NON_FIELD_ERRORS: ['Lookup "iexact" on Boolean field is not supported']}]
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
     def test_raise_error_for_isnull_lookup_with_non_nullable_field(self):
         # A boolean field fails with iexact on Postgres.
@@ -398,7 +410,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 ]
             }
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-field_name"] = "category"
         response = self.client.post(url, data)
@@ -432,7 +445,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 ]
             }
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-value"] = "True"
         response = self.client.post(url, data)
@@ -485,21 +499,27 @@ class ReportingAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
         expected = [
-            {NON_FIELD_ERRORS: ['Lookup "isempty" is only supported on blank-able fields.']}
+            {NON_FIELD_ERRORS: [
+                'Lookup "isempty" is only supported on blank-able fields.']}
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-field_name"] = "category"
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
-        expected = [{NON_FIELD_ERRORS: ['Lookup "isempty" is not supported on related fields.']}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        expected = [
+            {NON_FIELD_ERRORS: ['Lookup "isempty" is not supported on related fields.']}]
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-field_name"] = "annotations"
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
-        expected = [{NON_FIELD_ERRORS: ['Lookup "isempty" is not supported on related fields.']}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        expected = [
+            {NON_FIELD_ERRORS: ['Lookup "isempty" is not supported on related fields.']}]
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-field_name"] = "spdx_license_key"
         response = self.client.post(url, data)
@@ -532,7 +552,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 ]
             }
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-value"] = "True"
         response = self.client.post(url, data)
@@ -567,7 +588,8 @@ class ReportingAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
         expected = [{"field_name": ["Invalid field value"]}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
     def test_raise_error_for_invalid_field_type_with_descendant_lookup(self):
         self.client.login(username="test", password="t3st")
@@ -589,8 +611,10 @@ class ReportingAdminViewsTestCase(TestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
-        expected = [{NON_FIELD_ERRORS: ['Lookup "descendant" only supported on "id" field.']}]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        expected = [
+            {NON_FIELD_ERRORS: ['Lookup "descendant" only supported on "id" field.']}]
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["filters-0-field_name"] = "id"
         self.client.post(url, data)
@@ -618,9 +642,11 @@ class ReportingAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(200, response.status_code)
         expected = [
-            {NON_FIELD_ERRORS: ['Lookup "descendant" only supported on models with hierarchy.']}
+            {NON_FIELD_ERRORS: [
+                'Lookup "descendant" only supported on models with hierarchy.']}
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["content_type"] = ContentType.objects.get_for_model(Component).pk
         self.client.post(url, data)
@@ -653,7 +679,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 ]
             }
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][0].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][0].formset.errors)
 
         data["content_type"] = ContentType.objects.get_for_model(Component).pk
         self.client.post(url, data)
@@ -727,7 +754,8 @@ class ReportingAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertEqual(True, response.context["client_data"]["filter_formset_has_errors"])
+        self.assertEqual(
+            True, response.context["client_data"]["filter_formset_has_errors"])
 
         data = {
             "name": "The Name",
@@ -746,7 +774,8 @@ class ReportingAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertEqual(True, response.context["client_data"]["filter_formset_has_errors"])
+        self.assertEqual(
+            True, response.context["client_data"]["filter_formset_has_errors"])
 
     def test_invalid_add_column_template(self):
         self.client.login(username="test", password="t3st")
@@ -834,7 +863,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 "sort": ["This field is required."],
             }
         ]
-        self.assertEqual(expected, response.context_data["inline_admin_formsets"][1].formset.errors)
+        self.assertEqual(
+            expected, response.context_data["inline_admin_formsets"][1].formset.errors)
 
     def test_save_query_with_order_fields(self):
         self.client.login(username="test", password="t3st")
@@ -911,7 +941,8 @@ class ReportingAdminViewsTestCase(TestCase):
             lookup="icontains",
             value="license",
         )
-        OrderField.objects.create(dataspace=self.dataspace, query=query, field_name="name", seq=0)
+        OrderField.objects.create(
+            dataspace=self.dataspace, query=query, field_name="name", seq=0)
 
         self.client.login(username="test", password="t3st")
         url = query.get_admin_url()
@@ -948,7 +979,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 "a least one Report instance."
             ]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         self.report1.delete()
         self.assertFalse(self.query1.report_set.exists())
@@ -960,7 +992,8 @@ class ReportingAdminViewsTestCase(TestCase):
         url = self.column_template1.get_admin_url()
 
         self.assertTrue(self.column_template1.report_set.exists())
-        self.assertNotEqual(self.license_ct, self.column_template1.content_type)
+        self.assertNotEqual(
+            self.license_ct, self.column_template1.content_type)
 
         data = {
             "name": self.column_template1.name,
@@ -978,7 +1011,8 @@ class ReportingAdminViewsTestCase(TestCase):
                 "a least one Report instance."
             ]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         self.report1.delete()
         self.assertFalse(self.column_template1.report_set.exists())

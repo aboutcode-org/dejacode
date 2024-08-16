@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -42,13 +42,18 @@ class ProductGuardianAdminViewsTestCase(TestCase):
         self.alternate_dataspace = Dataspace.objects.create(name="alternate")
         self.super_user = create_superuser("super_user", self.dataspace)
         self.admin_user = create_admin("admin_user", self.dataspace)
-        self.alt_super_user = create_superuser("alt_super_user", self.alternate_dataspace)
+        self.alt_super_user = create_superuser(
+            "alt_super_user", self.alternate_dataspace)
 
-        self.p_changelist_url = reverse("admin:product_portfolio_product_changelist")
+        self.p_changelist_url = reverse(
+            "admin:product_portfolio_product_changelist")
 
-        self.p1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
-        self.p2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        self.alt_p = Product.objects.create(name="Alternate", dataspace=self.alternate_dataspace)
+        self.p1 = Product.objects.create(
+            name="Product1", dataspace=self.dataspace)
+        self.p2 = Product.objects.create(
+            name="Product2", dataspace=self.dataspace)
+        self.alt_p = Product.objects.create(
+            name="Alternate", dataspace=self.alternate_dataspace)
 
         self.group1 = Group.objects.create(name="Group1")
 
@@ -59,7 +64,8 @@ class ProductGuardianAdminViewsTestCase(TestCase):
         # actions = []
         # actions_to_remove = ['copy_to', 'compare_with', 'delete_selected']
         expected = [("", "---------"), ("mass_update", "Mass update")]
-        self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
+        self.assertEqual(
+            expected, response.context_data["action_form"].fields["action"].choices)
 
         # activity_log = False
         self.assertNotContains(response, "activity_log")
@@ -116,23 +122,27 @@ class ProductGuardianAdminViewsTestCase(TestCase):
 
         # Object permissions are added for the creator at save time
         expected = sorted(["change_product", "view_product", "delete_product"])
-        self.assertEqual(expected, sorted(get_perms(self.admin_user, added_product)))
+        self.assertEqual(expected, sorted(
+            get_perms(self.admin_user, added_product)))
 
     def test_product_guardian_admin_delete_view_permission(self):
         self.client.login(username=self.super_user.username, password="secret")
-        p1_delete_url = reverse("admin:product_portfolio_product_delete", args=[self.p1.pk])
+        p1_delete_url = reverse(
+            "admin:product_portfolio_product_delete", args=[self.p1.pk])
         response = self.client.get(p1_delete_url)
         self.assertTrue(self.super_user.has_perm("delete_product", self.p1))
         self.assertEqual(200, response.status_code)
 
         self.client.login(username=self.admin_user.username, password="secret")
-        self.assertFalse(self.admin_user.has_perm("product_portfolio.delete_product"))
+        self.assertFalse(self.admin_user.has_perm(
+            "product_portfolio.delete_product"))
         self.assertFalse(self.admin_user.has_perm("delete_product", self.p1))
         response = self.client.get(p1_delete_url)
         self.assertEqual(403, response.status_code)
 
         self.admin_user = add_perm(self.admin_user, "delete_product")
-        self.assertTrue(self.admin_user.has_perm("product_portfolio.delete_product"))
+        self.assertTrue(self.admin_user.has_perm(
+            "product_portfolio.delete_product"))
         response = self.client.get(p1_delete_url, follow=True)
         self.assertRedirects(response, reverse("admin:index"))
         self.assertContains(response, "Perhaps it was deleted?")
@@ -144,12 +154,14 @@ class ProductGuardianAdminViewsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_product_guardian_admin_mass_update_view_permission(self):
-        my_keyword = ComponentKeyword.objects.create(dataspace=self.dataspace, label="my_keyword")
+        my_keyword = ComponentKeyword.objects.create(
+            dataspace=self.dataspace, label="my_keyword")
         alt_keyword = ComponentKeyword.objects.create(
             dataspace=self.alternate_dataspace, label="alt_keyword"
         )
 
-        my_status = ProductStatus.objects.create(label="my_status", dataspace=self.dataspace)
+        my_status = ProductStatus.objects.create(
+            label="my_status", dataspace=self.dataspace)
         alt_status = ProductStatus.objects.create(
             label="alt_status", dataspace=self.alternate_dataspace
         )
@@ -217,7 +229,8 @@ class ProductGuardianAdminViewsTestCase(TestCase):
 
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(url + params)
-        expected = [{"value": str(self.p1.pk), "safe": False, "label": "Product1"}]
+        expected = [
+            {"value": str(self.p1.pk), "safe": False, "label": "Product1"}]
         self.assertEqual(expected, json.loads(response.content))
 
         self.client.login(username=self.admin_user.username, password="secret")
@@ -227,7 +240,8 @@ class ProductGuardianAdminViewsTestCase(TestCase):
 
         assign_perm("change_product", self.admin_user, self.p1)
         response = self.client.get(url + params)
-        expected = [{"value": str(self.p1.pk), "safe": False, "label": "Product1"}]
+        expected = [
+            {"value": str(self.p1.pk), "safe": False, "label": "Product1"}]
         self.assertEqual(expected, json.loads(response.content))
 
     def test_product_secured_grappelli_lookup_autocomplete(self):
@@ -256,7 +270,8 @@ class ProductGuardianAdminViewsTestCase(TestCase):
         # User must be a superuser or the instance creator to access guardian views.
         urls = [
             # /admin/products/<product_id>/permissions/
-            reverse("admin:product_portfolio_product_permissions", args=[self.p1.pk]),
+            reverse("admin:product_portfolio_product_permissions",
+                    args=[self.p1.pk]),
             # /admin/products/<product_id>/permissions/user-manage/<user_id>/
             reverse(
                 "admin:product_portfolio_product_permissions_manage_user",
@@ -288,7 +303,8 @@ class ProductGuardianAdminViewsTestCase(TestCase):
             self.assertEqual(200, self.client.get(url).status_code)
 
     def test_product_guardian_admin_obj_perms_user_select_form_scoping(self):
-        url = reverse("admin:product_portfolio_product_permissions", args=[self.p1.pk])
+        url = reverse(
+            "admin:product_portfolio_product_permissions", args=[self.p1.pk])
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(url)
         user_form = response.context["user_form"]
@@ -335,13 +351,18 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
         self.alternate_dataspace = Dataspace.objects.create(name="alternate")
         self.super_user = create_superuser("super_user", self.dataspace)
         self.admin_user = create_admin("admin_user", self.dataspace)
-        self.alt_super_user = create_superuser("alt_super_user", self.alternate_dataspace)
+        self.alt_super_user = create_superuser(
+            "alt_super_user", self.alternate_dataspace)
 
-        self.pc_changelist_url = reverse("admin:product_portfolio_productcomponent_changelist")
+        self.pc_changelist_url = reverse(
+            "admin:product_portfolio_productcomponent_changelist")
 
-        self.p1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
-        self.p2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        self.alt_p = Product.objects.create(name="Alternate", dataspace=self.alternate_dataspace)
+        self.p1 = Product.objects.create(
+            name="Product1", dataspace=self.dataspace)
+        self.p2 = Product.objects.create(
+            name="Product2", dataspace=self.dataspace)
+        self.alt_p = Product.objects.create(
+            name="Alternate", dataspace=self.alternate_dataspace)
 
         self.c1 = Component.objects.create(dataspace=self.dataspace, name="c1")
         self.c2 = Component.objects.create(dataspace=self.dataspace, name="c2")
@@ -358,7 +379,8 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
     def test_productcomponent_mass_update_no_product_field(self):
         # WARNING: Adding a secured field in the MassUpdate form would required
         # to adapt DejacodeMassUpdateForm scoping logic to secured querysets
-        self.assertNotIn("product", ProductComponentMassUpdateForm._meta.fields)
+        self.assertNotIn(
+            "product", ProductComponentMassUpdateForm._meta.fields)
 
     def test_productcomponent_guardian_admin_changelist_secured_queryset(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -384,7 +406,8 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
         self.assertNotIn(self.p2_c2, response.context_data["cl"].queryset)
 
     def test_productcomponent_admin_reporting_query_list_filter(self):
-        productcomponent_ct = ContentType.objects.get_for_model(ProductComponent)
+        productcomponent_ct = ContentType.objects.get_for_model(
+            ProductComponent)
         query1 = Query.objects.create(
             dataspace=self.dataspace, name="Q", content_type=productcomponent_ct, operator="and"
         )
@@ -433,7 +456,8 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(self.p1_c1, response.context_data["cl"].queryset)
         self.assertNotIn(self.p2_c2, response.context_data["cl"].queryset)
-        self.assertContains(response, input_html.format(self.p1_c1.product.name), html=True)
+        self.assertContains(response, input_html.format(
+            self.p1_c1.product.name), html=True)
 
         add_perm(self.admin_user, "change_productcomponent")
         self.client.login(username=self.admin_user.username, password="secret")
@@ -455,7 +479,8 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
             ("delete_selected", "Delete selected product component relationships"),
             ("mass_update", "Mass update"),
         ]
-        self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
+        self.assertEqual(
+            expected, response.context_data["action_form"].fields["action"].choices)
 
         # activity_log = False
         self.assertNotContains(response, "activity_log")

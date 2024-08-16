@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -35,7 +35,8 @@ from reporting.models import Report
 class ReportDetailsViewTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
-        self.owner = Owner.objects.create(dataspace=self.dataspace, name="My Fancy Owner Name")
+        self.owner = Owner.objects.create(
+            dataspace=self.dataspace, name="My Fancy Owner Name")
 
         for i in range(200):
             name = "license_{}".format(i)
@@ -164,7 +165,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_using_m2m_with_no_records_in_a_column_template(self):
-        component = Component.objects.create(name="c1", owner=self.owner, dataspace=self.dataspace)
+        component = Component.objects.create(
+            name="c1", owner=self.owner, dataspace=self.dataspace)
         self.assertEqual(0, component.children.count())
 
         query = Query.objects.create(
@@ -278,7 +280,8 @@ class ReportDetailsViewTestCase(TestCase):
 
     def test_nobody_can_see_report_from_another_dataspace(self):
         dataspace2 = Dataspace.objects.create(name="Another Dataspace")
-        user2 = get_user_model().objects.create_user("user2", "user2@user2.com", "pass", dataspace2)
+        user2 = get_user_model().objects.create_user(
+            "user2", "user2@user2.com", "pass", dataspace2)
 
         self.assertNotEqual(self.report.dataspace, user2.dataspace)
         self.client.login(username="user2", password="pass")
@@ -359,7 +362,8 @@ class ReportDetailsViewTestCase(TestCase):
         )
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
-        self.assertEqual([{}, {}], response.context_data["runtime_filter_formset"].errors)
+        self.assertEqual(
+            [{}, {}], response.context_data["runtime_filter_formset"].errors)
 
     def test_run_report_view_lookup_displayed_value(self):
         self.client.login(username="test", password="t3st")
@@ -373,7 +377,8 @@ class ReportDetailsViewTestCase(TestCase):
     def test_run_report_view_results_count(self):
         self.client.login(username="test", password="t3st")
         response = self.client.get(self.report.get_absolute_url())
-        self.assertContains(response, "<p>Showing 100 results on 150 total.</p>")
+        self.assertContains(
+            response, "<p>Showing 100 results on 150 total.</p>")
 
         url = (
             self.report.get_absolute_url()
@@ -384,7 +389,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(response, "<p>Showing 50 results on 50 total.</p>")
 
     def test_report_get_absolute_url(self):
-        self.assertEqual("/reports/{}/".format(self.report.uuid), self.report.get_absolute_url())
+        self.assertEqual("/reports/{}/".format(self.report.uuid),
+                         self.report.get_absolute_url())
 
     def test_report_view_get_json_response(self):
         self.client.login(username="test", password="t3st")
@@ -398,10 +404,12 @@ class ReportDetailsViewTestCase(TestCase):
         # Respecting the sequence ordering of the column_template.fields
         self.assertEqual(
             ["key", "short_name", "name"],
-            list(self.column_template.fields.all().values_list("field_name", flat=True)),
+            list(self.column_template.fields.all().values_list(
+                "field_name", flat=True)),
         )
         self.assertEqual(
-            [0, 1, 2], list(self.column_template.fields.all().values_list("seq", flat=True))
+            [0, 1, 2], list(
+                self.column_template.fields.all().values_list("seq", flat=True))
         )
 
         # In case of a change: print repr(response.content)
@@ -437,7 +445,8 @@ class ReportDetailsViewTestCase(TestCase):
         }
 
         # Inserting all the different type of Fields.
-        Filter.objects.create(field_name="full_text", lookup="contains", **default)
+        Filter.objects.create(field_name="full_text",
+                              lookup="contains", **default)
         Filter.objects.create(field_name="keywords", lookup="in", **default)
         Filter.objects.create(field_name="name", lookup="exact", **default)
         Filter.objects.create(field_name="key", lookup="contains", **default)
@@ -803,7 +812,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 100 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(is_component_license=True).count()
+                License.objects.scope(self.dataspace).filter(
+                    is_component_license=True).count()
             ),
         )
 
@@ -815,7 +825,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 50 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(is_component_license=False).count()
+                License.objects.scope(self.dataspace).filter(
+                    is_component_license=False).count()
             ),
         )
 
@@ -911,7 +922,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 100 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(is_active=True).count()
+                License.objects.scope(self.dataspace).filter(
+                    is_active=True).count()
             ),
         )
 
@@ -923,7 +935,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 50 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(is_active=False).count()
+                License.objects.scope(self.dataspace).filter(
+                    is_active=False).count()
             ),
         )
 
@@ -935,7 +948,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 1 result on {} total.".format(
-                License.objects.scope(self.dataspace).filter(is_active=None).count()
+                License.objects.scope(self.dataspace).filter(
+                    is_active=None).count()
             ),
         )
 
@@ -989,10 +1003,13 @@ class ReportDetailsViewTestCase(TestCase):
             runtime_parameter=True,
         )
 
-        category = LicenseCategory.objects.create(label="category1", dataspace=self.dataspace)
+        category = LicenseCategory.objects.create(
+            label="category1", dataspace=self.dataspace)
 
-        License.objects.scope(self.dataspace).filter(is_active=True).update(category=category)
-        License.objects.scope(self.dataspace).filter(is_active=False).update(category=None)
+        License.objects.scope(self.dataspace).filter(
+            is_active=True).update(category=category)
+        License.objects.scope(self.dataspace).filter(
+            is_active=False).update(category=None)
 
         # All, no value provided
         response = self.client.get(base_report_url)
@@ -1006,7 +1023,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 50 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(category__isnull=True).count()
+                License.objects.scope(self.dataspace).filter(
+                    category__isnull=True).count()
             ),
         )
 
@@ -1018,7 +1036,8 @@ class ReportDetailsViewTestCase(TestCase):
         self.assertContains(
             response,
             "Showing 100 results on {} total.".format(
-                License.objects.scope(self.dataspace).filter(category__isnull=False).count()
+                License.objects.scope(self.dataspace).filter(
+                    category__isnull=False).count()
             ),
         )
 
@@ -1061,7 +1080,8 @@ class ReportDetailsViewTestCase(TestCase):
     def test_run_report_view_runtime_parameters_default_all_value_for_choice_field(self):
         self.client.login(username="test", password="t3st")
 
-        request_ct = ContentType.objects.get(app_label="workflow", model="request")
+        request_ct = ContentType.objects.get(
+            app_label="workflow", model="request")
         query = Query.objects.create(
             dataspace=self.dataspace, name="query1", content_type=request_ct, operator="and"
         )
@@ -1079,7 +1099,8 @@ class ReportDetailsViewTestCase(TestCase):
             dataspace=self.dataspace, name="ct1", content_type=request_ct
         )
 
-        report = Report.objects.create(name="report1", query=query, column_template=column_template)
+        report = Report.objects.create(
+            name="report1", query=query, column_template=column_template)
 
         response = self.client.get(report.get_absolute_url())
         expected = """
@@ -1126,7 +1147,8 @@ class ReportDetailsViewTestCase(TestCase):
         duplicate_report.name = "DupReport"
         duplicate_report.save()
 
-        self.assertEqual(2, Report.objects.scope(self.report.dataspace).count())
+        self.assertEqual(2, Report.objects.scope(
+            self.report.dataspace).count())
 
         url = reverse("reporting:report_list")
         # Needed to clear the queries from the License batch creation in setUp
@@ -1150,7 +1172,8 @@ class ReportDetailsViewTestCase(TestCase):
 
     def test_run_report_product_inventory_item(self):
         self.client.login(username="test", password="t3st")
-        inventory_item_ct = ContentType.objects.get_for_model(ProductInventoryItem)
+        inventory_item_ct = ContentType.objects.get_for_model(
+            ProductInventoryItem)
         query = Query.objects.create(
             dataspace=self.dataspace,
             name="inventory",
@@ -1185,7 +1208,8 @@ class ReportDetailsViewTestCase(TestCase):
         )
 
         product = Product.objects.create(name="p1", dataspace=self.dataspace)
-        component = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         ProductComponent.objects.create(
             product=product, component=component, dataspace=self.dataspace
         )

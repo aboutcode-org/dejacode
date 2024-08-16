@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -51,9 +51,12 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.owner1 = Owner.objects.create(
             name="Owner1", alias="z", dataspace=self.dataspace, type="Person"
         )
-        self.owner1_detail_url = reverse("api_v2:owner-detail", args=[self.owner1.uuid])
-        self.owner2 = Owner.objects.create(name="Owner2", alias="a", dataspace=self.dataspace)
-        self.owner2_detail_url = reverse("api_v2:owner-detail", args=[self.owner2.uuid])
+        self.owner1_detail_url = reverse(
+            "api_v2:owner-detail", args=[self.owner1.uuid])
+        self.owner2 = Owner.objects.create(
+            name="Owner2", alias="a", dataspace=self.dataspace)
+        self.owner2_detail_url = reverse(
+            "api_v2:owner-detail", args=[self.owner2.uuid])
 
         self.alternate_owner = Owner.objects.create(
             name="Owner1", dataspace=self.alternate_dataspace
@@ -62,16 +65,21 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
             "api_v2:owner-detail", args=[self.alternate_owner.uuid]
         )
 
-        ext_source1 = ExternalSource.objects.create(label="GitHub", dataspace=self.dataspace)
+        ext_source1 = ExternalSource.objects.create(
+            label="GitHub", dataspace=self.dataspace)
 
-        ExternalReference.objects.create_for_content_object(self.owner1, ext_source1, "REF1")
-        ExternalReference.objects.create_for_content_object(self.owner1, ext_source1, "REF2")
-        ExternalReference.objects.create_for_content_object(self.owner1, ext_source1, "REF3")
+        ExternalReference.objects.create_for_content_object(
+            self.owner1, ext_source1, "REF1")
+        ExternalReference.objects.create_for_content_object(
+            self.owner1, ext_source1, "REF2")
+        ExternalReference.objects.create_for_content_object(
+            self.owner1, ext_source1, "REF3")
 
     def test_api_owner_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
         for index in range(5):
-            Owner.objects.create(name=f"Owner-{index}", dataspace=self.dataspace)
+            Owner.objects.create(
+                name=f"Owner-{index}", dataspace=self.dataspace)
 
         with self.assertMaxQueries(12):
             response = self.client.get(self.owner_list_url)
@@ -87,7 +95,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         response = client.options(self.owner_list_url, format="json")
         actions_post = response.data["actions"]["POST"]
 
-        values = [choice.get("value") for choice in actions_post["type"].get("choices")]
+        values = [choice.get("value")
+                  for choice in actions_post["type"].get("choices")]
         self.assertEqual(["Organization", "Person", "Project"], values)
 
     def test_api_owner_list_endpoint_search(self):
@@ -121,7 +130,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
 
     def test_api_owner_list_endpoint_multiple_char_filters(self):
         self.client.login(username="super_user", password="secret")
-        owner3 = Owner.objects.create(name="Own , er3", dataspace=self.dataspace)
+        owner3 = Owner.objects.create(
+            name="Own , er3", dataspace=self.dataspace)
         owner3_detail_url = reverse("api_v2:owner-detail", args=[owner3.uuid])
 
         filters = f"?name={self.owner1.name}&name={owner3.name}"
@@ -143,13 +153,17 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
 
         data = {"ordering": "alias"}
         response = self.client.get(self.owner_list_url, data)
-        self.assertEqual(self.owner2.name, response.data["results"][0].get("name"))
-        self.assertEqual(self.owner1.name, response.data["results"][1].get("name"))
+        self.assertEqual(self.owner2.name,
+                         response.data["results"][0].get("name"))
+        self.assertEqual(self.owner1.name,
+                         response.data["results"][1].get("name"))
 
         data = {"ordering": "-alias"}
         response = self.client.get(self.owner_list_url, data)
-        self.assertEqual(self.owner1.name, response.data["results"][0].get("name"))
-        self.assertEqual(self.owner2.name, response.data["results"][1].get("name"))
+        self.assertEqual(self.owner1.name,
+                         response.data["results"][0].get("name"))
+        self.assertEqual(self.owner2.name,
+                         response.data["results"][1].get("name"))
 
     def test_api_owner_detail_endpoint(self):
         from license_library.models import License
@@ -187,7 +201,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(32, len(response.data["created_date"]))
         self.assertEqual(32, len(response.data["last_modified_date"]))
         self.assertIn(
-            reverse("api_v2:license-detail", args=[self.license.uuid]), response.data["licenses"][0]
+            reverse("api_v2:license-detail",
+                    args=[self.license.uuid]), response.data["licenses"][0]
         )
         self.assertIn(
             reverse("api_v2:component-detail", args=[self.component.uuid]),
@@ -215,7 +230,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
 
     def test_api_owner_endpoint_create(self):
         self.client.login(username="super_user", password="secret")
-        response = self.client.post(self.owner_list_url, data={"name": "NewOwner"})
+        response = self.client.post(
+            self.owner_list_url, data={"name": "NewOwner"})
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
         owner = Owner.objects.get(name="NewOwner")
@@ -228,7 +244,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertIn('Owner "NewOwner" in dataspace "nexB" added by', body)
         self.assertIn(owner.get_admin_url(), body)
 
-        response = self.client.post(self.owner_list_url, data={"name": "NewOwner"})
+        response = self.client.post(
+            self.owner_list_url, data={"name": "NewOwner"})
         self.assertContains(
             response,
             "duplicate key value violates unique constraint",
@@ -255,7 +272,8 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
 
         put_data = {"name": self.owner1.name.upper()}
-        response = client.put(self.owner1_detail_url, data=put_data, format="json")
+        response = client.put(self.owner1_detail_url,
+                              data=put_data, format="json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.owner1.refresh_from_db()
         self.assertEqual(data["name"], self.owner1.name)
@@ -269,18 +287,23 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
-        history = History.objects.get_for_object(self.owner1, action_flag=History.CHANGE).get()
-        self.assertEqual("Changed name and alias.", history.get_change_message())
+        history = History.objects.get_for_object(
+            self.owner1, action_flag=History.CHANGE).get()
+        self.assertEqual("Changed name and alias.",
+                         history.get_change_message())
 
-        self.client.put(self.owner1_detail_url, data=put_data, content_type="application/json")
+        self.client.put(self.owner1_detail_url, data=put_data,
+                        content_type="application/json")
         history = History.objects.get_for_object(self.owner1, action_flag=History.CHANGE).latest(
             "id"
         )
         self.assertEqual("No fields changed.", history.change_message)
 
-        self.assertEqual('Updated Owner: "Updated Name"', mail.outbox[0].subject)
+        self.assertEqual('Updated Owner: "Updated Name"',
+                         mail.outbox[0].subject)
         body = mail.outbox[0].body
-        self.assertIn('Owner "Updated Name" in dataspace "nexB" updated by', body)
+        self.assertIn(
+            'Owner "Updated Name" in dataspace "nexB" updated by', body)
         self.assertIn(self.owner1.get_admin_url(), body)
         self.assertIn("Changed name and alias.", body)
         self.assertIn('Changes details for Owner "Updated Name"', body)
@@ -313,20 +336,23 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, list(response_json.keys()))
 
         DataspaceConfiguration.objects.create(
-            dataspace=self.dataspace, tab_permissions={"Group1": {"owner": ["licenses"]}}
+            dataspace=self.dataspace, tab_permissions={
+                "Group1": {"owner": ["licenses"]}}
         )
         self.assertTrue(self.dataspace.tab_permissions_enabled)
         self.client.login(username=self.base_user.username, password="secret")
         response_json = self.client.get(self.owner1_detail_url).json()
         self.assertEqual(
-            ["api_url", "absolute_url", "uuid", "dataspace"], list(response_json.keys())
+            ["api_url", "absolute_url", "uuid",
+                "dataspace"], list(response_json.keys())
         )
 
         self.base_user.groups.add(Group.objects.create(name="Group1"))
         self.client.login(username=self.base_user.username, password="secret")
         response_json = self.client.get(self.owner1_detail_url).json()
         self.assertEqual(
-            ["api_url", "absolute_url", "uuid", "licenses", "dataspace"], list(response_json.keys())
+            ["api_url", "absolute_url", "uuid", "licenses",
+                "dataspace"], list(response_json.keys())
         )
 
         self.client.login(username=self.super_user.username, password="secret")

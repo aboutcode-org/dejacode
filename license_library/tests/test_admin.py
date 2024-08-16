@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -51,7 +51,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
             "other_user", "other@test.com", "t3st", self.other_dataspace
         )
 
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.nexb_dataspace)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.nexb_dataspace)
         self.owner_other = Owner.objects.create(
             name="Organization_Other", dataspace=self.other_dataspace
         )
@@ -166,11 +167,15 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.client.post(url, data)
 
         self.assertEqual(original_count + 1, License.objects.count())
-        new_license = License.objects.get(name=self.license1.name, dataspace=self.dataspace_target)
-        self.assertTrue(self.license1.category.label, new_license.category.label)
+        new_license = License.objects.get(
+            name=self.license1.name, dataspace=self.dataspace_target)
+        self.assertTrue(self.license1.category.label,
+                        new_license.category.label)
         self.assertTrue(self.license1.owner.name, new_license.owner.name)
-        self.assertTrue(self.license1.license_profile.name, new_license.license_profile.name)
-        self.assertTrue(self.license1.license_style.name, new_license.license_style.name)
+        self.assertTrue(self.license1.license_profile.name,
+                        new_license.license_profile.name)
+        self.assertTrue(self.license1.license_style.name,
+                        new_license.license_style.name)
 
         history = History.objects.get_for_object(new_license).get()
         self.assertEqual(
@@ -251,7 +256,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
             "form-0-ct": ContentType.objects.get_for_model(LicenseAssignedTag).pk,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been copied</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been copied</h2>")
         license_in_target = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -259,10 +265,12 @@ class LicenseAdminCopyViewTestCase(TestCase):
             uuid=self.license1.uuid, dataspace=self.other_dataspace
         )
         self.assertContains(
-            response, "{} ({})".format(license_in_other, license_in_other.dataspace)
+            response, "{} ({})".format(
+                license_in_other, license_in_other.dataspace)
         )
         self.assertContains(
-            response, "{} ({})".format(license_in_target, license_in_target.dataspace)
+            response, "{} ({})".format(license_in_target,
+                                       license_in_target.dataspace)
         )
 
         history = History.objects.get_for_object(license_in_target).get()
@@ -280,7 +288,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_copy")
 
-        target_license = copy_object(self.license1, self.dataspace_target, self.user)
+        target_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
 
         data = {
             "ct": str(ContentType.objects.get_for_model(License).pk),
@@ -293,8 +302,10 @@ class LicenseAdminCopyViewTestCase(TestCase):
             "form-0-ct": ContentType.objects.get_for_model(LicenseAssignedTag).pk,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been copied</h2>")
-        self.assertContains(response, "<h2>The following Licenses have been updated.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been copied</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been updated.</h2>")
 
         self.assertEqual(3, len(response.context["copied"]))
         self.assertEqual(1, len(response.context["updated"]))
@@ -303,7 +314,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
     def test_license_copy_with_issue_on_related_organization(self):
         # Creating a new Owner in the target using the unique name
         # of self.owner but a different uuid, for future integrity error
-        Owner.objects.create(name=self.license1.owner.name, dataspace=self.dataspace_target)
+        Owner.objects.create(name=self.license1.owner.name,
+                             dataspace=self.dataspace_target)
         # We now copy the License in the target
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_copy")
@@ -318,7 +330,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
         response = self.client.post(url, data)
         # ... License copy fail as the Owner cannot be match nor copy.
-        self.assertContains(response, "<h2>Errors for the following Licenses.</h2>", html=True)
+        self.assertContains(
+            response, "<h2>Errors for the following Licenses.</h2>", html=True)
 
     def test_license_copy_update_into_self_dataspace(self):
         # Here we are trying to copy an object in its current Dataspace
@@ -356,7 +369,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         )
         # Also let make sure a tag with the original label already exist
         # under another uuid.
-        LicenseTag.objects.create(label=self.license_tag1.label, dataspace=self.other_dataspace)
+        LicenseTag.objects.create(
+            label=self.license_tag1.label, dataspace=self.other_dataspace)
 
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_copy")
@@ -371,12 +385,14 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
         self.client.post(url, data)
 
-        copied_license = License.objects.get(key=self.license1.key, dataspace=self.other_dataspace)
+        copied_license = License.objects.get(
+            key=self.license1.key, dataspace=self.other_dataspace)
         copied_assigned_tag = LicenseAssignedTag.objects.get(
             license=copied_license, license_tag=tag_in_target
         )
 
-        self.assertEqual(self.license_assigned_tag1.value, copied_assigned_tag.value)
+        self.assertEqual(self.license_assigned_tag1.value,
+                         copied_assigned_tag.value)
 
     def test_license_copy_with_annotation(self):
         license_temp = License.objects.create(
@@ -428,7 +444,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.assertTrue(copied_license)
         # Now looking at the copied annotation
         self.assertEqual(2, len(LicenseAnnotation.objects.all()))
-        new_annotation = LicenseAnnotation.objects.get(dataspace=self.dataspace_target)
+        new_annotation = LicenseAnnotation.objects.get(
+            dataspace=self.dataspace_target)
         self.assertEqual("nexb copyright", new_annotation.text)
         self.assertEqual(5, new_annotation.range_end_offset)
         self.assertEqual(3, new_annotation.range_start_offset)
@@ -510,8 +527,10 @@ class LicenseAdminCopyViewTestCase(TestCase):
             dataspace=self.dataspace_target, uuid=license_annotation.uuid
         )
         self.assertEqual(license_annotation.text, new_annotation.text)
-        self.assertEqual(license_annotation.range_end_offset, new_annotation.range_end_offset)
-        self.assertEqual(license_annotation.range_start_offset, new_annotation.range_start_offset)
+        self.assertEqual(license_annotation.range_end_offset,
+                         new_annotation.range_end_offset)
+        self.assertEqual(license_annotation.range_start_offset,
+                         new_annotation.range_start_offset)
 
     def test_license_update_with_m2m(self):
         license_temp = License.objects.create(
@@ -535,7 +554,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
             dataspace=self.nexb_dataspace,
         )
 
-        copied_license = copy_object(license_temp, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            license_temp, self.dataspace_target, self.user)
         self.client.login(username="nexb_user", password="t3st")
 
         url = reverse("admin:license_library_license_copy")
@@ -550,7 +570,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been updated.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been updated.</h2>")
         self.assertEqual(
             1,
             len(
@@ -592,7 +613,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         url = reverse("admin:license_library_license_copy")
         response = self.client.get(url)
         # Requesting the view without giving the required parameters
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
     def test_object_copy_view_maximum_ids_limit(self):
         # Testing the limitation of Object we can copy at one time
@@ -604,7 +626,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
             "ids": ",".join([str(x) for x in range(101)]),
         }
         response = self.client.get(url, data)
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
 
     def test_object_copy_view_non_existing_id(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -613,7 +636,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         data = {"ids": "300000"}
         response = self.client.get(url, data)
         # Redirecting the user to the list view
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
 
     def test_object_copy_view_as_reference_target_form(self):
         self.assertTrue(self.user.dataspace.is_reference)
@@ -624,9 +648,11 @@ class LicenseAdminCopyViewTestCase(TestCase):
         # The target_dataspace is not in the param at that stage
         # the response should be the "ToDataspace" form page
         response = self.client.get(url, {"ids": str(self.license1.id)})
-        self.assertTemplateUsed(response, "admin/object_copy_dataspace_form.html")
+        self.assertTemplateUsed(
+            response, "admin/object_copy_dataspace_form.html")
 
-        self.assertContains(response, "<h1>Choose the target Dataspace(s).</h1>")
+        self.assertContains(
+            response, "<h1>Choose the target Dataspace(s).</h1>")
         expected = (
             f'<label for="id_target_0"><input type="checkbox" name="target"'
             f' value="{self.other_dataspace.id}" id="id_target_0" />'
@@ -640,7 +666,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
         # Making sure my Dataspace is not a choice of the Form
-        self.assertNotContains(response, f'name="target" value="{self.nexb_dataspace.id}"')
+        self.assertNotContains(
+            response, f'name="target" value="{self.nexb_dataspace.id}"')
 
     def test_object_copy_update_view_as_reference_pre_copy(self):
         self.assertTrue(self.user.dataspace.is_reference)
@@ -657,7 +684,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         response = self.client.get(url, data)
 
         # The request is correct, presenting the confirmation page to the user
-        self.assertContains(response, "<h2>The following Licenses will be copied.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses will be copied.</h2>")
         expected = "<li>{} from {} to {}</li>".format(
             self.license1.get_admin_link(), self.license1.dataspace, self.dataspace_target
         )
@@ -703,7 +731,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.assertTrue(self.license1.license_profile)
         self.assertTrue(self.license1.full_text)
 
-        excluded_fields = ["category", "license_style", "license_profile", "full_text"]
+        excluded_fields = ["category", "license_style",
+                           "license_profile", "full_text"]
         exclude = {self.license1.__class__: excluded_fields}
 
         copied_object = copy_object(
@@ -719,7 +748,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.license1.curation_level = 0  # Just in case
         self.license1.save()
 
-        copied_object = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.license1, self.dataspace_target, self.user)
 
         copied_object.full_text = "New full_text"
         copied_object.short_name = "New short_name"
@@ -727,7 +757,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         copied_object.save()
 
         # Refresh the self.license1 instance
-        self.license1 = License.objects.get(uuid=self.license1.uuid, dataspace=self.nexb_dataspace)
+        self.license1 = License.objects.get(
+            uuid=self.license1.uuid, dataspace=self.nexb_dataspace)
         self.license1.curation_level = 99
         self.license1.save()
 
@@ -748,7 +779,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
     def test_object_copy_view_pre_copy_including_update(self):
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_licensecategory_copy")
-        copied_object = copy_object(self.category1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.category1, self.dataspace_target, self.user)
         self.assertEqual(self.category1.uuid, copied_object.uuid)
         self.assertNotEqual(self.category1.dataspace, copied_object.dataspace)
 
@@ -761,10 +793,12 @@ class LicenseAdminCopyViewTestCase(TestCase):
 
         # The request is correct, presenting the confirmation page to the user
         # Offering the option the update the match
-        self.assertContains(response, "Select the ones that you would like to apply data changes.")
+        self.assertContains(
+            response, "Select the ones that you would like to apply data changes.")
         self.assertContains(
             response,
-            '<input type="checkbox" name="select_for_update" value="{}">'.format(copied_object.id),
+            '<input type="checkbox" name="select_for_update" value="{}">'.format(
+                copied_object.id),
         )
         self.assertContains(response, "Make the Copy and Update")
 
@@ -780,14 +814,16 @@ class LicenseAdminCopyViewTestCase(TestCase):
         data = {"ids": str(category.id)}
         response = self.client.get(url, data)
         # As you cannot copy from a non Reference Dataspace you are redirected
-        self.assertRedirects(response, reverse("admin:license_library_licensecategory_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_licensecategory_changelist"))
 
         # Now, Using a Category from the Reference Dataspace
         self.assertTrue(self.category1.dataspace.is_reference)
         data["ids"] = str(self.category1.id)
         response = self.client.get(url, data)
         # The request is correct, presenting the confirmation page to the user
-        self.assertContains(response, "<h2>The following License categories will be copied.</h2>")
+        self.assertContains(
+            response, "<h2>The following License categories will be copied.</h2>")
         expected = "<li><strong>{}</strong> from {} to {}</li>".format(
             self.category1, self.nexb_dataspace, self.other_user.dataspace
         )
@@ -812,12 +848,14 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
         # Source and target are not valid IDs, User is redirected
         response = self.client.post(url, data)
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
         # Same thing using a name that do not exist in the DB
         data["source"] = "SOME NAME"
         response = self.client.post(url, data)
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
         # Now using proper source and target
         data["source"] = category.dataspace
@@ -828,11 +866,13 @@ class LicenseAdminCopyViewTestCase(TestCase):
         # - Source must be the Reference Dataspace
         # - Target must be the User Dataspace
         self.assertFalse(category.dataspace.is_reference)
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
         # Making sure the copy did not happen
         self.assertFalse(
-            LicenseCategory.objects.filter(label=category.label, dataspace=self.dataspace_target)
+            LicenseCategory.objects.filter(
+                label=category.label, dataspace=self.dataspace_target)
         )
 
     def test_object_copy_view_results(self):
@@ -881,26 +921,32 @@ class LicenseAdminCopyViewTestCase(TestCase):
         response = self.client.post(url, data)
 
         # Getting the added license during the copy
-        new_license = License.objects.get(key=self.license1.key, dataspace=self.dataspace_target)
+        new_license = License.objects.get(
+            key=self.license1.key, dataspace=self.dataspace_target)
         # Making sure the correct template is returned
         self.assertTemplateUsed(response, "admin/object_copy_results.html")
         # Copy results
-        self.assertContains(response, "<h2>The following Licenses have been copied</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been copied</h2>")
         self.assertContains(response, new_license.get_admin_url())
         # Update results
-        self.assertContains(response, "<h2>The following Licenses have been updated.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been updated.</h2>")
         self.assertContains(response, license_for_update.get_admin_url())
         # Errors results
-        self.assertContains(response, "<h2>Errors for the following Licenses.</h2>")
+        self.assertContains(
+            response, "<h2>Errors for the following Licenses.</h2>")
         self.assertContains(response, license_for_error1.get_admin_url())
-        self.assertContains(response, "duplicate key value violates unique constraint")
+        self.assertContains(
+            response, "duplicate key value violates unique constraint")
 
     def test_license_copy_and_update_configuration_get_view(self):
         # Testing the copy configuration view regarding m2m and one2m fields
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_copy")
 
-        data = {"ids": str(self.license1.id), "target": self.dataspace_target.pk}
+        data = {"ids": str(self.license1.id),
+                "target": self.dataspace_target.pk}
 
         response = self.client.get(url, data)
         self.assertContains(response, "<strong>License assigned tag</strong>")
@@ -927,7 +973,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         self.assertContains(response, expected, html=True)
 
         # Copy the object to simulation the update configuration view
-        copied_object = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.license1, self.dataspace_target, self.user)
         self.assertTrue(copied_object)
 
         response = self.client.get(url, data)
@@ -989,7 +1036,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been copied</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been copied</h2>")
 
         # Getting the objects created in the target dataspace
         copied_license = License.objects.get(
@@ -1045,8 +1093,10 @@ class LicenseAdminCopyViewTestCase(TestCase):
 
         self.assertEqual(1, copied_license.tags.count())
         self.assertEqual(self.license1.full_text, copied_license.full_text)
-        self.assertEqual(self.license_assigned_tag1.value, copied_assigned_tag.value)
-        self.assertEqual(annotation1.assigned_tag.uuid, copied_annotation.assigned_tag.uuid)
+        self.assertEqual(self.license_assigned_tag1.value,
+                         copied_assigned_tag.value)
+        self.assertEqual(annotation1.assigned_tag.uuid,
+                         copied_annotation.assigned_tag.uuid)
         self.assertEqual(annotation1.text, copied_annotation.text)
         self.assertEqual(annotation1.quote, copied_annotation.quote)
 
@@ -1075,7 +1125,8 @@ class LicenseAdminCopyViewTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been updated.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been updated.</h2>")
 
         # Getting the objects updated in the target dataspace
         copied_license = License.objects.get(
@@ -1089,9 +1140,11 @@ class LicenseAdminCopyViewTestCase(TestCase):
         )
 
         # Making sure the excluded field were not updated
-        self.assertEqual("abcdefghigklmnopqrstuvwxyz1234567890", copied_license.full_text)
+        self.assertEqual("abcdefghigklmnopqrstuvwxyz1234567890",
+                         copied_license.full_text)
         self.assertEqual(True, copied_assigned_tag.value)
-        self.assertEqual(self.license_assigned_tag1.uuid, copied_annotation.assigned_tag.uuid)
+        self.assertEqual(self.license_assigned_tag1.uuid,
+                         copied_annotation.assigned_tag.uuid)
         self.assertEqual("nexb copyright", copied_annotation.text)
         self.assertEqual("quote", copied_annotation.quote)
 
@@ -1108,7 +1161,8 @@ class LicenseAdminViewsTestCase(TestCase):
             "other_user", "other@test.com", "t3st", self.other_dataspace
         )
 
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.nexb_dataspace)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.nexb_dataspace)
         self.owner_other = Owner.objects.create(
             name="Organization_Other", dataspace=self.other_dataspace
         )
@@ -1197,16 +1251,19 @@ class LicenseAdminViewsTestCase(TestCase):
 
         response = self.client.get(url + changelist_filters)
         result_list = response.context_data["cl"].result_list
-        expected_qs = License.objects.scope(self.user.dataspace).order_by("-name")
+        expected_qs = License.objects.scope(
+            self.user.dataspace).order_by("-name")
         self.assertEqual(list(expected_qs), list(result_list))
 
-        response = self.client.get(self.license1.get_admin_url() + preserved_filters)
+        response = self.client.get(
+            self.license1.get_admin_url() + preserved_filters)
         expected = '<a class="grp-state-focus" href="{}{}">&larr; Previous License</a>'.format(
             self.license2.get_admin_url(), preserved_filters
         )
         self.assertContains(response, expected)
 
-        response = self.client.get(self.license2.get_admin_url() + preserved_filters)
+        response = self.client.get(
+            self.license2.get_admin_url() + preserved_filters)
         expected = '<a class="grp-state-focus" href="{}{}">&larr; Previous License</a>'.format(
             self.license3.get_admin_url(), preserved_filters
         )
@@ -1220,7 +1277,8 @@ class LicenseAdminViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
 
-        response = self.client.get(self.license3.get_admin_url() + preserved_filters)
+        response = self.client.get(
+            self.license3.get_admin_url() + preserved_filters)
         expected = '<a class="grp-state-focus" href="{}{}">Next License &rarr;</a>'.format(
             self.license2.get_admin_url(), preserved_filters
         )
@@ -1250,7 +1308,8 @@ class LicenseAdminViewsTestCase(TestCase):
     def test_license_admin_change_view_response_with_next_license(self):
         self.client.login(username="nexb_user", password="t3st")
         # POSTing a change using the "Save and go to next" link
-        url = reverse("admin:license_library_license_change", args=[self.license1.pk])
+        url = reverse("admin:license_library_license_change",
+                      args=[self.license1.pk])
         data = {
             "key": self.license1.key,
             "name": self.license1.name,
@@ -1269,7 +1328,8 @@ class LicenseAdminViewsTestCase(TestCase):
         preserved_filters = "?_changelist_filters=o%3D-3"
         response = self.client.post(url + preserved_filters, data, follow=True)
         # Making sure we are redirected on the "next" license
-        self.assertRedirects(response, self.license2.get_admin_url() + preserved_filters)
+        self.assertRedirects(
+            response, self.license2.get_admin_url() + preserved_filters)
         # Preserve filters
         expected = '<a href="{}?o=-3" class="grp-button cancel-link">Return to list</a>'.format(
             reverse("admin:license_library_license_changelist")
@@ -1278,7 +1338,8 @@ class LicenseAdminViewsTestCase(TestCase):
 
     def test_license_curation_level_validation(self):
         self.client.login(username="nexb_user", password="t3st")
-        url = reverse("admin:license_library_license_change", args=[self.license1.pk])
+        url = reverse("admin:license_library_license_change",
+                      args=[self.license1.pk])
 
         data = {
             "key": self.license1.key,
@@ -1294,31 +1355,38 @@ class LicenseAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "Ensure this value is less than or equal to 100.")
+        self.assertContains(
+            response, "Ensure this value is less than or equal to 100.")
 
         data["curation_level"] = 99
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
 
     def test_license_annotation_view(self):
         self.client.login(username="nexb_user", password="t3st")
         # Calling the view with a non existing id
         url = reverse("admin:license_library_license_annotation", args=[9999])
         response = self.client.get(url)
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
         # Now, with a proper license id
-        url = reverse("admin:license_library_license_annotation", args=[self.license1.id])
+        url = reverse("admin:license_library_license_annotation",
+                      args=[self.license1.id])
         response = self.client.get(url)
-        self.assertContains(response, f"<h1>Annotate: {self.license1.name}</h1>")
+        self.assertContains(
+            response, f"<h1>Annotate: {self.license1.name}</h1>")
         self.assertContains(response, "<h2>Group1</h2>")
         self.assertContains(response, "<strong>Tag 1</strong>")
 
         # Login as a user in another dataspace, the view is protected.
-        self.assertTrue(self.client.login(username="other_user", password="t3st"))
+        self.assertTrue(self.client.login(
+            username="other_user", password="t3st"))
         response = self.client.get(url)
 
-        self.assertContains(response, "The requested page could not be found.", status_code=404)
+        self.assertContains(
+            response, "The requested page could not be found.", status_code=404)
 
     def test_licenseprofile_details_view(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -1361,18 +1429,21 @@ class LicenseAdminViewsTestCase(TestCase):
             # time *anytime* the model is saved, so to set a custom value for
             # action_time we use QuerySet.update()
             def add_history_entry(licensetag, action_flag, days_back):
-                history_entry = History.objects.log_action(self.user, licensetag, action_flag)
+                history_entry = History.objects.log_action(
+                    self.user, licensetag, action_flag)
                 History.objects.filter(pk=history_entry.pk).update(
                     action_time=fake_now - datetime.timedelta(days=days_back)
                 )
 
             # create LogEntry objects for the licenses
             # license_tag1 was added 20 days ago
-            add_history_entry(self.license_tag1, History.ADDITION, days_back=20)
+            add_history_entry(self.license_tag1,
+                              History.ADDITION, days_back=20)
             add_history_entry(self.license_tag1, History.CHANGE, days_back=7)
 
             # license_tag2 was added 100 days ago
-            add_history_entry(self.license_tag2, History.ADDITION, days_back=100)
+            add_history_entry(self.license_tag2,
+                              History.ADDITION, days_back=100)
             add_history_entry(self.license_tag2, History.CHANGE, days_back=30)
 
             # no licenses were created in the last 7 days
@@ -1443,7 +1514,8 @@ class LicenseAdminViewsTestCase(TestCase):
         url = reverse("admin:license_library_licensetaggroup_changelist")
         # Create another assigned_tag in the same group, with a higher seq
         # but a lower alphabetical value for the tag label, to check the order
-        new_tag = LicenseTag.objects.create(label="aaa", dataspace=self.nexb_dataspace)
+        new_tag = LicenseTag.objects.create(
+            label="aaa", dataspace=self.nexb_dataspace)
         LicenseTagGroupAssignedTag.objects.create(
             license_tag_group=self.tag_group1,
             license_tag=new_tag,
@@ -1473,9 +1545,11 @@ class LicenseAdminViewsTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        license = License.objects.get(key="a-key", dataspace=self.nexb_dataspace)
+        license = License.objects.get(
+            key="a-key", dataspace=self.nexb_dataspace)
         self.assertRedirects(
-            response, reverse("admin:license_library_license_change", args=[license.id])
+            response, reverse(
+                "admin:license_library_license_change", args=[license.id])
         )
 
     def test_license_key_field_validation(self):
@@ -1499,17 +1573,20 @@ class LicenseAdminViewsTestCase(TestCase):
 
         data["key"] = "valid.key"
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
 
     def test_license_admin_views_view_on_site(self):
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_changelist")
         response = self.client.get(url)
         # View on site link
-        self.assertContains(response, '<div class="grp-text"><span>View</span></div>')
+        self.assertContains(
+            response, '<div class="grp-text"><span>View</span></div>')
         self.assertContains(
             response,
-            '<a href="{}" target="_blank">View</a>'.format(self.license1.get_absolute_url()),
+            '<a href="{}" target="_blank">View</a>'.format(
+                self.license1.get_absolute_url()),
         )
         # Details view
         url = self.license1.get_admin_url()
@@ -1530,7 +1607,8 @@ class LicenseAdminViewsTestCase(TestCase):
         )
         self.assertContains(
             response,
-            '<a href="{}?_changelist_filters=q%3Dlicense1">Annotations</a>'.format(annotation_url),
+            '<a href="{}?_changelist_filters=q%3Dlicense1">Annotations</a>'.format(
+                annotation_url),
         )
         self.assertContains(
             response,
@@ -1542,7 +1620,8 @@ class LicenseAdminViewsTestCase(TestCase):
     def test_admin_license_changelist_get_list_display_hide_display_links(self):
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_changelist")
-        copied_license = copy_object(self.license1, self.other_dataspace, self.user)
+        copied_license = copy_object(
+            self.license1, self.other_dataspace, self.user)
 
         expected1 = 'class="column-changelist_view_on_site"'
         expected2 = self.license1.get_admin_url()
@@ -1581,20 +1660,23 @@ class LicenseAdminViewsTestCase(TestCase):
 
         copy_url = reverse("admin:license_library_license_copy")
         self.assertContains(
-            response, "{}?ids={}&{}=1".format(copy_url, self.license1.id, IS_POPUP_VAR)
+            response, "{}?ids={}&{}=1".format(
+                copy_url, self.license1.id, IS_POPUP_VAR)
         )
 
     def test_license_admin_changeform_views_key_is_readonly(self):
         self.client.login(username="nexb_user", password="t3st")
         url = self.license1.get_admin_url()
         response = self.client.get(url)
-        expected = '<div class="grp-readonly">{}</div>'.format(self.license1.key)
+        expected = '<div class="grp-readonly">{}</div>'.format(
+            self.license1.key)
         self.assertContains(response, expected)
 
     def test_license_profile_changeform_assigned_tags_value_update(self):
         self.client.login(username="nexb_user", password="t3st")
         url = self.license_profile1.get_admin_url()
-        self.assertEqual(2, self.license_profile1.licenseprofileassignedtag_set.count())
+        self.assertEqual(
+            2, self.license_profile1.licenseprofileassignedtag_set.count())
         self.assertTrue(self.license_profile_assigned_tag1.value)
         self.assertTrue(self.license_profile_assigned_tag2.value)
 
@@ -1648,7 +1730,8 @@ class LicenseAdminViewsTestCase(TestCase):
             dataspace=self.nexb_dataspace,
         )
 
-        url = reverse("admin:license_library_licensetag_change", args=[self.license_tag1.id])
+        url = reverse("admin:license_library_licensetag_change",
+                      args=[self.license_tag1.id])
         response = self.client.get(url)
         expected = '<div class="grp-td">{}</div>'.format(
             self.license1.get_admin_link(target="_blank")
@@ -1656,11 +1739,13 @@ class LicenseAdminViewsTestCase(TestCase):
         self.assertContains(response, expected)
         expected = '<div class="grp-td"><img src="/static/img/icon-yes.png" alt="True"></div>'
         self.assertContains(response, expected)
-        self.assertContains(response, "&ldquo;{}&rdquo;".format(annotation.quote))
+        self.assertContains(
+            response, "&ldquo;{}&rdquo;".format(annotation.quote))
 
     def test_license_admin_form_prevent_changing_full_text_when_annotations_exists(self):
         self.client.login(username="nexb_user", password="t3st")
-        url = reverse("admin:license_library_license_change", args=[self.license1.pk])
+        url = reverse("admin:license_library_license_change",
+                      args=[self.license1.pk])
 
         annotation = LicenseAnnotation.objects.create(
             license=self.license1,
@@ -1698,7 +1783,8 @@ class LicenseAdminViewsTestCase(TestCase):
             ]
         }
         response = self.client.post(url, data)
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         annotation.delete()
         response = self.client.post(url, data)
@@ -1706,7 +1792,8 @@ class LicenseAdminViewsTestCase(TestCase):
 
     def test_license_full_text_normalize_newlines(self):
         self.client.login(username="nexb_user", password="t3st")
-        url = reverse("admin:license_library_license_change", args=[self.license1.pk])
+        url = reverse("admin:license_library_license_change",
+                      args=[self.license1.pk])
 
         data = {
             "key": self.license1.key,
@@ -1740,7 +1827,8 @@ class LicenseAdminViewsTestCase(TestCase):
 
     def test_license_spdx_license_key_validation(self):
         self.client.login(username="nexb_user", password="t3st")
-        url = reverse("admin:license_library_license_change", args=[self.license1.pk])
+        url = reverse("admin:license_library_license_change",
+                      args=[self.license1.pk])
 
         data = {
             "key": self.license1.key,
@@ -1757,7 +1845,8 @@ class LicenseAdminViewsTestCase(TestCase):
 
         data["spdx_license_key"] = "spdx_key_with_underscore"
         response = self.client.post(url, data)
-        expected = [["Enter a valid value consisting of letters, numbers, dots or hyphens."]]
+        expected = [
+            ["Enter a valid value consisting of letters, numbers, dots or hyphens."]]
         self.assertEqual(expected, response.context["errors"])
 
         data["spdx_license_key"] = "key"
@@ -1781,7 +1870,8 @@ class LicenseAdminViewsTestCase(TestCase):
         self.license2.save()
         data["spdx_license_key"] = self.license2.spdx_license_key
         response = self.client.post(url, data)
-        expected = [["License with this Dataspace and SPDX short identifier already exists."]]
+        expected = [
+            ["License with this Dataspace and SPDX short identifier already exists."]]
         self.assertEqual(expected, response.context["errors"])
 
 
@@ -1793,7 +1883,8 @@ class LicenseChoiceAdminTestCase(TestCase):
 
     def test_license_choice_admin_changelist_view(self):
         self.client.login(username="super_user", password="secret")
-        changelist_url = reverse("admin:license_library_licensechoice_changelist")
+        changelist_url = reverse(
+            "admin:license_library_licensechoice_changelist")
 
         LicenseChoice.objects.create(
             from_expression="bsd", to_expression="mit", dataspace=self.dataspace

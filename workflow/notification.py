@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -127,7 +127,8 @@ def request_slack_payload(req, created):
     if req.priority:
         fields.append(make_field_dict("Priority", f"{req.priority}"))
     if req.product_context:
-        fields.append(make_field_dict("Product context", f"{req.product_context}"))
+        fields.append(make_field_dict(
+            "Product context", f"{req.product_context}"))
     if req.content_object:
         content_object_link = (
             f"<{site_url}{req.content_object.get_absolute_url()}|{req.content_object}>"

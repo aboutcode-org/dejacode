@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -176,7 +176,8 @@ class LicenseExpressionMixin:
         template = '<a href="#license_{symbol.key}">{symbol.short_name}</a>'
         return self.get_license_expression(template)
 
-    license_expression_attribution = cached_property(get_license_expression_attribution)
+    license_expression_attribution = cached_property(
+        get_license_expression_attribution)
 
     def get_license_expression_linked(self):
         return self.get_license_expression(as_link=True)
@@ -184,7 +185,8 @@ class LicenseExpressionMixin:
     license_expression_linked = cached_property(get_license_expression_linked)
 
     def get_license_expression_linked_with_policy(self):
-        license_expression = self.get_license_expression(as_link=True, show_policy=True)
+        license_expression = self.get_license_expression(
+            as_link=True, show_policy=True)
         if license_expression:
             return format_html('<span class="license-expression">{}</span>', license_expression)
 
@@ -218,7 +220,8 @@ class LicenseExpressionMixin:
             return
 
         try:
-            expression_as_spdx = get_expression_as_spdx(expression, self.dataspace)
+            expression_as_spdx = get_expression_as_spdx(
+                expression, self.dataspace)
         except ExpressionError as e:
             return str(e)
 
@@ -384,7 +387,8 @@ def get_cyclonedx_properties(instance):
         "notice_text",
     ]
     properties = [
-        cyclonedx_model.Property(name=f"{property_prefix}:{field_name}", value=value)
+        cyclonedx_model.Property(
+            name=f"{property_prefix}:{field_name}", value=value)
         for field_name in property_fields
         if (value := getattr(instance, field_name, None)) not in EMPTY_VALUES
     ]
@@ -471,7 +475,8 @@ class URLFieldsMixin(models.Model):
         _("Code view URL"),
         max_length=1024,
         blank=True,
-        help_text=_("A URL that allows you to browse and view the source code online."),
+        help_text=_(
+            "A URL that allows you to browse and view the source code online."),
     )
 
     bug_tracking_url = models.URLField(
@@ -588,7 +593,8 @@ class DefaultOnAdditionFieldMixin(models.Model):
         been set on the instance yet.
         """
         if self.default_on_addition:
-            qs = self.__class__.objects.get_default_on_addition_qs(self.dataspace)
+            qs = self.__class__.objects.get_default_on_addition_qs(
+                self.dataspace)
             qs.update(default_on_addition=False)
         super().save(*args, **kwargs)
 
@@ -715,7 +721,8 @@ def component_mixin_factory(verbose_name):
 
         description = models.TextField(
             blank=True,
-            help_text=_("Free form description, preferably as provided by the author(s)."),
+            help_text=_(
+                "Free form description, preferably as provided by the author(s)."),
         )
 
         copyright = models.TextField(
@@ -768,7 +775,8 @@ def component_mixin_factory(verbose_name):
 
         class Meta:
             abstract = True
-            unique_together = (("dataspace", "name", "version"), ("dataspace", "uuid"))
+            unique_together = (
+                ("dataspace", "name", "version"), ("dataspace", "uuid"))
             ordering = ("name", "version")
 
         def __str__(self):
@@ -826,7 +834,8 @@ def component_mixin_factory(verbose_name):
             if expression_spdx:
                 # Using the LicenseExpression directly as the make_with_expression method
                 # does not support the "LicenseRef-" keys.
-                licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
+                licenses = [cyclonedx_license.LicenseExpression(
+                    value=expression_spdx)]
 
             if self.__class__.__name__ == "Product":
                 component_type = cyclonedx_component.ComponentType.APPLICATION
@@ -855,7 +864,8 @@ BaseComponentMixin = component_mixin_factory("component")
 class ComponentQuerySet(DataspacedQuerySet):
     def with_has_hierarchy(self):
         subcomponents = Subcomponent.objects.filter(
-            models.Q(child_id=OuterRef("pk")) | models.Q(parent_id=OuterRef("pk"))
+            models.Q(child_id=OuterRef("pk")) | models.Q(
+                parent_id=OuterRef("pk"))
         )
         return self.annotate(has_hierarchy=Exists(subcomponents))
 
@@ -901,7 +911,8 @@ class Component(
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        help_text=_("A component type provides a label to filter and sort components."),
+        help_text=_(
+            "A component type provides a label to filter and sort components."),
     )
 
     approval_reference = models.CharField(
@@ -1131,7 +1142,8 @@ class Component(
 
     legal_reviewed = models.BooleanField(
         default=False,
-        help_text=_("This component definition has been reviewed by the organization legal team."),
+        help_text=_(
+            "This component definition has been reviewed by the organization legal team."),
     )
 
     DISTRIBUTION_FORMATS_CHOICES = (
@@ -1145,7 +1157,8 @@ class Component(
         max_length=30,
         default="",
         choices=DISTRIBUTION_FORMATS_CHOICES,
-        help_text=_("The software distribution formats allowed by the component license."),
+        help_text=_(
+            "The software distribution formats allowed by the component license."),
     )
 
     acceptable_linkages = ArrayField(
@@ -1181,7 +1194,8 @@ class Component(
 
     approved_community_interaction = models.TextField(
         blank=True,
-        help_text=_("The community interaction allowed with this software project."),
+        help_text=_(
+            "The community interaction allowed with this software project."),
     )
 
     licenses = models.ManyToManyField(
@@ -1215,7 +1229,8 @@ class Component(
 
     class Meta(BaseComponentMixin.Meta):
         permissions = (
-            ("change_usage_policy_on_component", "Can change the usage_policy of component"),
+            ("change_usage_policy_on_component",
+             "Can change the usage_policy of component"),
         )
 
     @property
@@ -1279,7 +1294,8 @@ class Component(
         computed_level = self.compute_completion_level()
 
         if self.completion_level != computed_level:
-            Component.objects.filter(pk=self.pk).update(completion_level=computed_level)
+            Component.objects.filter(pk=self.pk).update(
+                completion_level=computed_level)
             msg = f"Updated completion_level for Component {self.pk}, new value: {computed_level}"
             logger.debug(msg)
             return True
@@ -1382,7 +1398,8 @@ class ComponentRelationshipMixin(models.Model):
 
     is_deployed = models.BooleanField(
         default=True,
-        help_text=_("Indicates if the component is deployed in this context. Default = True."),
+        help_text=_(
+            "Indicates if the component is deployed in this context. Default = True."),
     )
 
     is_modified = models.BooleanField(
@@ -1434,7 +1451,8 @@ class ComponentRelationshipMixin(models.Model):
         this relationship.
         """
         return "\n\n".join(
-            [license.standard_notice for license in self.licenses.all() if license.standard_notice]
+            [license.standard_notice for license in self.licenses.all()
+             if license.standard_notice]
         )
 
 
@@ -1527,7 +1545,8 @@ class Subcomponent(
         if child_policy:
             return child_policy.get_associated_policy_to_model(self)
 
-    policy_from_child_component = cached_property(get_policy_from_child_component)
+    policy_from_child_component = cached_property(
+        get_policy_from_child_component)
 
 
 class ComponentAssignedLicense(DataspacedModel):
@@ -1608,7 +1627,8 @@ class ComponentKeyword(DataspacedModel):
 
     description = models.TextField(
         blank=True,
-        help_text=_("Additional remarks about the intention and purpose of a Keyword value."),
+        help_text=_(
+            "Additional remarks about the intention and purpose of a Keyword value."),
     )
 
     class Meta:
@@ -1619,7 +1639,8 @@ class ComponentKeyword(DataspacedModel):
         return self.label
 
 
-PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
+PACKAGE_URL_FIELDS = ["type", "namespace",
+                      "name", "version", "qualifiers", "subpath"]
 
 
 class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
@@ -1630,7 +1651,8 @@ class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
         This value in used in the Package list for sorting by Identifier.
         """
         return self.annotate(
-            sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
+            sortable_identifier=Concat(
+                *PACKAGE_URL_FIELDS, "filename", output_field=CharField())
         )
 
     def only_rendering_fields(self):
@@ -1731,12 +1753,14 @@ class Package(
         db_index=True,
         max_length=50,
         blank=True,
-        help_text=_("The primary programming language associated with the package."),
+        help_text=_(
+            "The primary programming language associated with the package."),
     )
 
     description = models.TextField(
         blank=True,
-        help_text=_("Free form description, preferably as provided by the author(s)."),
+        help_text=_(
+            "Free form description, preferably as provided by the author(s)."),
     )
 
     project = models.CharField(
@@ -1826,7 +1850,8 @@ class Package(
     datasource_id = models.CharField(
         max_length=64,
         blank=True,
-        help_text=_("The identifier for the datafile handler used to obtain this package."),
+        help_text=_(
+            "The identifier for the datafile handler used to obtain this package."),
     )
 
     file_references = models.JSONField(
@@ -1843,7 +1868,8 @@ class Package(
     parties = models.JSONField(
         default=list,
         blank=True,
-        help_text=_("A list of parties such as a person, project or organization."),
+        help_text=_(
+            "A list of parties such as a person, project or organization."),
     )
 
     licenses = models.ManyToManyField(
@@ -1882,7 +1908,8 @@ class Package(
             models.Index(fields=["sha512"]),
         ]
         permissions = (
-            ("change_usage_policy_on_package", "Can change the usage_policy of package"),
+            ("change_usage_policy_on_package",
+             "Can change the usage_policy of package"),
         )
 
     def __str__(self):
@@ -1919,7 +1946,8 @@ class Package(
     def plain_package_url(self):
         """Package URL without the qualifiers and subpath fields."""
         try:
-            package_url = PackageURL(self.type, self.namespace, self.name, self.version)
+            package_url = PackageURL(
+                self.type, self.namespace, self.name, self.version)
         except ValueError:
             return ""
         return str(package_url)
@@ -2021,9 +2049,11 @@ class Package(
             "filename",
         ]
 
-        all_has_values = all(getattr(self, field_name, None) for field_name in collect_fields)
+        all_has_values = all(getattr(self, field_name, None)
+                             for field_name in collect_fields)
         if all_has_values and not force_update:
-            tasks_logger.info("Size, MD5, SHA1, SH256, SHA512, and filename values already set.")
+            tasks_logger.info(
+                "Size, MD5, SHA1, SH256, SHA512, and filename values already set.")
             return
 
         try:
@@ -2041,7 +2071,8 @@ class Package(
 
         if save:
             self.save(update_fields=update_fields)
-            tasks_logger.info(f'Package field(s) updated: {", ".join(update_fields)}')
+            tasks_logger.info(
+                f'Package field(s) updated: {", ".join(update_fields)}')
 
         return update_fields
 
@@ -2054,7 +2085,8 @@ class Package(
         When `history` is True, History entry will be created along updating the
         Package URL.
         """
-        skip_conditions = [self.package_url and not overwrite, not self.download_url]
+        skip_conditions = [
+            self.package_url and not overwrite, not self.download_url]
         if any(skip_conditions):
             return
 
@@ -2071,7 +2103,8 @@ class Package(
             Package.objects.filter(pk=self.pk).update(**package_url_dict)
 
         if history:
-            History.log_change(user, self, message="Set Package URL from Download URL")
+            History.log_change(
+                user, self, message="Set Package URL from Download URL")
 
         return package_url
 
@@ -2153,7 +2186,7 @@ class Package(
     def as_about(self, extra=None):
         """
         Return ABOUT file data as a dict.
-        https://github.com/nexB/aboutcode-toolkit/blob/develop/SPECIFICATION.rst
+        https://github.com/aboutcode-org/aboutcode-toolkit/blob/develop/SPECIFICATION.rst
 
         Optionally provided `extra` dict will be added to the returned data.
 
@@ -2214,7 +2247,8 @@ class Package(
             notice_text = component.notice_text
 
         if notice_text:
-            about_files.append((self.notice_file_name, normalize_newlines(notice_text)))
+            about_files.append(
+                (self.notice_file_name, normalize_newlines(notice_text)))
             extra["notice_file"] = self.notice_file_name
 
         licenses = []
@@ -2300,7 +2334,8 @@ class Package(
         if expression_spdx:
             # Using the LicenseExpression directly as the make_with_expression method
             # does not support the "LicenseRef-" keys.
-            licenses = [cyclonedx_license.LicenseExpression(value=expression_spdx)]
+            licenses = [cyclonedx_license.LicenseExpression(
+                value=expression_spdx)]
 
         hash_fields = {
             "md5": cyclonedx_model.HashAlgorithm.MD5,
@@ -2376,14 +2411,16 @@ class Package(
         if is_purl_str(url):
             download_url = purl2url.get_download_url(url)
             package_url = PackageURL.from_string(url)
-            existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
+            existing_packages = scoped_packages_qs.for_package_url(
+                url, exact_match=True)
         else:
             download_url = url
             package_url = url2purl.get_purl(url)
             existing_packages = scoped_packages_qs.filter(download_url=url)
 
         if existing_packages:
-            package_links = [package.get_absolute_link() for package in existing_packages]
+            package_links = [package.get_absolute_link()
+                             for package in existing_packages]
             raise PackageAlreadyExistsWarning(
                 f"{url} already exists in your Dataspace as {', '.join(package_links)}"
             )
@@ -2450,7 +2487,8 @@ class Package(
             if max_request_call and index >= max_request_call:
                 return
 
-            packages_data = PurlDB(user.dataspace).find_packages(payload, timeout)
+            packages_data = PurlDB(
+                user.dataspace).find_packages(payload, timeout)
             if packages_data:
                 return packages_data
 

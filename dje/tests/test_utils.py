@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -103,13 +103,15 @@ class DJEUtilsTestCase(TestCase):
             "nexb_user", "test@test.com", "t3st", nexb_dataspace
         )
 
-        package1 = Package.objects.create(filename="package1", dataspace=nexb_dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=nexb_dataspace)
 
         copied_package = copy_object(package1, other_dataspace, nexb_user)
         copied_package.filename = "new name"
         copied_package.save()
 
-        compare_diff, compare_diff_m2m = get_object_compare_diff(package1, copied_package)
+        compare_diff, compare_diff_m2m = get_object_compare_diff(
+            package1, copied_package)
         opts = Package._meta
         expected = {
             opts.get_field("filename"): ["package1", "new name"],
@@ -155,7 +157,8 @@ class DJEUtilsTestCase(TestCase):
             "other_user", "test2@test.com", "t3st", other_dataspace
         )
 
-        package1 = Package.objects.create(filename="package1", dataspace=nexb_dataspace)
+        package1 = Package.objects.create(
+            filename="package1", dataspace=nexb_dataspace)
         package1.created_by = nexb_user
         package1.last_modified_by = nexb_user
         package1.save()
@@ -164,16 +167,20 @@ class DJEUtilsTestCase(TestCase):
         self.assertEqual(other_user, copied.created_by)
         self.assertEqual(other_user, copied.last_modified_by)
 
-        compare_diff, compare_diff_m2m = get_object_compare_diff(package1, copied)
+        compare_diff, compare_diff_m2m = get_object_compare_diff(
+            package1, copied)
 
         self.assertEqual({}, compare_diff)
         self.assertEqual({}, compare_diff_m2m)
 
     def test_dje_utils_get_duplicates(self):
         nexb_dataspace = Dataspace.objects.create(name="nexB")
-        Owner.objects.create(name="owner1", notes="a", dataspace=nexb_dataspace)
-        Owner.objects.create(name="OwNer1", notes="a", dataspace=nexb_dataspace)
-        Owner.objects.create(name="owner2", notes="b", dataspace=nexb_dataspace)
+        Owner.objects.create(name="owner1", notes="a",
+                             dataspace=nexb_dataspace)
+        Owner.objects.create(name="OwNer1", notes="a",
+                             dataspace=nexb_dataspace)
+        Owner.objects.create(name="owner2", notes="b",
+                             dataspace=nexb_dataspace)
         queryset = Owner.objects.scope_by_name("nexB")
 
         self.assertEqual([], get_duplicates(queryset, "name"))
@@ -183,13 +190,19 @@ class DJEUtilsTestCase(TestCase):
     def test_dje_utils_merge_relations(self):
         nexb_dataspace = Dataspace.objects.create(name="nexB")
         alternate_dataspace = Dataspace.objects.create(name="Alternate")
-        original = Owner.objects.create(name="OwNer1", dataspace=nexb_dataspace)
-        duplicate = Owner.objects.create(name="owner1", dataspace=nexb_dataspace)
+        original = Owner.objects.create(
+            name="OwNer1", dataspace=nexb_dataspace)
+        duplicate = Owner.objects.create(
+            name="owner1", dataspace=nexb_dataspace)
 
-        component1 = Component.objects.create(name="c1", owner=duplicate, dataspace=nexb_dataspace)
-        license1 = License.objects.create(key="l1", owner=duplicate, dataspace=nexb_dataspace)
-        external_source = ExternalSource.objects.create(label="Source1", dataspace=nexb_dataspace)
-        er1 = ExternalReference.objects.create_for_content_object(duplicate, external_source, "id")
+        component1 = Component.objects.create(
+            name="c1", owner=duplicate, dataspace=nexb_dataspace)
+        license1 = License.objects.create(
+            key="l1", owner=duplicate, dataspace=nexb_dataspace)
+        external_source = ExternalSource.objects.create(
+            label="Source1", dataspace=nexb_dataspace)
+        er1 = ExternalReference.objects.create_for_content_object(
+            duplicate, external_source, "id")
 
         self.assertEqual(0, original.component_set.count())
         self.assertEqual(0, original.license_set.count())
@@ -216,7 +229,8 @@ class DJEUtilsTestCase(TestCase):
         with self.assertRaises(AssertionError):
             merge_relations(component1, license1)
 
-        alternate_owner = Owner.objects.create(name="OwNer1", dataspace=alternate_dataspace)
+        alternate_owner = Owner.objects.create(
+            name="OwNer1", dataspace=alternate_dataspace)
         with self.assertRaises(AssertionError):
             merge_relations(original, alternate_owner)
 
@@ -339,7 +353,8 @@ class DJEUtilsTestCase(TestCase):
         ]
 
         for test in test_cases:
-            object_list = [Component(name="a", version=version) for version in test["input"]]
+            object_list = [Component(name="a", version=version)
+                           for version in test["input"]]
 
             results = [
                 component.version
@@ -357,26 +372,32 @@ class DJEUtilsTestCase(TestCase):
         query_dict = QueryDict(query_string)
 
         expected = "q=ORBit2&primary_language=C&primary_language=ABC&keywords=Library"
-        self.assertEqual(expected, remove_field_from_query_dict(query_dict, "not_existing"))
+        self.assertEqual(expected, remove_field_from_query_dict(
+            query_dict, "not_existing"))
 
         expected = "primary_language=C&primary_language=ABC&keywords=Library"
-        self.assertEqual(expected, remove_field_from_query_dict(query_dict, "q"))
+        self.assertEqual(
+            expected, remove_field_from_query_dict(query_dict, "q"))
 
         expected = "q=ORBit2&keywords=Library"
-        self.assertEqual(expected, remove_field_from_query_dict(query_dict, "primary_language"))
+        self.assertEqual(expected, remove_field_from_query_dict(
+            query_dict, "primary_language"))
 
         expected = "q=ORBit2&keywords=Library"
         self.assertEqual(
-            expected, remove_field_from_query_dict(query_dict, "primary_language", "bad_value")
+            expected, remove_field_from_query_dict(
+                query_dict, "primary_language", "bad_value")
         )
 
         expected = "q=ORBit2&keywords=Library&primary_language=C"
         self.assertEqual(
-            expected, remove_field_from_query_dict(query_dict, "primary_language", "ABC")
+            expected, remove_field_from_query_dict(
+                query_dict, "primary_language", "ABC")
         )
 
         expected = "q=ORBit2&keywords=Library"
-        self.assertEqual(expected, remove_field_from_query_dict(query_dict, "primary_language", ""))
+        self.assertEqual(expected, remove_field_from_query_dict(
+            query_dict, "primary_language", ""))
 
     def test_database_re_escape(self):
         self.assertEqual("Araújo", database_re_escape("Araújo"))
@@ -395,7 +416,8 @@ class DJEUtilsTestCase(TestCase):
         self.assertIsNone(resolver)
 
         nexb_dataspace = Dataspace.objects.create(name="nexB")
-        component1 = Component.objects.create(name="c1", dataspace=nexb_dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=nexb_dataspace)
         request = factory.request(HTTP_REFERER=component1.get_absolute_url())
         resolver = get_referer_resolver(request)
         self.assertEqual(ResolverMatch, type(resolver))
@@ -407,7 +429,8 @@ class DJEUtilsTestCase(TestCase):
         self.assertIsNone(instance)
 
         nexb_dataspace = Dataspace.objects.create(name="nexB")
-        component1 = Component.objects.create(name="c1", dataspace=nexb_dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=nexb_dataspace)
         resolver = resolve(component1.get_absolute_url())
         instance = get_instance_from_resolver(resolver)
         self.assertIsNone(instance)
@@ -428,7 +451,8 @@ class DJEUtilsTestCase(TestCase):
         self.assertIsNone(resolver)
 
         nexb_dataspace = Dataspace.objects.create(name="nexB")
-        component1 = Component.objects.create(name="c1", dataspace=nexb_dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=nexb_dataspace)
         request = factory.request(HTTP_REFERER=component1.get_absolute_url())
         instance = get_instance_from_referer(request)
         self.assertIsNone(instance)
@@ -456,7 +480,8 @@ class DJEUtilsTestCase(TestCase):
 
     def test_utils_get_zipfile(self):
         files = [
-            ("/ibus-/hangul-1.5.0./tar.gz.ABOUT", "about_resource: ibus-/hangul-1.5.0.//tar.gz\n"),
+            ("/ibus-/hangul-1.5.0./tar.gz.ABOUT",
+             "about_resource: ibus-/hangul-1.5.0.//tar.gz\n"),
             ("6rd-init_1.0.tar.gz.NOTICE", "Copyright(c) 6rd Project"),
         ]
 

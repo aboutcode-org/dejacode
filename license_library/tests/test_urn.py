@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -34,7 +34,8 @@ class LicenseLibraryURNTestCase(TestCase):
         self.owner1 = Owner.objects.create(
             name="CCAD - Combined Conditional Access Development, LLC.", dataspace=self.dataspace1
         )
-        self.owner2 = Owner.objects.create(name="Organization2", dataspace=self.dataspace1)
+        self.owner2 = Owner.objects.create(
+            name="Organization2", dataspace=self.dataspace1)
         self.license1 = License.objects.create(
             key="apache-2.0",
             name="License1",
@@ -49,8 +50,10 @@ class LicenseLibraryURNTestCase(TestCase):
 
     def test_urn_resolve(self):
         # Using the output from Object.urn
-        self.assertEqual(self.license1, urn_resolver.resolve(self.license1.urn, self.dataspace1))
-        self.assertEqual(self.owner1, urn_resolver.resolve(self.owner1.urn, self.dataspace1))
+        self.assertEqual(self.license1, urn_resolver.resolve(
+            self.license1.urn, self.dataspace1))
+        self.assertEqual(self.owner1, urn_resolver.resolve(
+            self.owner1.urn, self.dataspace1))
 
         # We are testing the several steps of validation for a given URN
         with self.assertRaises(urn.URNValidationError):
@@ -59,11 +62,13 @@ class LicenseLibraryURNTestCase(TestCase):
             urn_resolver.resolve("url:djc:license:apache-2.0", self.dataspace1)
 
         with self.assertRaises(urn.URNValidationError):
-            urn_resolver.resolve("urn:dje:not-a-model:apache-2.0", self.other_dataspace)
+            urn_resolver.resolve(
+                "urn:dje:not-a-model:apache-2.0", self.other_dataspace)
 
         urn_object_does_not_exist = "urn:dje:license:apache-1337.0"
         with self.assertRaises(ObjectDoesNotExist):
-            urn_resolver.resolve(urn_object_does_not_exist, self.other_dataspace)
+            urn_resolver.resolve(urn_object_does_not_exist,
+                                 self.other_dataspace)
 
     def test_license_urn_resolve_view(self):
         self.client.login(username="test", password="t3st")

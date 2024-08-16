@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -40,7 +40,8 @@ class LicenseCopyTestCase(TestCase):
         self.user = get_user_model().objects.create_superuser(
             "nexb_user", "test@test.com", "t3st", self.nexb_dataspace
         )
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.nexb_dataspace)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.nexb_dataspace)
         self.target_owner = Owner.objects.create(
             name="Target Organization", dataspace=self.dataspace_target
         )
@@ -112,7 +113,8 @@ class LicenseCopyTestCase(TestCase):
             dataspace=self.dataspace_target,
         )
         # Not the same UUID on purpose! origin of the conflict
-        LicenseStyle.objects.create(name="style1", dataspace=self.dataspace_target)
+        LicenseStyle.objects.create(
+            name="style1", dataspace=self.dataspace_target)
 
         # Copy self.license1 in the target
         url = reverse("admin:license_library_license_copy")
@@ -133,7 +135,8 @@ class LicenseCopyTestCase(TestCase):
         self.assertEqual(2, LicenseStyle.objects.count())
 
     def test_copy_license_common_2(self):
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
 
         self.assertEqual(4, License.objects.count())
         self.assertEqual(2, LicenseCategory.objects.count())
@@ -141,7 +144,8 @@ class LicenseCopyTestCase(TestCase):
         self.assertEqual(2, LicenseProfile.objects.count())
         self.assertEqual("style1", copied_license.license_style.name)
         self.assertEqual(
-            self.license1.name, License.objects.get(dataspace=self.dataspace_target).name
+            self.license1.name, License.objects.get(
+                dataspace=self.dataspace_target).name
         )
 
         history = History.objects.get_for_object(copied_license).get()
@@ -156,7 +160,8 @@ class LicenseCopyTestCase(TestCase):
             str(License.objects.get(dataspace=self.dataspace_target).category.label),
         )
         self.assertNotEqual(
-            self.license1.owner, License.objects.get(dataspace=self.dataspace_target).owner
+            self.license1.owner, License.objects.get(
+                dataspace=self.dataspace_target).owner
         )
         self.assertEqual(
             self.license1.owner.name,
@@ -164,25 +169,30 @@ class LicenseCopyTestCase(TestCase):
         )
         self.assertEqual(
             self.dataspace_target,
-            License.objects.get(dataspace=self.dataspace_target).owner.dataspace,
+            License.objects.get(
+                dataspace=self.dataspace_target).owner.dataspace,
         )
         self.assertEqual(
             str(self.license1.license_style.name),
-            str(License.objects.get(dataspace=self.dataspace_target).license_style.name),
+            str(License.objects.get(
+                dataspace=self.dataspace_target).license_style.name),
         )
         self.assertEqual(
             str(self.license1.license_profile.name),
-            str(License.objects.get(dataspace=self.dataspace_target).license_profile.name),
+            str(License.objects.get(
+                dataspace=self.dataspace_target).license_profile.name),
         )
         self.assertEqual(
-            self.license1.full_text, License.objects.get(dataspace=self.dataspace_target).full_text
+            self.license1.full_text, License.objects.get(
+                dataspace=self.dataspace_target).full_text
         )
         self.assertEqual(
             self.license1.homepage_url,
             License.objects.get(dataspace=self.dataspace_target).homepage_url,
         )
         self.assertEqual(
-            self.license1.text_urls, License.objects.get(dataspace=self.dataspace_target).text_urls
+            self.license1.text_urls, License.objects.get(
+                dataspace=self.dataspace_target).text_urls
         )
 
     def test_copy_license_foreign_keys_no_exclude(self):
@@ -196,12 +206,14 @@ class LicenseCopyTestCase(TestCase):
         )
         # Do not exclude anything on purpose
         exclude = {License: []}
-        copied_object = copy_object(license, self.dataspace_target, self.user, exclude=exclude)
+        copied_object = copy_object(
+            license, self.dataspace_target, self.user, exclude=exclude)
 
         self.assertEqual(license.uuid, copied_object.uuid)
         # The FK objects have been copied in the target too.
         self.assertEqual(self.dataspace_target, copied_object.owner.dataspace)
-        self.assertEqual(self.dataspace_target, copied_object.license_status.dataspace)
+        self.assertEqual(self.dataspace_target,
+                         copied_object.license_status.dataspace)
 
     def test_copy_license(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -235,7 +247,8 @@ class LicenseCopyTestCase(TestCase):
             "form-0-ct": ContentType.objects.get_for_model(LicenseAssignedTag).pk,
         }
         self.client.post(url, data)
-        self.assertEqual(3, License.objects.scope(self.dataspace_target).count())
+        self.assertEqual(3, License.objects.scope(
+            self.dataspace_target).count())
 
     def test_copy_license_2(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -269,7 +282,8 @@ class LicenseCopyTestCase(TestCase):
             "form-0-ct": ContentType.objects.get_for_model(LicenseAssignedTag).pk,
         }
         self.client.post(url, data)
-        self.assertEqual(3, License.objects.scope(self.dataspace_target).count())
+        self.assertEqual(3, License.objects.scope(
+            self.dataspace_target).count())
 
     def test_copy_license_5(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -296,7 +310,8 @@ class LicenseCopyTestCase(TestCase):
             "form-0-ct": ContentType.objects.get_for_model(LicenseAssignedTag).pk,
         }
         self.client.post(url, data)
-        self.assertEqual(2, License.objects.scope(self.dataspace_target).count())
+        self.assertEqual(2, License.objects.scope(
+            self.dataspace_target).count())
 
     def test_update_license_1(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -336,7 +351,8 @@ class LicenseCopyTestCase(TestCase):
         )
         # The license status has been updated as it's not part of the update
         # exclude
-        self.assertEqual(self.license1.license_status.uuid, updated_license.license_status.uuid)
+        self.assertEqual(self.license1.license_status.uuid,
+                         updated_license.license_status.uuid)
         self.assertEqual("style1", updated_license.license_style.name)
 
         history_license = History.objects.get_for_object(updated_license)
@@ -344,8 +360,10 @@ class LicenseCopyTestCase(TestCase):
         expected_message = 'Updated object from "{}" dataspace to "{}" dataspace.'.format(
             self.nexb_dataspace, self.dataspace_target.name
         )
-        self.assertEqual(expected_message, history_license.latest("id").change_message)
-        self.assertEqual(History.CHANGE, history_license.latest("id").action_flag)
+        self.assertEqual(expected_message,
+                         history_license.latest("id").change_message)
+        self.assertEqual(
+            History.CHANGE, history_license.latest("id").action_flag)
 
     def test_update_license_2(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -382,7 +400,8 @@ class LicenseCopyTestCase(TestCase):
 
         # The license status has been updated as it's not part of the update
         # exclude
-        self.assertEqual(self.license1.license_status.uuid, updated_license.license_status.uuid)
+        self.assertEqual(self.license1.license_status.uuid,
+                         updated_license.license_status.uuid)
         self.assertEqual("style1", updated_license.license_style.name)
 
         history_license = History.objects.get_for_object(updated_license)
@@ -390,8 +409,10 @@ class LicenseCopyTestCase(TestCase):
         expected_message = 'Updated object from "{}" dataspace to "{}" dataspace.'.format(
             self.nexb_dataspace, self.dataspace_target.name
         )
-        self.assertEqual(expected_message, history_license.latest("id").change_message)
-        self.assertEqual(History.CHANGE, history_license.latest("id").action_flag)
+        self.assertEqual(expected_message,
+                         history_license.latest("id").change_message)
+        self.assertEqual(
+            History.CHANGE, history_license.latest("id").action_flag)
 
         self.assertEqual(4, License.objects.count())
         self.assertEqual(2, LicenseCategory.objects.count())
@@ -447,8 +468,10 @@ class LicenseCopyTestCase(TestCase):
         expected_message = 'Updated object from "{}" dataspace to "{}" dataspace.'.format(
             self.nexb_dataspace, self.dataspace_target.name
         )
-        self.assertEqual(expected_message, history_license.latest("id").change_message)
-        self.assertEqual(History.CHANGE, history_license.latest("id").action_flag)
+        self.assertEqual(expected_message,
+                         history_license.latest("id").change_message)
+        self.assertEqual(
+            History.CHANGE, history_license.latest("id").action_flag)
 
         self.assertEqual(4, License.objects.count())
         self.assertEqual(2, LicenseCategory.objects.count())
@@ -458,7 +481,8 @@ class LicenseCopyTestCase(TestCase):
 
     def test_license_compare_update_value(self):
         self.client.login(username="nexb_user", password="t3st")
-        updated_target = copy_object(self.license1, self.dataspace_target, self.user)
+        updated_target = copy_object(
+            self.license1, self.dataspace_target, self.user)
 
         # To test the case the FK to copy is None
         self.license1.category = None
@@ -498,8 +522,10 @@ class LicenseCopyTestCase(TestCase):
 
         # FK fields
         self.assertEqual(self.license1.owner.uuid, updated_target.owner.uuid)
-        self.assertEqual(self.license1.license_style.uuid, updated_target.license_style.uuid)
-        self.assertEqual(self.license1.license_profile.uuid, updated_target.license_profile.uuid)
+        self.assertEqual(self.license1.license_style.uuid,
+                         updated_target.license_style.uuid)
+        self.assertEqual(self.license1.license_profile.uuid,
+                         updated_target.license_profile.uuid)
         self.assertEqual(self.license1.owner.uuid, updated_target.owner.uuid)
         self.assertEqual(None, updated_target.category)
         # Local fields
@@ -514,7 +540,8 @@ class LicenseCopyTestCase(TestCase):
             "target": self.dataspace_target.id,
         }
         response = self.client.get(url, data, follow=True)
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
         self.assertContains(
             response, "Compare allows 1 object only. Please select 1 object to compare."
         )
@@ -527,11 +554,13 @@ class LicenseCopyTestCase(TestCase):
             "target": self.dataspace_target.id,
         }
         response = self.client.get(url, data, follow=True)
-        self.assertRedirects(response, reverse("admin:license_library_license_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:license_library_license_changelist"))
 
     def test_license_compare_views_include_preserved_filters(self):
         self.client.login(username="nexb_user", password="t3st")
-        copied_object = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_object = copy_object(
+            self.license1, self.dataspace_target, self.user)
         changelist_url = reverse("admin:license_library_license_changelist")
         compare_url = reverse("admin:license_library_license_compare")
         changelist_filters = "?o=-3"  # order by name reversed
@@ -544,10 +573,13 @@ class LicenseCopyTestCase(TestCase):
             "action": "compare_with",
         }
         # simulate selecting the action from the changelist
-        response = self.client.post(changelist_url + changelist_filters, data, follow=True)
-        redirect_url = "{}{}&ids={}".format(compare_url, preserved_filters, license_id)
+        response = self.client.post(
+            changelist_url + changelist_filters, data, follow=True)
+        redirect_url = "{}{}&ids={}".format(
+            compare_url, preserved_filters, license_id)
         self.assertRedirects(response, redirect_url)
-        expected = '<a href="{}{}">Licenses</a>'.format(changelist_url, changelist_filters)
+        expected = '<a href="{}{}">Licenses</a>'.format(
+            changelist_url, changelist_filters)
         self.assertContains(response, expected)
         expected = (
             '<input id="id__changelist_filters" name="_changelist_filters"'
@@ -565,7 +597,8 @@ class LicenseCopyTestCase(TestCase):
 
         # compare view
         response = self.client.get(redirect_url + "&target=" + target_id)
-        expected = '<a href="{}{}">Licenses</a>'.format(changelist_url, changelist_filters)
+        expected = '<a href="{}{}">Licenses</a>'.format(
+            changelist_url, changelist_filters)
         self.assertContains(response, expected)
         expected = '<a href="{}{}" target="_blank">License1 (license1)</a>'.format(
             self.license1.get_admin_url(), preserved_filters
@@ -581,7 +614,8 @@ class LicenseCopyTestCase(TestCase):
         self.assertContains(response, expected)
 
         response = self.client.post(redirect_url + "&target=" + target_id)
-        self.assertRedirects(response, "{}{}".format(changelist_url, changelist_filters))
+        self.assertRedirects(response, "{}{}".format(
+            changelist_url, changelist_filters))
 
     def test_license_copy_views_include_preserved_filters(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -597,10 +631,13 @@ class LicenseCopyTestCase(TestCase):
             "action": "copy_to",
         }
         # simulate selecting the action from the changelist
-        response = self.client.post(changelist_url + changelist_filters, data, follow=True)
-        redirect_url = "{}{}&ids={}".format(copy_url, preserved_filters, license_id)
+        response = self.client.post(
+            changelist_url + changelist_filters, data, follow=True)
+        redirect_url = "{}{}&ids={}".format(
+            copy_url, preserved_filters, license_id)
         self.assertRedirects(response, redirect_url)
-        expected = '<a href="{}{}">Licenses</a>'.format(changelist_url, changelist_filters)
+        expected = '<a href="{}{}">Licenses</a>'.format(
+            changelist_url, changelist_filters)
         self.assertContains(response, expected)
         expected = (
             '<input id="id__changelist_filters" name="_changelist_filters"'
@@ -614,7 +651,8 @@ class LicenseCopyTestCase(TestCase):
 
         # copy view
         response = self.client.get(redirect_url + "&target=" + target_id)
-        expected = '<a href="{}{}">Licenses</a>'.format(changelist_url, changelist_filters)
+        expected = '<a href="{}{}">Licenses</a>'.format(
+            changelist_url, changelist_filters)
         self.assertContains(response, expected)
         expected = '<a href="{}{}">License1 (license1)</a>'.format(
             self.license1.get_admin_url(), preserved_filters
@@ -633,7 +671,8 @@ class LicenseCopyTestCase(TestCase):
             "form-TOTAL_FORMS": 0,
             "form-INITIAL_FORMS": 0,
         }
-        response = self.client.post(redirect_url + "&target=" + target_id, data)
+        response = self.client.post(
+            redirect_url + "&target=" + target_id, data)
         self.assertContains(response, "Copy and update results")
         expected = '<a href="{}{}">License1 (license1) (nexB)</a>'.format(
             self.license1.get_admin_url(), preserved_filters
@@ -665,10 +704,12 @@ class LicenseCopyTestCase(TestCase):
             "form-TOTAL_FORMS": 0,
             "form-INITIAL_FORMS": 0,
         }
-        response = self.client.post(copy_url + "?{}=1".format(IS_POPUP_VAR), data=data)
+        response = self.client.post(
+            copy_url + "?{}=1".format(IS_POPUP_VAR), data=data)
         copied_license = License.objects.latest("id")
         self.assertContains(
-            response, "opener.dismissRelatedLookupPopup(window, {});".format(copied_license.id)
+            response, "opener.dismissRelatedLookupPopup(window, {});".format(
+                copied_license.id)
         )
 
     def test_obj_copy_integrity_error(self):
@@ -760,7 +801,8 @@ class LicenseCopyTestCase(TestCase):
         )
 
         # Making the update
-        updated_obj = copy_object(license1, self.dataspace_target, self.user, update=True)
+        updated_obj = copy_object(
+            license1, self.dataspace_target, self.user, update=True)
         # Let's make sure field like name are updated while excluded fields are not
         self.assertEqual(license1.name, updated_obj.name)
         self.assertNotEqual(license1.dataspace, updated_obj.dataspace)
@@ -774,7 +816,8 @@ class LicenseCopyTestCase(TestCase):
         # No m2m tags on our self.license1 at the moment
         self.assertEqual(0, self.license1.tags.count())
         # Let's copy our license in the target
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         # No m2m tags on our copied license neither
         self.assertEqual(0, copied_license.tags.count())
 
@@ -786,7 +829,8 @@ class LicenseCopyTestCase(TestCase):
             dataspace=self.nexb_dataspace,
         )
         # And copy it again with update activated
-        copy_object(self.license1, self.dataspace_target, self.user, update=True)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True)
 
         # The m2m relation and the related object were copied during the update
         copied_tag = LicenseTag.objects.get(
@@ -832,7 +876,8 @@ class LicenseCopyTestCase(TestCase):
         # Do not exclude anything on purpose, otherwise the assigned_tag.value
         # is exclude by default.
         exclude = {LicenseAssignedTag: []}
-        copy_object(self.license1, self.dataspace_target, self.user, update=True, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True, exclude=exclude)
 
         # Refresh instances
         copied_tag = LicenseTag.objects.get(
@@ -853,7 +898,8 @@ class LicenseCopyTestCase(TestCase):
         assigned_tag.save()
 
         # Copy again forcing an update
-        copy_object(self.license1, self.dataspace_target, self.user, update=True)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True)
         # Unknown value on BooleanField.null=True are never propagated to the target
         # on update.
         copied_assigned_tag = LicenseAssignedTag.objects.get(
@@ -888,8 +934,10 @@ class LicenseCopyTestCase(TestCase):
             uuid=profile_assigned_tag.uuid, dataspace=self.dataspace_target
         )
 
-        self.assertEqual(license_assigned_tag.value, copied_license_assigned_tag.value)
-        self.assertEqual(profile_assigned_tag.value, copied_profile_assigned_tag.value)
+        self.assertEqual(license_assigned_tag.value,
+                         copied_license_assigned_tag.value)
+        self.assertEqual(profile_assigned_tag.value,
+                         copied_profile_assigned_tag.value)
 
         # Changing the assigned value of the tags
         license_assigned_tag.value = False
@@ -902,7 +950,8 @@ class LicenseCopyTestCase(TestCase):
             LicenseAssignedTag: ["value"],
             LicenseProfileAssignedTag: ["value"],
         }
-        copy_object(self.license1, self.dataspace_target, self.user, update=True, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True, exclude=exclude)
         # The value on the target assigned tag was left as is, as "value" is
         # exclude on update by default.
         copied_license_assigned_tag = LicenseAssignedTag.objects.get(
@@ -941,7 +990,8 @@ class LicenseCopyTestCase(TestCase):
         )
 
         self.assertTrue(self.license1.annotations.count())
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         self.assertTrue(copied_license.annotations.count())
 
         # Nothing is excluded by default on the LicenseAnnotation Model.
@@ -950,8 +1000,10 @@ class LicenseCopyTestCase(TestCase):
         )
         self.assertEqual(annotation1.quote, copied_annotation.quote)
         self.assertEqual(annotation1.text, copied_annotation.text)
-        self.assertEqual(annotation1.range_start_offset, copied_annotation.range_start_offset)
-        self.assertEqual(annotation1.range_end_offset, copied_annotation.range_end_offset)
+        self.assertEqual(annotation1.range_start_offset,
+                         copied_annotation.range_start_offset)
+        self.assertEqual(annotation1.range_end_offset,
+                         copied_annotation.range_end_offset)
 
     def test_copy_license_one2many_exclude(self):
         assignedtag1 = LicenseAssignedTag.objects.create(
@@ -970,13 +1022,15 @@ class LicenseCopyTestCase(TestCase):
             dataspace=self.nexb_dataspace,
         )
 
-        exclude_choices = [f.name for f in LicenseAnnotation().get_exclude_candidates_fields()]
+        exclude_choices = [
+            f.name for f in LicenseAnnotation().get_exclude_candidates_fields()]
         self.assertEqual(["assigned_tag", "text", "quote"], exclude_choices)
 
         # Let's exclude all the available fields on the LicenseAnnotation
         exclude = {License: [], LicenseAnnotation: exclude_choices}
 
-        copy_object(self.license1, self.dataspace_target, self.user, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, exclude=exclude)
 
         # Nothing is excluded by default on the LicenseAnnotation Model.
         copied_annotation = LicenseAnnotation.objects.get(
@@ -986,8 +1040,10 @@ class LicenseCopyTestCase(TestCase):
         self.assertFalse(copied_annotation.text)
         self.assertFalse(copied_annotation.assigned_tag)
         # Those were not excluded
-        self.assertEqual(annotation1.range_start_offset, copied_annotation.range_start_offset)
-        self.assertEqual(annotation1.range_end_offset, copied_annotation.range_end_offset)
+        self.assertEqual(annotation1.range_start_offset,
+                         copied_annotation.range_start_offset)
+        self.assertEqual(annotation1.range_end_offset,
+                         copied_annotation.range_end_offset)
 
     def test_copy_update_license_with_annotation_and_exclude(self):
         assignedtag1 = LicenseAssignedTag.objects.create(
@@ -1030,7 +1086,8 @@ class LicenseCopyTestCase(TestCase):
 
         # Copy again with update and exclude
         exclude = {LicenseAnnotation: ["quote"]}
-        copy_object(self.license1, self.dataspace_target, self.user, update=True, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True, exclude=exclude)
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -1050,7 +1107,8 @@ class LicenseCopyTestCase(TestCase):
         )
 
         exclude = {LicenseAssignedTag: ["value"]}
-        copy_object(self.license1, self.dataspace_target, self.user, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, exclude=exclude)
         copied_assignedtag = LicenseAssignedTag.objects.get(
             uuid=assignedtag1.uuid, dataspace=self.dataspace_target
         )
@@ -1058,7 +1116,8 @@ class LicenseCopyTestCase(TestCase):
 
         # Copy again with update and no exclude on the value
         exclude = {LicenseAssignedTag: []}
-        copy_object(self.license1, self.dataspace_target, self.user, update=True, exclude=exclude)
+        copy_object(self.license1, self.dataspace_target,
+                    self.user, update=True, exclude=exclude)
         copied_assignedtag = LicenseAssignedTag.objects.get(
             uuid=assignedtag1.uuid, dataspace=self.dataspace_target
         )
@@ -1166,7 +1225,8 @@ class LicenseCopyTestCase(TestCase):
             "form-1-skip_on_copy": True,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been copied</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been copied</h2>")
 
         self.assertEqual(original_license_count + 1, License.objects.count())
         copied_license = License.objects.get(
@@ -1180,7 +1240,8 @@ class LicenseCopyTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("admin:license_library_license_copy")
 
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         self.assertEqual(0, copied_license.annotations.count())
         self.assertEqual(0, copied_license.licenseassignedtag_set.count())
 
@@ -1242,7 +1303,8 @@ class LicenseCopyTestCase(TestCase):
             "form-1-skip_on_update": True,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "<h2>The following Licenses have been updated.</h2>")
+        self.assertContains(
+            response, "<h2>The following Licenses have been updated.</h2>")
 
         copied_license.refresh_from_db()
         self.assertEqual(0, copied_license.annotations.count())
@@ -1286,7 +1348,8 @@ class LicenseCopyTestCase(TestCase):
             "form-2-ct": ContentType.objects.get_for_model(ExternalReference).pk,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "The following Licenses have been copied")
+        self.assertContains(
+            response, "The following Licenses have been copied")
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -1309,7 +1372,8 @@ class LicenseCopyTestCase(TestCase):
         copied_license.delete()
         data["form-2-skip_on_copy"] = True
         response = self.client.post(url, data)
-        self.assertContains(response, "The following Licenses have been copied")
+        self.assertContains(
+            response, "The following Licenses have been copied")
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -1320,7 +1384,8 @@ class LicenseCopyTestCase(TestCase):
         url = reverse("admin:license_library_license_copy")
         self.assertEqual(0, ExternalReference.objects.count())
 
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         self.assertEqual(0, copied_license.external_references.count())
 
         ext_source1 = ExternalSource.objects.create(
@@ -1343,7 +1408,8 @@ class LicenseCopyTestCase(TestCase):
         }
         response = self.client.get(url, data)
         self.assertContains(response, "<strong>External reference</strong>")
-        self.assertContains(response, "The Licenses identified below already exist in the")
+        self.assertContains(
+            response, "The Licenses identified below already exist in the")
 
         data = {
             "ct": str(ContentType.objects.get_for_model(License).pk),
@@ -1357,7 +1423,8 @@ class LicenseCopyTestCase(TestCase):
             "form-2-ct": ContentType.objects.get_for_model(ExternalReference).pk,
         }
         response = self.client.post(url, data)
-        self.assertContains(response, "The following Licenses have been updated.")
+        self.assertContains(
+            response, "The following Licenses have been updated.")
         copied_ext_source = ExternalSource.objects.get(
             uuid=ext_source1.uuid, dataspace=self.dataspace_target
         )
@@ -1377,7 +1444,8 @@ class LicenseCopyTestCase(TestCase):
         ext_ref1.external_id = "new id"
         ext_ref1.save()
         response = self.client.post(url, data)
-        self.assertContains(response, "The following Licenses have been updated.")
+        self.assertContains(
+            response, "The following Licenses have been updated.")
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -1386,7 +1454,8 @@ class LicenseCopyTestCase(TestCase):
         self.assertEqual(1, copied_license.external_references.count())
         # The field was updated on the ExternalReference
         self.assertEqual(
-            ext_ref1.external_id, copied_license.external_references.latest("id").external_id
+            ext_ref1.external_id, copied_license.external_references.latest(
+                "id").external_id
         )
 
         # Making sure we can skip the GenericRelation copy
@@ -1394,7 +1463,8 @@ class LicenseCopyTestCase(TestCase):
         copied_ext_source.delete()
         data["form-2-skip_on_update"] = True
         response = self.client.post(url, data)
-        self.assertContains(response, "The following Licenses have been updated")
+        self.assertContains(
+            response, "The following Licenses have been updated")
         copied_license = License.objects.get(
             uuid=self.license1.uuid, dataspace=self.dataspace_target
         )
@@ -1423,17 +1493,21 @@ class LicenseCopyTestCase(TestCase):
         # History fields are only set when the user copy to his dataspace
         self.assertNotEqual(self.dataspace_target, self.user.dataspace)
 
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user)
         self.assertIsNone(copied_license.created_by)
         self.assertIsNone(copied_license.last_modified_by)
 
-        copied_license = copy_object(self.license1, self.dataspace_target, self.user, update=True)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.user, update=True)
         self.assertIsNone(copied_license.created_by)
         self.assertIsNone(copied_license.last_modified_by)
 
         copied_license.delete()
-        self.alternate_user = create_superuser("alternate_user", self.dataspace_target)
-        copied_license = copy_object(self.license1, self.dataspace_target, self.alternate_user)
+        self.alternate_user = create_superuser(
+            "alternate_user", self.dataspace_target)
+        copied_license = copy_object(
+            self.license1, self.dataspace_target, self.alternate_user)
         self.assertEqual(self.alternate_user, copied_license.created_by)
         self.assertEqual(self.alternate_user, copied_license.last_modified_by)
 
@@ -1459,4 +1533,5 @@ class LicenseCopyTestCase(TestCase):
         )
 
         exclude = {LicenseAssignedTag: SKIP}
-        copy_to(self.license1, self.dataspace_target, self.user, exclude=exclude)
+        copy_to(self.license1, self.dataspace_target,
+                self.user, exclude=exclude)

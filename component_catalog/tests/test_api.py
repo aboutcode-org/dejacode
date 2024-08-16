@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -64,9 +64,11 @@ class ComponentAPITestCase(TestCase):
             "super_user", self.dataspace, data_email_notification=True
         )
         self.admin_user = create_admin("admin_user", self.dataspace)
-        self.alternate_super_user = create_superuser("alternate_user", self.alternate_dataspace)
+        self.alternate_super_user = create_superuser(
+            "alternate_user", self.alternate_dataspace)
 
-        self.type1 = ComponentType.objects.create(label="Type1", dataspace=self.dataspace)
+        self.type1 = ComponentType.objects.create(
+            label="Type1", dataspace=self.dataspace)
         self.status1 = ComponentStatus.objects.create(
             label="Status1", default_on_addition=True, dataspace=self.dataspace
         )
@@ -76,19 +78,28 @@ class ComponentAPITestCase(TestCase):
         self.component1 = Component.objects.create(
             name="c1", dataspace=self.dataspace, legal_reviewed=True
         )
-        self.component1_detail_url = reverse("api_v2:component-detail", args=[self.component1.uuid])
+        self.component1_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component1.uuid])
 
-        self.component2 = Component.objects.create(name="c2", dataspace=self.dataspace)
-        self.component2_detail_url = reverse("api_v2:component-detail", args=[self.component2.uuid])
+        self.component2 = Component.objects.create(
+            name="c2", dataspace=self.dataspace)
+        self.component2_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component2.uuid])
 
-        self.component3 = Component.objects.create(name="c3", dataspace=self.dataspace)
-        self.component3_detail_url = reverse("api_v2:component-detail", args=[self.component3.uuid])
+        self.component3 = Component.objects.create(
+            name="c3", dataspace=self.dataspace)
+        self.component3_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component3.uuid])
 
-        ext_source1 = ExternalSource.objects.create(label="GitHub", dataspace=self.dataspace)
+        ext_source1 = ExternalSource.objects.create(
+            label="GitHub", dataspace=self.dataspace)
 
-        ExternalReference.objects.create_for_content_object(self.component1, ext_source1, "REF1")
-        ExternalReference.objects.create_for_content_object(self.component1, ext_source1, "REF2")
-        ExternalReference.objects.create_for_content_object(self.component1, ext_source1, "REF3")
+        ExternalReference.objects.create_for_content_object(
+            self.component1, ext_source1, "REF1")
+        ExternalReference.objects.create_for_content_object(
+            self.component1, ext_source1, "REF2")
+        ExternalReference.objects.create_for_content_object(
+            self.component1, ext_source1, "REF3")
 
     def test_api_component_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -124,7 +135,8 @@ class ComponentAPITestCase(TestCase):
         self.assertEqual("field", actions_post["owner"].get("type"))
 
         self.assertFalse(bool(actions_post["type"].get("choices")))
-        self.assertFalse(bool(actions_post["configuration_status"].get("choices")))
+        self.assertFalse(
+            bool(actions_post["configuration_status"].get("choices")))
         self.assertFalse(bool(actions_post["usage_policy"].get("choices")))
 
     def test_api_component_list_endpoint_search(self):
@@ -231,7 +243,8 @@ class ComponentAPITestCase(TestCase):
         owner2 = Owner.objects.create(name="Owner2", dataspace=self.dataspace)
         self.component2.owner = owner2
         self.component2.save()
-        owner3 = Owner.objects.create(name="Own , er3", dataspace=self.dataspace)
+        owner3 = Owner.objects.create(
+            name="Own , er3", dataspace=self.dataspace)
         self.component3.owner = owner3
         self.component3.save()
 
@@ -245,7 +258,8 @@ class ComponentAPITestCase(TestCase):
     def test_api_component_list_endpoint_name_version_filter(self):
         self.client.login(username="super_user", password="secret")
 
-        filters = "?name_version={}:{}".format(self.component1.name, self.component1.version)
+        filters = "?name_version={}:{}".format(
+            self.component1.name, self.component1.version)
         response = self.client.get(self.component_list_url + filters)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.component1_detail_url)
@@ -253,7 +267,8 @@ class ComponentAPITestCase(TestCase):
         self.assertNotContains(response, self.component3_detail_url)
 
         # Supports multi-value
-        filters += "&name_version={}:{}".format(self.component3.name, self.component3.version)
+        filters += "&name_version={}:{}".format(
+            self.component3.name, self.component3.version)
         response = self.client.get(self.component_list_url + filters)
         self.assertEqual(2, response.data["count"])
         self.assertContains(response, self.component1_detail_url)
@@ -285,23 +300,27 @@ class ComponentAPITestCase(TestCase):
         data = {"uuid": self.component1.uuid}
         response = self.client.get(self.component_list_url, data)
         self.assertEqual(1, response.data["count"])
-        response = self.client.get(self.component_list_url + f"?uuid={self.component1.uuid}")
+        response = self.client.get(
+            self.component_list_url + f"?uuid={self.component1.uuid}")
         self.assertEqual(1, response.data["count"])
 
         data = {"uuid": [self.component1.uuid, self.component2.uuid]}
         response = self.client.get(self.component_list_url, data)
         self.assertEqual(2, response.data["count"])
         response = self.client.get(
-            self.component_list_url + f"?uuid={self.component1.uuid}&uuid={self.component2.uuid}"
+            self.component_list_url +
+            f"?uuid={self.component1.uuid}&uuid={self.component2.uuid}"
         )
         self.assertEqual(2, response.data["count"])
 
     def test_api_component_detail_endpoint(self):
-        package1 = Package.objects.create(filename="file.zip", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="file.zip", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace
         )
-        package1_detail_url = reverse("api_v2:package-detail", args=[package1.uuid])
+        package1_detail_url = reverse(
+            "api_v2:package-detail", args=[package1.uuid])
         owner = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         self.component1.owner = owner
         self.component1.save()
@@ -360,7 +379,8 @@ class ComponentAPITestCase(TestCase):
         }
         self.assertEqual([expected], response.data["licenses_summary"])
 
-        category1 = LicenseCategory.objects.create(label="C1", text="a", dataspace=self.dataspace)
+        category1 = LicenseCategory.objects.create(
+            label="C1", text="a", dataspace=self.dataspace)
         license1.category = category1
         license1.save()
         response = self.client.get(self.component1_detail_url)
@@ -373,7 +393,8 @@ class ComponentAPITestCase(TestCase):
         expected["type"] = category1.license_type
         self.assertEqual([expected], response.data["licenses_summary"])
 
-        self.component1.license_expression = "({} OR {})".format(license2.key, license1.key)
+        self.component1.license_expression = "({} OR {})".format(
+            license2.key, license1.key)
         self.component1.save()
         response = self.client.get(self.component1_detail_url)
         licenses_summary = response.data["licenses_summary"]
@@ -410,7 +431,8 @@ class ComponentAPITestCase(TestCase):
         response = self.client.get(self.component1_detail_url)
         expected = [{"key": "license2", "short_name": "L2"}]
         self.assertEqual(expected, response.data["license_choices"])
-        self.assertEqual(license2.key, response.data["license_choices_expression"])
+        self.assertEqual(
+            license2.key, response.data["license_choices_expression"])
 
     def test_api_component_list_endpoint_filter_by_last_modified_date(self):
         self.client.login(username="super_user", password="secret")
@@ -492,11 +514,13 @@ class ComponentAPITestCase(TestCase):
         self.assertEqual(1, Component.objects.filter(is_active=False).count())
 
         for value in ["on", "2", True, "True", "true", "t", "T", "yes", "Yes", "y", "Y"]:
-            response = self.client.get(self.component_list_url, {"is_active": value})
+            response = self.client.get(
+                self.component_list_url, {"is_active": value})
             self.assertEqual(2, response.data["count"])
 
         for value in ["3", "False", False, "false", "f", "F", "no", "No", "n", "N"]:
-            response = self.client.get(self.component_list_url, {"is_active": value})
+            response = self.client.get(
+                self.component_list_url, {"is_active": value})
             self.assertEqual(1, response.data["count"])
 
     def test_api_component_endpoint_create_minimal(self):
@@ -509,10 +533,13 @@ class ComponentAPITestCase(TestCase):
         self.assertTrue(response.data["is_active"])
 
     def test_api_component_endpoint_create_update_keywords(self):
-        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
-        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(
+            label="Keyword2", dataspace=self.dataspace)
         # For scoping sanity check
-        ComponentKeyword.objects.create(label=keyword1.label, dataspace=self.alternate_dataspace)
+        ComponentKeyword.objects.create(
+            label=keyword1.label, dataspace=self.alternate_dataspace)
 
         self.client.login(username="super_user", password="secret")
         data = {
@@ -533,7 +560,8 @@ class ComponentAPITestCase(TestCase):
         self.assertEqual(201, response.status_code)
         new_keyword = ComponentKeyword.objects.get(label="non-existing")
         self.assertTrue(new_keyword)
-        self.assertEqual([new_keyword.label], Component.objects.get(name="Comp3").keywords)
+        self.assertEqual([new_keyword.label],
+                         Component.objects.get(name="Comp3").keywords)
 
         # No keywords
         data = {
@@ -556,29 +584,36 @@ class ComponentAPITestCase(TestCase):
         # Update
         data = json.dumps({"keywords": [keyword1.label]})
         c2_api_url = reverse("api_v2:component-detail", args=[c2.uuid])
-        response = self.client.patch(c2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            c2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         c2.refresh_from_db()
         self.assertEqual([keyword1.label], c2.keywords)
 
         data = json.dumps({"keywords": [keyword2.label]})
-        response = self.client.patch(c2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            c2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         c2.refresh_from_db()
         self.assertEqual([keyword2.label], c2.keywords)
 
         data = json.dumps({"keywords": [keyword1.label, keyword2.label]})
-        response = self.client.patch(c2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            c2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         c2.refresh_from_db()
         self.assertEqual([keyword1.label, keyword2.label], c2.keywords)
 
     def test_api_component_endpoint_create_update_m2m_packages(self):
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace)
-        package1_detail_url = reverse("api_v2:package-detail", args=[package1.uuid])
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1.zip", dataspace=self.dataspace)
+        package1_detail_url = reverse(
+            "api_v2:package-detail", args=[package1.uuid])
+        package2 = Package.objects.create(
+            filename="package2.zip", dataspace=self.dataspace)
         # For scoping sanity check
-        Package.objects.create(filename="package1.zip", dataspace=self.alternate_dataspace)
+        Package.objects.create(filename="package1.zip",
+                               dataspace=self.alternate_dataspace)
 
         self.client.login(username="super_user", password="secret")
         data = {
@@ -614,19 +649,24 @@ class ComponentAPITestCase(TestCase):
         # Update
         data = json.dumps({"packages": [package1_detail_url]})
         c2_api_url = reverse("api_v2:component-detail", args=[c2.uuid])
-        response = self.client.patch(c2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            c2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(1, c2.packages.count())
 
         data = json.dumps({"packages": [str(package2.uuid)]})
-        response = self.client.patch(c2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            c2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(2, c2.packages.count())
 
     def test_api_component_endpoint_create_update_package1(self):
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace)
-        package1_detail_url = reverse("api_v2:package-detail", args=[package1.uuid])
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package1.zip", dataspace=self.dataspace)
+        package1_detail_url = reverse(
+            "api_v2:package-detail", args=[package1.uuid])
+        package2 = Package.objects.create(
+            filename="package2.zip", dataspace=self.dataspace)
 
         self.client.login(username="super_user", password="secret")
         data = {
@@ -703,7 +743,8 @@ class ComponentAPITestCase(TestCase):
             if field_name == "configuration_status":  # default_on_addition
                 self.assertEqual(self.status1, getattr(component, field_name))
                 continue
-            self.assertEqual(str(value), str(getattr(component, field_name)), msg=field_name)
+            self.assertEqual(str(value), str(
+                getattr(component, field_name)), msg=field_name)
 
         expected = 'Added Component: "RapidJSON 1.0.2"'
         self.assertEqual(expected, mail.outbox[0].subject)
@@ -738,7 +779,8 @@ class ComponentAPITestCase(TestCase):
         response = self.client.post(self.component_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         component = Component.objects.latest("id")
-        self.assertEqual(["Dynamic Linkage", "Any Linkage Allowed"], component.acceptable_linkages)
+        self.assertEqual(
+            ["Dynamic Linkage", "Any Linkage Allowed"], component.acceptable_linkages)
 
         data = {
             "name": "comp4",
@@ -792,7 +834,8 @@ class ComponentAPITestCase(TestCase):
         self.assertEqual({"json": "yes"}, component.dependencies)
 
     def test_api_component_endpoint_create_clean_validate_against_reference_data(self):
-        self.client.login(username=self.alternate_super_user, password="secret")
+        self.client.login(username=self.alternate_super_user,
+                          password="secret")
         data = {"name": self.component1.name}
         response = self.client.post(self.component_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -812,7 +855,8 @@ class ComponentAPITestCase(TestCase):
         self.assertEqual(expected, response.data)
 
     def test_api_component_endpoint_copy_to_my_dataspace_action(self):
-        self.client.login(username=self.alternate_super_user, password="secret")
+        self.client.login(username=self.alternate_super_user,
+                          password="secret")
         copy_to_my_dataspace_url = self.component1.get_api_copy_to_my_dataspace_url()
         self.assertTrue(self.component1.dataspace.is_reference)
 
@@ -822,10 +866,12 @@ class ComponentAPITestCase(TestCase):
 
         response = self.client.post(copy_to_my_dataspace_url)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"error": "The object already exists in your local Dataspace."}
+        expected = {
+            "error": "The object already exists in your local Dataspace."}
         self.assertEqual(expected, response.data)
 
-        not_found_url = reverse("api_v2:component-copy-to-my-dataspace", args=[uuid.uuid4()])
+        not_found_url = reverse(
+            "api_v2:component-copy-to-my-dataspace", args=[uuid.uuid4()])
         response = self.client.post(not_found_url)
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
@@ -838,7 +884,8 @@ class ComponentAPITestCase(TestCase):
         with override_settings(REFERENCE_DATASPACE="non_existing"):
             response = self.client.post(copy_to_my_dataspace_url)
             self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-            expected = {"error": "You do not have rights to execute this action."}
+            expected = {
+                "error": "You do not have rights to execute this action."}
             self.assertEqual(expected, response.data)
 
     def test_api_component_endpoint_update_put(self):
@@ -855,7 +902,8 @@ class ComponentAPITestCase(TestCase):
         ).latest("id")
         self.assertEqual("Changed name.", history.get_change_message())
 
-        self.assertEqual('Updated Component: "Updated Name"', mail.outbox[0].subject)
+        self.assertEqual('Updated Component: "Updated Name"',
+                         mail.outbox[0].subject)
         body = mail.outbox[0].body
         self.assertIn('Changes details for Component "Updated Name"', body)
         self.assertIn(self.component1.get_admin_url(), body)
@@ -884,7 +932,8 @@ class ComponentAPITestCase(TestCase):
         response = client.get(self.component1_detail_url, format="json")
         self.assertEqual(component_policy.label, response.data["usage_policy"])
 
-        self.admin_user = add_perms(self.admin_user, ["add_component", "change_component"])
+        self.admin_user = add_perms(
+            self.admin_user, ["add_component", "change_component"])
         data = {
             "name": "comp1",
             "usage_policy": component_policy.label,
@@ -905,7 +954,8 @@ class ComponentAPITestCase(TestCase):
         component = Component.objects.latest("id")
         self.assertIsNone(component.usage_policy)
 
-        self.admin_user = add_perm(self.admin_user, "change_usage_policy_on_component")
+        self.admin_user = add_perm(
+            self.admin_user, "change_usage_policy_on_component")
         response = client.put(detail_url, data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         component = Component.objects.latest("id")
@@ -945,7 +995,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             md5="6eed96478ad6ff01b97b7edf005b58ea",
             sha1="96b63269c5c5762b005a59a4e8ae57f453df3865",
         )
-        self.package1_detail_url = reverse("api_v2:package-detail", args=[self.package1.uuid])
+        self.package1_detail_url = reverse(
+            "api_v2:package-detail", args=[self.package1.uuid])
 
         self.package2 = Package.objects.create(
             filename="package2.zip",
@@ -953,7 +1004,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             md5="e555c0900d1debb26ea463c747de169d",
             sha1="d7b3679279b3d1bb1044a63232e1b309790a99ac",
         )
-        self.package2_detail_url = reverse("api_v2:package-detail", args=[self.package2.uuid])
+        self.package2_detail_url = reverse(
+            "api_v2:package-detail", args=[self.package2.uuid])
 
         self.package3 = Package.objects.create(
             filename="package3.zip",
@@ -961,7 +1013,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             md5="92d15ca3cf229be08c2cf5da1b4ab74b",
             sha1="f379606577b3a6f05b19a0162b53e0e1228c4e16",
         )
-        self.package3_detail_url = reverse("api_v2:package-detail", args=[self.package3.uuid])
+        self.package3_detail_url = reverse(
+            "api_v2:package-detail", args=[self.package3.uuid])
 
     def test_api_package_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -998,7 +1051,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             version="3.1",
             dataspace=self.dataspace,
         )
-        django_detail_url = reverse("api_v2:package-detail", args=[django.uuid])
+        django_detail_url = reverse(
+            "api_v2:package-detail", args=[django.uuid])
 
         search_queries = [
             "pkg:pypi/djangoproject/django@3.1",
@@ -1043,7 +1097,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, self.package2_detail_url)
         self.assertNotContains(response, self.package3_detail_url)
 
-        filters = "?sha1={}&sha1={}".format(self.package2.sha1, self.package3.sha1)
+        filters = "?sha1={}&sha1={}".format(
+            self.package2.sha1, self.package3.sha1)
         response = self.client.get(self.package_list_url + filters)
         self.assertEqual(2, response.data["count"])
         self.assertNotContains(response, self.package1_detail_url)
@@ -1051,11 +1106,13 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, self.package3_detail_url)
 
     def test_api_package_detail_endpoint(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
+        component1 = Component.objects.create(
+            name="c1", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=component1, package=self.package1, dataspace=self.dataspace
         )
-        component1_detail_url = reverse("api_v2:component-detail", args=[component1.uuid])
+        component1_detail_url = reverse(
+            "api_v2:component-detail", args=[component1.uuid])
 
         # Make sure the protected_fields does not break when a protected field is
         # not available on the serializer, here `usage_policy` on `ComponentEmbeddedSerializer`
@@ -1075,7 +1132,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.package1.filename, response.data["filename"])
         self.assertEqual(self.package1.size, response.data["size"])
         self.assertEqual(
-            list(self.package1.external_references.all()), response.data["external_references"]
+            list(self.package1.external_references.all()
+                 ), response.data["external_references"]
         )
 
         component_data = response.data["components"][0]
@@ -1097,7 +1155,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         data = {"download_url": "https://download.url"}
         response = self.client.post(self.package_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = [ErrorDetail(string="['package_url or filename required']", code="invalid")]
+        expected = [ErrorDetail(
+            string="['package_url or filename required']", code="invalid")]
         self.assertEqual(expected, response.data)
 
         data = {
@@ -1143,7 +1202,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         data["license_expression"] = "non-existing-license"
         response = self.client.post(self.package_list_url, data)
-        expected = {"license_expression": ["Unknown license key(s): non-existing-license"]}
+        expected = {"license_expression": [
+            "Unknown license key(s): non-existing-license"]}
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual(expected, response.data)
 
@@ -1237,10 +1297,13 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected2, status_code=400)
 
     def test_api_package_endpoint_create_update_keywords(self):
-        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
-        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(
+            label="Keyword1", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(
+            label="Keyword2", dataspace=self.dataspace)
         # For scoping sanity check
-        ComponentKeyword.objects.create(label=keyword1.label, dataspace=self.other_dataspace)
+        ComponentKeyword.objects.create(
+            label=keyword1.label, dataspace=self.other_dataspace)
 
         self.client.login(username="super_user", password="secret")
         data = {
@@ -1271,26 +1334,30 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         }
         response = self.client.post(self.package_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
-        self.assertEqual([], Package.objects.get(filename=data["filename"]).keywords)
+        self.assertEqual([], Package.objects.get(
+            filename=data["filename"]).keywords)
 
         # Update
         data = json.dumps({"keywords": [keyword1.label]})
         p2_api_url = reverse("api_v2:package-detail", args=[p2.uuid])
-        response = self.client.patch(p2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p2.refresh_from_db()
         self.assertEqual([keyword1.label], p2.keywords)
 
         data = json.dumps({"keywords": [keyword2.label]})
         p2_api_url = reverse("api_v2:package-detail", args=[p2.uuid])
-        response = self.client.patch(p2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p2.refresh_from_db()
         self.assertEqual([keyword2.label], p2.keywords)
 
         data = json.dumps({"keywords": [keyword1.label, keyword2.label]})
         p2_api_url = reverse("api_v2:package-detail", args=[p2.uuid])
-        response = self.client.patch(p2_api_url, data=data, content_type="application/json")
+        response = self.client.patch(
+            p2_api_url, data=data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         p2.refresh_from_db()
         self.assertEqual([keyword1.label, keyword2.label], p2.keywords)
@@ -1313,7 +1380,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("Changed filename.", history.get_change_message())
         self.assertIn("package1.zip", history.serialized_data)
 
-        self.assertEqual('Updated Package: "Updated Name"', mail.outbox[0].subject)
+        self.assertEqual('Updated Package: "Updated Name"',
+                         mail.outbox[0].subject)
         body = mail.outbox[0].body
         self.assertIn('Changes details for Package "Updated Name"', body)
         self.assertIn(self.package1.get_admin_url(), body)
@@ -1352,7 +1420,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.get(self.package1_detail_url)
         expected = [{"key": "license2", "short_name": "L2"}]
         self.assertEqual(expected, response.data["license_choices"])
-        self.assertEqual(license2.key, response.data["license_choices_expression"])
+        self.assertEqual(
+            license2.key, response.data["license_choices_expression"])
 
     def test_api_package_viewset_add_action(self):
         add_url = reverse("api_v2:package-add")
@@ -1420,7 +1489,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.json())
 
     def test_api_package_viewset_aboutcode_files_action(self):
-        about_url = reverse("api_v2:package-aboutcode-files", args=[self.package1.uuid])
+        about_url = reverse("api_v2:package-aboutcode-files",
+                            args=[self.package1.uuid])
 
         response = self.client.get(about_url)
         self.assertEqual(403, response.status_code)
@@ -1456,7 +1526,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         response = client.get(self.package1_detail_url, format="json")
         self.assertEqual(policy.label, response.data["usage_policy"])
 
-        self.admin_user = add_perms(self.admin_user, ["add_package", "change_package"])
+        self.admin_user = add_perms(
+            self.admin_user, ["add_package", "change_package"])
         data = {
             "filename": "pack1",
             "usage_policy": policy.label,
@@ -1477,7 +1548,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         package = Package.objects.latest("id")
         self.assertIsNone(package.usage_policy)
 
-        self.admin_user = add_perm(self.admin_user, "change_usage_policy_on_package")
+        self.admin_user = add_perm(
+            self.admin_user, "change_usage_policy_on_package")
         response = client.put(detail_url, data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         package = Package.objects.latest("id")
@@ -1529,7 +1601,8 @@ class PackageAPIFilterSetTest(TestCase):
             "jna-4.0.zip",
             "jna-src-3.3.0.tar.xz",
         ]
-        self.assertEqual(expected, [package.filename for package in package_filterset.qs])
+        self.assertEqual(
+            expected, [package.filename for package in package_filterset.qs])
 
     def test_package_api_filterset_fuzzy_filter_create_search_names_no_version(self):
         filename = "jna.jar"
@@ -1537,7 +1610,8 @@ class PackageAPIFilterSetTest(TestCase):
             filename,
             "jna",
         )
-        self.assertEqual(expected, FuzzyPackageNameSearch.create_search_names(filename))
+        self.assertEqual(
+            expected, FuzzyPackageNameSearch.create_search_names(filename))
 
     def test_package_api_filterset_fuzzy_filter_create_search_names_version(self):
         create_search_names = FuzzyPackageNameSearch.create_search_names
@@ -1556,7 +1630,8 @@ class PackageAPIFilterSetTest(TestCase):
             "jna 1.6.3-RELEASE",
             "jna",
         )
-        self.assertEqual(expected, create_search_names(filename_version_alphanumeric))
+        self.assertEqual(expected, create_search_names(
+            filename_version_alphanumeric))
 
     def test_package_api_filterset_purl_filter_invalid_purl(self):
         data = {"purl": "jna.jar"}
@@ -1622,10 +1697,13 @@ class SubcomponentAPITestCase(TestCase):
         self.component1 = Component.objects.create(
             name="c1", dataspace=self.dataspace, legal_reviewed=True
         )
-        self.component1_detail_url = reverse("api_v2:component-detail", args=[self.component1.uuid])
+        self.component1_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component1.uuid])
 
-        self.component2 = Component.objects.create(name="c2", dataspace=self.dataspace)
-        self.component2_detail_url = reverse("api_v2:component-detail", args=[self.component2.uuid])
+        self.component2 = Component.objects.create(
+            name="c2", dataspace=self.dataspace)
+        self.component2_detail_url = reverse(
+            "api_v2:component-detail", args=[self.component2.uuid])
 
         self.subcomponent_list_url = reverse("api_v2:subcomponent-list")
         self.subcomponent1 = Subcomponent.objects.create(
@@ -1649,10 +1727,14 @@ class SubcomponentAPITestCase(TestCase):
         self.assertContains(response, self.subcomponent1_detail_url)
         self.assertIn(self.subcomponent1_detail_url, response.data["api_url"])
         self.assertEqual(str(self.subcomponent1.uuid), response.data["uuid"])
-        self.assertIn(str(self.subcomponent1.parent.uuid), response.data["parent"])
-        self.assertIn(str(self.subcomponent1.child.uuid), response.data["child"])
-        self.assertEqual(self.subcomponent1.is_deployed, response.data["is_deployed"])
-        self.assertEqual(self.subcomponent1.is_modified, response.data["is_modified"])
+        self.assertIn(str(self.subcomponent1.parent.uuid),
+                      response.data["parent"])
+        self.assertIn(str(self.subcomponent1.child.uuid),
+                      response.data["child"])
+        self.assertEqual(self.subcomponent1.is_deployed,
+                         response.data["is_deployed"])
+        self.assertEqual(self.subcomponent1.is_modified,
+                         response.data["is_modified"])
 
     def test_api_subcomponent_endpoint_create_minimal(self):
         self.client.login(username="super_user", password="secret")
@@ -1690,7 +1772,8 @@ class SubcomponentAPITestCase(TestCase):
             "license_expression": "non-existing-license",
         }
         response = self.client.post(self.subcomponent_list_url, data)
-        expected = {"license_expression": ["Unknown license key(s): non-existing-license"]}
+        expected = {"license_expression": [
+            "Unknown license key(s): non-existing-license"]}
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual(expected, response.data)
 

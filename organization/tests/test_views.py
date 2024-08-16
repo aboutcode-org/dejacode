@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -29,9 +29,12 @@ class OwnerUserViewsTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="Dataspace")
         self.super_user = create_superuser("super_user", self.dataspace)
         self.basic_user = create_user("basic_user", self.dataspace)
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
-        self.owner2 = Owner.objects.create(name="Owner2", dataspace=self.dataspace)
-        Subowner.objects.create(parent=self.owner1, child=self.owner2, dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Owner1", dataspace=self.dataspace)
+        self.owner2 = Owner.objects.create(
+            name="Owner2", dataspace=self.dataspace)
+        Subowner.objects.create(
+            parent=self.owner1, child=self.owner2, dataspace=self.dataspace)
 
         self.license1 = License.objects.create(
             key="l1", name="L1", short_name="L1", dataspace=self.dataspace, owner=self.owner1
@@ -90,7 +93,8 @@ class OwnerUserViewsTestCase(TestCase):
 
         self.assertEqual(hierarchy_dict["owner_verbose_name"], "owner")
         self.assertEqual(hierarchy_dict["owner_verbose_name_plural"], "owners")
-        self.assertEqual("organization/tabs/tab_hierarchy.html", hierarchy_template)
+        self.assertEqual(
+            "organization/tabs/tab_hierarchy.html", hierarchy_template)
 
     def test_owner_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -215,7 +219,8 @@ class OwnerUserViewsTestCase(TestCase):
 
         response = self.client.post(add_url, data, follow=True)
         self.assertContains(response, "Please correct the error below.")
-        self.assertContains(response, "Owner with this Dataspace and Name already exists.")
+        self.assertContains(
+            response, "Owner with this Dataspace and Name already exists.")
 
         # Case-insensitive validation
         data["name"] = self.owner1.name.upper()

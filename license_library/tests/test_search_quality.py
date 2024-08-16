@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -66,12 +66,14 @@ def regen_fixtures():
     data = serializer.serialize(
         get_objects(), indent=0, use_natural_foreign_keys=True, use_natural_primary_keys=True
     )
-    fout = os.path.join(os.path.dirname(__file__), "fixtures", "test_license_library_fixture.json")
+    fout = os.path.join(os.path.dirname(__file__), "fixtures",
+                        "test_license_library_fixture.json")
     with open(fout, "w") as f:
         f.write(data)
     import zipfile
 
-    foutz = zipfile.ZipFile(fout + ".zip", "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True)
+    foutz = zipfile.ZipFile(
+        fout + ".zip", "w", compression=zipfile.ZIP_DEFLATED, allowZip64=True)
     foutz.write(fout, "test_license_library_fixture.json")
     foutz.close()
     os.remove(fout)
@@ -149,7 +151,8 @@ class SearchQualityTestCase(TestCase):
 
 class LicenseSearchQualityTestCase(SearchQualityTestCase):
     fixtures = [
-        os.path.join(os.path.dirname(__file__), "fixtures", "test_license_library_fixture.json.zip")
+        os.path.join(os.path.dirname(__file__), "fixtures",
+                     "test_license_library_fixture.json.zip")
     ]
 
     def setUp(self):
@@ -192,7 +195,8 @@ def search_tst(query, expected_results, ordered, exact, field, rownum, notes):
     """Return a search test function closed on arguments"""
 
     def search_test_func(self):
-        self.do_search(query, expected_results, ordered=ordered, exact=exact, field=field)
+        self.do_search(query, expected_results, ordered=ordered,
+                       exact=exact, field=field)
 
     # build a reasonably unique and valid function name
     # based on the up to 50 chars from the query and a row number
@@ -239,7 +243,8 @@ def build_tsts_from_csv(csv_path, test_class):
             query = row[0]
             if not query:
                 raise RuntimeError(
-                    "Missing test query for row: %d of CSV file:%r" % (i + 1, csv_path)
+                    "Missing test query for row: %d of CSV file:%r" % (
+                        i + 1, csv_path)
                 )
             notes = row[1] if len(row) >= 2 else False
             ordered = row[2] if len(row) >= 3 else False
@@ -248,7 +253,8 @@ def build_tsts_from_csv(csv_path, test_class):
             expectToFail = row[5] if len(row) >= 6 else False
             expectation = [r for r in row[6:] if r] if len(row) >= 7 else []
 
-            fun = search_tst(query, expectation, ordered, exact, field, rownum, notes)
+            fun = search_tst(query, expectation, ordered,
+                             exact, field, rownum, notes)
 
             if expectToFail:
                 fun = expectedFailure(fun)

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -31,7 +31,8 @@ class WorkflowAdminTestCase(TestCase):
             name="c1", dataspace=self.nexb_dataspace
         )
 
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
         self.product1 = self.product_ct.model_class().objects.create(
             name="p1", dataspace=self.nexb_dataspace
         )
@@ -101,10 +102,12 @@ class WorkflowAdminTestCase(TestCase):
             "label": "Urgent",
             "_save": "Save",
         }
-        response = self.client.post(reverse("admin:workflow_priority_add"), data)
+        response = self.client.post(
+            reverse("admin:workflow_priority_add"), data)
         self.assertEqual(302, response.status_code)
 
-        response = self.client.get(reverse("admin:workflow_priority_changelist"))
+        response = self.client.get(
+            reverse("admin:workflow_priority_changelist"))
         self.assertContains(response, "Urgent")
 
 
@@ -119,7 +122,8 @@ class RequestTemplateAdminTestCase(TestCase):
         self.component_ct = ContentType.objects.get(
             app_label="component_catalog", model="component"
         )
-        self.product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        self.product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
 
         self.request_template1 = RequestTemplate.objects.create(
             name="Template1",
@@ -136,7 +140,8 @@ class RequestTemplateAdminTestCase(TestCase):
 
     def test_request_template_admin_delete_permissions(self):
         self.client.login(username="nexb_user", password="secret")
-        url = reverse("admin:workflow_requesttemplate_delete", args=[self.request_template1.id])
+        url = reverse("admin:workflow_requesttemplate_delete",
+                      args=[self.request_template1.id])
 
         response = self.client.get(url)
         self.assertContains(response, "<h1>Are you sure?</h1>")
@@ -209,9 +214,11 @@ class RequestTemplateAdminTestCase(TestCase):
             response, "<li>Request template with this Dataspace and Name already exists.</li>"
         )
         expected = {
-            NON_FIELD_ERRORS: ["Request template with this Dataspace and Name already exists."]
+            NON_FIELD_ERRORS: [
+                "Request template with this Dataspace and Name already exists."]
         }
-        self.assertEqual(expected, response.context_data["adminform"].form.errors)
+        self.assertEqual(
+            expected, response.context_data["adminform"].form.errors)
 
         data["name"] = "New name"
         response = self.client.post(url, data)
@@ -236,7 +243,8 @@ class RequestTemplateAdminTestCase(TestCase):
         }
 
         response = self.client.post(url, data)
-        self.assertContains(response, "Question with this Label for this Template already exists.")
+        self.assertContains(
+            response, "Question with this Label for this Template already exists.")
 
         data["questions-1-label"] = "label2"
         response = self.client.post(url, data)
@@ -279,14 +287,17 @@ class RequestTemplateAdminTestCase(TestCase):
         }
 
         response = self.client.post(url, data, follow=True)
-        self.assertContains(response, "1 template was successfully marked as active")
+        self.assertContains(
+            response, "1 template was successfully marked as active")
 
         self.request_template1.refresh_from_db()
         self.assertTrue(self.request_template1.is_active)
 
-        data["_selected_action"] = [self.request_template1.pk, self.request_template2.pk]
+        data["_selected_action"] = [
+            self.request_template1.pk, self.request_template2.pk]
         response = self.client.post(url, data, follow=True)
-        self.assertContains(response, "2 templates were successfully marked as active")
+        self.assertContains(
+            response, "2 templates were successfully marked as active")
 
     def test_request_template_admin_make_inactive_action(self):
         self.client.login(username="nexb_user", password="secret")
@@ -308,13 +319,16 @@ class RequestTemplateAdminTestCase(TestCase):
         }
 
         response = self.client.post(url, data, follow=True)
-        self.assertContains(response, "1 template was successfully marked as inactive")
+        self.assertContains(
+            response, "1 template was successfully marked as inactive")
         self.request_template1.refresh_from_db()
         self.assertFalse(self.request_template1.is_active)
 
-        data["_selected_action"] = [self.request_template1.pk, self.request_template2.pk]
+        data["_selected_action"] = [
+            self.request_template1.pk, self.request_template2.pk]
         response = self.client.post(url, data, follow=True)
-        self.assertContains(response, "2 templates were successfully marked as inactive")
+        self.assertContains(
+            response, "2 templates were successfully marked as inactive")
 
     def test_request_template_admin_changeform_view_default_assignee_scope(self):
         self.client.login(username="nexb_user", password="secret")
@@ -344,7 +358,8 @@ class RequestTemplateAdminTestCase(TestCase):
         }
         response = self.client.get(url, data)
 
-        self.assertContains(response, "<h2>The following Request templates will be copied.</h2>")
+        self.assertContains(
+            response, "<h2>The following Request templates will be copied.</h2>")
         self.assertNotContains(response, "compare")
 
     def test_request_template_activity_log_available(self):

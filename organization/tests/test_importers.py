@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -21,7 +21,8 @@ from organization.models import Owner
 
 class OwnerImporterTestCase(TestCase):
     def setUp(self):
-        self.testfiles_location = os.path.join(os.path.dirname(__file__), "testfiles", "import")
+        self.testfiles_location = os.path.join(
+            os.path.dirname(__file__), "testfiles", "import")
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.user = get_user_model().objects.create_superuser(
             "nexb_user", "test@test.com", "t3st", self.dataspace
@@ -33,14 +34,16 @@ class OwnerImporterTestCase(TestCase):
 
     def test_owner_import_mandatory_columns(self):
         # The first file is missing the mandatory columns
-        file = os.path.join(self.testfiles_location, "missing_mandatory_columns.csv")
+        file = os.path.join(self.testfiles_location,
+                            "missing_mandatory_columns.csv")
         importer = OwnerImporter(self.user, file)
         # Make sure the errors are returned and no results
         self.assertTrue(importer.fatal_errors)
         self.assertFalse(getattr(importer, "formset", None))
 
         # Now using a file containing the mandatory columns
-        file = os.path.join(self.testfiles_location, "including_mandatory_columns.csv")
+        file = os.path.join(self.testfiles_location,
+                            "including_mandatory_columns.csv")
         importer = OwnerImporter(self.user, file)
         # Make sure no errors are returned and we got some results
         self.assertFalse(importer.fatal_errors)

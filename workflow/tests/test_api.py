@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -48,7 +48,8 @@ class RequestAPITestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
-        self.base_user = create_user("base_user", self.dataspace, workflow_email_notification=True)
+        self.base_user = create_user(
+            "base_user", self.dataspace, workflow_email_notification=True)
         self.admin_user = create_admin("admin_user", self.dataspace)
         self.super_user = create_superuser("super_user", self.dataspace)
 
@@ -101,7 +102,8 @@ class RequestAPITestCase(TestCase):
             dataspace=self.dataspace,
         )
 
-        self.priority1 = Priority.objects.create(label="Urgent", dataspace=self.dataspace)
+        self.priority1 = Priority.objects.create(
+            label="Urgent", dataspace=self.dataspace)
 
         self.request1 = Request.objects.create(
             title="Title1",
@@ -111,7 +113,8 @@ class RequestAPITestCase(TestCase):
             content_object=self.component1,
             priority=self.priority1,
         )
-        self.request1_detail_url = reverse("api_v2:request-detail", args=[self.request1.uuid])
+        self.request1_detail_url = reverse(
+            "api_v2:request-detail", args=[self.request1.uuid])
 
         self.request2 = Request.objects.create(
             title="Title2",
@@ -124,7 +127,8 @@ class RequestAPITestCase(TestCase):
             serialized_data='[{"input_type": "CharField", "value": "string_for_search", '
             '"label": "Organization"}]',
         )
-        self.request2_detail_url = reverse("api_v2:request-detail", args=[self.request2.uuid])
+        self.request2_detail_url = reverse(
+            "api_v2:request-detail", args=[self.request2.uuid])
 
     def test_api_request_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
@@ -167,7 +171,8 @@ class RequestAPITestCase(TestCase):
         self.assertEqual(2, response.data["count"])
 
     def test_api_request_secured_assigned_to_product_list_endpoint_results(self):
-        product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
         product1 = Product.objects.create(name="p1", dataspace=self.dataspace)
 
         # Force the product1 as content_object
@@ -205,7 +210,8 @@ class RequestAPITestCase(TestCase):
         actions_post = response.data["actions"]["POST"]
 
         # Tests the Dataspace scoping
-        Priority.objects.create(label="Alternate", dataspace=self.alternate_dataspace)
+        Priority.objects.create(
+            label="Alternate", dataspace=self.alternate_dataspace)
         create_user("alternate_user", self.alternate_dataspace)
 
         expected = ["Open", "Closed", "Draft"]
@@ -277,17 +283,22 @@ class RequestAPITestCase(TestCase):
         self.assertEqual(self.request1.status, response.data["status"])
         self.assertEqual(str(self.request1.uuid), response.data["uuid"])
         self.assertEqual(self.request1.title, response.data["title"])
-        self.assertEqual(str(self.component1), response.data["content_object_display_name"])
+        self.assertEqual(str(self.component1),
+                         response.data["content_object_display_name"])
         self.assertIn(
             reverse("api_v2:component-detail", args=[self.component1.uuid]),
             response.data["content_object"],
         )
-        self.assertIn(self.request_template1_detail_url, response.data["request_template"])
-        self.assertEqual(self.request_template1.name, response.data["request_template_name"])
+        self.assertIn(self.request_template1_detail_url,
+                      response.data["request_template"])
+        self.assertEqual(self.request_template1.name,
+                         response.data["request_template_name"])
         self.assertEqual({}, response.data["serialized_data"])
-        self.assertEqual(str(self.request1.requester), response.data["requester"])
+        self.assertEqual(str(self.request1.requester),
+                         response.data["requester"])
         self.assertEqual(self.request1.is_private, response.data["is_private"])
-        self.assertEqual(self.request1.priority.label, response.data["priority"])
+        self.assertEqual(self.request1.priority.label,
+                         response.data["priority"])
         self.assertIsNone(response.data["last_modified_by"])
 
         comment = response.data["comments"][0]
@@ -318,8 +329,10 @@ class RequestAPITestCase(TestCase):
         self.assertEqual(str(self.request1.uuid), response.data["uuid"])
 
     def test_api_secured_assigned_to_product_request_detail_endpoint(self):
-        product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
-        product1 = product_ct.model_class().objects.create(name="p1", dataspace=self.dataspace)
+        product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
+        product1 = product_ct.model_class().objects.create(
+            name="p1", dataspace=self.dataspace)
 
         # Force the product1 as content_object
         Request.objects.filter(pk=self.request1.pk).update(
@@ -338,9 +351,11 @@ class RequestAPITestCase(TestCase):
         response = self.client.get(self.request1_detail_url)
         self.assertEqual(str(product_ct.model), response.data["content_type"])
         self.assertIn(
-            reverse("api_v2:product-detail", args=[product1.uuid]), response.data["content_object"]
+            reverse("api_v2:product-detail",
+                    args=[product1.uuid]), response.data["content_object"]
         )
-        self.assertEqual(str(product1), response.data["content_object_display_name"])
+        self.assertEqual(
+            str(product1), response.data["content_object_display_name"])
         self.assertIn(self.request1_detail_url, response.data["api_url"])
         self.assertEqual(self.request1.status, response.data["status"])
         self.assertEqual(str(self.request1.uuid), response.data["uuid"])
@@ -435,18 +450,21 @@ class RequestAPITestCase(TestCase):
         expected = {"content_object": ["Invalid Object type."]}
         self.assertEqual(expected, response.data)
 
-        product_ct = ContentType.objects.get(app_label="product_portfolio", model="product")
+        product_ct = ContentType.objects.get(
+            app_label="product_portfolio", model="product")
         self.request_template1.content_type = product_ct
         self.request_template1.save()
 
-        data["content_object"] = reverse("api_v2:component-detail", args=[self.component1.uuid])
+        data["content_object"] = reverse(
+            "api_v2:component-detail", args=[self.component1.uuid])
         response = self.client.post(self.request_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"content_object": ["Invalid Object type."]}
         self.assertEqual(expected, response.data)
 
         product1 = Product.objects.create(name="p1", dataspace=self.dataspace)
-        data["content_object"] = reverse("api_v2:product-detail", args=[product1.uuid])
+        data["content_object"] = reverse(
+            "api_v2:product-detail", args=[product1.uuid])
         response = self.client.post(self.request_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
@@ -454,7 +472,8 @@ class RequestAPITestCase(TestCase):
         self.request_template1.save()
         response = self.client.post(self.request_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"content_object": ["Content object not available on this RequestTemplate."]}
+        expected = {"content_object": [
+            "Content object not available on this RequestTemplate."]}
         self.assertEqual(expected, response.data)
 
     def test_api_request_endpoint_create_with_cc_emails(self):
@@ -513,15 +532,18 @@ class RequestAPITestCase(TestCase):
         history = History.objects.get_for_object(self.request1, action_flag=History.CHANGE).latest(
             "id"
         )
-        self.assertEqual("Changed status and assignee.", history.get_change_message())
+        self.assertEqual("Changed status and assignee.",
+                         history.get_change_message())
 
         self.assertEqual(1, self.request1.events.count())
-        self.assertEqual(RequestEvent.EDIT, self.request1.events.get().event_type)
+        self.assertEqual(RequestEvent.EDIT,
+                         self.request1.events.get().event_type)
 
         expected = f"Request {self.request1} for component1 updated by {self.super_user} in nexB"
         self.assertEqual(expected, mail.outbox[0].subject)
         body = mail.outbox[0].body
-        expected = "The request {} has been updated in the nexB dataspace".format(self.request1)
+        expected = "The request {} has been updated in the nexB dataspace".format(
+            self.request1)
         self.assertIn(expected, body)
         self.assertIn("- Request template: Template1", body)
         self.assertIn("- Product context: (none)", body)
@@ -548,14 +570,16 @@ class RequestAPITestCase(TestCase):
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         # The 'request_template' value is ignored on update
-        self.assertEqual(self.request_template1, self.request1.request_template)
+        self.assertEqual(self.request_template1,
+                         self.request1.request_template)
 
     def test_api_request_endpoint_dataspaced_slug_related_fields_scoping(self):
         self.client.login(username="super_user", password="secret")
         alternate_priority = Priority.objects.create(
             label="Alternate", dataspace=self.alternate_dataspace
         )
-        alternate_user = create_user("alternate_user", self.alternate_dataspace)
+        alternate_user = create_user(
+            "alternate_user", self.alternate_dataspace)
 
         data = {
             "title": "Title",
@@ -582,7 +606,8 @@ class RequestAPITestCase(TestCase):
 
         self.assertIsNone(self.request1.product_context)
         product1 = Product.objects.create(name="p1", dataspace=self.dataspace)
-        product_api_url = reverse("api_v2:product-detail", args=[product1.uuid])
+        product_api_url = reverse(
+            "api_v2:product-detail", args=[product1.uuid])
         patch_data = json.dumps({"product_context": product_api_url})
         response = self.client.patch(
             self.request1_detail_url, data=patch_data, content_type="application/json"
@@ -591,13 +616,16 @@ class RequestAPITestCase(TestCase):
         self.request1.refresh_from_db()
         self.assertEqual(product1, self.request1.product_context)
 
-        alternate_product = Product.objects.create(name="p2", dataspace=self.alternate_dataspace)
-        alternate_product_url = reverse("api_v2:product-detail", args=[alternate_product.uuid])
+        alternate_product = Product.objects.create(
+            name="p2", dataspace=self.alternate_dataspace)
+        alternate_product_url = reverse(
+            "api_v2:product-detail", args=[alternate_product.uuid])
         patch_data = json.dumps({"product_context": alternate_product_url})
         response = self.client.patch(
             self.request1_detail_url, data=patch_data, content_type="application/json"
         )
-        self.assertContains(response, "Invalid hyperlink - Object does not exist.", status_code=400)
+        self.assertContains(
+            response, "Invalid hyperlink - Object does not exist.", status_code=400)
 
     def test_api_request_template_detail_endpoint(self):
         self.client.login(username="super_user", password="secret")
@@ -718,7 +746,8 @@ class RequestAPITestCase(TestCase):
             self.question2.label: "not a date",
         }
         response = client.post(self.request_list_url, data=data, format="json")
-        expected = {"serialized_data": ['Invalid date for "Date", use: YYYY-MM-DD.']}
+        expected = {"serialized_data": [
+            'Invalid date for "Date", use: YYYY-MM-DD.']}
         self.assertEqual(expected, response.data)
 
         # BooleanField input_type validation
@@ -741,12 +770,15 @@ class RequestAPITestCase(TestCase):
         response = client.post(self.request_list_url, data=data, format="json")
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         request = Request.objects.latest("id")
-        self.assertEqual(json.dumps(data["serialized_data"]), request.serialized_data)
-        self.assertEqual(data["serialized_data"], request.get_serialized_data())
+        self.assertEqual(json.dumps(
+            data["serialized_data"]), request.serialized_data)
+        self.assertEqual(data["serialized_data"],
+                         request.get_serialized_data())
 
         request_url = reverse("api_v2:request-detail", args=[request.uuid])
         response = client.get(request_url, format="json")
-        self.assertEqual(data["serialized_data"], response.data["serialized_data"])
+        self.assertEqual(data["serialized_data"],
+                         response.data["serialized_data"])
 
     def test_api_request_endpoint_edit_serialized_data(self):
         # See test_api_request_endpoint_create_serialized_data for full validation logic
@@ -762,12 +794,14 @@ class RequestAPITestCase(TestCase):
         }
 
         # Only dict value accepted
-        response = client.patch(self.request1_detail_url, data=data, format="json")
+        response = client.patch(self.request1_detail_url,
+                                data=data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"serialized_data": ["Invalid data content."]}
         self.assertEqual(expected, response.data)
 
-        response = client.put(self.request1_detail_url, data=data, format="json")
+        response = client.put(self.request1_detail_url,
+                              data=data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"serialized_data": ["Invalid data content."]}
         self.assertEqual(expected, response.data)
@@ -775,11 +809,13 @@ class RequestAPITestCase(TestCase):
         # Missing required label
         self.assertTrue(self.question1.is_required)
         data["serialized_data"] = {self.question2.label: "value"}
-        response = client.patch(self.request1_detail_url, data=data, format="json")
+        response = client.patch(self.request1_detail_url,
+                                data=data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"serialized_data": ['"Organization" is required.']}
         self.assertEqual(expected, response.data)
 
     def test_api_request_and_request_template_endpoints_tab_permission(self):
         self.assertEqual((TabPermission,), RequestViewSet.extra_permissions)
-        self.assertEqual((TabPermission,), RequestTemplateViewSet.extra_permissions)
+        self.assertEqual((TabPermission,),
+                         RequestTemplateViewSet.extra_permissions)

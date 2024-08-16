@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -119,7 +119,8 @@ class CreateRetrieveUpdateListViewSet(
     @action(detail=True, methods=["post"])
     def copy_to_my_dataspace(self, request, uuid):
         reference_dataspace = Dataspace.objects.get_reference()
-        permission_error = {"error": "You do not have rights to execute this action."}
+        permission_error = {
+            "error": "You do not have rights to execute this action."}
         reference_access = all(
             [
                 self.allow_reference_access,
@@ -166,7 +167,8 @@ class CreateRetrieveUpdateListViewSet(
         """Add the Addition History."""
         user = self.request.user
 
-        fields_name = [field.name for field in serializer.Meta.model._meta.get_fields()]
+        fields_name = [
+            field.name for field in serializer.Meta.model._meta.get_fields()]
         kwargs = {}
         if "created_by" in fields_name:
             kwargs["created_by"] = user
@@ -177,7 +179,8 @@ class CreateRetrieveUpdateListViewSet(
 
         History.log_addition(user, serializer.instance)
         if History.ADDITION in self.email_notification_on:
-            send_notification_email(self.request, serializer.instance, History.ADDITION)
+            send_notification_email(
+                self.request, serializer.instance, History.ADDITION)
 
     def perform_update(self, serializer):
         """Add the CHANGE History."""
@@ -191,7 +194,8 @@ class CreateRetrieveUpdateListViewSet(
                 changed_data.append(field_name)
                 changes_details.append((field_name, original_value, new_value))
 
-        fields_name = [field.name for field in serializer.Meta.model._meta.get_fields()]
+        fields_name = [
+            field.name for field in serializer.Meta.model._meta.get_fields()]
         kwargs = {}
         if "last_modified_by" in fields_name:
             kwargs["last_modified_by"] = user
@@ -203,12 +207,14 @@ class CreateRetrieveUpdateListViewSet(
         serializer.save(**kwargs)
 
         if changed_data:
-            change_message = [_("Changed {}.").format(get_text_list(changed_data, _("and")))]
+            change_message = [_("Changed {}.").format(
+                get_text_list(changed_data, _("and")))]
             change_message = " ".join(change_message)
         else:
             change_message = _("No fields changed.")
 
-        History.log_change(user, serializer.instance, change_message, serialized_data)
+        History.log_change(user, serializer.instance,
+                           change_message, serialized_data)
 
         if History.CHANGE in self.email_notification_on:
             change_message += construct_changes_details_message(
@@ -222,7 +228,8 @@ class CreateRetrieveUpdateListViewSet(
 class ExtraPermissionsViewSetMixin:
     def get_permissions(self):
         permission_classes = super().get_permissions()
-        extra_permission = [permission() for permission in self.extra_permissions]
+        extra_permission = [permission()
+                            for permission in self.extra_permissions]
         return permission_classes + extra_permission
 
 
@@ -307,7 +314,8 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
         if request:
             fields = self.apply_tabs_permission(fields, request.user)
 
-            protected_fields = get_protected_fields(self.Meta.model, request.user)
+            protected_fields = get_protected_fields(
+                self.Meta.model, request.user)
             for field_name in protected_fields:
                 if field_name in fields:
                     fields[field_name].read_only = True
@@ -342,7 +350,8 @@ class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
 
         if authorized_tabs:
             for tab in authorized_tabs:
-                authorized_fields.update(model_tabset.get(tab, {}).get("fields", []))
+                authorized_fields.update(
+                    model_tabset.get(tab, {}).get("fields", []))
 
             fields = {
                 field_name: field
@@ -385,7 +394,8 @@ class DataspacedRelatedFieldMixin:
         queryset = super().get_queryset()
 
         # Support for `many=True`
-        serializer_field = self.parent if isinstance(self.parent, ManyRelatedField) else self
+        serializer_field = self.parent if isinstance(
+            self.parent, ManyRelatedField) else self
 
         model_class = serializer_field.parent.Meta.model
         field_name = serializer_field.source
@@ -403,7 +413,8 @@ class DataspacedRelatedFieldMixin:
 
         if self.scope_content_type:
             if not is_content_type_related(field.related_model):
-                raise ImproperlyConfigured(f"`{field_name}` is not ContentType related")
+                raise ImproperlyConfigured(
+                    f"`{field_name}` is not ContentType related")
             content_type = ContentType.objects.get_for_model(model_class)
             queryset = queryset.filter(content_type=content_type)
 
@@ -486,14 +497,16 @@ class GenericForeignKeyHyperlinkedField(DataspacedHyperlinkedRelatedField):
 
         parent_model_opts = self.parent.Meta.model._meta
         field = parent_model_opts.get_field(self.field_name)
-        limit_choices_to = parent_model_opts.get_field(field.ct_field).get_limit_choices_to()
+        limit_choices_to = parent_model_opts.get_field(
+            field.ct_field).get_limit_choices_to()
         if limit_choices_to:
             try:
                 ContentType.objects.complex_filter(limit_choices_to).get(
                     app_label=related_opts.app_label, model=related_opts.model_name
                 )
             except ObjectDoesNotExist:
-                raise DRFValidationError(_("Invalid Object type."), code="incorrect_content_type")
+                raise DRFValidationError(
+                    _("Invalid Object type."), code="incorrect_content_type")
 
         lookup_value = match.kwargs[self.lookup_url_kwarg]
         lookup_kwargs = {self.lookup_field: lookup_value}
@@ -515,7 +528,8 @@ class ExternalReferenceSerializer(DataspacedSerializer):
     external_source = DataspacedSlugRelatedField(slug_field="label")
     content_type = serializers.StringRelatedField(source="content_type.model")
     content_object = GenericForeignKeyHyperlinkedField(lookup_field="uuid")
-    content_object_display_name = serializers.StringRelatedField(source="content_object")
+    content_object_display_name = serializers.StringRelatedField(
+        source="content_object")
 
     class Meta:
         model = ExternalReference
@@ -597,7 +611,8 @@ class AboutCodeFilesActionMixin:
 class SPDXDocumentActionMixin:
     @action(detail=True, name="Download SPDX document")
     def spdx_document(self, request, uuid):
-        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
+        spdx_document = outputs.get_spdx_document(
+            self.get_object(), self.request.user)
 
         spdx_document_json = spdx_document.as_json()
 
@@ -616,7 +631,8 @@ class CycloneDXSOMActionMixin:
 
         cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
         try:
-            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(
+                cyclonedx_bom, spec_version)
         except ValueError:
             error = f"Spec version {spec_version} not supported"
             return Response(error, status=status.HTTP_400_BAD_REQUEST)

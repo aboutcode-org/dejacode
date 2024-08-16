@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -40,7 +40,8 @@ class ReportAPITestCase(TestCase):
         self.component1 = self.component_ct.model_class().objects.create(
             name="component1", version="1.0", dataspace=self.dataspace
         )
-        self.license_ct = ContentType.objects.get(app_label="license_library", model="license")
+        self.license_ct = ContentType.objects.get(
+            app_label="license_library", model="license")
 
         self.query1 = Query.objects.create(
             dataspace=self.dataspace, name="Q1", content_type=self.component_ct, operator="and"
@@ -64,9 +65,12 @@ class ReportAPITestCase(TestCase):
             name="Report3", query=self.query1, column_template=self.column_template1
         )
 
-        self.report1_detail_url = reverse("api_v2:report-detail", args=[self.report1.uuid])
-        self.report2_detail_url = reverse("api_v2:report-detail", args=[self.report2.uuid])
-        self.report3_detail_url = reverse("api_v2:report-detail", args=[self.report3.uuid])
+        self.report1_detail_url = reverse(
+            "api_v2:report-detail", args=[self.report1.uuid])
+        self.report2_detail_url = reverse(
+            "api_v2:report-detail", args=[self.report2.uuid])
+        self.report3_detail_url = reverse(
+            "api_v2:report-detail", args=[self.report3.uuid])
 
     def test_api_report_list_endpoint_user_available_scope(self):
         self.client.login(username="super_user", password="secret")
@@ -76,8 +80,10 @@ class ReportAPITestCase(TestCase):
         self.assertContains(response, self.report2_detail_url)
         self.assertNotContains(response, self.report3_detail_url)
         self.assertEqual(2, response.data["count"])
-        self.assertEqual(self.report1.name, response.data["results"][0]["name"])
-        self.assertEqual(self.report2.name, response.data["results"][1]["name"])
+        self.assertEqual(self.report1.name,
+                         response.data["results"][0]["name"])
+        self.assertEqual(self.report2.name,
+                         response.data["results"][1]["name"])
 
         # results field only available on details view
         self.assertNotIn("results", response.data["results"][0].keys())
@@ -137,15 +143,19 @@ class ReportAPITestCase(TestCase):
         self.assertContains(response, self.report1_detail_url)
         self.assertIn(self.report1_detail_url, response.data["api_url"])
         self.assertEqual(str(self.report1.uuid), response.data["uuid"])
-        self.assertEqual(self.report1.column_template.name, response.data["column_template"])
-        self.assertEqual(self.report1.description, response.data["description"])
+        self.assertEqual(self.report1.column_template.name,
+                         response.data["column_template"])
+        self.assertEqual(self.report1.description,
+                         response.data["description"])
         expected_url = f"http://testserver{self.report1.get_absolute_url()}"
         self.assertEqual(expected_url, response.data["absolute_url"])
         self.assertEqual(self.report1.name, response.data["name"])
-        self.assertEqual(self.report1.query.content_type.model, response.data["content_type"])
+        self.assertEqual(self.report1.query.content_type.model,
+                         response.data["content_type"])
         self.assertEqual(self.report1.query.name, response.data["query"])
 
-        expected = [OrderedDict([("Display Name", "component1"), ("version", "1.0")])]
+        expected = [OrderedDict(
+            [("Display Name", "component1"), ("version", "1.0")])]
         self.assertEqual(expected, response.data["results"])
 
     def test_api_report_endpoint_tab_permission(self):

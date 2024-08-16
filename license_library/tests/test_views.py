@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -44,8 +44,10 @@ class LicenseListViewTestCase(TestCase):
         self.other_user = get_user_model().objects.create_superuser(
             "other_user", "other@test.com", "t3st", self.other_dataspace
         )
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.nexb_dataspace)
-        self.owner2 = Owner.objects.create(name="Owner2", dataspace=self.nexb_dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Owner1", dataspace=self.nexb_dataspace)
+        self.owner2 = Owner.objects.create(
+            name="Owner2", dataspace=self.nexb_dataspace)
         self.category1 = LicenseCategory.objects.create(
             label="1: Category 1",
             text="Some text",
@@ -128,7 +130,8 @@ class LicenseListViewTestCase(TestCase):
             value=None,
             dataspace=self.nexb_dataspace,
         )
-        self.group1 = LicenseTagGroup.objects.create(name="Group 1", dataspace=self.nexb_dataspace)
+        self.group1 = LicenseTagGroup.objects.create(
+            name="Group 1", dataspace=self.nexb_dataspace)
         self.license_tag_assigned_group1 = LicenseTagGroupAssignedTag.objects.create(
             license_tag_group=self.group1,
             license_tag=self.license_tag1,
@@ -141,7 +144,8 @@ class LicenseListViewTestCase(TestCase):
 
         response = self.client.get(url)
         self.assertRedirects(
-            response, "{}?next={}".format(reverse("login"), reverse("license_library:license_list"))
+            response, "{}?next={}".format(
+                reverse("login"), reverse("license_library:license_list"))
         )
 
         self.client.login(username="nexb_user", password="t3st")
@@ -229,7 +233,8 @@ class LicenseListViewTestCase(TestCase):
         self.client.login(username="nexb_user", password="t3st")
         # Using Unicode chars in the search input
         data = {"q": ",\xe2\xc3"}
-        response = self.client.get(reverse("license_library:license_list"), data)
+        response = self.client.get(
+            reverse("license_library:license_list"), data)
         # Making sure a 500 is not raised
         self.assertEqual(200, response.status_code)
 
@@ -238,7 +243,8 @@ class LicenseListViewTestCase(TestCase):
         self.license1.name = "name with special chars c++"
         self.license1.save()
         data = {"q": "c++"}
-        response = self.client.get(reverse("license_library:license_list"), data)
+        response = self.client.get(
+            reverse("license_library:license_list"), data)
         self.assertEqual(200, response.status_code)
 
     def test_license_library_details_license_profile_tab(self):
@@ -248,7 +254,8 @@ class LicenseListViewTestCase(TestCase):
 
         self.assertContains(response, 'id="tab_license-conditions"')
         self.assertContains(response, f"{self.group1.name}")
-        self.assertContains(response, f"<strong>{self.license_tag1.label}</strong>")
+        self.assertContains(
+            response, f"<strong>{self.license_tag1.label}</strong>")
         self.assertContains(response, f"{self.license_tag1.text}</p>")
 
     def test_license_library_list_previous_next_license_link(self):
@@ -289,12 +296,14 @@ class LicenseListViewTestCase(TestCase):
             self.client.get(reverse("license_library:license_list"))
 
     def test_license_profile_column_availability_in_license_list_view(self):
-        self.assertTrue(self.nexb_dataspace.show_license_profile_in_license_list_view)
+        self.assertTrue(
+            self.nexb_dataspace.show_license_profile_in_license_list_view)
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("license_library:license_list")
 
         response = self.client.get(url)
-        expected1 = '<option value="{name}">{name}</option>'.format(name=self.license_profile1.name)
+        expected1 = '<option value="{name}">{name}</option>'.format(
+            name=self.license_profile1.name)
         self.assertContains(response, expected1, html=True)
 
         # Switch the flag
@@ -304,7 +313,8 @@ class LicenseListViewTestCase(TestCase):
         self.assertNotContains(response, expected1, html=True)
 
     def test_license_spdx_identifier_availability_in_license_list_view(self):
-        self.assertFalse(self.nexb_dataspace.show_spdx_short_identifier_in_license_list_view)
+        self.assertFalse(
+            self.nexb_dataspace.show_spdx_short_identifier_in_license_list_view)
         self.client.login(username="nexb_user", password="t3st")
         url = reverse("license_library:license_list")
         self.license1.spdx_license_key = "SPDX Key"
@@ -357,7 +367,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
             "other_user", "other@test.com", "t3st", self.other_dataspace
         )
 
-        self.owner1 = Owner.objects.create(name="Test Organization", dataspace=self.nexb_dataspace)
+        self.owner1 = Owner.objects.create(
+            name="Test Organization", dataspace=self.nexb_dataspace)
         self.category1 = LicenseCategory.objects.create(
             label="1: Category 1",
             text="Some text",
@@ -475,7 +486,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
             value=True,
             dataspace=self.nexb_dataspace,
         )
-        group1 = LicenseTagGroup.objects.create(name="Group 1", dataspace=self.nexb_dataspace)
+        group1 = LicenseTagGroup.objects.create(
+            name="Group 1", dataspace=self.nexb_dataspace)
         LicenseTagGroupAssignedTag.objects.create(
             license_tag_group=group1, license_tag=license_tag1, seq=1, dataspace=self.nexb_dataspace
         )
@@ -547,7 +559,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         self.assertNotContains(response, expected6)
         self.assertNotContains(response, expected7)
 
-        copied_object = copy_object(self.license1, self.other_dataspace, self.other_user)
+        copied_object = copy_object(
+            self.license1, self.other_dataspace, self.other_user)
         response = self.client.get(url)
         self.assertNotContains(response, expected4)
         self.assertContains(response, expected4_update)
@@ -592,7 +605,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         self.assertNotContains(response, "Selected Owner")
         self.assertNotContains(response, "Child Owners")
 
-        child_owner = Owner.objects.create(name="ChildOwner", dataspace=self.nexb_dataspace)
+        child_owner = Owner.objects.create(
+            name="ChildOwner", dataspace=self.nexb_dataspace)
         Subowner.objects.create(
             parent=self.owner1, child=child_owner, dataspace=self.nexb_dataspace
         )
@@ -605,11 +619,13 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(
             response,
-            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(self.owner1.id),
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(
+                self.owner1.id),
         )
         self.assertContains(
             response,
-            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(child_owner.id),
+            '<div id="owner_{}" class="card bg-body-tertiary mb-2">'.format(
+                child_owner.id),
         )
         self.assertContains(
             response, f"{{source: 'owner_{child_owner.id}', target: 'owner_{self.owner1.id}'}}"
@@ -647,7 +663,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="t3st")
         url = self.license1.get_absolute_url()
 
-        tag1 = LicenseTag.objects.create(label="Tag1", text="Text1", dataspace=self.nexb_dataspace)
+        tag1 = LicenseTag.objects.create(
+            label="Tag1", text="Text1", dataspace=self.nexb_dataspace)
         assigned_tag1 = LicenseAssignedTag.objects.create(
             license=self.license1, license_tag=tag1, value=False, dataspace=self.nexb_dataspace
         )
@@ -682,6 +699,8 @@ class LicenseDetailsViewsTestCase(MaxQueryMixin, TestCase):
         url = self.license1.get_download_text_url()
 
         response = self.client.get(url)
-        self.assertEqual(b"abcdefghigklmnopqrstuvwxyz1234567890", response.getvalue())
+        self.assertEqual(
+            b"abcdefghigklmnopqrstuvwxyz1234567890", response.getvalue())
         self.assertEqual("text/plain", response["Content-Type"])
-        self.assertEqual('attachment; filename="license1.LICENSE"', response["Content-Disposition"])
+        self.assertEqual('attachment; filename="license1.LICENSE"',
+                         response["Content-Disposition"])

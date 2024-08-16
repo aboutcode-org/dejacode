@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -53,6 +53,7 @@ def resolve(urn, dataspace):
     model = model_data["model"]
 
     # Using ContentType to get the corresponding Model
-    model_class = ContentType.objects.get_by_natural_key(app_label, model).model_class()
+    model_class = ContentType.objects.get_by_natural_key(
+        app_label, model).model_class()
 
     return model_class.objects.get(**filters)

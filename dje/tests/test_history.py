@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -23,7 +23,8 @@ class HistoryTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="Dataspace")
         self.super_user = create_superuser("super_user", self.dataspace)
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.dataspace)
 
     def test_history_on_admin_owner_add(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -91,10 +92,12 @@ class HistoryTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(new_name, Owner.objects.get(id=self.owner.id).name)
 
-        history = History.objects.get_for_object(self.owner, action_flag=History.CHANGE).get()
+        history = History.objects.get_for_object(
+            self.owner, action_flag=History.CHANGE).get()
         self.assertEqual(self.dataspace, history.object_dataspace)
         self.assertEqual(self.super_user.id, history.user_id)
-        self.assertEqual('[{"changed": {"fields": ["Name"]}}]', history.change_message)
+        self.assertEqual(
+            '[{"changed": {"fields": ["Name"]}}]', history.change_message)
         self.assertEqual("Changed Name.", history.get_change_message())
 
     def test_activity_log_view_get_history_entries(self):
@@ -145,9 +148,11 @@ class HistoryTestCase(TestCase):
         self.assertTrue(some_user.is_active)
         data = {"post": "yes"}
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse("admin:dje_dejacodeuser_changelist"))
+        self.assertRedirects(response, reverse(
+            "admin:dje_dejacodeuser_changelist"))
         some_user.refresh_from_db()
         self.assertFalse(some_user.is_active)
 
-        history = History.objects.get_for_object(some_user, action_flag=History.CHANGE).get()
+        history = History.objects.get_for_object(
+            some_user, action_flag=History.CHANGE).get()
         self.assertEqual("Set as inactive.", history.change_message)

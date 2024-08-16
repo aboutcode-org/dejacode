@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -245,7 +245,8 @@ class DejaCodeLDAPBackendTestCase(TestCase):
 
     def test_ldap_group_active_properly_setup_and_searchable(self):
         conn = ldap.initialize("ldap://localhost/")
-        results = conn.search_s("ou=groups,dc=nexb,dc=com", ldap.SCOPE_ONELEVEL, "(cn=active)")
+        results = conn.search_s(
+            "ou=groups,dc=nexb,dc=com", ldap.SCOPE_ONELEVEL, "(cn=active)")
 
         expected = [
             (
@@ -261,19 +262,22 @@ class DejaCodeLDAPBackendTestCase(TestCase):
 
     @override_settings(AUTH_LDAP_FIND_GROUP_PERMS=True)
     def test_ldap_authentication_group_permissions(self):
-        bob = create_user("bob", self.nexb_dataspace, email="bob@test.com", is_staff=True)
+        bob = create_user("bob", self.nexb_dataspace,
+                          email="bob@test.com", is_staff=True)
         bob.groups.add(self.dejacode_group1)
 
         self.assertFalse(bob.has_perm("license_library.change_license"))
 
         # Using the LDAPBackend adds the `ldap_user` to the `user` instance
-        bob = DejaCodeLDAPBackend().authenticate(request=None, username="bob", password="secret")
+        bob = DejaCodeLDAPBackend().authenticate(
+            request=None, username="bob", password="secret")
 
         # Even if not available in the database `Group` table,
         # the LDAP groups assigned to the user are returned in `ldap_user.group_names`.
         # No permissions can be loaded from those though.
         self.assertFalse(Group.objects.filter(name="not_in_database").exists())
-        self.assertEqual({"active", "not_in_database", "superuser"}, bob.ldap_user.group_names)
+        self.assertEqual({"active", "not_in_database",
+                         "superuser"}, bob.ldap_user.group_names)
         expected_group_dns = {
             "cn=active,ou=groups,dc=nexb,dc=com",
             "cn=not_in_database,ou=groups,dc=nexb,dc=com",
@@ -283,7 +287,8 @@ class DejaCodeLDAPBackendTestCase(TestCase):
 
         expected_perms = "license_library.change_license"
         self.assertTrue(bob.has_perm(expected_perms))
-        self.assertEqual({expected_perms}, bob.ldap_user.get_group_permissions())
+        self.assertEqual({expected_perms},
+                         bob.ldap_user.get_group_permissions())
         # WARNING: The permissions are properly available through `user.get_all_permissions()`
         # but the Group inherited from LDAP are not in `user.groups` since it's a DB relation.
         # Those are available from `user.ldap_user.group_names` and `user.get_group_names()`
@@ -292,11 +297,15 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         expected_group = ["active", "group1", "not_in_database", "superuser"]
         self.assertEqual(expected_group, sorted(bob.get_group_names()))
 
-        license_changelist_url = reverse("admin:license_library_license_changelist")
-        component_changelist_url = reverse("admin:component_catalog_component_changelist")
+        license_changelist_url = reverse(
+            "admin:license_library_license_changelist")
+        component_changelist_url = reverse(
+            "admin:component_catalog_component_changelist")
         self.assertTrue(self.client.login(username="bob", password="secret"))
-        self.assertEqual(200, self.client.get(license_changelist_url).status_code)
-        self.assertEqual(403, self.client.get(component_changelist_url).status_code)
+        self.assertEqual(200, self.client.get(
+            license_changelist_url).status_code)
+        self.assertEqual(403, self.client.get(
+            component_changelist_url).status_code)
 
         with override_settings(AUTH_LDAP_FIND_GROUP_PERMS=False):
             bob = DejaCodeLDAPBackend().authenticate(
@@ -309,9 +318,11 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         bob = create_user("bob", self.nexb_dataspace)
         self.assertFalse(bob.is_superuser)
 
-        bob = DejaCodeLDAPBackend().authenticate(request=None, username="bob", password="secret")
+        bob = DejaCodeLDAPBackend().authenticate(
+            request=None, username="bob", password="secret")
         self.assertFalse(bob.is_superuser)
-        self.assertEqual({"active", "not_in_database", "superuser"}, bob.ldap_user.group_names)
+        self.assertEqual({"active", "not_in_database",
+                         "superuser"}, bob.ldap_user.group_names)
 
         user_flags_by_group = {
             "is_superuser": "cn=superuser,ou=groups,dc=nexb,dc=com",
@@ -338,7 +349,8 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         from component_catalog.views import ComponentDetailsView
 
         create_user("bob", self.nexb_dataspace)
-        bob = DejaCodeLDAPBackend().authenticate(request=None, username="bob", password="secret")
+        bob = DejaCodeLDAPBackend().authenticate(
+            request=None, username="bob", password="secret")
 
         component1 = Component.objects.create(
             name="c1", notice_text="NOTICE", dataspace=self.nexb_dataspace
@@ -351,14 +363,16 @@ class DejaCodeLDAPBackendTestCase(TestCase):
 
         # No configuration, all tabs available
         self.assertEqual(
-            ["Essentials", "Notice", "History"], list(tabset_view.get_tabsets().keys())
+            ["Essentials", "Notice", "History"], list(
+                tabset_view.get_tabsets().keys())
         )
 
         configuration = DataspaceConfiguration.objects.create(
             dataspace=self.nexb_dataspace,
             tab_permissions={"NotAssigned": {"component": ["notice"]}},
         )
-        bob = DejaCodeLDAPBackend().authenticate(request=None, username="bob", password="secret")
+        bob = DejaCodeLDAPBackend().authenticate(
+            request=None, username="bob", password="secret")
         tabset_view.request.user = bob
         self.assertEqual([], list(tabset_view.get_tabsets().keys()))
 
@@ -366,7 +380,8 @@ class DejaCodeLDAPBackendTestCase(TestCase):
             "active": {"component": ["notice"]},
         }
         configuration.save()
-        bob = DejaCodeLDAPBackend().authenticate(request=None, username="bob", password="secret")
+        bob = DejaCodeLDAPBackend().authenticate(
+            request=None, username="bob", password="secret")
         tabset_view.request.user = bob
         self.assertEqual(["Notice"], list(tabset_view.get_tabsets().keys()))
 

@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -50,7 +50,8 @@ class NotificationTasksTestCase(TestCase):
             dataspace=self.nexb_user.dataspace,
         )
 
-        self.priority1 = Priority.objects.create(label="Urgent", dataspace=self.nexb_dataspace)
+        self.priority1 = Priority.objects.create(
+            label="Urgent", dataspace=self.nexb_dataspace)
 
     @patch("requests.Session.post", autospec=True)
     def test_notification_task_on_workflow_request_creation_generic_url(self, method_mock):
@@ -84,7 +85,8 @@ class NotificationTasksTestCase(TestCase):
         data = results["data"]
         self.assertEqual(str(request1.uuid), data["uuid"])
         self.assertEqual(request1.title, data["title"])
-        self.assertEqual(self.request_template1.name, data["request_template_name"])
+        self.assertEqual(self.request_template1.name,
+                         data["request_template_name"])
         self.assertEqual("open", data["status"])
         self.assertEqual(self.nexb_user.username, data["assignee"])
 
@@ -167,7 +169,8 @@ class NotificationTasksTestCase(TestCase):
         data = results["data"]
         self.assertEqual(str(request1.uuid), data["uuid"])
         self.assertEqual(request1.title, data["title"])
-        self.assertEqual(self.request_template1.name, data["request_template_name"])
+        self.assertEqual(self.request_template1.name,
+                         data["request_template_name"])
         self.assertEqual("open", data["status"])
         self.assertEqual(self.nexb_user.username, data["assignee"])
 

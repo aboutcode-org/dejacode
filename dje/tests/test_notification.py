@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -43,7 +43,8 @@ class EmailNotificationTest(TestCase):
         self.user = get_user_model().objects.create_superuser(
             "test", "test@test.com", "t3st", self.dataspace, data_email_notification=True
         )
-        self.owner = Owner.objects.create(name="Test Organization", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(
+            name="Test Organization", dataspace=self.dataspace)
 
     @override_settings(
         EMAIL_HOST_USER=None,
@@ -87,8 +88,10 @@ class EmailNotificationTest(TestCase):
         self.user.save()
         send_notification_email(request, self.owner, notification.ADDITION)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Added Owner: "{self.owner}"')
-        self.assertIn(f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].subject,
+                         f'Added Owner: "{self.owner}"')
+        self.assertIn(
+            f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
 
         # Sending a notification on a empty string object
         # Nothing is sent as it's not dataspace related
@@ -97,11 +100,13 @@ class EmailNotificationTest(TestCase):
 
         # Sending a change notification with the 'No fields changed.' message
         # Nothing is sent
-        send_notification_email(request, self.owner, notification.CHANGE, "No fields changed.")
+        send_notification_email(request, self.owner,
+                                notification.CHANGE, "No fields changed.")
         self.assertEqual(len(mail.outbox), 1)
 
         # Sending a change notification with a change message
-        send_notification_email(request, self.owner, notification.CHANGE, "Some changes...")
+        send_notification_email(request, self.owner,
+                                notification.CHANGE, "Some changes...")
 
         self.assertEqual(len(mail.outbox), 2)
 
@@ -115,38 +120,45 @@ class EmailNotificationTest(TestCase):
         # No recipient, no mail
         self.user.data_email_notification = False
         self.user.save()
-        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(
+            request, queryset, notification.CHANGE)
         self.assertEqual(len(mail.outbox), 0)
 
         # Proper object and user, notification is sent
         self.user.data_email_notification = True
         self.user.save()
-        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(
+            request, queryset, notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(len(queryset), 1)
-        self.assertEqual(mail.outbox[0].subject, f'Updated Owner: "{self.owner}"')
-        self.assertIn(f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[0].subject,
+                         f'Updated Owner: "{self.owner}"')
+        self.assertIn(
+            f"http://testserver{self.owner.get_admin_url()}", mail.outbox[0].body)
 
         # Using an empty queryset, nothing is sent
         send_notification_email_on_queryset(request, [], notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
 
         # Using a queryset of non-dataspace related object (empty strings)
-        send_notification_email_on_queryset(request, ["", ""], notification.CHANGE)
+        send_notification_email_on_queryset(
+            request, ["", ""], notification.CHANGE)
         self.assertEqual(len(mail.outbox), 1)
 
         Owner.objects.create(name="Organization2", dataspace=self.dataspace)
         queryset = Owner.objects.all()
 
         self.assertEqual(len(queryset), 2)
-        send_notification_email_on_queryset(request, queryset, notification.CHANGE)
+        send_notification_email_on_queryset(
+            request, queryset, notification.CHANGE)
         self.assertEqual(mail.outbox[1].subject, "Multiple Owners updated")
         self.assertIn(str(self.owner), mail.outbox[1].body)
 
     def test_notification_with_body_containing_unicode_chars(self):
         line = "Ã™â€ž"
         self.assertEqual(len(mail.outbox), 0)
-        Owner.objects.create(name="Test2 Organization", dataspace=self.dataspace)
+        Owner.objects.create(name="Test2 Organization",
+                             dataspace=self.dataspace)
         queryset = Owner.objects.all()
 
         request = self.factory.get("")
@@ -155,7 +167,8 @@ class EmailNotificationTest(TestCase):
         # Proper object and user, notification is sent
         self.user.data_email_notification = True
         self.user.save()
-        send_notification_email_on_queryset(request, queryset, notification.CHANGE, line)
+        send_notification_email_on_queryset(
+            request, queryset, notification.CHANGE, line)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(len(queryset), 2)
@@ -232,8 +245,10 @@ class EmailNotificationTest(TestCase):
         # present in the notification
         self.client.login(username="test", password="t3st")
         owner = Owner.objects.create(name="Org", dataspace=self.dataspace)
-        person = Owner.objects.create(name="person", type="Person", dataspace=self.dataspace)
-        person2 = Owner.objects.create(name="person2", type="Person", dataspace=self.dataspace)
+        person = Owner.objects.create(
+            name="person", type="Person", dataspace=self.dataspace)
+        person2 = Owner.objects.create(
+            name="person2", type="Person", dataspace=self.dataspace)
         subowner = Subowner.objects.create(
             parent=owner,
             child=person,
@@ -280,8 +295,10 @@ class EmailNotificationTest(TestCase):
         # We do not give details on the related ADDITION
         self.client.login(username="test", password="t3st")
 
-        owner = Owner.objects.create(name="Org", type="Organization", dataspace=self.dataspace)
-        person = Owner.objects.create(name="person", type="Person", dataspace=self.dataspace)
+        owner = Owner.objects.create(
+            name="Org", type="Organization", dataspace=self.dataspace)
+        person = Owner.objects.create(
+            name="person", type="Person", dataspace=self.dataspace)
 
         url = owner.get_admin_url()
         params = {
@@ -300,7 +317,8 @@ class EmailNotificationTest(TestCase):
 
         self.client.post(url, params)
         notification_body = mail.outbox[0].body
-        self.assertTrue("Added subowner “Parent: Org ; Child: person”." in notification_body)
+        self.assertTrue(
+            "Added subowner “Parent: Org ; Child: person”." in notification_body)
 
     def test_notification_delete_selected_action(self):
         org = Owner.objects.create(name="Owner2", dataspace=self.dataspace)
