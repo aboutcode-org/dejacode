@@ -6,10 +6,14 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import logging
+
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 class DejaCodeConfig(AppConfig):
@@ -47,3 +51,27 @@ class DejaCodeConfig(AppConfig):
             from dje.notification import notify_on_user_added_or_updated
 
             post_save.connect(notify_on_user_added_or_updated, sender=get_user_model())
+
+        if settings.DEJACODE_ASYNC:
+            logger.info("Schedule vulnerabilities update")
+            self.schedule_vulnerabilities_update()
+
+    @staticmethod
+    def schedule_vulnerabilities_update():
+        """Create a scheduled task to update vulnerabilities daily."""
+        import django_rq
+
+        from dje.tasks import update_vulnerabilies
+
+        scheduler = django_rq.get_scheduler("default")
+
+        # Cancel all scheduled jobs
+        for job in list(scheduler.get_jobs()):
+            scheduler.cancel(job)
+
+        # Create a repeating job executed daily at fixed times
+        scheduler.cron(
+            cron_string="0 3 * * *",  # Every day at 3:00am
+            func=update_vulnerabilies,
+            result_ttl=300,
+        )

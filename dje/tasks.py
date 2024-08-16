@@ -229,29 +229,17 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.notify(verb=notification_verb, description=description)
 
 
-@job("default", timeout=1200)
+def fetch_vulnerabilities(dataspace):
+    logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
+    dataspace.vulnerabilities_updated_at = timezone.now()
+    dataspace.save(update_fields=["vulnerabilities_updated_at"])
+
+
+@job("default", timeout=10800)  # 3 hours
 def update_vulnerabilies():
-    """
-    import django_rq
-    from dje.tasks import update_vulnerabilies
-
-    scheduler = django_rq.get_scheduler('default')
-    scheduler.cron(
-        cron_string="* * * * *",
-        func=update_vulnerabilies,
-        repeat=None,
-        result_ttl=300,
-        ttl=200,
-        use_local_timezone=True,
-    )
-
-    # Cancel all scheduled jobs
-    list_of_scheduled_job = list(scheduler.get_jobs())
-    for job in list_of_scheduled_job:
-        scheduler.cancel(job)
-    """
+    """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
+    logger.info("Entering update_vulnerabilies task")
     Dataspace = apps.get_model("dje", "Dataspace")
     dataspace_qs = Dataspace.objects.filter(enable_vulnerablecodedb_access=True)
     for dataspace in dataspace_qs:
-        dataspace.vulnerabilities_updated_at = timezone.now()
-        dataspace.save(update_fields=["vulnerabilities_updated_at"])
+        fetch_vulnerabilities(dataspace)

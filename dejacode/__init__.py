@@ -70,6 +70,8 @@ __version__ = get_version(VERSION)
 
 # Turn off the warnings for the following modules.
 warnings.filterwarnings("ignore", module="cyclonedx")
+# TODO:
+warnings.filterwarnings("ignore", module="crontab")
 
 
 def command_line():
