@@ -89,8 +89,7 @@ class ModelChoiceFieldForImport(ModelChoiceField):
                     pass
                 else:
                     # Injecting a special value for display in UI
-                    self.value_for_display = object.get_admin_link(
-                        target="_blank")
+                    self.value_for_display = object.get_admin_link(target="_blank")
 
         return super().clean(value)
 
@@ -119,11 +118,9 @@ class BaseImportModelForm(ModelFormWithWarnings):
                 model = field.queryset.model
                 extra_filters = {}
                 if is_content_type_related(model):
-                    content_type = ContentType.objects.get_for_model(
-                        self._meta.model)
+                    content_type = ContentType.objects.get_for_model(self._meta.model)
                     extra_filters["content_type"] = content_type
-                pk = get_object_pk(value, field.queryset.model,
-                                   self.dataspace, extra_filters)
+                pk = get_object_pk(value, field.queryset.model, self.dataspace, extra_filters)
                 if pk:
                     data[prefix] = pk
 
@@ -194,24 +191,20 @@ class BaseImportModelForm(ModelFormWithWarnings):
                 continue
 
             form_field = self.fields[fk_field.name]
-            form_field.queryset = fk_field.related_model.objects.scope(
-                self.dataspace)
+            form_field.queryset = fk_field.related_model.objects.scope(self.dataspace)
 
             if is_content_type_related(fk_field.related_model):
                 form_field.queryset = form_field.queryset.filter(
-                    content_type=ContentType.objects.get_for_model(
-                        self._meta.model)
+                    content_type=ContentType.objects.get_for_model(self._meta.model)
                 )
 
             identifier_field = getattr(form_field, "identifier_field", None)
             if not identifier_field:
                 continue
 
-            choices = [str(getattr(choice, identifier_field, ""))
-                       for choice in form_field.queryset]
+            choices = [str(getattr(choice, identifier_field, "")) for choice in form_field.queryset]
             form_field.error_messages["invalid_choice"] = (
-                'That choice is not one of the available choices: "{}"'.format(
-                    ", ".join(choices))
+                'That choice is not one of the available choices: "{}"'.format(", ".join(choices))
             )
 
         for field_name, field in self.fields.items():
@@ -277,8 +270,7 @@ class BaseImportModelFormSet(BaseModelFormSet):
             if not cleaned_data:
                 continue
 
-            values = [str(cleaned_data.get(field_name))
-                      for field_name in fields_name]
+            values = [str(cleaned_data.get(field_name)) for field_name in fields_name]
 
             if values not in all_values:
                 all_values.append(values)
@@ -383,8 +375,7 @@ class BaseImporter:
             elif header not in self.headers:
                 self.headers.append(header)
             else:
-                self.fatal_errors.append(
-                    f'Column "{header}" is listed more than once.')
+                self.fatal_errors.append(f'Column "{header}" is listed more than once.')
 
     def get_reader(self):
         # Encoding is assumed to be either UTF-8 or Windows-1252 (because Excel
@@ -470,8 +461,7 @@ class BaseImporter:
         # Headers validation. Verifies that the required columns are present
         for field in self.required_fields:
             if field not in header_row:
-                self.fatal_errors.append(
-                    f'Required column missing: "{field}".')
+                self.fatal_errors.append(f'Required column missing: "{field}".')
 
         self.build_headers(header_row)
 
@@ -487,8 +477,7 @@ class BaseImporter:
                 continue
 
             if len(row) != header_row_len:
-                self.fatal_errors.append(
-                    f"Row at line {line_number} is not valid.")
+                self.fatal_errors.append(f"Row at line {line_number} is not valid.")
                 return
 
             row_as_dict = {}
@@ -505,8 +494,7 @@ class BaseImporter:
             return
 
         if len(input_as_list_of_dict) > DEFAULT_MAX_NUM:
-            self.fatal_errors.append(
-                f"Import limited to {DEFAULT_MAX_NUM} rows")
+            self.fatal_errors.append(f"Import limited to {DEFAULT_MAX_NUM} rows")
             return
 
         return input_as_list_of_dict
@@ -580,8 +568,7 @@ class BaseImporter:
         available.
         Note that this can only be done on an instance of the model_form.
         """
-        model_form_instance = self.model_form(
-            dataspace=self.dataspace, user=self.user)
+        model_form_instance = self.model_form(dataspace=self.dataspace, user=self.user)
 
         for field in model_form_instance.fields.values():
             field.supported_values = self.get_supported_values(field)
@@ -618,8 +605,7 @@ class BaseImporter:
             # We need to refresh the instance from the db because form.instance has
             # the unsaved form.cleaned_data modification at that stage.
             instance.refresh_from_db()
-            updated_fields = instance.update_from_data(
-                self.user, form.cleaned_data, override=False)
+            updated_fields = instance.update_from_data(self.user, form.cleaned_data, override=False)
             if updated_fields:
                 self.results["modified"].append(instance)
                 msg = f'Updated {", ".join(updated_fields)} from import'
@@ -675,8 +661,7 @@ def import_view(request, importer_class):
 
     if request.GET.get("get_template"):  # ?get_template=1
         header = ",".join(importer.required_fields + importer.supported_fields)
-        filename = "{}_import_template.csv".format(
-            importer.verbose_name.replace(" ", "_"))
+        filename = "{}_import_template.csv".format(importer.verbose_name.replace(" ", "_"))
         response = HttpResponse(header, content_type="application/csv")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
@@ -718,8 +703,7 @@ class ComponentRelatedFieldImportMixin:
         try:
             return extract_name_version(str_value)
         except SyntaxError:
-            raise forms.ValidationError(
-                'Invalid format. Expected format: "<name>:<version>".')
+            raise forms.ValidationError('Invalid format. Expected format: "<name>:<version>".')
 
     def _clean_name_version_related_field(self, field_name, model_class, queryset=None):
         cleaned_data = self.cleaned_data.get(field_name)
@@ -735,10 +719,8 @@ class ComponentRelatedFieldImportMixin:
         try:
             cleaned_data = queryset.get(name=name, version=version)
         except ObjectDoesNotExist:
-            raise forms.ValidationError(
-                f"Could not find the {model_class._meta.verbose_name}.")
+            raise forms.ValidationError(f"Could not find the {model_class._meta.verbose_name}.")
         else:
-            field.value_for_display = cleaned_data.get_admin_link(
-                target="_blank")
+            field.value_for_display = cleaned_data.get_admin_link(target="_blank")
 
         return cleaned_data

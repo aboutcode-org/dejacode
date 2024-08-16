@@ -61,8 +61,7 @@ class PurlDB(BaseService):
 
     def find_packages(self, payload, timeout=None):
         """Get Packages details using provided `payload` filters on the PurlDB package list."""
-        response = self.request_get(
-            self.package_api_url, params=payload, timeout=timeout)
+        response = self.request_get(self.package_api_url, params=payload, timeout=timeout)
         if response and response.get("count") > 0:
             return response.get("results")
 
@@ -86,7 +85,6 @@ def pick_purldb_entry(purldb_entries, purl=None):
         return purldb_entries[0]
 
     if purl:
-        matches = [
-            entry for entry in purldb_entries if entry.get("purl") == purl]
+        matches = [entry for entry in purldb_entries if entry.get("purl") == purl]
         if len(matches) == 1:
             return matches[0]

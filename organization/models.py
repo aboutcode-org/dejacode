@@ -51,15 +51,13 @@ class Owner(
         ),
     )
 
-    notes = models.TextField(blank=True, help_text=_(
-        "Extended notes about an owner."))
+    notes = models.TextField(blank=True, help_text=_("Extended notes about an owner."))
 
     alias = models.CharField(
         db_index=True,
         max_length=500,
         blank=True,
-        help_text=_(
-            "Alternative spellings of the name of the owner as a comma-separated list."),
+        help_text=_("Alternative spellings of the name of the owner as a comma-separated list."),
     )
 
     OWNER_TYPE_CHOICES = (
@@ -187,5 +185,4 @@ class Subowner(ParentChildRelationshipModel):
     class Meta:
         # We have a special case for this Model, one Owner can be assigned
         # more than once as child or parent of the same Owner.
-        unique_together = (("parent", "child", "start_date",
-                           "end_date"), ("dataspace", "uuid"))
+        unique_together = (("parent", "child", "start_date", "end_date"), ("dataspace", "uuid"))

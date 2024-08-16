@@ -96,8 +96,7 @@ class UsagePolicy(ColoredIconMixin, DataspacedModel):
     )
 
     class Meta:
-        unique_together = (("dataspace", "content_type",
-                           "label"), ("dataspace", "uuid"))
+        unique_together = (("dataspace", "content_type", "label"), ("dataspace", "uuid"))
         ordering = ["content_type", "label"]
         verbose_name_plural = _("usage policies")
 
@@ -183,8 +182,7 @@ class UsagePolicyMixin(models.Model):
         if license_instance.usage_policy:
             return license_instance.usage_policy.get_associated_policy_to_model(self)
 
-    policy_from_primary_license = cached_property(
-        get_policy_from_primary_license)
+    policy_from_primary_license = cached_property(get_policy_from_primary_license)
 
 
 class SetPolicyFromLicenseMixin:

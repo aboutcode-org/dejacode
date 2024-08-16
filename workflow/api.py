@@ -163,8 +163,7 @@ class RequestSerializer(DataspacedSerializer):
         lookup_field="uuid",
         slug_field="name",
     )
-    request_template_name = serializers.StringRelatedField(
-        source="request_template.name")
+    request_template_name = serializers.StringRelatedField(source="request_template.name")
     requester = serializers.StringRelatedField()
     assignee = DataspacedSlugRelatedField(slug_field="username")
     priority = DataspacedSlugRelatedField(
@@ -189,8 +188,7 @@ class RequestSerializer(DataspacedSerializer):
         allow_null=True,
         required=False,
     )
-    content_object_display_name = serializers.StringRelatedField(
-        source="content_object")
+    content_object_display_name = serializers.StringRelatedField(source="content_object")
     last_modified_by = serializers.StringRelatedField()
     comments = RequestCommentSerializer(
         many=True,
@@ -241,8 +239,7 @@ class RequestSerializer(DataspacedSerializer):
         return fields
 
     def _validate_serialized_data(self, serialized_data, request_template):
-        questions = {
-            question.label: question for question in request_template.questions.all()}
+        questions = {question.label: question for question in request_template.questions.all()}
 
         for label in serialized_data.keys():
             if not questions.get(label):
@@ -285,8 +282,7 @@ class RequestSerializer(DataspacedSerializer):
         serialized_data = self.initial_data.get("serialized_data")
 
         # WARNING: data['request_template'] is not always present, PUT/PATCH
-        request_template = data.get(
-            "request_template") or self.instance.request_template
+        request_template = data.get("request_template") or self.instance.request_template
 
         content_object = data.get("content_object")
         if content_object and request_template:
@@ -297,8 +293,7 @@ class RequestSerializer(DataspacedSerializer):
                     }
                 )
             if request_template.content_type.model_class() != content_object.__class__:
-                raise serializers.ValidationError(
-                    {"content_object": "Invalid Object type."})
+                raise serializers.ValidationError({"content_object": "Invalid Object type."})
 
         if serialized_data and request_template:
             self._validate_serialized_data(serialized_data, request_template)
@@ -396,13 +391,11 @@ class RequestViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewS
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
-        send_request_notification(
-            self.request, serializer.instance, created=True)
+        send_request_notification(self.request, serializer.instance, created=True)
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
-        send_request_notification(
-            self.request, serializer.instance, created=False)
+        send_request_notification(self.request, serializer.instance, created=False)
         serializer.instance.events.create(
             user=self.request.user,
             text="Request edited.",

@@ -12,8 +12,7 @@ from guardian.shortcuts import get_perms_for_model
 
 def get_protected_fields(model_class, user):
     """Return the list of protected fields names for the given `user`."""
-    protected_fields = getattr(
-        model_class(), "permission_protected_fields", {})
+    protected_fields = getattr(model_class(), "permission_protected_fields", {})
 
     return [
         field_name

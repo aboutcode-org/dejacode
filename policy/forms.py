@@ -35,8 +35,7 @@ class UsagePolicyForm(ColorCodeFormMixin, DataspacedAdminForm):
         Do not allow to set ``associated_product_relation_status`` on non supported
         model content type.
         """
-        relation_status = self.cleaned_data.get(
-            "associated_product_relation_status")
+        relation_status = self.cleaned_data.get("associated_product_relation_status")
         content_type = self.cleaned_data.get("content_type")
 
         if relation_status and content_type.model not in ["component", "package"]:
@@ -68,8 +67,7 @@ class AssociatedPolicyForm(DataspacedAdminForm):
             return
 
         if from_policy.content_type == to_policy.content_type:
-            self.add_error(
-                "to_policy", "Cannot associate with same object type")
+            self.add_error("to_policy", "Cannot associate with same object type")
 
         def get_ct(app_label, model):
             return ContentType.objects.get(app_label=app_label, model=model)

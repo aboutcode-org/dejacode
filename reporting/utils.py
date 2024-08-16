@@ -11,8 +11,7 @@ from django.core.exceptions import FieldDoesNotExist
 
 def rename_field_in_reporting_models(apps, to_replace, replace_by):
     """Suitable for a data migration following a field rename migrations.RenameField()"""
-    ColumnTemplateAssignedField = apps.get_model(
-        "reporting", "ColumnTemplateAssignedField")
+    ColumnTemplateAssignedField = apps.get_model("reporting", "ColumnTemplateAssignedField")
     Filter = apps.get_model("reporting", "Filter")
     OrderField = apps.get_model("reporting", "OrderField")
 

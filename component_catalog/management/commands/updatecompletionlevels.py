@@ -21,8 +21,7 @@ class Command(DataspacedCommand):
         super().handle(*args, **options)
 
         components = Component.objects.scope(self.dataspace)
-        updated_count = sum(
-            1 for component in components if component.update_completion_level())
+        updated_count = sum(1 for component in components if component.update_completion_level())
 
         msg = f"{updated_count} Component(s) updated."
         self.stdout.write(self.style.SUCCESS(msg))

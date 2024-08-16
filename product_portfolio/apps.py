@@ -15,8 +15,7 @@ from django.utils.translation import gettext_lazy as _
 
 def run_unmanaged_models_raw_sql(app_config, **kwargs):
     """Run the `raw_sql` attribute of the unmanaged models within the provided `app_config`."""
-    unmanaged_models = [
-        model for model in app_config.get_models() if not model._meta.managed]
+    unmanaged_models = [model for model in app_config.get_models() if not model._meta.managed]
     for model in unmanaged_models:
         if raw_sql := getattr(model, "raw_sql", None):
             with connection.cursor() as cursor:

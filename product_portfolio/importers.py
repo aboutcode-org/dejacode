@@ -104,8 +104,7 @@ class ProductComponentImportForm(ProductRelationshipMixin):
 
         try:
             product_name, product_version = self.get_name_version(product)
-            component_name, component_version = self.get_name_version(
-                component)
+            component_name, component_version = self.get_name_version(component)
             product = Product.objects.get_queryset(self.user).get(
                 name=product_name, version=product_version
             )
@@ -290,8 +289,7 @@ class CodebaseResourceImportForm(CleanProductMixin, BaseImportModelForm):
             return
 
         product = self.cleaned_data["product"]
-        component_name, component_version = self.get_name_version(
-            product_component)
+        component_name, component_version = self.get_name_version(product_component)
         component_lookup = Q(
             component__name=component_name,
             component__version=component_version,
@@ -327,20 +325,17 @@ class CodebaseResourceImportForm(CleanProductMixin, BaseImportModelForm):
                 product=product,
             )
         except ProductPackage.DoesNotExist:
-            raise forms.ValidationError(
-                f'The package "{filename}" is not available on {product}')
+            raise forms.ValidationError(f'The package "{filename}" is not available on {product}')
 
     def clean_deployed_to(self):
         deployed_to = self.cleaned_data["deployed_to"]
-        self.deployed_to_paths = [
-            path.strip() for path in deployed_to.split(",") if path.strip()]
+        self.deployed_to_paths = [path.strip() for path in deployed_to.split(",") if path.strip()]
         return deployed_to
 
 
 class CodebaseResourceFormSet(BaseImportModelFormSet):
     def clean(self):
-        paths = [form.cleaned_data.get(
-            "path") for form in self if form.cleaned_data.get("path")]
+        paths = [form.cleaned_data.get("path") for form in self if form.cleaned_data.get("path")]
 
         for form in self:
             for deployed_to in form.deployed_to_paths:
@@ -355,8 +350,7 @@ class CodebaseResourceFormSet(BaseImportModelFormSet):
                     except CodebaseResource.DoesNotExist:
                         if "deployed_to" not in form._errors:
                             form._errors["deployed_to"] = self.error_class([])
-                        form._errors["deployed_to"].append(
-                            f"Path {deployed_to} is not available.")
+                        form._errors["deployed_to"].append(f"Path {deployed_to} is not available.")
 
 
 class CodebaseResourceImporter(BaseImporter):
@@ -438,8 +432,7 @@ class ImportFromScan:
         """
         headers = self.data.get("headers", [])
         if not headers:
-            raise ValidationError(
-                "The uploaded file is not a proper ScanCode output results.")
+            raise ValidationError("The uploaded file is not a proper ScanCode output results.")
 
         header = headers[0]
         tool_name = header.get("tool_name", "")
@@ -464,13 +457,11 @@ class ImportFromScan:
             "--package",
         ]
 
-        missing_options = [
-            option for option in required_options if option not in scan_options]
+        missing_options = [option for option in required_options if option not in scan_options]
 
         if missing_options:
             options_str = " ".join(missing_options)
-            raise ValidationError(
-                f"The Scan run is missing those required options: {options_str}")
+            raise ValidationError(f"The Scan run is missing those required options: {options_str}")
 
     def import_packages(self):
         product_packages_count = 0
@@ -492,8 +483,7 @@ class ImportFromScan:
             package_uid = package_data.get("package_uid")
             package_dependencies = package_data.get("dependencies", [])
             if not package_dependencies:
-                package_data["dependencies"] = dependencies_by_package_uid.get(
-                    package_uid, [])
+                package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
 
             prepared = PackageImporter.prepare_package(package_data, path="/")
             if not prepared:
@@ -520,8 +510,7 @@ class ImportFromScan:
                 # In the context of ScanCode-Toolkit, the `license_expression` is
                 # available in the `declared_license_expression` field.
                 if "license_expression" not in prepared:
-                    license_expression = package_data.get(
-                        "declared_license_expression") or ""
+                    license_expression = package_data.get("declared_license_expression") or ""
                     prepared["license_expression"] = license_expression
 
                 prepared.update(package_url_dict)
@@ -575,8 +564,7 @@ class ImportFromScan:
                 extra = {}
                 path = file.get("path")
 
-                max_length = CodebaseResource._meta.get_field(
-                    "path").max_length
+                max_length = CodebaseResource._meta.get_field("path").max_length
                 if len(path) > max_length:
                     msg = f'Path too long > {max_length} for "{path}"'
                     if self.stop_on_error:
@@ -584,8 +572,7 @@ class ImportFromScan:
                     self.warnings.extend(msg)
                     continue
 
-                product_package = self.product_packages_by_id.get(
-                    identifier, None)
+                product_package = self.product_packages_by_id.get(identifier, None)
                 if product_package:
                     extra["product_package"] = product_package
 
@@ -648,16 +635,14 @@ class ImportPackageFromScanCodeIO:
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")
-        self.dependencies = scancodeio.fetch_project_dependencies(
-            self.project_uuid)
+        self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
     def save(self):
         self.import_packages()
         self.import_dependencies()
 
         if self.scan_all_packages:
-            transaction.on_commit(
-                lambda: self.product.scan_all_packages_task(self.user))
+            transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
 
         return dict(self.created), dict(self.existing), dict(self.errors)
 
@@ -678,8 +663,7 @@ class ImportPackageFromScanCodeIO:
 
         # Check if the Package already exists in the local Dataspace
         try:
-            package = Package.objects.scope(
-                self.user.dataspace).get(**unique_together_lookups)
+            package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
             self.existing["package"].append(str(package))
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             package = None
@@ -688,13 +672,11 @@ class ImportPackageFromScanCodeIO:
         reference_dataspace = Dataspace.objects.get_reference()
         user_dataspace = self.user.dataspace
         if not package and user_dataspace != reference_dataspace:
-            qs = Package.objects.scope(reference_dataspace).filter(
-                **unique_together_lookups)
+            qs = Package.objects.scope(reference_dataspace).filter(**unique_together_lookups)
             if qs.exists():
                 reference_object = qs.first()
                 try:
-                    package = copy_object(
-                        reference_object, user_dataspace, self.user, update=False)
+                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
                     self.created["package"].append(str(package))
                 except IntegrityError as error:
                     self.errors["package"].append(str(error))
@@ -708,8 +690,7 @@ class ImportPackageFromScanCodeIO:
 
         if not package:
             try:
-                package = Package.create_from_data(
-                    self.user, package_data, validate=True)
+                package = Package.create_from_data(self.user, package_data, validate=True)
             except ValidationError as errors:
                 self.errors["package"].append(str(errors))
                 return
@@ -738,8 +719,7 @@ class ImportPackageFromScanCodeIO:
 
         dependency_data["product"] = self.product
         if for_package_uid := dependency_data.get("for_package_uid"):
-            dependency_data["for_package"] = self.package_uid_mapping.get(
-                for_package_uid)
+            dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
         if resolved_to_package_uid := dependency_data.get("resolved_to_package_uid"):
             dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
                 resolved_to_package_uid

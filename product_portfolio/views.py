@@ -151,10 +151,8 @@ class ProductListView(
         Header("license_expression", "License", filter="licenses"),
         Header("primary_language", "Language", filter="primary_language"),
         Header("owner", "Owner"),
-        Header("configuration_status", "Status",
-               filter="configuration_status"),
-        Header("productinventoryitem_count",
-               "Inventory", help_text="Inventory count"),
+        Header("configuration_status", "Status", filter="configuration_status"),
+        Header("productinventoryitem_count", "Inventory", help_text="Inventory count"),
         Header("keywords", "Keywords", filter="keywords"),
     )
 
@@ -342,8 +340,7 @@ class ProductDetailsView(
                 "licenses__usage_policy",
                 "scancodeprojects",
                 LicenseAssignedTag.prefetch_for_license_tab(),
-                models.Prefetch("productcomponents",
-                                queryset=productcomponent_qs),
+                models.Prefetch("productcomponents", queryset=productcomponent_qs),
                 models.Prefetch("productpackages", queryset=productpackage_qs),
             )
         )
@@ -376,8 +373,7 @@ class ProductDetailsView(
             TabField("configuration_status"),
             TabField("copyright"),
             TabField("homepage_url", value_func=urlize_target_blank),
-            TabField("keywords", source="keywords",
-                     value_func=lambda x: "\n".join(x)),
+            TabField("keywords", source="keywords", value_func=lambda x: "\n".join(x)),
             TabField("primary_language"),
             TabField("release_date"),
             TabField("contact"),
@@ -416,8 +412,7 @@ class ProductDetailsView(
         )
 
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.product(
-                product)
+            "package__declared_dependencies", ProductDependency.objects.product(product)
         )
 
         productpackage_qs = (
@@ -437,10 +432,8 @@ class ProductDetailsView(
         is_deployed = self.request.GET.get("hierarchy-is_deployed")
         if is_deployed:
             is_deployed_filter = BooleanChoiceFilter(field_name="is_deployed")
-            productcomponent_qs = is_deployed_filter.filter(
-                productcomponent_qs, is_deployed)
-            productpackage_qs = is_deployed_filter.filter(
-                productpackage_qs, is_deployed)
+            productcomponent_qs = is_deployed_filter.filter(productcomponent_qs, is_deployed)
+            productpackage_qs = is_deployed_filter.filter(productpackage_qs, is_deployed)
 
         if not (productcomponent_qs or productpackage_qs or is_deployed):
             return
@@ -605,10 +598,8 @@ class ProductDetailsView(
         )
 
         if context["has_edit_productpackage"] or context["has_edit_productcomponent"]:
-            all_licenses = License.objects.scope(
-                dataspace).filter(is_active=True)
-            add_client_data(
-                self.request, license_data=all_licenses.data_for_expression_builder())
+            all_licenses = License.objects.scope(dataspace).filter(is_active=True)
+            add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
         scancodeio = ScanCodeIO(dataspace)
         include_scancodeio_features = all(
@@ -659,8 +650,7 @@ class ProductTabInventoryView(
             "licenses", License.objects.select_related("usage_policy")
         )
         declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.product(
-                self.object)
+            "package__declared_dependencies", ProductDependency.objects.product(self.object)
         )
 
         productpackage_qs = (
@@ -725,8 +715,7 @@ class ProductTabInventoryView(
         productcomponent_qs = filter_productcomponent.qs
         productpackage_qs = filter_productpackage.qs
         # 1. Combine components and packages into a single list of object
-        filtered_inventory_items = list(
-            productcomponent_qs) + list(productpackage_qs)
+        filtered_inventory_items = list(productcomponent_qs) + list(productpackage_qs)
 
         display_tab = any(
             [
@@ -763,8 +752,7 @@ class ProductTabInventoryView(
         )
         if display_scan_features:
             context["display_scan_features"] = True
-            self.inject_scan_data(
-                scancodeio, objects_by_feature, dataspace.uuid)
+            self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
 
         # 5. Display the compliance alert based on license policies
         if self.show_licenses_policy:
@@ -793,8 +781,7 @@ class ProductTabInventoryView(
                 if isinstance(inventory_item, ProductPackage)
             ]
 
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(
-                packages)
+            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         context.update(
             {
@@ -874,8 +861,7 @@ class ProductTabInventoryView(
                     continue
                 scan = scans_by_uri.get(productpackage.package.download_url)
                 if scan:
-                    scan["download_result_url"] = get_scan_results_as_file_url(
-                        scan)
+                    scan["download_result_url"] = get_scan_results_as_file_url(scan)
                     productpackage.scan = scan
                 injected_productpackages.append(productpackage)
 
@@ -982,8 +968,7 @@ class ProductTabDependenciesView(
         product = self.object
 
         dependency_qs = product.dependencies.prefetch_related(
-            models.Prefetch(
-                "for_package", Package.objects.only_rendering_fields()),
+            models.Prefetch("for_package", Package.objects.only_rendering_fields()),
             models.Prefetch(
                 "resolved_to_package",
                 Package.objects.only_rendering_fields().declared_dependencies_count(product),
@@ -1108,8 +1093,7 @@ def add_customcomponent_ajax_view(request, dataspace, name, version=""):
     form_class = ProductCustomComponentForm
 
     qs = Product.objects.get_queryset(user, perms="change_product")
-    product = get_object_or_404(qs, name=unquote_plus(
-        name), version=unquote_plus(version))
+    product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
 
     if not user.has_perm("product_portfolio.add_productcomponent"):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
@@ -1118,8 +1102,7 @@ def add_customcomponent_ajax_view(request, dataspace, name, version=""):
         form = form_class(user, data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Custom Component relationship successfully added.")
+            messages.success(request, "Custom Component relationship successfully added.")
             return JsonResponse({"success": "added"}, status=200)
     else:
         form = form_class(user, initial={"product": product})
@@ -1158,16 +1141,14 @@ def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
     has_permissions = all(
         [
             product.can_be_changed_by(user),
-            user.has_perm(
-                f"product_portfolio.change_{relationship_model_name}"),
+            user.has_perm(f"product_portfolio.change_{relationship_model_name}"),
         ]
     )
 
     if not has_permissions:
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
-    has_delete_permission = user.has_perm(
-        f"product_portfolio.delete_{relationship_model_name}")
+    has_delete_permission = user.has_perm(f"product_portfolio.delete_{relationship_model_name}")
     if request.GET.get("delete"):
         if has_delete_permission:
             History.log_deletion(user, relation_instance)
@@ -1260,10 +1241,8 @@ class ProductTreeComparisonView(
 
     def get(self, request, *args, **kwargs):
         guarded_qs = Product.objects.get_queryset(self.request.user)
-        self.left_product = get_object_or_404(
-            guarded_qs, uuid=self.kwargs["left_uuid"])
-        self.right_product = get_object_or_404(
-            guarded_qs, uuid=self.kwargs["right_uuid"])
+        self.left_product = get_object_or_404(guarded_qs, uuid=self.kwargs["left_uuid"])
+        self.right_product = get_object_or_404(guarded_qs, uuid=self.kwargs["right_uuid"])
 
         if self.request.GET.get("download_xlsx"):
             context = self.get_context_data(**kwargs)
@@ -1293,8 +1272,7 @@ class ProductTreeComparisonView(
         # The "update" status is only possible when no more than 2 packages (1 on each side)
         # have the same unique identifier.
         updated = [
-            (removed[removed_identifiers.index(name)],
-             added[added_identifiers.index(name)])
+            (removed[removed_identifiers.index(name)], added[added_identifiers.index(name)])
             for name in removed_identifiers
             if added_identifiers.count(name) == 1 and removed_identifiers.count(name) == 1
         ]
@@ -1307,19 +1285,15 @@ class ProductTreeComparisonView(
         excluded = ["product", "uuid"] + self.request.GET.getlist("exclude")
 
         for k in left_relationships.intersection(right_relationships):
-            diff, _ = get_object_compare_diff(
-                left_dict[k], right_dict[k], excluded)
+            diff, _ = get_object_compare_diff(left_dict[k], right_dict[k], excluded)
             changed.append(k) if diff else unchanged.append(k)
             diffs[k] = OrderedDict(sorted(diff.items()))
 
         rows = [("added", None, right_dict[k], None) for k in added]
         rows.extend(("removed", left_dict[k], None, None) for k in removed)
-        rows.extend(
-            ("updated", left_dict[k], right_dict[v], None) for k, v in updated)
-        rows.extend(
-            ("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
-        rows.extend(
-            ("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
+        rows.extend(("updated", left_dict[k], right_dict[v], None) for k, v in updated)
+        rows.extend(("changed", left_dict[k], right_dict[k], diffs[k]) for k in changed)
+        rows.extend(("unchanged", left_dict[k], right_dict[k], None) for k in unchanged)
         rows.sort(key=self.sort_by_name_version)
 
         action_filters = [
@@ -1502,8 +1476,7 @@ class AttributionView(
         names = super().get_template_names()
         dataspace_hash = sha1(self.object.dataspace.name.encode("utf-8"))[:7]
         if not self.template_name.endswith("attribution_configuration.html"):
-            names.insert(
-                0, f"product_portfolio/attribution/{dataspace_hash}/base.html")
+            names.insert(0, f"product_portfolio/attribution/{dataspace_hash}/base.html")
         return names
 
     def get_queryset(self):
@@ -1605,10 +1578,8 @@ class AttributionView(
 
             children_hierarchy = []
             if component and include_subcomponents:
-                children_qs = component.related_children.order_by(
-                    Lower("child__name"))
-                children_hierarchy = self.get_hierarchy(
-                    children_qs, include_subcomponents)
+                children_qs = component.related_children.order_by(Lower("child__name"))
+                children_hierarchy = self.get_hierarchy(children_qs, include_subcomponents)
 
             if component and self.is_displayed(component):
                 self.hierarchy_licenses.extend(relationship.licenses.all())
@@ -1639,8 +1610,7 @@ class AttributionView(
         if not submitted and product.productpackages.exists():
             initial = {"include_packages": True}
 
-        form = AttributionConfigurationForm(
-            request, data=request.GET or None, initial=initial)
+        form = AttributionConfigurationForm(request, data=request.GET or None, initial=initial)
 
         context.update(
             {
@@ -1655,8 +1625,7 @@ class AttributionView(
             return context
 
         product_licenses = list(product.licenses.order_by("short_name"))
-        productcomponents = product.productcomponents.order_by(
-            "component", "name", "version")
+        productcomponents = product.productcomponents.order_by("component", "name", "version")
 
         group_by_feature = bool(form.cleaned_data.get("group_by_feature"))
         if group_by_feature:
@@ -1681,22 +1650,17 @@ class AttributionView(
                 "id", flat=True
             )
 
-        self.include_all_licenses = bool(
-            form.cleaned_data.get("all_license_texts"))
-        self.include_homepage_url = bool(
-            form.cleaned_data.get("include_homepage_url"))
-        self.include_standard_notice = bool(
-            form.cleaned_data.get("include_standard_notice"))
+        self.include_all_licenses = bool(form.cleaned_data.get("all_license_texts"))
+        self.include_homepage_url = bool(form.cleaned_data.get("include_homepage_url"))
+        self.include_standard_notice = bool(form.cleaned_data.get("include_standard_notice"))
 
         # self.hierarchy_licenses and self.unique_component_nodes are populated during the
         # self.get_hierarchy() call
         self.hierarchy_licenses = []
         self.unique_component_nodes = set()
 
-        include_subcomponents = bool(
-            form.cleaned_data.get("subcomponent_hierarchy"))
-        context["hierarchy"] = self.get_hierarchy(
-            productcomponents, include_subcomponents)
+        include_subcomponents = bool(form.cleaned_data.get("subcomponent_hierarchy"))
+        context["hierarchy"] = self.get_hierarchy(productcomponents, include_subcomponents)
 
         include_packages = bool(form.cleaned_data.get("include_packages"))
         package_nodes = []
@@ -1716,10 +1680,8 @@ class AttributionView(
                         package_nodes_by_feature[feature] = []
                     package_nodes_by_feature[feature].append(attribution_node)
 
-        context["hierarchy_licenses"] = self.get_sorted(
-            set(self.hierarchy_licenses))
-        all_available_licenses = product_licenses + \
-            context["hierarchy_licenses"]
+        context["hierarchy_licenses"] = self.get_sorted(set(self.hierarchy_licenses))
+        all_available_licenses = product_licenses + context["hierarchy_licenses"]
 
         context.update(
             {
@@ -1766,8 +1728,7 @@ def scan_all_packages_view(request, dataspace, name, version=""):
         raise Http404
 
     guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(
-        name), version=unquote_plus(version))
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     if not product.all_packages:
         raise Http404("No packages available for this product.")
@@ -1798,8 +1759,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
     form_class = ImportFromScanForm
 
     guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(
-        name), version=unquote_plus(version))
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     if request.method == "POST":
         form = form_class(
@@ -1858,8 +1818,7 @@ class BaseProductManageGridView(
     base_fields = []
 
     def get_relationship_queryset(self):
-        raise ImproperlyConfigured(
-            "`get_relationship_queryset` must be defined.")
+        raise ImproperlyConfigured("`get_relationship_queryset` must be defined.")
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -1868,8 +1827,7 @@ class BaseProductManageGridView(
 
     def post(self, request, *args, **kwargs):
         if "update-grid-configuration" in request.POST:
-            grid_configuration_form = ProductGridConfigurationForm(
-                data=request.POST)
+            grid_configuration_form = ProductGridConfigurationForm(data=request.POST)
             if grid_configuration_form.is_valid():
                 displayed_fields = request.POST.getlist("displayed_fields")
                 request.session[self.configuration_session_key] = displayed_fields
@@ -2038,8 +1996,7 @@ def license_summary_view(request, dataspace, name, version=""):
     user = request.user
 
     guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(
-        name), version=unquote_plus(version))
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     filterset = LicenseFilterSet(
         data=request.GET or None,
@@ -2052,8 +2009,7 @@ def license_summary_view(request, dataspace, name, version=""):
 
     components_hierarchy = set(product_components)
     for component in product_components:
-        components_hierarchy.update(
-            component.get_descendants(set_direct_parent=True))
+        components_hierarchy.update(component.get_descendants(set_direct_parent=True))
 
     packages_hierarchy = set(product_packages)
     for component in components_hierarchy:
@@ -2120,8 +2076,7 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
         raise Http404
 
     guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(
-        name), version=unquote_plus(version))
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     purls = []
     packages = product.packages.all()
@@ -2146,8 +2101,7 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
         if latest_version_entry:
             return latest_version_entry
 
-        latest_version_entry = purldb.get_package(
-            f"{current_uuid}/latest_version")
+        latest_version_entry = purldb.get_package(f"{current_uuid}/latest_version")
         if latest_version_entry:
             request.session[current_uuid] = latest_version_entry
             return latest_version_entry
@@ -2160,8 +2114,7 @@ def check_package_version_ajax_view(request, dataspace, name, version=""):
             latest_version = latest_version_entry.get("version")
             if current_version != latest_version:
                 purldb_entry["latest_version"] = latest_version
-                purldb_entry["latest_version_uuid"] = latest_version_entry.get(
-                    "uuid")
+                purldb_entry["latest_version_uuid"] = latest_version_entry.get("uuid")
                 upgrade_available.append(purldb_entry)
 
     return JsonResponse({"success": "success", "upgrade_available": upgrade_available})
@@ -2254,8 +2207,7 @@ def import_packages_from_scancodeio_view(request, key):
 
     user = get_object_or_404(DejacodeUser, uuid=user_uuid)
     project_uuid = json_data["project"]["uuid"]
-    scancode_project = get_object_or_404(
-        ScanCodeProject, project_uuid=project_uuid)
+    scancode_project = get_object_or_404(ScanCodeProject, project_uuid=project_uuid)
 
     # Ensure that the user has permission to change the ScanCodeProject related Product.
     product_qs = Product.objects.get_queryset(user, perms="change_product")
@@ -2278,18 +2230,15 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
 
     scancodeio = ScanCodeIO(dataspace)
-    scan_detail_url = scancodeio.get_scan_detail_url(
-        scancode_project.project_uuid)
+    scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
     scan_data = scancodeio.fetch_scan_data(scan_detail_url)
 
     results = scancode_project.results
 
     # Backward compatibility
-    is_old_results_format = any(isinstance(entry, list)
-                                for entry in results.values())
+    is_old_results_format = any(isinstance(entry, list) for entry in results.values())
     if is_old_results_format:
-        results = {key: {"package": value}
-                   for key, value in results.items() if value}
+        results = {key: {"package": value} for key, value in results.items() if value}
 
     context = {
         "scancode_project": scancode_project,

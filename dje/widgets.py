@@ -140,8 +140,7 @@ class BootstrapSelectMixin:
         # Apply the order in `get_context` since this method is only called once
         # and the `self.choices` are properly set when reaching it.
         if value:
-            self.choices = self.order_choices_selected_first(
-                self.choices, value)
+            self.choices = self.order_choices_selected_first(self.choices, value)
 
         css_class = "bootstrap-select-filter show-tick"
         if value:

@@ -131,12 +131,10 @@ MIME_TYPES = {
     "html": "text/html",
 }
 
-Header = namedtuple(
-    "Header", "field_name verbose_name help_text filter condition sort")
+Header = namedtuple("Header", "field_name verbose_name help_text filter condition sort")
 Header.__new__.__defaults__ = (None,) * len(Header._fields)
 
-TabField = namedtuple(
-    "TabField", "field_name instance source value_func condition template value")
+TabField = namedtuple("TabField", "field_name instance source value_func condition template value")
 TabField.__new__.__defaults__ = (None,) * len(TabField._fields)
 
 FieldSeparator = (None, None, None, "includes/field_separator.html")
@@ -190,8 +188,7 @@ class AdminLinksDropDownMixin:
         opts = self.model._meta
         info = opts.app_label, opts.model_name
 
-        context["changelist_url"] = reverse(
-            "admin:{}_{}_changelist".format(*info))
+        context["changelist_url"] = reverse("admin:{}_{}_changelist".format(*info))
         context["addition_url"] = reverse("admin:{}_{}_add".format(*info))
 
         with suppress(NoReverseMatch):
@@ -241,8 +238,7 @@ class GetDataspaceMixin:
             is_reference_data = self.dataspace == reference_dataspace
             context["is_reference_data"] = is_reference_data
             if self.is_user_dataspace and not is_reference_data:
-                context["reference_data_link"] = reverse(
-                    viewname, args=[reference_dataspace])
+                context["reference_data_link"] = reverse(viewname, args=[reference_dataspace])
             if not self.is_user_dataspace and is_reference_data:
                 context["my_data_link"] = reverse(viewname)
 
@@ -310,8 +306,7 @@ class TableHeaderMixin:
         return [
             Header(
                 field_name=header.field_name,
-                verbose_name=header.verbose_name or opts.get_field(
-                    header.field_name).verbose_name,
+                verbose_name=header.verbose_name or opts.get_field(header.field_name).verbose_name,
                 help_text=header.help_text or ght(opts, header.field_name),
                 filter=self.filterset.form[header.filter] if header.filter else None,
                 condition=None,
@@ -370,10 +365,8 @@ class DataspacedFilterView(
         opts = self.model._meta
 
         with suppress(NoReverseMatch):
-            import_url = reverse(
-                f"admin:{opts.app_label}_{opts.model_name}_import")
-            extra_add_urls.append(
-                (f"Import {opts.verbose_name_plural}", import_url))
+            import_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_import")
+            extra_add_urls.append((f"Import {opts.verbose_name_plural}", import_url))
 
         return extra_add_urls
 
@@ -387,11 +380,9 @@ class DataspacedFilterView(
 
         if self.group_name_version:
             if not self.request.GET.get("sort", None):
-                name_version_groups = group_by_name_version(
-                    context_data["object_list"])
+                name_version_groups = group_by_name_version(context_data["object_list"])
             else:
-                name_version_groups = [[obj]
-                                       for obj in context_data["object_list"]]
+                name_version_groups = [[obj] for obj in context_data["object_list"]]
 
             context_data.update(
                 {
@@ -544,8 +535,7 @@ class DataspacedDeleteView(
         from dje.admin import dejacode_site
 
         objs = [self.object]
-        __, __, perms_needed, protected = get_deleted_objects(
-            objs, self.request, dejacode_site)
+        __, __, perms_needed, protected = get_deleted_objects(objs, self.request, dejacode_site)
 
         return perms_needed, protected
 
@@ -657,8 +647,7 @@ class MultiSendAboutFilesView(
         ids_str = request.GET.get("ids")
         ids = str_to_id_list(ids_str)
 
-        queryset = self.model.objects.scope(
-            self.request.user.dataspace).filter(id__in=ids)
+        queryset = self.model.objects.scope(self.request.user.dataspace).filter(id__in=ids)
 
         verbose_name = self.model._meta.verbose_name
 
@@ -702,11 +691,9 @@ def home_view(request):
 
     user = request.user
     if user.is_staff:
-        documentation_urls["Models documentation"] = reverse(
-            "admin:docs_models")
+        documentation_urls["Models documentation"] = reverse("admin:docs_models")
 
-    request_qs = Request.objects.for_list_view(
-        user).open().order_by("-last_modified_date")
+    request_qs = Request.objects.for_list_view(user).open().order_by("-last_modified_date")
 
     cards = []
     homepage_layout = user.get_homepage_layout()
@@ -805,8 +792,7 @@ class TabSetMixin:
 
         authorized_tabs = None
         if self.enforce_tab_authorization:
-            authorized_tabs = get_authorized_tabs(
-                self.model, self.request.user)
+            authorized_tabs = get_authorized_tabs(self.model, self.request.user)
 
         if authorized_tabs and None in authorized_tabs:
             return {}
@@ -937,10 +923,8 @@ class TabSetMixin:
 
         for license_field in license_fields:
             if expression := getattr(obj, license_field, None):
-                rendered_expression = render_expression_as_html(
-                    expression, obj.dataspace)
-                tab_fields.append(
-                    TabField(license_field, value=rendered_expression))
+                rendered_expression = render_expression_as_html(expression, obj.dataspace)
+                tab_fields.append(TabField(license_field, value=rendered_expression))
 
         if getattr(obj, "reference_notes", False):
             tab_fields.append(TabField("reference_notes"))
@@ -1003,8 +987,7 @@ class TabSetMixin:
         references = self.object.external_references.all()
 
         if references:
-            references_fields = [
-                (None, references, None, "tabs/tab_external.html")]
+            references_fields = [(None, references, None, "tabs/tab_external.html")]
             help_texts = {
                 "external_source_label": ght(ExternalSource._meta, "label"),
                 "external_id": ght(ExternalReference._meta, "external_id"),
@@ -1030,8 +1013,7 @@ class TabSetMixin:
             TabField("created_by"),
             TabField("last_modified_date"),
             TabField("last_modified_by"),
-            ("Changes", history_entries, None,
-             "includes/field_history_changes.html"),
+            ("Changes", history_entries, None, "includes/field_history_changes.html"),
         ]
 
         return {
@@ -1058,8 +1040,7 @@ class TabSetMixin:
 
         if not essential_tab:
             tab_fields.append(
-                (_("Identifier"), package.get_absolute_link(),
-                 package.identifier_help(), None)
+                (_("Identifier"), package.get_absolute_link(), package.identifier_help(), None)
             )
 
         package_url_fields_context = {
@@ -1069,8 +1050,7 @@ class TabSetMixin:
 
         tab_fields.extend(
             [
-                (_("Package URL"), package.package_url,
-                 package.package_url_help(), None),
+                (_("Package URL"), package.package_url, package.package_url_help(), None),
                 (
                     "",
                     package_url_fields_context,
@@ -1083,8 +1063,7 @@ class TabSetMixin:
                     source="get_usage_policy_display_with_icon",
                     condition=show_usage_policy,
                 ),
-                TabField("download_url", package,
-                         value_func=urlize_target_blank),
+                TabField("download_url", package, value_func=urlize_target_blank),
             ]
         )
 
@@ -1093,21 +1072,17 @@ class TabSetMixin:
                 "A URL deduced from the information available in a Package URL (purl)."
             )
             tab_fields.append(
-                (_("Inferred URL"), urlize_target_blank(
-                    inferred_url), inferred_url_help, None)
+                (_("Inferred URL"), urlize_target_blank(inferred_url), inferred_url_help, None)
             )
 
         tab_fields.extend(
             [
                 TabField("size", package, source="size_formatted"),
-                TabField("release_date", package,
-                         condition=essential_else_bool),
-                TabField("primary_language", package,
-                         condition=essential_else_bool),
+                TabField("release_date", package, condition=essential_else_bool),
+                TabField("primary_language", package, condition=essential_else_bool),
                 TabField("cpe", condition=bool, value_func=get_cpe_vuln_link),
                 TabField("description", package, condition=bool),
-                TabField("keywords", package,
-                         value_func=lambda x: "\n".join(x)),
+                TabField("keywords", package, value_func=lambda x: "\n".join(x)),
                 TabField("project", condition=bool),
                 TabField("notes", package, condition=bool),
             ]
@@ -1230,12 +1205,10 @@ class ObjectDetailsView(
             session_key = build_session_key(opts.verbose_name)
             session_ids = self.request.session.get(session_key)
             if session_ids:
-                previous_id, next_id = get_previous_next(
-                    session_ids, int(self.object.id))
+                previous_id, next_id = get_previous_next(session_ids, int(self.object.id))
                 if previous_id:
                     with suppress(ObjectDoesNotExist):
-                        previous_object = self.model.objects.get(
-                            id=previous_id)
+                        previous_object = self.model.objects.get(id=previous_id)
                         context["previous_object_url"] = previous_object.get_absolute_url()
                 if next_id:
                     with suppress(ObjectDoesNotExist):
@@ -1266,8 +1239,7 @@ def object_copy_get(request, m2m_formset_class):
     preserved_filters = get_preserved_filters(
         request, model_class, parameter_name="_changelist_filters"
     )
-    changelist_url = reverse(
-        f"admin:{opts.app_label}_{opts.model_name}_changelist")
+    changelist_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
     redirect_url = add_preserved_filters(
         {"preserved_filters": preserved_filters, "opts": opts}, changelist_url
     )
@@ -1297,8 +1269,7 @@ def object_copy_get(request, m2m_formset_class):
 
     # No custom permission for 'copy', we use the 'add' one
     if not has_permission(source_object, request.user, "add"):
-        messages.error(request, _(
-            "Sorry you do not have rights to execute this action"))
+        messages.error(request, _("Sorry you do not have rights to execute this action"))
         return redirect(redirect_url)
 
     source = source_object.dataspace
@@ -1311,8 +1282,7 @@ def object_copy_get(request, m2m_formset_class):
         # If the target has been set, then we can continue
         if targets_from_request:
             data = {"target": targets_from_request}
-            choice_form = MultiDataspaceChoiceForm(
-                source, request.user, data=data)
+            choice_form = MultiDataspaceChoiceForm(source, request.user, data=data)
             if not choice_form.is_valid():
                 return redirect(redirect_url)
             targets = choice_form.cleaned_data["target"]
@@ -1328,8 +1298,7 @@ def object_copy_get(request, m2m_formset_class):
             is_popup = request.GET.get(IS_POPUP_VAR, False)
             if is_popup:
                 initial["_popup"] = is_popup
-            choice_form = MultiDataspaceChoiceForm(
-                source, request.user, initial=initial)
+            choice_form = MultiDataspaceChoiceForm(source, request.user, initial=initial)
             return render(
                 request,
                 "admin/object_copy_dataspace_form.html",
@@ -1375,8 +1344,7 @@ def object_copy_get(request, m2m_formset_class):
 
     # Many2Many exclude on copy/update
     m2m_initial = [
-        {"ct": ContentType.objects.get_for_model(
-            m2m_field.remote_field.through).id}
+        {"ct": ContentType.objects.get_for_model(m2m_field.remote_field.through).id}
         for m2m_field in model_class._meta.many_to_many
     ]
 
@@ -1417,8 +1385,7 @@ def object_copy_view(request):
     """
     # Declared here as it required in GET and POST cases.
     m2m_formset_class = formset_factory(
-        wraps(M2MCopyConfigurationForm)(
-            partial(M2MCopyConfigurationForm, user=request.user)),
+        wraps(M2MCopyConfigurationForm)(partial(M2MCopyConfigurationForm, user=request.user)),
         extra=0,
     )
 
@@ -1445,10 +1412,8 @@ def object_copy_view(request):
 
         # We use False rather than empty list to keep track of the non-selection
         # vs unknown in lower level copy method.
-        exclude_copy = {
-            model_class: config_form.cleaned_data.get("exclude_copy")}
-        exclude_update = {
-            model_class: config_form.cleaned_data.get("exclude_update")}
+        exclude_copy = {model_class: config_form.cleaned_data.get("exclude_copy")}
+        exclude_update = {model_class: config_form.cleaned_data.get("exclude_update")}
 
         # Append the m2m copy configuration
         for m2m_form in m2m_formset_class(request.POST):
@@ -1459,12 +1424,10 @@ def object_copy_view(request):
             skip_on_copy = cleaned_data.get("skip_on_copy")
             skip_on_update = cleaned_data.get("skip_on_update")
             exclude_copy.update(
-                {m2m_model_class: SKIP if skip_on_copy else cleaned_data.get(
-                    "exclude_copy")}
+                {m2m_model_class: SKIP if skip_on_copy else cleaned_data.get("exclude_copy")}
             )
             exclude_update.update(
-                {m2m_model_class: SKIP if skip_on_update else cleaned_data.get(
-                    "exclude_update")}
+                {m2m_model_class: SKIP if skip_on_update else cleaned_data.get("exclude_update")}
             )
 
         copy_candidates = request.POST.get("copy_candidates", "")
@@ -1555,8 +1518,7 @@ def object_compare_view(request):
     preserved_filters = get_preserved_filters(
         request, model_class, parameter_name="_changelist_filters"
     )
-    changelist_url = reverse(
-        f"admin:{opts.app_label}_{opts.model_name}_changelist")
+    changelist_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
     redirect_url = add_preserved_filters(
         {"preserved_filters": preserved_filters, "opts": opts}, changelist_url
     )
@@ -1625,8 +1587,7 @@ def object_compare_view(request):
 
         if isinstance(field, models.ForeignKey):
             if field_value is not None:
-                fk_in_target = get_or_create_in(
-                    field_value, target_dataspace, request.user)
+                fk_in_target = get_or_create_in(field_value, target_dataspace, request.user)
                 if fk_in_target:
                     setattr(target_object, field_name, fk_in_target)
                     updated_fields.append(field_name)
@@ -1727,8 +1688,7 @@ class DataspaceAwareRelatedLookup(RelatedLookup):
     def get_queryset(self):
         if is_secured(self.model._default_manager):
             perm = get_permission_codename("change", self.model._meta)
-            qs = self.model._default_manager.get_queryset(
-                self.request.user, perm)
+            qs = self.model._default_manager.get_queryset(self.request.user, perm)
             qs = self.get_filtered_queryset(qs)
         else:
             qs = super().get_queryset()
@@ -1783,13 +1743,11 @@ class DataspaceAwareAutocompleteLookup(AutocompleteLookup):
         GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS.
         """
         if self.model._meta.model_name in ["product", "component"]:
-            qs = qs.annotate(name_version=Concat(
-                "name", Value(" "), "version"))
+            qs = qs.annotate(name_version=Concat("name", Value(" "), "version"))
 
         if self.model._meta.model_name == "package":
             qs = qs.annotate(
-                type_name_version=Concat("type", Value(
-                    " "), "name", Value(" "), "version"),
+                type_name_version=Concat("type", Value(" "), "name", Value(" "), "version"),
             )
 
         return qs
@@ -1808,8 +1766,7 @@ class DataspaceAwareAutocompleteLookup(AutocompleteLookup):
     def get_queryset(self):
         if is_secured(self.model._default_manager):
             perm = get_permission_codename("change", self.model._meta)
-            qs = self.model._default_manager.get_queryset(
-                self.request.user, perm)
+            qs = self.model._default_manager.get_queryset(self.request.user, perm)
         else:
             qs = self.set_dataspace_scope(self.model._default_manager.all())
 
@@ -1821,8 +1778,7 @@ class DataspaceAwareAutocompleteLookup(AutocompleteLookup):
 
 class GlobalSearchListView(AcceptAnonymousMixin, TemplateView):
     template_name = "global_search.html"
-    SearchResult = namedtuple(
-        "SearchResult", ["object_list", "paginator_count"])
+    SearchResult = namedtuple("SearchResult", ["object_list", "paginator_count"])
 
     def get_list_view_results(self, view_class, dataspace):
         request = RequestFactory().get("", self.request.GET)
@@ -1954,8 +1910,7 @@ class DownloadableMixin:
             response_kwargs["content_type"] = content_type
             if hasattr(self, f"get_{self.format}_response"):
                 use_custom_response = True
-                response = getattr(self, f"get_{self.format}_response")(
-                    **response_kwargs)
+                response = getattr(self, f"get_{self.format}_response")(**response_kwargs)
 
         if not use_custom_response:
             response = super().render_to_response(context, **response_kwargs)
@@ -1970,8 +1925,7 @@ class DownloadableMixin:
 class BootstrapCSSMixin:
     def get_bootstrap_css_code(self):
         # Use the staticfiles.finders to get the absolute path of the file
-        bootstrap_css_path = os.path.join(
-            "bootstrap-5.3.2", "css", "bootstrap.min.css")
+        bootstrap_css_path = os.path.join("bootstrap-5.3.2", "css", "bootstrap.min.css")
         bootstrap_css_file_path = finders.find(bootstrap_css_path)
 
         with open(bootstrap_css_file_path) as f:
@@ -2024,8 +1978,7 @@ class ActivityLog(
         has_history_fields = issubclass(self.model, HistoryFieldsMixin)
         if has_history_fields:
             # Use the history fields from the model for the Addition entries
-            history_entries = history_entries.exclude(
-                action_flag=History.ADDITION)
+            history_entries = history_entries.exclude(action_flag=History.ADDITION)
 
             objects = self.model.objects.scope_by_id(user_dataspace_id).filter(
                 created_date__gt=start
@@ -2208,12 +2161,10 @@ def manage_copy_defaults_view(request, pk):
         formset = CopyDefaultsFormSet(request.POST)
         if formset.is_valid():
             formset.save(dataspace)
-            formset.log_change(request, dataspace,
-                               "Changed copy defaults configuration.")
+            formset.log_change(request, dataspace, "Changed copy defaults configuration.")
             messages.success(request, _("Copy defaults updated."))
         else:
-            messages.error(request, _(
-                "Error, please refresh the page and try again."))
+            messages.error(request, _("Error, please refresh the page and try again."))
     else:
         initial = [
             {"app_name": str(apps.get_app_config(app_label).verbose_name)}
@@ -2247,12 +2198,10 @@ def manage_tab_permissions_view(request, pk):
         formset = TabPermissionsFormSet(request.POST)
         if formset.is_valid():
             formset.save(dataspace)
-            formset.log_change(request, dataspace,
-                               "Changed tab permissions configuration.")
+            formset.log_change(request, dataspace, "Changed tab permissions configuration.")
             messages.success(request, _("Tab permissions updated."))
         else:
-            messages.error(request, _(
-                "Error, please refresh the page and try again."))
+            messages.error(request, _("Error, please refresh the page and try again."))
     else:
         initial = [{"group_name": group.name} for group in Group.objects.all()]
         formset = TabPermissionsFormSet(initial=initial)
@@ -2311,8 +2260,7 @@ class NotificationsCountMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_notifications = self.request.user.notifications
-        grouped = group_by_simple(
-            self.object_list, "action_object_content_type")
+        grouped = group_by_simple(self.object_list, "action_object_content_type")
 
         context.update(
             {
@@ -2386,8 +2334,7 @@ class IntegrationsStatusView(
         context = super().get_context_data(**kwargs)
 
         integrations_status = {
-            integration_class.label: self.get_integration_status(
-                integration_class)
+            integration_class.label: self.get_integration_status(integration_class)
             for integration_class in self.integrations
         }
 
@@ -2406,8 +2353,7 @@ class ExportSPDXDocumentView(
     BaseDetailView,
 ):
     def get(self, request, *args, **kwargs):
-        spdx_document = outputs.get_spdx_document(
-            self.get_object(), self.request.user)
+        spdx_document = outputs.get_spdx_document(self.get_object(), self.request.user)
         spdx_document_json = spdx_document.as_json()
 
         return outputs.get_attachment_response(
@@ -2430,8 +2376,7 @@ class ExportCycloneDXBOMView(
         cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
 
         try:
-            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(
-                cyclonedx_bom, spec_version)
+            cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
         except ValueError:
             raise Http404(f"Spec version {spec_version} not supported")
 

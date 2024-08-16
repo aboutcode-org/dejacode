@@ -268,8 +268,7 @@ def get_model_data_for_column_template(dataspace=None):
             for label in labels:
                 fields.append(label)
                 meta[label] = {}
-                extra_groups.append(
-                    {"group": group, "label": label, "value": label})
+                extra_groups.append({"group": group, "label": label, "value": label})
 
         grouped_fields.extend(extra_groups)
 
@@ -352,8 +351,7 @@ class FilterForm(forms.ModelForm):
 
         if isinstance(field_instance, (models.BooleanField)):
             if lookup == "iexact":
-                raise ValidationError(
-                    'Lookup "iexact" on Boolean field is not supported')
+                raise ValidationError('Lookup "iexact" on Boolean field is not supported')
 
         if lookup == "descendant":
             if not getattr(model_class, "get_descendant_ids", None):
@@ -361,8 +359,7 @@ class FilterForm(forms.ModelForm):
                     'Lookup "descendant" only supported on models with hierarchy.'
                 )
             if field_name != "id":
-                raise ValidationError(
-                    'Lookup "descendant" only supported on "id" field.')
+                raise ValidationError('Lookup "descendant" only supported on "id" field.')
 
         elif lookup == "product_descendant":
             if model_class.__name__ != "Component":
@@ -374,8 +371,7 @@ class FilterForm(forms.ModelForm):
             not_valid = all(
                 [
                     not isinstance(
-                        field_instance, (ManyToOneRel,
-                                         ManyToManyField, GenericRelation)
+                        field_instance, (ManyToOneRel, ManyToManyField, GenericRelation)
                     ),
                     not getattr(field_instance, "null", False),
                 ]
@@ -389,12 +385,10 @@ class FilterForm(forms.ModelForm):
 
         elif lookup == "isempty":
             if isinstance(field_instance, (ForeignKey, ManyToOneRel)):
-                raise ValidationError(
-                    f'Lookup "{lookup}" is not supported on related fields.')
+                raise ValidationError(f'Lookup "{lookup}" is not supported on related fields.')
 
             if not getattr(field_instance, "blank", False):
-                raise ValidationError(
-                    f'Lookup "{lookup}" is only supported on blank-able fields.')
+                raise ValidationError(f'Lookup "{lookup}" is only supported on blank-able fields.')
 
         if lookup in ["isnull", "isempty"] and value and value not in ISNULL_LOOKUP_CHOICES:
             raise ValidationError(
@@ -489,8 +483,7 @@ class RuntimeFilterForm(forms.Form):
             widget_class = forms.Select
             widget_kwargs["choices"] = [("", "All")] + list(field.choices)
 
-        self.fields["value"] = forms.CharField(
-            required=False, widget=widget_class(**widget_kwargs))
+        self.fields["value"] = forms.CharField(required=False, widget=widget_class(**widget_kwargs))
 
 
 class OrderFieldForm(forms.ModelForm):
@@ -510,8 +503,7 @@ class OrderFieldForm(forms.ModelForm):
             field_names = model_data[model_label]["fields"]
 
             if field_name not in field_names:
-                raise ValidationError(
-                    f"{field_name} is not a field of {model.__name__}")
+                raise ValidationError(f"{field_name} is not a field of {model.__name__}")
 
     def clean(self):
         cleaned_data = super().clean()

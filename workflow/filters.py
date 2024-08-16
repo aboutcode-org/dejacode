@@ -80,7 +80,6 @@ class RequestFilterSet(DataspacedFilterSet):
         self.filters["assignee"].extra["to_field_name"] = "username"
         self.filters["priority"].extra["to_field_name"] = "label"
 
-        self.filters["request_template"].extra["widget"] = DropDownAsListWidget(
-            label="Form")
+        self.filters["request_template"].extra["widget"] = DropDownAsListWidget(label="Form")
         for filter_name in ["status", "requester", "assignee", "priority"]:
             self.filters[filter_name].extra["widget"] = DropDownAsListWidget()

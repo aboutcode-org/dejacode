@@ -135,8 +135,7 @@ class AddToProductFormMixin(BaseFormView):
         if add_to_product_form:
             if self.object.license_expression:
                 to_product_licenses = self.object.licenses.all().data_for_expression_builder()
-                add_client_data(
-                    self.request, to_product_licenses=to_product_licenses)
+                add_client_data(self.request, to_product_licenses=to_product_licenses)
             else:
                 all_licenses = (
                     License.objects.scope(self.request.user.dataspace)
@@ -254,8 +253,7 @@ class TabVulnerabilityMixin:
     vulnerability_matching_field = None
 
     def tab_vulnerabilities(self):
-        matching_value = getattr(
-            self.object, self.vulnerability_matching_field)
+        matching_value = getattr(self.object, self.vulnerability_matching_field)
         dataspace = self.object.dataspace
         vulnerablecode = VulnerableCode(self.request.user.dataspace)
 
@@ -276,13 +274,11 @@ class TabVulnerabilityMixin:
             "package_url": vulnerablecode.get_vulnerabilities_by_purl,
         }.get(self.vulnerability_matching_field)
 
-        vulnerabilities = vulnerability_getter_function(
-            matching_value, timeout=3)
+        vulnerabilities = vulnerability_getter_function(matching_value, timeout=3)
         if not vulnerabilities:
             return
 
-        fields, vulnerabilities_count = self.get_vulnerabilities_tab_fields(
-            vulnerabilities)
+        fields, vulnerabilities_count = self.get_vulnerabilities_tab_fields(vulnerabilities)
 
         if fields:
             label = (
@@ -310,8 +306,7 @@ class TabVulnerabilityMixin:
             url = reference.get("reference_url")
             reference_id = reference.get("reference_id")
             if url and reference_id:
-                reference_ids.append(
-                    f'<a href="{url}" target="_blank">{reference_id}</a>')
+                reference_ids.append(f'<a href="{url}" target="_blank">{reference_id}</a>')
             elif reference_id:
                 reference_ids.append(reference_id)
             elif url:
@@ -330,13 +325,11 @@ class TabVulnerabilityMixin:
                 '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
                 vulnerability_url=vulnerability_url,
             )
-            tab_fields.append(
-                (_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
+            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
 
         if include_fixed_packages:
             fixed_packages = vulnerability.get("fixed_packages", [])
-            fixed_packages_sorted = natsorted(
-                fixed_packages, key=itemgetter("purl"))
+            fixed_packages_sorted = natsorted(fixed_packages, key=itemgetter("purl"))
             add_package_url = reverse("component_catalog:package_add")
             vulnerability_icon = (
                 '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
@@ -357,8 +350,7 @@ class TabVulnerabilityMixin:
             for fixed_package in fixed_packages_sorted:
                 purl = fixed_package.get("purl")
                 is_vulnerable = fixed_package.get("is_vulnerable")
-                package_instances = Package.objects.scope(
-                    dataspace).for_package_url(purl)
+                package_instances = Package.objects.scope(dataspace).for_package_url(purl)
 
                 for package in package_instances:
                     absolute_url = package.get_absolute_url()
@@ -442,8 +434,7 @@ class ComponentListView(
     table_headers = (
         Header("name", _("Component name")),
         Header("version", _("Version")),
-        Header("usage_policy", _("Policy"),
-               filter="usage_policy", condition=include_policy),
+        Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("owner", _("Owner")),
@@ -745,8 +736,7 @@ class ComponentDetailsView(
             TabField("copyright", value_func=copyright_placeholder),
             TabField("holder", condition=bool),
             TabField("homepage_url", value_func=urlize_target_blank),
-            TabField("keywords", source="keywords",
-                     value_func=lambda x: "\n".join(x)),
+            TabField("keywords", source="keywords", value_func=lambda x: "\n".join(x)),
             TabField("primary_language"),
             TabField("cpe", condition=bool, value_func=get_cpe_vuln_link),
             TabField("project", condition=bool),
@@ -754,10 +744,8 @@ class ComponentDetailsView(
             TabField("release_date"),
             TabField("type"),
             TabField("vcs_url", value_func=urlize_target_blank, condition=bool),
-            TabField("code_view_url",
-                     value_func=urlize_target_blank, condition=bool),
-            TabField("bug_tracking_url",
-                     value_func=urlize_target_blank, condition=bool),
+            TabField("code_view_url", value_func=urlize_target_blank, condition=bool),
+            TabField("bug_tracking_url", value_func=urlize_target_blank, condition=bool),
             TabField("completion_level", value_func=lambda x: f"{x}%"),
             (_("URN"), self.object.urn_link, URN_HELP_TEXT, None),
             TabField("dataspace"),
@@ -817,8 +805,7 @@ class ComponentDetailsView(
 
         if components:
             subcomponents_fields = [
-                (None, components, None,
-                 "component_catalog/tabs/tab_subcomponents.html"),
+                (None, components, None, "component_catalog/tabs/tab_subcomponents.html"),
             ]
             return {"fields": subcomponents_fields}
 
@@ -855,8 +842,7 @@ class ComponentDetailsView(
             TabField("legal_reviewed"),
             TabField("approval_reference"),
             TabField("distribution_formats_allowed"),
-            TabField("acceptable_linkages",
-                     value_func=lambda x: "\n".join(x or [])),
+            TabField("acceptable_linkages", value_func=lambda x: "\n".join(x or [])),
             TabField("export_restrictions"),
             TabField("approved_download_location"),
             TabField("approved_community_interaction"),
@@ -886,8 +872,7 @@ class ComponentDetailsView(
         # At least 1 value need to be set (excepting the license_expression)
         # for the tab to be available.
         if not any(
-            [1 for field in fields if field[1] and field[0]
-                != "Concluded license expression"]
+            [1 for field in fields if field[1] and field[0] != "Concluded license expression"]
         ):
             return
 
@@ -899,8 +884,7 @@ class ComponentDetailsView(
         vulnerabilities_count = 0
 
         for vulnerability in vulnerabilities:
-            vulnerability_fields = self.get_vulnerability_fields(
-                vulnerability, dataspace)
+            vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
             fields.extend(vulnerability_fields)
             vulnerabilities_count += 1
 
@@ -912,8 +896,7 @@ class ComponentDetailsView(
         context["has_change_subcomponent_permission"] = user.has_perm(
             "component_catalog.change_subcomponent"
         )
-        context["has_change_package_permission"] = user.has_perm(
-            "component_catalog.change_package")
+        context["has_change_package_permission"] = user.has_perm("component_catalog.change_package")
         return context
 
 
@@ -1023,8 +1006,7 @@ class BaseSetPolicyView(LoginRequiredMixin, BaseAdminActionFormView):
     def form_valid(self, form):
         policy_count = form.save()
         if policy_count:
-            messages.success(
-                self.request, f"{policy_count} usage policies updated.")
+            messages.success(self.request, f"{policy_count} usage policies updated.")
         return super().form_valid(form)
 
 
@@ -1040,8 +1022,7 @@ class SetSubcomponentPolicyView(BaseSetPolicyView):
     model = Subcomponent
     perm = "component_catalog.change_subcomponent"
     template_name = "admin/component_catalog/subcomponent/set_policy.html"
-    success_url = reverse_lazy(
-        "admin:component_catalog_subcomponent_changelist")
+    success_url = reverse_lazy("admin:component_catalog_subcomponent_changelist")
     policy_attr = "policy_from_child_component"
 
 
@@ -1093,15 +1074,12 @@ class PackageListView(
     include_reference_dataspace = True
     put_results_in_session = True
     table_headers = (
-        Header("sortable_identifier", _("Identifier"),
-               Package.identifier_help()),
-        Header("usage_policy", _("Policy"),
-               filter="usage_policy", condition=include_policy),
+        Header("sortable_identifier", _("Identifier"), Package.identifier_help()),
+        Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
         Header("filename", _("Download"), help_text="Download link"),
-        Header("components", "Components",
-               PACKAGE_COMPONENTS_HELP, "component"),
+        Header("components", "Components", PACKAGE_COMPONENTS_HELP, "component"),
     )
 
     def get_queryset(self):
@@ -1141,16 +1119,14 @@ class PackageListView(
 
     def get_extra_add_urls(self):
         extra_add_urls = super().get_extra_add_urls()
-        extra_add_urls.insert(
-            0, ("Add Package form", reverse("component_catalog:package_add")))
+        extra_add_urls.insert(0, ("Add Package form", reverse("component_catalog:package_add")))
         return extra_add_urls
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         if self.request.user.has_perm("component_catalog.change_component"):
-            context["add_to_component_form"] = AddMultipleToComponentForm(
-                self.request)
+            context["add_to_component_form"] = AddMultipleToComponentForm(self.request)
 
         vulnerablecode = VulnerableCode(self.request.user.dataspace)
         # The display of vulnerabilities is controlled by the objects Dataspace
@@ -1163,8 +1139,7 @@ class PackageListView(
 
         if enable_vulnerabilities:
             packages = context["object_list"]
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(
-                packages)
+            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         return context
 
@@ -1326,8 +1301,7 @@ class PackageDetailsView(
         if user.is_authenticated:
             self.object.mark_all_notifications_as_read(user)
 
-        has_change_package_permission = user.has_perm(
-            "component_catalog.change_package")
+        has_change_package_permission = user.has_perm("component_catalog.change_package")
         context_data["has_change_package_permission"] = has_change_package_permission
 
         # License data is required for the Scan tab "scan to package" license expression fields
@@ -1340,10 +1314,8 @@ class PackageDetailsView(
             ]
         )
         if include_all_licenses:
-            all_licenses = License.objects.scope(
-                user.dataspace).filter(is_active=True)
-            add_client_data(
-                self.request, license_data=all_licenses.data_for_expression_builder())
+            all_licenses = License.objects.scope(user.dataspace).filter(is_active=True)
+            add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
         if user.has_perm("component_catalog.change_component"):
             context_data["add_to_component_form"] = AddToComponentForm(
@@ -1371,8 +1343,7 @@ class PackageDetailsView(
         )
 
     def tab_essentials(self):
-        essentials_fields = self.get_package_fields(
-            self.object, essential_tab=True)
+        essentials_fields = self.get_package_fields(self.object, essential_tab=True)
         return {"fields": essentials_fields}
 
     def tab_usage_policy(self):
@@ -1382,8 +1353,7 @@ class PackageDetailsView(
         instance = self.object
         if instance.usage_policy_id and instance.usage_policy.guidelines:
             tab_fields = [
-                TabField("usage_policy",
-                         source="get_usage_policy_display_with_icon"),
+                TabField("usage_policy", source="get_usage_policy_display_with_icon"),
                 (
                     _("Usage policy guidelines"),
                     getattr(self.object.usage_policy, "guidelines", ""),
@@ -1532,8 +1502,7 @@ class PackageDetailsView(
         for entry in vulnerabilities:
             unresolved = entry.get("affected_by_vulnerabilities", [])
             for vulnerability in unresolved:
-                vulnerability_fields = self.get_vulnerability_fields(
-                    vulnerability, dataspace)
+                vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
                 fields.extend(vulnerability_fields)
                 vulnerabilities_count += 1
 
@@ -1580,8 +1549,7 @@ class PackageDetailsView(
                 return redirect(f"{component.get_absolute_url()}#packages")
             return redirect(request.path)
 
-        msg = format_html(
-            "Error assigning the package to a component.\n{}", form.errors)
+        msg = format_html("Error assigning the package to a component.\n{}", form.errors)
         messages.error(request, msg)
         return redirect(request.path)
 
@@ -1669,8 +1637,7 @@ def package_create_ajax_view(request):
         redirect_url = created[0].get_absolute_url()
         messages.success(request, "The Package was successfully created.")
     elif len_created > 1:
-        packages = "\n".join([package.get_absolute_link()
-                             for package in created])
+        packages = "\n".join([package.get_absolute_link() for package in created])
         msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
         messages.success(request, format_html(msg))
 
@@ -1722,10 +1689,8 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
     in_memory_zip = io.BytesIO()
     with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
-        zipf.writestr(f"{filename}_scan.json",
-                      json.dumps(scan_results, indent=2))
-        zipf.writestr(f"{filename}_summary.json",
-                      json.dumps(scan_summary, indent=2))
+        zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
+        zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
 
     in_memory_zip.seek(0)
     response = FileResponse(in_memory_zip, content_type="application/zip")
@@ -1800,8 +1765,7 @@ class ScanListView(
         package_qs = Package.objects.scope(self.request.user.dataspace).filter(
             download_url__in=urls
         )
-        packages_by_url = {
-            package.download_url: package for package in package_qs}
+        packages_by_url = {package.download_url: package for package in package_qs}
 
         scans = []
         for scan in context_data["object_list"]:
@@ -1810,8 +1774,7 @@ class ScanListView(
             scan["package"] = package
             scan["download_result_url"] = get_scan_results_as_file_url(scan)
             scan["created_date"] = parse_datetime(scan.get("created_date"))
-            scan["delete_url"] = reverse(
-                "component_catalog:scan_delete", args=[scan.get("uuid")])
+            scan["delete_url"] = reverse("component_catalog:scan_delete", args=[scan.get("uuid")])
             scans.append(scan)
 
         context_data.update(
@@ -1844,8 +1807,7 @@ def send_scan_notification(request, key):
         raise Http404("Missing `input_sources` entry in provided data.")
     download_url = input_sources[0].get("download_url")
 
-    package = get_object_or_404(
-        Package, download_url=download_url, dataspace=user.dataspace)
+    package = get_object_or_404(Package, download_url=download_url, dataspace=user.dataspace)
     description = package.download_url
 
     run = json_data.get("run")
@@ -1923,8 +1885,7 @@ class ComponentAddView(
             .values("id", *self.initial_from_package_fields)
         )
 
-        initial = {"packages_ids": ",".join(
-            [str(entry.pop("id")) for entry in packages])}
+        initial = {"packages_ids": ",".join([str(entry.pop("id")) for entry in packages])}
 
         if packages:
             initial.update(self.extract_common_values(packages))
@@ -1985,8 +1946,7 @@ class PackageAddView(
 
         if purldb_entry := self.get_entry_from_purldb():
             # Duplicate the declared_license_expression as the "concluded" license_expression
-            purldb_entry["license_expression"] = purldb_entry.get(
-                "declared_license_expression")
+            purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
             model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
                 field_name: value
@@ -2063,8 +2023,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         if not user.dataspace.enable_package_scanning:
             raise Http404("Package scanning is not enabled.")
 
-        has_change_package_permission = user.has_perm(
-            "component_catalog.change_package")
+        has_change_package_permission = user.has_perm("component_catalog.change_package")
         context_data["has_change_package_permission"] = has_change_package_permission
 
         tab_scan = self.tab_scan()
@@ -2154,16 +2113,14 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         license_matches,
         checked=False,
     ):
-        licensing, show_policy = cls._get_dataspace_licensing(
-            dataspace, license_expressions)
+        licensing, show_policy = cls._get_dataspace_licensing(dataspace, license_expressions)
         values = []
         for entry in license_expressions:
             license_expression = entry.get("value")
             if not license_expression:
                 continue
 
-            value = get_formatted_expression(
-                licensing, license_expression, show_policy)
+            value = get_formatted_expression(licensing, license_expression, show_policy)
             count = entry.get("count")
             checked_html = "checked" if checked else ""
             select_input = (
@@ -2184,8 +2141,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             match_data = ""
             matches = license_matches.get(license_expression, {})
             for path, detection_data in matches.items():
-                match_data += cls._generate_license_match_card(
-                    path, detection_data)
+                match_data += cls._generate_license_match_card(path, detection_data)
 
             if match_data:
                 html_content += (
@@ -2199,8 +2155,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     f"</button>"
                 )
 
-            values.append(
-                f'<span class="license-expression">{html_content}</span>')
+            values.append(f'<span class="license-expression">{html_content}</span>')
 
         return values
 
@@ -2226,8 +2181,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             th_class = None
 
             if field_value is True:
-                badge_color = "text-bg-success" if weight.startswith(
-                    "+") else "text-bg-danger"
+                badge_color = "text-bg-success" if weight.startswith("+") else "text-bg-danger"
                 value = f'<span class="badge {badge_color} fs-85pct">{weight}</span>'
 
             elif field == "score":
@@ -2319,8 +2273,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
             if detected_license_expression := key_file["detected_license_expression"]:
                 licensing, show_policy = self._get_dataspace_licensing(
-                    self.object.dataspace, [
-                        {"value": detected_license_expression}]
+                    self.object.dataspace, [{"value": detected_license_expression}]
                 )
                 key_file["formatted_expression"] = get_formatted_expression(
                     licensing,
@@ -2349,8 +2302,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
     def scan_detected_package_fields(self, key_files_packages):
         user = self.request.user
-        has_change_package_permission = user.has_perm(
-            "component_catalog.change_package")
+        has_change_package_permission = user.has_perm("component_catalog.change_package")
         detected_package_fields = []
 
         # Only 1 package entry is supported
@@ -2380,15 +2332,13 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 (None, field_context, None, "includes/field_pretitle.html")
             )
 
-            self.detected_package_data = ScanCodeIO.map_detected_package_data(
-                detected_package)
+            self.detected_package_data = ScanCodeIO.map_detected_package_data(detected_package)
 
             # Add the supported Package fields in the tab UI.
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
                 if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
-                        value = format_html("<br>".join(
-                            [escape(entry) for entry in value]))
+                        value = format_html("<br>".join([escape(entry) for entry in value]))
                     else:
                         value = escape(value)
                     detected_package_fields.append((label, value))
@@ -2400,8 +2350,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
     def scan_summary_fields(self, scan_summary):
         scan_summary_fields = []
         user = self.request.user
-        has_change_package_permission = user.has_perm(
-            "component_catalog.change_package")
+        has_change_package_permission = user.has_perm("component_catalog.change_package")
 
         right_button_data_target = ""
         if has_change_package_permission:
@@ -2418,8 +2367,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         }
 
         summary_fields = ScanCodeIO.SCAN_SUMMARY_FIELDS
-        has_summary_values = any(
-            field[1] in scan_summary for field in summary_fields)
+        has_summary_values = any(field[1] in scan_summary for field in summary_fields)
         if not has_summary_values:
             return
 
@@ -2487,8 +2435,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         dataspace_name = self.object.dataspace.name
         request_template_uuid = scan_issue_request_template.get(dataspace_name)
         if request_template_uuid and status in completed_statuses:
-            request_form_url = reverse("workflow:request_add", args=[
-                                       request_template_uuid])
+            request_form_url = reverse("workflow:request_add", args=[request_template_uuid])
             field_context = {
                 "href": f"{request_form_url}?content_object_id={self.object.id}",
                 "target": "_blank",
@@ -2496,8 +2443,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 "icon_class": "fas fa-bug",
             }
             scan_status_fields.append(
-                ("Report Scan Issues", field_context,
-                 None, "includes/field_button.html")
+                ("Report Scan Issues", field_context, None, "includes/field_button.html")
             )
 
         scan_status_fields.extend(
@@ -2513,8 +2459,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         if status in issue_statuses:
             log = scan_run.get("log")
             if log:
-                scan_status_fields.append(
-                    ("Log", log, None, "includes/field_log.html"))
+                scan_status_fields.append(("Log", log, None, "includes/field_log.html"))
             task_output = scan_run.get("task_output")
             if task_output:
                 scan_status_fields.append(
@@ -2532,8 +2477,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 "icon_class": "fas fa-download",
             }
             scan_status_fields.append(
-                ("Download Scan data", field_context,
-                 None, "includes/field_button.html")
+                ("Download Scan data", field_context, None, "includes/field_button.html")
             )
 
         return scan_status_fields
@@ -2562,8 +2506,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
         if scan_summary:
             license_clarity_score = scan_summary.get("license_clarity_score")
-            license_clarity_fields = self.license_clarity_fields(
-                license_clarity_score)
+            license_clarity_fields = self.license_clarity_fields(license_clarity_score)
             tab_fields.extend(license_clarity_fields)
 
             key_files = scan_summary.get("key_files")
@@ -2572,8 +2515,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 tab_fields.extend(key_files_fields)
 
             if key_files_packages := scan_summary.get("key_files_packages", []):
-                tab_fields.extend(
-                    self.scan_detected_package_fields(key_files_packages))
+                tab_fields.extend(self.scan_detected_package_fields(key_files_packages))
 
             scan_summary_fields = self.scan_summary_fields(scan_summary)
             if scan_summary_fields:
@@ -2606,8 +2548,7 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
                 "full_width": True,
                 "alert_class": "alert-light disable-tab",
             }
-            tab_fields = [
-                ("", alert_context, None, "includes/field_alert.html")]
+            tab_fields = [("", alert_context, None, "includes/field_alert.html")]
             context_data["tab_context"] = {"fields": tab_fields}
 
         return context_data
@@ -2634,8 +2575,7 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
             "full_width": True,
             "alert_class": "alert-primary",
         }
-        tab_fields.append(
-            ("", alert_context, None, "includes/field_alert.html"))
+        tab_fields.append(("", alert_context, None, "includes/field_alert.html"))
 
         if len(purldb_entries) > 1:
             alert_context = {
@@ -2643,12 +2583,10 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
                 "full_width": True,
                 "alert_class": "alert-warning",
             }
-            tab_fields.append(
-                ("", alert_context, None, "includes/field_alert.html"))
+            tab_fields.append(("", alert_context, None, "includes/field_alert.html"))
 
         user = self.request.user
         for purldb_entry in purldb_entries:
-            tab_fields.extend(get_purldb_tab_fields(
-                purldb_entry, user.dataspace))
+            tab_fields.extend(get_purldb_tab_fields(purldb_entry, user.dataspace))
 
         return {"fields": tab_fields}

@@ -60,8 +60,7 @@ class SetKeywordsChoicesFormMixin:
         if keywords_field := self.fields.get("keywords"):
             keywords_qs = ComponentKeyword.objects.scope(self.dataspace)
             labels = keywords_qs.values_list("label", flat=True)
-            keywords_field.widget.attrs.update(
-                {"data-list": ", ".join(labels)})
+            keywords_field.widget.attrs.update({"data-list": ", ".join(labels)})
 
 
 class KeywordsField(JSONListField):
@@ -168,8 +167,7 @@ class ComponentForm(
                 try:
                     int(package_id)
                 except ValueError:
-                    raise forms.ValidationError(
-                        f"Wrong value type for {package_id}")
+                    raise forms.ValidationError(f"Wrong value type for {package_id}")
         return packages_ids
 
     def save(self, *args, **kwargs):
@@ -177,8 +175,7 @@ class ComponentForm(
 
         packages_ids = self.cleaned_data.get("packages_ids")
         if packages_ids:
-            packages = Package.objects.scope(
-                self.user.dataspace).filter(id__in=packages_ids)
+            packages = Package.objects.scope(self.user.dataspace).filter(id__in=packages_ids)
             for package in packages:
                 ComponentAssignedPackage.objects.create(
                     component=instance,
@@ -201,13 +198,11 @@ class ComponentForm(
                 Group("name", "version", "owner"),
                 HTML("<hr>"),
                 "license_expression",
-                Group("declared_license_expression",
-                      "other_license_expression"),
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "holder"),
                 "notice_text",
                 Group("notice_filename", "notice_url"),
-                Group("is_license_notice", "is_copyright_notice",
-                      "is_notice_in_codebase"),
+                Group("is_license_notice", "is_copyright_notice", "is_notice_in_codebase"),
                 HTML("<hr>"),
                 Group("description", "keywords"),
                 Group("primary_language", "cpe"),
@@ -265,8 +260,7 @@ class PackageFieldsValidationMixin:
     def clean(self):
         cleaned_data = super().clean()
 
-        purl_values = [cleaned_data.get(field_name)
-                       for field_name in PACKAGE_URL_FIELDS]
+        purl_values = [cleaned_data.get(field_name) for field_name in PACKAGE_URL_FIELDS]
 
         if any(purl_values):
             try:
@@ -274,8 +268,7 @@ class PackageFieldsValidationMixin:
             except ValueError as e:
                 raise forms.ValidationError(e)
         elif not cleaned_data.get("filename"):
-            raise forms.ValidationError(
-                "A Filename or a Package URL (type + name) is required.")
+            raise forms.ValidationError("A Filename or a Package URL (type + name) is required.")
 
         return cleaned_data
 
@@ -404,8 +397,7 @@ class PackageForm(
                 Group("version", "qualifiers", "subpath"),
                 HTML("<hr>"),
                 "license_expression",
-                Group("declared_license_expression",
-                      "other_license_expression"),
+                Group("declared_license_expression", "other_license_expression"),
                 Group("copyright", "notice_text"),
                 Group("holder", "author"),
                 HTML("<hr>"),
@@ -443,8 +435,7 @@ class PackageForm(
         collect_data = self.cleaned_data.get("collect_data")
 
         if collect_data and download_url:
-            transaction.on_commit(
-                lambda: tasks.package_collect_data.delay(instance.id))
+            transaction.on_commit(lambda: tasks.package_collect_data.delay(instance.id))
             self.cleaned_data["data_collected"] = True
 
         if self.submit_scan_enabled and download_url:
@@ -627,8 +618,7 @@ class BaseAddToProductForm(
 
         product_field = self.fields["product"]
         perms = ["view_product", "change_product"]
-        product_field.queryset = Product.objects.get_queryset(
-            user, perms=perms)
+        product_field.queryset = Product.objects.get_queryset(user, perms=perms)
 
         if relation_instance:
             help_text = f'"{relation_instance}" will be assigned to the selected product.'
@@ -793,8 +783,7 @@ class AddToComponentFormMixin(forms.Form):
     def clean_component(self):
         object_id = self.cleaned_data.get("object_id")
         try:
-            component = Component.objects.scope(
-                self.dataspace).get(uuid=object_id)
+            component = Component.objects.scope(self.dataspace).get(uuid=object_id)
         except Component.DoesNotExist:
             raise forms.ValidationError("Invalid Component.")
         return component
@@ -871,8 +860,7 @@ class AddMultipleToComponentForm(AddToComponentFormMixin):
                 "package": obj,
                 "dataspace": obj.dataspace,
             }
-            relation_obj, created = ComponentAssignedPackage.objects.get_or_create(
-                **filters)
+            relation_obj, created = ComponentAssignedPackage.objects.get_or_create(**filters)
             if created:
                 History.log_addition(user, relation_obj)
                 History.log_change(user, component, f'Added package "{obj}"')
@@ -960,8 +948,7 @@ class AcceptableLinkagesFormMixin(forms.Form):
             choices = [(choice.label, choice.label) for choice in qs]
             acceptable_linkages_field = self.fields["acceptable_linkages"]
             acceptable_linkages_field.choices = choices
-            help_text = Component._meta.get_field(
-                "acceptable_linkages").help_text
+            help_text = Component._meta.get_field("acceptable_linkages").help_text
             acceptable_linkages_field.help_text = help_text
 
 

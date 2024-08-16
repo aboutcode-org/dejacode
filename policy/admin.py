@@ -152,8 +152,7 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
             "explicit_end": False,
         }
 
-        yaml_dump = yaml.safe_dump(
-            {"license_policies": licenses}, **dump_kwargs)
+        yaml_dump = yaml.safe_dump({"license_policies": licenses}, **dump_kwargs)
 
         response = HttpResponse(yaml_dump, content_type="application/x-yaml")
         response["Content-Disposition"] = 'attachment; filename="license_policies.yml"'

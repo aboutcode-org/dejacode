@@ -72,12 +72,10 @@ def send_notification_email(request, instance, action, message=""):
         body += f"\n\n{message}"
 
     if action is not History.DELETION:
-        absolute_url = request.build_absolute_uri(
-            location=instance.get_admin_url())
+        absolute_url = request.build_absolute_uri(location=instance.get_admin_url())
         body += f"\n\n{absolute_url}"
 
-    send_mail_task.delay(
-        subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
+    send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
 
 
 def send_notification_email_on_queryset(request, queryset, action, message=""):
@@ -112,15 +110,13 @@ def send_notification_email_on_queryset(request, queryset, action, message=""):
         body += f"\n- {instance}"
 
         if action is not History.DELETION:
-            absolute_url = request.build_absolute_uri(
-                location=instance.get_admin_url())
+            absolute_url = request.build_absolute_uri(location=instance.get_admin_url())
             body += f" {absolute_url}"
 
     if message:
         body += f"\n\n{message}"
 
-    send_mail_task.delay(
-        subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
+    send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
 
 
 def successful_mass_update(sender, action, request, queryset, modeladmin, form, **kwargs):
@@ -162,11 +158,9 @@ def successful_mass_update(sender, action, request, queryset, modeladmin, form, 
 
     # Send 1 email notification including all the modified objects.
     message = "Changes details:\n\n"
-    message += "\n\n".join(f"* {field}\nNew value: {value}" for field,
-                           value in changes)
+    message += "\n\n".join(f"* {field}\nNew value: {value}" for field, value in changes)
 
-    send_notification_email_on_queryset(
-        request, queryset, History.CHANGE, message)
+    send_notification_email_on_queryset(request, queryset, History.CHANGE, message)
 
 
 def send_password_changed_email(user):
@@ -177,8 +171,7 @@ def send_password_changed_email(user):
         "password_reset_url": reverse("password_reset"),
     }
     body = render_to_string("registration/password_change_email.txt", data)
-    send_mail_task.delay(
-        subject, body, settings.DEFAULT_FROM_EMAIL, [user.email])
+    send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email])
 
 
 def notify_on_user_locked_out(request, username, **kwargs):
@@ -188,8 +181,7 @@ def notify_on_user_locked_out(request, username, **kwargs):
     signal is triggered.
     """
     access_attempt_url = reverse("admin:axes_accessattempt_changelist")
-    access_attempt_absolute_url = request.build_absolute_uri(
-        location=access_attempt_url)
+    access_attempt_absolute_url = request.build_absolute_uri(location=access_attempt_url)
     access_attempt_link = f"{access_attempt_absolute_url}?q={username}"
     user = DejacodeUser.objects.get_or_none(username=username)
 
@@ -208,8 +200,7 @@ def notify_on_user_locked_out(request, username, **kwargs):
 
     if user:
         user_list_url = reverse("admin:dje_dejacodeuser_changelist")
-        user_list_absolute_url = request.build_absolute_uri(
-            location=user_list_url)
+        user_list_absolute_url = request.build_absolute_uri(location=user_list_url)
         user_list_link = f"{user_list_absolute_url}?q={username}"
         message += (
             f'"{username}" is an existing DejaCode user in Dataspace '

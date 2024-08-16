@@ -142,8 +142,7 @@ def queryset_to_html_list(queryset, url_params, qs_limit=None):
     opts = queryset.model._meta
     url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
     href = f"{url}?{urlencode(url_params)}"
-    changelist_link = format_html(
-        CHANGELIST_LINK_TEMPLATE, href, count, opts.verbose_name_plural)
+    changelist_link = format_html(CHANGELIST_LINK_TEMPLATE, href, count, opts.verbose_name_plural)
 
     list_items = [
         "<li>{}</li>".format(instance.get_admin_link(target="_blank"))
@@ -151,8 +150,7 @@ def queryset_to_html_list(queryset, url_params, qs_limit=None):
     ]
 
     return format_html(
-        '<ul class="with-disc">{}</ul>{}', mark_safe(
-            "".join(list_items)), changelist_link
+        '<ul class="with-disc">{}</ul>{}', mark_safe("".join(list_items)), changelist_link
     )
 
 
@@ -307,8 +305,7 @@ def get_duplicates(queryset, field_name, function=None):
         func_field_name = f"{function.__name__.lower()}_{field_name}"
         queryset = queryset.annotate(**{func_field_name: function(field_name)})
 
-    values_list = queryset.values_list(
-        func_field_name or field_name, flat=True)
+    values_list = queryset.values_list(func_field_name or field_name, flat=True)
     return [elem for elem, count in Counter(values_list).items() if count > 1]
 
 
@@ -330,11 +327,9 @@ def merge_relations(original, duplicate):
 
     for f in original._meta.get_fields():
         if f.one_to_many and f.auto_created:
-            getattr(duplicate, f.get_accessor_name()).update(
-                **{f.field.name: original})
+            getattr(duplicate, f.get_accessor_name()).update(**{f.field.name: original})
         elif f.__class__.__name__ == "GenericRelation":
-            getattr(duplicate, f.attname).update(
-                **{f.object_id_field_name: original.id})
+            getattr(duplicate, f.attname).update(**{f.object_id_field_name: original.id})
 
 
 def get_preserved_filters(request, model, parameter_name="_list_filters"):
@@ -385,8 +380,7 @@ def construct_changes_details_message(changes_details):
     change_line = "\n\n* {field}\nOld value: {old}\nNew value: {new}"
 
     for instance, data in changes_details.items():
-        msg.append(header.format(
-            model_class=instance.__class__.__name__, instance=instance))
+        msg.append(header.format(model_class=instance.__class__.__name__, instance=instance))
         for field, old, new in data:
             msg.append(change_line.format(field=field, old=old, new=new))
     return "".join(msg)
@@ -411,16 +405,14 @@ def group_by_name_version(object_list):
     from natsort import natsorted
 
     return [
-        natsorted(group, key=lambda x: version_sort_key(
-            x.version), reverse=True)
+        natsorted(group, key=lambda x: version_sort_key(x.version), reverse=True)
         for key, group in groupby(object_list, key=attrgetter("name"))
     ]
 
 
 def pop_from_get_request(request, key):
     if not isinstance(request, HttpRequest):
-        raise AssertionError(
-            "`request` argument is not a HttpRequest instance")
+        raise AssertionError("`request` argument is not a HttpRequest instance")
 
     if key not in request.GET:
         return

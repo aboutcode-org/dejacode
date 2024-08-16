@@ -43,8 +43,7 @@ class OwnerFilterSet(DataspacedFilterSet):
     )
     type = django_filters.ChoiceFilter(
         label=_("Type"),
-        choices=[(type_value, type_value)
-                 for type_value, _ in Owner.OWNER_TYPE_CHOICES],
+        choices=[(type_value, type_value) for type_value, _ in Owner.OWNER_TYPE_CHOICES],
         widget=DropDownRightWidget,
     )
     sort = DefaultOrderingFilter(

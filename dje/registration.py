@@ -80,8 +80,7 @@ class DejaCodeActivationView(ActivationView):
             )
             return user
         except User.DoesNotExist:
-            raise ActivationError(
-                self.BAD_USERNAME_MESSAGE, code="bad_username")
+            raise ActivationError(self.BAD_USERNAME_MESSAGE, code="bad_username")
 
 
 class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
@@ -108,8 +107,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
         if "password2" in self.fields:
             del self.fields["password2"]
 
-        self.fields["username"].validators.append(
-            validators.MinLengthValidator(3))
+        self.fields["username"].validators.append(validators.MinLengthValidator(3))
 
         placeholders = {
             "username": _("Username"),
@@ -194,8 +192,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
         """Add the default Dataspace on the user instance before saving."""
         user = super().save(commit=False)
 
-        user.dataspace, _ = Dataspace.objects.get_or_create(
-            name=REGISTRATION_DEFAULT_DATASPACE)
+        user.dataspace, _ = Dataspace.objects.get_or_create(name=REGISTRATION_DEFAULT_DATASPACE)
         user.is_active = False
         if REGISTRATION_DEFAULT_IS_STAFF:
             user.is_staff = True

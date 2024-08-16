@@ -88,8 +88,7 @@ class DJESearchFilter(SearchFilter):
         displayed in the autocomplete results.
         """
         if self.is_autocomplete(request):
-            search_fields_autocomplete = getattr(
-                view, "search_fields_autocomplete", None)
+            search_fields_autocomplete = getattr(view, "search_fields_autocomplete", None)
             if search_fields_autocomplete:
                 return search_fields_autocomplete
 
@@ -123,8 +122,7 @@ class DJEOrderingFilter(OrderingFilter):
         """Inject the list of ordering fields in the description."""
         schema_fields = super().get_schema_fields(view)
 
-        ordering_fields = getattr(
-            view, "ordering_fields", self.ordering_fields)
+        ordering_fields = getattr(view, "ordering_fields", self.ordering_fields)
         if ordering_fields:
             ordering_fields_str = ", ".join(ordering_fields)
             schema_fields[0].schema.description += f" Ordering on: {ordering_fields_str}"

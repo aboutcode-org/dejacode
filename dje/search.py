@@ -61,8 +61,7 @@ def advanced_search(search_terms, search_fields):
             continue
 
         orm_lookups = [f"{field}__{lookup_type}" for field in lookup_fields]
-        or_queries.extend([models.Q(**{orm_lookup: term})
-                          for orm_lookup in orm_lookups])
+        or_queries.extend([models.Q(**{orm_lookup: term}) for orm_lookup in orm_lookups])
 
     if or_queries:
         return reduce(or_, or_queries)

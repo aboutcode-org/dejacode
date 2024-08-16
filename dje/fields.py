@@ -126,8 +126,7 @@ class SmartFileField(forms.FileField):
             raise forms.ValidationError(
                 _(
                     "File size must be under {}. Current file size is {}.".format(
-                        filesizeformat(self.max_upload_size), filesizeformat(
-                            uploaded_file.size)
+                        filesizeformat(self.max_upload_size), filesizeformat(uploaded_file.size)
                     )
                 )
             )
@@ -161,8 +160,7 @@ class SmartFileField(forms.FileField):
 
         for status, reason in scan_response.values():
             if status == "FOUND":
-                raise forms.ValidationError(
-                    _("This file is infected. Upload aborted."))
+                raise forms.ValidationError(_("This file is infected. Upload aborted."))
             elif status == "ERROR":
                 raise forms.ValidationError(_("File upload error."))
 

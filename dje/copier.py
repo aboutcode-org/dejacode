@@ -91,8 +91,7 @@ def get_or_create_in(reference_obj, target_dataspace, user, **kwargs):
     instance_in_target = get_object_in(reference_obj, target_dataspace)
 
     if not instance_in_target:
-        instance_in_target = copy_object(
-            reference_obj, target_dataspace, user, **kwargs)
+        instance_in_target = copy_object(reference_obj, target_dataspace, user, **kwargs)
 
     return instance_in_target  # None if not matched and the copy failed
 
@@ -156,8 +155,7 @@ def copy_object(reference_obj, target_dataspace, user, update=False, **kwargs):
         # the one used for Matching in target) already exists.
         # The integrity error is propagated up from a DB constraints error as
         # the unicity constraint cannot be satisfied in the DB
-        logger.debug(debug_message.format(
-            operation="IntegrityError", **locals()))
+        logger.debug(debug_message.format(operation="IntegrityError", **locals()))
         raise  # re-raise the exception
 
     # Refresh the copied/updated object, Return None if something went wrong
@@ -173,13 +171,11 @@ def copy_to(reference_obj, target_dataspace, user, **kwargs):
     model_class = reference_obj.__class__
 
     if reference_dataspace == target_dataspace:
-        raise AssertionError(
-            "Reference and target cannot share the same Dataspace")
+        raise AssertionError("Reference and target cannot share the same Dataspace")
 
     # Copy configuration
     exclude_dict = kwargs.get("exclude", {})
-    excluded_fields = get_excluded_fields(
-        exclude_dict, user.dataspace, model_class)
+    excluded_fields = get_excluded_fields(exclude_dict, user.dataspace, model_class)
     if excluded_fields == SKIP:
         logger.debug(f"copy_object: SKIP copy for {repr(reference_obj)}")
         return
@@ -192,8 +188,7 @@ def copy_to(reference_obj, target_dataspace, user, **kwargs):
     target_obj.dataspace = target_dataspace
 
     # Replace FKs by match or copy on the copied_object
-    copy_foreignfields(reference_obj, target_obj,
-                       excluded_fields, user, **kwargs)
+    copy_foreignfields(reference_obj, target_obj, excluded_fields, user, **kwargs)
 
     # Set the proper id value on GenericForeignKey fields
     fix_generic_foreignkeys(reference_obj, target_obj)
@@ -229,8 +224,7 @@ def copy_to(reference_obj, target_dataspace, user, **kwargs):
         # None of the m2m relation (through table) can exist as the object is not existing yet.
         copy_m2m_fields(reference_obj, target_dataspace, user, **kwargs)
 
-    post_copy.send(sender=model_class, reference=reference_obj,
-                   target=target_obj, user=user)
+    post_copy.send(sender=model_class, reference=reference_obj, target=target_obj, user=user)
 
 
 def get_generic_foreignkeys_fields(model_class):
@@ -270,8 +264,7 @@ def copy_foreignfields(reference_obj, target_obj, excluded_fields, user, **kwarg
         if not fk_instance:
             continue
 
-        matched_obj = get_or_create_in(
-            fk_instance, target_obj.dataspace, user, **kwargs)
+        matched_obj = get_or_create_in(fk_instance, target_obj.dataspace, user, **kwargs)
         if matched_obj:
             setattr(target_obj, field_name, matched_obj)
         else:  # Match nor copy were not possible.
@@ -318,8 +311,7 @@ def copy_m2m_fields(reference_obj, target_dataspace, user, update=False, **kwarg
         through_model = m2m_field.remote_field.through
         # FK fields names on the Relation Model
         m2m_field_name = m2m_field.m2m_field_name()
-        reference_m2m_qs = through_model.objects.filter(
-            **{m2m_field_name: reference_obj})
+        reference_m2m_qs = through_model.objects.filter(**{m2m_field_name: reference_obj})
 
         if kwargs.get("exclude", {}).get(through_model) == SKIP:
             logger.debug(f"copy_object: SKIP copy for {repr(reference_obj)}")
@@ -335,20 +327,17 @@ def update_to(reference_obj, target_obj, user, **kwargs):
     model_class = reference_obj.__class__
 
     if reference_obj.dataspace == target_dataspace:
-        raise AssertionError(
-            "Reference and target cannot share the same Dataspace")
+        raise AssertionError("Reference and target cannot share the same Dataspace")
 
     # Copy configuration
     exclude_dict = kwargs.get("exclude", {})
-    excluded_fields = get_excluded_fields(
-        exclude_dict, user.dataspace, model_class)
+    excluded_fields = get_excluded_fields(exclude_dict, user.dataspace, model_class)
     if excluded_fields == SKIP:
         logger.debug(f"copy_object: SKIP update for {repr(reference_obj)}")
         return
     excluded_fields.extend(ALWAYS_EXCLUDE)
 
-    copy_foreignfields(reference_obj, target_obj,
-                       excluded_fields, user, **kwargs)
+    copy_foreignfields(reference_obj, target_obj, excluded_fields, user, **kwargs)
 
     generic_fk_field = [
         generic_fk.fk_field for generic_fk in get_generic_foreignkeys_fields(reference_obj)
@@ -387,12 +376,10 @@ def update_to(reference_obj, target_obj, user, **kwargs):
     target_obj.save(copy=True)
 
     # Copy o2m and m2m can only be executed after save()
-    copy_relational_fields(reference_obj, target_dataspace,
-                           user, update=True, **kwargs)
+    copy_relational_fields(reference_obj, target_dataspace, user, update=True, **kwargs)
     # Always update m2m relation (through table) on m2m update, the related
     # object will not be affected.
-    copy_m2m_fields(reference_obj, target_dataspace,
-                    user, update=True, **kwargs)
+    copy_m2m_fields(reference_obj, target_dataspace, user, update=True, **kwargs)
 
     # The object as been updated, logging as a CHANGE
     message = 'Updated object from "{}" dataspace to "{}" dataspace.'.format(
@@ -400,5 +387,4 @@ def update_to(reference_obj, target_obj, user, **kwargs):
     )
     History.log_change(user, target_obj, message, serialized_data)
 
-    post_update.send(sender=model_class, reference=reference_obj,
-                     target=target_obj, user=user)
+    post_update.send(sender=model_class, reference=reference_obj, target=target_obj, user=user)

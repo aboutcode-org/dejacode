@@ -84,8 +84,7 @@ class OwnerChoiceField(ModelChoiceFieldForImport):
             value = super().to_python(value)
         except ValidationError:
             msg = "{} {}".format(
-                self.error_messages["invalid_choice"], self.get_suggestion_message(
-                    value)
+                self.error_messages["invalid_choice"], self.get_suggestion_message(value)
             )
             raise ValidationError(msg)
         return value
@@ -95,8 +94,7 @@ class CleanPrimaryLanguageFormMixin:
     def clean_primary_language(self):
         primary_language = self.cleaned_data["primary_language"]
         if primary_language and primary_language not in PROGRAMMING_LANGUAGES:
-            language_mapping = {
-                language.lower(): language for language in PROGRAMMING_LANGUAGES}
+            language_mapping = {language.lower(): language for language in PROGRAMMING_LANGUAGES}
             proper_case = language_mapping.get(primary_language.lower(), None)
             if proper_case:
                 msg = f'Language will be imported with proper case: "{proper_case}"'
@@ -191,8 +189,7 @@ class ComponentImportForm(
     def pre_process_form(self, data, **kwargs):
         instance = kwargs.pop("instance", None)
         self.prefix = kwargs.get("prefix")
-        version = self.normalize_version(
-            data.get(self.add_prefix("version"), "").strip())
+        version = self.normalize_version(data.get(self.add_prefix("version"), "").strip())
 
         if not instance:  # No instance given, let's match our component
             try:
@@ -215,8 +212,7 @@ class ComponentImportForm(
         original_version = self.cleaned_data["version"]
         normalized_version = self.normalize_version(original_version)
         if original_version != normalized_version:
-            self.add_warning(
-                "version", f"Version will been cleaned to {normalized_version}")
+            self.add_warning("version", f"Version will been cleaned to {normalized_version}")
         return normalized_version
 
     def save(self, commit=True):
@@ -286,8 +282,7 @@ class PackageImportForm(
             if field_name == "filename":
                 remaining_errors[field_name] = value
             else:
-                self.add_warning(
-                    field_name, "Value is not valid, it will not be imported.")
+                self.add_warning(field_name, "Value is not valid, it will not be imported.")
         self._errors = remaining_errors
 
     def clean(self):
@@ -340,8 +335,7 @@ class PackageImporter(BaseImporter):
             ]
 
         if not packages:
-            self.fatal_errors.append(
-                "No package data to import in input file.")
+            self.fatal_errors.append("No package data to import in input file.")
             return
 
         self.is_from_scancode = True
@@ -350,8 +344,7 @@ class PackageImporter(BaseImporter):
 
         # Using a dict comprehension to keep the original key order and
         # ensure we have all possibile headers.
-        header_row = {
-            key: None for package in packages for key in package.keys()}
+        header_row = {key: None for package in packages for key in package.keys()}
         header_row = list(header_row.keys())
 
         self.build_headers(header_row)
@@ -436,11 +429,9 @@ class SubcomponentImportForm(
     SubcomponentLicenseExpressionFormMixin,
     BaseImportModelForm,
 ):
-    parent = forms.CharField(
-        help_text='"<name>:<version>" of the parent Component.')
+    parent = forms.CharField(help_text='"<name>:<version>" of the parent Component.')
 
-    child = forms.CharField(
-        help_text='"<name>:<version>" of the child Component.')
+    child = forms.CharField(help_text='"<name>:<version>" of the child Component.')
 
     usage_policy = ModelChoiceFieldForImport(
         queryset=UsagePolicy.objects.none(),

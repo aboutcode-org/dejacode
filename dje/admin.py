@@ -115,8 +115,7 @@ class DejaCodeAdminSite(AdminSite):
             path("logout/", LogoutView.as_view(next_page="login"), name="logout"),
             path(
                 "password_change/",
-                RedirectView.as_view(
-                    url="/account/password_change/", permanent=True),
+                RedirectView.as_view(url="/account/password_change/", permanent=True),
                 name="password_change",
             ),
             path("docs/models/", docs_models_view, name="docs_models"),
@@ -262,8 +261,7 @@ class ProhibitDataspaceLookupMixin:
 
         if has_dataspace_filter:
             errors.append(
-                checks.Error(
-                    f"Remove {DataspaceFilter} from {self}.list_filter", obj=self)
+                checks.Error(f"Remove {DataspaceFilter} from {self}.list_filter", obj=self)
             )
 
         return errors
@@ -313,8 +311,7 @@ class HistoryAdminMixin:
         to True on the request.
         """
         serialized_data = getattr(request, "_serialized_data", None)
-        history_entry = History.log_change(
-            request.user, object, message, serialized_data)
+        history_entry = History.log_change(request.user, object, message, serialized_data)
 
         message = history_entry.get_change_message()
         disable_notification = getattr(request, "_disable_notification", False)
@@ -342,8 +339,7 @@ class HistoryAdminMixin:
 
             history_qs = History.objects
             if is_dataspace_related(self.model):
-                history_qs = history_qs.filter(
-                    object_dataspace__id=obj.dataspace_id)
+                history_qs = history_qs.filter(object_dataspace__id=obj.dataspace_id)
 
             history_entries = (
                 history_qs.filter(
@@ -362,8 +358,7 @@ class HistoryAdminMixin:
                     user=obj.created_by,
                     change_message="Added.",
                 )
-                history_entries = history_entries.exclude(
-                    action_flag=History.ADDITION)
+                history_entries = history_entries.exclude(action_flag=History.ADDITION)
                 history_entries = list(history_entries) + [addition_entry]
 
             response.context_data["action_list"] = history_entries
@@ -416,8 +411,7 @@ class DataspacedChangeList(ChangeList):
         do_set_link = all(
             [
                 DataspaceFilter in self.model_admin.list_filter,
-                self.model_admin.lookup_allowed(
-                    DataspaceFilter.parameter_name, None),
+                self.model_admin.lookup_allowed(DataspaceFilter.parameter_name, None),
                 not self.is_popup,
             ]
         )
@@ -503,8 +497,7 @@ class DataspacedAdmin(
 
         if has_wrong_form_subclass:
             errors.extend(
-                [checks.Error(
-                    f"{self.form} is not a subclass of {DataspacedAdminForm}", obj=self)]
+                [checks.Error(f"{self.form} is not a subclass of {DataspacedAdminForm}", obj=self)]
             )
 
         return errors
@@ -595,10 +588,8 @@ class DataspacedAdmin(
             # Sanity check, if the _changelist_filters were manually changed for example.
             if hasattr(changelist_view, "context_data"):
                 # Do not use ".values_list('id', flat=True)" to avoid an extra query
-                ids_list = [
-                    str(obj.id) for obj in changelist_view.context_data["cl"].result_list]
-                previous_id, next_id = get_previous_next(
-                    ids_list, str(object_id))
+                ids_list = [str(obj.id) for obj in changelist_view.context_data["cl"].result_list]
+                previous_id, next_id = get_previous_next(ids_list, str(object_id))
                 context.update(
                     {
                         "previous_id": previous_id,
@@ -613,8 +604,7 @@ class DataspacedAdmin(
         return super().change_view(request, object_id, form_url, context)
 
     def render_change_form(self, request, context, add=False, change=False, form_url="", obj=None):
-        response = super().render_change_form(
-            request, context, add, change, form_url, obj)
+        response = super().render_change_form(request, context, add, change, form_url, obj)
         # De-activating the 'Save as' option if the user is editing an Object
         # belonging to another Dataspace.
         # We are able to update the context_data at that point as the
@@ -639,8 +629,7 @@ class DataspacedAdmin(
         ids = self.get_selected_ids_from_request(request, queryset)
         opts = self.model._meta
         preserved_filters = self.get_preserved_filters(request)
-        view_url = reverse(
-            f"admin:{opts.app_label}_{opts.model_name}_{viewname}")
+        view_url = reverse(f"admin:{opts.app_label}_{opts.model_name}_{viewname}")
         url_with_params = "{}?{}".format(view_url, urlencode({"ids": ids}))
         redirect_url = add_preserved_filters(
             {"preserved_filters": preserved_filters, "opts": opts}, url_with_params
@@ -662,8 +651,7 @@ class DataspacedAdmin(
         values = queryset.values_list("uuid", "last_modified_date")
 
         orm_lookups = [
-            models.Q(
-                **{"uuid": uuid, "last_modified_date__gt": last_modified_date})
+            models.Q(**{"uuid": uuid, "last_modified_date__gt": last_modified_date})
             for uuid, last_modified_date in values
         ]
 
@@ -694,8 +682,7 @@ class DataspacedAdmin(
         if changelist_href:
             return redirect(changelist_href)
 
-        messages.warning(
-            request, "No updates available in the reference dataspace.")
+        messages.warning(request, "No updates available in the reference dataspace.")
 
     @staticmethod
     def get_changes_details(form):
@@ -795,8 +782,7 @@ class DataspacedAdmin(
             urls += [
                 path(
                     "activity_log/",
-                    self.admin_site.admin_view(
-                        ActivityLog.as_view(model=self.model)),
+                    self.admin_site.admin_view(ActivityLog.as_view(model=self.model)),
                     name="{}_{}_activity_log".format(*info),
                 )
             ]
@@ -866,8 +852,7 @@ class DataspacedAdmin(
         for label, entry in fieldsets:
             fields = entry.get("fields")
             if fields:
-                entry["fields"] = [
-                    field for field in fields if field not in exclude]
+                entry["fields"] = [field for field in fields if field not in exclude]
             fieldsets_with_exclude.append((label, entry))
 
         return fieldsets_with_exclude
@@ -901,8 +886,7 @@ class DataspacedAdmin(
         )
 
         if can_mass_update:
-            actions["mass_update"] = (
-                mass_update_action, "mass_update", "Mass update")
+            actions["mass_update"] = (mass_update_action, "mass_update", "Mass update")
 
         if not has_permission(self.model, request.user, "add") and "copy_to" in actions:
             del actions["copy_to"]
@@ -943,8 +927,7 @@ class DataspacedAdmin(
         return all(
             [
                 DataspaceFilter.parameter_name in request.GET,
-                request.GET.get(DataspaceFilter.parameter_name) != str(
-                    request.user.dataspace_id),
+                request.GET.get(DataspaceFilter.parameter_name) != str(request.user.dataspace_id),
             ]
         )
 
@@ -987,13 +970,11 @@ class DataspacedAdmin(
                 "name": str(opts.verbose_name),
                 "obj": str(obj),
             }
-            msg = 'The {name} "{obj}" was changed successfully.'.format(
-                **msg_dict)
+            msg = 'The {name} "{obj}" was changed successfully.'.format(**msg_dict)
             self.message_user(request, msg, messages.SUCCESS)
 
             viewname = f"admin:{opts.app_label}_{opts.model_name}_change"
-            next_url = reverse(
-                viewname, args=[next_id], current_app=self.admin_site.name)
+            next_url = reverse(viewname, args=[next_id], current_app=self.admin_site.name)
             redirect_url = add_preserved_filters(
                 {"preserved_filters": preserved_filters, "opts": opts}, next_url
             )
@@ -1273,15 +1254,12 @@ class ExternalSourceAdmin(DataspacedAdmin):
         """
         changelist_links = []
         queryset = obj.externalreference_set
-        grouped = group_by(queryset, "content_type",
-                           count_on="object_id", distinct=True)
+        grouped = group_by(queryset, "content_type", count_on="object_id", distinct=True)
 
         for value in grouped:
-            model_class = ContentType.objects.get(
-                id=value["content_type"]).model_class()
+            model_class = ContentType.objects.get(id=value["content_type"]).model_class()
             opts = model_class._meta
-            url = reverse(
-                f"admin:{opts.app_label}_{opts.model_name}_changelist")
+            url = reverse(f"admin:{opts.app_label}_{opts.model_name}_changelist")
             params = {EXTERNAL_SOURCE_LOOKUP: obj.id}
             href = f"{url}?{urlencode(params)}"
             changelist_link = format_html(
@@ -1289,8 +1267,7 @@ class ExternalSourceAdmin(DataspacedAdmin):
             )
             changelist_links.append([changelist_link])
 
-        html_list = "<ul>{}</ul>".format(format_html_join("",
-                                         "<li>{}</li>", changelist_links))
+        html_list = "<ul>{}</ul>".format(format_html_join("", "<li>{}</li>", changelist_links))
         return class_wrap(html_list, "width200")
 
     list_display = (
@@ -1326,8 +1303,7 @@ def send_activation_email(user, request):
     activation_key = registration_view.get_activation_key(user)
     context = registration_view.get_email_context(activation_key)
     context.update({"user": user})
-    subject = render_to_string(
-        registration_view.email_subject_template, context)
+    subject = render_to_string(registration_view.email_subject_template, context)
     message = render_to_string(registration_view.email_body_template, context)
     user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
 
@@ -1393,8 +1369,7 @@ class DejacodeUserAdmin(
     )
     add_fieldsets = (
         (None, {"fields": ("username", "dataspace")}),
-        (_("Personal information"), {
-         "fields": ("email", "first_name", "last_name", "company")}),
+        (_("Personal information"), {"fields": ("email", "first_name", "last_name", "company")}),
         (_("Profile"), {"fields": ("homepage_layout",)}),
         (
             _("Notifications"),
@@ -1409,10 +1384,8 @@ class DejacodeUserAdmin(
         (_("Permissions"), {"fields": ("is_staff", "is_superuser", "groups")}),
     )
     fieldsets = add_fieldsets[:-1] + (
-        (_("Permissions"), {"fields": ("is_active",
-         "is_staff", "is_superuser", "groups")}),
-        (_("Important dates"), {
-         "fields": ("last_login", "last_api_access", "date_joined")}),
+        (_("Permissions"), {"fields": ("is_active", "is_staff", "is_superuser", "groups")}),
+        (_("Important dates"), {"fields": ("last_login", "last_api_access", "date_joined")}),
     )
     form = DejacodeUserChangeForm
     add_form = DejacodeUserCreationForm
@@ -1432,8 +1405,7 @@ class DejacodeUserAdmin(
         "provide a default value for various application work flows."
     )
 
-    activation_email_msg = _(
-        "An activation email will be sent shortly to the email address.")
+    activation_email_msg = _("An activation email will be sent shortly to the email address.")
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -1455,8 +1427,7 @@ class DejacodeUserAdmin(
             "  (permission details)"
             "</a>"
         )
-        groups_field.label = format_html(
-            label_template, groups_field.label, permission_details_url)
+        groups_field.label = format_html(label_template, groups_field.label, permission_details_url)
 
         return form
 
@@ -1517,8 +1488,7 @@ class DejacodeUserAdmin(
         urls = [
             path(
                 "activity_log/",
-                self.admin_site.admin_view(
-                    ActivityLog.as_view(model=self.model)),
+                self.admin_site.admin_view(ActivityLog.as_view(model=self.model)),
                 name="{}_{}_activity_log".format(*info),
             ),
             path(
@@ -1570,8 +1540,7 @@ class DejacodeUserAdmin(
             data_email_notification=False,
             workflow_email_notification=False,
         )
-        self.message_user(
-            request, f"{count} users set as inactive.", messages.SUCCESS)
+        self.message_user(request, f"{count} users set as inactive.", messages.SUCCESS)
 
     @admin.display(description=_("Export selected users as CSV"))
     def export_as_csv(self, request, queryset):
@@ -1620,8 +1589,7 @@ class DejacodeUserAdmin(
         if not self.has_change_permission(request):
             raise PermissionDenied
 
-        user = get_object_or_404(self.get_queryset(
-            request), pk=unquote(object_id))
+        user = get_object_or_404(self.get_queryset(request), pk=unquote(object_id))
         # User needs to be de-activated for the activation_key to work.
         # Also needs a unusable_password for the proper redirection.
         # See ActivationView.get_user() for implementation details.
@@ -1712,8 +1680,7 @@ class GroupAdmin(ReferenceOnlyPermissions, HistoryAdminMixin, GroupAdmin):
     def get_permission_group_mapping():
         group_qs = Group.objects.order_by("name")
 
-        permission_qs = Permission.objects.filter(
-            group__isnull=False).prefetch_related("group_set")
+        permission_qs = Permission.objects.filter(group__isnull=False).prefetch_related("group_set")
 
         permission_group = {}
         for perm in permission_qs:
@@ -1740,8 +1707,7 @@ class GroupAdmin(ReferenceOnlyPermissions, HistoryAdminMixin, GroupAdmin):
         response["Content-Disposition"] = 'attachment; filename="dejacode_group_permission.csv"'
 
         csv_writer = csv.writer(response, dialect="excel")
-        csv_writer.writerow(
-            [""] + list(group_qs.values_list("name", flat=True)))
+        csv_writer.writerow([""] + list(group_qs.values_list("name", flat=True)))
         for perm_name, row in permission_group.items():
             csv_writer.writerow([perm_name] + row)
 

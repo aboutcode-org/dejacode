@@ -42,8 +42,7 @@ class Command(BaseCommand):
             history_count = 0
 
             for obj in model.objects.all():
-                history = History.objects.get_for_object(
-                    obj, action_flag=History.ADDITION)
+                history = History.objects.get_for_object(obj, action_flag=History.ADDITION)
 
                 if not history.exists():
                     History.log_addition(user, obj)

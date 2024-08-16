@@ -53,7 +53,6 @@ def resolve(urn, dataspace):
     model = model_data["model"]
 
     # Using ContentType to get the corresponding Model
-    model_class = ContentType.objects.get_by_natural_key(
-        app_label, model).model_class()
+    model_class = ContentType.objects.get_by_natural_key(app_label, model).model_class()
 
     return model_class.objects.get(**filters)

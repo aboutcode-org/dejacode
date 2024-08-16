@@ -66,8 +66,7 @@ class Command(DataspacedCommand):
         for model_class in models:
             qs = get_unsecured_manager(model_class).filter(dataspace=dataspace)
             if options["verbosity"] > 1:
-                self.stdout.write(
-                    f"Deleting {qs.count()} {model_class.__name__}...")
+                self.stdout.write(f"Deleting {qs.count()} {model_class.__name__}...")
             qs.delete()
 
         # This is the case where --keep-users is NOT given

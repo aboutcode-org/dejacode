@@ -308,8 +308,7 @@ class ModelIntrospector:
         if get_fields:
             out.update(
                 {
-                    f.name: f.related_model if isinstance(
-                        f, RelatedField) else None
+                    f.name: f.related_model if isinstance(f, RelatedField) else None
                     for f in fields
                     if not f.is_relation
                     or f.one_to_one
@@ -342,8 +341,7 @@ class ModelIntrospector:
             )
 
         if get_generic_relation:
-            out.update(
-                {f.name: f.related_model for f in fields if isinstance(f, GenericRelation)})
+            out.update({f.name: f.related_model for f in fields if isinstance(f, GenericRelation)})
 
         return out
 
@@ -382,8 +380,7 @@ class ModelIntrospector:
         return model_class
 
     def validate_field_traversal_of_model_data(self, fields, starting_model, model_data):
-        model_class = self.get_model_class_via_field_traversal(
-            fields, starting_model, model_data)
+        model_class = self.get_model_class_via_field_traversal(fields, starting_model, model_data)
         if model_class:
             # Last field validation, not part of get_model_class_via_field_traversal
             last_field = fields[-1]

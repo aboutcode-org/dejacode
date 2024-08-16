@@ -70,8 +70,7 @@ class FilterSetUtilsMixin:
         for field_name in self.form.changed_data:
             data_field_name = f"{self.form_prefix}-{field_name}" if self.form_prefix else field_name
             for value in self.data.getlist(data_field_name):
-                breadcrumbs.append(self.get_filter_breadcrumb(
-                    field_name, data_field_name, value))
+                breadcrumbs.append(self.get_filter_breadcrumb(field_name, data_field_name, value))
 
         return breadcrumbs
 
@@ -83,8 +82,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
         try:
             self.dataspace = kwargs.pop("dataspace")
         except KeyError:
-            raise AttributeError(
-                "A dataspace needs to be provided to this FilterSet.")
+            raise AttributeError("A dataspace needs to be provided to this FilterSet.")
 
         self.dynamic_qs = kwargs.pop("dynamic_qs", True)
         self.parent_qs_cache = {}
@@ -102,8 +100,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
         usage_policy = self.filters.get("usage_policy")
         if usage_policy:
             model_name = self._meta.model._meta.model_name
-            usage_policy.queryset = usage_policy.queryset.filter(
-                content_type__model=model_name)
+            usage_policy.queryset = usage_policy.queryset.filter(content_type__model=model_name)
 
     def apply_related_only(self, field_name, filter_):
         """
@@ -120,8 +117,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
             )
         else:  # Choices type fields
             choices_qs = (
-                parent_qs.order_by(field_name).distinct(
-                ).values_list(field_name, flat=True)
+                parent_qs.order_by(field_name).distinct().values_list(field_name, flat=True)
             )
             filter_.extra["choices"] = [
                 choice for choice in filter_.extra["choices"] if choice[0] in choices_qs
@@ -246,8 +242,7 @@ class MatchOrderedSearchFilter(SearchRankFilter):
             # 1. Exact match
             When(self.get_match_order_lookups("iexact", value), then=Value(1)),
             # 2. Contains word with boundaries
-            When(self.get_match_order_lookups(
-                "iregex", regex_escaped_value), then=Value(2)),
+            When(self.get_match_order_lookups("iregex", regex_escaped_value), then=Value(2)),
             # 3. Contains word
             default=Value(3),  # default `icontains` clause in `.filter()`
             output_field=IntegerField(),
@@ -277,8 +272,7 @@ class ProgressiveTextSearchFilter(SearchRankFilter):
             return qs
 
         if len(self.search_fields) != 1:
-            raise ImproperlyConfigured(
-                f"Only 1 field supported for {self.__class__}")
+            raise ImproperlyConfigured(f"Only 1 field supported for {self.__class__}")
         search_field = self.search_fields[0]
 
         contains_search_qs = qs.filter(**{f"{search_field}__icontains": value})
@@ -410,8 +404,7 @@ class NameVersionFilter(MultipleCharFilter):
             except SyntaxError:
                 pass
             else:
-                q |= Q(**{self.name_field_name: name,
-                       self.version_field_name: version})
+                q |= Q(**{self.name_field_name: name, self.version_field_name: version})
 
         if self.distinct:
             return self.get_method(qs)(q).distinct()
@@ -530,10 +523,8 @@ class LimitToDataspaceListFilter(filters.RelatedFieldListFilter):
         # limit_choices_to = get_limit_choices_to_from_path(model, field_path)
         limit_choices_to = models.Q(**field.get_limit_choices_to())
 
-        dataspace_id = request.GET.get(
-            DataspaceFilter.parameter_name, request.user.dataspace_id)
-        queryset = field.related_model.objects.scope_by_id(
-            dataspace_id).filter(limit_choices_to)
+        dataspace_id = request.GET.get(DataspaceFilter.parameter_name, request.user.dataspace_id)
+        queryset = field.related_model.objects.scope_by_id(dataspace_id).filter(limit_choices_to)
 
         if field.related_model.__name__ == "UsagePolicy":
             content_type = ContentType.objects.get_for_model(model)
@@ -714,8 +705,7 @@ class CreatedByListFilter(filters.SimpleListFilter):
         super().__init__(request, params, model, model_admin)
 
     def lookups(self, request, model_admin):
-        dataspace_id = request.GET.get(
-            DataspaceFilter.parameter_name, request.user.dataspace.id)
+        dataspace_id = request.GET.get(DataspaceFilter.parameter_name, request.user.dataspace.id)
         # Find users of the selected Dataspace
         users = get_user_model().objects.scope_by_id(dataspace_id)
 
@@ -752,8 +742,7 @@ class IsNullFieldListFilter(filters.FieldListFilter):
         self.lookup_kwarg = f"{field_path}__isnull"
         self.lookup_val = request.GET.get(self.lookup_kwarg)
         super().__init__(field, request, params, model, model_admin, field_path)
-        self.title = "Has {}".format(
-            getattr(field, "verbose_name", field_path))
+        self.title = "Has {}".format(getattr(field, "verbose_name", field_path))
 
     def expected_parameters(self):
         return [self.lookup_kwarg]
@@ -793,8 +782,7 @@ class RelatedLookupListFilter(filters.FieldListFilter):
         # Propagates the dataspace filtering to the lookup URL
         dataspace_id = request.GET.get(DataspaceFilter.parameter_name)
         if dataspace_id:
-            lookup_filters.append(
-                f"{DataspaceFilter.parameter_name}={dataspace_id}")
+            lookup_filters.append(f"{DataspaceFilter.parameter_name}={dataspace_id}")
 
         if lookup_filters:
             self.lookup_params = "&{}".format("&".join(lookup_filters))

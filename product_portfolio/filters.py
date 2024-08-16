@@ -165,12 +165,10 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         super().__init__(*args, **kwargs)
 
         self.filters["review_status"].extra["to_field_name"] = "label"
-        self.filters["review_status"].extra["widget"] = DropDownWidget(
-            anchor=self.anchor)
+        self.filters["review_status"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
         self.filters["purpose"].extra["to_field_name"] = "label"
-        self.filters["purpose"].extra["widget"] = DropDownWidget(
-            anchor=self.anchor)
+        self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
         self.filters["is_modified"].extra["widget"] = DropDownWidget(
             anchor=self.anchor, right_align=True

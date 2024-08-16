@@ -96,14 +96,12 @@ class ReportDetailsView(
         runtime_value_map = None
         if self.runtime_filter_formset.is_bound and self.runtime_filter_formset.is_valid():
             filters = [x.filter for x in self.runtime_filter_formset]
-            runtime_value_map = dict(
-                zip(filters, self.runtime_filter_formset.cleaned_data))
+            runtime_value_map = dict(zip(filters, self.runtime_filter_formset.cleaned_data))
 
         object_list = []
         self.errors = []
         try:
-            object_list = self.object.query.get_qs(
-                runtime_value_map, user=self.request.user)
+            object_list = self.object.query.get_qs(runtime_value_map, user=self.request.user)
         except ValidationError as e:
             # Using the _non_form_errors to store the validation error, as we
             # cannot locate the exact field with the issue at that point.
@@ -111,14 +109,12 @@ class ReportDetailsView(
         except FieldDoesNotExist as e:
             self.errors.append(e)
         except ValueError:
-            self.runtime_filter_formset._non_form_errors = [
-                "Invalid value for runtime parameter"]
+            self.runtime_filter_formset._non_form_errors = ["Invalid value for runtime parameter"]
 
         return object_list
 
     def _BaseListView_get(self, request, *args, **kwargs):
-        self.runtime_filter_formset = self.get_runtime_filter_formset(
-            self.object)
+        self.runtime_filter_formset = self.get_runtime_filter_formset(self.object)
         super()._BaseListView_get(request, *args, **kwargs)
 
     def get_root_filename(self):
@@ -133,8 +129,7 @@ class ReportDetailsView(
         filters = list(report.query.filters.filter(runtime_parameter=True))
         for filter_ in filters:
             # '\u2192' is a right arrow character
-            filter_.field_with_arrows = filter_.field_name.replace(
-                "__", " \u2192 ")
+            filter_.field_with_arrows = filter_.field_name.replace("__", " \u2192 ")
         return filters
 
     def get_runtime_filter_formset(self, report):
@@ -196,10 +191,8 @@ class ReportDetailsView(
         report = self.object
         model_class = report.column_template.get_model_class()
         # Only available in the UI since the link is relative to the current URL
-        include_view_link = not self.format and hasattr(
-            model_class, "get_absolute_url")
-        interpolated_report_context = self.get_interpolated_report_context(
-            request, report)
+        include_view_link = not self.format and hasattr(model_class, "get_absolute_url")
+        interpolated_report_context = self.get_interpolated_report_context(request, report)
         multi_as_list = True if self.format in ["json", "yaml"] else False
         output = report.get_output(
             queryset=context["object_list"],
@@ -226,8 +219,7 @@ class ReportDetailsView(
     def get_dump(self, dumper, **dumper_kwargs):
         """Return the data dump using provided kwargs."""
         context = self.get_context_data(**self.kwargs)
-        data = [dict(zip(context["headers"], values))
-                for values in context["output"]]
+        data = [dict(zip(context["headers"], values)) for values in context["output"]]
         return dumper(data, **dumper_kwargs)
 
     def get_json_response(self, **response_kwargs):
@@ -251,8 +243,7 @@ class ReportDetailsView(
 
         for row_index, row in enumerate(report_data):
             for cell_index, cell in enumerate(row):
-                worksheet.write_string(
-                    row_index, cell_index, normalize_newlines(cell))
+                worksheet.write_string(row_index, cell_index, normalize_newlines(cell))
 
         workbook.close()
 
@@ -294,8 +285,7 @@ class ReportListView(
         context = super().get_context_data(**kwargs)
 
         if not self.request.GET.get("sort", None):
-            context["object_list"] = self.object_list.order_by(
-                "group", "name").group_by("group")
+            context["object_list"] = self.object_list.order_by("group", "name").group_by("group")
         else:
             context["object_list"] = {"": context["object_list"]}
 

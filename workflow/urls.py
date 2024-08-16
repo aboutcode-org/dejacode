@@ -19,6 +19,5 @@ urlpatterns = [
     path("<uuid:request_uuid>/", request_details_view, name="request_details"),
     path("form/<uuid:template_uuid>/", request_add_view, name="request_add"),
     path("<uuid:request_uuid>/edit/", request_edit_view, name="request_edit"),
-    path("attachment/(<uuid:attachment_uuid>/",
-         send_attachment_view, name="send_attachment"),
+    path("attachment/(<uuid:attachment_uuid>/", send_attachment_view, name="send_attachment"),
 ]

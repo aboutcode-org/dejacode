@@ -33,8 +33,7 @@ environ.Env.read_env(ENV_FILE)  # Reading the .env file into os.environ
 SECRET_KEY = env.str("SECRET_KEY")
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
-    default=[".localhost", "127.0.0.1", "[::1]",
-             "host.docker.internal", "172.17.0.1"],
+    default=[".localhost", "127.0.0.1", "[::1]", "host.docker.internal", "172.17.0.1"],
 )
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # SECURITY WARNING: don't run with debug turned on in production
@@ -166,12 +165,10 @@ MAX_UPLOAD_SIZE = env.int("MAX_UPLOAD_SIZE", default=31457280)  # 30M
 FILE_UPLOAD_PERMISSIONS = 0o644  # -rw-rw-r--
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#data-upload-max-number-fields
-DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int(
-    "DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
 
 # hCaptcha script location for registration form
-HCAPTCHA_JS_API_URL = env.str(
-    "HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
+HCAPTCHA_JS_API_URL = env.str("HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
 
 EXTRA_MIDDLEWARE = env.list("EXTRA_MIDDLEWARE", default=[])
 
@@ -201,8 +198,7 @@ MIDDLEWARE = [
 ]
 
 # Security
-SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
-    "SECURE_CONTENT_TYPE_NOSNIFF", default=True)
+SECURE_CONTENT_TYPE_NOSNIFF = env.bool("SECURE_CONTENT_TYPE_NOSNIFF", default=True)
 SECURE_CROSS_ORIGIN_OPENER_POLICY = env.str(
     "SECURE_CROSS_ORIGIN_OPENER_POLICY", default="same-origin"
 )
@@ -368,8 +364,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Instead of sending out real emails the console backend just writes the emails
 # that would be sent to the standard output.
-EMAIL_BACKEND = env.str(
-    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_BACKEND = env.str("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = env.str("EMAIL_HOST", default="")
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
@@ -398,13 +393,11 @@ CHANGELOG_PATH = ROOT_DIR("CHANGELOG.rst")
 
 # Display a "Report Scan Issues" button in Scan tab
 # Format: "dataspace_name=request_template_UUID,"
-SCAN_ISSUE_REQUEST_TEMPLATE = env.dict(
-    "SCAN_ISSUE_REQUEST_TEMPLATE", default={})
+SCAN_ISSUE_REQUEST_TEMPLATE = env.dict("SCAN_ISSUE_REQUEST_TEMPLATE", default={})
 
 # https://docs.djangoproject.com/en/dev/topics/http/sessions/
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-SESSION_EXPIRE_AT_BROWSER_CLOSE = env.bool(
-    "SESSION_EXPIRE_AT_BROWSER_CLOSE", default=False)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = env.bool("SESSION_EXPIRE_AT_BROWSER_CLOSE", default=False)
 SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=28800)  # 8 hours
 # Prevent from erasing a session of another Django app when running multiple `runserver`
 # instances side by side on the on same host (different ports).
@@ -421,8 +414,7 @@ REDIS_URL = env.str("REDIS_URL", default="redis://127.0.0.1:6379")
 
 # Default setup for the cache
 # See https://docs.djangoproject.com/en/dev/topics/cache/
-CACHE_BACKEND = env.str(
-    "CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache")
+CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache")
 CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
@@ -651,8 +643,7 @@ AXES_ENABLED = env.bool("AXES_ENABLED", default=False)
 # The integer number of login attempts allowed before the user is locked out.
 AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
 # If set, specifies a template to render when a user is locked out.
-AXES_LOCKOUT_TEMPLATE = env.str(
-    "AXES_LOCKOUT_TEMPLATE", default="axes_lockout.html")
+AXES_LOCKOUT_TEMPLATE = env.str("AXES_LOCKOUT_TEMPLATE", default="axes_lockout.html")
 # If True, only lock based on username, and never lock based on IP
 # if attempts to exceed the limit.
 AXES_ONLY_USER_FAILURES = True
@@ -728,8 +719,7 @@ AUTH_LDAP_USER_DN = env.str("AUTH_LDAP_USER_DN", default="")
 # AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 AUTH_LDAP_USER_FILTERSTR = env.str("AUTH_LDAP_USER_FILTERSTR", default="")
 
-AUTH_LDAP_USER_SEARCH = LDAPSearch(
-    AUTH_LDAP_USER_DN, ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_FILTERSTR)
+AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_DN, ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_FILTERSTR)
 
 # When AUTH_LDAP_AUTOCREATE_USER is True (default), a new DejaCode user will be
 # created in the database with the minimum permission (a read-only user).
@@ -755,8 +745,7 @@ AUTH_LDAP_USER_ATTR_MAP = env.dict("AUTH_LDAP_USER_ATTR_MAP", default={})
 
 # By default, all mapped user fields will be updated each time the user logs in.
 # To disable this, set AUTH_LDAP_ALWAYS_UPDATE_USER to False.
-AUTH_LDAP_ALWAYS_UPDATE_USER = env.bool(
-    "AUTH_LDAP_ALWAYS_UPDATE_USER", default=True)
+AUTH_LDAP_ALWAYS_UPDATE_USER = env.bool("AUTH_LDAP_ALWAYS_UPDATE_USER", default=True)
 
 # To associate LDAP groups and DejaCode groups:
 # 1. Create the DejaCode groups and associate permissions through the DejaCode
@@ -764,8 +753,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = env.bool(
 # 2. Enable the following settings to enable LDAP groups retrieval.
 #    Set the proper AUTH_LDAP_GROUP_DN and AUTH_LDAP_GROUP_FILTERSTR values matching
 #    for your LDAP configuration.
-AUTH_LDAP_FIND_GROUP_PERMS = env.bool(
-    "AUTH_LDAP_FIND_GROUP_PERMS", default=False)
+AUTH_LDAP_FIND_GROUP_PERMS = env.bool("AUTH_LDAP_FIND_GROUP_PERMS", default=False)
 # AUTH_LDAP_GROUP_DN="ou=groups,dc=example,dc=com"
 AUTH_LDAP_GROUP_DN = env.str("AUTH_LDAP_GROUP_DN", default="")
 # In order to be valid, filterstr must be enclosed in parentheses.

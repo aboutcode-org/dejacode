@@ -34,8 +34,7 @@ generic_uri_validator = validators.RegexValidator(
 
 def validate_list(value):
     if not isinstance(value, list):
-        raise ValidationError(
-            _('Enter a valid list: ["item1", "item2"]'), code="invalid_list")
+        raise ValidationError(_('Enter a valid list: ["item1", "item2"]'), code="invalid_list")
 
 
 class SpecialCharacterPasswordValidator:

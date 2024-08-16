@@ -131,8 +131,7 @@ def parse(urn):
     segments = urn_parts[3:]
     keys = URN_SCHEMAS[object_name]
     if len(keys) != len(segments):
-        raise URNValidationError(
-            f'Invalid number of segments in URN: "{urn}".')
+        raise URNValidationError(f'Invalid number of segments in URN: "{urn}".')
 
     fields = dict(zip(keys, segments))
     return object_name, fields

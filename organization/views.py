@@ -76,8 +76,7 @@ class OwnerListView(
                 license_count=Count("license"),
                 component_count=Count("component"),
                 has_license_and_component=Case(
-                    When(license_count__gt=0,
-                         component_count__gt=0, then=Value(0)),
+                    When(license_count__gt=0, component_count__gt=0, then=Value(0)),
                     default=Value(1),
                     output_field=IntegerField(),
                 ),
@@ -135,8 +134,7 @@ class OwnerDetailsView(
     }
 
     def get_queryset(self):
-        license_qs = License.objects.select_related(
-            "license_profile", "category", "usage_policy")
+        license_qs = License.objects.select_related("license_profile", "category", "usage_policy")
 
         return (
             super()

@@ -71,8 +71,7 @@ def find_and_fire_hook(
     if not dataspace and instance:
         dataspace = instance.dataspace
     if not dataspace:
-        raise AttributeError(
-            "Provide one of `dataspace` or `instance` argument.")
+        raise AttributeError("Provide one of `dataspace` or `instance` argument.")
 
     filters = {
         "event": event_name,

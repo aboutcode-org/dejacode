@@ -134,8 +134,7 @@ class Command(BaseCommand):
         try:
             dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(
-                f"The Dataspace {dataspace_name} does not exit.")
+            raise CommandError(f"The Dataspace {dataspace_name} does not exit.")
 
         models = []
         data = []
@@ -183,8 +182,7 @@ class Command(BaseCommand):
                 .filter(component__in=component_qs)
                 .exclude(id__in=get_owner_limited_qs(dataspace))
             )
-            package_qs = Package.objects.scope(
-                dataspace).filter(productpackages__isnull=False)
+            package_qs = Package.objects.scope(dataspace).filter(productpackages__isnull=False)
 
             data += list(owner_qs)
             data += list(component_qs)
@@ -202,8 +200,7 @@ class Command(BaseCommand):
             data += list(components)
 
             subcomponents = (
-                Subcomponent.objects.filter(
-                    parent_id__in=component_ids, child_id__in=component_ids)
+                Subcomponent.objects.filter(parent_id__in=component_ids, child_id__in=component_ids)
                 .select_related(
                     "parent__dataspace",
                     "child__dataspace",
@@ -231,15 +228,13 @@ class Command(BaseCommand):
             data += list(ComponentKeyword.objects.scope(dataspace))
 
             packages = (
-                Package.objects.filter(
-                    componentassignedpackage__component__id__in=component_ids)
+                Package.objects.filter(componentassignedpackage__component__id__in=component_ids)
                 .select_related()
                 .distinct()
             )
             data += list(packages)
             data += list(
-                ComponentAssignedPackage.objects.filter(
-                    component__id__in=component_ids)
+                ComponentAssignedPackage.objects.filter(component__id__in=component_ids)
                 .select_related()
                 .distinct()
             )
@@ -256,8 +251,7 @@ class Command(BaseCommand):
             models = REPORTING_MODELS[:]
 
         for model_class in models:
-            qs = get_unsecured_manager(model_class).scope(
-                dataspace).select_related()
+            qs = get_unsecured_manager(model_class).scope(dataspace).select_related()
             data += list(qs)
 
         return ExcludeFieldsSerializer().serialize(

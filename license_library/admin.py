@@ -129,15 +129,13 @@ class LicenseAssignedTagInline(TabularInline):
 class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
     @admin.display(description=_(""))
     def annotations_link(self, obj):
-        annotation_url = reverse(
-            "admin:license_library_license_annotation", args=[obj.pk])
+        annotation_url = reverse("admin:license_library_license_annotation", args=[obj.pk])
 
         # See DataspacedChangeList.get_results
         preserved_filters = obj._preserved_filters
         if preserved_filters:
             annotation_url = add_preserved_filters(
-                {"preserved_filters": preserved_filters,
-                    "opts": obj._meta}, annotation_url
+                {"preserved_filters": preserved_filters, "opts": obj._meta}, annotation_url
             )
 
         return format_html('<a href="{}">Annotations</a>', annotation_url)
@@ -272,8 +270,7 @@ class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
     )
     raw_id_fields = ("owner",)
     autocomplete_lookup_fields = {"fk": ["owner"]}
-    readonly_fields = DataspacedAdmin.readonly_fields + \
-        ("urn_link", "get_spdx_link")
+    readonly_fields = DataspacedAdmin.readonly_fields + ("urn_link", "get_spdx_link")
     form = LicenseAdminForm
     inlines = [
         LicenseAssignedTagInline,
@@ -435,8 +432,7 @@ class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
 
     def license_annotation_view(self, request, object_id):
         """Admin view for the LicenseAnnotation Model."""
-        obj = get_object_or_404(License, pk=unquote(
-            object_id), dataspace=request.user.dataspace)
+        obj = get_object_or_404(License, pk=unquote(object_id), dataspace=request.user.dataspace)
         tagset = obj.get_tagset(include_unknown=True, include_no_group=True)
 
         template = "admin/license_library/license/annotation.html"
@@ -470,8 +466,7 @@ class LicenseTagHolderBaseAdmin(DataspacedAdmin):
 
         tags_dict = {}
         for tag in LicenseTag.objects.scope(dataspace):
-            tags_dict[str(tag.id)] = {"text": str(
-                tag.text), "guidance": str(tag.guidance)}
+            tags_dict[str(tag.id)] = {"text": str(tag.text), "guidance": str(tag.guidance)}
 
         return tags_dict
 
@@ -481,8 +476,7 @@ class LicenseTagHolderBaseAdmin(DataspacedAdmin):
 
         # Making sure the object exists before processing the extra context
         check_object_pk_exists(request, object_id, self)
-        add_client_data(
-            request, tags_dict=self._get_tags_data(request, object_id))
+        add_client_data(request, tags_dict=self._get_tags_data(request, object_id))
 
         return super().change_view(request, object_id, form_url, extra_context)
 
@@ -496,8 +490,7 @@ class LicenseProfileAssignedTagInline(DataspacedFKMixin, TabularInline):
     model = LicenseProfileAssignedTag
     can_delete = True
     extra = 0
-    fieldsets = (
-        ("", {"fields": ("license_tag", "value", "text", "guidance")}),)
+    fieldsets = (("", {"fields": ("license_tag", "value", "text", "guidance")}),)
     # Using a 'Select' rather then a 'Checkbox' to render the 'value' field
     formfield_overrides = {
         models.BooleanField: {
@@ -742,8 +735,7 @@ class LicenseTagGroupAssignedTagInline(DataspacedFKMixin, TabularInline):
 
 @admin.register(LicenseTagGroup, site=dejacode_site)
 class LicenseTagGroupAdmin(LicenseTagHolderBaseAdmin):
-    list_display = ("name", "get_assigned_tags_label",
-                    "notes", "seq", "get_dataspace")
+    list_display = ("name", "get_assigned_tags_label", "notes", "seq", "get_dataspace")
     search_fields = ("name",)
     inlines = (LicenseTagGroupAssignedTagInline,)
 
@@ -753,10 +745,8 @@ class LicenseTagGroupAdmin(LicenseTagHolderBaseAdmin):
 
     @admin.display(description=_(""))
     def get_assigned_tags_label(self, obj):
-        labels = [
-            tag.license_tag.label for tag in obj.licensetaggroupassignedtag_set.all()]
-        label_list = format_html_join(
-            "", "<li>{}</li>", ((label,) for label in labels))
+        labels = [tag.license_tag.label for tag in obj.licensetaggroupassignedtag_set.all()]
+        label_list = format_html_join("", "<li>{}</li>", ((label,) for label in labels))
         return format_html("<ul>{}</ul>", label_list)
 
     get_assigned_tags_label.short_description = "Assigned tags"

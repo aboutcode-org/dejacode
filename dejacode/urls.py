@@ -83,8 +83,7 @@ api_router.register("usage_policies", UsagePolicyViewSet)
 urlpatterns = [
     path("", index_dispatch, name="index_dispatch"),
     path("home/", home_view, name="home"),
-    path("integrations_status/", IntegrationsStatusView.as_view(),
-         name="integrations_status"),
+    path("integrations_status/", IntegrationsStatusView.as_view(), name="integrations_status"),
     path("account/", include("django.contrib.auth.urls")),
     path("account/profile/", AccountProfileView.as_view(), name="account_profile"),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
@@ -101,8 +100,7 @@ urlpatterns = [
     # so the 'complete/' segment is not caught as the activation_key
     path(
         "account/activate/complete/",
-        TemplateView.as_view(
-            template_name="django_registration/activation_complete.html"),
+        TemplateView.as_view(template_name="django_registration/activation_complete.html"),
         name="django_registration_activation_complete",
     ),
     path(
@@ -111,12 +109,9 @@ urlpatterns = [
         name="django_registration_activate",
     ),
     # Two-factor authentication
-    path("account/2fa/enable/", two_factor.EnableView.as_view(),
-         name="account_2fa_enable"),
-    path("account/2fa/disable/", two_factor.DisableView.as_view(),
-         name="account_2fa_disable"),
-    path("account/2fa/verify/", two_factor.VerifyView.as_view(),
-         name="account_2fa_verify"),
+    path("account/2fa/enable/", two_factor.EnableView.as_view(), name="account_2fa_enable"),
+    path("account/2fa/disable/", two_factor.DisableView.as_view(), name="account_2fa_disable"),
+    path("account/2fa/verify/", two_factor.VerifyView.as_view(), name="account_2fa_verify"),
     path("urn/", urn_resolve_view, name="urn_resolve"),
     path("urn/<urn>/", urn_resolve_view, name="urn_resolve"),
     path("admin/", dejacode_site.urls),
@@ -137,8 +132,7 @@ urlpatterns = [
     path("grappelli/lookup/m2m/", page_not_found, name="grp_m2m_lookup"),
     # This need to be registered after the overrides.
     path("grappelli/", include("grappelli.urls")),
-    path("favicon.ico", RedirectView.as_view(
-        url="/static/img/favicon.ico", permanent=True)),
+    path("favicon.ico", RedirectView.as_view(url="/static/img/favicon.ico", permanent=True)),
 ]
 
 urlpatterns += [

@@ -59,5 +59,4 @@ class DejaCodeLDAPBackend(LDAPBackend):
         try:
             return model.objects.get(**kwargs), False
         except model.DoesNotExist:
-            raise _LDAPUser.AuthenticationFailed(
-                "User does not exist in Django auth system")
+            raise _LDAPUser.AuthenticationFailed("User does not exist in Django auth system")

@@ -96,8 +96,7 @@ urlpatterns = [
     *product_path("tab_dependencies", ProductTabDependenciesView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
-    *product_path("pull_project_data",
-                  PullProjectDataFromScanCodeIOView.as_view()),
+    *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),
     path(
         "<str:dataspace>/<str:name>/<str:version>/",
         ProductDetailsView.as_view(),

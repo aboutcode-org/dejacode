@@ -26,8 +26,7 @@ class Command(DataspacedCommand):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
-        parser.add_argument(
-            "username", help="Your username, for History entries.")
+        parser.add_argument("username", help="Your username, for History entries.")
         parser.add_argument(
             "--last_modified_date",
             help=(
@@ -48,22 +47,18 @@ class Command(DataspacedCommand):
             raise CommandError("The given username does not exist.")
 
         # Packages without any assigned components
-        package_qs = Package.objects.scope(
-            self.dataspace).filter(component__isnull=True)
+        package_qs = Package.objects.scope(self.dataspace).filter(component__isnull=True)
 
         if last_modified_date := options["last_modified_date"]:
             try:
-                package_qs = package_qs.filter(
-                    last_modified_date__gt=last_modified_date)
+                package_qs = package_qs.filter(last_modified_date__gt=last_modified_date)
             except ValidationError as e:
                 raise CommandError(e)
 
         self.component_qs = Component.objects.scope(self.dataspace)
         self.owner_qs = Owner.objects.scope(self.dataspace)
-        self.approved_status = ComponentStatus.objects.scope(
-            self.dataspace).get(label="Approved")
-        self.file_type = ComponentType.objects.scope(
-            self.dataspace).get(label="File")
+        self.approved_status = ComponentStatus.objects.scope(self.dataspace).get(label="Approved")
+        self.file_type = ComponentType.objects.scope(self.dataspace).get(label="File")
 
         created = []
         errors = []
@@ -83,8 +78,7 @@ class Command(DataspacedCommand):
                     dataspace=self.dataspace,
                 )
 
-        self.stdout.write(self.style.SUCCESS(
-            f"{len(created)} Component(s) created."))
+        self.stdout.write(self.style.SUCCESS(f"{len(created)} Component(s) created."))
         if errors:
             self.stdout.write(self.style.ERROR(f"{len(errors)} errors:"))
             for error in errors:
@@ -126,8 +120,7 @@ class Command(DataspacedCommand):
         if not component_data.get("owner"):
             component_data["owner"] = self.get_owner(component_data)
 
-        component = Component.create_from_data(
-            self.user, component_data, validate=False)
+        component = Component.create_from_data(self.user, component_data, validate=False)
         component.update_completion_level()
         return component
 
@@ -170,5 +163,4 @@ class Command(DataspacedCommand):
             )
             return owner
 
-        self.stdout.write(
-            f"Cannot found owner for {component_data.get('name')}")
+        self.stdout.write(f"Cannot found owner for {component_data.get('name')}")

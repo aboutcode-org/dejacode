@@ -20,8 +20,7 @@ class ListDisplayItem:
         self.name = name
         self.__name__ = name
         # Ideally we should use label_for_field but the Model is required
-        self.short_description = kwargs.get(
-            "short_description", name.replace("_", " "))
+        self.short_description = kwargs.get("short_description", name.replace("_", " "))
         self.html_class = kwargs.get("html_class")
         kwargs.setdefault("admin_order_field", name)
         self.__dict__.update(kwargs)

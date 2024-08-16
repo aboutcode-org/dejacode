@@ -130,14 +130,11 @@ class RequestForm(forms.ModelForm):
             del self.fields["status"]
             del self.fields["notes"]
 
-        content_object = self.instance.content_object or getattr(
-            self, "content_object", None)
+        content_object = self.instance.content_object or getattr(self, "content_object", None)
 
         if request_template.include_applies_to:
-            api_url = reverse(
-                f"api_v2:{request_template.content_type.model}-list")
-            self.fields["applies_to"].widget.attrs.update(
-                {"data-api_url": api_url})
+            api_url = reverse(f"api_v2:{request_template.content_type.model}-list")
+            self.fields["applies_to"].widget.attrs.update({"data-api_url": api_url})
             self.set_applies_to_view_link(content_object)
             if content_object:
                 self.fields["applies_to"].initial = str(content_object)
@@ -153,16 +150,14 @@ class RequestForm(forms.ModelForm):
                 request_template.include_applies_to,
                 request_template.include_product,
                 model_name in ["component", "package"],
-                self.user.has_perm(
-                    f"product_portfolio.add_product{model_name}"),
+                self.user.has_perm(f"product_portfolio.add_product{model_name}"),
             ]
         )
         if not include_add_object_to_product:
             del self.fields["add_object_to_product"]
 
         if request_template.include_product:
-            self.fields["product_context"].queryset = Product.objects.get_queryset(
-                self.user)
+            self.fields["product_context"].queryset = Product.objects.get_queryset(self.user)
         else:
             del self.fields["product_context"]
 
@@ -171,14 +166,12 @@ class RequestForm(forms.ModelForm):
         # We do not enforce it on the HTML side since it can be automatically
         # set to self on "Saving Draft"
         assignee_field.required = False
-        assignee_field.queryset = assignee_field.queryset.scope(
-            self.user.dataspace)
+        assignee_field.queryset = assignee_field.queryset.scope(self.user.dataspace)
         if request_template.default_assignee:
             assignee_field.initial = request_template.default_assignee
 
         priority_field = self.fields["priority"]
-        priority_field.queryset = priority_field.queryset.scope(
-            self.user.dataspace)
+        priority_field.queryset = priority_field.queryset.scope(self.user.dataspace)
 
         self.questions = request_template.questions.all()
         self.add_question_fields()
@@ -227,8 +220,7 @@ class RequestForm(forms.ModelForm):
                 Div(
                     submit_as_private,
                     save_draft if self.is_addition else None,
-                    StrictSubmit("submit", _("Submit"),
-                                 css_class="btn-success"),
+                    StrictSubmit("submit", _("Submit"), css_class="btn-success"),
                     css_class="float-end",
                 ),
             ),
@@ -340,8 +332,7 @@ class RequestForm(forms.ModelForm):
         }
 
         try:
-            self.content_object = content_type.get_object_for_this_type(
-                **filters)
+            self.content_object = content_type.get_object_for_this_type(**filters)
         except ObjectDoesNotExist:
             # Instance with this id does not exists or not in the user dataspace
             return
@@ -382,14 +373,12 @@ class RequestForm(forms.ModelForm):
         permission_error_msg = "{} does not have the permission to view {}"
         product_context = self.cleaned_data.get("product_context")
         if assignee and product_context and not assignee.has_perm("view_product", product_context):
-            self.add_error("assignee", permission_error_msg.format(
-                assignee, product_context))
+            self.add_error("assignee", permission_error_msg.format(assignee, product_context))
 
         if assignee and content_object:
             manager = content_object.__class__._default_manager
             if is_secured(manager) and not assignee.has_perm("view_product", content_object):
-                self.add_error("assignee", permission_error_msg.format(
-                    assignee, content_object))
+                self.add_error("assignee", permission_error_msg.format(assignee, content_object))
 
         return cleaned_data
 
@@ -437,8 +426,7 @@ class RequestForm(forms.ModelForm):
                 self.cleaned_data.get("add_object_to_product"),
                 product and product.can_be_changed_by(self.user),
                 model_name in ["component", "package"],
-                self.user.has_perm(
-                    f"product_portfolio.add_product{model_name}"),
+                self.user.has_perm(f"product_portfolio.add_product{model_name}"),
             ]
         )
         if do_assign_objects:

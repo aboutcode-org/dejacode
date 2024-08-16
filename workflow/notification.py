@@ -127,8 +127,7 @@ def request_slack_payload(req, created):
     if req.priority:
         fields.append(make_field_dict("Priority", f"{req.priority}"))
     if req.product_context:
-        fields.append(make_field_dict(
-            "Product context", f"{req.product_context}"))
+        fields.append(make_field_dict("Product context", f"{req.product_context}"))
     if req.content_object:
         content_object_link = (
             f"<{site_url}{req.content_object.get_absolute_url()}|{req.content_object}>"

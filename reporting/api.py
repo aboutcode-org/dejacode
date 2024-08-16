@@ -23,11 +23,9 @@ from reporting.models import Report
 
 class ReportSerializer(DataspacedSerializer):
     absolute_url = serializers.SerializerMethodField()
-    content_type = serializers.StringRelatedField(
-        source="query.content_type.model")
+    content_type = serializers.StringRelatedField(source="query.content_type.model")
     query = serializers.StringRelatedField(source="query.name")
-    column_template = serializers.StringRelatedField(
-        source="column_template.name")
+    column_template = serializers.StringRelatedField(source="column_template.name")
     results = serializers.SerializerMethodField()
 
     class Meta:

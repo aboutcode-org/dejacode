@@ -85,8 +85,7 @@ class NameVersionValidationFormMixin:
             qs = qs.exclude(pk=self.instance.pk)
 
         if qs.exists():
-            unique_check = [
-                field for field in lookup_kwargs.keys() if field != "dataspace_id"]
+            unique_check = [field for field in lookup_kwargs.keys() if field != "dataspace_id"]
             raise self.instance.unique_error_message(model, unique_check)
 
 
@@ -206,8 +205,7 @@ class ProductRelatedAdminForm(DataspacedAdminForm):
         # `product` is not in self.fields when used in Inlines
         is_inline = "product" not in self.fields
         if not is_inline:
-            product_qs = Product.objects.get_queryset(
-                self.request.user, "change_product")
+            product_qs = Product.objects.get_queryset(self.request.user, "change_product")
             self.fields["product"].queryset = product_qs
 
 
@@ -217,8 +215,7 @@ class ProductComponentAdminForm(
 ):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["feature"].widget = AdminAwesompleteInputWidget(
-            data_list="#feature_datalist")
+        self.fields["feature"].widget = AdminAwesompleteInputWidget(data_list="#feature_datalist")
 
 
 class ProductPackageAdminForm(ProductComponentAdminForm):
@@ -380,11 +377,9 @@ class AttributionConfigurationForm(forms.Form):
         from reporting.models import Query
 
         scoped_queryset = Query.objects.scope(request.user.dataspace)
-        self.fields["pc_query"].queryset = scoped_queryset.get_for_model(
-            ProductComponent)
+        self.fields["pc_query"].queryset = scoped_queryset.get_for_model(ProductComponent)
         self.fields["pc_query"].widget.attrs["class"] = "span7"
-        self.fields["component_query"].queryset = scoped_queryset.get_for_model(
-            Component)
+        self.fields["component_query"].queryset = scoped_queryset.get_for_model(Component)
         self.fields["component_query"].widget.attrs["class"] = "span7"
 
     def clean(self):
@@ -575,8 +570,7 @@ class ImportFromScanForm(forms.Form):
             product,
             self.user,
             upload_file=self.cleaned_data.get("upload_file"),
-            create_codebase_resources=self.cleaned_data.get(
-                "create_codebase_resources"),
+            create_codebase_resources=self.cleaned_data.get("create_codebase_resources"),
             stop_on_error=self.cleaned_data.get("stop_on_error"),
         )
 
@@ -623,8 +617,7 @@ class BaseProductImportFormView(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["input_file"].label = _(
-            f"{self.input_label} file or zip archive")
+        self.fields["input_file"].label = _(f"{self.input_label} file or zip archive")
 
     @property
     def helper(self):
@@ -632,8 +625,7 @@ class BaseProductImportFormView(forms.Form):
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(
-            Submit("submit", "Load Packages", css_class="btn-success"))
+        helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
         return helper
 
     def submit(self, product, user):
@@ -642,8 +634,7 @@ class BaseProductImportFormView(forms.Form):
             dataspace=product.dataspace,
             type=self.project_type,
             input_file=self.cleaned_data.get("input_file"),
-            update_existing_packages=self.cleaned_data.get(
-                "update_existing_packages"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=self.cleaned_data.get("scan_all_packages"),
             created_by=user,
         )
@@ -705,8 +696,7 @@ class ProductRelationInlineFormMixin:
             object_display.widget = StrongTextWidget()
             object_display.disabled = True
         elif self.can_add_perm:
-            object_display.widget.can_add = self.user.has_perm(
-                self.can_add_perm)
+            object_display.widget.can_add = self.user.has_perm(self.can_add_perm)
 
         # Builds the headers only for the first form entry of the formset.
         # The table headers in `table_inline_formset.html` are loaded from
@@ -722,8 +712,7 @@ class ProductRelationInlineFormMixin:
             sortable_fields = list(sort_filter.param_map.keys())
 
         query_no_sort = self.filterset.get_query_no_sort()
-        current_sort = self.filterset.data.get(
-            "sort", "") if self.filterset else "no-sort"
+        current_sort = self.filterset.data.get("sort", "") if self.filterset else "no-sort"
 
         for field_name in sortable_fields:
             field = self.fields.get(field_name)
@@ -768,8 +757,7 @@ class ProductRelationInlineFormMixin:
             if field_name in filterable_fields:
                 filter_form = self.filterset.form[field_name]
 
-            field.label = format_html(
-                "{} {} {}", field.label, sort_link, filter_form)
+            field.label = format_html("{} {} {}", field.label, sort_link, filter_form)
 
 
 class ProductComponentInlineForm(
@@ -925,8 +913,7 @@ class PullProjectDataForm(forms.Form):
     def get_project_data(self, project_name_or_uuid, user):
         scancodeio = ScanCodeIO(user.dataspace)
         for field_name in ["name", "uuid"]:
-            project_data = scancodeio.find_project(
-                **{field_name: project_name_or_uuid})
+            project_data = scancodeio.find_project(**{field_name: project_name_or_uuid})
             if project_data:
                 return project_data
 
@@ -943,8 +930,7 @@ class PullProjectDataForm(forms.Form):
             dataspace=product.dataspace,
             type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
             project_uuid=project_data.get("uuid"),
-            update_existing_packages=self.cleaned_data.get(
-                "update_existing_packages"),
+            update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=False,
             status=ScanCodeProject.Status.SUBMITTED,
             created_by=user,

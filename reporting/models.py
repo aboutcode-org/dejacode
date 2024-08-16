@@ -186,8 +186,7 @@ class Query(HistoryFieldsMixin, DataspacedModel):
 
         q_objects = []
         for filter_ in self.filters.all():
-            runtime_value = runtime_value_map.get(
-                filter_, {}).get("value", None)
+            runtime_value = runtime_value_map.get(filter_, {}).get("value", None)
             q_object = filter_.get_q(runtime_value, user)
             if q_object:
                 q_objects.append(q_object)
@@ -373,8 +372,7 @@ class Filter(DataspacedModel):
                     # we are considering.  For example ``AutoField`` returns
                     # None for its form field and thus will not be in the
                     # dictionary returned by ``fields_for_model()``.
-                    form_field_instance = fields_for_model(
-                        model).get(final_part)
+                    form_field_instance = fields_for_model(model).get(final_part)
                     if form_field_instance:
                         widget_value = form_field_instance.widget.value_from_datadict(
                             data={final_part: value}, files={}, name=final_part
@@ -426,8 +424,7 @@ class Filter(DataspacedModel):
 
         elif self.lookup == "descendant":
             model_class = self.query.content_type.model_class()
-            root_instance = get_by_reporting_key(
-                model_class, self.dataspace, value)
+            root_instance = get_by_reporting_key(model_class, self.dataspace, value)
             if not root_instance:
                 return
             left_hand_side = "id__in"
@@ -438,8 +435,7 @@ class Filter(DataspacedModel):
 
             # Requires a `user` to be provided for secured Product scoping
             product_secured_qs = Product.objects.get_queryset(user)
-            product = get_by_reporting_key(
-                product_secured_qs, self.dataspace, value)
+            product = get_by_reporting_key(product_secured_qs, self.dataspace, value)
             if not product:
                 return
             left_hand_side = "id__in"
@@ -549,8 +545,7 @@ class ColumnTemplate(HistoryFieldsMixin, DataspacedModel):
 
     def as_headers(self, include_view_link=False):
         """Return a list of field name, usable as Report results headers."""
-        headers = [
-            field.display_name or field.field_name for field in self.fields.all()]
+        headers = [field.display_name or field.field_name for field in self.fields.all()]
         if include_view_link:
             headers.insert(0, format_html("&nbsp;"))
         return headers
@@ -680,8 +675,7 @@ class ColumnTemplateAssignedField(DataspacedModel):
 
         objects = [instance]
         for field_name in self.field_name.split("__"):
-            objects = self._get_objects_for_field_name(
-                objects, field_name, user)
+            objects = self._get_objects_for_field_name(objects, field_name, user)
 
         results = [
             # The .strip() ensure the SafeString types are casted to regular str
@@ -717,8 +711,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
     query = models.ForeignKey(
         to="reporting.Query",
         on_delete=models.PROTECT,
-        help_text=_(
-            "Choose one of your Queries to select the data for your report."),
+        help_text=_("Choose one of your Queries to select the data for your report."),
     )
 
     column_template = models.ForeignKey(
@@ -731,8 +724,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
 
     user_available = models.BooleanField(
         default=False,
-        help_text=_(
-            "Check this to provide access to non-administrative application users."),
+        help_text=_("Check this to provide access to non-administrative application users."),
     )
 
     report_context = models.TextField(
@@ -778,13 +770,11 @@ class Report(HistoryFieldsMixin, DataspacedModel):
         for instance in queryset:
             cells = []
             if include_view_link:
-                view_link = instance.get_absolute_link(
-                    value=icon, title="View", target="_blank")
+                view_link = instance.get_absolute_link(value=icon, title="View", target="_blank")
                 cells.append(view_link)
 
             for field in self.column_template.fields.all():
-                value = field.get_value_for_instance(
-                    instance, user, multi_as_list)
+                value = field.get_value_for_instance(instance, user, multi_as_list)
 
                 if type(value) is list:
                     if value == []:
@@ -825,8 +815,7 @@ class Card(HistoryFieldsMixin, DataspacedModel):
     )
     display_changelist_link = models.BooleanField(
         default=False,
-        help_text=_(
-            "Display a link to the filtered changelist for admin users."),
+        help_text=_("Display a link to the filtered changelist for admin users."),
     )
 
     class Meta:

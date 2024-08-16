@@ -23,5 +23,4 @@ class DataspacedCommand(BaseCommand):
         try:
             self.dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
-            raise CommandError(
-                f'The Dataspace "{dataspace_name}" does not exit.')
+            raise CommandError(f'The Dataspace "{dataspace_name}" does not exit.')

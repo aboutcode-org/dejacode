@@ -254,8 +254,7 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
                 super().__init__(*args, **kwargs)
 
                 self.fields["user"].queryset = (
-                    User.objects.scope(
-                        request.user.dataspace).actives().order_by("username")
+                    User.objects.scope(request.user.dataspace).actives().order_by("username")
                 )
 
         return UserManageForm
@@ -387,8 +386,7 @@ class ProductAdmin(
     change_form_template = "admin/product_portfolio/product/change_form.html"
     email_notification_on = []  # Turned off for security reasons
     awesomplete_data = {"primary_language": PROGRAMMING_LANGUAGES}
-    readonly_fields = DataspacedAdmin.readonly_fields + \
-        ("get_feature_datalist",)
+    readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
 
     def get_feature_datalist(self, obj):
         if obj.pk:
@@ -445,8 +443,7 @@ class ProductRelationshipAdminMixin(
 ):
     related_name = None
     awesomplete_data = {"primary_language": PROGRAMMING_LANGUAGES}
-    readonly_fields = DataspacedAdmin.readonly_fields + \
-        ("get_feature_datalist",)
+    readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
 
     def get_queryset(self, request):
         return (
@@ -601,12 +598,10 @@ class ProductComponentAdmin(ProductRelationshipAdminMixin):
     # in templates/admin/change_list_extended.html as well
     @admin.display(description=_("Check for component updates in reference data"))
     def check_related_updates_in_reference(self, request, queryset):
-        values = queryset.values_list(
-            "component__uuid", "component__last_modified_date")
+        values = queryset.values_list("component__uuid", "component__last_modified_date")
 
         orm_lookups = [
-            models.Q(
-                **{"uuid": uuid, "last_modified_date__gt": last_modified_date})
+            models.Q(**{"uuid": uuid, "last_modified_date__gt": last_modified_date})
             for uuid, last_modified_date in values
             if uuid  # Excludes custom components
         ]
@@ -711,12 +706,10 @@ class ProductPackageAdmin(ProductRelationshipAdminMixin):
     # in templates/admin/change_list_extended.html as well
     @admin.display(description=_("Check for package updates in reference data"))
     def check_related_updates_in_reference(self, request, queryset):
-        values = queryset.values_list(
-            "package__uuid", "package__last_modified_date")
+        values = queryset.values_list("package__uuid", "package__last_modified_date")
 
         orm_lookups = [
-            models.Q(
-                **{"uuid": uuid, "last_modified_date__gt": last_modified_date})
+            models.Q(**{"uuid": uuid, "last_modified_date__gt": last_modified_date})
             for uuid, last_modified_date in values
         ]
 
@@ -739,10 +732,8 @@ class CodebaseResourceAdmin(ProductRelatedAdminMixin):
         "is_deployment_path",
         AsLink("product_component"),
         AsLink("product_package"),
-        AsJoinList("deployed_from_paths", "<br>",
-                   short_description="Deployed from"),
-        AsJoinList("deployed_to_paths", "<br>",
-                   short_description="Deployed to"),
+        AsJoinList("deployed_from_paths", "<br>", short_description="Deployed from"),
+        AsJoinList("deployed_to_paths", "<br>", short_description="Deployed to"),
         "additional_details",
         "get_dataspace",
     )
