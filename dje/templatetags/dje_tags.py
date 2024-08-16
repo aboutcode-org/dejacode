@@ -50,8 +50,7 @@ def as_icon_admin(field_value):
     Return the <img> for the icon based on the field_value (True/False/None).
     Using the staticfiles templatetags 'static' to generate the proper path.
     """
-    cleaned_value = {True: "yes", False: "no",
-                     None: "unknown"}.get(field_value)
+    cleaned_value = {True: "yes", False: "no", None: "unknown"}.get(field_value)
 
     if not cleaned_value:
         return ""
@@ -84,8 +83,7 @@ def smart_page_range(paginator, page_num):
     if page_num < (paginator.num_pages - ON_EACH_SIDE - ON_ENDS):
         page_range.extend(range(page_num + 1, page_num + ON_EACH_SIDE + 1))
         page_range.append(None)
-        page_range.extend(range(paginator.num_pages -
-                          ON_ENDS + 1, paginator.num_pages + 1))
+        page_range.extend(range(paginator.num_pages - ON_ENDS + 1, paginator.num_pages + 1))
     else:
         page_range.extend(range(page_num + 1, paginator.num_pages + 1))
 
@@ -119,8 +117,7 @@ def inject_preserved_filters(context, url):
             current_url = f"{match.app_name}:{match.url_name}"
             list_url = f"{opts.app_label}:{opts.model_name}_list"
             if list_url == current_url and "_list_filters" in preserved_filters:
-                preserved_filters = dict(
-                    parse_qsl(preserved_filters["_list_filters"]))
+                preserved_filters = dict(parse_qsl(preserved_filters["_list_filters"]))
 
         merged_qs.update(preserved_filters)
 
