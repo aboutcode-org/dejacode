@@ -185,7 +185,7 @@ class VulnerableObjectMixin:
             if not vulnerability:
                 vulnerability = Vulnerability.create_from_data(
                     dataspace=self.dataspace,
-                    data=vulnerability,
+                    data=vulnerability_data,
                 )
             vulnerabilities.append(vulnerability)
 
