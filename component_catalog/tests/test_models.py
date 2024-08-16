@@ -37,6 +37,8 @@ from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
+from component_catalog.models import Vulnerability
+from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import download
@@ -2525,8 +2527,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, package1.inferred_url)
 
     def test_package_model_vulnerability_queryset_mixin(self):
-        package1 = make_package(self.dataspace, filename="package1", is_vulnerable=True)
-        package2 = make_package(self.dataspace, filename="package2")
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        package2 = make_package(self.dataspace)
 
         qs = Package.objects.with_vulnerability_count()
         self.assertEqual(1, qs.get(pk=package1.pk).vulnerability_count)
@@ -2536,7 +2538,54 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertQuerySetEqual(qs, [package1])
 
     def test_vulnerability_model_affected_packages_m2m(self):
-        package1 = make_package(self.dataspace, filename="package")
+        package1 = make_package(self.dataspace)
         vulnerablity1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
         self.assertEqual(package1, vulnerablity1.affected_packages.get())
         self.assertEqual(vulnerablity1, package1.affected_by_vulnerabilities.get())
+
+    def test_vulnerability_model_add_affected(self):
+        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerablity1.add_affected(package1)
+        vulnerablity1.add_affected([package2])
+        self.assertEqual(2, vulnerablity1.affected_packages.count())
+
+        vulnerablity2 = make_vulnerability(dataspace=self.dataspace)
+        component1 = make_component(self.dataspace)
+        vulnerablity2.add_affected([component1, package1])
+        self.assertQuerySetEqual(vulnerablity2.affected_packages.all(), [package1])
+        self.assertQuerySetEqual(vulnerablity2.affected_components.all(), [component1])
+
+    def test_vulnerability_model_create_from_data(self):
+        package1 = make_package(self.dataspace)
+        vulnerability_data = {
+            "vulnerability_id": "VCID-q4q6-yfng-aaag",
+            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
+            "aliases": ["CVE-2024-27351", "GHSA-vm8q-m57g-pff3", "PYSEC-2024-47"],
+            "references": [
+                {
+                    "reference_url": "https://access.redhat.com/hydra/rest/"
+                    "securitydata/cve/CVE-2024-27351.json",
+                    "reference_id": "",
+                    "scores": [
+                        {
+                            "value": "7.5",
+                            "scoring_system": "cvssv3",
+                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                        }
+                    ],
+                },
+            ],
+        }
+
+        vulnerability1 = Vulnerability.create_from_data(
+            dataspace=self.dataspace,
+            data=vulnerability_data,
+            affecting=package1,
+        )
+        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
+        self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
+        self.assertEqual(vulnerability_data["references"], vulnerability1.references)
+        self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])

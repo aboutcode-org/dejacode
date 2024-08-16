@@ -2658,27 +2658,10 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         self.affected_components.add(*components)
 
     @classmethod
-    def create_from_data(
-        cls, dataspace, data, validate=False, affected_packages=None, affected_components=None
-    ):
-        # TODO: Remove duplication with super()
-        model_fields = cls.model_fields()
-        cleaned_data = {
-            field_name: value
-            for field_name, value in data.items()
-            if field_name in model_fields and value not in EMPTY_VALUES
-        }
+    def create_from_data(cls, dataspace, data, validate=False, affecting=None):
+        instance = super().create_from_data(user=dataspace, data=data, validate=False)
 
-        instance = cls(dataspace=dataspace, **cleaned_data)
-
-        if validate:
-            instance.full_clean()
-        instance.save()
-
-        if affected_packages:
-            instance.add_affected_packages(affected_packages)
-
-        if affected_components:
-            instance.add_affected_component(affected_components)
+        if affecting:
+            instance.add_affected(affecting)
 
         return instance

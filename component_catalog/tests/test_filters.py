@@ -200,7 +200,7 @@ class ComponentFilterSetTest(TestCase):
         )
 
     def test_component_filterset_is_vulnerable_filter(self):
-        component1 = make_component(self.dataspace, name="component1", is_vulnerable=True)
+        component1 = make_component(self.dataspace, is_vulnerable=True)
         self.assertTrue(component1.is_vulnerable)
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)

@@ -748,9 +748,19 @@ class DataspacedModel(models.Model):
             if field_name in model_fields and value not in EMPTY_VALUES
         }
 
+        if isinstance(user, DejacodeUser):
+            initial_values = {
+                "dataspace": user.dataspace,
+                "created_by": user,
+            }
+        # Add support for proviing a Dataspace directly in place of User
+        elif isinstance(user, Dataspace):
+            initial_values = {
+                "dataspace": user,
+            }
+
         instance = cls(
-            dataspace=user.dataspace,
-            created_by=user,
+            **initial_values,
             **cleaned_data,
         )
 

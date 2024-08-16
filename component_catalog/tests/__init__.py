@@ -7,14 +7,22 @@
 #
 
 import random
+import string
 
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import Vulnerability
 
 
+def make_string(length):
+    return "".join(random.choices(string.ascii_letters, k=length))
+
+
 def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
     """Create a package for test purposes."""
+    if not package_url and "filename" not in data:
+        data["filename"] = make_string(10)
+
     package = Package(dataspace=dataspace, **data)
     if package_url:
         package.set_package_url(package_url)
@@ -28,6 +36,9 @@ def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
 
 def make_component(dataspace, is_vulnerable=False, **data):
     """Create a component for test purposes."""
+    if "name" not in data:
+        data["name"] = make_string(10)
+
     component = Component.objects.create(
         dataspace=dataspace,
         **data,
