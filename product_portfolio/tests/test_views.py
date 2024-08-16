@@ -86,7 +86,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
         self.vulnerability1 = make_vulnerability(
             self.dataspace,
-            vulnerability_id="VCID-0000-0001",
             affected_packages=[self.package1],
         )
 

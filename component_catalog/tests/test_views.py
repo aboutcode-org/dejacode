@@ -1040,7 +1040,6 @@ class ComponentUserViewsTestCase(TestCase):
     def test_component_details_view_tab_vulnerabilities(self):
         vulnerability1 = make_vulnerability(
             self.nexb_dataspace,
-            vulnerability_id="VCID-0000-0001",
             affected_components=[self.component1],
         )
 
@@ -1123,7 +1122,6 @@ class PackageUserViewsTestCase(TestCase):
 
         self.vulnerability1 = make_vulnerability(
             self.dataspace,
-            vulnerability_id="VCID-0000-0001",
             affected_packages=[self.package1],
         )
         ComponentAssignedPackage.objects.create(

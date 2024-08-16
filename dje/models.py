@@ -802,7 +802,7 @@ class DataspacedModel(models.Model):
                 use_natural_foreign_keys=True,
                 use_natural_primary_keys=True,
             )
-        except SerializationError:
+        except (SerializationError, ValueError):
             serialized_data = None
 
         return serialized_data

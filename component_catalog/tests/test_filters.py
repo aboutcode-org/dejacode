@@ -19,7 +19,6 @@ from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
-from component_catalog.tests import make_vulnerability
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -202,7 +201,6 @@ class ComponentFilterSetTest(TestCase):
 
     def test_component_filterset_is_vulnerable_filter(self):
         component1 = make_component(self.dataspace, name="component1", is_vulnerable=True)
-        # make_vulnerability(self.dataspace, affected_components=[component1])
         self.assertTrue(component1.is_vulnerable)
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)
@@ -382,7 +380,9 @@ class PackageFilterSearchTestCase(TestCase):
         self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
     def test_package_filterset_is_vulnerable_filter(self):
-        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0", is_vulnerable=True)
+        package1 = make_package(
+            self.dataspace, package_url="pkg:pypi/django@5.0", is_vulnerable=True
+        )
         self.assertTrue(package1.is_vulnerable)
 
         filterset = PackageFilterSet(dataspace=self.dataspace)
