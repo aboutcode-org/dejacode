@@ -45,7 +45,7 @@ license_library_app = apps.get_app_config("license_library")
 SPDX_LICENSE_URL = "https://spdx.org/licenses/{}.html"
 SCANCODE_LICENSEDB_URL = "https://scancode-licensedb.aboutcode.org/{}"
 SCANCODE_DATA_BASE_URL = (
-    "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data"
+    "https://github.com/aboutcode-org/scancode-toolkit/tree/develop/src/licensedcode/data"
 )
 SCANCODE_LICENSE_URL = f"{SCANCODE_DATA_BASE_URL}/licenses/{{}}.LICENSE"
 

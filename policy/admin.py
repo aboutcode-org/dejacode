@@ -92,7 +92,7 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
                 "a file to use in other applications by clicking the "
                 '"Download License Policies as YAML" button. '
                 "For an example of how to use this file in an open source tool, see "
-                "https://github.com/nexB/scancode-toolkit/wiki/License-Policy-Plugin "
+                "https://github.com/aboutcode-org/scancode-toolkit/wiki/License-Policy-Plugin "
                 "for a detailed explanation."
             )
         )

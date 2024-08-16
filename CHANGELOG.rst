@@ -58,6 +58,9 @@ Release notes
   Product.
   https://github.com/nexB/dejacode/issues/138
 
+- Update link references of ownership from nexB to aboutcode-org
+  https://github.com/aboutcode-org/dejacode/issues/158
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x
