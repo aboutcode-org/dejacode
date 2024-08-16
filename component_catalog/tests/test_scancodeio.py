@@ -35,8 +35,7 @@ class ScanCodeIOTestCase(TestCase):
         self.basic_user = create_user("basic_user", self.dataspace)
         self.super_user = create_superuser("super_user", self.dataspace)
 
-        self.owner1 = Owner.objects.create(
-            name="Owner1", dataspace=self.dataspace)
+        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         self.license1 = License.objects.create(
             key="l1", name="L1", short_name="L1", dataspace=self.dataspace, owner=self.owner1
         )
@@ -46,8 +45,7 @@ class ScanCodeIOTestCase(TestCase):
         self.package1 = Package.objects.create(
             filename="package1", download_url="http://url.com/package1", dataspace=self.dataspace
         )
-        self.package1.license_expression = "{} AND {}".format(
-            self.license1.key, self.license2.key)
+        self.package1.license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
         self.package1.save()
 
     @mock.patch("requests.head")
@@ -82,8 +80,7 @@ class ScanCodeIOTestCase(TestCase):
 
         scancodeio.fetch_scan_list(user=self.basic_user)
         params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json",
-                    "name__endswith": get_hash_uid(self.basic_user.uuid)}
+        expected = {"format": "json", "name__endswith": get_hash_uid(self.basic_user.uuid)}
         self.assertEqual(expected, params)
 
         scancodeio.fetch_scan_list(dataspace=self.basic_user.dataspace)
@@ -151,8 +148,7 @@ class ScanCodeIOTestCase(TestCase):
                 project_data,
             ],
         }
-        self.assertEqual(
-            project_data, scancodeio.find_project(name="project_name"))
+        self.assertEqual(project_data, scancodeio.find_project(name="project_name"))
 
         mock_request_get.return_value = {
             "count": 0,
@@ -179,29 +175,23 @@ class ScanCodeIOTestCase(TestCase):
         mock_get_scan_results.return_value = None
         mock_fetch_scan_data.return_value = None
 
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 
         mock_get_scan_results.return_value = {"url": "https://scancode.io/"}
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 
-        mock_fetch_scan_data.return_value = {
-            "error": "Summary file not available"}
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        mock_fetch_scan_data.return_value = {"error": "Summary file not available"}
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 
-        scan_summary_location = self.data / "summary" / \
-            "bulma-1.0.1-scancode.io-summary.json"
+        scan_summary_location = self.data / "summary" / "bulma-1.0.1-scancode.io-summary.json"
         with open(scan_summary_location) as f:
             scan_summary = json.load(f)
 
         mock_fetch_scan_data.return_value = scan_summary
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         expected = [
             "license_expression",
             "declared_license_expression",
@@ -221,12 +211,10 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual("apache-2.0", self.package1.other_license_expression)
         self.assertEqual("Jeremy Thomas", self.package1.holder)
         self.assertEqual("JavaScript", self.package1.primary_language)
-        self.assertEqual("Modern CSS framework based on Flexbox",
-                         self.package1.description)
+        self.assertEqual("Modern CSS framework based on Flexbox", self.package1.description)
         self.assertEqual("https://bulma.io", self.package1.homepage_url)
         self.assertEqual("Copyright Jeremy Thomas", self.package1.copyright)
-        expected_keywords = ["css", "sass", "scss",
-                             "flexbox", "grid", "responsive", "framework"]
+        expected_keywords = ["css", "sass", "scss", "flexbox", "grid", "responsive", "framework"]
         self.assertEqual(expected_keywords, self.package1.keywords)
 
         self.assertEqual(self.super_user, self.package1.last_modified_by)
@@ -239,27 +227,22 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual(expected, history_entry.change_message)
 
         # Inferred Copyright statement
-        mock_fetch_scan_data.return_value = {
-            "key_files_packages": [{"name": "package1"}]}
+        mock_fetch_scan_data.return_value = {"key_files_packages": [{"name": "package1"}]}
         self.package1.copyright = ""
         self.package1.save()
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual(["copyright"], updated_fields)
         self.package1.refresh_from_db()
-        self.assertEqual(
-            "Copyright package1 project contributors", self.package1.copyright)
+        self.assertEqual("Copyright package1 project contributors", self.package1.copyright)
 
         mock_fetch_scan_data.return_value = {"some_key": "some_value"}
         self.package1.name = "bulma"
         self.package1.copyright = ""
         self.package1.save()
-        updated_fields = scancodeio.update_from_scan(
-            self.package1, self.super_user)
+        updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual(["copyright"], updated_fields)
         self.package1.refresh_from_db()
-        self.assertEqual("Copyright bulma project contributors",
-                         self.package1.copyright)
+        self.assertEqual("Copyright bulma project contributors", self.package1.copyright)
 
     def test_scancodeio_map_detected_package_data(self):
         detected_package = {
@@ -328,8 +311,7 @@ class ScanCodeIOTestCase(TestCase):
         }
         scan_summary = {"key_files": [key_file_data1, key_file_data2]}
         notice_text = get_notice_text_from_key_files(scan_summary)
-        self.assertEqual(
-            "Content from file1\n\n---\n\nContent from file2", notice_text)
+        self.assertEqual("Content from file1\n\n---\n\nContent from file2", notice_text)
 
         key_file_data1["name"] = "README"
         scan_summary = {"key_files": [key_file_data1]}

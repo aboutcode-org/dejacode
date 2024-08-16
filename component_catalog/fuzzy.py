@@ -29,12 +29,10 @@ class FuzzyPackageNameSearch(django_filters.CharFilter):
             return qs
 
         search_values = self.create_search_names(value)
-        or_queries = [models.Q(filename__icontains=value)
-                      for value in search_values]
+        or_queries = [models.Q(filename__icontains=value) for value in search_values]
         if or_queries:
             potential_packages = qs.filter(reduce(operator.or_, or_queries))
-            pks = list(self.fuzzy_match_packages(
-                value, potential_packages, self.threshold))
+            pks = list(self.fuzzy_match_packages(value, potential_packages, self.threshold))
             # Duplicated query since the output need to be a QuerySet instance while
             # fuzzy_match_packages() function return an iterable.
             qs = qs.filter(pk__in=pks)

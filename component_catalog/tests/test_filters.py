@@ -34,10 +34,8 @@ class ComponentFilterSetTest(TestCase):
         self.nexb_user = create_superuser("nexb_user", self.dataspace)
         self.basic_user = create_user("basic_user", self.dataspace)
 
-        self.owner = Owner.objects.create(
-            name="Owner", dataspace=self.dataspace)
-        self.other_owner = Owner.objects.create(
-            name="OtherOwner", dataspace=self.other_dataspace)
+        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.other_owner = Owner.objects.create(name="OtherOwner", dataspace=self.other_dataspace)
 
         self.license_ct = ContentType.objects.get_for_model(License)
         self.component_ct = ContentType.objects.get_for_model(Component)
@@ -61,8 +59,7 @@ class ComponentFilterSetTest(TestCase):
             dataspace=self.other_dataspace,
         )
 
-        self.component_type = ComponentType.objects.create(
-            label="type1", dataspace=self.dataspace)
+        self.component_type = ComponentType.objects.create(label="type1", dataspace=self.dataspace)
         self.other_type = ComponentType.objects.create(
             label="other_type", dataspace=self.other_dataspace
         )
@@ -89,8 +86,7 @@ class ComponentFilterSetTest(TestCase):
             owner=self.other_owner,
         )
 
-        self.keyword1 = ComponentKeyword.objects.create(
-            label="Keyword", dataspace=self.dataspace)
+        self.keyword1 = ComponentKeyword.objects.create(label="Keyword", dataspace=self.dataspace)
         self.other_keyword = ComponentKeyword.objects.create(
             label="OtherKeyword", dataspace=self.other_dataspace
         )
@@ -105,8 +101,7 @@ class ComponentFilterSetTest(TestCase):
         class ComponentFilterSetScoping(ComponentFilterSet):
             related_only = []
 
-        component_filterset = ComponentFilterSetScoping(
-            dataspace=self.dataspace)
+        component_filterset = ComponentFilterSetScoping(dataspace=self.dataspace)
 
         qs = component_filterset.filters["usage_policy"].queryset
         self.assertTrue(self.component_policy in qs)
@@ -127,11 +122,9 @@ class ComponentFilterSetTest(TestCase):
 
     def test_component_filterset_primary_language_filter(self):
         filterset = ComponentFilterSet(dataspace=self.dataspace)
-        self.assertEqual(
-            [], list(filterset.filters["primary_language"].field.choices))
+        self.assertEqual([], list(filterset.filters["primary_language"].field.choices))
 
-        c1 = make_component(self.dataspace, name="c1",
-                            primary_language="Python")
+        c1 = make_component(self.dataspace, name="c1", primary_language="Python")
         c2 = make_component(self.dataspace, name="c2", primary_language="Java")
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)
@@ -141,18 +134,15 @@ class ComponentFilterSetTest(TestCase):
             list(filterset.filters["primary_language"].field.choices),
         )
 
-        filterset = ComponentFilterSet(
-            dataspace=self.dataspace, data={"q": c1.name})
+        filterset = ComponentFilterSet(dataspace=self.dataspace, data={"q": c1.name})
         self.assertEqual([c1], list(filterset.qs))
         self.assertEqual(
-            [("Python", "Python")], list(
-                filterset.filters["primary_language"].field.choices)
+            [("Python", "Python")], list(filterset.filters["primary_language"].field.choices)
         )
 
     def test_component_filterset_related_only_values_filter(self):
         self.assertEqual(
-            ["licenses", "primary_language",
-                "usage_policy"], ComponentFilterSet.related_only
+            ["licenses", "primary_language", "usage_policy"], ComponentFilterSet.related_only
         )
 
         c1 = make_component(
@@ -165,30 +155,24 @@ class ComponentFilterSetTest(TestCase):
 
         filterset = ComponentFilterSet(dataspace=self.dataspace)
         self.assertEqual([c1, c2], list(filterset.qs))
-        self.assertEqual([self.license1], list(
-            filterset.filters["licenses"].queryset))
+        self.assertEqual([self.license1], list(filterset.filters["licenses"].queryset))
         self.assertEqual(
             [("Java", "Java"), ("Python", "Python")],
             list(filterset.filters["primary_language"].field.choices),
         )
 
-        filterset = ComponentFilterSet(
-            dataspace=self.dataspace, data={"q": c1.name})
+        filterset = ComponentFilterSet(dataspace=self.dataspace, data={"q": c1.name})
         self.assertEqual([c1], list(filterset.qs))
-        self.assertEqual([self.license1], list(
-            filterset.filters["licenses"].queryset))
+        self.assertEqual([self.license1], list(filterset.filters["licenses"].queryset))
         self.assertEqual(
-            [("Python", "Python")], list(
-                filterset.filters["primary_language"].field.choices)
+            [("Python", "Python")], list(filterset.filters["primary_language"].field.choices)
         )
 
-        filterset = ComponentFilterSet(
-            dataspace=self.dataspace, data={"q": c2.name})
+        filterset = ComponentFilterSet(dataspace=self.dataspace, data={"q": c2.name})
         self.assertEqual([c2], list(filterset.qs))
         self.assertEqual([], list(filterset.filters["licenses"].queryset))
         self.assertEqual(
-            [("Java", "Java")], list(
-                filterset.filters["primary_language"].field.choices)
+            [("Java", "Java")], list(filterset.filters["primary_language"].field.choices)
         )
 
         c2.license_expression = self.license2.key
@@ -196,8 +180,7 @@ class ComponentFilterSetTest(TestCase):
         filterset = ComponentFilterSet(dataspace=self.dataspace)
         self.assertEqual([c1, c2], list(filterset.qs))
         self.assertEqual(
-            [self.license1, self.license2], list(
-                filterset.filters["licenses"].queryset)
+            [self.license1, self.license2], list(filterset.filters["licenses"].queryset)
         )
         self.assertEqual(
             [("Java", "Java"), ("Python", "Python")],
@@ -210,12 +193,10 @@ class ComponentFilterSetTest(TestCase):
         )
         self.assertEqual([c1], list(filterset.qs))
         self.assertEqual(
-            [self.license1, self.license2], list(
-                filterset.filters["licenses"].queryset)
+            [self.license1, self.license2], list(filterset.filters["licenses"].queryset)
         )
         self.assertEqual(
-            [("Python", "Python")], list(
-                filterset.filters["primary_language"].field.choices)
+            [("Python", "Python")], list(filterset.filters["primary_language"].field.choices)
         )
 
 
@@ -230,8 +211,7 @@ class ComponentFilterSearchTestCase(TestCase):
     def test_component_filterset_search_filter(self):
         dataspace = Dataspace.objects.get(name="Reference")
         data = {"q": ""}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         expected = [
             "jblogbackup 1.0",
             "jblogbackup 1.1",
@@ -243,12 +223,10 @@ class ComponentFilterSearchTestCase(TestCase):
             "nagios-logback-appender 1.0",
             "zzz",
         ]
-        self.assertEqual(expected, [str(component)
-                         for component in component_filterset.qs])
+        self.assertEqual(expected, [str(component) for component in component_filterset.qs])
 
         data = {"q": "logback"}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         expected = [
             "logback 0.9.9",
             "logback 1.0.0",
@@ -259,44 +237,34 @@ class ComponentFilterSearchTestCase(TestCase):
             "jblogbackup 1.0",
             "jblogbackup 1.1",
         ]
-        self.assertEqual(expected, [str(component)
-                         for component in component_filterset.qs])
+        self.assertEqual(expected, [str(component) for component in component_filterset.qs])
 
     def test_component_filterset_sort_keeps_default_ordering_from_model(self):
         dataspace = Dataspace.objects.get(name="Reference")
         data = {}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": ""}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": "invalid"}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual((), component_filterset.qs.query.order_by)
 
         data = {"sort": "name"}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
-        self.assertEqual(("name", "version"),
-                         component_filterset.qs.query.order_by)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
+        self.assertEqual(("name", "version"), component_filterset.qs.query.order_by)
 
         data = {"sort": "version"}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
-        self.assertEqual(("version", "name"),
-                         component_filterset.qs.query.order_by)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
+        self.assertEqual(("version", "name"), component_filterset.qs.query.order_by)
 
         data = {"sort": "primary_language"}
-        component_filterset = ComponentFilterSet(
-            dataspace=dataspace, data=data)
+        component_filterset = ComponentFilterSet(dataspace=dataspace, data=data)
         self.assertEqual(
-            ("primary_language", "name",
-             "version"), component_filterset.qs.query.order_by
+            ("primary_language", "name", "version"), component_filterset.qs.query.order_by
         )
 
 
@@ -389,8 +357,7 @@ class PackageFilterSearchTestCase(TestCase):
 
     def test_package_filterset_search_match_order_on_purl_fields(self):
         make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
-        make_package(self.dataspace, package_url="pkg:pypi/django@4.0",
-                     filename="Django-4.0.zip")
+        make_package(self.dataspace, package_url="pkg:pypi/django@4.0", filename="Django-4.0.zip")
 
         data = {"q": "django"}
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)

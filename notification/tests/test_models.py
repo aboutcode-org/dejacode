@@ -27,8 +27,7 @@ class NotificationModelsTestCase(TestCase):
         )
 
     def test_notification_webhook_model_str(self):
-        self.assertEqual("request.added => http://1.2.3.4/",
-                         str(self.webhook1))
+        self.assertEqual("request.added => http://1.2.3.4/", str(self.webhook1))
 
     def test_notification_webhook_model_dict(self):
         expected = {

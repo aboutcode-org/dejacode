@@ -133,8 +133,7 @@ class HierarchyRelatedLookupListFilter(RelatedLookupListFilter):
         except Component.DoesNotExist as e:
             raise IncorrectLookupParameters(e)
 
-        ids = list(instance.children.values_list(
-            "id", flat=True)) + [instance.id]
+        ids = list(instance.children.values_list("id", flat=True)) + [instance.id]
         return queryset.filter(component__id__in=ids)
 
 

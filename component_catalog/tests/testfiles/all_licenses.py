@@ -29,8 +29,7 @@ def get_response(api_url, headers, params):
     """Return the JSON response from calling `api_url` with `headers` and `params`."""
     response = requests.get(api_url, headers=headers, params=params)
     if response.status_code != requests.codes.ok:
-        raise Exception(
-            "Failed API call HTTP request: {}".format(response.status_code))
+        raise Exception("Failed API call HTTP request: {}".format(response.status_code))
     return response.json()
 
 

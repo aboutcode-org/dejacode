@@ -39,8 +39,7 @@ MockLicense = namedtuple("MockLicense", "key aliases is_exception")
 class LicenseExpressionDjeTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="Starship")
-        self.owner = Owner.objects.create(
-            name="Owner", dataspace=self.dataspace)
+        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
 
         self.license1 = License.objects.create(
             key="apache-2.0",
@@ -62,8 +61,7 @@ class LicenseExpressionDjeTestCase(TestCase):
     def test_get_license_objects_with_spaces_in_keys_raise_exception(self):
         lic1 = MockLicense("x11", ["X11 License"], True)
         lic2 = MockLicense("x11-xconsortium", ["X11 XConsortium"], False)
-        lic3 = MockLicense("gps-2.0-plus-ekiga",
-                           ["GPL 2.0 or later with Ekiga exception"], False)
+        lic3 = MockLicense("gps-2.0-plus-ekiga", ["GPL 2.0 or later with Ekiga exception"], False)
         licenses = [lic1, lic2, lic3]
         expression = "x11 or x11 Xconsortium OR gps-2.0-plus-ekiga"
         try:
@@ -77,8 +75,7 @@ class LicenseExpressionDjeTestCase(TestCase):
     def test_get_license_objects_without_spaces_in_keys(self):
         lic1 = MockLicense("x11", ["X11 License"], True)
         lic2 = MockLicense("x11-xconsortium", ["X11 XConsortium"], False)
-        lic3 = MockLicense("gps-2.0-plus-ekiga",
-                           ["GPL 2.0 or later with Ekiga exception"], False)
+        lic3 = MockLicense("gps-2.0-plus-ekiga", ["GPL 2.0 or later with Ekiga exception"], False)
         licenses = [lic1, lic2, lic3]
         expression = "x11 or x11-Xconsortium OR gps-2.0-plus-ekiga"
         results = get_license_objects(expression, licenses)
@@ -86,8 +83,7 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_normalize_and_validate_expression(self):
         expression = "gpl and BSD"
-        licenses = [MockLicense("GPL", [], False),
-                    MockLicense("bsd", [], False)]
+        licenses = [MockLicense("GPL", [], False), MockLicense("bsd", [], False)]
         normalize_and_validate_expression(expression, licenses)
 
     def test_normalize_and_validate_expression_with_exception(self):
@@ -107,15 +103,13 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_normalize_expression_without_symbols_with_keys_containing_keywords(self):
         expression = " withorand with orribleand or orwithand and andwithor or orandwith"
-        results = normalize_and_validate_expression(
-            expression, validate_known=False)
+        results = normalize_and_validate_expression(expression, validate_known=False)
         expected = "withorand WITH orribleand OR (orwithand AND andwithor) OR orandwith"
         self.assertEqual(expected, results)
 
     def test_normalize_expression_without_symbols_and_with_validate(self):
         expression = "gps-2.0 with Classpath or gps-2.0-plus and lgps-2.1-plus or oracle-bcl"
-        results = normalize_and_validate_expression(
-            expression, validate_known=False)
+        results = normalize_and_validate_expression(expression, validate_known=False)
         expected = "gps-2.0 WITH Classpath OR (gps-2.0-plus AND lgps-2.1-plus) OR oracle-bcl"
         self.assertEqual(expected, results)
 
@@ -134,8 +128,7 @@ class LicenseExpressionDjeTestCase(TestCase):
     def test_normalize_expression_raise_exception_if_symbol_has_spaces(self):
         expression = "gps-2.0 with classpath or gps-2.0-plus and lgpl 2.1-plus or oracle-bcl or"
         try:
-            normalize_and_validate_expression(
-                expression, validate_known=False, simple=True)
+            normalize_and_validate_expression(expression, validate_known=False, simple=True)
             self.fail("ValidationError not raised")
         except Exception as e:
             self.assertEqual(
@@ -145,8 +138,7 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_normalize_expression_raise_exception_if_symbol_has_spaces_with_advanced(self):
         expression = "gps-2.0 with classpath or gps-2.0-plus and lgpl 2.1-plus or oracle-bcl or"
-        results = normalize_and_validate_expression(
-            expression, validate_known=False, simple=False)
+        results = normalize_and_validate_expression(expression, validate_known=False, simple=False)
         expected = "gps-2.0 WITH classpath OR (gps-2.0-plus AND lgpl 2.1-plus) OR oracle-bcl"
         self.assertEqual(expected, results)
 
@@ -164,8 +156,7 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_normalize_expression_without_symbols_does_not_raise_for_unknown_symbols(self):
         expression = "gpl 2.0 with class path or gpl 2.0-plus and lgpl 2.1-plus or oracle bcl"
-        result = normalize_and_validate_expression(
-            expression, validate_known=False)
+        result = normalize_and_validate_expression(expression, validate_known=False)
         expected = "gpl 2.0 WITH class path OR (gpl 2.0-plus AND lgpl 2.1-plus) OR oracle bcl"
         self.assertEqual(expected, result)
 
@@ -175,8 +166,7 @@ class LicenseExpressionDjeTestCase(TestCase):
             normalize_and_validate_expression(expression, validate_known=False)
             self.fail("ValidationError not raised")
         except ValidationError as e:
-            self.assertEqual(
-                'Invalid expression for token: "with" at position: 26', e.message)
+            self.assertEqual('Invalid expression for token: "with" at position: 26', e.message)
 
     def test_normalize_and_validate_ticket_503(self):
         expression = (
@@ -184,8 +174,7 @@ class LicenseExpressionDjeTestCase(TestCase):
             "AND cddl-1.0 AND gps-2.0-classpath AND cddl-1.1 AND sax-pd "
             "AND jdom AND w3c AND public-domain AND eps-1.0 AND protobuf AND gps-2.0-gcc)"
         )
-        results = normalize_and_validate_expression(
-            expression, validate_known=False)
+        results = normalize_and_validate_expression(expression, validate_known=False)
         expected = (
             "apache-2.0 AND (bsd-new AND bsd-simplified AND mit AND zlib "
             "AND cddl-1.0 AND gps-2.0-classpath AND cddl-1.1 AND sax-pd "
@@ -203,8 +192,7 @@ class LicenseExpressionDjeTestCase(TestCase):
 
         expression = "mit AND zlib or mit or mit"
         try:
-            normalize_and_validate_expression(
-                expression, licenses, validate_known=True)
+            normalize_and_validate_expression(expression, licenses, validate_known=True)
             self.fail("Exception not raised")
         except ValidationError as e:
             expected = 'Invalid symbols sequence such as (A B) for token: "mit" at position: 23'
@@ -219,8 +207,7 @@ class LicenseExpressionDjeTestCase(TestCase):
         ]
 
         expression = "mit AND zlib or mit or and mit"
-        results = normalize_and_validate_expression(
-            expression, licenses, validate_known=True)
+        results = normalize_and_validate_expression(expression, licenses, validate_known=True)
         expected = "(mit AND zlib) OR (mitr AND mit)"
         self.assertEqual(expected, results)
 
@@ -233,8 +220,7 @@ class LicenseExpressionDjeTestCase(TestCase):
         ]
 
         expression = "mit AND zlib or mit or mit"
-        results = normalize_and_validate_expression(
-            expression, licenses, validate_known=True)
+        results = normalize_and_validate_expression(expression, licenses, validate_known=True)
         expected = "(mit AND zlib) OR mit OR mit"
         self.assertEqual(expected, results)
 
@@ -302,16 +288,14 @@ class LicenseExpressionDjeTestCase(TestCase):
     def test_get_expression_as_spdx(self):
         expression = "apache-2.0"
         expected = "Apache-2.0"
-        self.assertEqual(expected, get_expression_as_spdx(
-            expression, self.dataspace))
+        self.assertEqual(expected, get_expression_as_spdx(expression, self.dataspace))
 
         with self.assertRaises(ExpressionError):
             get_expression_as_spdx("unknown", self.dataspace)
 
     def test_fetch_licensing_for_dataspace(self):
         licensing = fetch_licensing_for_dataspace(self.dataspace)
-        self.assertEqual([self.license1.key], list(
-            licensing.known_symbols.keys()))
+        self.assertEqual([self.license1.key], list(licensing.known_symbols.keys()))
 
     def test_get_dataspace_licensing(self):
         licensing_cache = caches["licensing"]
@@ -319,14 +303,12 @@ class LicenseExpressionDjeTestCase(TestCase):
         self.assertFalse(licensing_cache.has_key(cache_key))
 
         licensing = get_dataspace_licensing(self.dataspace)
-        self.assertEqual([self.license1.key], list(
-            licensing.known_symbols.keys()))
+        self.assertEqual([self.license1.key], list(licensing.known_symbols.keys()))
         self.assertTrue(licensing_cache.has_key(cache_key))
         self.assertTrue(licensing_cache.get(cache_key))
 
     def test_render_expression_as_html(self):
-        expression_as_html = render_expression_as_html(
-            str(self.license1.key), self.dataspace)
+        expression_as_html = render_expression_as_html(str(self.license1.key), self.dataspace)
         expected = (
             '<span class="license-expression">'
             '<a href="/licenses/Starship/apache-2.0/" title="Apache 2.0">apache-2.0</a>'
@@ -334,8 +316,7 @@ class LicenseExpressionDjeTestCase(TestCase):
         )
         self.assertEqual(expected, expression_as_html)
 
-        expression_as_html = render_expression_as_html(
-            "unknown", self.dataspace)
+        expression_as_html = render_expression_as_html("unknown", self.dataspace)
         expected = '<span class="license-expression">unknown</span>'
         self.assertEqual(expected, expression_as_html)
 
@@ -366,38 +347,30 @@ class LicenseExpressionDataTestCase(TestCase):
         # See testfiles/all_licenses.py to recreate this test data set
         self.maxDiff = None
 
-        test_data = os.path.join(os.path.dirname(
-            __file__), "testfiles", "all_licenses.json")
+        test_data = os.path.join(os.path.dirname(__file__), "testfiles", "all_licenses.json")
         with open(test_data) as f:
             licenses = json.load(f)
 
         keys = [key for key, _, _ in licenses]
 
         # using keys only
-        key_only_symbols = [MockLicense(key, [], False)
-                            for key, _, _ in licenses]
+        key_only_symbols = [MockLicense(key, [], False) for key, _, _ in licenses]
         expression_items = keys
-        self.check_parse(" and ", expression_items,
-                         keys=keys, licenses=key_only_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=key_only_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=key_only_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=key_only_symbols)
 
         # using key + short name
         short_name_alias_symbols = [
             MockLicense(key, [short_name], False) for key, _, short_name in licenses
         ]
         expression_items = keys
-        self.check_parse(" and ", expression_items, keys=keys,
-                         licenses=short_name_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=short_name_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=short_name_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=short_name_alias_symbols)
 
         short_names = [short_name for _, _, short_name in licenses]
         expression_items = short_names
-        self.check_parse(" and ", expression_items, keys=keys,
-                         licenses=short_name_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=short_name_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=short_name_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=short_name_alias_symbols)
 
         expression_items = keys + short_names
         self.check_parse(
@@ -412,35 +385,25 @@ class LicenseExpressionDataTestCase(TestCase):
             MockLicense(key, [short_name, name], False) for key, name, short_name in licenses
         ]
         expression_items = keys
-        self.check_parse(" and ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=full_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=full_alias_symbols)
 
         expression_items = short_names
-        self.check_parse(" and ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=full_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=full_alias_symbols)
 
         expression_items = keys + short_names
-        self.check_parse(" and ", expression_items, keys=keys +
-                         keys, licenses=full_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys +
-                         keys, licenses=full_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys + keys, licenses=full_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys + keys, licenses=full_alias_symbols)
 
         names = [name for _, name, _ in licenses]
         expression_items = names
-        self.check_parse(" and ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys,
-                         licenses=full_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys, licenses=full_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys, licenses=full_alias_symbols)
 
         expression_items = keys + names
-        self.check_parse(" and ", expression_items, keys=keys +
-                         keys, licenses=full_alias_symbols)
-        self.check_parse(" or ", expression_items, keys=keys +
-                         keys, licenses=full_alias_symbols)
+        self.check_parse(" and ", expression_items, keys=keys + keys, licenses=full_alias_symbols)
+        self.check_parse(" or ", expression_items, keys=keys + keys, licenses=full_alias_symbols)
 
         expression_items = short_names + keys + names
         self.check_parse(
@@ -451,10 +414,8 @@ class LicenseExpressionDataTestCase(TestCase):
         )
 
         # using full aliases and with
-        expression = " and ".join(" with ".join(
-            [x, y]) for x, y in zip(keys, names))
-        expected = " AND ".join(" WITH ".join(
-            [x, y]) for x, y in zip(keys, keys))
+        expression = " and ".join(" with ".join([x, y]) for x, y in zip(keys, names))
+        expected = " AND ".join(" WITH ".join([x, y]) for x, y in zip(keys, keys))
         result = normalize_and_validate_expression(
             expression,
             licenses=full_alias_symbols,
@@ -466,10 +427,8 @@ class LicenseExpressionDataTestCase(TestCase):
             _print_sequence_diff(expected, result)
             self.assertEqual(expected, result)
 
-        expression = " or ".join(" with ".join(
-            [x, y]) for x, y in zip(keys, names))
-        expected = " OR ".join(" WITH ".join([x, y])
-                               for x, y in zip(keys, keys))
+        expression = " or ".join(" with ".join([x, y]) for x, y in zip(keys, names))
+        expected = " OR ".join(" WITH ".join([x, y]) for x, y in zip(keys, keys))
         result = normalize_and_validate_expression(
             expression,
             licenses=full_alias_symbols,

@@ -64,10 +64,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.user = create_superuser("nexb_user", self.dataspace)
         self.admin_user = create_admin("admin_user", self.dataspace)
 
-        self.owner = Owner.objects.create(
-            name="Owner", dataspace=self.dataspace)
-        self.other_owner = Owner.objects.create(
-            name="Other_Org", dataspace=self.other_dataspace)
+        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.other_owner = Owner.objects.create(name="Other_Org", dataspace=self.other_dataspace)
         self.license1 = License.objects.create(
             key="license1",
             name="License1",
@@ -85,8 +83,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             owner=self.owner,
             dataspace=self.dataspace,
         )
-        self.component_type = ComponentType.objects.create(
-            label="type1", dataspace=self.dataspace)
+        self.component_type = ComponentType.objects.create(label="type1", dataspace=self.dataspace)
         self.configuration_status = ComponentStatus.objects.create(
             label="Status1", dataspace=self.dataspace
         )
@@ -175,8 +172,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         error = (
             "The application object that you are creating already exists as "
-            "{} in the reference dataspace. {}".format(
-                absolute_link, copy_link)
+            "{} in the reference dataspace. {}".format(absolute_link, copy_link)
         )
 
         self.assertEqual(error, cm.exception.error_dict["version"][0].message)
@@ -187,11 +183,9 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_ordering(self):
         # All the Component will be create with this type to query only on this set
-        type_ordering = ComponentType.objects.create(
-            label="ordering", dataspace=self.dataspace)
+        type_ordering = ComponentType.objects.create(label="ordering", dataspace=self.dataspace)
         # Creating the component in out of order on purpose
-        Component.objects.create(name="b", version="",
-                                 type=type_ordering, dataspace=self.dataspace)
+        Component.objects.create(name="b", version="", type=type_ordering, dataspace=self.dataspace)
         Component.objects.create(
             name="b", version="1", type=type_ordering, dataspace=self.dataspace
         )
@@ -286,8 +280,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual([self.c1.id], self.c2.get_ancestor_ids())
         self.assertEqual([self.c1.id], self.c3.get_ancestor_ids())
         self.assertEqual(
-            sorted([self.c1.id, self.c2.id, self.c3.id]
-                   ), sorted(self.c4.get_ancestor_ids())
+            sorted([self.c1.id, self.c2.id, self.c3.id]), sorted(self.c4.get_ancestor_ids())
         )
 
     def test_component_get_descendants(self):
@@ -305,8 +298,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_get_descendant_ids(self):
         self.assertEqual(
-            sorted([self.c2.id, self.c3.id, self.c4.id]), sorted(
-                self.c1.get_descendant_ids())
+            sorted([self.c2.id, self.c3.id, self.c4.id]), sorted(self.c1.get_descendant_ids())
         )
         self.assertEqual([self.c4.id], self.c2.get_descendant_ids())
         self.assertEqual([self.c4.id], self.c3.get_descendant_ids())
@@ -317,21 +309,17 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual([self.sub_1_2], list(self.c2.get_related_ancestors()))
         self.assertEqual([self.sub_1_3], list(self.c3.get_related_ancestors()))
         self.assertEqual(
-            sorted([self.sub_1_3, self.sub_1_2, self.sub_2_4,
-                   self.sub_3_4], key=attrgetter("id")),
+            sorted([self.sub_1_3, self.sub_1_2, self.sub_2_4, self.sub_3_4], key=attrgetter("id")),
             sorted(self.c4.get_related_ancestors(), key=attrgetter("id")),
         )
 
     def test_component_get_related_descendants(self):
         self.assertEqual(
-            sorted([self.sub_1_3, self.sub_1_2, self.sub_2_4,
-                   self.sub_3_4], key=attrgetter("id")),
+            sorted([self.sub_1_3, self.sub_1_2, self.sub_2_4, self.sub_3_4], key=attrgetter("id")),
             sorted(self.c1.get_related_descendants(), key=attrgetter("id")),
         )
-        self.assertEqual([self.sub_2_4], list(
-            self.c2.get_related_descendants()))
-        self.assertEqual([self.sub_3_4], list(
-            self.c3.get_related_descendants()))
+        self.assertEqual([self.sub_2_4], list(self.c2.get_related_descendants()))
+        self.assertEqual([self.sub_3_4], list(self.c3.get_related_descendants()))
         self.assertEqual([], list(self.c4.get_related_descendants()))
 
     def test_component_is_ancestor_of(self):
@@ -368,8 +356,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_type_unique_filters_for(self):
         filters = self.component_type.unique_filters_for(self.other_dataspace)
-        expected = {"label": self.component_type.label,
-                    "dataspace": self.other_dataspace}
+        expected = {"label": self.component_type.label, "dataspace": self.other_dataspace}
         self.assertEqual(expected, filters)
 
     def test_component_catalog_models_get_identifier_fields(self):
@@ -384,8 +371,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         for model_class, expected in inputs:
             self.assertEqual(expected, model_class.get_identifier_fields())
 
-        self.assertEqual(PACKAGE_URL_FIELDS,
-                         Package.get_identifier_fields(purl_fields_only=True))
+        self.assertEqual(PACKAGE_URL_FIELDS, Package.get_identifier_fields(purl_fields_only=True))
 
     def test_component_model_get_absolute_url(self):
         c = Component(name="c1", version="1.0", dataspace=self.dataspace)
@@ -397,16 +383,14 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_model_get_absolute_url_with_slash_in_name(self):
         c = Component(name="c1/c1", dataspace=self.dataspace, version="1.0")
-        self.assertEqual("/components/nexB/c1%252Fc1/1.0/",
-                         c.get_absolute_url())
+        self.assertEqual("/components/nexB/c1%252Fc1/1.0/", c.get_absolute_url())
 
     def test_component_model_get_absolute_url_with_multiline_name_ticket(self):
         multilines_name = (
             "* zstream.h - C++ interface to the 'zlib' general purpose"
             " compression library\r\n * $Id: zstream.h"
         )
-        c = Component(name=multilines_name,
-                      dataspace=self.dataspace, version="1.0")
+        c = Component(name=multilines_name, dataspace=self.dataspace, version="1.0")
         expected = (
             "/components/nexB/%252A+zstream.h+-+C%252B%252B+"
             "interface+to+the+%2527zlib%2527+general+purpose+compression"
@@ -433,8 +417,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                 self.license1.get_absolute_url(), self.license2.get_absolute_url()
             )
         )
-        self.assertEqual(
-            expected, self.component1.get_license_expression_linked())
+        self.assertEqual(expected, self.component1.get_license_expression_linked())
 
     def test_component_concluded_license_expression_spdx(self):
         self.license1.spdx_license_key = "SPDX-1"
@@ -444,24 +427,21 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.license_expression = expression
         self.component1.save()
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(
-            expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         expression = "{} WITH {}".format(self.license1.key, self.license2.key)
         self.component1.license_expression = expression
         self.component1.save()
         # WITH is replaced by AND for "LicenseRef-" exceptions
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(
-            expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
         self.license2.spdx_license_key = "SPDX-2"
         self.license2.save()
         self.component1 = Component.objects.get(pk=self.component1.pk)
         # WITH is kept for exceptions in SPDX list
         expected = "SPDX-1 WITH SPDX-2"
-        self.assertEqual(
-            expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
 
     def test_component_model_license_expression_spdx_properties(self):
         self.license1.spdx_license_key = "SPDX-1"
@@ -474,31 +454,24 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.component1.save()
 
         expected = "SPDX-1 AND LicenseRef-dejacode-license2"
-        self.assertEqual(
-            expected, self.component1.concluded_license_expression_spdx)
-        self.assertEqual(
-            expected, self.component1.declared_license_expression_spdx)
-        self.assertEqual(
-            expected, self.component1.other_license_expression_spdx)
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
 
         self.component1.license_expression = "unknown"
         self.component1.declared_license_expression = "unknown"
         self.component1.other_license_expression = "unknown"
         self.component1.save()
         expected = "Unknown license key(s): unknown"
-        self.assertEqual(
-            expected, self.component1.concluded_license_expression_spdx)
-        self.assertEqual(
-            expected, self.component1.declared_license_expression_spdx)
-        self.assertEqual(
-            expected, self.component1.other_license_expression_spdx)
+        self.assertEqual(expected, self.component1.concluded_license_expression_spdx)
+        self.assertEqual(expected, self.component1.declared_license_expression_spdx)
+        self.assertEqual(expected, self.component1.other_license_expression_spdx)
 
     def test_component_model_get_expression_as_spdx(self):
         self.license1.spdx_license_key = "SPDX-1"
         self.license1.save()
 
-        expression_as_spdx = self.component1.get_expression_as_spdx(
-            str(self.license1.key))
+        expression_as_spdx = self.component1.get_expression_as_spdx(str(self.license1.key))
         self.assertEqual("SPDX-1", expression_as_spdx)
 
         expression_as_spdx = self.component1.get_expression_as_spdx("unknown")
@@ -520,8 +493,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             f'<a href="{self.license1.get_absolute_url()}" title="L1">w3c</a> AND'
             f' <a href="{self.license2.get_absolute_url()}" title="L2">w3c-documentation</a>'
         )
-        self.assertEqual(
-            expected, self.component1.get_license_expression_linked())
+        self.assertEqual(expected, self.component1.get_license_expression_linked())
 
     def test_component_model_save_license_expression_handle_assigned_licenses(self):
         expression = "{} AND {}".format(self.license1.key, self.license2.key)
@@ -564,25 +536,20 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_status_model_set_default_on_addition(self):
         # The default_on_addition can only be True on 1 ComponentStatus per Dataspace
-        self.assertFalse(ComponentStatus.objects.get(
-            pk=self.status1.pk).default_on_addition)
-        self.assertTrue(ComponentStatus.objects.get(
-            pk=self.status2.pk).default_on_addition)
+        self.assertFalse(ComponentStatus.objects.get(pk=self.status1.pk).default_on_addition)
+        self.assertTrue(ComponentStatus.objects.get(pk=self.status2.pk).default_on_addition)
 
         self.status1.default_on_addition = True
         self.status1.save()
-        self.assertTrue(ComponentStatus.objects.get(
-            pk=self.status1.pk).default_on_addition)
-        self.assertFalse(ComponentStatus.objects.get(
-            pk=self.status2.pk).default_on_addition)
+        self.assertTrue(ComponentStatus.objects.get(pk=self.status1.pk).default_on_addition)
+        self.assertFalse(ComponentStatus.objects.get(pk=self.status2.pk).default_on_addition)
 
     def test_component_model_default_status_on_component_addition(self):
         self.status1.default_on_addition = True
         self.status1.save()
 
         # No status given at creation time, the default is set
-        c1 = Component.objects.create(
-            owner=self.owner, name="C1", dataspace=self.dataspace)
+        c1 = Component.objects.create(owner=self.owner, name="C1", dataspace=self.dataspace)
         self.assertEqual(self.status1, c1.configuration_status)
 
         # A status is given at creation time, no default is set
@@ -668,13 +635,11 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     def test_component_deletion(self):
         # We have a Subcomponent relation between c1 and c2
-        self.assertTrue(Subcomponent.objects.filter(
-            parent=self.c1, child=self.c2))
+        self.assertTrue(Subcomponent.objects.filter(parent=self.c1, child=self.c2))
         # Deleting c1 should delete the c1 object and the Subcomponent, but c2
         # is not impacted
         self.c1.delete()
-        self.assertFalse(Subcomponent.objects.filter(
-            parent__id=self.c1.id, child=self.c2))
+        self.assertFalse(Subcomponent.objects.filter(parent__id=self.c1.id, child=self.c2))
         self.assertFalse(Component.objects.filter(id=self.c1.id))
         self.assertTrue(Component.objects.filter(id=self.c2.id))
 
@@ -693,8 +658,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertTrue(License.objects.filter(id=self.license1.id))
 
     def test_component_compute_completion_level(self):
-        component = Component.objects.create(
-            name="Component", dataspace=self.dataspace)
+        component = Component.objects.create(name="Component", dataspace=self.dataspace)
 
         # Minimum possible for a Component
         self.assertEqual(0, component.compute_completion_level())
@@ -722,8 +686,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         component.license_expression = self.license1.key
 
         component.save()
-        package = Package.objects.create(
-            filename="package", dataspace=self.dataspace)
+        package = Package.objects.create(filename="package", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=component, package=package, dataspace=self.dataspace
         )
@@ -741,13 +704,11 @@ class ComponentCatalogModelsTestCase(TestCase):
         # Making sure the weight of m2m is included
         self.component1.license_expression = self.license1.key
         self.component1.save()
-        copied_component = copy_object(
-            self.component1, self.other_dataspace, self.user)
+        copied_component = copy_object(self.component1, self.other_dataspace, self.user)
         self.assertEqual(15, copied_component.completion_level)
 
     def test_component_update_completion_level_after_update(self):
-        copied_component = copy_object(
-            self.component1, self.other_dataspace, self.user)
+        copied_component = copy_object(self.component1, self.other_dataspace, self.user)
         self.assertEqual(8, copied_component.completion_level)
 
         self.component1.description = "desc"
@@ -800,8 +761,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(12, component.completion_level)
 
     def test_component_update_completion_level_after_package_import(self):
-        self.assertEqual(
-            0, self.component1.componentassignedpackage_set.count())
+        self.assertEqual(0, self.component1.componentassignedpackage_set.count())
         self.assertEqual(0, self.component1.completion_level)
 
         formset_data = {
@@ -815,8 +775,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         importer.save_all()
 
         package1 = Package.objects.get(filename="Django-2.0.zip")
-        self.assertEqual(
-            1, self.component1.componentassignedpackage_set.count())
+        self.assertEqual(1, self.component1.componentassignedpackage_set.count())
         self.assertEqual(1, package1.componentassignedpackage_set.count())
         self.component1.refresh_from_db()
         self.assertEqual(15, self.component1.completion_level)
@@ -863,16 +822,14 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         # Force a refresh of the instance
         self.component1 = Component.objects.get(pk=self.component1.pk)
-        self.assertEqual(self.license2.key,
-                         self.component1.license_choices_expression)
+        self.assertEqual(self.license2.key, self.component1.license_choices_expression)
         self.assertTrue(self.component1.has_license_choices)
 
     def test_mass_update_m2m_fields_scope_to_dataspace(self):
         # The limitation of the m2ms is done in dje.forms.DejacodeMassUpdateForm
         self.client.login(username="nexb_user", password="secret")
 
-        keyword1 = ComponentKeyword.objects.create(
-            label="Keyword1", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
 
         other_keyword = ComponentKeyword.objects.create(
             label="OtherKeyword", dataspace=self.other_dataspace
@@ -893,10 +850,8 @@ class ComponentCatalogModelsTestCase(TestCase):
     def test_mass_update_component_keywords(self):
         self.client.login(username="nexb_user", password="secret")
 
-        keyword1 = ComponentKeyword.objects.create(
-            label="Keyword1", dataspace=self.dataspace)
-        keyword2 = ComponentKeyword.objects.create(
-            label="Keyword2", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
 
         data = {
             "_selected_action": [self.c1.pk, self.c2.pk],
@@ -919,8 +874,7 @@ class ComponentCatalogModelsTestCase(TestCase):
     def test_mass_update_component_owner(self):
         self.client.login(username="nexb_user", password="secret")
 
-        new_owner = Owner.objects.create(
-            name="new owner", dataspace=self.dataspace)
+        new_owner = Owner.objects.create(name="new owner", dataspace=self.dataspace)
 
         data = {
             "_selected_action": [self.component1.pk, self.c2.pk],
@@ -961,10 +915,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertContains(response, "awesomplete-1.1.5.css")
         self.assertContains(response, "awesomplete-1.1.5.min.js")
         self.assertContains(response, "license_expression_builder.js")
-        expected = [("L1 (license1)", "license1"),
-                    ("L2 (license2)", "license2")]
-        self.assertEqual(
-            expected, response.context["client_data"]["license_data"])
+        expected = [("L1 (license1)", "license1"), ("L2 (license2)", "license2")]
+        self.assertEqual(expected, response.context["client_data"]["license_data"])
 
         data.update(
             {
@@ -979,8 +931,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, response.context["adminform"].form.errors)
         expected = '<p class="errornote">Please correct the error below.</p>'
         self.assertContains(response, expected)
-        self.assertContains(
-            response, "<li>Unknown license key(s): wrong</li>", html=True)
+        self.assertContains(response, "<li>Unknown license key(s): wrong</li>", html=True)
         # Make sure the enabler checkbox is checked
         expected = (
             '<input type="checkbox" name="chk_id_license_expression"'
@@ -988,8 +939,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
 
-        data["license_expression"] = "{} OR {}".format(
-            self.license1.key, self.license2.key)
+        data["license_expression"] = "{} OR {}".format(self.license1.key, self.license2.key)
         response = self.client.post(url, data, follow=True)
         self.assertContains(response, "Updated 2 records")
         self.assertEqual(2, self.component1.licenses.count())
@@ -1012,18 +962,15 @@ class ComponentCatalogModelsTestCase(TestCase):
         response = self.client.post(url, data)
         self.assertNotContains(response, "usage_policy")
 
-        self.admin_user = add_perm(
-            self.admin_user, "change_usage_policy_on_component")
+        self.admin_user = add_perm(self.admin_user, "change_usage_policy_on_component")
         response = self.client.post(url, data)
         self.assertContains(response, "usage_policy")
 
     def test_mass_update_packages(self):
         self.client.login(username="nexb_user", password="secret")
 
-        package1 = Package.objects.create(
-            filename="a", dataspace=self.dataspace)
-        package2 = Package.objects.create(
-            filename="b", dataspace=self.dataspace)
+        package1 = Package.objects.create(filename="a", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="b", dataspace=self.dataspace)
 
         data = {
             "_selected_action": [package1.pk, package2.pk],
@@ -1044,26 +991,20 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("Notes", package2.notes)
 
         # Break the purl on a Package without a filename
-        package3 = Package.objects.create(
-            type="type", name="name", dataspace=self.dataspace)
+        package3 = Package.objects.create(type="type", name="name", dataspace=self.dataspace)
         data["_selected_action"] = [package3.pk]
         data["chk_id_name"] = "on"
         data["name"] = ""
         response = self.client.post(url, data, follow=True)
-        self.assertContains(
-            response, "1 error(s): package_url or filename required")
+        self.assertContains(response, "1 error(s): package_url or filename required")
 
     def test_mass_update_package_keywords(self):
         self.client.login(username="nexb_user", password="secret")
 
-        package1 = Package.objects.create(
-            filename="a", dataspace=self.dataspace)
-        package2 = Package.objects.create(
-            filename="b", dataspace=self.dataspace)
-        keyword1 = ComponentKeyword.objects.create(
-            label="Keyword1", dataspace=self.dataspace)
-        keyword2 = ComponentKeyword.objects.create(
-            label="Keyword2", dataspace=self.dataspace)
+        package1 = Package.objects.create(filename="a", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="b", dataspace=self.dataspace)
+        keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
+        keyword2 = ComponentKeyword.objects.create(label="Keyword2", dataspace=self.dataspace)
 
         data = {
             "_selected_action": [package1.pk, package2.pk],
@@ -1096,8 +1037,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.sub_1_2.child.license_expression = self.license1.key
         self.sub_1_2.child.save()
 
-        self.assertEqual(list(self.sub_1_2.licenses.all()),
-                         list(self.sub_1_2.child.licenses.all()))
+        self.assertEqual(list(self.sub_1_2.licenses.all()), list(self.sub_1_2.child.licenses.all()))
         self.assertTrue(
             Licensing().is_equivalent(
                 self.sub_1_2.license_expression, self.sub_1_2.child.license_expression
@@ -1125,12 +1065,10 @@ class ComponentCatalogModelsTestCase(TestCase):
         c = Component(license_expression="")
         self.assertIsNone(self.component1.primary_license)
 
-        c = Component(license_expression="{} AND {}".format(
-            self.license2.key, self.license1.key))
+        c = Component(license_expression="{} AND {}".format(self.license2.key, self.license1.key))
         self.assertEqual(self.license2.key, c.primary_license)
 
-        c = Component(license_expression="({} OR {})".format(
-            self.license1.key, self.license2.key))
+        c = Component(license_expression="({} OR {})".format(self.license1.key, self.license2.key))
         self.assertEqual(self.license1.key, c.primary_license)
 
         c = Component(license_expression=self.license2.key)
@@ -1183,10 +1121,8 @@ class ComponentCatalogModelsTestCase(TestCase):
             to_policy=component_policy,
             dataspace=self.dataspace,
         )
-        self.assertEqual(component_policy,
-                         self.component1.get_policy_from_primary_license())
-        self.assertEqual(component_policy,
-                         self.component1.policy_from_primary_license)
+        self.assertEqual(component_policy, self.component1.get_policy_from_primary_license())
+        self.assertEqual(component_policy, self.component1.policy_from_primary_license)
         self.assertIsNone(self.component1.usage_policy)
 
     def test_component_create_save_set_usage_policy_from_license(self):
@@ -1251,8 +1187,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             name="component4",
             dataspace=self.dataspace,
         )
-        component4_api_url = reverse(
-            "api_v2:component-detail", args=[component4.uuid])
+        component4_api_url = reverse("api_v2:component-detail", args=[component4.uuid])
         put_data = json.dumps(
             {
                 "name": component4.name,
@@ -1310,8 +1245,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             to_policy=subcomponent_policy,
             dataspace=self.dataspace,
         )
-        self.assertEqual(subcomponent_policy,
-                         self.sub_1_2.get_policy_from_child_component())
+        self.assertEqual(subcomponent_policy, self.sub_1_2.get_policy_from_child_component())
         self.assertIsNone(self.sub_1_2.usage_policy)
 
     def test_component_catalog_models_get_exclude_candidates_fields(self):
@@ -1435,8 +1369,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
 
         for model_class, expected in input_data:
-            results = [f.name for f in model_class(
-            ).get_exclude_candidates_fields()]
+            results = [f.name for f in model_class().get_exclude_candidates_fields()]
             self.assertEqual(sorted(expected), sorted(results))
 
     def test_component_create_with_or_and_and_in_license_name_and_key(self):
@@ -1537,8 +1470,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "(<foo License1 bar license1> WITH <foo License2 bar license2>)"
         )
         self.assertEqual(
-            expected, comp.get_license_expression(
-                template="<foo {symbol.name} bar {symbol.key}>")
+            expected, comp.get_license_expression(template="<foo {symbol.name} bar {symbol.key}>")
         )
 
         expected = (
@@ -1581,14 +1513,12 @@ class ComponentCatalogModelsTestCase(TestCase):
             license_expression=expression,
         )
 
-        self.assertEqual(
-            "orrible AND anddistrophic with license2", str(expression))
+        self.assertEqual("orrible AND anddistrophic with license2", str(expression))
         self.assertEqual(or_license.key, comp._get_primary_license())
 
         # With exception first
         expression = f"{self.license1.key} WITH {self.license2.key} AND {and_license.key}"
-        self.assertEqual(
-            "license1 WITH license2 AND anddistrophic", str(expression))
+        self.assertEqual("license1 WITH license2 AND anddistrophic", str(expression))
         comp.license_expression = expression
         comp.save()
         # Primary license with exceptions are not supported
@@ -1597,16 +1527,14 @@ class ComponentCatalogModelsTestCase(TestCase):
     def test_component_model_package_property(self):
         self.assertIsNone(self.component1.package)
 
-        package = Package.objects.create(
-            filename="package.zip", dataspace=self.dataspace)
+        package = Package.objects.create(filename="package.zip", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package, dataspace=self.dataspace
         )
         self.component1 = Component.objects.get(pk=self.component1.pk)
         self.assertEqual(package, self.component1.package)
 
-        package2 = Package.objects.create(
-            filename="package2.zip", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package2, dataspace=self.dataspace
         )
@@ -1675,8 +1603,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         assert_unique(**download_url, **filename)
         # 2f. download_url, filename, optional purl fields
         assert_unique(**download_url, **filename, version="1.0")
-        assert_unique(**download_url, **filename,
-                      version="1.0", namespace="namespace")
+        assert_unique(**download_url, **filename, version="1.0", namespace="namespace")
 
         # 3a. simple purl, no download_url
         assert_unique(**simple_purl)
@@ -1688,8 +1615,7 @@ class ComponentCatalogModelsTestCase(TestCase):
     def test_package_model_create_from_data(self):
         with self.assertRaises(ValidationError) as cm:
             Package.create_from_data(user=self.user, data={})
-        self.assertEqual("package_url or filename required",
-                         cm.exception.message)
+        self.assertEqual("package_url or filename required", cm.exception.message)
 
         package_data = {
             "not_available": True,
@@ -1715,8 +1641,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         with self.assertRaises(ValidationError) as cm:
-            Package.create_from_data(
-                user=self.user, data=package_data, validate=True)
+            Package.create_from_data(user=self.user, data=package_data, validate=True)
 
         expected = {
             "primary_language": ["Ensure this value has at most 50 characters (it has 600)."]
@@ -1751,8 +1676,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         # Empty field, updated
         self.assertEqual(new_data["version"], package.version)
 
-        updated_fields = package.update_from_data(
-            self.user, data=new_data, override=True)
+        updated_fields = package.update_from_data(self.user, data=new_data, override=True)
         self.assertEqual(["name"], updated_fields)
         package.refresh_from_db()
         self.assertEqual(new_data["name"], package.name)
@@ -1783,8 +1707,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertTrue(package.uuid)
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purl, package.package_url)
-        mock_collect.assert_called_with(
-            "https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+        mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
@@ -1819,8 +1742,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         mock_get_purldb_entries.assert_called_once()
 
         self.assertEqual(self.user, package.created_by)
-        self.assertEqual(
-            purldb_entry["declared_license_expression"], package.license_expression)
+        self.assertEqual(purldb_entry["declared_license_expression"], package.license_expression)
 
         for field_name, value in purldb_entry.items():
             self.assertEqual(value, getattr(package, field_name))
@@ -1863,8 +1785,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
 
     def test_package_model_component_property(self):
-        package = Package.objects.create(
-            filename="package.zip", dataspace=self.dataspace)
+        package = Package.objects.create(filename="package.zip", dataspace=self.dataspace)
         self.assertIsNone(package.component)
 
         ComponentAssignedPackage.objects.create(
@@ -1906,10 +1827,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         with self.assertRaises(ValidationError):
             Package.objects.create(dataspace=self.dataspace)
 
-        self.assertTrue(Package.objects.create(
-            filename="a", dataspace=self.dataspace))
-        self.assertTrue(Package.objects.create(
-            type="a", name="a", dataspace=self.dataspace))
+        self.assertTrue(Package.objects.create(filename="a", dataspace=self.dataspace))
+        self.assertTrue(Package.objects.create(type="a", name="a", dataspace=self.dataspace))
 
     def test_package_model_package_url_properties(self):
         package = Package.objects.create(
@@ -1961,12 +1880,10 @@ class ComponentCatalogModelsTestCase(TestCase):
         package_url = f'pkg:maven/mysql/mysql-connector-java@%40MYSQL_CJ_.{"version"*100}'
         with self.assertRaises(ValidationError) as e:
             package.set_package_url(package_url)
-        self.assertEqual('Value too long for field "version".',
-                         e.exception.message)
+        self.assertEqual('Value too long for field "version".', e.exception.message)
 
     def test_package_model_update_package_url(self):
-        package = Package.objects.create(
-            dataspace=self.dataspace, filename="p1.zip")
+        package = Package.objects.create(dataspace=self.dataspace, filename="p1.zip")
         self.assertEqual("", package.download_url)
 
         package_url = package.update_package_url(self.user)
@@ -1989,14 +1906,12 @@ class ComponentCatalogModelsTestCase(TestCase):
         package_url = package.update_package_url(self.user, save=True)
         self.assertIsNone(package_url)
 
-        package_url = package.update_package_url(
-            self.user, save=True, overwrite=True)
+        package_url = package.update_package_url(self.user, save=True, overwrite=True)
         self.assertIsNone(package_url)
 
         package.download_url = "http://repo1.maven.org/maven2/jdbm/jdbm/1.0/"
         package.save()
-        package_url = package.update_package_url(
-            self.user, save=True, overwrite=True, history=True)
+        package_url = package.update_package_url(self.user, save=True, overwrite=True, history=True)
         purl = "pkg:maven/jdbm/jdbm@1.0"
         self.assertEqual(purl, str(package_url))
         package.refresh_from_db()
@@ -2011,13 +1926,11 @@ class ComponentCatalogModelsTestCase(TestCase):
             type="type", name="name", dataspace=self.dataspace
         )
 
-        expected = {"about_resource": ".", "name": "name",
-                    "package_url": "pkg:type/name"}
+        expected = {"about_resource": ".", "name": "name", "package_url": "pkg:type/name"}
         self.assertEqual(expected, package_purl_only.as_about())
         expected = "about_resource: .\nname: name\npackage_url: pkg:type/name\n"
         self.assertEqual(expected, package_purl_only.as_about_yaml())
-        self.assertEqual("pkg_type_name.ABOUT",
-                         package_purl_only.about_file_name)
+        self.assertEqual("pkg_type_name.ABOUT", package_purl_only.about_file_name)
 
         package = Package.objects.create(
             filename="package.zip",
@@ -2252,8 +2165,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(expected, self.component1.as_spdx().as_dict())
 
     def test_component_model_get_spdx_packages(self):
-        self.assertEqual([self.component1],
-                         self.component1.get_spdx_packages())
+        self.assertEqual([self.component1], self.component1.get_spdx_packages())
 
     def test_package_model_as_spdx(self):
         package1 = Package.objects.create(
@@ -2291,8 +2203,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "releaseDate": "2020-10-10T00:00:00Z",
             "comment": "Notes",
             "checksums": [
-                {"algorithm": "SHA1",
-                    "checksumValue": "5ba93c9db0cff93f52b521d7420e43f6eda2784f"},
+                {"algorithm": "SHA1", "checksumValue": "5ba93c9db0cff93f52b521d7420e43f6eda2784f"},
                 {"algorithm": "MD5", "checksumValue": "93b885adfe0da089cdf634904fd59f71"},
             ],
             "externalRefs": [
@@ -2326,16 +2237,14 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("library", cyclonedx_data.type)
         self.assertEqual(self.component1.name, cyclonedx_data.name)
         self.assertEqual(self.component1.version, cyclonedx_data.version)
-        self.assertEqual(str(self.component1.uuid),
-                         str(cyclonedx_data.bom_ref))
+        self.assertEqual(str(self.component1.uuid), str(cyclonedx_data.bom_ref))
 
         expected = {
             "aboutcode:homepage_url": "https://homepage.url",
             "aboutcode:notice_text": "Notice",
             "aboutcode:primary_language": "Python",
         }
-        properties = {
-            property.name: property.value for property in cyclonedx_data.properties}
+        properties = {property.name: property.value for property in cyclonedx_data.properties}
         self.assertEqual(expected, properties)
 
     def test_package_model_as_cyclonedx(self):
@@ -2356,8 +2265,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("library", cyclonedx_data.type)
         self.assertEqual(package.name, cyclonedx_data.name)
         self.assertEqual(package.version, cyclonedx_data.version)
-        self.assertEqual("pkg:deb/debian/curl@7.50.3-1",
-                         str(cyclonedx_data.bom_ref))
+        self.assertEqual("pkg:deb/debian/curl@7.50.3-1", str(cyclonedx_data.bom_ref))
         package_url = package.get_package_url()
         self.assertEqual(package_url, cyclonedx_data.purl)
 
@@ -2368,8 +2276,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "aboutcode:notice_text": "Notice",
             "aboutcode:primary_language": "Python",
         }
-        properties = {
-            property.name: property.value for property in cyclonedx_data.properties}
+        properties = {property.name: property.value for property in cyclonedx_data.properties}
         self.assertEqual(expected, properties)
 
     def test_package_model_github_repo_url(self):
@@ -2421,8 +2328,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "Could not download content: ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2"
         )
         with self.assertRaisesMessage(DataCollectionException, expected_message):
-            collect_package_data(
-                "ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2")
+            collect_package_data("ftp://ftp.denx.de/pub/u-boot/u-boot-2017.11.tar.bz2")
 
         download_url = "http://domain.com/a%20b.zip;<params>?<query>#<fragment>"
 
@@ -2473,8 +2379,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "content-length": 1,
             "content-disposition": 'attachment; filename="another_name.zip"',
         }
-        mock_get.return_value = mock.Mock(
-            content=b"\x00", headers=headers, status_code=200)
+        mock_get.return_value = mock.Mock(content=b"\x00", headers=headers, status_code=200)
         expected_data = {
             "download_url": download_url,
             "filename": "another_name.zip",
@@ -2551,16 +2456,14 @@ class ComponentCatalogModelsTestCase(TestCase):
             filename="package4",
             dataspace=self.dataspace,
         )
-        package4_api_url = reverse(
-            "api_v2:package-detail", args=[package4.uuid])
+        package4_api_url = reverse("api_v2:package-detail", args=[package4.uuid])
         put_data = json.dumps(
             {
                 "filename": package4.filename,
                 "license_expression": self.license1.key,
             }
         )
-        response = self.client.put(
-            package4_api_url, data=put_data, content_type="application/json")
+        response = self.client.put(package4_api_url, data=put_data, content_type="application/json")
         self.assertEqual(200, response.status_code)
         package4 = Package.objects.get(id=package4.id)
         self.assertEqual(package_policy, package4.usage_policy)
@@ -2585,46 +2488,36 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
 
         basic_user = create_user("basic_user", self.dataspace)
-        self.assertEqual(
-            "Product 0\n", self.component1.where_used(user=basic_user))
+        self.assertEqual("Product 0\n", self.component1.where_used(user=basic_user))
 
         self.assertTrue(self.user.is_superuser)
-        self.assertEqual(
-            "Product 1\n", self.component1.where_used(user=self.user))
+        self.assertEqual("Product 1\n", self.component1.where_used(user=self.user))
 
     def test_package_model_where_used_property(self):
         product1 = Product.objects.create(name="P1", dataspace=self.dataspace)
-        package1 = Package.objects.create(
-            filename="package", dataspace=self.dataspace)
-        ProductPackage.objects.create(
-            product=product1, package=package1, dataspace=self.dataspace)
+        package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
+        ProductPackage.objects.create(product=product1, package=package1, dataspace=self.dataspace)
 
         basic_user = create_user("basic_user", self.dataspace)
-        self.assertEqual("Product 0\nComponent 0\n",
-                         package1.where_used(user=basic_user))
+        self.assertEqual("Product 0\nComponent 0\n", package1.where_used(user=basic_user))
 
         self.assertTrue(self.user.is_superuser)
-        self.assertEqual("Product 1\nComponent 0\n",
-                         package1.where_used(user=self.user))
+        self.assertEqual("Product 1\nComponent 0\n", package1.where_used(user=self.user))
 
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace
         )
-        self.assertEqual("Product 0\nComponent 1\n",
-                         package1.where_used(user=basic_user))
+        self.assertEqual("Product 0\nComponent 1\n", package1.where_used(user=basic_user))
 
     def test_package_model_inferred_url_property(self):
-        package1 = Package.objects.create(
-            filename="package", dataspace=self.dataspace)
+        package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
         self.assertIsNone(package1.inferred_url)
 
         package1.set_package_url("pkg:pypi/toml@0.10.2")
         package1.save()
-        self.assertEqual(
-            "https://pypi.org/project/toml/0.10.2/", package1.inferred_url)
+        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_url)
 
-        package1.set_package_url(
-            "pkg:github/package-url/packageurl-python@0.10.4?version_prefix=v")
+        package1.set_package_url("pkg:github/package-url/packageurl-python@0.10.4?version_prefix=v")
         package1.save()
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_url)
