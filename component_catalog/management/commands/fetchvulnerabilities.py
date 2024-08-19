@@ -66,9 +66,12 @@ def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=
     return created_vulnerabilities
 
 
-def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
+def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
     start_time = timer()
-    dataspace = vulnerablecode.dataspace
+    vulnerablecode = VulnerableCode(dataspace)
+    if not vulnerablecode.is_configured():
+        return
+
     package_qs = (
         Package.objects.scope(dataspace)
         .has_package_url()
@@ -76,12 +79,14 @@ def fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger):
         .order_by("-last_modified_date")
     )
     package_count = package_qs.count()
-    logger.write(f"{package_count} Packages in the queue.")
+    if logger:
+        logger.write(f"{package_count} Packages in the queue.")
 
     created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, logger)
-    logger.write(f" + Created {intcomma(created)} vulnerabilities")
     run_time = timer() - start_time
-    logger.write(f"Completed in {humanize_time(run_time)}")
+    if logger:
+        logger.write(f"+ Created {intcomma(created)} vulnerabilities")
+        logger.write(f"Completed in {humanize_time(run_time)}")
 
     dataspace.vulnerabilities_updated_at = timezone.now()
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
@@ -107,15 +112,14 @@ class Command(DataspacedCommand):
 
     def handle(self, *args, **options):
         super().handle(*args, **options)
-
-        vulnerablecode = VulnerableCode(self.dataspace)
+        batch_size = options["batch_size"]
+        timeout = options["timeout"]
 
         if not self.dataspace.enable_vulnerablecodedb_access:
             raise CommandError("VulnerableCode is not enabled on this Dataspace.")
 
+        vulnerablecode = VulnerableCode(self.dataspace)
         if not vulnerablecode.is_configured():
             raise CommandError("VulnerableCode is not configured.")
 
-        batch_size = options["batch_size"]
-        timeout = options["timeout"]
-        fetch_from_vulnerablecode(vulnerablecode, batch_size, timeout, logger=self.stdout)
+        fetch_from_vulnerablecode(self.dataspace, batch_size, timeout, logger=self.stdout)

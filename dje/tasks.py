@@ -18,7 +18,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.defaultfilters import pluralize
-from django.utils import timezone
 
 from django_rq import job
 
@@ -229,17 +228,15 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.notify(verb=notification_verb, description=description)
 
 
-def fetch_vulnerabilities(dataspace):
-    logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
-    dataspace.vulnerabilities_updated_at = timezone.now()
-    dataspace.save(update_fields=["vulnerabilities_updated_at"])
-
-
 @job("default", timeout=10800)  # 3 hours
-def update_vulnerabilies():
+def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
-    logger.info("Entering update_vulnerabilies task")
+    from component_catalog.management.commands.fetchvulnerabilities import fetch_from_vulnerablecode
+
+    logger.info("Entering update_vulnerabilities task")
     Dataspace = apps.get_model("dje", "Dataspace")
     dataspace_qs = Dataspace.objects.filter(enable_vulnerablecodedb_access=True)
+
     for dataspace in dataspace_qs:
-        fetch_vulnerabilities(dataspace)
+        logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
+        fetch_from_vulnerablecode(dataspace, batch_size=50, timeout=60)
