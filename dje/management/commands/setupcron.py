@@ -13,7 +13,7 @@ from django.core.management.base import BaseCommand
 
 import django_rq
 
-from dje.tasks import update_vulnerabilies
+from dje.tasks import update_vulnerabilities
 
 # **Regular RQ jobs** are tasks that run once when you enqueue them.
 # **Scheduled RQ jobs** are tasks that are set to run automatically at specific times
@@ -42,10 +42,11 @@ class Command(BaseCommand):
         cancel_all_scheduled_jobs(scheduler)
 
         self.stdout.write("Schedule vulnerabilities update")
-        daily_at_3am = "0 3 * * *"
+        # daily_at_3am = "0 3 * * *"
+        every_3_hours = "0 */3 * * *"
         scheduler.cron(
-            cron_string=daily_at_3am,
-            func=update_vulnerabilies,
+            cron_string=every_3_hours,
+            func=update_vulnerabilities,
             result_ttl=300,
             repeat=None,  # None means repeat forever
         )

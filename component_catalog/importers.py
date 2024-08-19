@@ -23,6 +23,7 @@ from component_catalog.forms import AcceptableLinkagesFormMixin
 from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.forms import SubcomponentLicenseExpressionFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
+from component_catalog.management.commands.fetchvulnerabilities import fetch_for_queryset
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentStatus
@@ -345,7 +346,7 @@ class PackageImporter(BaseImporter):
         input_as_list_of_dict = packages
 
         # Using a dict comprehension to keep the original key order and
-        # ensure we have all possibile headers.
+        # ensure we have all possible headers.
         header_row = {key: None for package in packages for key in package.keys()}
         header_row = list(header_row.keys())
 
@@ -424,6 +425,15 @@ class PackageImporter(BaseImporter):
         kwargs = super().get_form_kwargs()
         kwargs["is_from_scancode"] = getattr(self, "is_from_scancode", False)
         return kwargs
+
+    def save_all(self):
+        """Fetch vulnerabilities for imported Packages."""
+        super().save_all()
+
+        if self.dataspace.enable_vulnerablecodedb_access:
+            package_pks = [package.pk for package in self.results["added"]]
+            package_qs = Package.objects.scope(dataspace=self.dataspace).filter(pk__in=package_pks)
+            fetch_for_queryset(package_qs, self.dataspace)
 
 
 class SubcomponentImportForm(
