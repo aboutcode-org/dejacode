@@ -648,3 +648,17 @@ def remove_empty_values(input_dict):
     `0` and `False` values are kept.
     """
     return {key: value for key, value in input_dict.items() if value not in EMPTY_VALUES}
+
+
+def humanize_time(seconds):
+    """Convert the provided ``seconds`` number into human-readable time."""
+    message = f"{seconds:.0f} seconds"
+
+    if seconds > 86400:
+        message += f" ({seconds / 86400:.1f} days)"
+    if seconds > 3600:
+        message += f" ({seconds / 3600:.1f} hours)"
+    elif seconds > 60:
+        message += f" ({seconds / 60:.1f} minutes)"
+
+    return message

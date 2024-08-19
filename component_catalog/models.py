@@ -143,6 +143,27 @@ class VulnerabilityQuerySetMixin:
 
 
 class VulnerableObjectMixin:
+    def get_entry_for_package(self, vulnerablecode):
+        if not self.package_url:
+            return
+
+        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
+            self.package_url,
+            timeout=10,
+        )
+
+        if vulnerable_packages:
+            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
+            return affected_by_vulnerabilities
+
+    def get_entry_for_component(self, vulnerablecode):
+        if not self.cpe:
+            return
+
+        # Support for Component is paused as the CPES endpoint do not work properly.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
+        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
+
     def get_entry_from_vulnerablecode(self):
         from dejacode_toolkit.vulnerablecode import VulnerableCode
 
@@ -158,19 +179,12 @@ class VulnerableObjectMixin:
         if not is_vulnerablecode_enabled:
             return
 
-        if not self.package_url:
-            return
-
-        # TODO: Make this compatible with Component as well
-        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
-            self.package_url, timeout=10
-        )
-        if vulnerable_packages:
-            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
-            return affected_by_vulnerabilities
+        if isinstance(self, Component):
+            return self.get_entry_for_component(vulnerablecode)
+        elif isinstance(self, Package):
+            return self.get_entry_for_package(vulnerablecode)
 
     def fetch_vulnerabilities(self):
-        """Get and save."""
         affected_by_vulnerabilities = self.get_entry_from_vulnerablecode()
         if affected_by_vulnerabilities:
             self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
