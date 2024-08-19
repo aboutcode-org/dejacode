@@ -58,6 +58,12 @@ Release notes
   Product.
   https://github.com/nexB/dejacode/issues/138
 
+- Added a task scheduler service to the Docker Compose stack.
+  This service runs a dedicated ``setupcron`` management command to create the
+  application's scheduled cron jobs.
+  The scheduler is configured to run the daily vulnerabilities update task.
+  https://github.com/nexB/dejacode/issues/94
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

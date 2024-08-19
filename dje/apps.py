@@ -21,6 +21,15 @@ class DejaCodeConfig(AppConfig):
     verbose_name = _("DejaCode")
 
     def ready(self):
+        """
+        Get the apps ready when Django starts.
+
+        WARNING: The ready() method gets triggered multiple times and is not
+        suitable to handle execution that should only happen once.
+         - Gunicorn workers: When Gunicorn starts, it spawns multiple worker processes,
+        each of which calls the ready() method.
+         - Worker services: Similarly, the workers also trigger the ready() method.
+        """
         from dje.mass_update import action_end
         from dje.notification import successful_mass_update
 
@@ -51,27 +60,3 @@ class DejaCodeConfig(AppConfig):
             from dje.notification import notify_on_user_added_or_updated
 
             post_save.connect(notify_on_user_added_or_updated, sender=get_user_model())
-
-        if settings.DEJACODE_ASYNC:
-            logger.info("Schedule vulnerabilities update")
-            self.schedule_vulnerabilities_update()
-
-    @staticmethod
-    def schedule_vulnerabilities_update():
-        """Create a scheduled task to update vulnerabilities daily."""
-        import django_rq
-
-        from dje.tasks import update_vulnerabilies
-
-        scheduler = django_rq.get_scheduler("default")
-
-        # Cancel all scheduled jobs
-        for job in list(scheduler.get_jobs()):
-            scheduler.cancel(job)
-
-        # Create a repeating job executed daily at fixed times
-        scheduler.cron(
-            cron_string="0 3 * * *",  # Every day at 3:00am
-            func=update_vulnerabilies,
-            result_ttl=300,
-        )
