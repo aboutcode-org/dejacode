@@ -12,6 +12,7 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
 from django.utils import timezone
 
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
 from component_catalog.models import Vulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -75,6 +76,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
     package_qs = (
         Package.objects.scope(dataspace)
         .has_package_url()
+        .only("dataspace", *PACKAGE_URL_FIELDS)
         .exclude(type="sourceforge")
         .order_by("-last_modified_date")
     )

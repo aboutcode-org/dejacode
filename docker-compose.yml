@@ -51,7 +51,7 @@ services:
     build: .
     # Ensure that potential db migrations run first by waiting until "web" is up
     command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
-      ./manage.py rqworker --num-workers 4 --verbosity 1"
+      ./manage.py rqworker-pool --num-workers 2 --verbosity 1"
     env_file:
       - docker.env
     volumes:
