@@ -231,7 +231,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
 @job("default", timeout="3h")
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
-    from component_catalog.management.commands.fetchvulnerabilities import fetch_from_vulnerablecode
+    from component_catalog.vulnerabilities import fetch_from_vulnerablecode
 
     logger.info("Entering update_vulnerabilities task")
     Dataspace = apps.get_model("dje", "Dataspace")

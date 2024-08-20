@@ -23,7 +23,6 @@ from component_catalog.forms import AcceptableLinkagesFormMixin
 from component_catalog.forms import SetKeywordsChoicesFormMixin
 from component_catalog.forms import SubcomponentLicenseExpressionFormMixin
 from component_catalog.license_expression_dje import LicenseExpressionFormMixin
-from component_catalog.management.commands.fetchvulnerabilities import fetch_for_queryset
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentStatus
@@ -31,6 +30,7 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from component_catalog.vulnerabilities import fetch_for_queryset
 from dje.fields import SmartFileField
 from dje.forms import JSONListField
 from dje.importers import BaseImporter
