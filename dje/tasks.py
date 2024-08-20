@@ -228,7 +228,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.notify(verb=notification_verb, description=description)
 
 
-@job("default", timeout=10800)  # 3 hours
+@job("default", timeout="3h")
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
     from component_catalog.management.commands.fetchvulnerabilities import fetch_from_vulnerablecode

@@ -441,7 +441,7 @@ RQ_QUEUES = {
         "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
         "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
         "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
-        "DEFAULT_TIMEOUT": env.int("DEJACODE_REDIS_DEFAULT_TIMEOUT", default=360),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_RQ_DEFAULT_TIMEOUT", default=360),
     },
 }
 

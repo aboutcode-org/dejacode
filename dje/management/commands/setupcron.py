@@ -9,6 +9,7 @@
 import sys
 
 from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.core.management.base import BaseCommand
 
 import django_rq
@@ -43,15 +44,22 @@ class Command(BaseCommand):
 
         self.stdout.write("Schedule vulnerabilities update")
         # daily_at_3am = "0 3 * * *"
-        every_3_hours = "0 */3 * * *"
+        every_2_hours = "0 */2 * * *"
+        forever = None
         scheduler.cron(
-            cron_string=every_3_hours,
+            cron_string=every_2_hours,
             func=update_vulnerabilities,
             result_ttl=300,
-            repeat=None,  # None means repeat forever
+            repeat=forever,
+            timeout="3h",
+            use_local_timezone=True,
         )
 
         self.stdout.write(self.style.SUCCESS("Successfully set up cron jobs."))
+        self.stdout.write("Scheduled jobs next execution:")
+        for job, scheduled_time in scheduler.get_jobs(with_times=True):
+            msg = f" > {job.description} in {naturaltime(scheduled_time)} ({scheduled_time})"
+            self.stdout.write(msg)
 
 
 def cancel_all_scheduled_jobs(scheduler):
