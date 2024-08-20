@@ -1731,6 +1731,18 @@ class PackageUserViewsTestCase(TestCase):
             Package.objects.filter(download_url=collected_data["download_url"]).exists()
         )
 
+    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    def test_package_create_ajax_view_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
+        mock_fetch_vulnerabilities.return_value = None
+        package_add_url = reverse("component_catalog:package_add_urls")
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        self.client.login(username=self.super_user.username, password="secret")
+
+        data = {"download_urls": "pkg:pypi/django@2.1"}
+        self.client.post(package_add_url, data)
+        mock_fetch_vulnerabilities.assert_called()
+
     def test_package_details_view_add_to_product(self):
         self.client.login(username=self.basic_user.username, password="secret")
 
@@ -3383,6 +3395,23 @@ class PackageUserViewsTestCase(TestCase):
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
         }
         self.assertEqual(expected, response.context["form"].initial)
+
+    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    def test_component_catalog_package_add_view_fetch_vulnerabilities(
+        self, mock_fetch_vulnerabilities
+    ):
+        mock_fetch_vulnerabilities.return_value = None
+        self.client.login(username=self.super_user.username, password="secret")
+        add_url = reverse("component_catalog:package_add")
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+
+        data = {
+            "filename": "name.zip",
+            "submit": "Add Package",
+        }
+        self.client.post(add_url, data)
+        mock_fetch_vulnerabilities.assert_called()
 
     @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")

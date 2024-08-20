@@ -1980,6 +1980,25 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(errors, response.context_data["adminform"].form.errors)
 
+    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    def test_package_changeform_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
+        mock_fetch_vulnerabilities.return_value = None
+        self.dataspace1.enable_vulnerablecodedb_access = True
+        self.dataspace1.save()
+        self.client.login(username="test", password="secret")
+        add_url = reverse("admin:component_catalog_package_add")
+
+        data = {
+            "filename": "package.zip",
+            "componentassignedpackage_set-TOTAL_FORMS": 0,
+            "componentassignedpackage_set-INITIAL_FORMS": 0,
+            "dje-externalreference-content_type-object_id-TOTAL_FORMS": 0,
+            "dje-externalreference-content_type-object_id-INITIAL_FORMS": 0,
+        }
+
+        self.client.post(add_url, data)
+        mock_fetch_vulnerabilities.assert_called()
+
     def test_component_changelist_advanced_search_on_empty_space(self):
         self.client.login(username="test", password="secret")
         changelist_url = reverse("admin:component_catalog_component_changelist")
