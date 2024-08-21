@@ -753,7 +753,7 @@ class DataspacedModel(models.Model):
                 "dataspace": user.dataspace,
                 "created_by": user,
             }
-        # Add support for proviing a Dataspace directly in place of User
+        # Support for providing a Dataspace directly in place of a User
         elif isinstance(user, Dataspace):
             initial_values = {
                 "dataspace": user,
