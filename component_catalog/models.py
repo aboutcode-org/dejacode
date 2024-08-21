@@ -1776,7 +1776,6 @@ class Package(
     filename = models.CharField(
         _("Filename"),
         blank=True,
-        db_index=True,
         max_length=255,  # 255 is the maximum on most filesystems
         validators=[validate_filename],
         help_text=_(
@@ -1784,7 +1783,6 @@ class Package(
             "This is usually the name of the file as downloaded from a website."
         ),
     )
-
     download_url = models.CharField(
         _("Download URL"),
         max_length=1024,
@@ -1792,30 +1790,11 @@ class Package(
         blank=True,
         help_text=_("The download URL for obtaining the package."),
     )
-
-    sha1 = models.CharField(
-        _("SHA1"),
-        max_length=40,
-        blank=True,
-        db_index=True,
-        help_text=_("The SHA1 signature of the package file."),
-    )
-
-    md5 = models.CharField(
-        _("MD5"),
-        max_length=32,
-        blank=True,
-        db_index=True,
-        help_text=_("The MD5 signature of the package file."),
-    )
-
     size = models.BigIntegerField(
         blank=True,
         null=True,
-        db_index=True,
         help_text=_("The size of the package file in bytes."),
     )
-
     release_date = models.DateField(
         blank=True,
         null=True,
@@ -1824,39 +1803,30 @@ class Package(
             "original download source."
         ),
     )
-
     primary_language = models.CharField(
-        db_index=True,
         max_length=50,
         blank=True,
         help_text=_("The primary programming language associated with the package."),
     )
-
     description = models.TextField(
         blank=True,
         help_text=_("Free form description, preferably as provided by the author(s)."),
     )
-
     project = models.CharField(
         max_length=50,
-        db_index=True,
         blank=True,
         help_text=PROJECT_FIELD_HELP,
     )
-
     notes = models.TextField(
         blank=True,
         help_text=_("Descriptive information about the package."),
     )
-
     license_expression = models.CharField(
         _("Concluded license expression"),
         max_length=1024,
         blank=True,
-        db_index=True,
         help_text=LICENSE_EXPRESSION_HELP_TEXT,
     )
-
     copyright = models.TextField(
         blank=True,
         help_text=_(
@@ -1864,7 +1834,6 @@ class Package(
             "source or as specified in an associated file."
         ),
     )
-
     notice_text = NoStripTextField(
         blank=True,
         help_text=_(
@@ -1872,14 +1841,12 @@ class Package(
             "statement(s), contributors, and/or license obligations that apply to a package."
         ),
     )
-
     author = models.TextField(
         blank=True,
         help_text=_(
             "The name(s) of the author(s) of a software package as documented in the code."
         ),
     )
-
     dependencies = models.JSONField(
         blank=True,
         default=list,
@@ -1889,7 +1856,6 @@ class Package(
             "on licensing and/or attribution obligations."
         ),
     )
-
     repository_homepage_url = models.URLField(
         _("Repository homepage URL"),
         max_length=1024,
@@ -1899,7 +1865,6 @@ class Package(
             "This is typically different from the package homepage URL proper."
         ),
     )
-
     repository_download_url = models.URLField(
         _("Repository download URL"),
         max_length=1024,
@@ -1910,7 +1875,6 @@ class Package(
             "This may be different from the actual download URL."
         ),
     )
-
     api_data_url = models.URLField(
         _("API data URL"),
         max_length=1024,
@@ -1920,13 +1884,11 @@ class Package(
             "URL to a JSON or XML api its package repository."
         ),
     )
-
     datasource_id = models.CharField(
         max_length=64,
         blank=True,
         help_text=_("The identifier for the datafile handler used to obtain this package."),
     )
-
     file_references = models.JSONField(
         default=list,
         blank=True,
@@ -1937,13 +1899,11 @@ class Package(
             "package type or datafile format."
         ),
     )
-
     parties = models.JSONField(
         default=list,
         blank=True,
         help_text=_("A list of parties such as a person, project or organization."),
     )
-
     licenses = models.ManyToManyField(
         to="license_library.License",
         through="PackageAssignedLicense",
@@ -1974,11 +1934,21 @@ class Package(
             ),
         )
         indexes = [
+            models.Index(fields=["type"]),
+            models.Index(fields=["namespace"]),
+            models.Index(fields=["name"]),
+            models.Index(fields=["version"]),
+            models.Index(fields=["filename"]),
+            models.Index(fields=["size"]),
             models.Index(fields=["md5"]),
             models.Index(fields=["sha1"]),
             models.Index(fields=["sha256"]),
             models.Index(fields=["sha512"]),
+            models.Index(fields=["primary_language"]),
+            models.Index(fields=["project"]),
+            models.Index(fields=["license_expression"]),
         ]
+
         permissions = (
             ("change_usage_policy_on_package", "Can change the usage_policy of package"),
         )
