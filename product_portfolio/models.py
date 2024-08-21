@@ -491,8 +491,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             dataspace_uuid=user.dataspace.uuid,
         )
 
-    def update_vulnerabilities(self):
-        """Update the vulnerabilties of all the Package realted to this Product."""
+    def fetch_vulnerabilities(self):
+        """Fetch and update the vulnerabilties of all the Package of this Product."""
         return fetch_for_queryset(self.all_packages, self.dataspace)
 
 

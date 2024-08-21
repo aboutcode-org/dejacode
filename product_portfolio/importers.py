@@ -645,7 +645,7 @@ class ImportPackageFromScanCodeIO:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
 
         if self.user.dataspace.enable_vulnerablecodedb_access:
-            self.product.update_vulnerabilities()
+            self.product.fetch_vulnerabilities()
 
         return dict(self.created), dict(self.existing), dict(self.errors)
 
