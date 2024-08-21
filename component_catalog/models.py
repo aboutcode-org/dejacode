@@ -142,70 +142,6 @@ class VulnerabilityQuerySetMixin:
         return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
 
-class VulnerableObjectMixin:
-    def get_entry_for_package(self, vulnerablecode):
-        if not self.package_url:
-            return
-
-        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
-            self.package_url,
-            timeout=10,
-        )
-
-        if vulnerable_packages:
-            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
-            return affected_by_vulnerabilities
-
-    def get_entry_for_component(self, vulnerablecode):
-        if not self.cpe:
-            return
-
-        # Support for Component is paused as the CPES endpoint do not work properly.
-        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
-        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
-
-    def get_entry_from_vulnerablecode(self):
-        from dejacode_toolkit.vulnerablecode import VulnerableCode
-
-        dataspace = self.dataspace
-        vulnerablecode = VulnerableCode(dataspace)
-
-        is_vulnerablecode_enabled = all(
-            [
-                vulnerablecode.is_configured(),
-                dataspace.enable_vulnerablecodedb_access,
-            ]
-        )
-        if not is_vulnerablecode_enabled:
-            return
-
-        if isinstance(self, Component):
-            return self.get_entry_for_component(vulnerablecode)
-        elif isinstance(self, Package):
-            return self.get_entry_for_package(vulnerablecode)
-
-    def fetch_vulnerabilities(self):
-        affected_by_vulnerabilities = self.get_entry_from_vulnerablecode()
-        if affected_by_vulnerabilities:
-            self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
-
-    def create_vulnerabilities(self, vulnerabilities_data):
-        vulnerabilities = []
-        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
-
-        for vulnerability_data in vulnerabilities_data:
-            vulnerability_id = vulnerability_data["vulnerability_id"]
-            vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
-            if not vulnerability:
-                vulnerability = Vulnerability.create_from_data(
-                    dataspace=self.dataspace,
-                    data=vulnerability_data,
-                )
-            vulnerabilities.append(vulnerability)
-
-        self.affected_by_vulnerabilities.add(*vulnerabilities)
-
-
 class LicenseExpressionMixin:
     """Model mixin for models that store license expressions."""
 
@@ -542,6 +478,68 @@ class VulnerabilityMixin(models.Model):
     @property
     def is_vulnerable(self):
         return self.affected_by_vulnerabilities.exists()
+
+    def get_entry_for_package(self, vulnerablecode):
+        if not self.package_url:
+            return
+
+        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
+            self.package_url,
+            timeout=10,
+        )
+
+        if vulnerable_packages:
+            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
+            return affected_by_vulnerabilities
+
+    def get_entry_for_component(self, vulnerablecode):
+        if not self.cpe:
+            return
+
+        # Support for Component is paused as the CPES endpoint do not work properly.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
+        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
+
+    def get_entry_from_vulnerablecode(self):
+        from dejacode_toolkit.vulnerablecode import VulnerableCode
+
+        dataspace = self.dataspace
+        vulnerablecode = VulnerableCode(dataspace)
+
+        is_vulnerablecode_enabled = all(
+            [
+                vulnerablecode.is_configured(),
+                dataspace.enable_vulnerablecodedb_access,
+            ]
+        )
+        if not is_vulnerablecode_enabled:
+            return
+
+        if isinstance(self, Component):
+            return self.get_entry_for_component(vulnerablecode)
+        elif isinstance(self, Package):
+            return self.get_entry_for_package(vulnerablecode)
+
+    def fetch_vulnerabilities(self):
+        affected_by_vulnerabilities = self.get_entry_from_vulnerablecode()
+        if affected_by_vulnerabilities:
+            self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
+
+    def create_vulnerabilities(self, vulnerabilities_data):
+        vulnerabilities = []
+        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
+
+        for vulnerability_data in vulnerabilities_data:
+            vulnerability_id = vulnerability_data["vulnerability_id"]
+            vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+            if not vulnerability:
+                vulnerability = Vulnerability.create_from_data(
+                    dataspace=self.dataspace,
+                    data=vulnerability_data,
+                )
+            vulnerabilities.append(vulnerability)
+
+        self.affected_by_vulnerabilities.add(*vulnerabilities)
 
 
 class URLFieldsMixin(models.Model):
@@ -969,7 +967,6 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
-    VulnerableObjectMixin,
     VulnerabilityMixin,
     LicenseFieldsMixin,
     ParentChildModelMixin,
@@ -1770,7 +1767,6 @@ class Package(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
-    VulnerableObjectMixin,
     VulnerabilityMixin,
     URLFieldsMixin,
     HashFieldsMixin,

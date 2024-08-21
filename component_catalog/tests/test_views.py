@@ -1731,7 +1731,7 @@ class PackageUserViewsTestCase(TestCase):
             Package.objects.filter(download_url=collected_data["download_url"]).exists()
         )
 
-    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
     def test_package_create_ajax_view_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
         mock_fetch_vulnerabilities.return_value = None
         package_add_url = reverse("component_catalog:package_add_urls")
@@ -3396,7 +3396,7 @@ class PackageUserViewsTestCase(TestCase):
         }
         self.assertEqual(expected, response.context["form"].initial)
 
-    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
     def test_component_catalog_package_add_view_fetch_vulnerabilities(
         self, mock_fetch_vulnerabilities
     ):

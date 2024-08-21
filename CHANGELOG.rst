@@ -83,6 +83,14 @@ Release notes
   property on Package/Component column template or going through the full
   affected_by_vulnerabilities m2m field.
   This is available in both Query and ColumnTemplate.
+  The vulnerabilities are fetched each time a Package is created/modified
+  (note that a purl is required on the package for the lookup).
+  Also, all the Packages of a Product are updated with latest vulnerabilities from
+  the VulnerableCode service following importing data in Product using:
+  - Import data from Scan
+  - Load Packages from SBOMs
+  - Import Packages from manifests
+  - Pull ScanCode.io Project data
   https://github.com/nexB/dejacode/issues/94
 
 ### Version 5.1.0

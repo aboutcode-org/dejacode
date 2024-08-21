@@ -1980,7 +1980,7 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(errors, response.context_data["adminform"].form.errors)
 
-    @mock.patch("component_catalog.models.VulnerableObjectMixin.fetch_vulnerabilities")
+    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
     def test_package_changeform_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
         mock_fetch_vulnerabilities.return_value = None
         self.dataspace1.enable_vulnerablecodedb_access = True
