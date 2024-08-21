@@ -19,6 +19,33 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 
+# Replace by fetching the endpoint once available.
+# https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
+VULNERABLECODE_TYPES = [
+    "alpine",
+    "alpm",
+    "apache",
+    "cargo",
+    "composer",
+    "conan",
+    "deb",
+    "gem",
+    "generic",
+    "github",
+    "golang",
+    "hex",
+    "mattermost",
+    "maven",
+    "mozilla",
+    "nginx",
+    "npm",
+    "nuget",
+    "openssl",
+    "pypi",
+    "rpm",
+    "ruby",
+]
+
 
 def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=None):
     object_count = queryset.count()
@@ -72,7 +99,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
         Package.objects.scope(dataspace)
         .has_package_url()
         .only("dataspace", *PACKAGE_URL_FIELDS)
-        .exclude(type="sourceforge")
+        .filter(type__in=VULNERABLECODE_TYPES)
         .order_by("-last_modified_date")
     )
     package_count = package_qs.count()
