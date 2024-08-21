@@ -43,11 +43,9 @@ class Command(BaseCommand):
         cancel_all_scheduled_jobs(scheduler)
 
         self.stdout.write("Schedule vulnerabilities update")
-        # daily_at_3am = "0 3 * * *"
-        every_2_hours = "0 */2 * * *"
         forever = None
         scheduler.cron(
-            cron_string=every_2_hours,
+            cron_string=settings.DEJACODE_VULNERABILITIES_CRON,  # 3am daily by default
             func=update_vulnerabilities,
             result_ttl=300,
             repeat=forever,
