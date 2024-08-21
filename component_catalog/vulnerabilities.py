@@ -20,7 +20,7 @@ from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 
 
-def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
+def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
     if not vulnerablecode.is_configured():
@@ -35,20 +35,20 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
         .order_by("-last_modified_date")
     )
     package_count = package_qs.count()
-    if logger:
-        logger.write(f"{package_count} Packages in the queue.")
+    if log_func:
+        log_func(f"{package_count} Packages in the queue.")
 
-    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, logger)
+    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, log_func)
     run_time = timer() - start_time
-    if logger:
-        logger.write(f"+ Created {intcomma(created)} vulnerabilities")
-        logger.write(f"Completed in {humanize_time(run_time)}")
+    if log_func:
+        log_func(f"+ Created {intcomma(created)} vulnerabilities")
+        log_func(f"Completed in {humanize_time(run_time)}")
 
     dataspace.vulnerabilities_updated_at = timezone.now()
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
 
 
-def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=None):
+def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, log_func=None):
     object_count = queryset.count()
     if object_count < 1:
         return
@@ -58,8 +58,11 @@ def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=
     created_vulnerabilities = 0
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
-        if logger:
-            logger.write(f"Progress: {intcomma(index * batch_size)}/{intcomma(object_count)}")
+        if log_func:
+            progress_count = index * batch_size
+            if progress_count > object_count:
+                progress_count = object_count
+            log_func(f"Progress: {intcomma(progress_count)}/{intcomma(object_count)}")
 
         vc_entries = vulnerablecode.get_vulnerable_purls(batch, purl_only=False, timeout=timeout)
         for vc_entry in vc_entries:
