@@ -19,32 +19,33 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 
-# Replace by fetching the endpoint once available.
-# https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
-VULNERABLECODE_TYPES = [
-    "alpine",
-    "alpm",
-    "apache",
-    "cargo",
-    "composer",
-    "conan",
-    "deb",
-    "gem",
-    "generic",
-    "github",
-    "golang",
-    "hex",
-    "mattermost",
-    "maven",
-    "mozilla",
-    "nginx",
-    "npm",
-    "nuget",
-    "openssl",
-    "pypi",
-    "rpm",
-    "ruby",
-]
+
+def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
+    start_time = timer()
+    vulnerablecode = VulnerableCode(dataspace)
+    if not vulnerablecode.is_configured():
+        return
+
+    available_types = vulnerablecode.get_package_url_available_types()
+    package_qs = (
+        Package.objects.scope(dataspace)
+        .has_package_url()
+        .only("dataspace", *PACKAGE_URL_FIELDS)
+        .filter(type__in=available_types)
+        .order_by("-last_modified_date")
+    )
+    package_count = package_qs.count()
+    if logger:
+        logger.write(f"{package_count} Packages in the queue.")
+
+    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, logger)
+    run_time = timer() - start_time
+    if logger:
+        logger.write(f"+ Created {intcomma(created)} vulnerabilities")
+        logger.write(f"Completed in {humanize_time(run_time)}")
+
+    dataspace.vulnerabilities_updated_at = timezone.now()
+    dataspace.save(update_fields=["vulnerabilities_updated_at"])
 
 
 def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=None):
@@ -87,30 +88,3 @@ def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, logger=
                 vulnerability.add_affected_packages(affected_packages)
 
     return created_vulnerabilities
-
-
-def fetch_from_vulnerablecode(dataspace, batch_size, timeout, logger=None):
-    start_time = timer()
-    vulnerablecode = VulnerableCode(dataspace)
-    if not vulnerablecode.is_configured():
-        return
-
-    package_qs = (
-        Package.objects.scope(dataspace)
-        .has_package_url()
-        .only("dataspace", *PACKAGE_URL_FIELDS)
-        .filter(type__in=VULNERABLECODE_TYPES)
-        .order_by("-last_modified_date")
-    )
-    package_count = package_qs.count()
-    if logger:
-        logger.write(f"{package_count} Packages in the queue.")
-
-    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, logger)
-    run_time = timer() - start_time
-    if logger:
-        logger.write(f"+ Created {intcomma(created)} vulnerabilities")
-        logger.write(f"Completed in {humanize_time(run_time)}")
-
-    dataspace.vulnerabilities_updated_at = timezone.now()
-    dataspace.save(update_fields=["vulnerabilities_updated_at"])

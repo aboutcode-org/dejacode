@@ -139,6 +139,34 @@ class VulnerableCode(BaseService):
 
         return list(set(vulnerable_cpes))
 
+    def get_package_url_available_types(self):
+        # Replace by fetching the endpoint once available.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
+        return [
+            "alpine",
+            "alpm",
+            "apache",
+            "cargo",
+            "composer",
+            "conan",
+            "deb",
+            "gem",
+            "generic",
+            "github",
+            "golang",
+            "hex",
+            "mattermost",
+            "maven",
+            "mozilla",
+            "nginx",
+            "npm",
+            "nuget",
+            "openssl",
+            "pypi",
+            "rpm",
+            "ruby",
+        ]
+
 
 def get_plain_purl(purl_str):
     """Remove the PURL qualifiers and subpath from the search lookups."""

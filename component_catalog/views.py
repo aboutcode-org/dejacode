@@ -336,7 +336,7 @@ class TabVulnerabilityMixin:
                 )
                 fixed_packages_values.append(display_value)
 
-        return format_html("\n".join(fixed_packages_values))
+        return format_html("<br>".join(fixed_packages_values))
 
 
 class ComponentListView(

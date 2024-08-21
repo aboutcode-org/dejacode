@@ -9,6 +9,7 @@
 import json
 import uuid
 from operator import attrgetter
+from pathlib import Path
 from unittest import mock
 
 from django.contrib.contenttypes.models import ContentType
@@ -44,6 +45,7 @@ from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import download
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.copier import copy_object
 from dje.models import Dataspace
 from dje.models import History
@@ -62,6 +64,8 @@ from product_portfolio.models import ProductPackage
 
 
 class ComponentCatalogModelsTestCase(TestCase):
+    data = Path(__file__).parent / "testfiles"
+
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.other_dataspace = Dataspace.objects.create(name="other")
@@ -2536,6 +2540,68 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         qs = Package.objects.vulnerable()
         self.assertQuerySetEqual(qs, [package1])
+
+    def test_vulnerability_mixin_is_vulnerable_property(self):
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        package2 = make_package(self.dataspace)
+        self.assertTrue(package1.is_vulnerable)
+        self.assertFalse(package2.is_vulnerable)
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
+    def test_vulnerability_mixin_get_entry_for_package(self, mock_request_get):
+        vulnerablecode = VulnerableCode(self.dataspace)
+        package1 = make_package(self.dataspace, package_url="pkg:composer/guzzlehttp/psr7@1.9.0")
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        mock_request_get.return_value = json.loads(response_file.read_text())
+
+        affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
+        self.assertEqual(1, len(affected_by_vulnerabilities))
+        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["vulnerability_id"])
+
+    @mock.patch("component_catalog.models.VulnerabilityMixin.get_entry_for_package")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_vulnerability_mixin_get_entry_from_vulnerablecode(
+        self, mock_is_configured, mock_get_entry_for_package
+    ):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        self.assertIsNone(package1.get_entry_from_vulnerablecode())
+
+        mock_get_entry_for_package.return_value = None
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        mock_is_configured.return_value = True
+        package1.get_entry_from_vulnerablecode()
+        mock_get_entry_for_package.assert_called_once()
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_vulnerability_mixin_fetch_vulnerabilities(self, mock_is_configured, mock_request_get):
+        mock_is_configured.return_value = True
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        mock_request_get.return_value = json.loads(response_file.read_text())
+
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        package1.fetch_vulnerabilities()
+
+        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.get()
+        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+
+    def test_vulnerability_mixin_create_vulnerabilities(self):
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        response_json = json.loads(response_file.read_text())
+        vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
+
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        package1.create_vulnerabilities(vulnerabilities_data)
+
+        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.get()
+        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
 
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)

@@ -2607,6 +2607,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     class Meta:
         verbose_name_plural = "Vulnerabilities"
         unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
+        indexes = [
+            models.Index(fields=["vulnerability_id"]),
+        ]
 
     def __str__(self):
         return self.vulnerability_id
