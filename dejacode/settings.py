@@ -441,9 +441,13 @@ RQ_QUEUES = {
         "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
         "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
         "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
-        "DEFAULT_TIMEOUT": env.int("DEJACODE_REDIS_DEFAULT_TIMEOUT", default=360),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_RQ_DEFAULT_TIMEOUT", default=360),
     },
 }
+
+# Cron jobs (scheduler)
+daily_at_3am = "0 3 * * *"
+DEJACODE_VULNERABILITIES_CRON = env.str("DEJACODE_VULNERABILITIES_CRON", default=daily_at_3am)
 
 
 def enable_rq_eager_mode():

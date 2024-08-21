@@ -9,6 +9,7 @@
 import datetime
 import os
 from os.path import dirname
+from unittest import mock
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -1395,6 +1396,18 @@ class PackageImporterTestCase(TestCase):
         self.assertContains(response, expected2)
         self.assertContains(response, expected3)
         self.assertContains(response, expected4)
+
+    @mock.patch("component_catalog.importers.fetch_for_queryset")
+    def test_package_import_fetch_vulnerabilities(self, mock_fetch_for_queryset):
+        mock_fetch_for_queryset.return_value = None
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+
+        file = os.path.join(TESTFILES_LOCATION, "package_from_scancode.json")
+        importer = PackageImporter(self.super_user, file)
+        importer.save_all()
+        self.assertEqual(2, len(importer.results["added"]))
+        mock_fetch_for_queryset.assert_called()
 
 
 class SubcomponentImporterTestCase(TestCase):

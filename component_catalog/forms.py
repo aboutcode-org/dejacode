@@ -446,6 +446,9 @@ class PackageForm(
             )
             self.cleaned_data["scan_submitted"] = True
 
+        if self.user.dataspace.enable_vulnerablecodedb_access:
+            instance.fetch_vulnerabilities()
+
         return instance
 
 
@@ -1042,6 +1045,11 @@ class PackageAdminForm(
         # Replaces the auto-generated UUID but the purldb_uuid if available.
         self._set_purldb_uuid_on_instance()
         return super().save(commit)
+
+    def _save_m2m(self):
+        super()._save_m2m()
+        if self.dataspace.enable_vulnerablecodedb_access:
+            self.instance.fetch_vulnerabilities()
 
 
 class ComponentMassUpdateForm(

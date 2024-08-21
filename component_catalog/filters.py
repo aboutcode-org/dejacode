@@ -28,6 +28,21 @@ from dje.widgets import SortDropDownWidget
 from license_library.models import License
 
 
+class IsVulnerableFilter(HasRelationFilter):
+    def __init__(self, *args, **kwargs):
+        kwargs["lookup_expr"] = "isnull"
+        kwargs["empty_label"] = "Any"
+        kwargs.setdefault("label", _("Is Vulnerable"))
+        kwargs.setdefault(
+            "choices",
+            (
+                ("yes", _("Affected by vulnerabilities")),
+                ("no", _("No vulnerabilities found")),
+            ),
+        )
+        super().__init__(*args, **kwargs)
+
+
 class ComponentFilterSet(DataspacedFilterSet):
     related_only = [
         "licenses",
@@ -84,6 +99,10 @@ class ComponentFilterSet(DataspacedFilterSet):
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search keywords",
         ),
+    )
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
 
     class Meta:
@@ -218,6 +237,10 @@ class PackageFilterSet(DataspacedFilterSet):
         },
         empty_label="Last modified (default)",
         widget=SortDropDownWidget,
+    )
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
 
     class Meta:

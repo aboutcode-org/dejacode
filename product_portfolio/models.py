@@ -29,6 +29,7 @@ from component_catalog.models import KeywordsMixin
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
 from component_catalog.models import component_mixin_factory
+from component_catalog.vulnerabilities import fetch_for_queryset
 from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
@@ -489,6 +490,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
+
+    def fetch_vulnerabilities(self):
+        """Fetch and update the vulnerabilties of all the Package of this Product."""
+        return fetch_for_queryset(self.all_packages, self.dataspace)
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):

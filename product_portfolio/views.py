@@ -23,9 +23,9 @@ from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db import models
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import Http404
@@ -64,10 +64,10 @@ from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
-from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
+from dje.filters import HasCountFilter
 from dje.models import DejacodeUser
 from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
@@ -303,9 +303,7 @@ class ProductDetailsView(
     }
 
     def get_queryset(self):
-        licenses_prefetch = models.Prefetch(
-            "licenses", License.objects.select_related("usage_policy")
-        )
+        licenses_prefetch = Prefetch("licenses", License.objects.select_related("usage_policy"))
 
         productcomponent_qs = ProductComponent.objects.select_related(
             "component__dataspace",
@@ -340,8 +338,8 @@ class ProductDetailsView(
                 "licenses__usage_policy",
                 "scancodeprojects",
                 LicenseAssignedTag.prefetch_for_license_tab(),
-                models.Prefetch("productcomponents", queryset=productcomponent_qs),
-                models.Prefetch("productpackages", queryset=productpackage_qs),
+                Prefetch("productcomponents", queryset=productcomponent_qs),
+                Prefetch("productpackages", queryset=productpackage_qs),
             )
         )
 
@@ -402,16 +400,18 @@ class ProductDetailsView(
             )
             .annotate(
                 children_count=Count("component__children"),
+                vulnerability_count=Count("component__affected_by_vulnerabilities"),
             )
             .order_by(
                 "feature",
-                "component",
+                "component__name",
+                "component__version",
                 "name",
                 "version",
             )
         )
 
-        declared_dependencies_prefetch = models.Prefetch(
+        declared_dependencies_prefetch = Prefetch(
             "package__declared_dependencies", ProductDependency.objects.product(product)
         )
 
@@ -423,9 +423,16 @@ class ProductDetailsView(
                 "package__licenses",
                 declared_dependencies_prefetch,
             )
+            .annotate(
+                vulnerability_count=Count("package__affected_by_vulnerabilities"),
+            )
             .order_by(
                 "feature",
-                "package",
+                "package__type",
+                "package__namespace",
+                "package__name",
+                "package__version",
+                "package__filename",
             )
         )
 
@@ -434,6 +441,12 @@ class ProductDetailsView(
             is_deployed_filter = BooleanChoiceFilter(field_name="is_deployed")
             productcomponent_qs = is_deployed_filter.filter(productcomponent_qs, is_deployed)
             productpackage_qs = is_deployed_filter.filter(productpackage_qs, is_deployed)
+
+        is_vulnerable = self.request.GET.get("hierarchy-is_vulnerable")
+        if is_vulnerable:
+            is_vulnerable_filter = HasCountFilter(field_name="vulnerability")
+            productcomponent_qs = is_vulnerable_filter.filter(productcomponent_qs, is_vulnerable)
+            productpackage_qs = is_vulnerable_filter.filter(productpackage_qs, is_vulnerable)
 
         if not (productcomponent_qs or productpackage_qs or is_deployed):
             return
@@ -448,6 +461,7 @@ class ProductDetailsView(
             "verbose_name_plural": self.model._meta.verbose_name_plural,
             "relations_feature_grouped": dict(sorted(relations_feature_grouped.items())),
             "is_deployed": is_deployed,
+            "is_vulnerable": is_vulnerable,
         }
 
         return {"fields": [(None, context, None, template)]}
@@ -643,26 +657,32 @@ class ProductTabInventoryView(
 
         user = self.request.user
         dataspace = user.dataspace
-
         context["inventory_count"] = self.object.productinventoryitem_set.count()
 
-        licenses_prefetch = models.Prefetch(
-            "licenses", License.objects.select_related("usage_policy")
+        license_qs = License.objects.select_related("usage_policy")
+        declared_dependencies_qs = ProductDependency.objects.product(self.object)
+        package_qs = (
+            Package.objects.select_related(
+                "dataspace",
+                "usage_policy",
+            )
+            .prefetch_related(Prefetch("declared_dependencies", declared_dependencies_qs))
+            .with_vulnerability_count()
         )
-        declared_dependencies_prefetch = models.Prefetch(
-            "package__declared_dependencies", ProductDependency.objects.product(self.object)
-        )
+        component_qs = Component.objects.select_related(
+            "dataspace",
+            "owner__dataspace",
+            "usage_policy",
+        ).with_vulnerability_count()
 
         productpackage_qs = (
             self.object.productpackages.select_related(
-                "package__dataspace",
-                "package__usage_policy",
                 "review_status",
                 "purpose",
             )
             .prefetch_related(
-                licenses_prefetch,
-                declared_dependencies_prefetch,
+                Prefetch("licenses", license_qs),
+                Prefetch("package", package_qs),
             )
             .order_by(
                 "feature",
@@ -684,16 +704,14 @@ class ProductTabInventoryView(
 
         productcomponent_qs = (
             self.object.productcomponents.select_related(
-                "component__dataspace",
-                "component__owner__dataspace",
-                "component__usage_policy",
                 "review_status",
                 "purpose",
             )
             .prefetch_related(
+                Prefetch("component", component_qs),
+                Prefetch("licenses", license_qs),
                 "component__packages",
                 "component__children",
-                licenses_prefetch,
             )
             .order_by(
                 "feature",
@@ -764,24 +782,6 @@ class ProductTabInventoryView(
             )
             if "error" in compliance_alerts:
                 context["compliance_errors"] = True
-
-        # 6. Add vulnerability data
-        vulnerablecode = VulnerableCode(dataspace)
-        enable_vulnerabilities = all(
-            [
-                dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-        if enable_vulnerabilities:
-            # Re-use the inventory mapping to prevent duplicated queries
-            packages = [
-                inventory_item.package
-                for inventory_item in object_list
-                if isinstance(inventory_item, ProductPackage)
-            ]
-
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         context.update(
             {
@@ -967,12 +967,15 @@ class ProductTabDependenciesView(
         context_data = super().get_context_data(**kwargs)
         product = self.object
 
+        for_package_qs = Package.objects.only_rendering_fields().with_vulnerability_count()
+        resolved_to_package_qs = (
+            Package.objects.only_rendering_fields()
+            .declared_dependencies_count(product)
+            .with_vulnerability_count()
+        )
         dependency_qs = product.dependencies.prefetch_related(
-            models.Prefetch("for_package", Package.objects.only_rendering_fields()),
-            models.Prefetch(
-                "resolved_to_package",
-                Package.objects.only_rendering_fields().declared_dependencies_count(product),
-            ),
+            Prefetch("for_package", for_package_qs),
+            Prefetch("resolved_to_package", resolved_to_package_qs),
         )
 
         filter_dependency = DependencyFilterSet(

@@ -70,6 +70,7 @@ __version__ = get_version(VERSION)
 
 # Turn off the warnings for the following modules.
 warnings.filterwarnings("ignore", module="cyclonedx")
+warnings.filterwarnings("ignore", category=FutureWarning, module="rq_scheduler.utils")
 
 
 def command_line():

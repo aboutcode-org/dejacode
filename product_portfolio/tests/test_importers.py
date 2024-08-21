@@ -1014,3 +1014,15 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual([purl], [str(package) for package in existing["package"]])
         self.assertEqual([dependency_uid], [str(package) for package in existing["dependency"]])
         self.assertEqual({}, errors)
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        with mock.patch("product_portfolio.models.Product.fetch_vulnerabilities") as mock_fetch:
+            mock_fetch.return_value = None
+            importer = ImportPackageFromScanCodeIO(
+                user=self.super_user,
+                project_uuid=uuid.uuid4(),
+                product=self.product1,
+            )
+            importer.save()
+            mock_fetch.assert_called()

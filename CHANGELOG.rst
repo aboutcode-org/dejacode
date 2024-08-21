@@ -58,6 +58,41 @@ Release notes
   Product.
   https://github.com/nexB/dejacode/issues/138
 
+- Add a task scheduler service to the Docker Compose stack.
+  This service runs a dedicated ``setupcron`` management command to create the
+  application's scheduled cron jobs.
+  The scheduler is configured to run the daily vulnerabilities update task.
+  https://github.com/nexB/dejacode/issues/94
+
+- Add a new Vulnerability model and all the code logic to fetch and create
+  Vulnerability records and assign those to Package/Component through ManyToMany
+  relationships.
+  A fetchvulnerabilities management command is available to fetch all the relevant
+  data from VulnerableCode for a given Dataspace.
+  The latest vulnerability data refresh date is displayed in the Admin dashboard in a
+  new "Data updates" section in the bottom right corner.
+  It is also available in the "Integration Status" page.
+  The Package/Component views that display vulnerability information (icon or tab)
+  are now using the data from the Vulnerability model in place of calling the
+  VulnerableCode API on each request. This results into much better performances as
+  we do not depend on the VulnerableCode service to render the DejaCode view anymore.
+  Also, this will make Vulnerability data available in the Reporting system.
+  The vulnerability icon is displayed next to the Package/Component identifier in the
+  Product views: "Inventory", "Hierarchy", "Dependencies" tabs.
+  The vulnerability data is available in Reporting either through the is_vulnerable
+  property on Package/Component column template or going through the full
+  affected_by_vulnerabilities m2m field.
+  This is available in both Query and ColumnTemplate.
+  The vulnerabilities are fetched each time a Package is created/modified
+  (note that a purl is required on the package for the lookup).
+  Also, all the Packages of a Product are updated with latest vulnerabilities from
+  the VulnerableCode service following importing data in Product using:
+  - Import data from Scan
+  - Load Packages from SBOMs
+  - Import Packages from manifests
+  - Pull ScanCode.io Project data
+  https://github.com/nexB/dejacode/issues/94
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

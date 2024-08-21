@@ -25,7 +25,7 @@
                   </td>
                 {% endif %}
                 <td>
-                    {% if object.has_hierarchy or object.request_count or object.cpe %}
+                    {% if object.has_hierarchy or object.request_count or object.vulnerability_count %}
                         <ul class="list-inline float-end mb-0">
                             {% if object.has_hierarchy %}
                                 <li class="list-inline-item">
@@ -37,9 +37,9 @@
                                     <a href="{% inject_preserved_filters object.get_absolute_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
                                 </li>
                             {% endif %}
-                            {% if object.cpe in vulnerable_cpes %}
+                            {% if object.vulnerability_count %}
                                 <li class="list-inline-item">
-                                    {% include 'component_catalog/includes/vulnerability_icon_link.html' %}
+                                  {% include 'component_catalog/includes/vulnerability_icon_link.html' with count=object.vulnerability_count %}
                                 </li>
                             {% endif %}
                         </ul>

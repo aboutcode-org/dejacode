@@ -342,6 +342,14 @@ class Dataspace(models.Model):
         ),
     )
 
+    vulnerabilities_updated_at = models.DateTimeField(
+        _("Last vulnerability data update"),
+        auto_now=False,
+        null=True,
+        blank=True,
+        help_text=_("The date and time when the local vulnerability database was last updated. "),
+    )
+
     objects = DataspaceManager()
 
     class Meta:
@@ -740,9 +748,19 @@ class DataspacedModel(models.Model):
             if field_name in model_fields and value not in EMPTY_VALUES
         }
 
+        if isinstance(user, DejacodeUser):
+            initial_values = {
+                "dataspace": user.dataspace,
+                "created_by": user,
+            }
+        # Support for providing a Dataspace directly in place of a User
+        elif isinstance(user, Dataspace):
+            initial_values = {
+                "dataspace": user,
+            }
+
         instance = cls(
-            dataspace=user.dataspace,
-            created_by=user,
+            **initial_values,
             **cleaned_data,
         )
 
@@ -771,7 +789,7 @@ class DataspacedModel(models.Model):
 
         if updated_fields:
             self.last_modified_by = user
-            self.save()
+            self.save(update_fields=[*updated_fields, "last_modified_by"])
 
         return updated_fields
 
@@ -794,7 +812,7 @@ class DataspacedModel(models.Model):
                 use_natural_foreign_keys=True,
                 use_natural_primary_keys=True,
             )
-        except SerializationError:
+        except (SerializationError, ValueError):
             serialized_data = None
 
         return serialized_data

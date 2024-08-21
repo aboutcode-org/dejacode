@@ -644,6 +644,9 @@ class ImportPackageFromScanCodeIO:
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
 
+        if self.user.dataspace.enable_vulnerablecodedb_access:
+            self.product.fetch_vulnerabilities()
+
         return dict(self.created), dict(self.existing), dict(self.errors)
 
     def import_packages(self):
@@ -655,6 +658,9 @@ class ImportPackageFromScanCodeIO:
             self.import_dependency(dependency_data)
 
     def import_package(self, package_data):
+        # Vulnerabilities are fetched post import.
+        package_data.pop("affected_by_vulnerabilities", None)
+
         unique_together_lookups = {
             field: value
             for field in self.unique_together_fields

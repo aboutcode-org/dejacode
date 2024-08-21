@@ -226,3 +226,17 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.save()
     description = "\n".join(scancode_project.import_log)
     scancode_project.notify(verb=notification_verb, description=description)
+
+
+@job("default", timeout="3h")
+def update_vulnerabilities():
+    """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
+    from component_catalog.vulnerabilities import fetch_from_vulnerablecode
+
+    logger.info("Entering update_vulnerabilities task")
+    Dataspace = apps.get_model("dje", "Dataspace")
+    dataspace_qs = Dataspace.objects.filter(enable_vulnerablecodedb_access=True)
+
+    for dataspace in dataspace_qs:
+        logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
+        fetch_from_vulnerablecode(dataspace, batch_size=50, timeout=60)

@@ -95,7 +95,6 @@ from dje.views import APIWrapperListView
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedFilterView
 from dje.views import DataspacedUpdateView
-from dje.views import FieldLastLoop
 from dje.views import FieldSeparator
 from dje.views import Header
 from dje.views import LicenseDataForBuilderMixin
@@ -250,169 +249,94 @@ def include_type(view_instance):
 
 
 class TabVulnerabilityMixin:
-    vulnerability_matching_field = None
+    template = "component_catalog/tabs/tab_vulnerabilities.html"
 
     def tab_vulnerabilities(self):
-        matching_value = getattr(self.object, self.vulnerability_matching_field)
-        dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
+        vulnerabilities_qs = self.object.affected_by_vulnerabilities.all()
+        if not vulnerabilities_qs:
+            return
 
-        # The display of vulnerabilities is controlled by the object Dataspace
-        display_tab = all(
-            [
-                matching_value,
-                dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
+        vulnerablecode = VulnerableCode(self.object.dataspace)
+        label = (
+            f"Vulnerabilities"
+            f' <span class="badge badge-vulnerability">{len(vulnerabilities_qs)}</span>'
         )
 
-        if not display_tab:
+        vulnerabilities = []
+        for vulnerability in vulnerabilities_qs:
+            fixed_packages_html = self.get_fixed_packages_html(vulnerability, self.object.dataspace)
+            vulnerability.fixed_packages_html = fixed_packages_html
+            vulnerabilities.append(vulnerability)
+
+        context = {
+            "vulnerabilities": vulnerabilities,
+            "vulnerablecode_url": vulnerablecode.service_url,
+        }
+
+        return {
+            "fields": [(None, context, None, self.template)],
+            "label": format_html(label),
+        }
+
+    def get_fixed_packages_html(self, vulnerability, dataspace):
+        if not vulnerability.fixed_packages:
             return
 
-        vulnerability_getter_function = {
-            "cpe": vulnerablecode.get_vulnerabilities_by_cpe,
-            "package_url": vulnerablecode.get_vulnerabilities_by_purl,
-        }.get(self.vulnerability_matching_field)
+        fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
+        add_package_url = reverse("component_catalog:package_add")
+        vulnerability_icon = (
+            '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
+            ' data-boundary="viewport">'
+            '<i class="fas fa-bug vulnerability mx-1"></i>'
+            "</span>"
+        )
+        no_vulnerabilities_icon = (
+            '<span class="fa-stack fa-small text-muted-light ms-1"'
+            ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
+            ' data-boundary="viewport">'
+            '  <i class="fas fa-bug fa-stack-1x"></i>'
+            '  <i class="fas fa-ban fa-stack-2x"></i>'
+            "</span>"
+        )
 
-        vulnerabilities = vulnerability_getter_function(matching_value, timeout=3)
-        if not vulnerabilities:
-            return
+        fixed_packages_values = []
+        for fixed_package in fixed_packages_sorted:
+            purl = fixed_package.get("purl")
+            is_vulnerable = fixed_package.get("is_vulnerable")
+            package_instances = Package.objects.scope(dataspace).for_package_url(purl)
 
-        fields, vulnerabilities_count = self.get_vulnerabilities_tab_fields(vulnerabilities)
-
-        if fields:
-            label = (
-                f"Vulnerabilities"
-                f' <span class="badge badge-vulnerability">{vulnerabilities_count}</span>'
-            )
-            return {
-                "fields": fields,
-                "label": format_html(label),
-            }
-
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        raise NotImplementedError
-
-    @staticmethod
-    def get_vulnerability_fields(vulnerability, dataspace):
-        include_fixed_packages = "fixed_packages" in vulnerability.keys()
-        summary = vulnerability.get("summary")
-        references = vulnerability.get("references", [])
-
-        reference_urls = []
-        reference_ids = []
-
-        for reference in references:
-            url = reference.get("reference_url")
-            reference_id = reference.get("reference_id")
-            if url and reference_id:
-                reference_ids.append(f'<a href="{url}" target="_blank">{reference_id}</a>')
-            elif reference_id:
-                reference_ids.append(reference_id)
-            elif url:
-                reference_urls.append(url)
-
-        reference_urls_joined = "\n".join(reference_urls)
-        reference_ids_joined = "\n".join(reference_ids)
-
-        tab_fields = [
-            (_("Summary"), summary, "Summary of the vulnerability"),
-        ]
-
-        if vulnerability_url := vulnerability.get("resource_url"):
-            vulnerability_url_help = "Link to the VulnerableCode app."
-            url_as_link = format_html(
-                '<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>',
-                vulnerability_url=vulnerability_url,
-            )
-            tab_fields.append((_("VulnerableCode URL"), url_as_link, vulnerability_url_help))
-
-        if include_fixed_packages:
-            fixed_packages = vulnerability.get("fixed_packages", [])
-            fixed_packages_sorted = natsorted(fixed_packages, key=itemgetter("purl"))
-            add_package_url = reverse("component_catalog:package_add")
-            vulnerability_icon = (
-                '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
-                ' data-boundary="viewport">'
-                '<i class="fas fa-bug vulnerability ms-1"></i>'
-                "</span>"
-            )
-            no_vulnerabilities_icon = (
-                '<span class="fa-stack fa-small text-muted-light ms-1"'
-                ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
-                ' data-boundary="viewport">'
-                '  <i class="fas fa-bug fa-stack-1x"></i>'
-                '  <i class="fas fa-ban fa-stack-2x"></i>'
-                "</span>"
-            )
-
-            fixed_packages_values = []
-            for fixed_package in fixed_packages_sorted:
-                purl = fixed_package.get("purl")
-                is_vulnerable = fixed_package.get("is_vulnerable")
-                package_instances = Package.objects.scope(dataspace).for_package_url(purl)
-
-                for package in package_instances:
-                    absolute_url = package.get_absolute_url()
-                    display_value = package.get_html_link(href=absolute_url)
-                    if is_vulnerable:
-                        display_value += package.get_html_link(
-                            href=f"{absolute_url}#vulnerabilities",
-                            value=format_html(vulnerability_icon),
-                        )
-                    else:
-                        display_value += no_vulnerabilities_icon
-                    fixed_packages_values.append(display_value)
-
-                if not package_instances:
-                    display_value = purl.replace("pkg:", "")
-                    if is_vulnerable:
-                        display_value += vulnerability_icon
-                    else:
-                        display_value += no_vulnerabilities_icon
-                    # Warning: do not add spaces between HTML elements as this content
-                    # is displayed in a <pre>
-                    display_value += (
-                        f'<a href="{add_package_url}?package_url={purl}"'
-                        f'   target="_blank" class="ms-1">'
-                        f'<span data-bs-toggle="tooltip" title="Add Package"'
-                        f'      data-boundary="viewport">'
-                        f'<i class="fas fa-plus-circle"></i>'
-                        f"</span>"
-                        f"</a>"
+            for package in package_instances:
+                absolute_url = package.get_absolute_url()
+                display_value = package.get_html_link(href=absolute_url)
+                if is_vulnerable:
+                    display_value += package.get_html_link(
+                        href=f"{absolute_url}#vulnerabilities",
+                        value=format_html(vulnerability_icon),
                     )
-                    fixed_packages_values.append(display_value)
+                else:
+                    display_value += no_vulnerabilities_icon
+                fixed_packages_values.append(display_value)
 
-            tab_fields.append(
-                (
-                    _("Fixed packages"),
-                    format_html("\n".join(fixed_packages_values)),
-                    "The identifiers of Package Versions that have been reported to fix a "
-                    "specific vulnerability and collected in VulnerableCodeDB.",
-                ),
-            )
+            if not package_instances:
+                display_value = purl.replace("pkg:", "")
+                if is_vulnerable:
+                    display_value += vulnerability_icon
+                else:
+                    display_value += no_vulnerabilities_icon
+                # Warning: do not add spaces between HTML elements as this content
+                # is displayed in a <pre>
+                display_value += (
+                    f'<a href="{add_package_url}?package_url={purl}"'
+                    f'   target="_blank">'
+                    f'<span data-bs-toggle="tooltip" title="Add Package"'
+                    f'      data-boundary="viewport">'
+                    f'<i class="fas fa-plus-circle"></i>'
+                    f"</span>"
+                    f"</a>"
+                )
+                fixed_packages_values.append(display_value)
 
-        tab_fields.extend(
-            [
-                (
-                    _("Reference IDs"),
-                    format_html(reference_ids_joined),
-                    "Reference IDs to the reported vulnerability, such as a DSA "
-                    "(Debian Security Advisory) ID or a CVE (Common Vulnerabilities "
-                    "and Exposures) ID, when available.",
-                ),
-                (
-                    _("Reference URLs"),
-                    urlize_target_blank(reference_urls_joined),
-                    "The URLs collected in VulnerableCodeDB that give you quick "
-                    "access to public websites that provide details about a "
-                    "vulnerability.",
-                ),
-                FieldLastLoop,
-            ]
-        )
-
-        return tab_fields
+        return format_html("<br>".join(fixed_packages_values))
 
 
 class ComponentListView(
@@ -432,7 +356,7 @@ class ComponentListView(
     group_name_version = True
 
     table_headers = (
-        Header("name", _("Component name")),
+        Header("name", _("Component name"), filter="is_vulnerable"),
         Header("version", _("Version")),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
@@ -472,29 +396,11 @@ class ComponentListView(
                 "licenses__usage_policy",
             )
             .with_has_hierarchy()
+            .with_vulnerability_count()
             .order_by(
                 "-last_modified_date",
             )
         )
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
-
-        # The display of vulnerabilities is controlled by the objects Dataspace
-        enable_vulnerabilities = all(
-            [
-                self.dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if enable_vulnerabilities:
-            context["vulnerable_cpes"] = vulnerablecode.get_vulnerable_cpes(
-                components=context["object_list"],
-            )
-
-        return context
 
 
 class ComponentDetailsView(
@@ -510,7 +416,6 @@ class ComponentDetailsView(
     add_to_product_perm = "product_portfolio.add_productcomponent"
     show_previous_and_next_object_links = True
     include_reference_dataspace = True
-    vulnerability_matching_field = "cpe"
     tabset = {
         "essentials": {
             "fields": [
@@ -878,18 +783,6 @@ class ComponentDetailsView(
 
         return {"fields": fields}
 
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        dataspace = self.object.dataspace
-        fields = []
-        vulnerabilities_count = 0
-
-        for vulnerability in vulnerabilities:
-            vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
-            fields.extend(vulnerability_fields)
-            vulnerabilities_count += 1
-
-        return fields, vulnerabilities_count
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -1074,7 +967,12 @@ class PackageListView(
     include_reference_dataspace = True
     put_results_in_session = True
     table_headers = (
-        Header("sortable_identifier", _("Identifier"), Package.identifier_help()),
+        Header(
+            "sortable_identifier",
+            _("Identifier"),
+            Package.identifier_help(),
+            filter="is_vulnerable",
+        ),
         Header("usage_policy", _("Policy"), filter="usage_policy", condition=include_policy),
         Header("license_expression", _("Concluded license"), filter="licenses"),
         Header("primary_language", _("Language"), filter="primary_language"),
@@ -1105,6 +1003,7 @@ class PackageListView(
                 "dataspace",
             )
             .annotate_sortable_identifier()
+            .with_vulnerability_count()
             .select_related(
                 "usage_policy",
             )
@@ -1127,19 +1026,6 @@ class PackageListView(
 
         if self.request.user.has_perm("component_catalog.change_component"):
             context["add_to_component_form"] = AddMultipleToComponentForm(self.request)
-
-        vulnerablecode = VulnerableCode(self.request.user.dataspace)
-        # The display of vulnerabilities is controlled by the objects Dataspace
-        enable_vulnerabilities = all(
-            [
-                self.dataspace.enable_vulnerablecodedb_access,
-                vulnerablecode.is_configured(),
-            ]
-        )
-
-        if enable_vulnerabilities:
-            packages = context["object_list"]
-            context["vulnerable_purls"] = vulnerablecode.get_vulnerable_purls(packages)
 
         return context
 
@@ -1191,7 +1077,6 @@ class PackageDetailsView(
     template_name = "component_catalog/package_details.html"
     form_class = PackageAddToProductForm
     add_to_product_perm = "product_portfolio.add_productpackage"
-    vulnerability_matching_field = "package_url"
     tabset = {
         "essentials": {
             "fields": [
@@ -1494,20 +1379,6 @@ class PackageDetailsView(
 
         return {"fields": [(None, context, None, template)]}
 
-    def get_vulnerabilities_tab_fields(self, vulnerabilities):
-        dataspace = self.object.dataspace
-        fields = []
-        vulnerabilities_count = 0
-
-        for entry in vulnerabilities:
-            unresolved = entry.get("affected_by_vulnerabilities", [])
-            for vulnerability in unresolved:
-                vulnerability_fields = self.get_vulnerability_fields(vulnerability, dataspace)
-                fields.extend(vulnerability_fields)
-                vulnerabilities_count += 1
-
-        return fields, vulnerabilities_count
-
     @staticmethod
     def readable_date(date):
         if date:
@@ -1632,6 +1503,10 @@ def package_create_ajax_view(request):
             dataspace_uuid=dataspace.uuid,
         )
         scan_msg = " and submitted to ScanCode.io for scanning"
+
+    if dataspace.enable_vulnerablecodedb_access:
+        for package in created:
+            package.fetch_vulnerabilities()
 
     if len_created == 1:
         redirect_url = created[0].get_absolute_url()

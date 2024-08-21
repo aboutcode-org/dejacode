@@ -64,6 +64,9 @@ a.dropdown-item:hover {
 .smaller {
   font-size: 90%;
 }
+.mini {
+  font-size: .675em;
+}
 code {
   color: #ac1459;
 }

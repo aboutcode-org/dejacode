@@ -200,6 +200,17 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="component__affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownWidget(
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
+    )
 
     class Meta:
         model = ProductComponent
@@ -239,6 +250,17 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_deployed",
             "is_modified",
         ],
+    )
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="package__affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownWidget(
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
     )
 
     @staticmethod

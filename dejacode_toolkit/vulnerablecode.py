@@ -69,6 +69,7 @@ class VulnerableCode(BaseService):
     def bulk_search_by_purl(
         self,
         purls,
+        purl_only,
         timeout=None,
     ):
         """Bulk search of vulnerabilities using the provided list of `purls`."""
@@ -76,7 +77,7 @@ class VulnerableCode(BaseService):
 
         data = {
             "purls": purls,
-            "purl_only": True,
+            "purl_only": purl_only,
             "plain_purl": True,
         }
 
@@ -98,7 +99,7 @@ class VulnerableCode(BaseService):
         logger.debug(f"VulnerableCode: url={url} cpes_count={len(cpes)}")
         return self.request_post(url, json=data, timeout=timeout)
 
-    def get_vulnerable_purls(self, packages):
+    def get_vulnerable_purls(self, packages, purl_only=True, timeout=10):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
         was found in the VulnerableCodeDB for the given list of `packages`.
@@ -108,7 +109,11 @@ class VulnerableCode(BaseService):
         if not plain_purls:
             return []
 
-        vulnerable_purls = self.bulk_search_by_purl(plain_purls, timeout=5)
+        vulnerable_purls = self.bulk_search_by_purl(
+            plain_purls,
+            purl_only=purl_only,
+            timeout=timeout,
+        )
         return vulnerable_purls or []
 
     def get_vulnerable_cpes(self, components):
@@ -133,6 +138,34 @@ class VulnerableCode(BaseService):
         ]
 
         return list(set(vulnerable_cpes))
+
+    def get_package_url_available_types(self):
+        # Replace by fetching the endpoint once available.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
+        return [
+            "alpine",
+            "alpm",
+            "apache",
+            "cargo",
+            "composer",
+            "conan",
+            "deb",
+            "gem",
+            "generic",
+            "github",
+            "golang",
+            "hex",
+            "mattermost",
+            "maven",
+            "mozilla",
+            "nginx",
+            "npm",
+            "nuget",
+            "openssl",
+            "pypi",
+            "rpm",
+            "ruby",
+        ]
 
 
 def get_plain_purl(purl_str):

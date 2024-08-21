@@ -64,6 +64,7 @@ from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import ExternalReferenceMixin
 from dje.models import History
+from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
@@ -127,6 +128,18 @@ def validate_filename(value):
         raise ValidationError(
             _("Enter a valid filename: slash, backslash, or colon are not allowed.")
         )
+
+
+class VulnerabilityQuerySetMixin:
+    def with_vulnerability_count(self):
+        """Annotate the QuerySet with the vulnerability_count."""
+        return self.annotate(
+            vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
+        )
+
+    def vulnerable(self):
+        """Return vulnerable Packages."""
+        return self.with_vulnerability_count().filter(vulnerability_count__gt=0)
 
 
 class LicenseExpressionMixin:
@@ -448,6 +461,85 @@ class CPEMixin(models.Model):
                 type="cpe23Type",
                 locator=self.cpe,
             )
+
+
+class VulnerabilityMixin(models.Model):
+    """Add the `vulnerability` many to many field."""
+
+    affected_by_vulnerabilities = models.ManyToManyField(
+        to="component_catalog.Vulnerability",
+        related_name="affected_%(class)ss",
+        help_text=_("Vulnerabilities affecting this object."),
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_vulnerable(self):
+        return self.affected_by_vulnerabilities.exists()
+
+    def get_entry_for_package(self, vulnerablecode):
+        if not self.package_url:
+            return
+
+        vulnerable_packages = vulnerablecode.get_vulnerabilities_by_purl(
+            self.package_url,
+            timeout=10,
+        )
+
+        if vulnerable_packages:
+            affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
+            return affected_by_vulnerabilities
+
+    def get_entry_for_component(self, vulnerablecode):
+        if not self.cpe:
+            return
+
+        # Support for Component is paused as the CPES endpoint do not work properly.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
+        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
+
+    def get_entry_from_vulnerablecode(self):
+        from dejacode_toolkit.vulnerablecode import VulnerableCode
+
+        dataspace = self.dataspace
+        vulnerablecode = VulnerableCode(dataspace)
+
+        is_vulnerablecode_enabled = all(
+            [
+                vulnerablecode.is_configured(),
+                dataspace.enable_vulnerablecodedb_access,
+            ]
+        )
+        if not is_vulnerablecode_enabled:
+            return
+
+        if isinstance(self, Component):
+            return self.get_entry_for_component(vulnerablecode)
+        elif isinstance(self, Package):
+            return self.get_entry_for_package(vulnerablecode)
+
+    def fetch_vulnerabilities(self):
+        affected_by_vulnerabilities = self.get_entry_from_vulnerablecode()
+        if affected_by_vulnerabilities:
+            self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
+
+    def create_vulnerabilities(self, vulnerabilities_data):
+        vulnerabilities = []
+        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
+
+        for vulnerability_data in vulnerabilities_data:
+            vulnerability_id = vulnerability_data["vulnerability_id"]
+            vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+            if not vulnerability:
+                vulnerability = Vulnerability.create_from_data(
+                    dataspace=self.dataspace,
+                    data=vulnerability_data,
+                )
+            vulnerabilities.append(vulnerability)
+
+        self.affected_by_vulnerabilities.add(*vulnerabilities)
 
 
 class URLFieldsMixin(models.Model):
@@ -852,7 +944,7 @@ def component_mixin_factory(verbose_name):
 BaseComponentMixin = component_mixin_factory("component")
 
 
-class ComponentQuerySet(DataspacedQuerySet):
+class ComponentQuerySet(VulnerabilityQuerySetMixin, DataspacedQuerySet):
     def with_has_hierarchy(self):
         subcomponents = Subcomponent.objects.filter(
             models.Q(child_id=OuterRef("pk")) | models.Q(parent_id=OuterRef("pk"))
@@ -875,6 +967,7 @@ class Component(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerabilityMixin,
     LicenseFieldsMixin,
     ParentChildModelMixin,
     BaseComponentMixin,
@@ -1622,7 +1715,11 @@ class ComponentKeyword(DataspacedModel):
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
-class PackageQuerySet(PackageURLQuerySetMixin, DataspacedQuerySet):
+class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, DataspacedQuerySet):
+    def has_package_url(self):
+        """Return objects with Package URL defined."""
+        return self.filter(~models.Q(type="") & ~models.Q(name=""))
+
     def annotate_sortable_identifier(self):
         """
         Annotate the QuerySet with a `sortable_identifier` value that combines
@@ -1670,6 +1767,7 @@ class Package(
     HolderMixin,
     KeywordsMixin,
     CPEMixin,
+    VulnerabilityMixin,
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
@@ -1678,7 +1776,6 @@ class Package(
     filename = models.CharField(
         _("Filename"),
         blank=True,
-        db_index=True,
         max_length=255,  # 255 is the maximum on most filesystems
         validators=[validate_filename],
         help_text=_(
@@ -1686,7 +1783,6 @@ class Package(
             "This is usually the name of the file as downloaded from a website."
         ),
     )
-
     download_url = models.CharField(
         _("Download URL"),
         max_length=1024,
@@ -1694,30 +1790,11 @@ class Package(
         blank=True,
         help_text=_("The download URL for obtaining the package."),
     )
-
-    sha1 = models.CharField(
-        _("SHA1"),
-        max_length=40,
-        blank=True,
-        db_index=True,
-        help_text=_("The SHA1 signature of the package file."),
-    )
-
-    md5 = models.CharField(
-        _("MD5"),
-        max_length=32,
-        blank=True,
-        db_index=True,
-        help_text=_("The MD5 signature of the package file."),
-    )
-
     size = models.BigIntegerField(
         blank=True,
         null=True,
-        db_index=True,
         help_text=_("The size of the package file in bytes."),
     )
-
     release_date = models.DateField(
         blank=True,
         null=True,
@@ -1726,39 +1803,30 @@ class Package(
             "original download source."
         ),
     )
-
     primary_language = models.CharField(
-        db_index=True,
         max_length=50,
         blank=True,
         help_text=_("The primary programming language associated with the package."),
     )
-
     description = models.TextField(
         blank=True,
         help_text=_("Free form description, preferably as provided by the author(s)."),
     )
-
     project = models.CharField(
         max_length=50,
-        db_index=True,
         blank=True,
         help_text=PROJECT_FIELD_HELP,
     )
-
     notes = models.TextField(
         blank=True,
         help_text=_("Descriptive information about the package."),
     )
-
     license_expression = models.CharField(
         _("Concluded license expression"),
         max_length=1024,
         blank=True,
-        db_index=True,
         help_text=LICENSE_EXPRESSION_HELP_TEXT,
     )
-
     copyright = models.TextField(
         blank=True,
         help_text=_(
@@ -1766,7 +1834,6 @@ class Package(
             "source or as specified in an associated file."
         ),
     )
-
     notice_text = NoStripTextField(
         blank=True,
         help_text=_(
@@ -1774,14 +1841,12 @@ class Package(
             "statement(s), contributors, and/or license obligations that apply to a package."
         ),
     )
-
     author = models.TextField(
         blank=True,
         help_text=_(
             "The name(s) of the author(s) of a software package as documented in the code."
         ),
     )
-
     dependencies = models.JSONField(
         blank=True,
         default=list,
@@ -1791,7 +1856,6 @@ class Package(
             "on licensing and/or attribution obligations."
         ),
     )
-
     repository_homepage_url = models.URLField(
         _("Repository homepage URL"),
         max_length=1024,
@@ -1801,7 +1865,6 @@ class Package(
             "This is typically different from the package homepage URL proper."
         ),
     )
-
     repository_download_url = models.URLField(
         _("Repository download URL"),
         max_length=1024,
@@ -1812,7 +1875,6 @@ class Package(
             "This may be different from the actual download URL."
         ),
     )
-
     api_data_url = models.URLField(
         _("API data URL"),
         max_length=1024,
@@ -1822,13 +1884,11 @@ class Package(
             "URL to a JSON or XML api its package repository."
         ),
     )
-
     datasource_id = models.CharField(
         max_length=64,
         blank=True,
         help_text=_("The identifier for the datafile handler used to obtain this package."),
     )
-
     file_references = models.JSONField(
         default=list,
         blank=True,
@@ -1839,13 +1899,11 @@ class Package(
             "package type or datafile format."
         ),
     )
-
     parties = models.JSONField(
         default=list,
         blank=True,
         help_text=_("A list of parties such as a person, project or organization."),
     )
-
     licenses = models.ManyToManyField(
         to="license_library.License",
         through="PackageAssignedLicense",
@@ -1876,11 +1934,21 @@ class Package(
             ),
         )
         indexes = [
+            models.Index(fields=["type"]),
+            models.Index(fields=["namespace"]),
+            models.Index(fields=["name"]),
+            models.Index(fields=["version"]),
+            models.Index(fields=["filename"]),
+            models.Index(fields=["size"]),
             models.Index(fields=["md5"]),
             models.Index(fields=["sha1"]),
             models.Index(fields=["sha256"]),
             models.Index(fields=["sha512"]),
+            models.Index(fields=["primary_language"]),
+            models.Index(fields=["project"]),
+            models.Index(fields=["license_expression"]),
         ]
+
         permissions = (
             ("change_usage_policy_on_package", "Can change the usage_policy of package"),
         )
@@ -2492,3 +2560,91 @@ class ComponentAssignedPackage(DataspacedModel):
 
     def __str__(self):
         return f"<{self.component}>: {self.package}"
+
+
+class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
+    """
+    A software vulnerability with a unique identifier and alternate aliases.
+
+    Adapted from the VulnerabeCode models at
+    https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py#L164
+
+    Note that this model implements the HistoryDateFieldsMixin but not the
+    HistoryUserFieldsMixin as the Vulnerability records are usually created
+    automatically on object addition or during schedule tasks.
+    """
+
+    vulnerability_id = models.CharField(
+        max_length=20,
+        help_text=_(
+            "A unique identifier for the vulnerability, prefixed with 'VCID-'. "
+            "For example, 'VCID-2024-0001'."
+        ),
+    )
+    summary = models.TextField(
+        help_text=_("A brief summary of the vulnerability, outlining its nature and impact."),
+        blank=True,
+    )
+    aliases = JSONListField(
+        blank=True,
+        help_text=_(
+            "A list of aliases for this vulnerability, such as CVE identifiers "
+            "(e.g., 'CVE-2017-1000136')."
+        ),
+    )
+    references = JSONListField(
+        blank=True,
+        help_text=_(
+            "A list of references for this vulnerability. Each reference includes a "
+            "URL, an optional reference ID, scores, and the URL for further details. "
+        ),
+    )
+    fixed_packages = JSONListField(
+        blank=True,
+        help_text=_("A list of packages that are not affected by this vulnerability."),
+    )
+
+    class Meta:
+        verbose_name_plural = "Vulnerabilities"
+        unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
+        indexes = [
+            models.Index(fields=["vulnerability_id"]),
+        ]
+
+    def __str__(self):
+        return self.vulnerability_id
+
+    @property
+    def vcid(self):
+        return self.vulnerability_id
+
+    def add_affected(self, instances):
+        """
+        Assign the ``instances`` (Package or Component) as affected to this
+        vulnerability.
+        """
+        if not isinstance(instances, list):
+            instances = [instances]
+
+        for instance in instances:
+            if isinstance(instance, Package):
+                self.affected_packages.add(instance)
+            if isinstance(instance, Component):
+                self.affected_components.add(instance)
+
+    def add_affected_packages(self, packages):
+        """Assign the ``packages`` as affected to this vulnerability."""
+        self.affected_packages.add(*packages)
+
+    def add_affected_components(self, components):
+        """Assign the ``components`` as affected to this vulnerability."""
+        self.affected_components.add(*components)
+
+    @classmethod
+    def create_from_data(cls, dataspace, data, validate=False, affecting=None):
+        instance = super().create_from_data(user=dataspace, data=data, validate=False)
+
+        if affecting:
+            instance.add_affected(affecting)
+
+        return instance

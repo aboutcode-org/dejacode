@@ -581,6 +581,10 @@ class ImportFromScanForm(forms.Form):
             raise
 
         transaction.savepoint_commit(sid)
+
+        if self.dataspace.enable_vulnerablecodedb_access:
+            product.fetch_vulnerabilities()
+
         return warnings, created_counts
 
 
