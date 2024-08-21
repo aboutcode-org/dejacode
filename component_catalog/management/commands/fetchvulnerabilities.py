@@ -12,10 +12,6 @@ from component_catalog.vulnerabilities import fetch_from_vulnerablecode
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
 
-# TODO: Retry failures -> log those
-# ERROR VulnerableCode [Exception] HTTPSConnectionPool(host='public.vulnerablecode.io',
-# port=443): Read timed out. (read timeout=10)
-
 
 class Command(DataspacedCommand):
     help = "Fetch vulnerabilities for the provided Dataspace"
