@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -682,7 +682,7 @@ def home_view(request):
     }
 
     support_urls = {
-        "Report an issue": "https://github.com/nexB/dejacode/issues/new/",
+        "Report an issue": "https://github.com/aboutcode-org/dejacode/issues/new/",
     }
 
     sections = {

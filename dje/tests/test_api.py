@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -523,7 +523,7 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
             "content_object": owner_detail_url,
             "external_source": self.ext_source1.label,
             "external_id": "dejacode",
-            "external_url": "https://github.com/nexB/dejacode",
+            "external_url": "https://github.com/aboutcode-org/dejacode",
         }
 
         response = self.client.post(self.external_reference_list_url, data)
@@ -534,7 +534,7 @@ class ExternalReferenceAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(new_ext_ref.content_type, ContentType.objects.get_for_model(new_owner))
         self.assertEqual(new_ext_ref.object_id, new_owner.id)
         self.assertEqual(new_ext_ref.dataspace, self.dataspace)
-        self.assertEqual(new_ext_ref.external_url, "https://github.com/nexB/dejacode")
+        self.assertEqual(new_ext_ref.external_url, "https://github.com/aboutcode-org/dejacode")
         self.assertEqual(new_ext_ref.external_id, "dejacode")
 
         # Non-supported object_type
