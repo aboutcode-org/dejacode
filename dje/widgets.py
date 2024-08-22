@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -23,15 +23,19 @@ class DropDownWidget(LinkWidget):
       <a class="btn btn-outline-secondary btn-xs dropdown-toggle {active}" href="#" role="button"
          data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
          aria-label="{label} options dropdown">
+         {link_content}
       </a>
       {menu}
     </div>
     """
 
-    def __init__(self, attrs=None, choices=(), anchor=None, right_align=False, label=None):
+    def __init__(
+        self, attrs=None, choices=(), anchor=None, right_align=False, label=None, link_content=None
+    ):
         self.anchor = anchor
         self.right_align = right_align
         self.label = label
+        self.link_content = link_content
         super().__init__(attrs, choices)
 
     def render(self, name, value, attrs=None, renderer=None, choices=()):
@@ -58,6 +62,7 @@ class DropDownWidget(LinkWidget):
             menu=menu,
             active="active" if value else "",
             label=self.label if self.label else name.title(),
+            link_content=format_html(self.link_content or ""),
         )
 
     def render_option(self, name, selected_choices, option_value, option_label):

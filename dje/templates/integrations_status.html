@@ -36,6 +36,13 @@
             {% else %}
               <div class="text-danger">Not configured <i class="fas fa-times-circle"></i></div>
             {% endif %}
+            {% if status.extra_info %}
+              <div>
+                <hr>
+                <i class="fa-solid fa-circle-info"></i>
+                {{ status.extra_info }}
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>

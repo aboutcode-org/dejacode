@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -343,6 +343,14 @@ class Dataspace(models.Model):
             "and related URLs to a Vulnerabilities tab in the Package details user "
             "view."
         ),
+    )
+
+    vulnerabilities_updated_at = models.DateTimeField(
+        _("Last vulnerability data update"),
+        auto_now=False,
+        null=True,
+        blank=True,
+        help_text=_("The date and time when the local vulnerability database was last updated. "),
     )
 
     objects = DataspaceManager()
@@ -743,9 +751,19 @@ class DataspacedModel(models.Model):
             if field_name in model_fields and value not in EMPTY_VALUES
         }
 
+        if isinstance(user, DejacodeUser):
+            initial_values = {
+                "dataspace": user.dataspace,
+                "created_by": user,
+            }
+        # Support for providing a Dataspace directly in place of a User
+        elif isinstance(user, Dataspace):
+            initial_values = {
+                "dataspace": user,
+            }
+
         instance = cls(
-            dataspace=user.dataspace,
-            created_by=user,
+            **initial_values,
             **cleaned_data,
         )
 
@@ -802,7 +820,7 @@ class DataspacedModel(models.Model):
                 use_natural_foreign_keys=True,
                 use_natural_primary_keys=True,
             )
-        except SerializationError:
+        except (SerializationError, ValueError):
             serialized_data = None
 
         return serialized_data

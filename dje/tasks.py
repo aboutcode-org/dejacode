@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -272,3 +272,17 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
         recipient=user,
         description=description,
     )
+
+
+@job("default", timeout="3h")
+def update_vulnerabilities():
+    """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
+    from component_catalog.vulnerabilities import fetch_from_vulnerablecode
+
+    logger.info("Entering update_vulnerabilities task")
+    Dataspace = apps.get_model("dje", "Dataspace")
+    dataspace_qs = Dataspace.objects.filter(enable_vulnerablecodedb_access=True)
+
+    for dataspace in dataspace_qs:
+        logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
+        fetch_from_vulnerablecode(dataspace, batch_size=50, timeout=60)

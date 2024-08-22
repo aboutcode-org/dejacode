@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -28,6 +28,7 @@ from component_catalog.models import Package
 from component_catalog.models import PackageAssignedLicense
 from component_catalog.models import Subcomponent
 from component_catalog.models import SubcomponentAssignedLicense
+from component_catalog.models import Vulnerability
 from dje.forms import DataspacedAdminForm
 from dje.mass_update import DejacodeMassUpdateForm
 from dje.models import DejacodeUser
@@ -118,6 +119,7 @@ MODEL_WHITELIST = [
     DejacodeUser,
     CodebaseResource,
     CodebaseResourceUsage,
+    Vulnerability,
 ]
 
 FIELDS_WHITELIST = {
@@ -199,6 +201,7 @@ def get_model_data_for_column_template(dataspace=None):
                 "redistribution_required",
                 "change_tracking_required",
                 "where_used",
+                "is_vulnerable",
             ],
         },
         "component_catalog:package": {
@@ -217,6 +220,7 @@ def get_model_data_for_column_template(dataspace=None):
                 "short_package_url",
                 "where_used",
                 "inferred_url",
+                "is_vulnerable",
             ],
         },
         "license_library:license": {

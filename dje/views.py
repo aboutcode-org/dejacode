@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -33,6 +33,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.staticfiles import finders
 from django.core.exceptions import ObjectDoesNotExist
@@ -681,7 +682,7 @@ def home_view(request):
     }
 
     support_urls = {
-        "Report an issue": "https://github.com/nexB/dejacode/issues/new/",
+        "Report an issue": "https://github.com/aboutcode-org/dejacode/issues/new/",
     }
 
     sections = {
@@ -2308,6 +2309,7 @@ class IntegrationsStatusView(
         is_configured = False
         is_available = False
         error_log = ""
+        extra_info = None
 
         integration = integration_class(dataspace=self.request.user.dataspace)
 
@@ -2318,10 +2320,16 @@ class IntegrationsStatusView(
             except Exception as exception:
                 error_log = str(exception)
 
+        if integration_class is VulnerableCode:
+            updated_at = self.request.user.dataspace.vulnerabilities_updated_at
+
+            extra_info = f"Vulnerability data update: {naturaltime(updated_at)}"
+
         status = {
             "is_configured": is_configured,
             "is_available": is_available,
             "error_log": error_log,
+            "extra_info": extra_info,
         }
 
         if self.request.user.is_superuser:
@@ -2338,11 +2346,7 @@ class IntegrationsStatusView(
             for integration_class in self.integrations
         }
 
-        context.update(
-            {
-                "integrations_status": integrations_status,
-            }
-        )
+        context["integrations_status"] = integrations_status
         return context
 
 

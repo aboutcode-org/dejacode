@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -2031,6 +2031,11 @@ class ColumnTemplateTestCase(TestCase):
                 "label": "website_terms_of_use",
                 "value": "website_terms_of_use",
             },
+            {
+                "group": "Many to Many Fields",
+                "label": "affected_by_vulnerabilities",
+                "value": "affected_by_vulnerabilities",
+            },
             {"group": "Many to Many Fields", "label": "children", "value": "children"},
             {"group": "Many to Many Fields", "label": "licenses", "value": "licenses"},
             {"group": "Many to Many Fields", "label": "packages", "value": "packages"},
@@ -2091,6 +2096,7 @@ class ColumnTemplateTestCase(TestCase):
                 "value": "change_tracking_required",
             },
             {"group": "Properties", "label": "where_used", "value": "where_used"},
+            {"group": "Properties", "label": "is_vulnerable", "value": "is_vulnerable"},
         ]
         self.assertEqual(expected, value["component_catalog:component"]["grouped_fields"])
 

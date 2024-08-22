@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -441,9 +441,13 @@ RQ_QUEUES = {
         "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
         "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
         "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
-        "DEFAULT_TIMEOUT": env.int("DEJACODE_REDIS_DEFAULT_TIMEOUT", default=360),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_RQ_DEFAULT_TIMEOUT", default=360),
     },
 }
+
+# Cron jobs (scheduler)
+daily_at_3am = "0 3 * * *"
+DEJACODE_VULNERABILITIES_CRON = env.str("DEJACODE_VULNERABILITIES_CRON", default=daily_at_3am)
 
 
 def enable_rq_eager_mode():

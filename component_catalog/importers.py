@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -30,6 +30,7 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
+from component_catalog.vulnerabilities import fetch_for_queryset
 from dje.fields import SmartFileField
 from dje.forms import JSONListField
 from dje.importers import BaseImporter
@@ -182,6 +183,7 @@ class ComponentImportForm(
             "packages",
             "completion_level",
             "request_count",
+            "affected_by_vulnerabilities",
             # JSONField not supported
             "dependencies",
         )
@@ -261,6 +263,7 @@ class PackageImportForm(
             "file_references",
             "request_count",
             "parties",
+            "affected_by_vulnerabilities",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -343,7 +346,7 @@ class PackageImporter(BaseImporter):
         input_as_list_of_dict = packages
 
         # Using a dict comprehension to keep the original key order and
-        # ensure we have all possibile headers.
+        # ensure we have all possible headers.
         header_row = {key: None for package in packages for key in package.keys()}
         header_row = list(header_row.keys())
 
@@ -422,6 +425,15 @@ class PackageImporter(BaseImporter):
         kwargs = super().get_form_kwargs()
         kwargs["is_from_scancode"] = getattr(self, "is_from_scancode", False)
         return kwargs
+
+    def save_all(self):
+        """Fetch vulnerabilities for imported Packages."""
+        super().save_all()
+
+        if self.dataspace.enable_vulnerablecodedb_access:
+            package_pks = [package.pk for package in self.results["added"]]
+            package_qs = Package.objects.scope(dataspace=self.dataspace).filter(pk__in=package_pks)
+            fetch_for_queryset(package_qs, self.dataspace)
 
 
 class SubcomponentImportForm(

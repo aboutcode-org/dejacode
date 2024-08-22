@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -70,6 +70,7 @@ __version__ = get_version(VERSION)
 
 # Turn off the warnings for the following modules.
 warnings.filterwarnings("ignore", module="cyclonedx")
+warnings.filterwarnings("ignore", category=FutureWarning, module="rq_scheduler.utils")
 
 
 def command_line():

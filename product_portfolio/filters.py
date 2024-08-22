@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -200,6 +200,17 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="component__affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownWidget(
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
+    )
 
     class Meta:
         model = ProductComponent
@@ -239,6 +250,17 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_deployed",
             "is_modified",
         ],
+    )
+    is_vulnerable = HasRelationFilter(
+        label=_("Is Vulnerable"),
+        field_name="package__affected_by_vulnerabilities",
+        choices=(
+            ("yes", _("Affected by vulnerabilities")),
+            ("no", _("No vulnerabilities found")),
+        ),
+        widget=DropDownWidget(
+            anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
     )
 
     @staticmethod

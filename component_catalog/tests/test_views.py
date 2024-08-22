@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -39,9 +39,9 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.tests import make_vulnerability
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
-from component_catalog.views import PackageDetailsView
 from component_catalog.views import PackageTabScanView
 from dejacode_toolkit.scancodeio import get_webhook_url
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -1037,31 +1037,8 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerabilities_by_cpe")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_component_details_view_tab_vulnerabilities(
-        self, mock_is_configured, mock_get_vulnerabilities_by_cpe
-    ):
-        mock_is_configured.return_value = True
-
-        self.nexb_dataspace.enable_vulnerablecodedb_access = True
-        self.nexb_dataspace.save()
-
-        self.component1.cpe = "cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*"
-        self.component1.save()
-
-        mock_get_vulnerabilities_by_cpe.return_value = [
-            {
-                "vulnerability_id": "VULCOID-5U6",
-                "summary": "django.contrib.sessions in Django before 1.2.7",
-                "references": [
-                    {
-                        "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2011-4136",
-                        "reference_id": "CVE-2011-4136",
-                    }
-                ],
-            }
-        ]
+    def test_component_details_view_tab_vulnerabilities(self):
+        vulnerability1 = make_vulnerability(self.nexb_dataspace, affecting=self.component1)
 
         self.client.login(username="nexb_user", password="t3st")
         response = self.client.get(self.component1.details_url)
@@ -1073,11 +1050,7 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        expected = (
-            '<a href="https://nvd.nist.gov/vuln/detail/CVE-2011-4136" target="_blank">'
-            "CVE-2011-4136</a>"
-        )
-        self.assertContains(response, expected)
+        self.assertContains(response, vulnerability1.vcid)
 
     def test_component_catalog_component_create_ajax_view(self):
         component_create_ajax_url = reverse("component_catalog:component_add_ajax")
@@ -1144,6 +1117,7 @@ class PackageUserViewsTestCase(TestCase):
         self.package1.save()
         self.package1_tab_scan_url = self.package1.get_url("tab_scan")
 
+        self.vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=self.package1, dataspace=self.dataspace
         )
@@ -1155,7 +1129,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(16):
             self.client.get(reverse("component_catalog:package_list"))
 
     def test_package_views_urls(self):
@@ -1265,7 +1239,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(27):
+        with self.assertNumQueries(29):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -1756,6 +1730,18 @@ class PackageUserViewsTestCase(TestCase):
         self.assertFalse(
             Package.objects.filter(download_url=collected_data["download_url"]).exists()
         )
+
+    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
+    def test_package_create_ajax_view_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
+        mock_fetch_vulnerabilities.return_value = None
+        package_add_url = reverse("component_catalog:package_add_urls")
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        self.client.login(username=self.super_user.username, password="secret")
+
+        data = {"download_urls": "pkg:pypi/django@2.1"}
+        self.client.post(package_add_url, data)
+        mock_fetch_vulnerabilities.assert_called()
 
     def test_package_details_view_add_to_product(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -2973,128 +2959,22 @@ class PackageUserViewsTestCase(TestCase):
             'attachment; filename="package1_scan.zip"', response["content-disposition"]
         )
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerable_purls")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_package_list_view_vulnerabilities(self, mock_is_configured, mock_vulnerable_purls):
-        purl = "pkg:pypi/django@2.1"
-        mock_is_configured.return_value = True
-
-        self.package1.set_package_url(purl)
-        self.package1.save()
-
-        self.dataspace.enable_vulnerablecodedb_access = True
-        self.dataspace.save()
-
-        mock_vulnerable_purls.return_value = [purl]
-
+    def test_package_list_view_vulnerabilities(self):
         self.client.login(username=self.super_user.username, password="secret")
         package_list_url = reverse("component_catalog:package_list")
         response = self.client.get(package_list_url)
 
         self.assertContains(response, self.package1.identifier)
         self.assertContains(response, "#vulnerabilities")
-        expected = '<i class="fas fa-bug vulnerability"></i>'
+        expected = f"""
+        <a href="{self.package1.details_url}#vulnerabilities" class="vulnerability"
+           data-bs-toggle="tooltip" title="Vulnerabilities">
+          <i class="fas fa-bug"></i>1
+        </a>
+        """
         self.assertContains(response, expected, html=True)
 
-    def test_package_details_view_get_vulnerability_fields(self):
-        self.package1.set_package_url("pkg:nginx/nginx@1.11.1")
-        self.package1.save()
-        copy_object(self.package1, Dataspace.objects.create(name="Other"), self.basic_user)
-
-        get_vulnerability_fields = PackageDetailsView.get_vulnerability_fields
-        fields = get_vulnerability_fields(vulnerability={}, dataspace=self.dataspace)
-        self.assertEqual(fields[0], ("Summary", None, "Summary of the vulnerability"))
-
-        vulnerability_url = "http://public.vulnerablecode.io/vulnerabilities/VCID-pk3r-ga7k-aaap"
-        vulnerability = {
-            "vulnerability_id": "VCID-pk3r-ga7k-aaap",
-            "summary": "SQL Injection",
-            "resource_url": vulnerability_url,
-            "references": [
-                {
-                    "reference_id": "",
-                    "reference_url": "http://www.openwall.com/lists/oss-security/2022/01/18/4",
-                    "scores": [],
-                },
-                {
-                    "reference_id": "CVE-2022-23305",
-                    "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23305",
-                    "scores": [],
-                },
-            ],
-            "fixed_packages": [
-                {"purl": "pkg:nginx/nginx@1.11.1"},
-                {"purl": "pkg:nginx/nginx@1.10.1"},
-            ],
-        }
-        fields = get_vulnerability_fields(
-            vulnerability=vulnerability,
-            dataspace=self.dataspace,
-        )
-        self.assertEqual(fields[0], ("Summary", "SQL Injection", "Summary of the vulnerability"))
-        self.assertEqual(fields[1][0], "VulnerableCode URL")
-        url_as_link = f'<a href="{vulnerability_url}" target="_blank">{vulnerability_url}</a>'
-        self.assertEqual(fields[1][1], url_as_link)
-        self.assertEqual(fields[2][0], "Fixed packages")
-        fixed_package_values = fields[2][1]
-        self.assertIn("nginx/nginx@1.10.1", fixed_package_values)
-        self.assertIn(
-            '<a href="/packages/add/?package_url=pkg:nginx/nginx@1.10.1"',
-            fixed_package_values,
-        )
-        self.assertIn(
-            f'<a href="{self.package1.get_absolute_url()}">pkg:nginx/nginx@1.11.1</a>',
-            fixed_package_values,
-        )
-        self.assertEqual(
-            fields[3][0:2],
-            (
-                "Reference IDs",
-                '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
-                "CVE-2022-23305"
-                "</a>",
-            ),
-        )
-        self.assertEqual(
-            fields[4][0:2],
-            (
-                "Reference URLs",
-                '<a target="_blank" href="http://www.openwall.com/lists/oss-security/2022/01/18/4" '
-                'rel="nofollow">http://www.openwall.com/lists/oss-security/2022/01/18/4</a>',
-            ),
-        )
-
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_vulnerabilities_by_purl")
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_package_details_view_tab_vulnerabilities(
-        self, mock_is_configured, mock_get_vulnerabilities_by_purl
-    ):
-        purl = "pkg:pypi/django@2.1"
-        mock_is_configured.return_value = True
-
-        self.package1.set_package_url(purl)
-        self.package1.save()
-
-        self.dataspace.enable_vulnerablecodedb_access = True
-        self.dataspace.save()
-
-        mock_get_vulnerabilities_by_purl.return_value = [
-            {
-                "purl": "pkg:pypi/django@2.1",
-                "affected_by_vulnerabilities": [
-                    {
-                        "summary": "SQL Injection",
-                        "references": [
-                            {
-                                "reference_id": "CVE-2022-23305",
-                                "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-23305",
-                            }
-                        ],
-                    },
-                ],
-            }
-        ]
-
+    def test_package_details_view_tab_vulnerabilities(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(self.package1.details_url)
 
@@ -3105,12 +2985,7 @@ class PackageUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        expected = (
-            '<a href="https://nvd.nist.gov/vuln/detail/CVE-2022-23305" target="_blank">'
-            "CVE-2022-23305"
-            "</a>"
-        )
-        self.assertContains(response, expected)
+        self.assertContains(response, self.vulnerability1.vcid)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])
@@ -3520,6 +3395,23 @@ class PackageUserViewsTestCase(TestCase):
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
         }
         self.assertEqual(expected, response.context["form"].initial)
+
+    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
+    def test_component_catalog_package_add_view_fetch_vulnerabilities(
+        self, mock_fetch_vulnerabilities
+    ):
+        mock_fetch_vulnerabilities.return_value = None
+        self.client.login(username=self.super_user.username, password="secret")
+        add_url = reverse("component_catalog:package_add")
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+
+        data = {
+            "filename": "name.zip",
+            "submit": "Add Package",
+        }
+        self.client.post(add_url, data)
+        mock_fetch_vulnerabilities.assert_called()
 
     @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
@@ -3957,7 +3849,7 @@ class ComponentListViewTestCase(TestCase):
 
     def test_component_catalog_list_view_num_queries(self):
         self.client.login(username="nexb_user", password="t3st")
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(17):
             self.client.get(reverse("component_catalog:component_list"))
 
     def test_component_catalog_list_view_default(self):

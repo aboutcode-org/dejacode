@@ -1,0 +1,270 @@
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "url": "http://public.vulnerablecode.io/api/packages/844821",
+            "purl": "pkg:pypi/idna@3.6",
+            "type": "pypi",
+            "namespace": "",
+            "name": "idna",
+            "version": "3.6",
+            "qualifiers": {},
+            "subpath": "",
+            "is_vulnerable": true,
+            "next_non_vulnerable_version": "3.7",
+            "latest_non_vulnerable_version": "3.7",
+            "affected_by_vulnerabilities": [
+                {
+                    "url": "http://public.vulnerablecode.io/api/vulnerabilities/525663",
+                    "vulnerability_id": "VCID-j3au-usaz-aaag",
+                    "summary": "Internationalized Domain Names in Applications (IDNA) vulnerable to denial of service from specially crafted inputs to idna.encode",
+                    "references": [
+                        {
+                            "reference_url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2024-3651.json",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "6.5",
+                                    "scoring_system": "cvssv3",
+                                    "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+                                }
+                            ],
+                            "url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2024-3651.json"
+                        },
+                        {
+                            "reference_url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-3651",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-3651"
+                        },
+                        {
+                            "reference_url": "https://ftp.suse.com/pub/projects/security/yaml/suse-cvss-scores.yaml",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "2.1",
+                                    "scoring_system": "cvssv2",
+                                    "scoring_elements": "AV:N/AC:H/Au:S/C:N/I:P/A:N"
+                                },
+                                {
+                                    "value": "4.4",
+                                    "scoring_system": "cvssv3",
+                                    "scoring_elements": "CVSS:3.0/AV:L/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:L"
+                                },
+                                {
+                                    "value": "5.5",
+                                    "scoring_system": "cvssv3.1",
+                                    "scoring_elements": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"
+                                }
+                            ],
+                            "url": "https://ftp.suse.com/pub/projects/security/yaml/suse-cvss-scores.yaml"
+                        },
+                        {
+                            "reference_url": "https://github.com/kjd/idna",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "6.2",
+                                    "scoring_system": "cvssv3.1",
+                                    "scoring_elements": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                },
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "generic_textual",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://github.com/kjd/idna"
+                        },
+                        {
+                            "reference_url": "https://github.com/kjd/idna/commit/1d365e17e10d72d0b7876316fc7b9ca0eebdd38d",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "7.5",
+                                    "scoring_system": "cvssv3.1",
+                                    "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                },
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "generic_textual",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://github.com/kjd/idna/commit/1d365e17e10d72d0b7876316fc7b9ca0eebdd38d"
+                        },
+                        {
+                            "reference_url": "https://github.com/pypa/advisory-database/tree/main/vulns/idna/PYSEC-2024-60.yaml",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "6.2",
+                                    "scoring_system": "cvssv3.1",
+                                    "scoring_elements": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                },
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "generic_textual",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://github.com/pypa/advisory-database/tree/main/vulns/idna/PYSEC-2024-60.yaml"
+                        },
+                        {
+                            "reference_url": "https://huntr.com/bounties/93d78d07-d791-4b39-a845-cbfabc44aadb",
+                            "reference_id": "",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "7.5",
+                                    "scoring_system": "cvssv3.1",
+                                    "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                },
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "generic_textual",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://huntr.com/bounties/93d78d07-d791-4b39-a845-cbfabc44aadb"
+                        },
+                        {
+                            "reference_url": "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1069127",
+                            "reference_id": "1069127",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1069127"
+                        },
+                        {
+                            "reference_url": "https://bugzilla.redhat.com/show_bug.cgi?id=2274779",
+                            "reference_id": "2274779",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://bugzilla.redhat.com/show_bug.cgi?id=2274779"
+                        },
+                        {
+                            "reference_url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:kjd:internationalized_domain_names_in_applications:3.6:*:*:*:*:*:*:*",
+                            "reference_id": "cpe:2.3:a:kjd:internationalized_domain_names_in_applications:3.6:*:*:*:*:*:*:*",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query=cpe:2.3:a:kjd:internationalized_domain_names_in_applications:3.6:*:*:*:*:*:*:*"
+                        },
+                        {
+                            "reference_url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3651",
+                            "reference_id": "CVE-2024-3651",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "7.5",
+                                    "scoring_system": "cvssv3",
+                                    "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+                                }
+                            ],
+                            "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-3651"
+                        },
+                        {
+                            "reference_url": "https://github.com/advisories/GHSA-jjg7-2v4v-x38h",
+                            "reference_id": "GHSA-jjg7-2v4v-x38h",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "cvssv3.1_qr",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://github.com/advisories/GHSA-jjg7-2v4v-x38h"
+                        },
+                        {
+                            "reference_url": "https://github.com/kjd/idna/security/advisories/GHSA-jjg7-2v4v-x38h",
+                            "reference_id": "GHSA-jjg7-2v4v-x38h",
+                            "reference_type": "",
+                            "scores": [
+                                {
+                                    "value": "MODERATE",
+                                    "scoring_system": "cvssv3.1_qr",
+                                    "scoring_elements": ""
+                                }
+                            ],
+                            "url": "https://github.com/kjd/idna/security/advisories/GHSA-jjg7-2v4v-x38h"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:3466",
+                            "reference_id": "RHSA-2024:3466",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:3466"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:3543",
+                            "reference_id": "RHSA-2024:3543",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:3543"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:3552",
+                            "reference_id": "RHSA-2024:3552",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:3552"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:3781",
+                            "reference_id": "RHSA-2024:3781",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:3781"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:3846",
+                            "reference_id": "RHSA-2024:3846",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:3846"
+                        },
+                        {
+                            "reference_url": "https://access.redhat.com/errata/RHSA-2024:4260",
+                            "reference_id": "RHSA-2024:4260",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://access.redhat.com/errata/RHSA-2024:4260"
+                        },
+                        {
+                            "reference_url": "https://usn.ubuntu.com/6780-1/",
+                            "reference_id": "USN-6780-1",
+                            "reference_type": "",
+                            "scores": [],
+                            "url": "https://usn.ubuntu.com/6780-1/"
+                        }
+                    ],
+                    "fixed_packages": [
+                        {
+                            "url": "http://public.vulnerablecode.io/api/packages/810901",
+                            "purl": "pkg:pypi/idna@3.7",
+                            "is_vulnerable": false,
+                            "affected_by_vulnerabilities": [],
+                            "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/idna@3.7"
+                        }
+                    ],
+                    "aliases": [
+                        "CVE-2024-3651",
+                        "GHSA-jjg7-2v4v-x38h",
+                        "PYSEC-2024-60"
+                    ],
+                    "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-j3au-usaz-aaag"
+                }
+            ],
+            "fixing_vulnerabilities": [],
+            "resource_url": "http://public.vulnerablecode.io/packages/pkg:pypi/idna@3.6"
+        }
+    ]
+}

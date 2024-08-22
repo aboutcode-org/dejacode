@@ -47,10 +47,10 @@ create the Docker images and to manage the services (database, cache, webserver)
 Clone the DejaCode repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Open your terminal and clone the `DejaCode repo <https://github.com/nexB/dejacode>`_
+Open your terminal and clone the `DejaCode repo <https://github.com/aboutcode-org/dejacode>`_
 with the following command::
 
-    git clone --depth=1 https://github.com/nexB/dejacode.git
+    git clone --depth=1 https://github.com/aboutcode-org/dejacode.git
 
 Build the Docker image
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -189,9 +189,9 @@ Before you install DejaCode, make sure you have the following prerequisites:
 Clone and Configure
 -------------------
 
-#. Clone the `DejaCode GitHub repository <https://github.com/nexB/dejacode>`_::
+#. Clone the `DejaCode GitHub repository <https://github.com/aboutcode-org/dejacode>`_::
 
-    git clone https://github.com/nexB/dejacode.git && cd dejacode
+    git clone https://github.com/aboutcode-org/dejacode.git && cd dejacode
 
 #. Install the dependencies::
 

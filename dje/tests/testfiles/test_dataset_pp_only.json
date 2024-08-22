@@ -47,7 +47,8 @@
     "api_data_url": "",
     "datasource_id": "",
     "file_references": [],
-    "parties": []
+    "parties": [],
+    "affected_by_vulnerabilities": []
   }
 },
 {

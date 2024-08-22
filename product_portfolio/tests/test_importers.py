@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -1014,3 +1014,15 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual([purl], [str(package) for package in existing["package"]])
         self.assertEqual([dependency_uid], [str(package) for package in existing["dependency"]])
         self.assertEqual({}, errors)
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        with mock.patch("product_portfolio.models.Product.fetch_vulnerabilities") as mock_fetch:
+            mock_fetch.return_value = None
+            importer = ImportPackageFromScanCodeIO(
+                user=self.super_user,
+                project_uuid=uuid.uuid4(),
+                product=self.product1,
+            )
+            importer.save()
+            mock_fetch.assert_called()

@@ -2,14 +2,18 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
+
+import logging
 
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 class DejaCodeConfig(AppConfig):
@@ -17,6 +21,15 @@ class DejaCodeConfig(AppConfig):
     verbose_name = _("DejaCode")
 
     def ready(self):
+        """
+        Get the apps ready when Django starts.
+
+        WARNING: The ready() method gets triggered multiple times and is not
+        suitable to handle execution that should only happen once.
+         - Gunicorn workers: When Gunicorn starts, it spawns multiple worker processes,
+        each of which calls the ready() method.
+         - Worker services: Similarly, the workers also trigger the ready() method.
+        """
         from dje.mass_update import action_end
         from dje.notification import successful_mass_update
 

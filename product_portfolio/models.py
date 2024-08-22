@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -29,6 +29,7 @@ from component_catalog.models import KeywordsMixin
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
 from component_catalog.models import component_mixin_factory
+from component_catalog.vulnerabilities import fetch_for_queryset
 from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
@@ -501,6 +502,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             if updated_fields:
                 updated_packages.append(package)
         return updated_packages
+
+    def fetch_vulnerabilities(self):
+        """Fetch and update the vulnerabilties of all the Package of this Product."""
+        return fetch_for_queryset(self.all_packages, self.dataspace)
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):

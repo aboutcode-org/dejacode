@@ -2,7 +2,7 @@
 # Copyright (c) nexB Inc. and others. All rights reserved.
 # DejaCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/nexB/dejacode for support or download.
+# See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
@@ -844,16 +844,19 @@ class HasRelationFilter(django_filters.ChoiceFilter):
     def __init__(self, *args, **kwargs):
         kwargs["lookup_expr"] = "isnull"
         kwargs["empty_label"] = "Any"
-        kwargs["choices"] = (
-            ("with", _("With")),
-            ("without", _("Without")),
+        kwargs.setdefault(
+            "choices",
+            (
+                ("with", _("With")),
+                ("without", _("Without")),
+            ),
         )
         super().__init__(*args, **kwargs)
 
     def filter(self, qs, value):
-        if value == "with":
+        if value in ["with", "yes"]:
             return qs.filter(**{f"{self.field_name}__{self.lookup_expr}": False}).distinct()
-        elif value == "without":
+        elif value in ["without", "no"]:
             return qs.filter(**{f"{self.field_name}__{self.lookup_expr}": True}).distinct()
         return qs
 
@@ -865,8 +868,8 @@ class HasCountFilter(HasRelationFilter):
     """
 
     def filter(self, qs, value):
-        if value == "with":
+        if value in ["with", "yes"]:
             return qs.filter(**{f"{self.field_name}_count__gt": 0}).distinct()
-        elif value == "without":
+        elif value in ["without", "no"]:
             return qs.filter(**{f"{self.field_name}_count__exact": 0}).distinct()
         return qs
