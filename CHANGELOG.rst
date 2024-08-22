@@ -93,6 +93,10 @@ Release notes
   - Pull ScanCode.io Project data
   https://github.com/aboutcode-org/dejacode/issues/94
 
+- Display warning when a "download_url" could not be determined from a PURL in
+  "Add Package".
+  https://github.com/aboutcode-org/dejacode/issues/163
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

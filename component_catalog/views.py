@@ -1492,13 +1492,13 @@ def package_create_ajax_view(request):
             errors.append(str(error))
 
     redirect_url = reverse("component_catalog:package_list")
-    len_created = len(created)
 
     scancodeio = ScanCodeIO(dataspace)
-    if scancodeio.is_configured() and dataspace.enable_package_scanning:
+    download_urls = [package.download_url for package in created if package.download_url]
+    if download_urls and dataspace.enable_package_scanning and scancodeio.is_configured():
         # The availability of the each `download_url` is checked in the task.
         tasks.scancodeio_submit_scan.delay(
-            uris=[package.download_url for package in created if package.download_url],
+            uris=download_urls,
             user_uuid=user.uuid,
             dataspace_uuid=dataspace.uuid,
         )
@@ -1508,6 +1508,7 @@ def package_create_ajax_view(request):
         for package in created:
             package.fetch_vulnerabilities()
 
+    len_created = len(created)
     if len_created == 1:
         redirect_url = created[0].get_absolute_url()
         messages.success(request, "The Package was successfully created.")
@@ -1515,6 +1516,17 @@ def package_create_ajax_view(request):
         packages = "\n".join([package.get_absolute_link() for package in created])
         msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
         messages.success(request, format_html(msg))
+
+    purls_wihtout_download_url = [package for package in created if not package.download_url]
+    if purls_wihtout_download_url:
+        packages = [package.get_absolute_link() for package in purls_wihtout_download_url]
+        msg = (
+            "Unable to determine a download URL for the following packages."
+            " A download URL is required to fetch and scan a package from DejaCode."
+            "\nAlternatively, you can directly provide a download URL instead of a "
+            "package URL to create the packages.\n"
+        )
+        messages.warning(request, format_html(msg + "\n".join(packages)))
 
     if errors:
         messages.error(request, format_html("\n".join(errors)))
