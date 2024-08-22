@@ -682,7 +682,7 @@ def home_view(request):
     }
 
     support_urls = {
-        "Report an issue": "https://github.com/nexB/dejacode/issues/new/",
+        "Report an issue": "https://github.com/aboutcode-org/dejacode/issues/new/",
     }
 
     sections = {

@@ -8,7 +8,7 @@
 
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/nexB/dejacode"
+LABEL org.opencontainers.image.source="https://github.com/aboutcode-org/dejacode"
 LABEL org.opencontainers.image.description="DejaCode"
 LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 
