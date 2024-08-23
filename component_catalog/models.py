@@ -2604,10 +2604,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         help_text=_("A list of packages that are not affected by this vulnerability."),
     )
     fixed_packages_length = models.GeneratedField(
-        expression=models.Func(
-            models.F('fixed_packages'),
-            function='jsonb_array_length'
-        ),
+        expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
     )
@@ -2656,3 +2653,46 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             instance.add_affected(affecting)
 
         return instance
+
+    def get_severities(self):
+        return [score for reference in self.references for score in reference.get("scores", [])]
+
+    # Duplicated from
+    # https://github.com/aboutcode-org/vulnerablecode/blob/main/vulnerabilities/utils.py
+    # Until made available in the API https://github.com/aboutcode-org/vulnerablecode/issues/1565
+    def get_severity_range(self):
+        severities = self.get_severities()
+        if len(severities) < 1:
+            return
+
+        scores = self.get_severity_scores(severities)
+        if scores:
+            return f"{min(scores)} - {max(scores)}"
+
+    @staticmethod
+    def get_severity_scores(severities):
+        score_map = {
+            "low": [0.1, 3],
+            "moderate": [4.0, 6.9],
+            "medium": [4.0, 6.9],
+            "high": [7.0, 8.9],
+            "important": [7.0, 8.9],
+            "critical": [9.0, 10.0],
+        }
+
+        consolidated_scores = []
+        for severity in severities:
+            score = severity.get("value")
+            try:
+                consolidated_scores.append(float(score))
+            except ValueError:
+                if score_range := score_map.get(score.lower(), None):
+                    consolidated_scores.extend(score_range)
+
+        return consolidated_scores
+
+    def get_highest_score(self):
+        severities = self.get_severities()
+        scores = self.get_severity_scores(severities)
+        if scores:
+            return max(scores)

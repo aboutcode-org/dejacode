@@ -358,6 +358,15 @@ table.packages-table .column-primary_language {
   margin-right: 0.3rem;
 }
 
+/* -- Vulnerability List -- */
+table.vulnerabilities-table .column-vulnerability_id {
+  width: 220px;
+}
+table.vulnerabilities-table .column-summary {
+  width: 300px;
+  max-width: 300px;
+}
+
 /* -- Package Details -- */
 textarea.licenseexpressionwidget {
   height: 62px;

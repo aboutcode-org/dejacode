@@ -2491,9 +2491,10 @@ class VulnerabilityListView(
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
-        # Header("score"),
-        Header("affected_packages_count", "Affected packages", help_text=" "),
-        Header("fixed_packages_length", "Fixed by packages", help_text=" "),
+        Header("score", _("Severity score"), help_text="TODO"),
+        Header("summary", _("Summary")),
+        Header("affected_packages_count", "Affected packages", help_text="TODO"),
+        Header("fixed_packages_length", "Fixed by packages", help_text="TODO"),
         # Header("affected_product_count", "Affected products"),
     )
 
@@ -2501,15 +2502,16 @@ class VulnerabilityListView(
         return (
             super()
             .get_queryset()
-            .only(
-                "uuid",
-                "vulnerability_id",
-                "aliases",
-                "fixed_packages_length",
-                "created_date",
-                "last_modified_date",
-                "dataspace",
-            )
+            # .only(
+            #     "uuid",
+            #     "vulnerability_id",
+            #     "aliases",
+            #     "summary",
+            #     "fixed_packages_length",
+            #     "created_date",
+            #     "last_modified_date",
+            #     "dataspace",
+            # )
             .annotate(
                 affected_packages_count=Count("affected_packages"),
             )
@@ -2517,3 +2519,9 @@ class VulnerabilityListView(
                 "-last_modified_date",
             )
         )
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        vulnerablecode = VulnerableCode(self.dataspace)
+        context_data["vulnerablecode_url"] = vulnerablecode.service_url
+        return context_data
