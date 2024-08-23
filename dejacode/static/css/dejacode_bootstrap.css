@@ -362,6 +362,15 @@ table.packages-table .column-primary_language {
 table.vulnerabilities-table .column-vulnerability_id {
   width: 220px;
 }
+table.vulnerabilities-table .column-aliases {
+  width: 210px;
+}
+table.vulnerabilities-table .column-highest_score {
+  width: 110px;
+}
+table.vulnerabilities-table .column-priority {
+  width: 110px;
+}
 table.vulnerabilities-table .column-summary {
   width: 300px;
   max-width: 300px;
