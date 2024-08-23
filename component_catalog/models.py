@@ -2675,7 +2675,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             min_str, max_str = score.split('-')
             return float(min_str.strip()), float(max_str.strip())
         except Exception:
-            return None, None
+            return
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
@@ -2691,8 +2691,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             for score in reference.get("scores", [])
         ]
         scores = cls.get_severity_scores(severities)
-        data["lowest_score"] = min(scores)
-        data["highest_score"] = max(scores)
+        if scores:
+            data["lowest_score"] = min(scores)
+            data["highest_score"] = max(scores)
 
         instance = super().create_from_data(user=dataspace, data=data, validate=False)
 
