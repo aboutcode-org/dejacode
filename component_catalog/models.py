@@ -2609,6 +2609,16 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         output_field=models.IntegerField(),
         db_persist=True,
     )
+    highest_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=_("The highest score of the range."),
+    )
+    lowest_score = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=_("The lowest score of the range."),
+    )
 
     # The second set of fields are in the context of handling vulnerabilities in DejaCode
     class Priority(models.IntegerChoices):
@@ -2659,14 +2669,45 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         """Assign the ``components`` as affected to this vulnerability."""
         self.affected_components.add(*components)
 
+    @staticmethod
+    def range_to_values(self, range_str):
+        try:
+            min_str, max_str = score.split('-')
+            return float(min_str.strip()), float(max_str.strip())
+        except Exception:
+            return None, None
+
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
+        # severity_range_score = data.get("severity_range_score")
+        # if severity_range_score:
+        #     min_score, max_score = self.range_to_values(severity_range_score)
+        #     data["lowest_score"] = min_score
+        #     data["highest_score"] = max_score
+
+        severities = [
+            score
+            for reference in data.get("references")
+            for score in reference.get("scores", [])
+        ]
+        scores = cls.get_severity_scores(severities)
+        data["lowest_score"] = min(scores)
+        data["highest_score"] = max(scores)
+
         instance = super().create_from_data(user=dataspace, data=data, validate=False)
 
         if affecting:
             instance.add_affected(affecting)
 
         return instance
+
+    @property
+    def severity_score_range(self):
+        if not (self.lowest_score and self.highest_score):
+            return ""
+        if self.lowest_score == self.highest_score:
+            return str(self.highest_score)
+        return f"{self.lowest_score} - {self.highest_score}"
 
     def get_severities(self):
         return [score for reference in self.references for score in reference.get("scores", [])]
