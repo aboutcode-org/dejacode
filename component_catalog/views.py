@@ -2498,9 +2498,6 @@ class VulnerabilityListView(
     )
 
     def get_queryset(self):
-        from django.db.models import Func
-        from django.db.models import IntegerField
-
         return (
             super()
             .get_queryset()
@@ -2508,16 +2505,13 @@ class VulnerabilityListView(
                 "uuid",
                 "vulnerability_id",
                 "aliases",
+                "fixed_packages_length",
                 "created_date",
                 "last_modified_date",
                 "dataspace",
             )
             .annotate(
                 affected_packages_count=Count("affected_packages"),
-                # TODO: Consider computing this on save()
-                fixed_packages_length=Func(
-                    "fixed_packages", function="jsonb_array_length", output_field=IntegerField()
-                ),
             )
             .order_by(
                 "-last_modified_date",

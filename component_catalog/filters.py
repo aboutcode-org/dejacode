@@ -286,6 +286,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         fields=[
             "vulnerability_id",
             "affected_packages_count",
+            "fixed_packages_length",
             "created_date",
             "last_modified_date",
         ],

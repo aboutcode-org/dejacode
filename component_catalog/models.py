@@ -2603,6 +2603,14 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("A list of packages that are not affected by this vulnerability."),
     )
+    fixed_packages_length = models.GeneratedField(
+        expression=models.Func(
+            models.F('fixed_packages'),
+            function='jsonb_array_length'
+        ),
+        output_field=models.IntegerField(),
+        db_persist=True,
+    )
 
     class Meta:
         verbose_name_plural = "Vulnerabilities"
