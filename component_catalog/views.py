@@ -2492,6 +2492,7 @@ class VulnerabilityListView(
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
         Header("score", _("Severity score"), help_text="TODO"),
+        Header("priority", _("Priority"), filter="priority"),
         Header("summary", _("Summary")),
         Header("affected_packages_count", "Affected packages", help_text="TODO"),
         Header("fixed_packages_length", "Fixed by packages", help_text="TODO"),
@@ -2516,7 +2517,9 @@ class VulnerabilityListView(
                 affected_packages_count=Count("affected_packages"),
             )
             .order_by(
-                "-last_modified_date",
+                "priority",
+                # "highest_score",
+                # "lowest_score",
             )
         )
 

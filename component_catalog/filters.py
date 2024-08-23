@@ -287,6 +287,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "vulnerability_id",
             "affected_packages_count",
             "fixed_packages_length",
+            "priority",
             "created_date",
             "last_modified_date",
         ],
@@ -297,4 +298,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         model = Vulnerability
         fields = [
             "q",
+            "priority",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters["priority"].extra["widget"] = DropDownRightWidget()

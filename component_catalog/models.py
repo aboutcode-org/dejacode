@@ -2574,6 +2574,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     automatically on object addition or during schedule tasks.
     """
 
+    # The first set of fields are storing data as fetched from VulnerableCode
     vulnerability_id = models.CharField(
         max_length=20,
         help_text=_(
@@ -2607,6 +2608,19 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
+    )
+
+    # The second set of fields are in the context of handling vulnerabilities in DejaCode
+    class Priority(models.IntegerChoices):
+        HIGH = 1, 'High'
+        MEDIUM = 2, 'Medium'
+        LOW = 3, 'Low'
+
+    priority = models.IntegerField(
+        choices=Priority.choices,
+        null=True,
+        blank=True,
+        help_text=_("Priority level"),
     )
 
     class Meta:
