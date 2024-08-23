@@ -244,6 +244,10 @@ class PackageFilterSet(DataspacedFilterSet):
         field_name="affected_by_vulnerabilities",
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label=_("Affected by"),
+    )
 
     class Meta:
         model = Package
