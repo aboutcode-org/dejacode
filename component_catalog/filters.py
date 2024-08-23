@@ -16,12 +16,14 @@ import django_filters
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
+from component_catalog.models import Vulnerability
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
 from dje.filters import DataspacedFilterSet
 from dje.filters import DefaultOrderingFilter
 from dje.filters import HasRelationFilter
 from dje.filters import MatchOrderedSearchFilter
 from dje.filters import RelatedLookupListFilter
+from dje.filters import SearchFilter
 from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
@@ -272,3 +274,26 @@ class PackageFilterSet(DataspacedFilterSet):
     @cached_property
     def show_last_modified_date(self):
         return not self.sort_value or self.has_sort_by("last_modified_date")
+
+
+class VulnerabilityFilterSet(DataspacedFilterSet):
+    q = SearchFilter(
+        label=_("Search"),
+        search_fields=["vulnerability_id", "aliases"],
+    )
+    sort = DefaultOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            "vulnerability_id",
+            "affected_packages_count",
+            "created_date",
+            "last_modified_date",
+        ],
+        widget=SortDropDownWidget,
+    )
+
+    class Meta:
+        model = Vulnerability
+        fields = [
+            "q",
+        ]

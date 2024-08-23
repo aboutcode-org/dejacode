@@ -52,6 +52,7 @@ from packageurl.contrib import purl2url
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
+from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import AddMultipleToComponentForm
 from component_catalog.forms import AddToComponentForm
 from component_catalog.forms import AddToProductAdminForm
@@ -71,6 +72,7 @@ from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
+from component_catalog.models import Vulnerability
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -2476,3 +2478,48 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
             tab_fields.extend(get_purldb_tab_fields(purldb_entry, user.dataspace))
 
         return {"fields": tab_fields}
+
+
+class VulnerabilityListView(
+    LoginRequiredMixin,
+    DataspacedFilterView,
+):
+    model = Vulnerability
+    filterset_class = VulnerabilityFilterSet
+    template_name = "component_catalog/vulnerability_list.html"
+    template_list_table = "component_catalog/includes/vulnerability_list_table.html"
+    table_headers = (
+        Header("vulnerability_id", _("Vulnerability")),
+        Header("aliases", _("Aliases")),
+        # Header("score"),
+        Header("affected_packages_count", "Affected packages", help_text=" "),
+        Header("fixed_packages_length", "Fixed by packages", help_text=" "),
+        # Header("affected_product_count", "Affected products"),
+    )
+
+    def get_queryset(self):
+        from django.db.models import Func
+        from django.db.models import IntegerField
+
+        return (
+            super()
+            .get_queryset()
+            .only(
+                "uuid",
+                "vulnerability_id",
+                "aliases",
+                "created_date",
+                "last_modified_date",
+                "dataspace",
+            )
+            .annotate(
+                affected_packages_count=Count("affected_packages"),
+                # TODO: Consider computing this on save()
+                fixed_packages_length=Func(
+                    "fixed_packages", function="jsonb_array_length", output_field=IntegerField()
+                ),
+            )
+            .order_by(
+                "-last_modified_date",
+            )
+        )
