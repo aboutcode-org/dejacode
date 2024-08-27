@@ -19,6 +19,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import models
 from django.db.models import CharField
+from django.db.models import Count
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.db.models.functions import Concat
@@ -134,7 +135,7 @@ class VulnerabilityQuerySetMixin:
     def with_vulnerability_count(self):
         """Annotate the QuerySet with the vulnerability_count."""
         return self.annotate(
-            vulnerability_count=models.Count("affected_by_vulnerabilities", distinct=True)
+            vulnerability_count=Count("affected_by_vulnerabilities", distinct=True)
         )
 
     def vulnerable(self):
@@ -1748,7 +1749,7 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         dependencies are always scoped to a Product.
         """
         return self.annotate(
-            declared_dependencies_count=models.Count(
+            declared_dependencies_count=Count(
                 "declared_dependencies",
                 filter=models.Q(declared_dependencies__product=product),
             )
@@ -2562,6 +2563,22 @@ class ComponentAssignedPackage(DataspacedModel):
         return f"<{self.component}>: {self.package}"
 
 
+class VulnerabilityQuerySet(DataspacedQuerySet):
+    def with_affected_products_count(self):
+        """Annotate the QuerySet with the affected_products_count."""
+        return self.annotate(
+            affected_products_count=Count(
+                "affected_packages__productpackages__product", distinct=True
+            ),
+        )
+
+    def with_affected_packages_count(self):
+        """Annotate the QuerySet with the affected_packages_count."""
+        return self.annotate(
+            affected_packages_count=Count("affected_packages", distinct=True),
+        )
+
+
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
@@ -2622,9 +2639,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     # The second set of fields are in the context of handling vulnerabilities in DejaCode
     class Priority(models.IntegerChoices):
-        HIGH = 1, 'High'
-        MEDIUM = 2, 'Medium'
-        LOW = 3, 'Low'
+        HIGH = 1, "High"
+        MEDIUM = 2, "Medium"
+        LOW = 3, "Low"
 
     priority = models.IntegerField(
         choices=Priority.choices,
@@ -2632,6 +2649,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("Priority level"),
     )
+
+    objects = DataspacedManager.from_queryset(VulnerabilityQuerySet)()
 
     class Meta:
         verbose_name_plural = "Vulnerabilities"
@@ -2672,7 +2691,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     @staticmethod
     def range_to_values(self, range_str):
         try:
-            min_str, max_str = score.split('-')
+            min_str, max_str = range_str.split("-")
             return float(min_str.strip()), float(max_str.strip())
         except Exception:
             return
@@ -2686,9 +2705,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         #     data["highest_score"] = max_score
 
         severities = [
-            score
-            for reference in data.get("references")
-            for score in reference.get("scores", [])
+            score for reference in data.get("references") for score in reference.get("scores", [])
         ]
         scores = cls.get_severity_scores(severities)
         if scores:

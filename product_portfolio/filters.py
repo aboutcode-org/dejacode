@@ -102,6 +102,10 @@ class ProductFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
+    affected_by = django_filters.CharFilter(
+        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
+        label=_("Affected by"),
+    )
 
     class Meta:
         model = Product

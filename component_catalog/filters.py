@@ -305,6 +305,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "lowest_score",
             "priority",
             "vulnerability_id",
+            "affected_products_count",
             "affected_packages_count",
             "fixed_packages_length",
             "created_date",
@@ -314,9 +315,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
     )
     highest_score = django_filters.ChoiceFilter(
         choices=SCORE_CHOICES,
-        method='filter_by_score_range',
-        label='Score Range',
-        help_text='Select a score range to filter.'
+        method="filter_by_score_range",
+        label="Score Range",
+        help_text="Select a score range to filter.",
     )
 
     class Meta:

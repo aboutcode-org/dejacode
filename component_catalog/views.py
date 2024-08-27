@@ -2487,16 +2487,18 @@ class VulnerabilityListView(
     model = Vulnerability
     filterset_class = VulnerabilityFilterSet
     template_name = "component_catalog/vulnerability_list.html"
-    template_list_table = "component_catalog/includes/vulnerability_list_table.html"
+    template_list_table = "component_catalog/tables/vulnerability_list_table.html"
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
-        Header("highest_score", _("Score"), help_text="Severity score range", filter="highest_score"),
+        Header(
+            "highest_score", _("Score"), help_text="Severity score range", filter="highest_score"
+        ),
         # Header("priority", _("Priority"), filter="priority"),
         Header("summary", _("Summary")),
-        Header("affected_packages_count", "Affected packages", help_text="TODO"),
-        Header("fixed_packages_length", "Fixed by packages", help_text="TODO"),
-        # Header("affected_product_count", "Affected products"),
+        Header("affected_products_count", "Affected products", help_text="Affected products"),
+        Header("affected_packages_count", "Affected packages", help_text="Affected packages"),
+        Header("fixed_packages_length", "Fixed by", help_text="Fixed by packages"),
     )
 
     def get_queryset(self):
@@ -2513,11 +2515,9 @@ class VulnerabilityListView(
             #     "last_modified_date",
             #     "dataspace",
             # )
-            .annotate(
-                affected_packages_count=Count("affected_packages"),
-            )
+            .with_affected_products_count()
+            .with_affected_packages_count()
             .order_by(
-                "priority",
                 "-highest_score",
                 "-lowest_score",
             )
