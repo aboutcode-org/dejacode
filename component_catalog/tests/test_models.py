@@ -2616,6 +2616,18 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertQuerySetEqual(vulnerablity2.affected_packages.all(), [package1])
         self.assertQuerySetEqual(vulnerablity2.affected_components.all(), [component1])
 
+    def test_vulnerability_model_fixed_packages_count_generated_field(self):
+        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
+        self.assertEqual(0, vulnerablity1.fixed_packages_count)
+
+        vulnerablity1.fixed_packages = [
+            {'purl': 'pkg:pypi/gitpython@3.1.41', 'is_vulnerable': True},
+            {'purl': 'pkg:pypi/gitpython@3.2', 'is_vulnerable': False},
+        ]
+        vulnerablity1.save()
+        vulnerablity1.refresh_from_db()
+        self.assertEqual(2, vulnerablity1.fixed_packages_count)
+
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
         vulnerability_data = {

@@ -309,7 +309,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "min_score",
             "affected_products_count",
             "affected_packages_count",
-            "fixed_packages_length",
+            "fixed_packages_count",
             "created_date",
             "last_modified_date",
         ],

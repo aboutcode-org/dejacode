@@ -2496,7 +2496,7 @@ class VulnerabilityListView(
         Header("summary", _("Summary")),
         Header("affected_products_count", _("Affected products"), help_text="Affected products"),
         Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
-        Header("fixed_packages_length", _("Fixed by"), help_text="Fixed by packages"),
+        Header("fixed_packages_count", _("Fixed by"), help_text="Fixed by packages"),
     )
 
     def get_queryset(self):
@@ -2508,7 +2508,7 @@ class VulnerabilityListView(
                 "vulnerability_id",
                 "aliases",
                 "summary",
-                "fixed_packages_length",
+                "fixed_packages_count",
                 "max_score",
                 "min_score",
                 "created_date",
