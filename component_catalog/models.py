@@ -2685,6 +2685,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
+        # Computing the min_score and max_score from the `references` as those data
+        # are not provided by the VulnerableCode API.
+        # https://github.com/aboutcode-org/vulnerablecode/issues/1573
         # severity_range_score = data.get("severity_range_score")
         # if severity_range_score:
         #     min_score, max_score = self.range_to_values(severity_range_score)
@@ -2704,29 +2707,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             instance.add_affected(affecting)
 
         return instance
-
-    @property
-    def severity_score_range(self):
-        if not (self.min_score and self.max_score):
-            return ""
-        if self.min_score == self.max_score:
-            return str(self.max_score)
-        return f"{self.min_score} - {self.max_score}"
-
-    def get_severities(self):
-        return [score for reference in self.references for score in reference.get("scores", [])]
-
-    # Duplicated from
-    # https://github.com/aboutcode-org/vulnerablecode/blob/main/vulnerabilities/utils.py
-    # Until made available in the API https://github.com/aboutcode-org/vulnerablecode/issues/1565
-    def get_severity_range(self):
-        severities = self.get_severities()
-        if len(severities) < 1:
-            return
-
-        scores = self.get_severity_scores(severities)
-        if scores:
-            return f"{min(scores)} - {max(scores)}"
 
     @staticmethod
     def get_severity_scores(severities):
@@ -2749,9 +2729,3 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
                     consolidated_scores.extend(score_range)
 
         return consolidated_scores
-
-    def get_max_score(self):
-        severities = self.get_severities()
-        scores = self.get_severity_scores(severities)
-        if scores:
-            return max(scores)
