@@ -47,6 +47,10 @@ COPY_DEFAULT_EXCLUDE = {
             "usage_policy",
             "guidance",
             "acceptable_linkages",
+            "affected_by_vulnerabilities",
+        ],
+        "package": [
+            "affected_by_vulnerabilities",
         ],
         "subcomponent relationship": [
             "extra_attribution_text",
@@ -65,6 +69,7 @@ ALWAYS_EXCLUDE = [
     "scanned_by",
     "project_uuid",
     "default_assignee",
+    "affected_by_vulnerabilities",
 ]
 
 
@@ -199,6 +204,11 @@ def copy_to(reference_obj, target_dataspace, user, **kwargs):
             field = reference_obj._meta.get_field(field_name)
         except FieldDoesNotExist:
             continue
+
+        # Simply skip many_to_many fields.
+        if field.many_to_many or field.many_to_one:
+            continue
+
         # get_default Return None or empty string (depending on the Field type)
         # if no default value was declared.
         setattr(target_obj, field_name, field.get_default())
@@ -306,6 +316,9 @@ def copy_m2m_fields(reference_obj, target_dataspace, user, update=False, **kwarg
     m2m_fields = reference_obj._meta.many_to_many
 
     for m2m_field in m2m_fields:
+        if m2m_field.name in ALWAYS_EXCLUDE:
+            continue
+
         through_model = m2m_field.remote_field.through  # Relation Model (through table)
         m2m_field_name = m2m_field.m2m_field_name()  # FK fields names on the Relation Model
         reference_m2m_qs = through_model.objects.filter(**{m2m_field_name: reference_obj})
