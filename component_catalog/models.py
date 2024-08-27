@@ -2637,19 +2637,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         help_text=_("The lowest score of the range."),
     )
 
-    # The second set of fields are in the context of handling vulnerabilities in DejaCode
-    class Priority(models.IntegerChoices):
-        HIGH = 1, "High"
-        MEDIUM = 2, "Medium"
-        LOW = 3, "Low"
-
-    priority = models.IntegerField(
-        choices=Priority.choices,
-        null=True,
-        blank=True,
-        help_text=_("Priority level"),
-    )
-
     objects = DataspacedManager.from_queryset(VulnerabilityQuerySet)()
 
     class Meta:

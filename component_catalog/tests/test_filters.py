@@ -19,6 +19,7 @@ from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
+from component_catalog.tests import make_vulnerability
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -380,9 +381,7 @@ class PackageFilterSearchTestCase(TestCase):
         self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
     def test_package_filterset_is_vulnerable_filter(self):
-        package1 = make_package(
-            self.dataspace, package_url="pkg:pypi/django@5.0", is_vulnerable=True
-        )
+        package1 = make_package(self.dataspace, is_vulnerable=True)
         self.assertTrue(package1.is_vulnerable)
 
         filterset = PackageFilterSet(dataspace=self.dataspace)
@@ -395,3 +394,18 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"is_vulnerable": "no"}
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         self.assertNotIn(package1, filterset.qs)
+
+    def test_package_filterset_affected_by_filter(self):
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=package1)
+        self.assertTrue(package1.is_vulnerable)
+        self.assertFalse(package2.is_vulnerable)
+
+        filterset = PackageFilterSet(dataspace=self.dataspace)
+        self.assertIn(package1, filterset.qs)
+        self.assertIn(package2, filterset.qs)
+
+        data = {"affected_by": vulnerability1.vulnerability_id}
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [package1])

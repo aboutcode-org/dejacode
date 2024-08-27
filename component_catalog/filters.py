@@ -106,6 +106,10 @@ class ComponentFilterSet(DataspacedFilterSet):
         field_name="affected_by_vulnerabilities",
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label=_("Affected by"),
+    )
 
     class Meta:
         model = Component
@@ -303,7 +307,6 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         fields=[
             "highest_score",
             "lowest_score",
-            "priority",
             "vulnerability_id",
             "affected_products_count",
             "affected_packages_count",
@@ -324,12 +327,10 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         model = Vulnerability
         fields = [
             "q",
-            "priority",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["priority"].extra["widget"] = DropDownRightWidget()
         self.filters["highest_score"].extra["widget"] = DropDownRightWidget()
 
     def filter_by_score_range(self, queryset, name, value):

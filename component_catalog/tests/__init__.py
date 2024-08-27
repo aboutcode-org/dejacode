@@ -21,7 +21,7 @@ def make_string(length):
 def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
     """Create a package for test purposes."""
     if not package_url and "filename" not in data:
-        data["filename"] = make_string(10)
+        data["filename"] = f"package-{make_string(10)}"
 
     package = Package(dataspace=dataspace, **data)
     if package_url:
@@ -37,7 +37,7 @@ def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
 def make_component(dataspace, is_vulnerable=False, **data):
     """Create a component for test purposes."""
     if "name" not in data:
-        data["name"] = make_string(10)
+        data["name"] = f"component-{make_string(10)}"
 
     component = Component.objects.create(
         dataspace=dataspace,
