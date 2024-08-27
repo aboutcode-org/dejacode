@@ -18,11 +18,11 @@
 {% block top-right-buttons %}
   {{ block.super }}
    <div class="btn-group">
-    <button type="button" class="btn btn-outline-dark {% if filter.form.changed_data %}active{% endif %}" data-bs-toggle="modal" data-bs-target="#purldb-filterset-modal"><i class="fas fa-filter"></i> Filters</button>
+    <button type="button" class="btn btn-outline-dark {% if filter.form.changed_data %}active{% endif %}" data-bs-toggle="modal" data-bs-target="#filterset-modal"><i class="fas fa-filter"></i> Filters</button>
   </div>
 {% endblock %}
 
 {% block content %}
   {{ block.super }}
-  {% include 'purldb/includes/filterset_modal.html' %}
+  {% include 'modals/filterset_modal.html' %}
 {% endblock %}

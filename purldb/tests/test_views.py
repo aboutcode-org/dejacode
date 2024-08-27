@@ -199,8 +199,8 @@ class PurlDBViewsTestCase(TestCase):
         self.client.login(username=self.nexb_user.username, password="secret")
 
         response = self.client.get(list_url + "?sort=-name&type=pypi")
-        self.assertContains(response, 'data-bs-target="#purldb-filterset-modal"')
-        self.assertContains(response, 'id="purldb-filterset-modal"')
+        self.assertContains(response, 'data-bs-target="#filterset-modal"')
+        self.assertContains(response, 'id="filterset-modal"')
         self.assertContains(
             response, '<option value="-name" selected>Name (descending)</option>', html=True
         )

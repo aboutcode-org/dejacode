@@ -178,7 +178,7 @@ class PurlDBListView(
         return self.list_data.get("results", [])
 
     @staticmethod
-    def get_form_helper():
+    def get_filter_form_helper():
         helper = FormHelper()
         helper.form_method = "get"
         helper.form_tag = False
@@ -200,7 +200,7 @@ class PurlDBListView(
         )
 
         context["filter"] = self.filterset
-        context["form_helper"] = self.get_form_helper()
+        context["filter_form_helper"] = self.get_filter_form_helper()
 
         return context
 

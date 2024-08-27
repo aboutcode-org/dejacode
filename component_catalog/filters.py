@@ -307,7 +307,6 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         fields=[
             "max_score",
             "min_score",
-            "vulnerability_id",
             "affected_products_count",
             "affected_packages_count",
             "fixed_packages_length",

@@ -2491,7 +2491,8 @@ class VulnerabilityListView(
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
-        Header("score_range", _("Score"), help_text="Severity score range", filter="max_score"),
+        # Keep `max_score` to enable column sorting
+        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
         Header("summary", _("Summary")),
         Header("affected_products_count", _("Affected products"), help_text="Affected products"),
         Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
