@@ -2491,35 +2491,34 @@ class VulnerabilityListView(
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
-        Header(
-            "highest_score", _("Score"), help_text="Severity score range", filter="highest_score"
-        ),
-        # Header("priority", _("Priority"), filter="priority"),
+        Header("score_range", _("Score"), help_text="Severity score range", filter="max_score"),
         Header("summary", _("Summary")),
-        Header("affected_products_count", "Affected products", help_text="Affected products"),
-        Header("affected_packages_count", "Affected packages", help_text="Affected packages"),
-        Header("fixed_packages_length", "Fixed by", help_text="Fixed by packages"),
+        Header("affected_products_count", _("Affected products"), help_text="Affected products"),
+        Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
+        Header("fixed_packages_length", _("Fixed by"), help_text="Fixed by packages"),
     )
 
     def get_queryset(self):
         return (
             super()
             .get_queryset()
-            # .only(
-            #     "uuid",
-            #     "vulnerability_id",
-            #     "aliases",
-            #     "summary",
-            #     "fixed_packages_length",
-            #     "created_date",
-            #     "last_modified_date",
-            #     "dataspace",
-            # )
+            .only(
+                "uuid",
+                "vulnerability_id",
+                "aliases",
+                "summary",
+                "fixed_packages_length",
+                "max_score",
+                "min_score",
+                "created_date",
+                "last_modified_date",
+                "dataspace",
+            )
             .with_affected_products_count()
             .with_affected_packages_count()
             .order_by(
-                "-highest_score",
-                "-lowest_score",
+                "-max_score",
+                "-min_score",
             )
         )
 

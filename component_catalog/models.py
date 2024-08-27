@@ -2626,15 +2626,15 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         output_field=models.IntegerField(),
         db_persist=True,
     )
-    highest_score = models.FloatField(
+    min_score = models.FloatField(
         null=True,
         blank=True,
-        help_text=_("The highest score of the range."),
+        help_text=_("The minimum score of the range."),
     )
-    lowest_score = models.FloatField(
+    max_score = models.FloatField(
         null=True,
         blank=True,
-        help_text=_("The lowest score of the range."),
+        help_text=_("The maximum score of the range."),
     )
 
     objects = DataspacedManager.from_queryset(VulnerabilityQuerySet)()
@@ -2678,8 +2678,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     @staticmethod
     def range_to_values(self, range_str):
         try:
-            min_str, max_str = range_str.split("-")
-            return float(min_str.strip()), float(max_str.strip())
+            min_score, max_score = range_str.split("-")
+            return float(min_score.strip()), float(max_score.strip())
         except Exception:
             return
 
@@ -2688,16 +2688,15 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         # severity_range_score = data.get("severity_range_score")
         # if severity_range_score:
         #     min_score, max_score = self.range_to_values(severity_range_score)
-        #     data["lowest_score"] = min_score
-        #     data["highest_score"] = max_score
+        #     data["min_score"] = min_score
+        #     data["max_score"] = max_score
 
         severities = [
             score for reference in data.get("references") for score in reference.get("scores", [])
         ]
-        scores = cls.get_severity_scores(severities)
-        if scores:
-            data["lowest_score"] = min(scores)
-            data["highest_score"] = max(scores)
+        if scores := cls.get_severity_scores(severities):
+            data["min_score"] = min(scores)
+            data["max_score"] = max(scores)
 
         instance = super().create_from_data(user=dataspace, data=data, validate=False)
 
@@ -2708,11 +2707,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     @property
     def severity_score_range(self):
-        if not (self.lowest_score and self.highest_score):
+        if not (self.min_score and self.max_score):
             return ""
-        if self.lowest_score == self.highest_score:
-            return str(self.highest_score)
-        return f"{self.lowest_score} - {self.highest_score}"
+        if self.min_score == self.max_score:
+            return str(self.max_score)
+        return f"{self.min_score} - {self.max_score}"
 
     def get_severities(self):
         return [score for reference in self.references for score in reference.get("scores", [])]
@@ -2751,7 +2750,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         return consolidated_scores
 
-    def get_highest_score(self):
+    def get_max_score(self):
         severities = self.get_severities()
         scores = self.get_severity_scores(severities)
         if scores:

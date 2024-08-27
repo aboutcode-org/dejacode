@@ -305,8 +305,8 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
     sort = DefaultOrderingFilter(
         label=_("Sort"),
         fields=[
-            "highest_score",
-            "lowest_score",
+            "max_score",
+            "min_score",
             "vulnerability_id",
             "affected_products_count",
             "affected_packages_count",
@@ -316,7 +316,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         ],
         widget=SortDropDownWidget,
     )
-    highest_score = django_filters.ChoiceFilter(
+    max_score = django_filters.ChoiceFilter(
         choices=SCORE_CHOICES,
         method="filter_by_score_range",
         label="Score Range",
@@ -331,10 +331,10 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["highest_score"].extra["widget"] = DropDownRightWidget()
+        self.filters["max_score"].extra["widget"] = DropDownRightWidget()
 
     def filter_by_score_range(self, queryset, name, value):
         if value in vulnerability_score_ranges:
             low, high = vulnerability_score_ranges[value]
-            return queryset.filter(highest_score__gte=low, highest_score__lte=high)
+            return queryset.filter(max_score__gte=low, max_score__lte=high)
         return queryset

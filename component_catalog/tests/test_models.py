@@ -58,9 +58,7 @@ from license_library.models import LicenseAssignedTag
 from license_library.models import LicenseChoice
 from license_library.models import LicenseTag
 from organization.models import Owner
-from product_portfolio.models import Product
-from product_portfolio.models import ProductComponent
-from product_portfolio.models import ProductPackage
+from product_portfolio.tests import make_product
 
 
 class ComponentCatalogModelsTestCase(TestCase):
@@ -2490,11 +2488,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(package_policy, package5.usage_policy)
 
     def test_component_model_where_used_property(self):
-        product1 = Product.objects.create(name="P1", dataspace=self.dataspace)
-        ProductComponent.objects.create(
-            product=product1, component=self.component1, dataspace=self.dataspace
-        )
-
+        make_product(self.dataspace, inventory=[self.component1])
         basic_user = create_user("basic_user", self.dataspace)
         self.assertEqual("Product 0\n", self.component1.where_used(user=basic_user))
 
@@ -2502,9 +2496,8 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("Product 1\n", self.component1.where_used(user=self.user))
 
     def test_package_model_where_used_property(self):
-        product1 = Product.objects.create(name="P1", dataspace=self.dataspace)
         package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
-        ProductPackage.objects.create(product=product1, package=package1, dataspace=self.dataspace)
+        make_product(self.dataspace, inventory=[package1])
 
         basic_user = create_user("basic_user", self.dataspace)
         self.assertEqual("Product 0\nComponent 0\n", package1.where_used(user=basic_user))
@@ -2655,3 +2648,18 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
         self.assertEqual(vulnerability_data["references"], vulnerability1.references)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
+
+    def test_vulnerability_model_queryset_count_methods(self):
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
+        vulnerablity1.add_affected([package1, package2])
+        make_product(self.dataspace, inventory=[package1, package2])
+
+        qs = (
+            Vulnerability.objects.scope(self.dataspace)
+            .with_affected_products_count()
+            .with_affected_packages_count()
+        )
+        self.assertEqual(2, qs[0].affected_packages_count)
+        self.assertEqual(1, qs[0].affected_products_count)

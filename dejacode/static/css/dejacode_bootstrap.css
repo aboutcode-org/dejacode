@@ -365,7 +365,7 @@ table.vulnerabilities-table .column-vulnerability_id {
 table.vulnerabilities-table .column-aliases {
   width: 210px;
 }
-table.vulnerabilities-table .column-highest_score {
+table.vulnerabilities-table .column-score_range {
   width: 110px;
 }
 table.vulnerabilities-table .column-priority {
