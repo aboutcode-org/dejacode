@@ -4846,6 +4846,24 @@ class VulnerabilityViewsTestCase(TestCase):
         expected = f'<a class="nav-link disabled">{vulnerability_count} results</a>'
         self.assertContains(response, expected, html=True)
 
+    def test_vulnerability_list_view_enable_vulnerablecodedb_access(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        vulnerability_list_url = reverse("component_catalog:vulnerability_list")
+        response = self.client.get(vulnerability_list_url)
+        self.assertEqual(200, response.status_code)
+        vulnerability_header_link = (
+            f'<a class="dropdown-item active" href="{vulnerability_list_url}">'
+        )
+        self.assertContains(response, vulnerability_header_link)
+
+        self.dataspace.enable_vulnerablecodedb_access = False
+        self.dataspace.save()
+        response = self.client.get(reverse("component_catalog:vulnerability_list"))
+        self.assertEqual(404, response.status_code)
+
+        response = self.client.get(reverse("component_catalog:package_list"))
+        self.assertNotContains(response, vulnerability_header_link)
+
     def test_vulnerability_list_view_vulnerability_id_link(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("component_catalog:vulnerability_list"))
