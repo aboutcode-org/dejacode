@@ -8,6 +8,7 @@
 
 from django import forms
 from django.contrib.admin.options import IncorrectLookupParameters
+from django.db.models import F
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
@@ -284,6 +285,30 @@ class PackageFilterSet(DataspacedFilterSet):
         return not self.sort_value or self.has_sort_by("last_modified_date")
 
 
+class NullsLastOrderingFilter(django_filters.OrderingFilter):
+    """
+    A custom ordering filter that ensures null values are sorted last.
+
+    When sorting by fields with potential null values, this filter modifies the
+    ordering to use Django's `nulls_last` clause for better handling of null values,
+    whether in ascending or descending order.
+    """
+
+    def filter(self, qs, value):
+        if not value:
+            return qs
+
+        ordering = []
+        for field in value:
+            if field.startswith("-"):
+                field_name = field[1:]
+                ordering.append(F(field_name).desc(nulls_last=True))
+            else:
+                ordering.append(F(field).asc(nulls_last=True))
+
+        return qs.order_by(*ordering)
+
+
 vulnerability_score_ranges = {
     "low": (0.1, 3),
     "medium": (4.0, 6.9),
@@ -302,7 +327,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         label=_("Search"),
         search_fields=["vulnerability_id", "aliases"],
     )
-    sort = DefaultOrderingFilter(
+    sort = NullsLastOrderingFilter(
         label=_("Sort"),
         fields=[
             "max_score",

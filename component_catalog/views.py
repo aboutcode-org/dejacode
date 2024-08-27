@@ -22,6 +22,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
 from django.db.models import Count
+from django.db.models import F
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -2518,7 +2519,7 @@ class VulnerabilityListView(
             .with_affected_products_count()
             .with_affected_packages_count()
             .order_by(
-                "-max_score",
+                F("max_score").desc(nulls_last=True),
                 "-min_score",
             )
         )
