@@ -93,6 +93,13 @@ Release notes
   - Pull ScanCode.io Project data
   https://github.com/aboutcode-org/dejacode/issues/94
 
+- Add a new Vulnerabilities list available from the "Tools" menu when
+  ``enable_vulnerablecodedb_access`` is enabled on a Dataspace.
+  This implementation focuses on ranking/sorting: Vulnerabilities can be sorted and
+  filtered by severity score.
+  It's also possible to sort by the count of affected packages to help prioritize.
+  https://github.com/aboutcode-org/dejacode/issues/94
+
 - Display warning when a "download_url" could not be determined from a PURL in
   "Add Package".
   https://github.com/aboutcode-org/dejacode/issues/163

@@ -14,11 +14,13 @@ from django.test import TestCase
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
+from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
+from component_catalog.tests import make_vulnerability
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -283,7 +285,7 @@ class ComponentFilterSearchTestCase(TestCase):
         )
 
 
-class PackageFilterSearchTestCase(TestCase):
+class PackageFilterSetTestCase(TestCase):
     def sorted_results(self, qs):
         return sorted([str(package) for package in qs])
 
@@ -380,9 +382,7 @@ class PackageFilterSearchTestCase(TestCase):
         self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
 
     def test_package_filterset_is_vulnerable_filter(self):
-        package1 = make_package(
-            self.dataspace, package_url="pkg:pypi/django@5.0", is_vulnerable=True
-        )
+        package1 = make_package(self.dataspace, is_vulnerable=True)
         self.assertTrue(package1.is_vulnerable)
 
         filterset = PackageFilterSet(dataspace=self.dataspace)
@@ -395,3 +395,73 @@ class PackageFilterSearchTestCase(TestCase):
         data = {"is_vulnerable": "no"}
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         self.assertNotIn(package1, filterset.qs)
+
+    def test_package_filterset_affected_by_filter(self):
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=package1)
+        self.assertTrue(package1.is_vulnerable)
+        self.assertFalse(package2.is_vulnerable)
+
+        filterset = PackageFilterSet(dataspace=self.dataspace)
+        self.assertIn(package1, filterset.qs)
+        self.assertIn(package2, filterset.qs)
+
+        data = {"affected_by": vulnerability1.vulnerability_id}
+        filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [package1])
+
+
+class VulnerabilityFilterSetTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="Reference")
+        self.vulnerability1 = make_vulnerability(self.dataspace, max_score=10.0)
+        self.vulnerability2 = make_vulnerability(
+            self.dataspace, max_score=5.5, aliases=["ALIAS-V2"]
+        )
+        self.vulnerability3 = make_vulnerability(self.dataspace, max_score=2.0)
+        self.vulnerability4 = make_vulnerability(self.dataspace, max_score=None)
+
+    def test_vulnerability_filterset_search(self):
+        data = {"q": self.vulnerability1.vulnerability_id}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [self.vulnerability1])
+
+        data = {"q": "ALIAS-V2"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [self.vulnerability2])
+
+    def test_vulnerability_filterset_sort_nulls_last_ordering(self):
+        data = {"sort": "max_score"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        expected = [
+            self.vulnerability3,
+            self.vulnerability2,
+            self.vulnerability1,
+            self.vulnerability4,  # The max_score=None are always last
+        ]
+        self.assertQuerySetEqual(filterset.qs, expected)
+
+        data = {"sort": "-max_score"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        expected = [
+            self.vulnerability1,
+            self.vulnerability2,
+            self.vulnerability3,
+            self.vulnerability4,  # The max_score=None are always last
+        ]
+        self.assertQuerySetEqual(filterset.qs, expected)
+
+    def test_vulnerability_filterset_max_score(self):
+        data = {"max_score": "critical"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [self.vulnerability1])
+        data = {"max_score": "high"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [])
+        data = {"max_score": "medium"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [self.vulnerability2])
+        data = {"max_score": "low"}
+        filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
+        self.assertQuerySetEqual(filterset.qs, [self.vulnerability3])

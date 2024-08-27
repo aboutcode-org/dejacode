@@ -22,6 +22,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
 from django.db.models import Count
+from django.db.models import F
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -52,6 +53,7 @@ from packageurl.contrib import purl2url
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
+from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import AddMultipleToComponentForm
 from component_catalog.forms import AddToComponentForm
 from component_catalog.forms import AddToProductAdminForm
@@ -71,6 +73,7 @@ from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
+from component_catalog.models import Vulnerability
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -2476,3 +2479,57 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
             tab_fields.extend(get_purldb_tab_fields(purldb_entry, user.dataspace))
 
         return {"fields": tab_fields}
+
+
+class VulnerabilityListView(
+    LoginRequiredMixin,
+    DataspacedFilterView,
+):
+    model = Vulnerability
+    filterset_class = VulnerabilityFilterSet
+    template_name = "component_catalog/vulnerability_list.html"
+    template_list_table = "component_catalog/tables/vulnerability_list_table.html"
+    table_headers = (
+        Header("vulnerability_id", _("Vulnerability")),
+        Header("aliases", _("Aliases")),
+        # Keep `max_score` to enable column sorting
+        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
+        Header("summary", _("Summary")),
+        Header("affected_products_count", _("Affected products"), help_text="Affected products"),
+        Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
+        Header("fixed_packages_count", _("Fixed by"), help_text="Fixed by packages"),
+    )
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .only(
+                "uuid",
+                "vulnerability_id",
+                "aliases",
+                "summary",
+                "fixed_packages_count",
+                "max_score",
+                "min_score",
+                "created_date",
+                "last_modified_date",
+                "dataspace",
+            )
+            .with_affected_products_count()
+            .with_affected_packages_count()
+            .order_by(
+                F("max_score").desc(nulls_last=True),
+                "-min_score",
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        if not self.dataspace.enable_vulnerablecodedb_access:
+            raise Http404("VulnerableCode access is not enabled.")
+
+        vulnerablecode = VulnerableCode(self.dataspace)
+        context_data["vulnerablecode_url"] = vulnerablecode.service_url
+        return context_data

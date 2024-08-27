@@ -32,6 +32,14 @@
           </a>
         {% endif %}
       {% endif %}
+      {% if user.dataspace.enable_vulnerablecodedb_access %}
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header">{% trans 'Vulnerabilities' %}</div>
+        <a class="dropdown-item{% if vulnerability_list_url in request.path %} active{% endif %}" href="{{ vulnerability_list_url }}">
+          <i class="fas fa-bug"></i>
+          {% trans 'Vulnerabilities' %}
+        </a>
+      {% endif %}
       <div class="dropdown-divider"></div>
       <div class="dropdown-header">API</div>
       <a class="dropdown-item" href="{{ api_root_url }}">

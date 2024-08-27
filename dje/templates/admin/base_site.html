@@ -42,6 +42,7 @@
     {% url 'workflow:request_list' as request_list_url %}
     {% url 'component_catalog:scan_list' as scan_list_url %}
     {% url 'purldb:purldb_list' as purldb_list_url %}
+    {% url 'component_catalog:vulnerability_list' as vulnerability_list_url %}
     {% url 'api_v2:api-root' as api_root_url %}
     {% if report_list_url or request_list_url or api_root_url %}
         <li class="grp-collapse grp-closed">
@@ -63,6 +64,10 @@
                   {% if user.dataspace.enable_purldb_access %}
                       <li><a href="{{ purldb_list_url }}">{% trans 'PurlDB' %}</a></li>
                   {% endif %}
+                {% endif %}
+                {% if user.dataspace.enable_vulnerablecodedb_access %}
+                    <li class="nav-header">{% trans 'Vulnerabilities' %}</li>
+                    <li><a href="{{ vulnerability_list_url }}">{% trans 'Vulnerabilities' %}</a></li>
                 {% endif %}
                 {% if api_root_url %}
                     <li class="nav-header">{% trans 'API' %}</li>
