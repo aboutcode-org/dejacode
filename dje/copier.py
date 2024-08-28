@@ -47,10 +47,6 @@ COPY_DEFAULT_EXCLUDE = {
             "usage_policy",
             "guidance",
             "acceptable_linkages",
-            "affected_by_vulnerabilities",
-        ],
-        "package": [
-            "affected_by_vulnerabilities",
         ],
         "subcomponent relationship": [
             "extra_attribution_text",
@@ -206,7 +202,7 @@ def copy_to(reference_obj, target_dataspace, user, **kwargs):
             continue
 
         # Simply skip many_to_many fields.
-        if field.many_to_many or field.many_to_one:
+        if field.many_to_many:
             continue
 
         # get_default Return None or empty string (depending on the Field type)
