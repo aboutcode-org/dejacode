@@ -23,14 +23,14 @@
         </span>
       </th>
       <th style="min-width: 320px;">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="The identifiers of Package Versions that have been reported to fix a specific vulnerability and collected in VulnerableCodeDB.">
-          {% trans 'Fixed packages' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Affected packages.">
+          {% trans 'Affected packages' %}
         </span>
       </th>
     </tr>
   </thead>
   <tbody>
-    {% for vulnerability in values.vulnerabilities %}
+    {% for vulnerability in page_obj.object_list %}
       <tr>
         <td>
           <strong>
@@ -66,9 +66,13 @@
           {% endif %}
         </td>
         <td>
-          {% if vulnerability.fixed_packages_html %}
-            {{ vulnerability.fixed_packages_html }}
-          {% endif %}
+          <ul class="list-unstyled mb-0">
+            {% for package in vulnerability.affected_packages.all %}
+              <li>
+                <a href="{{ package.get_absolute_url }}#vulnerabilities" target="_blank">{{ package }}</a>
+              </li>
+            {% endfor %}
+          </ul>
         </td>
       </tr>
     {% endfor %}

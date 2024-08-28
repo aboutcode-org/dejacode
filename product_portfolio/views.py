@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import F
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -53,6 +54,7 @@ from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
 
+from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
@@ -64,6 +66,7 @@ from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
@@ -285,6 +288,7 @@ class ProductDetailsView(
                 "owner",
             ],
         },
+        "vulnerabilities": {},
         "dependencies": {
             "fields": [
                 "dependencies",
@@ -514,6 +518,41 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
+    def tab_vulnerabilities(self):
+        dataspace = self.object.dataspace
+        vulnerablecode = VulnerableCode(self.object.dataspace)
+        display_tab_contions = [
+            dataspace.enable_vulnerablecodedb_access,
+            vulnerablecode.is_configured(),
+        ]
+        if not all(display_tab_contions):
+            return
+
+        vulnerability_qs = self.object.get_vulnerability_qs()
+        vulnerability_count = vulnerability_qs.count()
+        if not vulnerability_count:  # TODO: Display tab as disabled instead
+            return
+
+        label = (
+            f'Vulnerabilities <span class="badge badge-vulnerability">{vulnerability_count}</span>'
+        )
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_vulnerabilities")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        template = "tabs/tab_async_loader.html"
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "vulnerabilities",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
     def tab_codebase(self):
         codebaseresources_count = self.object.codebaseresources.count()
         if not codebaseresources_count:
@@ -698,7 +737,7 @@ class ProductTabInventoryView(
             self.request.GET,
             queryset=productpackage_qs,
             dataspace=self.object.dataspace,
-            prefix="inventory",
+            prefix=self.tab_id,
             anchor="#inventory",
         )
 
@@ -726,7 +765,7 @@ class ProductTabInventoryView(
             self.request.GET,
             queryset=productcomponent_qs,
             dataspace=self.object.dataspace,
-            prefix="inventory",
+            prefix=self.tab_id,
             anchor="#inventory",
         )
 
@@ -893,7 +932,7 @@ class ProductTabCodebaseView(
             self.request.GET,
             queryset=codebaseresource_qs,
             dataspace=self.object.dataspace,
-            prefix="codebase",
+            prefix=self.tab_id,
         )
 
         paginator = Paginator(filter_codebaseresource.qs, self.paginate_by)
@@ -982,7 +1021,7 @@ class ProductTabDependenciesView(
             self.request.GET,
             queryset=dependency_qs,
             dataspace=product.dataspace,
-            prefix="dependencies",
+            prefix=self.tab_id,
         )
 
         filtered_and_ordered_qs = filter_dependency.qs.order_by(
@@ -1010,6 +1049,64 @@ class ProductTabDependenciesView(
                 "total_count": product.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
                 "help_texts": help_texts,
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabVulnerabilitiesView(
+    LoginRequiredMixin,
+    BaseProductView,
+    PreviousNextPaginationMixin,
+    TabContentView,
+):
+    # TODO: Remove duplication
+    template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
+    paginate_by = 50
+    query_dict_page_param = "vulnerabilities-page"
+    tab_id = "vulnerabilities"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        product = self.object
+        base_vulnerability_qs = product.get_vulnerability_qs()
+        total_count = base_vulnerability_qs.count()
+
+        package_qs = Package.objects.filter(product=product).only_rendering_fields()
+        vulnerability_qs = base_vulnerability_qs.prefetch_related(
+            Prefetch("affected_packages", package_qs)
+        ).order_by(
+            F("max_score").desc(nulls_last=True),
+            "-min_score",
+        )
+
+        filter_vulnerability = VulnerabilityFilterSet(
+            self.request.GET,
+            queryset=vulnerability_qs,
+            dataspace=product.dataspace,
+            prefix=self.tab_id,
+        )
+
+        paginator = Paginator(filter_vulnerability.qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        context_data.update(
+            {
+                "filter_vulnerability": filter_vulnerability,
+                "page_obj": page_obj,
+                "total_count": total_count,
+                "search_query": self.request.GET.get("vulnerabilities-q", ""),
             }
         )
 
