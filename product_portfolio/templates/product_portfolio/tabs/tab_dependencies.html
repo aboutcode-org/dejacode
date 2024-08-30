@@ -3,38 +3,8 @@
 {% load humanize %}
 
 {% spaceless %}
-<div class="row align-items-end">
-  <div class="col mb-3">
-    <ul class="nav nav-pills">
-      <li class="nav-item">
-        <form id="tab-dependencies-search-form" class="mt-md-0 me-sm-2">
-          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-dependencies-search-input" name="dependencies-q" placeholder="Search dependencies" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
-        </form>
-      </li>
-      <li class="nav-item">
-        <div class="h6 mt-2 mb-0 smaller">
-          {% if page_obj.paginator.count != total_count %}
-            {{ page_obj.paginator.count|intcomma }} of
-            <a href="#" hx-get="{{ request.path }}?all=true#dependencies" hx-target="{{ tab_id_html }}">
-              {{ total_count }} results
-            </a>
-          {% else %}
-            {{ page_obj.paginator.count|intcomma }} results
-          {% endif %}
-        </div>
-      </li>
-    </ul>
-    <div class="mt-1">
-      {% include 'includes/filters_breadcrumbs.html' with filterset=filter_dependency fragment=tab_id only %}
-    </div>
-  </div>
-  <div class="col-auto">
-    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
-  </div>
-</div>
-
+{% include 'tabs/pagination.html' %}
 <table class="table table-bordered table-hover table-md text-break">
-  {% include 'includes/object_list_table_header.html' %}
   <thead>
     <tr>
       <th style="min-width: 250px">
@@ -42,7 +12,7 @@
           {% trans 'For package' %}
         </span>
         <div class="float-end">
-          {{ filter_dependency.form.for_package }}
+          {{ filterset.form.for_package }}
         </div>
       </th>
       <th style="min-width: 250px">
@@ -50,7 +20,7 @@
           {% trans 'Resolved to package' %}
         </span>
         <div class="float-end">
-          {{ filter_dependency.form.resolved_to_package }}
+          {{ filterset.form.resolved_to_package }}
         </div>
       </th>
       <th>
@@ -73,7 +43,7 @@
           {% trans 'Runtime' %}
         </span>
         <div class="float-end">
-          {{ filter_dependency.form.is_runtime }}
+          {{ filterset.form.is_runtime }}
         </div>
       </th>
       <th style="min-width: 100px">
@@ -81,7 +51,7 @@
           {% trans 'Optional' %}
         </span>
         <div class="float-end">
-          {{ filter_dependency.form.is_optional }}
+          {{ filterset.form.is_optional }}
         </div>
       </th>
       <th style="min-width: 88px">
@@ -89,7 +59,7 @@
           {% trans 'Pinned' %}
         </span>
         <div class="float-end">
-          {{ filter_dependency.form.is_resolved }}
+          {{ filterset.form.is_resolved }}
         </div>
       </th>
     </tr>
@@ -163,7 +133,7 @@
       <tr>
         <td colspan="10">
           No results.
-          {% if filter_dependency.is_active %}
+          {% if filterset.is_active %}
             <a href="#" hx-get="{{ request.path }}?all=true#dependencies" hx-target="{{ tab_id_html }}">
               Clear search and filters
             </a>

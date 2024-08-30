@@ -39,6 +39,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -60,6 +61,7 @@ from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import Vulnerability
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -94,6 +96,7 @@ from dje.views import PreviousNextPaginationMixin
 from dje.views import SendAboutFilesView
 from dje.views import TabContentView
 from dje.views import TabField
+from dje.views import TableHeaderMixin
 from dje.views_formset import FormSetView
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
@@ -126,7 +129,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 
 
-class BaseProductView:
+class BaseProductView:  # TODO: Rename this, it is a mixin
     model = Product
     slug_url_kwarg = ("name", "version")
 
@@ -1044,7 +1047,7 @@ class ProductTabDependenciesView(
 
         context_data.update(
             {
-                "filter_dependency": filter_dependency,
+                "filterset": filter_dependency,
                 "page_obj": page_obj,
                 "total_count": product.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
@@ -1068,16 +1071,25 @@ class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductView,
     PreviousNextPaginationMixin,
+    TableHeaderMixin,
     TabContentView,
 ):
-    # TODO: Remove duplication
+    # TODO: Remove duplication + check queries: assertMax
     template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
-    paginate_by = 50
+    paginate_by = 5
     query_dict_page_param = "vulnerabilities-page"
     tab_id = "vulnerabilities"
+    table_model = Vulnerability
+    filterset_class = VulnerabilityFilterSet
+    table_headers = (
+        Header("vulnerability_id", _("Vulnerability")),
+        Header("aliases", _("Aliases")),
+        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
+        Header("summary", _("Summary")),
+        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+    )
 
     def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
         product = self.object
         base_vulnerability_qs = product.get_vulnerability_qs()
         total_count = base_vulnerability_qs.count()
@@ -1090,20 +1102,24 @@ class ProductTabVulnerabilitiesView(
             "-min_score",
         )
 
-        filter_vulnerability = VulnerabilityFilterSet(
+        # TODO: Add missing anchor
+        self.filterset = self.filterset_class(
             self.request.GET,
             queryset=vulnerability_qs,
             dataspace=product.dataspace,
             prefix=self.tab_id,
         )
 
-        paginator = Paginator(filter_vulnerability.qs, self.paginate_by)
+        # The self.filterset needs to be set before calling super()
+        context_data = super().get_context_data(**kwargs)
+
+        paginator = Paginator(self.filterset.qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
         context_data.update(
             {
-                "filter_vulnerability": filter_vulnerability,
+                "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": total_count,
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),

@@ -1,0 +1,30 @@
+{% load humanize %}
+<div class="row align-items-end">
+  <div class="col mb-3">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <form id="tab-{{ tab_id }}-search-form" class="mt-md-0 me-sm-2">
+          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-{{ tab_id }}-search-input" name="{{ tab_id }}-q" placeholder="Search {{ tab_id }}" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+        </form>
+      </li>
+      <li class="nav-item">
+        <div class="h6 mt-2 mb-0 smaller">
+          {% if page_obj.paginator.count != total_count %}
+            {{ page_obj.paginator.count|intcomma }} of
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+              {{ total_count }} results
+            </a>
+          {% else %}
+            {{ page_obj.paginator.count|intcomma }} results
+          {% endif %}
+        </div>
+      </li>
+    </ul>
+    <div class="mt-1">
+      {% include 'includes/filters_breadcrumbs.html' with filterset=filterset fragment=tab_id only %}
+    </div>
+  </div>
+  <div class="col-auto">
+    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
+  </div>
+</div>
