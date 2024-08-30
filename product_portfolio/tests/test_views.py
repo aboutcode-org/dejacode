@@ -56,6 +56,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product
 from product_portfolio.views import ManageComponentGridView
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -270,6 +271,35 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         with self.assertMaxQueries(9):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
+
+    def test_product_portfolio_detail_view_tab_vulnerability_view(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_vulnerabilities")
+
+        with self.assertMaxQueries(9):
+            response = self.client.get(url)
+        self.assertContains(response, "0 results")
+
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p3 = make_package(self.dataspace, is_vulnerable=True)
+        p4 = make_package(self.dataspace, is_vulnerable=True)
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3, p4])
+
+        self.assertEqual(4, product1.packages.count())
+        self.assertEqual(4, product1.packages.vulnerable().count())
+
+        url = product1.get_url("tab_vulnerabilities")
+        with self.assertMaxQueries(10):
+            response = self.client.get(url)
+        self.assertContains(response, "4 results")
+
+    def test_product_portfolio_detail_view_tab_vulnerability_view_filters(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_vulnerabilities")
+        response = self.client.get(url)
+        expected = "?vulnerabilities-max_score=#vulnerabilities"
+        self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")

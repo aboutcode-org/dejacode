@@ -129,7 +129,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 
 
-class BaseProductView:  # TODO: Rename this, it is a mixin
+class BaseProductViewMixin:
     model = Product
     slug_url_kwarg = ("name", "version")
 
@@ -227,7 +227,7 @@ class ProductListView(
 
 class ProductDetailsView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     ObjectDetailsView,
 ):
     template_name = "product_portfolio/product_details.html"
@@ -685,7 +685,7 @@ class ProductDetailsView(
 
 class ProductTabInventoryView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TabContentView,
 ):
@@ -915,7 +915,7 @@ class ProductTabInventoryView(
 
 class ProductTabCodebaseView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TabContentView,
 ):
@@ -996,7 +996,7 @@ class ProductTabCodebaseView(
 
 class ProductTabDependenciesView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TableHeaderMixin,
     TabContentView,
@@ -1075,12 +1075,11 @@ class ProductTabDependenciesView(
 
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TableHeaderMixin,
     TabContentView,
 ):
-    # TODO: check queries: assertMax
     template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
     paginate_by = 50
     query_dict_page_param = "vulnerabilities-page"
@@ -1108,7 +1107,6 @@ class ProductTabVulnerabilitiesView(
             "-min_score",
         )
 
-        # TODO: Add missing anchor
         self.filterset = self.filterset_class(
             self.request.GET,
             queryset=vulnerability_qs,
@@ -1147,7 +1145,7 @@ class ProductTabVulnerabilitiesView(
 
 class ProductTabImportsView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_imports.html"
@@ -1328,7 +1326,7 @@ class ProductAddView(
 
 class ProductUpdateView(
     LicenseDataForBuilderMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     DataspacedUpdateView,
 ):
     form_class = ProductForm
@@ -1346,7 +1344,7 @@ class ProductUpdateView(
         return super().get_success_url()
 
 
-class ProductDeleteView(BaseProductView, DataspacedDeleteView):
+class ProductDeleteView(BaseProductViewMixin, DataspacedDeleteView):
     permission_required = "product_portfolio.delete_product"
 
     def get_queryset(self):
@@ -1583,7 +1581,7 @@ class AttributionView(
     LoginRequiredMixin,
     DataspaceScopeMixin,
     GetDataspacedObjectMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     DetailView,
 ):
     template_name = "product_portfolio/attribution/base.html"
@@ -1822,15 +1820,15 @@ class AttributionView(
         return context
 
 
-class ProductSendAboutFilesView(BaseProductView, SendAboutFilesView):
+class ProductSendAboutFilesView(BaseProductViewMixin, SendAboutFilesView):
     pass
 
 
-class ProductExportSPDXDocumentView(BaseProductView, ExportSPDXDocumentView):
+class ProductExportSPDXDocumentView(BaseProductViewMixin, ExportSPDXDocumentView):
     pass
 
 
-class ProductExportCycloneDXBOMView(BaseProductView, ExportCycloneDXBOMView):
+class ProductExportCycloneDXBOMView(BaseProductViewMixin, ExportCycloneDXBOMView):
     pass
 
 
@@ -1925,7 +1923,7 @@ class BaseProductManageGridView(
     LicenseDataForBuilderMixin,
     GetDataspacedObjectMixin,
     PermissionRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     FormSetView,
 ):
     """A base view for managing product relationship through a grid."""
@@ -2248,7 +2246,7 @@ class BaseProductImportFormView(
     PermissionRequiredMixin,
     GetDataspacedObjectMixin,
     DataspacedModelFormMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     FormView,
 ):
     permission_required = "product_portfolio.change_product"
