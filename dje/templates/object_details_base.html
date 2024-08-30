@@ -78,7 +78,7 @@
     <ul class="nav nav-tabs container px-3" id="details_tab" role="tablist">
       {% for tab_name, tab_context in tabsets.items %}
         <li class="nav-item" role="presentation"{% if tab_context.tooltip %} data-bs-toggle="tooltip" title="{{ tab_context.tooltip }}"{% endif %}>
-          <button class="nav-link{% if forloop.first %} active{% endif %}" id="tab_{{ tab_name|slugify }}-tab" data-bs-toggle="tab" data-bs-target="#tab_{{ tab_name|slugify }}" type="button" role="tab" aria-controls="tab_{{ tab_name|slugify }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" {% if tab_context.disabled %}disabled="disabled"{% endif %}>
+          <button class="nav-link{% if forloop.first %} active{% endif %}" id="tab_{{ tab_name|slugify }}-tab" data-bs-toggle="tab" data-bs-target="#tab_{{ tab_name|slugify }}" type="button" role="tab" aria-controls="tab_{{ tab_name|slugify }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"{% if tab_context.disabled %} disabled="disabled"{% endif %}>
             {% if tab_context.label %}
               {{ tab_context.label }}
             {% else %}
