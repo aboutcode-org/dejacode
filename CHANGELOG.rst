@@ -104,6 +104,9 @@ Release notes
   "Add Package".
   https://github.com/aboutcode-org/dejacode/issues/163
 
+- Add a Vulnerabilities tab in the Product details view.
+  https://github.com/aboutcode-org/dejacode/issues/95
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

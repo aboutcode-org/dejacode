@@ -533,8 +533,14 @@ class ProductDetailsView(
 
         vulnerability_qs = self.object.get_vulnerability_qs()
         vulnerability_count = vulnerability_qs.count()
-        if not vulnerability_count:  # TODO: Display tab as disabled instead
-            return
+        if not vulnerability_count:
+            label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
+            return {
+                "label": format_html(label),
+                "fields": [],
+                "disabled": True,
+                "tooltip": "No vulnerabilities found in this Product",
+            }
 
         label = (
             f'Vulnerabilities <span class="badge badge-vulnerability">{vulnerability_count}</span>'

@@ -301,6 +301,30 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = "?vulnerabilities-max_score=#vulnerabilities"
         self.assertContains(response, expected)
 
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
+        mock_is_configured.return_value = True
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_absolute_url()
+        response = self.client.get(url)
+        self.assertNotContains(response, "tab_vulnerabilities")
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        response = self.client.get(url)
+        expected = 'aria-controls="tab_vulnerabilities" aria-selected="false" disabled="disabled"'
+        self.assertContains(response, expected)
+        expected = 'data-bs-toggle="tooltip" title="No vulnerabilities found in this Product"'
+        self.assertContains(response, expected)
+
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        ProductPackage.objects.create(
+            product=self.product1, package=package1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = '<span class="badge badge-vulnerability">1</span>'
+        self.assertContains(response, expected)
+
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")
 
@@ -409,7 +433,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, component2.name)
         self.assertContains(response, self.package1.filename)
 
-        # <a href="?inventory-review_status=" class="dropdown-item active">All</a>
         self.assertContains(
             response,
             '<a href="?inventory-review_status=#inventory" class="dropdown-item active">All</a>',
