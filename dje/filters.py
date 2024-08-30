@@ -55,7 +55,10 @@ class FilterSetUtilsMixin:
         )
 
     def get_query_no_sort(self):
-        return remove_field_from_query_dict(self.data, "sort")
+        sort_field_name = "sort"
+        if self.form_prefix:
+            sort_field_name = f"{self.form_prefix}-{sort_field_name}"
+        return remove_field_from_query_dict(self.data, sort_field_name)
 
     def get_filter_breadcrumb(self, field_name, data_field_name, value):
         return {

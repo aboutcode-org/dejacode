@@ -5,7 +5,7 @@
 {% spaceless %}
 {% include 'tabs/pagination.html' %}
 <table class="table table-bordered table-hover table-md text-break">
-  {% include 'includes/object_list_table_header.html' %}
+  {% include 'includes/object_list_table_header.html' with filter=filterset %}
   <tbody class="text-break">
     {% for dependency in page_obj.object_list %}
       <tr class="{% cycle 'odd' '' %}">

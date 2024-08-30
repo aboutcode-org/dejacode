@@ -1,7 +1,7 @@
 {% load i18n %}
 {% include 'tabs/pagination.html' %}
 <table class="table table-bordered table-hover table-md text-break">
-  {% include 'includes/object_list_table_header.html' %}
+  {% include 'includes/object_list_table_header.html' with filter=filterset %}
   <tbody>
     {% for vulnerability in page_obj.object_list %}
       <tr>
