@@ -409,6 +409,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, component2.name)
         self.assertContains(response, self.package1.filename)
 
+        # <a href="?inventory-review_status=" class="dropdown-item active">All</a>
         self.assertContains(
             response,
             '<a href="?inventory-review_status=#inventory" class="dropdown-item active">All</a>',
