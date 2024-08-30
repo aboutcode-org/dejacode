@@ -998,17 +998,28 @@ class ProductTabDependenciesView(
     LoginRequiredMixin,
     BaseProductView,
     PreviousNextPaginationMixin,
+    TableHeaderMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_dependencies.html"
     paginate_by = 50
+    table_model = ProductDependency
+    filterset_class = DependencyFilterSet
     query_dict_page_param = "dependencies-page"
     tab_id = "dependencies"
+    table_headers = (
+        Header("for_package", _("For package"), filter="for_package"),
+        Header("resolved_to_package", _("Resolved to package"), filter="resolved_to_package"),
+        Header("declared_dependency", _("Declared dependency")),
+        Header("scope", _("Scope")),
+        Header("extracted_requirement", _("Extracted requirement")),
+        Header("is_runtime", _("Runtime"), filter="is_runtime"),
+        Header("is_optional", _("Optional"), filter="is_optional"),
+        Header("is_resolved", _("Resolved"), filter="is_resolved"),
+    )
 
     def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
         product = self.object
-
         for_package_qs = Package.objects.only_rendering_fields().with_vulnerability_count()
         resolved_to_package_qs = (
             Package.objects.only_rendering_fields()
@@ -1020,14 +1031,16 @@ class ProductTabDependenciesView(
             Prefetch("resolved_to_package", resolved_to_package_qs),
         )
 
-        filter_dependency = DependencyFilterSet(
+        self.filterset = self.filterset_class(
             self.request.GET,
             queryset=dependency_qs,
             dataspace=product.dataspace,
             prefix=self.tab_id,
         )
 
-        filtered_and_ordered_qs = filter_dependency.qs.order_by(
+        context_data = super().get_context_data(**kwargs)
+
+        filtered_and_ordered_qs = self.filterset.qs.order_by(
             "for_package__type",
             "for_package__namespace",
             "for_package__name",
@@ -1039,19 +1052,12 @@ class ProductTabDependenciesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        help_texts = {
-            field.name: field.help_text
-            for field in ProductDependency._meta.get_fields()
-            if hasattr(field, "help_text")
-        }
-
         context_data.update(
             {
-                "filterset": filter_dependency,
+                "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": product.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
-                "help_texts": help_texts,
             }
         )
 
@@ -1074,9 +1080,9 @@ class ProductTabVulnerabilitiesView(
     TableHeaderMixin,
     TabContentView,
 ):
-    # TODO: Remove duplication + check queries: assertMax
+    # TODO: check queries: assertMax
     template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
-    paginate_by = 5
+    paginate_by = 50
     query_dict_page_param = "vulnerabilities-page"
     tab_id = "vulnerabilities"
     table_model = Vulnerability
@@ -1108,6 +1114,7 @@ class ProductTabVulnerabilitiesView(
             queryset=vulnerability_qs,
             dataspace=product.dataspace,
             prefix=self.tab_id,
+            anchor=f"#{self.tab_id}",
         )
 
         # The self.filterset needs to be set before calling super()

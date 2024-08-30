@@ -1,6 +1,5 @@
 {% load i18n %}
 {% include 'tabs/pagination.html' %}
-{{ table_headers }}
 <table class="table table-bordered table-hover table-md text-break">
   {% include 'includes/object_list_table_header.html' %}
   <tbody>
@@ -47,6 +46,17 @@
               </li>
             {% endfor %}
           </ul>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="10">
+          No results.
+          {% if filterset.is_active %}
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+              Clear search and filters
+            </a>
+          {% endif %}
         </td>
       </tr>
     {% endfor %}

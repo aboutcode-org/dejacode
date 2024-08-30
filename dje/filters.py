@@ -86,6 +86,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
 
         self.dynamic_qs = kwargs.pop("dynamic_qs", True)
         self.parent_qs_cache = {}
+        self.anchor = kwargs.pop("anchor", None)
 
         super().__init__(*args, **kwargs)
 

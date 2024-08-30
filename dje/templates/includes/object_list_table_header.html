@@ -26,9 +26,9 @@
         {% if header.sort %}
           {% with query_no_sort=filter.get_query_no_sort %}
             {% if filter.form.sort.data and header.field_name in filter.form.sort.data.0 %}
-              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={% if '-' not in filter.form.sort.data.0 %}-{% endif %}{{ header.field_name }}" class="sort active" aria-label="Sort"><i class="fas fa-sort-{% if '-' not in filter.form.sort.data.0 %}up{% else %}down{% endif %}"></i></a>
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={% if '-' not in filter.form.sort.data.0 %}-{% endif %}{{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort active" aria-label="Sort"><i class="fas fa-sort-{% if '-' not in filter.form.sort.data.0 %}up{% else %}down{% endif %}"></i></a>
             {% else %}
-              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={{ header.field_name }}" class="sort" aria-label="Sort"><i class="fas fa-sort"></i></a>
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}sort={{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort" aria-label="Sort"><i class="fas fa-sort"></i></a>
             {% endif %}
           {% endwith %}
         {% endif %}

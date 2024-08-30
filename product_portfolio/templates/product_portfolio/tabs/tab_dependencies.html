@@ -5,65 +5,7 @@
 {% spaceless %}
 {% include 'tabs/pagination.html' %}
 <table class="table table-bordered table-hover table-md text-break">
-  <thead>
-    <tr>
-      <th style="min-width: 250px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.for_package }}">
-          {% trans 'For package' %}
-        </span>
-        <div class="float-end">
-          {{ filterset.form.for_package }}
-        </div>
-      </th>
-      <th style="min-width: 250px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.resolved_to_package }}">
-          {% trans 'Resolved to package' %}
-        </span>
-        <div class="float-end">
-          {{ filterset.form.resolved_to_package }}
-        </div>
-      </th>
-      <th>
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.declared_dependency }}">
-          {% trans 'Declared dependency' %}
-        </span>
-      </th>
-      <th>
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.scope }}">
-          {% trans 'Scope' %}
-        </span>
-      </th>
-      <th>
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.extracted_requirement }}">
-          {% trans 'Extracted requirement' %}
-        </span>
-      </th>
-      <th style="min-width: 100px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_runtime }}">
-          {% trans 'Runtime' %}
-        </span>
-        <div class="float-end">
-          {{ filterset.form.is_runtime }}
-        </div>
-      </th>
-      <th style="min-width: 100px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_optional }}">
-          {% trans 'Optional' %}
-        </span>
-        <div class="float-end">
-          {{ filterset.form.is_optional }}
-        </div>
-      </th>
-      <th style="min-width: 88px">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ help_texts.is_resolved }}">
-          {% trans 'Pinned' %}
-        </span>
-        <div class="float-end">
-          {{ filterset.form.is_resolved }}
-        </div>
-      </th>
-    </tr>
-  </thead>
+  {% include 'includes/object_list_table_header.html' %}
   <tbody class="text-break">
     {% for dependency in page_obj.object_list %}
       <tr class="{% cycle 'odd' '' %}">
@@ -134,7 +76,7 @@
         <td colspan="10">
           No results.
           {% if filterset.is_active %}
-            <a href="#" hx-get="{{ request.path }}?all=true#dependencies" hx-target="{{ tab_id_html }}">
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
               Clear search and filters
             </a>
           {% endif %}
