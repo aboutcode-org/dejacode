@@ -6,22 +6,16 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import random
-import string
-
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import Vulnerability
-
-
-def make_string(length):
-    return "".join(random.choices(string.ascii_letters, k=length))
+from dje.tests import make_string
 
 
 def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
     """Create a package for test purposes."""
     if not package_url and "filename" not in data:
-        data["filename"] = make_string(10)
+        data["filename"] = f"package-{make_string(10)}"
 
     package = Package(dataspace=dataspace, **data)
     if package_url:
@@ -37,7 +31,7 @@ def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
 def make_component(dataspace, is_vulnerable=False, **data):
     """Create a component for test purposes."""
     if "name" not in data:
-        data["name"] = make_string(10)
+        data["name"] = f"component-{make_string(10)}"
 
     component = Component.objects.create(
         dataspace=dataspace,
@@ -53,7 +47,7 @@ def make_component(dataspace, is_vulnerable=False, **data):
 def make_vulnerability(dataspace, affecting=None, **data):
     """Create a vulnerability for test purposes."""
     if "vulnerability_id" not in data:
-        data["vulnerability_id"] = f"VCID-0000-{random.randint(1, 9999):04}"
+        data["vulnerability_id"] = f"VCID-0000-{make_string(4)}"
 
     vulnerability = Vulnerability.objects.create(
         dataspace=dataspace,

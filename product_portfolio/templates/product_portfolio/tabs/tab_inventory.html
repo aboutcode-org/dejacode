@@ -23,6 +23,9 @@
         </div>
       </li>
     </ul>
+    <div class="mt-1">
+      {% include 'includes/filters_breadcrumbs.html' with filterset=filter_productcomponent fragment=tab_id only %}
+    </div>
   </div>
   <div class="col-auto">
     {% include 'pagination/object_list_pagination.html' %}

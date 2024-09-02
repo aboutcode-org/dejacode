@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import random
+import string
 import sys
 from importlib import reload
 
@@ -21,6 +23,10 @@ from django.urls import clear_url_caches
 from model_bakery import baker
 
 User = get_user_model()
+
+
+def make_string(length):
+    return "".join(random.choices(string.ascii_letters, k=length))
 
 
 def create(model, dataspace, **kwargs):

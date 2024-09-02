@@ -43,7 +43,7 @@
 {% block javascripts %}
   {{ block.super }}
   {% if form.fields.license_expression %}
-    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-oTqsk3bKZbt7gvIiSLAxv/f/1zUBuzofCLQcVe+9J9s7zHhGnWfebQu3miHGT1Vc" crossorigin="anonymous"></script>
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
   {% endif %}
   {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
   {{ form.identifier_fields|json_script:"identifier_fields" }}

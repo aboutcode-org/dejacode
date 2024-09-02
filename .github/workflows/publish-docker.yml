@@ -59,5 +59,5 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.REGISTRY }}/nexb/dejacode:latest
+            ${{ env.REGISTRY }}/aboutcode-org/dejacode:latest
           labels: ${{ steps.meta.outputs.labels }}

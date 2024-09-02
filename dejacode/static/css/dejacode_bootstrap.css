@@ -358,6 +358,55 @@ table.packages-table .column-primary_language {
   margin-right: 0.3rem;
 }
 
+/* -- Vulnerability List -- */
+table.vulnerabilities-table .column-vulnerability_id {
+  width: 220px;
+}
+table.vulnerabilities-table .column-aliases {
+  width: 210px;
+}
+table.vulnerabilities-table .column-score_range {
+  width: 110px;
+}
+table.vulnerabilities-table .column-priority {
+  width: 110px;
+}
+table.vulnerabilities-table .column-summary {
+  width: 300px;
+  max-width: 300px;
+}
+
+/* -- Vulnerability tab -- */
+#tab_vulnerabilities .column-vulnerability_id {
+  width: 210px;
+}
+#tab_vulnerabilities .column-aliases {
+  width: 210px;
+}
+#tab_vulnerabilities .column-max_score {
+  width: 105px;
+}
+#tab_vulnerabilities .column-column-affected_packages {
+  width: 320px;
+}
+
+/* -- Dependency tab -- */
+#tab_dependencies .column-for_package {
+  width: 250px;
+}
+#tab_dependencies .column-resolved_to_package {
+  width: 250px;
+}
+#tab_dependencies .column-is_runtime {
+  width: 100px;
+}
+#tab_dependencies .column-column-is_optional {
+  width: 100px;
+}
+#tab_dependencies .column-column-is_resolved {
+  width: 88px;
+}
+
 /* -- Package Details -- */
 textarea.licenseexpressionwidget {
   height: 62px;

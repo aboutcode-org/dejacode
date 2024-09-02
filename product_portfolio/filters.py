@@ -102,6 +102,10 @@ class ProductFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
+    affected_by = django_filters.CharFilter(
+        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
+        label=_("Affected by"),
+    )
 
     class Meta:
         model = Product
@@ -160,8 +164,6 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         return queryset.none()
 
     def __init__(self, *args, **kwargs):
-        self.anchor = kwargs.pop("anchor", None)
-
         super().__init__(*args, **kwargs)
 
         self.filters["review_status"].extra["to_field_name"] = "label"

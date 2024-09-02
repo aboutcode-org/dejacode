@@ -79,9 +79,8 @@ from component_catalog.license_expression_dje import render_expression_as_html
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import copier
 from dje import outputs
-from dje.copier import COPY_DEFAULT_EXCLUDE
-from dje.copier import SKIP
 from dje.copier import get_object_in
 from dje.copier import get_or_create_in
 from dje.decorators import accept_anonymous
@@ -295,10 +294,11 @@ class PreviousNextPaginationMixin:
 class TableHeaderMixin:
     table_headers = ()
     model = None
-    filterset = None
+    table_model = None
 
     def get_table_headers(self):
-        opts = self.model._meta
+        model = self.table_model or self.model
+        opts = model._meta
 
         sort_fields = []
         if self.filterset and "sort" in self.filterset.filters:
@@ -1347,6 +1347,7 @@ def object_copy_get(request, m2m_formset_class):
     m2m_initial = [
         {"ct": ContentType.objects.get_for_model(m2m_field.remote_field.through).id}
         for m2m_field in model_class._meta.many_to_many
+        if m2m_field.name not in copier.ALWAYS_EXCLUDE
     ]
 
     # Also handle relational fields if explicitly declared on the Model using the
@@ -1425,10 +1426,14 @@ def object_copy_view(request):
             skip_on_copy = cleaned_data.get("skip_on_copy")
             skip_on_update = cleaned_data.get("skip_on_update")
             exclude_copy.update(
-                {m2m_model_class: SKIP if skip_on_copy else cleaned_data.get("exclude_copy")}
+                {m2m_model_class: copier.SKIP if skip_on_copy else cleaned_data.get("exclude_copy")}
             )
             exclude_update.update(
-                {m2m_model_class: SKIP if skip_on_update else cleaned_data.get("exclude_update")}
+                {
+                    m2m_model_class: copier.SKIP
+                    if skip_on_update
+                    else cleaned_data.get("exclude_update")
+                }
             )
 
         copy_candidates = request.POST.get("copy_candidates", "")
@@ -2172,7 +2177,7 @@ def manage_copy_defaults_view(request, pk):
             for app_label in supported_apps
         ]
         formset = CopyDefaultsFormSet(initial=initial)
-        formset.load(dataspace, default=COPY_DEFAULT_EXCLUDE)
+        formset.load(dataspace, default=copier.COPY_DEFAULT_EXCLUDE)
 
     context = {
         "formset": formset,

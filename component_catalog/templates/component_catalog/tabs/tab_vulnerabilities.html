@@ -7,14 +7,19 @@
           {% trans 'Affected by' %}
         </span>
       </th>
-      <th>
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Summary of the vulnerability.">
-          {% trans 'Summary' %}
-        </span>
-      </th>
       <th style="width: 210px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="A list of aliases for this vulnerability.">
           {% trans 'Aliases' %}
+        </span>
+      </th>
+      <th style="width: 90px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Severity score range.">
+          {% trans 'Score' %}
+        </span>
+      </th>
+      <th>
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Summary of the vulnerability.">
+          {% trans 'Summary' %}
         </span>
       </th>
       <th style="min-width: 320px;">
@@ -28,33 +33,37 @@
     {% for vulnerability in values.vulnerabilities %}
       <tr>
         <td>
-          <a href="{{ values.vulnerablecode_url }}vulnerabilities/{{ vulnerability.vulnerability_id }}" target="_blank">
-            {{ vulnerability.vulnerability_id }}
-            <i class="fa-solid fa-up-right-from-square mini"></i>
-          </a>
+          <strong>
+            <a href="{{ values.vulnerablecode_url }}vulnerabilities/{{ vulnerability.vulnerability_id }}" target="_blank">
+              {{ vulnerability.vulnerability_id }}
+              <i class="fa-solid fa-up-right-from-square mini"></i>
+            </a>
+          </strong>
         </td>
         <td>
-          {{ vulnerability.summary }}
+           {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
         </td>
         <td>
-          {% for alias in vulnerability.aliases %}
-            {% if alias|slice:":3" == "CVE" %}
-              <a href="https://nvd.nist.gov/vuln/detail/{{ alias }}" target="_blank">{{ alias }}
-                <i class="fa-solid fa-up-right-from-square mini"></i>
-              </a>
-            {% elif alias|slice:":4" == "GHSA" %}
-              <a href="https://github.com/advisories/{{ alias }}" target="_blank">{{ alias }}
-                <i class="fa-solid fa-up-right-from-square mini"></i>
-              </a>
-            {% elif alias|slice:":3" == "NPM" %}
-              <a href="https://github.com/nodejs/security-wg/blob/main/vuln/npm/{{ alias|slice:"4:" }}.json" target="_blank">{{ alias }}
-                <i class="fa-solid fa-up-right-from-square mini"></i>
-              </a>
+          {% if vulnerability.min_score %}
+            {{ vulnerability.min_score }} -
+          {% endif %}
+          {% if vulnerability.max_score %}
+            <strong>
+              {{ vulnerability.max_score }}
+            </strong>
+          {% endif %}
+        </td>
+        <td>
+          {% if vulnerability.summary %}
+            {% if vulnerability.summary|length > 120 %}
+              <details>
+                <summary>{{ vulnerability.summary|slice:":120" }}...</summary>
+                {{ vulnerability.summary|slice:"120:" }}
+              </details>
             {% else %}
-              {{ alias }}
+              {{ vulnerability.summary }}
             {% endif %}
-            <br>
-          {% endfor %}
+          {% endif %}
         </td>
         <td>
           {% if vulnerability.fixed_packages_html %}

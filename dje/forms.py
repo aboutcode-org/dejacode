@@ -435,7 +435,12 @@ class BaseCopyConfigurationForm(forms.Form):
 
         self.model_class = ContentType.objects.get(pk=ct).model_class()
 
-        exclude_choices = self.model_class.get_exclude_choices()
+        # Some implicitly created models, such as some Many2Many, do not inherit the
+        # get_exclude_choices method from the DataspacedModel class.
+        exclude_choices = []
+        if hasattr(self.model_class, "get_exclude_choices"):
+            exclude_choices = self.model_class.get_exclude_choices()
+
         self.fields["exclude_copy"].choices = exclude_choices
         self.fields["exclude_update"].choices = exclude_choices
 
