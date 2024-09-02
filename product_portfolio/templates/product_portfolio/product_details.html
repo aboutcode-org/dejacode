@@ -50,7 +50,7 @@
             <div class="dropdown-header">ScanCode.io</div>
             <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal"><i class="fas fa-barcode"></i> {% trans 'Scan all Packages' %}</a>
           {% endif %}
-          {% if has_change_permission %}{# TODO: Only if PurlDB is configured! #}
+          {% if request.user.dataspace.enable_purldb_access %}
             <div class="dropdown-header">PurlDB</div>
             <a class="dropdown-item" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
           {% endif %}

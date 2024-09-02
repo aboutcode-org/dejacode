@@ -583,7 +583,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
 
-    def test_product_detail_view_inventory_tab_display_vulnerabilities(self):
+    def test_product_portfolio_detail_view_inventory_tab_display_vulnerabilities(self):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
@@ -637,7 +637,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response, '<td colspan="100" class="sub-header"><strong>f2</strong></td>'
         )
 
-    def test_product_portfolio_details_view_configuration_status(self):
+    def test_product_portfolio_detail_view_configuration_status(self):
         self.client.login(username="nexb_user", password="secret")
 
         configuration_status = ProductStatus.objects.create(
@@ -933,6 +933,28 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         add_perms(self.basic_user, ["delete_productcomponent"])
         response = self.client.get(url)
         self.assertContains(response, delete_button)
+
+    def test_product_portfolio_detail_view_display_purldb_features(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        self.assertFalse(self.super_user.dataspace.enable_purldb_access)
+        url = self.product1.get_absolute_url()
+
+        expected1 = '<div class="dropdown-header">PurlDB</div>'
+        expected2 = "Improve Packages from PurlDB"
+        expected3 = self.product1.get_url("improve_packages_from_purldb")
+
+        response = self.client.get(url)
+        self.assertNotContains(response, expected1)
+        self.assertNotContains(response, expected2)
+        self.assertNotContains(response, expected3)
+
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+        url = self.product1.get_absolute_url()
+        response = self.client.get(url)
+        self.assertContains(response, expected1)
+        self.assertContains(response, expected2)
+        self.assertContains(response, expected3)
 
     def test_product_portfolio_list_view_secured_queryset(self):
         self.client.login(username=self.basic_user.username, password="secret")
