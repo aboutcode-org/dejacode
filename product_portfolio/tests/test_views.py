@@ -56,6 +56,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product
 from product_portfolio.views import ManageComponentGridView
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -132,7 +133,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(29):
+        with self.assertNumQueries(30):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -158,7 +159,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(26):
+        with self.assertNumQueries(27):
             response = self.client.get(url)
         self.assertContains(response, expected)
 
@@ -270,6 +271,61 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         with self.assertMaxQueries(9):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
+
+    def test_product_portfolio_detail_view_tab_vulnerability_view(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_vulnerabilities")
+
+        with self.assertMaxQueries(9):
+            response = self.client.get(url)
+        self.assertContains(response, "0 results")
+
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p3 = make_package(self.dataspace, is_vulnerable=True)
+        p4 = make_package(self.dataspace, is_vulnerable=True)
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3, p4])
+
+        self.assertEqual(4, product1.packages.count())
+        self.assertEqual(4, product1.packages.vulnerable().count())
+
+        url = product1.get_url("tab_vulnerabilities")
+        with self.assertMaxQueries(10):
+            response = self.client.get(url)
+        self.assertContains(response, "4 results")
+
+    def test_product_portfolio_detail_view_tab_vulnerability_view_filters(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_vulnerabilities")
+        response = self.client.get(url)
+        self.assertContains(response, "?vulnerabilities-max_score=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=max_score#vulnerabilities")
+        response = self.client.get(url + "?vulnerabilities-sort=max_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=-max_score#vulnerabilities")
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
+        mock_is_configured.return_value = True
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_absolute_url()
+        response = self.client.get(url)
+        self.assertNotContains(response, "tab_vulnerabilities")
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        response = self.client.get(url)
+        expected = 'aria-controls="tab_vulnerabilities" aria-selected="false" disabled="disabled"'
+        self.assertContains(response, expected)
+        expected = 'data-bs-toggle="tooltip" title="No vulnerabilities found in this Product"'
+        self.assertContains(response, expected)
+
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        ProductPackage.objects.create(
+            product=self.product1, package=package1, dataspace=self.dataspace
+        )
+        response = self.client.get(url)
+        expected = '<span class="badge badge-vulnerability">1</span>'
+        self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")

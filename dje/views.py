@@ -294,10 +294,11 @@ class PreviousNextPaginationMixin:
 class TableHeaderMixin:
     table_headers = ()
     model = None
-    filterset = None
+    table_model = None
 
     def get_table_headers(self):
-        opts = self.model._meta
+        model = self.table_model or self.model
+        opts = model._meta
 
         sort_fields = []
         if self.filterset and "sort" in self.filterset.filters:

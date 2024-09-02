@@ -164,8 +164,6 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         return queryset.none()
 
     def __init__(self, *args, **kwargs):
-        self.anchor = kwargs.pop("anchor", None)
-
         super().__init__(*args, **kwargs)
 
         self.filters["review_status"].extra["to_field_name"] = "label"

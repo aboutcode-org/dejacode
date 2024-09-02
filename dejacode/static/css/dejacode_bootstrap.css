@@ -376,6 +376,37 @@ table.vulnerabilities-table .column-summary {
   max-width: 300px;
 }
 
+/* -- Vulnerability tab -- */
+#tab_vulnerabilities .column-vulnerability_id {
+  width: 210px;
+}
+#tab_vulnerabilities .column-aliases {
+  width: 210px;
+}
+#tab_vulnerabilities .column-max_score {
+  width: 105px;
+}
+#tab_vulnerabilities .column-column-affected_packages {
+  width: 320px;
+}
+
+/* -- Dependency tab -- */
+#tab_dependencies .column-for_package {
+  width: 250px;
+}
+#tab_dependencies .column-resolved_to_package {
+  width: 250px;
+}
+#tab_dependencies .column-is_runtime {
+  width: 100px;
+}
+#tab_dependencies .column-column-is_optional {
+  width: 100px;
+}
+#tab_dependencies .column-column-is_resolved {
+  width: 88px;
+}
+
 /* -- Package Details -- */
 textarea.licenseexpressionwidget {
   height: 62px;

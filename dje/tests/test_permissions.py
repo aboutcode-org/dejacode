@@ -138,6 +138,7 @@ class DejaCodePermissionTestCase(TestCase):
                 "notice",
                 "license",
                 "owner",
+                "vulnerabilities",
                 "dependencies",
                 "activity",
                 "imports",

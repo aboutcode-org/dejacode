@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import F
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -38,6 +39,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -53,17 +55,20 @@ from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
 
+from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import Vulnerability
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
@@ -91,6 +96,7 @@ from dje.views import PreviousNextPaginationMixin
 from dje.views import SendAboutFilesView
 from dje.views import TabContentView
 from dje.views import TabField
+from dje.views import TableHeaderMixin
 from dje.views_formset import FormSetView
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
@@ -123,7 +129,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 
 
-class BaseProductView:
+class BaseProductViewMixin:
     model = Product
     slug_url_kwarg = ("name", "version")
 
@@ -221,7 +227,7 @@ class ProductListView(
 
 class ProductDetailsView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     ObjectDetailsView,
 ):
     template_name = "product_portfolio/product_details.html"
@@ -285,6 +291,7 @@ class ProductDetailsView(
                 "owner",
             ],
         },
+        "vulnerabilities": {},
         "dependencies": {
             "fields": [
                 "dependencies",
@@ -514,6 +521,47 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
+    def tab_vulnerabilities(self):
+        dataspace = self.object.dataspace
+        vulnerablecode = VulnerableCode(self.object.dataspace)
+        display_tab_contions = [
+            dataspace.enable_vulnerablecodedb_access,
+            vulnerablecode.is_configured(),
+        ]
+        if not all(display_tab_contions):
+            return
+
+        vulnerability_qs = self.object.get_vulnerability_qs()
+        vulnerability_count = vulnerability_qs.count()
+        if not vulnerability_count:
+            label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
+            return {
+                "label": format_html(label),
+                "fields": [],
+                "disabled": True,
+                "tooltip": "No vulnerabilities found in this Product",
+            }
+
+        label = (
+            f'Vulnerabilities <span class="badge badge-vulnerability">{vulnerability_count}</span>'
+        )
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_vulnerabilities")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        template = "tabs/tab_async_loader.html"
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "vulnerabilities",
+        }
+
+        return {
+            "label": format_html(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
     def tab_codebase(self):
         codebaseresources_count = self.object.codebaseresources.count()
         if not codebaseresources_count:
@@ -643,7 +691,7 @@ class ProductDetailsView(
 
 class ProductTabInventoryView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TabContentView,
 ):
@@ -698,7 +746,7 @@ class ProductTabInventoryView(
             self.request.GET,
             queryset=productpackage_qs,
             dataspace=self.object.dataspace,
-            prefix="inventory",
+            prefix=self.tab_id,
             anchor="#inventory",
         )
 
@@ -726,7 +774,7 @@ class ProductTabInventoryView(
             self.request.GET,
             queryset=productcomponent_qs,
             dataspace=self.object.dataspace,
-            prefix="inventory",
+            prefix=self.tab_id,
             anchor="#inventory",
         )
 
@@ -873,7 +921,7 @@ class ProductTabInventoryView(
 
 class ProductTabCodebaseView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
     TabContentView,
 ):
@@ -893,7 +941,7 @@ class ProductTabCodebaseView(
             self.request.GET,
             queryset=codebaseresource_qs,
             dataspace=self.object.dataspace,
-            prefix="codebase",
+            prefix=self.tab_id,
         )
 
         paginator = Paginator(filter_codebaseresource.qs, self.paginate_by)
@@ -954,19 +1002,30 @@ class ProductTabCodebaseView(
 
 class ProductTabDependenciesView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     PreviousNextPaginationMixin,
+    TableHeaderMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_dependencies.html"
     paginate_by = 50
+    table_model = ProductDependency
+    filterset_class = DependencyFilterSet
     query_dict_page_param = "dependencies-page"
     tab_id = "dependencies"
+    table_headers = (
+        Header("for_package", _("For package"), filter="for_package"),
+        Header("resolved_to_package", _("Resolved to package"), filter="resolved_to_package"),
+        Header("declared_dependency", _("Declared dependency")),
+        Header("scope", _("Scope")),
+        Header("extracted_requirement", _("Extracted requirement")),
+        Header("is_runtime", _("Runtime"), filter="is_runtime"),
+        Header("is_optional", _("Optional"), filter="is_optional"),
+        Header("is_resolved", _("Resolved"), filter="is_resolved"),
+    )
 
     def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
         product = self.object
-
         for_package_qs = Package.objects.only_rendering_fields().with_vulnerability_count()
         resolved_to_package_qs = (
             Package.objects.only_rendering_fields()
@@ -978,14 +1037,16 @@ class ProductTabDependenciesView(
             Prefetch("resolved_to_package", resolved_to_package_qs),
         )
 
-        filter_dependency = DependencyFilterSet(
+        self.filterset = self.filterset_class(
             self.request.GET,
             queryset=dependency_qs,
             dataspace=product.dataspace,
-            prefix="dependencies",
+            prefix=self.tab_id,
         )
 
-        filtered_and_ordered_qs = filter_dependency.qs.order_by(
+        context_data = super().get_context_data(**kwargs)
+
+        filtered_and_ordered_qs = self.filterset.qs.order_by(
             "for_package__type",
             "for_package__namespace",
             "for_package__name",
@@ -997,19 +1058,82 @@ class ProductTabDependenciesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        help_texts = {
-            field.name: field.help_text
-            for field in ProductDependency._meta.get_fields()
-            if hasattr(field, "help_text")
-        }
-
         context_data.update(
             {
-                "filter_dependency": filter_dependency,
+                "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": product.dependencies.count(),
                 "search_query": self.request.GET.get("dependencies-q", ""),
-                "help_texts": help_texts,
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabVulnerabilitiesView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    PreviousNextPaginationMixin,
+    TableHeaderMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
+    paginate_by = 50
+    query_dict_page_param = "vulnerabilities-page"
+    tab_id = "vulnerabilities"
+    table_model = Vulnerability
+    filterset_class = VulnerabilityFilterSet
+    table_headers = (
+        Header("vulnerability_id", _("Vulnerability")),
+        Header("aliases", _("Aliases")),
+        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
+        Header("summary", _("Summary")),
+        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+    )
+
+    def get_context_data(self, **kwargs):
+        product = self.object
+        base_vulnerability_qs = product.get_vulnerability_qs()
+        total_count = base_vulnerability_qs.count()
+
+        package_qs = Package.objects.filter(product=product).only_rendering_fields()
+        vulnerability_qs = base_vulnerability_qs.prefetch_related(
+            Prefetch("affected_packages", package_qs)
+        ).order_by(
+            F("max_score").desc(nulls_last=True),
+            "-min_score",
+        )
+
+        self.filterset = self.filterset_class(
+            self.request.GET,
+            queryset=vulnerability_qs,
+            dataspace=product.dataspace,
+            prefix=self.tab_id,
+            anchor=f"#{self.tab_id}",
+        )
+
+        # The self.filterset needs to be set before calling super()
+        context_data = super().get_context_data(**kwargs)
+
+        paginator = Paginator(self.filterset.qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        context_data.update(
+            {
+                "filterset": self.filterset,
+                "page_obj": page_obj,
+                "total_count": total_count,
+                "search_query": self.request.GET.get("vulnerabilities-q", ""),
             }
         )
 
@@ -1027,7 +1151,7 @@ class ProductTabDependenciesView(
 
 class ProductTabImportsView(
     LoginRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_imports.html"
@@ -1208,7 +1332,7 @@ class ProductAddView(
 
 class ProductUpdateView(
     LicenseDataForBuilderMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     DataspacedUpdateView,
 ):
     form_class = ProductForm
@@ -1226,7 +1350,7 @@ class ProductUpdateView(
         return super().get_success_url()
 
 
-class ProductDeleteView(BaseProductView, DataspacedDeleteView):
+class ProductDeleteView(BaseProductViewMixin, DataspacedDeleteView):
     permission_required = "product_portfolio.delete_product"
 
     def get_queryset(self):
@@ -1463,7 +1587,7 @@ class AttributionView(
     LoginRequiredMixin,
     DataspaceScopeMixin,
     GetDataspacedObjectMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     DetailView,
 ):
     template_name = "product_portfolio/attribution/base.html"
@@ -1702,15 +1826,15 @@ class AttributionView(
         return context
 
 
-class ProductSendAboutFilesView(BaseProductView, SendAboutFilesView):
+class ProductSendAboutFilesView(BaseProductViewMixin, SendAboutFilesView):
     pass
 
 
-class ProductExportSPDXDocumentView(BaseProductView, ExportSPDXDocumentView):
+class ProductExportSPDXDocumentView(BaseProductViewMixin, ExportSPDXDocumentView):
     pass
 
 
-class ProductExportCycloneDXBOMView(BaseProductView, ExportCycloneDXBOMView):
+class ProductExportCycloneDXBOMView(BaseProductViewMixin, ExportCycloneDXBOMView):
     pass
 
 
@@ -1805,7 +1929,7 @@ class BaseProductManageGridView(
     LicenseDataForBuilderMixin,
     GetDataspacedObjectMixin,
     PermissionRequiredMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     FormSetView,
 ):
     """A base view for managing product relationship through a grid."""
@@ -2128,7 +2252,7 @@ class BaseProductImportFormView(
     PermissionRequiredMixin,
     GetDataspacedObjectMixin,
     DataspacedModelFormMixin,
-    BaseProductView,
+    BaseProductViewMixin,
     FormView,
 ):
     permission_required = "product_portfolio.change_product"
