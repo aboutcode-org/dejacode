@@ -617,8 +617,8 @@ class ProductDetailsView(
 
         # This behavior does not works well in the context of getting informed about
         # tasks completion on the Product.
-        # if user.is_authenticated:
-        #     self.object.mark_all_notifications_as_read(user)
+        if user.is_authenticated:
+            self.object.mark_all_notifications_as_read(user)
 
         context = super().get_context_data(**kwargs)
 
@@ -2408,4 +2408,4 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         )
     )
     messages.success(request, "Improve Packages from PurlDB in progress...")
-    return redirect(product)
+    return redirect(f"{product.get_absolute_url()}#history")

@@ -52,7 +52,7 @@
           {% endif %}
           {% if request.user.dataspace.enable_purldb_access %}
             <div class="dropdown-header">PurlDB</div>
-            <a class="dropdown-item" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
+            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
           {% endif %}
           </div>
       </div>
@@ -314,6 +314,13 @@
               spinnerTd.innerHTML = 'Error.';
             });
 
+        })
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelector('#improve_from_purldb').addEventListener('click', function() {
+          NEXB.displayOverlay("Fetching data from PurlDB...");
         })
       });
     </script>
