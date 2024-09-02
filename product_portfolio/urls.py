@@ -33,6 +33,7 @@ from product_portfolio.views import check_package_version_ajax_view
 from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
+from product_portfolio.views import improve_packages_from_purldb_view
 from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -80,6 +81,7 @@ urlpatterns = [
     ),
     *product_path("add_customcomponent_ajax", add_customcomponent_ajax_view),
     *product_path("scan_all_packages", scan_all_packages_view),
+    *product_path("improve_packages_from_purldb", improve_packages_from_purldb_view),
     *product_path("about_files", ProductSendAboutFilesView.as_view()),
     *product_path("export_spdx", ProductExportSPDXDocumentView.as_view()),
     *product_path("export_cyclonedx", ProductExportCycloneDXBOMView.as_view()),

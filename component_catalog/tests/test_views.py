@@ -3364,7 +3364,7 @@ class PackageUserViewsTestCase(TestCase):
 
         puyrldb_entry = {
             "filename": "abbot-1.4.0.jar",
-            "release_date": "2015-09-22",
+            "release_date": "2010-05-24T00:00:00Z",
             "type": "maven",
             "namespace": "abbot",
             "name": "abbot",
@@ -3388,7 +3388,7 @@ class PackageUserViewsTestCase(TestCase):
         expected = {
             "filename": "abbot-1.4.0.jar",
             "keywords": ["keyword1", "keyword2"],
-            "release_date": "2015-09-22",
+            "release_date": "2010-05-24T00:00:00Z",
             "type": "maven",
             "namespace": "abbot",
             "name": "abbot",

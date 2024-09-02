@@ -298,6 +298,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_pull_project_data_url(self):
         return self.get_url("pull_project_data")
 
+    def get_improve_packages_from_purldb_url(self):
+        return self.get_url("improve_packages_from_purldb")
+
     def can_be_changed_by(self, user):
         perms = guardian.shortcuts.get_perms(user, self)
         has_change_permission_on_product = "change_product" in perms
@@ -491,6 +494,15 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
+
+    def improve_packages_from_purldb(self, user):
+        """Update all Packages assigned to the Product using PurlDB data."""
+        updated_packages = []
+        for package in self.packages.all():
+            updated_fields = package.update_from_purldb(user)
+            if updated_fields:
+                updated_packages.append(package)
+        return updated_packages
 
     def fetch_vulnerabilities(self):
         """Fetch and update the vulnerabilties of all the Package of this Product."""
@@ -1204,6 +1216,15 @@ def generate_input_file_path(instance, filename):
     return f"{dataspace}/scancode_project/{instance.uuid}/{filename}"
 
 
+class ScanCodeProjectQuerySet(ProductSecuredQuerySet):
+    def in_progress(self):
+        in_progress_statuses = [
+            ScanCodeProject.Status.SUBMITTED,
+            ScanCodeProject.Status.IMPORT_STARTED,
+        ]
+        return self.filter(status__in=in_progress_statuses)
+
+
 class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     """Wrap a ScanCode.io Project."""
 
@@ -1211,6 +1232,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
         LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
         PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
+        IMPROVE_FROM_PURLDB = "IMPROVE_FROM_PURLDB", _("Improve from PurlDB")
 
     class Status(models.TextChoices):
         SUBMITTED = "submitted"
@@ -1265,6 +1287,8 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         blank=True,
         default=dict,
     )
+
+    objects = DataspacedManager.from_queryset(ScanCodeProjectQuerySet)()
 
     class Meta:
         unique_together = ("dataspace", "uuid")

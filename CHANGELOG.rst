@@ -107,6 +107,9 @@ Release notes
 - Add a Vulnerabilities tab in the Product details view.
   https://github.com/aboutcode-org/dejacode/issues/95
 
+- Add a "Improve Packages from PurlDB" action in the Product details view.
+  https://github.com/aboutcode-org/dejacode/issues/45
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

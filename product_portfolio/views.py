@@ -615,6 +615,8 @@ class ProductDetailsView(
         user = self.request.user
         dataspace = user.dataspace
 
+        # This behavior does not works well in the context of getting informed about
+        # tasks completion on the Product.
         if user.is_authenticated:
             self.object.mark_all_notifications_as_read(user)
 
@@ -2374,3 +2376,43 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     }
 
     return TemplateResponse(request, template, context)
+
+
+@login_required
+def improve_packages_from_purldb_view(request, dataspace, name, version=""):
+    user = request.user
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    perms = guardian_get_perms(user, product)
+    has_change_permission = "change_product" in perms
+
+    purldb = PurlDB(user.dataspace)
+    conditions = [
+        purldb.is_configured(),
+        user.dataspace.enable_purldb_access,
+        has_change_permission,
+        user.dataspace.name == dataspace,
+    ]
+
+    if not all(conditions):
+        raise Http404
+
+    if not product.packages.count():
+        raise Http404("No packages available for this product.")
+
+    improve_in_progress = product.scancodeprojects.in_progress().filter(
+        type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+    )
+
+    if improve_in_progress.exists():
+        messages.error(request, "Improve Packages already in progress...")
+    else:
+        transaction.on_commit(
+            lambda: tasks.improve_packages_from_purldb(
+                product_uuid=product.uuid,
+                user_uuid=user.uuid,
+            )
+        )
+        messages.success(request, "Improve Packages from PurlDB in progress...")
+    return redirect(f"{product.get_absolute_url()}#imports")

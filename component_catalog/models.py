@@ -2490,7 +2490,7 @@ class Package(
         package = cls.create_from_data(user, package_data)
         return package
 
-    def get_purldb_entries(self, user, max_request_call=0, timeout=None):
+    def get_purldb_entries(self, user, max_request_call=0, timeout=10):
         """
         Return the PurlDB entries that correspond to this Package instance.
 
@@ -2515,13 +2515,31 @@ class Package(
         if self.download_url:
             payloads.append({"download_url": self.download_url})
 
+        purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
             if max_request_call and index >= max_request_call:
                 return
 
-            packages_data = PurlDB(user.dataspace).find_packages(payload, timeout)
-            if packages_data:
+            if packages_data := purldb.find_packages(payload, timeout):
                 return packages_data
+
+    def update_from_purldb(self, user):
+        """
+        Find this Package in the PurlDB and update empty fields with PurlDB data
+        when available.
+        """
+        purldb_entries = self.get_purldb_entries(user)
+        if not purldb_entries:
+            return
+
+        package_data = purldb_entries[0]
+        # The format from PURLDB is "2019-11-18T00:00:00Z"
+        if release_date := package_data.get("release_date"):
+            package_data["release_date"] = release_date.split("T")[0]
+        package_data["license_expression"] = package_data.get("declared_license_expression")
+
+        updated_fields = self.update_from_data(user, package_data, override=False)
+        return updated_fields
 
 
 class PackageAssignedLicense(DataspacedModel):

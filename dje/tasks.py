@@ -20,6 +20,8 @@ from django.db import transaction
 from django.template.defaultfilters import pluralize
 
 from django_rq import job
+from guardian.shortcuts import get_perms as guardian_get_perms
+from notifications.signals import notify
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.utils import is_available
@@ -92,16 +94,17 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     Submit the provided `uris` to ScanCode.io as an asynchronous task.
     Only publicly available URLs are sent to ScanCode.io.
     """
-    from dje.models import DejacodeUser
-
     logger.info(
         f"Entering scancodeio_submit_scan task with "
         f"uris={uris} user_uuid={user_uuid} dataspace_uuid={dataspace_uuid}"
     )
 
+    DejacodeUser = apps.get_model("dje", "DejacodeUser")
+
     try:
         user = DejacodeUser.objects.get(uuid=user_uuid, dataspace__uuid=dataspace_uuid)
     except ObjectDoesNotExist:
+        logger.error(f"[scancodeio_submit_scan]: User uuid={user_uuid} does not exists.")
         return
 
     if not isinstance(uris, list):
@@ -118,20 +121,20 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 @job
 def scancodeio_submit_project(scancodeproject_uuid, user_uuid, pipeline_name):
     """Submit the provided SBOM file to ScanCode.io as an asynchronous task."""
-    from dje.models import DejacodeUser
-
     logger.info(
         f"Entering scancodeio_submit_project task with "
         f"scancodeproject_uuid={scancodeproject_uuid} user_uuid={user_uuid} "
         f"pipeline_name={pipeline_name}"
     )
 
+    DejacodeUser = apps.get_model("dje", "DejacodeUser")
     ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")
     scancode_project = ScanCodeProject.objects.get(uuid=scancodeproject_uuid)
 
     try:
         user = DejacodeUser.objects.get(uuid=user_uuid)
     except ObjectDoesNotExist:
+        logger.error(f"[scancodeio_submit_project]: User uuid={user_uuid} does not exists.")
         return
 
     scancodeio = ScanCodeIO(user.dataspace)
@@ -226,6 +229,76 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     scancode_project.save()
     description = "\n".join(scancode_project.import_log)
     scancode_project.notify(verb=notification_verb, description=description)
+
+
+@job("default", timeout=1200)
+def improve_packages_from_purldb(product_uuid, user_uuid):
+    logger.info(
+        f"Entering improve_packages_from_purldb task with "
+        f"product_uuid={product_uuid} user_uuid={user_uuid}"
+    )
+
+    DejacodeUser = apps.get_model("dje", "DejacodeUser")
+    History = apps.get_model("dje", "History")
+    Product = apps.get_model("product_portfolio", "product")
+    ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")
+
+    try:
+        user = DejacodeUser.objects.get(uuid=user_uuid)
+    except ObjectDoesNotExist:
+        logger.error(f"[improve_packages_from_purldb]: User uuid={user_uuid} does not exists.")
+        return
+
+    try:
+        product = Product.objects.get_queryset(user).get(uuid=product_uuid)
+    except ObjectDoesNotExist:
+        logger.error(
+            f"[improve_packages_from_purldb]: Product uuid={product_uuid} does not exists."
+        )
+        return
+
+    perms = guardian_get_perms(user, product)
+    has_change_permission = "change_product" in perms
+    if not has_change_permission:
+        logger.error("[improve_packages_from_purldb]: Permission denied.")
+        return
+
+    scancode_project = ScanCodeProject.objects.create(
+        product=product,
+        dataspace=product.dataspace,
+        type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+        status=ScanCodeProject.Status.IMPORT_STARTED,
+        created_by=user,
+    )
+
+    try:
+        updated_packages = product.improve_packages_from_purldb(user)
+    except Exception as e:
+        scancode_project.update(
+            status=ScanCodeProject.Status.FAILURE,
+            import_log=str(e),
+        )
+
+    logger.info(f"[improve_packages_from_purldb]: {len(updated_packages)} updated from PurlDB.")
+    verb = "Improved packages from PurlDB:"
+    if updated_packages:
+        description = ", ".join([str(package) for package in updated_packages])
+        History.log_change(user, product, message=f"{verb} {description}")
+    else:
+        description = "No packages updated from PurlDB data."
+
+    scancode_project.update(
+        status=ScanCodeProject.Status.SUCCESS,
+        import_log=[verb, description],
+    )
+
+    notify.send(
+        sender=user,
+        verb=verb,
+        action_object=product,
+        recipient=user,
+        description=description,
+    )
 
 
 @job("default", timeout="3h")

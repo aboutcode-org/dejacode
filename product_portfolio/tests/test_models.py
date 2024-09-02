@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from unittest import mock
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.models import ProtectedError
@@ -37,6 +39,7 @@ from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product_package
 from workflow.models import RequestTemplate
 
 
@@ -482,6 +485,18 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         product.refresh_from_db()
         self.assertEqual(1, product.request_count)
+
+    @mock.patch("component_catalog.models.Package.update_from_purldb")
+    def test_product_model_improve_packages_from_purldb(self, mock_update_from_purldb):
+        mock_update_from_purldb.return_value = 1
+
+        make_product_package(self.product1)
+        make_product_package(self.product1)
+        self.assertEqual(2, self.product1.packages.count())
+
+        updated_packages = self.product1.improve_packages_from_purldb(self.super_user)
+        self.assertEqual(2, len(updated_packages))
+        self.assertEqual(2, mock_update_from_purldb.call_count)
 
     def test_productcomponent_model_license_expression_handle_assigned_licenses(self):
         p1 = ProductComponent.objects.create(
