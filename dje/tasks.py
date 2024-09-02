@@ -20,6 +20,7 @@ from django.db import transaction
 from django.template.defaultfilters import pluralize
 
 from django_rq import job
+from guardian.shortcuts import get_perms as guardian_get_perms
 from notifications.signals import notify
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -253,6 +254,12 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
         logger.error(
             f"[improve_packages_from_purldb]: Product uuid={product_uuid} does not exists."
         )
+        return
+
+    perms = guardian_get_perms(user, product)
+    has_change_permission = "change_product" in perms
+    if not has_change_permission:
+        logger.error("[improve_packages_from_purldb]: Permission denied.")
         return
 
     updated_packages = product.improve_packages_from_purldb(user)

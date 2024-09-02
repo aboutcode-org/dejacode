@@ -34,6 +34,7 @@ from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
 from dje.outputs import get_spdx_extracted_licenses
+from dje.tasks import improve_packages_from_purldb
 from dje.tasks import logger as tasks_logger
 from dje.tasks import pull_project_data_from_scancodeio
 from dje.tasks import scancodeio_submit_project
@@ -57,6 +58,7 @@ from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_package
 from product_portfolio.views import ManageComponentGridView
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -3052,7 +3054,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.super_user, project.created_by)
 
     @mock.patch("product_portfolio.models.ScanCodeProject.import_data_from_scancodeio")
-    def test_pull_project_data_from_scancodeio_task(self, mock_import_data):
+    def test_product_portfolio_pull_project_data_from_scancodeio_task(self, mock_import_data):
         scancode_project = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
@@ -3101,7 +3103,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.super_user, notif.recipient)
         self.assertEqual("\n".join(scancode_project.import_log), notif.description)
 
-    def test_pull_project_data_from_scancodeio_task_can_start_import(self):
+    def test_product_portfolio_pull_project_data_from_scancodeio_task_can_start_import(self):
         scancode_project = ScanCodeProject.objects.create(
             product=self.product1,
             dataspace=self.product1.dataspace,
@@ -3117,5 +3119,60 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             f"INFO:dje.tasks:Entering pull_project_data_from_scancodeio task with "
             f"scancodeproject_uuid={scancode_project.uuid}",
             "ERROR:dje.tasks:Cannot start import",
+        ]
+        self.assertEqual(expected, cm.output)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_product_portfolio_improve_packages_from_purldb_view(self, mock_is_configured):
+        mock_is_configured.return_value = True
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+        make_product_package(self.product1)
+
+        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = self.product1.get_url("improve_packages_from_purldb")
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code)
+
+        self.assertTrue(self.super_user.has_perm("change_product", self.product1))
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_url("improve_packages_from_purldb")
+        response = self.client.get(url, follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "Improve Packages from PurlDB in progress...")
+
+    @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
+    def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):
+        mock_improve.return_value = ["pkg1", "pkg2"]
+
+        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
+        with self.assertLogs(tasks_logger) as cm:
+            improve_packages_from_purldb(self.product1.uuid, self.basic_user.uuid)
+
+        expected = (
+            "ERROR:dje.tasks:[improve_packages_from_purldb]: "
+            f"Product uuid={self.product1.uuid} does not exists."
+        )
+        self.assertIn(expected, cm.output)
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
+        with self.assertLogs(tasks_logger) as cm:
+            improve_packages_from_purldb(self.product1.uuid, self.basic_user.uuid)
+
+        expected = "ERROR:dje.tasks:[improve_packages_from_purldb]: Permission denied."
+        self.assertIn(expected, cm.output)
+
+        self.assertTrue(self.super_user.has_perm("change_product", self.product1))
+        with self.assertLogs(tasks_logger) as cm:
+            improve_packages_from_purldb(self.product1.uuid, self.super_user.uuid)
+
+        mock_improve.assert_called_once()
+        expected = [
+            "INFO:dje.tasks:Entering improve_packages_from_purldb task with "
+            f"product_uuid={self.product1.uuid} "
+            f"user_uuid={self.super_user.uuid}",
+            "INFO:dje.tasks:[improve_packages_from_purldb]: 2 updated from PurlDB.",
         ]
         self.assertEqual(expected, cm.output)

@@ -2381,20 +2381,22 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
 @login_required
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
+    guarded_qs = Product.objects.get_queryset(user)
+    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    perms = guardian_get_perms(user, product)
+    has_change_permission = "change_product" in perms
 
     purldb = PurlDB(user.dataspace)
     conditions = [
         purldb.is_configured(),
-        user.is_superuser,
         user.dataspace.enable_purldb_access,
+        has_change_permission,
         user.dataspace.name == dataspace,
     ]
 
     if not all(conditions):
         raise Http404
-
-    guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     if not product.packages.count():
         raise Http404("No packages available for this product.")
