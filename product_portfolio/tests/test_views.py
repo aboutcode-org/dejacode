@@ -135,7 +135,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(29):
+        with self.assertNumQueries(30):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -161,7 +161,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(26):
+        with self.assertNumQueries(27):
             response = self.client.get(url)
         self.assertContains(response, expected)
 
@@ -3142,6 +3142,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages from PurlDB in progress...")
 
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+            status=ScanCodeProject.Status.IMPORT_STARTED,
+        )
+        response = self.client.get(url, follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "Improve Packages already in progress...")
+
     @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
     def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):
         mock_improve.return_value = ["pkg1", "pkg2"]
@@ -3176,3 +3186,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "INFO:dje.tasks:[improve_packages_from_purldb]: 2 updated from PurlDB.",
         ]
         self.assertEqual(expected, cm.output)
+
+        import_project = self.product1.scancodeprojects.get()
+        self.assertEqual(import_project.type, ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB)
+        self.assertEqual(import_project.status, ScanCodeProject.Status.SUCCESS)
+        expected = ["Improved packages from PurlDB:", "pkg1, pkg2"]
+        self.assertEqual(expected, import_project.import_log)

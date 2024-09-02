@@ -241,6 +241,7 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
     DejacodeUser = apps.get_model("dje", "DejacodeUser")
     History = apps.get_model("dje", "History")
     Product = apps.get_model("product_portfolio", "product")
+    ScanCodeProject = apps.get_model("product_portfolio", "scancodeproject")
 
     try:
         user = DejacodeUser.objects.get(uuid=user_uuid)
@@ -262,15 +263,34 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
         logger.error("[improve_packages_from_purldb]: Permission denied.")
         return
 
-    updated_packages = product.improve_packages_from_purldb(user)
-    logger.info(f"[improve_packages_from_purldb]: {len(updated_packages)} updated from PurlDB.")
+    scancode_project = ScanCodeProject.objects.create(
+        product=product,
+        dataspace=product.dataspace,
+        type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+        status=ScanCodeProject.Status.IMPORT_STARTED,
+        created_by=user,
+    )
 
-    verb = "Improved packages from PurlDB"
+    try:
+        updated_packages = product.improve_packages_from_purldb(user)
+    except Exception as e:
+        scancode_project.update(
+            status=ScanCodeProject.Status.FAILURE,
+            import_log=str(e),
+        )
+
+    logger.info(f"[improve_packages_from_purldb]: {len(updated_packages)} updated from PurlDB.")
+    verb = "Improved packages from PurlDB:"
     if updated_packages:
         description = ", ".join([str(package) for package in updated_packages])
-        History.log_change(user, product, message=f"{verb}: {description}")
+        History.log_change(user, product, message=f"{verb} {description}")
     else:
         description = "No packages updated from PurlDB data."
+
+    scancode_project.update(
+        status=ScanCodeProject.Status.SUCCESS,
+        import_log=[verb, description],
+    )
 
     notify.send(
         sender=user,

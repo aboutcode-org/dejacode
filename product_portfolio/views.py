@@ -2401,11 +2401,18 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     if not product.packages.count():
         raise Http404("No packages available for this product.")
 
-    transaction.on_commit(
-        lambda: tasks.improve_packages_from_purldb(
-            product_uuid=product.uuid,
-            user_uuid=user.uuid,
-        )
+    improve_in_progress = product.scancodeprojects.in_progress().filter(
+        type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
     )
-    messages.success(request, "Improve Packages from PurlDB in progress...")
-    return redirect(f"{product.get_absolute_url()}#history")
+
+    if improve_in_progress.exists():
+        messages.error(request, "Improve Packages already in progress...")
+    else:
+        transaction.on_commit(
+            lambda: tasks.improve_packages_from_purldb(
+                product_uuid=product.uuid,
+                user_uuid=user.uuid,
+            )
+        )
+        messages.success(request, "Improve Packages from PurlDB in progress...")
+    return redirect(f"{product.get_absolute_url()}#imports")

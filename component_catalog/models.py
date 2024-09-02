@@ -2529,7 +2529,7 @@ class Package(
         when available.
         """
         purldb_entries = self.get_purldb_entries(user)
-        if not purldb_entries or len(purldb_entries) != 1:
+        if not purldb_entries:
             return
 
         package_data = purldb_entries[0]
