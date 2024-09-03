@@ -2390,6 +2390,8 @@ class ExportCycloneDXBOMView(
             extension = "vex"
             include_components = False
             include_vex = True
+        elif content == "combined":
+            include_vex = True
 
         cyclonedx_bom = outputs.get_cyclonedx_bom(
             instance,

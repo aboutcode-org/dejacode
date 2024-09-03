@@ -2735,20 +2735,25 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
         sbom_link = f"{export_cyclonedx_url}?spec_version=1.6"
         vex_link = f"{export_cyclonedx_url}?spec_version=1.6&content=vex"
+        combined_link = f"{export_cyclonedx_url}?spec_version=1.6&content=combined"
 
         response = self.client.get(url)
-        self.assertContains(response, "CycloneDX SBOM")
+        self.assertContains(response, "SBOM")
         self.assertContains(response, sbom_link)
-        self.assertNotContains(response, "CycloneDX VEX")
+        self.assertNotContains(response, "VEX (only)")
         self.assertNotContains(response, vex_link)
+        self.assertNotContains(response, "SBOM+VEX (combined)")
+        self.assertNotContains(response, combined_link)
 
         self.dataspace.enable_vulnerablecodedb_access = True
         self.dataspace.save()
         response = self.client.get(url)
-        self.assertContains(response, "CycloneDX SBOM")
+        self.assertContains(response, "SBOM")
         self.assertContains(response, sbom_link)
-        self.assertContains(response, "CycloneDX VEX")
+        self.assertContains(response, "VEX (only)")
         self.assertContains(response, vex_link)
+        self.assertContains(response, "SBOM+VEX (combined)")
+        self.assertContains(response, combined_link)
 
     def test_product_portfolio_product_export_cyclonedx_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)

@@ -301,6 +301,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_improve_packages_from_purldb_url(self):
         return self.get_url("improve_packages_from_purldb")
 
+    @property
+    def cyclonedx_bom_ref(self):
+        return str(self.uuid)
+
     def can_be_changed_by(self, user):
         perms = guardian.shortcuts.get_perms(user, self)
         has_change_permission_on_product = "change_product" in perms

@@ -1,7 +1,7 @@
 {
   "affects": [
     {
-      "ref": "dd0afd00-89bd-46d6-b1f0-57b553c44d32"
+      "ref": "pkg:type/name@1.9.0"
     }
   ],
   "description": "Internationalized Domain Names in Applications (IDNA) vulnerable to denial of service from specially crafted inputs to idna.encode",

@@ -932,7 +932,7 @@ def component_mixin_factory(verbose_name):
                 name=self.name,
                 type=component_type,
                 version=self.version,
-                bom_ref=str(self.uuid),
+                bom_ref=self.cyclonedx_bom_ref,
                 supplier=supplier,
                 licenses=licenses,
                 copyright=self.copyright,
@@ -1325,6 +1325,10 @@ class Component(
     @staticmethod
     def get_extra_relational_fields():
         return ["external_references"]
+
+    @property
+    def cyclonedx_bom_ref(self):
+        return str(self.uuid)
 
     @property
     def permission_protected_fields(self):
@@ -2363,6 +2367,12 @@ class Package(
     def get_spdx_packages(self):
         return [self]
 
+    @property
+    def cyclonedx_bom_ref(self):
+        if package_url := self.get_package_url():
+            return str(package_url)
+        return str(self.uuid)
+
     def as_cyclonedx(self, license_expression_spdx=None):
         """Return this Package as an CycloneDX Component entry."""
         expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
@@ -2389,7 +2399,7 @@ class Package(
         return cyclonedx_component.Component(
             name=self.name,
             version=self.version,
-            bom_ref=str(package_url) or str(self.uuid),
+            bom_ref=self.cyclonedx_bom_ref,
             purl=package_url,
             licenses=licenses,
             copyright=self.copyright,
@@ -2752,7 +2762,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     def as_cyclonedx(self, affected_instances):
         affects = [
-            cdx_vulnerability.BomTarget(ref=str(instance.uuid)) for instance in affected_instances
+            cdx_vulnerability.BomTarget(ref=instance.cyclonedx_bom_ref)
+            for instance in affected_instances
         ]
 
         source_url = f"https://public.vulnerablecode.io/vulnerabilities/{self.vulnerability_id}"
