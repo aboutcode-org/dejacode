@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import decimal
 import logging
 import re
 from contextlib import suppress
@@ -37,6 +38,7 @@ from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
 from cyclonedx.model import license as cyclonedx_license
+from cyclonedx.model import vulnerability as cdx_vulnerability
 from license_expression import ExpressionError
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
@@ -2747,3 +2749,59 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
                     consolidated_scores.extend(score_range)
 
         return consolidated_scores
+
+    def as_cyclonedx(self, component_bom_ref):
+        affects = [cdx_vulnerability.BomTarget(ref=f"urn:cdx:{component_bom_ref}")]
+
+        source_url = f"https://public.vulnerablecode.io/vulnerabilities/{self.vulnerability_id}"
+        source = cdx_vulnerability.VulnerabilitySource(
+            name="VulnerableCode",
+            url=source_url,
+        )
+
+        references = []
+        ratings = []
+        for reference in self.references:
+            reference_source = cdx_vulnerability.VulnerabilitySource(
+                url=reference.get("reference_url"),
+            )
+            references.append(
+                cdx_vulnerability.VulnerabilityReference(
+                    id=reference.get("reference_id"),
+                    source=reference_source,
+                )
+            )
+
+            for score_entry in reference.get("scores", []):
+                # CycloneDX only support a float value for the score field,
+                # where on the VulnerableCode data it can be either a score float value
+                # or a severity string value.
+                score_value = score_entry.get("value")
+                try:
+                    score = decimal.Decimal(score_value)
+                    severity = None
+                except decimal.DecimalException:
+                    score = None
+                    severity = getattr(
+                        cdx_vulnerability.VulnerabilitySeverity,
+                        score_value.upper(),
+                        None,
+                    )
+
+                ratings.append(
+                    cdx_vulnerability.VulnerabilityRating(
+                        source=reference_source,
+                        score=score,
+                        severity=severity,
+                        vector=score_entry.get("scoring_elements"),
+                    )
+                )
+
+        return cdx_vulnerability.Vulnerability(
+            id=self.vulnerability_id,
+            source=source,
+            description=self.summary,
+            affects=affects,
+            references=sorted(references),
+            ratings=ratings,
+        )
