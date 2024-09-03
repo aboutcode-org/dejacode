@@ -508,9 +508,15 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         """Fetch and update the vulnerabilties of all the Package of this Product."""
         return fetch_for_queryset(self.all_packages, self.dataspace)
 
-    def get_vulnerability_qs(self):
+    def get_vulnerability_qs(self, prefetch_related_packages=False):
         """Return a QuerySet of all Vulnerability instances related to this product"""
-        return Vulnerability.objects.filter(affected_packages__in=self.packages.all())
+        qs = Vulnerability.objects.filter(affected_packages__in=self.packages.all())
+
+        if prefetch_related_packages:
+            package_qs = Package.objects.filter(product=self).only_rendering_fields()
+            qs = qs.prefetch_related(models.Prefetch("affected_packages", package_qs))
+
+        return qs
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):

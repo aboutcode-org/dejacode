@@ -2750,8 +2750,10 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         return consolidated_scores
 
-    def as_cyclonedx(self, component_bom_ref):
-        affects = [cdx_vulnerability.BomTarget(ref=f"urn:cdx:{component_bom_ref}")]
+    def as_cyclonedx(self, affected_instances):
+        affects = [
+            cdx_vulnerability.BomTarget(ref=str(instance.uuid)) for instance in affected_instances
+        ]
 
         source_url = f"https://public.vulnerablecode.io/vulnerabilities/{self.vulnerability_id}"
         source = cdx_vulnerability.VulnerabilitySource(

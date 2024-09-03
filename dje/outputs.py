@@ -95,8 +95,11 @@ def get_spdx_filename(spdx_document):
     return safe_filename(filename)
 
 
-def get_cyclonedx_bom(instance, user):
-    """https://cyclonedx.org/use-cases/#dependency-graph"""
+def get_cyclonedx_bom(instance, user, include_components=True, include_vex=False):
+    """
+    https://cyclonedx.org/use-cases/#dependency-graph
+    https://cyclonedx.org/use-cases/#vulnerability-exploitability
+    """
     root_component = instance.as_cyclonedx()
 
     bom = cyclonedx_bom.Bom()
@@ -122,9 +125,18 @@ def get_cyclonedx_bom(instance, user):
             component.as_cyclonedx() for component in instance.get_cyclonedx_components()
         ]
 
-    for component in cyclonedx_components:
-        bom.components.add(component)
-        bom.register_dependency(root_component, [component])
+    if include_components:
+        for component in cyclonedx_components:
+            bom.components.add(component)
+            bom.register_dependency(root_component, [component])
+
+    if include_vex:
+        vulnerability_qs = instance.get_vulnerability_qs(prefetch_related_packages=True)
+        vulnerabilities = [
+            vulnerability.as_cyclonedx(affected_instances=vulnerability.affected_packages.all())
+            for vulnerability in vulnerability_qs
+        ]
+        bom.vulnerabilities = vulnerabilities
 
     return bom
 
@@ -165,7 +177,7 @@ def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
     return json.dumps(ordered_dict, indent=2)
 
 
-def get_cyclonedx_filename(instance):
+def get_cyclonedx_filename(instance, extension="cdx"):
     base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
-    filename = f"{base_filename}_{instance}.cdx.json"
+    filename = f"{base_filename}_{instance}.{extension}.json"
     return safe_filename(filename)

@@ -2381,8 +2381,22 @@ class ExportCycloneDXBOMView(
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         spec_version = self.request.GET.get("spec_version")
+        content = self.request.GET.get("content", "sbom")
 
-        cyclonedx_bom = outputs.get_cyclonedx_bom(instance, self.request.user)
+        extension = "cdx"
+        include_components = True
+        include_vex = False
+        if content == "vex":
+            extension = "vex"
+            include_components = False
+            include_vex = True
+
+        cyclonedx_bom = outputs.get_cyclonedx_bom(
+            instance,
+            self.request.user,
+            include_components,
+            include_vex,
+        )
 
         try:
             cyclonedx_bom_json = outputs.get_cyclonedx_bom_json(cyclonedx_bom, spec_version)
@@ -2391,6 +2405,6 @@ class ExportCycloneDXBOMView(
 
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,
-            filename=outputs.get_cyclonedx_filename(instance),
+            filename=outputs.get_cyclonedx_filename(instance, extension),
             content_type="application/json",
         )

@@ -2743,8 +2743,9 @@ class ComponentCatalogModelsTestCase(TestCase):
             dataspace=self.dataspace,
             data=affected_by_vulnerabilities[0],
         )
+        package1 = make_package(self.dataspace, uuid="dd0afd00-89bd-46d6-b1f0-57b553c44d32")
 
-        vulnerability1_as_cdx = vulnerability1.as_cyclonedx(component_bom_ref="ref")
+        vulnerability1_as_cdx = vulnerability1.as_cyclonedx(affected_instances=[package1])
         as_dict = json.loads(vulnerability1_as_cdx.as_json())
         as_dict.pop("ratings", None)  # The sorting is inconsistent
         results = json.dumps(as_dict, indent=2)
