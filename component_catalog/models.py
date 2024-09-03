@@ -2369,9 +2369,7 @@ class Package(
 
     @property
     def cyclonedx_bom_ref(self):
-        if package_url := self.get_package_url():
-            return str(package_url)
-        return str(self.uuid)
+        return self.package_url or str(self.uuid)
 
     def as_cyclonedx(self, license_expression_spdx=None):
         """Return this Package as an CycloneDX Component entry."""
@@ -2395,12 +2393,11 @@ class Package(
             if (hash_value := getattr(self, field_name))
         ]
 
-        package_url = self.get_package_url()
         return cyclonedx_component.Component(
             name=self.name,
             version=self.version,
             bom_ref=self.cyclonedx_bom_ref,
-            purl=package_url,
+            purl=self.get_package_url(),
             licenses=licenses,
             copyright=self.copyright,
             description=self.description,
