@@ -76,7 +76,6 @@ from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
-from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.models import DejacodeUser
@@ -347,7 +346,7 @@ class ComponentListView(
     add_to_product_perm = "product_portfolio.add_productcomponent"
     template_name = "component_catalog/base_component_package_list.html"
     filterset_class = ComponentFilterSet
-    template_list_table = "component_catalog/includes/component_list_table.html"
+    template_list_table = "component_catalog/tables/component_list_table.html"
     include_reference_dataspace = True
     put_results_in_session = True
     paginate_by = settings.PAGINATE_BY or 200
@@ -961,7 +960,7 @@ class PackageListView(
     add_to_product_perm = "product_portfolio.add_productpackage"
     filterset_class = PackageFilterSet
     template_name = "component_catalog/package_list.html"
-    template_list_table = "component_catalog/includes/package_list_table.html"
+    template_list_table = "component_catalog/tables/package_list_table.html"
     include_reference_dataspace = True
     put_results_in_session = True
     table_headers = (

@@ -11,7 +11,6 @@ from django.db.models import F
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
-from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.views import DataspacedFilterView
 from dje.views import Header
 from vulnerabilities.filters import VulnerabilityFilterSet
@@ -24,8 +23,8 @@ class VulnerabilityListView(
 ):
     model = Vulnerability
     filterset_class = VulnerabilityFilterSet
-    template_name = "component_catalog/vulnerability_list.html"
-    template_list_table = "component_catalog/tables/vulnerability_list_table.html"
+    template_name = "vulnerabilities/vulnerability_list.html"
+    template_list_table = "vulnerabilities/tables/vulnerability_list_table.html"
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("aliases", _("Aliases")),
