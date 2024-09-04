@@ -10,12 +10,15 @@ from django.test import TestCase
 
 from cyclonedx.model import bom as cyclonedx_bom
 
+from component_catalog.tests import make_package
+from component_catalog.tests import make_vulnerability
 from dejacode import __version__ as dejacode_version
 from dje import outputs
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
 from product_portfolio.models import Product
+from product_portfolio.tests import make_product_package
 
 
 class OutputsTestCase(TestCase):
@@ -72,6 +75,24 @@ class OutputsTestCase(TestCase):
     def test_outputs_get_cyclonedx_bom(self):
         bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
         self.assertIsInstance(bom, cyclonedx_bom.Bom)
+
+    def test_outputs_get_cyclonedx_bom_include_vex(self):
+        package_in_product = make_package(self.dataspace, package_url="pkg:type/name")
+        make_product_package(self.product1, package_in_product)
+        package_not_in_product = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(
+            self.dataspace, affecting=[package_in_product, package_not_in_product]
+        )
+        make_vulnerability(self.dataspace, affecting=[package_not_in_product])
+
+        bom = outputs.get_cyclonedx_bom(
+            instance=self.product1,
+            user=self.super_user,
+            include_vex=True,
+        )
+        self.assertIsInstance(bom, cyclonedx_bom.Bom)
+        self.assertEqual(1, len(bom.vulnerabilities))
+        self.assertEqual(vulnerability1.vulnerability_id, bom.vulnerabilities[0].id)
 
     def test_outputs_get_cyclonedx_bom_json(self):
         bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)

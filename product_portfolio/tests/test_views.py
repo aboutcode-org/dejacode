@@ -2728,6 +2728,33 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ]
         self.assertEqual(expected, extracted_licenses_as_dict)
 
+    def test_product_portfolio_product_details_view_cyclonedx_links(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_absolute_url()
+
+        export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
+        sbom_link = f"{export_cyclonedx_url}?spec_version=1.6"
+        vex_link = f"{export_cyclonedx_url}?spec_version=1.6&content=vex"
+        combined_link = f"{export_cyclonedx_url}?spec_version=1.6&content=combined"
+
+        response = self.client.get(url)
+        self.assertContains(response, "SBOM")
+        self.assertContains(response, sbom_link)
+        self.assertNotContains(response, "VEX (only)")
+        self.assertNotContains(response, vex_link)
+        self.assertNotContains(response, "SBOM+VEX (combined)")
+        self.assertNotContains(response, combined_link)
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        response = self.client.get(url)
+        self.assertContains(response, "SBOM")
+        self.assertContains(response, sbom_link)
+        self.assertContains(response, "VEX (only)")
+        self.assertContains(response, vex_link)
+        self.assertContains(response, "SBOM+VEX (combined)")
+        self.assertContains(response, combined_link)
+
     def test_product_portfolio_product_export_cyclonedx_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
@@ -2773,6 +2800,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=package, dataspace=self.dataspace
         )
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package])
 
         self.client.login(username=self.super_user.username, password="secret")
         export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
@@ -2852,6 +2880,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.get(export_cyclonedx_url, data={"spec_version": "10.10"})
         self.assertEqual(404, response.status_code)
+
+        response = self.client.get(export_cyclonedx_url, data={"content": "vex"})
+        response_str = str(response.getvalue())
+        self.assertIn("vulnerabilities", response_str)
+        self.assertIn(vulnerability1.vulnerability_id, response_str)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_scancodeio_submit_project_task(self, mock_submit_project):

@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import decimal
 import logging
 import re
 from contextlib import suppress
@@ -37,6 +38,7 @@ from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
 from cyclonedx.model import license as cyclonedx_license
+from cyclonedx.model import vulnerability as cdx_vulnerability
 from license_expression import ExpressionError
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
@@ -930,7 +932,7 @@ def component_mixin_factory(verbose_name):
                 name=self.name,
                 type=component_type,
                 version=self.version,
-                bom_ref=str(self.uuid),
+                bom_ref=self.cyclonedx_bom_ref,
                 supplier=supplier,
                 licenses=licenses,
                 copyright=self.copyright,
@@ -1323,6 +1325,10 @@ class Component(
     @staticmethod
     def get_extra_relational_fields():
         return ["external_references"]
+
+    @property
+    def cyclonedx_bom_ref(self):
+        return str(self.uuid)
 
     @property
     def permission_protected_fields(self):
@@ -2361,6 +2367,10 @@ class Package(
     def get_spdx_packages(self):
         return [self]
 
+    @property
+    def cyclonedx_bom_ref(self):
+        return self.package_url or str(self.uuid)
+
     def as_cyclonedx(self, license_expression_spdx=None):
         """Return this Package as an CycloneDX Component entry."""
         expression_spdx = license_expression_spdx or self.concluded_license_expression_spdx
@@ -2383,12 +2393,11 @@ class Package(
             if (hash_value := getattr(self, field_name))
         ]
 
-        package_url = self.get_package_url()
         return cyclonedx_component.Component(
             name=self.name,
             version=self.version,
-            bom_ref=str(package_url) or str(self.uuid),
-            purl=package_url,
+            bom_ref=self.cyclonedx_bom_ref,
+            purl=self.get_package_url(),
             licenses=licenses,
             copyright=self.copyright,
             description=self.description,
@@ -2747,3 +2756,62 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
                     consolidated_scores.extend(score_range)
 
         return consolidated_scores
+
+    def as_cyclonedx(self, affected_instances):
+        affects = [
+            cdx_vulnerability.BomTarget(ref=instance.cyclonedx_bom_ref)
+            for instance in affected_instances
+        ]
+
+        source_url = f"https://public.vulnerablecode.io/vulnerabilities/{self.vulnerability_id}"
+        source = cdx_vulnerability.VulnerabilitySource(
+            name="VulnerableCode",
+            url=source_url,
+        )
+
+        references = []
+        ratings = []
+        for reference in self.references:
+            reference_source = cdx_vulnerability.VulnerabilitySource(
+                url=reference.get("reference_url"),
+            )
+            references.append(
+                cdx_vulnerability.VulnerabilityReference(
+                    id=reference.get("reference_id"),
+                    source=reference_source,
+                )
+            )
+
+            for score_entry in reference.get("scores", []):
+                # CycloneDX only support a float value for the score field,
+                # where on the VulnerableCode data it can be either a score float value
+                # or a severity string value.
+                score_value = score_entry.get("value")
+                try:
+                    score = decimal.Decimal(score_value)
+                    severity = None
+                except decimal.DecimalException:
+                    score = None
+                    severity = getattr(
+                        cdx_vulnerability.VulnerabilitySeverity,
+                        score_value.upper(),
+                        None,
+                    )
+
+                ratings.append(
+                    cdx_vulnerability.VulnerabilityRating(
+                        source=reference_source,
+                        score=score,
+                        severity=severity,
+                        vector=score_entry.get("scoring_elements"),
+                    )
+                )
+
+        return cdx_vulnerability.Vulnerability(
+            id=self.vulnerability_id,
+            source=source,
+            description=self.summary,
+            affects=affects,
+            references=sorted(references),
+            ratings=ratings,
+        )

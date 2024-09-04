@@ -110,6 +110,9 @@ Release notes
 - Add a "Improve Packages from PurlDB" action in the Product details view.
   https://github.com/aboutcode-org/dejacode/issues/45
 
+- Add the ability to download the CycloneDX VEX-only and SBOM+VEX combined outputs.
+  https://github.com/aboutcode-org/dejacode/issues/108
+
 ### Version 5.1.0
 
 - Upgrade Python version to 3.12 and Django to 5.0.x

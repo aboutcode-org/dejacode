@@ -2734,3 +2734,29 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual(2, qs[0].affected_packages_count)
         self.assertEqual(1, qs[0].affected_products_count)
+
+    def test_vulnerability_model_as_cyclonedx(self):
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        json_data = json.loads(response_file.read_text())
+        affected_by_vulnerabilities = json_data["results"][0]["affected_by_vulnerabilities"]
+        vulnerability1 = Vulnerability.create_from_data(
+            dataspace=self.dataspace,
+            data=affected_by_vulnerabilities[0],
+        )
+        package1 = make_package(
+            self.dataspace,
+            package_url="pkg:type/name@1.9.0",
+            uuid="dd0afd00-89bd-46d6-b1f0-57b553c44d32",
+        )
+
+        vulnerability1_as_cdx = vulnerability1.as_cyclonedx(affected_instances=[package1])
+        as_dict = json.loads(vulnerability1_as_cdx.as_json())
+        as_dict.pop("ratings", None)  # The sorting is inconsistent
+        results = json.dumps(as_dict, indent=2)
+
+        expected_location = self.data / "vulnerabilities" / "idna_3.6_as_cyclonedx.json"
+        # Uncomment to regen the expected results
+        # if True:
+        #     expected_location.write_text(results)
+
+        self.assertJSONEqual(results, expected_location.read_text())

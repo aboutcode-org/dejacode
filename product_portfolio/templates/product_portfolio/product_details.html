@@ -66,19 +66,35 @@
           <i class="fas fa-share-alt"></i> Share
         </button>
         <div class="dropdown-menu dropdown-menu-end">
-          <div class="dropdown-header">Download</div>
+          <div class="dropdown-header">AboutCode</div>
           <a href="{{ object.get_about_files_url }}" class="dropdown-item" target="_blank">
             <i class="fas fa-download"></i> AboutCode files as zip
           </a>
+          <div class="dropdown-header">SPDX</div>
           <a href="{{ object.get_export_spdx_url }}" class="dropdown-item" target="_blank">
             <i class="fas fa-download"></i> SPDX document
           </a>
+          <div class="dropdown-header">CycloneDX</div>
           <div class="dropdown-item">
-            <i class="fas fa-download"></i> CycloneDX SBOM
+            <i class="fas fa-download"></i> SBOM
             <a class="badge text-bg-primary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.6">1.6</a>
             <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5">1.5</a>
             <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4">1.4</a>
           </div>
+          {% if request.user.dataspace.enable_vulnerablecodedb_access %}
+            <div class="dropdown-item">
+              <i class="fas fa-download"></i> VEX (only)
+              <a class="badge text-bg-primary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.6&content=vex">1.6</a>
+              <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5&content=vex">1.5</a>
+              <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4&content=vex">1.4</a>
+            </div>
+            <div class="dropdown-item">
+              <i class="fas fa-download"></i> SBOM+VEX (combined)
+              <a class="badge text-bg-primary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.6&content=combined">1.6</a>
+              <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5&content=combined">1.5</a>
+              <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4&content=combined">1.4</a>
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
