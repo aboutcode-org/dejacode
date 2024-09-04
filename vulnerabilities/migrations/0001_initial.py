@@ -30,6 +30,7 @@ class Migration(migrations.Migration):
                 ('fixed_packages_count', models.GeneratedField(db_persist=True, expression=models.Func(models.F('fixed_packages'), function='jsonb_array_length'), output_field=models.IntegerField())),
                 ('min_score', models.FloatField(blank=True, help_text='The minimum score of the range.', null=True)),
                 ('max_score', models.FloatField(blank=True, help_text='The maximum score of the range.', null=True)),
+                ('resource_url', models.URLField(blank=True, help_text='URL of the data source for this Vulnerability.', max_length=1024, verbose_name='Resource URL')),
                 ('dataspace', models.ForeignKey(editable=False, help_text='A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.', on_delete=django.db.models.deletion.PROTECT, to='dje.dataspace')),
             ],
             options={
