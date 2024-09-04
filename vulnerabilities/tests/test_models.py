@@ -12,8 +12,8 @@ from unittest import mock
 
 from django.test import TestCase
 
-from component_catalog.tests import make_component
 from component_catalog.models import Package
+from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.models import Dataspace

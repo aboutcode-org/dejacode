@@ -9,6 +9,7 @@
 import decimal
 import logging
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
@@ -254,6 +255,104 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             references=sorted(references),
             ratings=ratings,
         )
+
+
+class VulnerabilityAnalysisMixin(models.Model):
+    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+
+    # cyclonedx.model.impact_analysis.ImpactAnalysisState
+    class State(models.TextChoices):
+        RESOLVED = "resolved"
+        RESOLVED_WITH_PEDIGREE = "resolved_with_pedigree"
+        EXPLOITABLE = "exploitable"
+        IN_TRIAGE = "in_triage"
+        FALSE_POSITIVE = "false_positive"
+        NOT_AFFECTED = "not_affected"
+
+    # cyclonedx.model.impact_analysis.ImpactAnalysisJustification
+    class Justification(models.TextChoices):
+        CODE_NOT_PRESENT = "code_not_present"
+        CODE_NOT_REACHABLE = "code_not_reachable"
+        PROTECTED_AT_PERIMITER = "protected_at_perimeter"
+        PROTECTED_AT_RUNTIME = "protected_at_runtime"
+        PROTECTED_BY_COMPILER = "protected_by_compiler"
+        PROTECTED_BY_MITIGATING_CONTROL = "protected_by_mitigating_control"
+        REQUIRES_CONFIGURATION = "requires_configuration"
+        REQUIRES_DEPENDENCY = "requires_dependency"
+        REQUIRES_ENVIRONMENT = "requires_environment"
+
+    # cyclonedx.model.impact_analysis.ImpactAnalysisResponse
+    class Response(models.TextChoices):
+        CAN_NOT_FIX = "can_not_fix"
+        ROLLBACK = "rollback"
+        UPDATE = "update"
+        WILL_NOT_FIX = "will_not_fix"
+        WORKAROUND_AVAILABLE = "workaround_available"
+
+    state = models.CharField(
+        max_length=25,
+        blank=True,
+        choices=State.choices,
+        help_text=_(
+            "Declares the current state of an occurrence of a vulnerability, "
+            "after automated or manual analysis."
+        ),
+    )
+    justification = models.CharField(
+        max_length=35,
+        blank=True,
+        choices=Justification.choices,
+        help_text=_("The rationale of why the impact analysis state was asserted."),
+    )
+    responses = ArrayField(
+        models.CharField(
+            max_length=20,
+            choices=Response.choices,
+        ),
+        blank=True,
+        null=True,
+        help_text=_(
+            "A response to the vulnerability by the manufacturer, supplier, or project "
+            "responsible for the affected component or service. "
+            "More than one response is allowed. "
+            "Responses are strongly encouraged for vulnerabilities where the analysis "
+            "state is exploitable."
+        ),
+    )
+    detail = models.TextField(
+        blank=True,
+        help_text=_(
+            "Detailed description of the impact including methods used during assessment. "
+            "If a vulnerability is not exploitable, this field should include specific "
+            "details on why the component or service is not impacted by this vulnerability."
+        ),
+    )
+    first_issued = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("The date and time (timestamp) when the analysis was first issued."),
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        help_text=_("The date and time (timestamp) when the analysis was last updated."),
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # At least one of those fields must be provided.
+        main_fields = [
+            self.state,
+            self.justification,
+            self.responses,
+            self.detail,
+        ]
+        if not any(main_fields):
+            raise ValueError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
+
+        super().save(*args, **kwargs)
 
 
 class AffectedByVulnerabilityRelationship(DataspacedModel):
