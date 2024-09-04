@@ -41,6 +41,7 @@ from workflow.models import RequestTemplate
 class ExcludeFieldsSerializer(Serializer):
     exclude_fields = [
         "request_count",
+        "affected_by_vulnerabilities",
     ]
 
     def handle_field(self, obj, field):
