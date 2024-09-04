@@ -21,7 +21,6 @@ from component_catalog.views import PackageTabPurlDBView
 from component_catalog.views import PackageTabScanView
 from component_catalog.views import PackageUpdateView
 from component_catalog.views import ScanListView
-from component_catalog.views import VulnerabilityListView
 from component_catalog.views import component_create_ajax_view
 from component_catalog.views import delete_scan_view
 from component_catalog.views import package_create_ajax_view
@@ -149,17 +148,9 @@ scans_patterns = [
     ),
 ]
 
-vulnerabilities_patterns = [
-    path(
-        "vulnerabilities/",
-        VulnerabilityListView.as_view(),
-        name="vulnerability_list",
-    ),
-]
-
 
 # WARNING: we moved the components/ patterns from the include to the following
-# since we need the packages/ and scans/ to be register on the root "/"
+# since we need the packages/ and scans/ to be registered on the root "/"
 
 
 def component_path(path_segment, view):
@@ -248,4 +239,4 @@ component_patterns = [
 ]
 
 
-urlpatterns = packages_patterns + component_patterns + scans_patterns + vulnerabilities_patterns
+urlpatterns = packages_patterns + component_patterns + scans_patterns
