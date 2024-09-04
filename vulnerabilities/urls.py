@@ -7,8 +7,8 @@
 #
 
 from django.urls import path
-from vulnerabilities.views import VulnerabilityListView
 
+from vulnerabilities.views import VulnerabilityListView
 
 urlpatterns = [
     path("", VulnerabilityListView.as_view(), name="vulnerability_list"),

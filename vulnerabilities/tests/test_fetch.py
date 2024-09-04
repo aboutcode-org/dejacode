@@ -20,8 +20,8 @@ from vulnerabilities.fetch import fetch_for_queryset
 from vulnerabilities.fetch import fetch_from_vulnerablecode
 
 
-class VulnerabilitiesTestCase(TestCase):
-    data = Path(__file__).parent / "testfiles"
+class VulnerabilitiesFetchTestCase(TestCase):
+    data = Path(__file__).parent / "data"
 
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")

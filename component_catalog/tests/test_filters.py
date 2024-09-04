@@ -20,13 +20,13 @@ from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
-from component_catalog.tests import make_vulnerability
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
 from license_library.models import License
 from organization.models import Owner
 from policy.models import UsagePolicy
+from vulnerabilities.tests import make_vulnerability
 
 
 class ComponentFilterSetTest(TestCase):

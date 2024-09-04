@@ -22,7 +22,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
 from django.db.models import Count
-from django.db.models import F
 from django.db.models import Prefetch
 from django.http import FileResponse
 from django.http import Http404
@@ -53,7 +52,6 @@ from packageurl.contrib import purl2url
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
-from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import AddMultipleToComponentForm
 from component_catalog.forms import AddToComponentForm
 from component_catalog.forms import AddToProductAdminForm
@@ -108,7 +106,6 @@ from license_library.models import LicenseAssignedTag
 from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
-from vulnerabilities.models import Vulnerability
 
 License = apps.get_model("license_library", "License")
 

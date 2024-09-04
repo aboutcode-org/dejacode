@@ -254,7 +254,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         )
 
 
-class VulnerabilityMixin(models.Model):
+class AffectedByVulnerabilityMixin(models.Model):
     """Add the `vulnerability` many to many field."""
 
     affected_by_vulnerabilities = models.ManyToManyField(

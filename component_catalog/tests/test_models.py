@@ -40,7 +40,6 @@ from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
-from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import download
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
@@ -59,6 +58,7 @@ from license_library.models import LicenseTag
 from organization.models import Owner
 from product_portfolio.tests import make_product
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.tests import make_vulnerability
 
 
 class ComponentCatalogModelsTestCase(TestCase):
