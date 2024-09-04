@@ -12,7 +12,6 @@ from django.core import management
 from django.core.management.base import CommandError
 from django.test import TestCase
 
-from component_catalog.models import Component
 from dje.models import Dataspace
 from dje.tests import create_superuser
 
