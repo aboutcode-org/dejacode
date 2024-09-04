@@ -44,6 +44,7 @@ class VulnerabilityListView(
             .only(
                 "uuid",
                 "vulnerability_id",
+                "resource_url",
                 "aliases",
                 "summary",
                 "fixed_packages_count",
@@ -67,6 +68,4 @@ class VulnerabilityListView(
         if not self.dataspace.enable_vulnerablecodedb_access:
             raise Http404("VulnerableCode access is not enabled.")
 
-        vulnerablecode = VulnerableCode(self.dataspace)
-        context_data["vulnerablecode_url"] = vulnerablecode.service_url
         return context_data

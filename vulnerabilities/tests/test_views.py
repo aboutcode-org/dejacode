@@ -13,7 +13,6 @@ from django.urls import reverse
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dje.models import Dataspace
-from dje.models import DataspaceConfiguration
 from dje.tests import create_superuser
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.tests import make_vulnerability
@@ -27,10 +26,6 @@ class VulnerabilityViewsTestCase(TestCase):
             name="Dataspace",
             enable_vulnerablecodedb_access=True,
         )
-        DataspaceConfiguration.objects.create(
-            dataspace=self.dataspace,
-            vulnerablecode_url="vulnerablecode_url/",
-        )
         self.super_user = create_superuser("super_user", self.dataspace)
 
         self.component1 = make_component(self.dataspace)
@@ -43,7 +38,7 @@ class VulnerabilityViewsTestCase(TestCase):
 
     def test_vulnerability_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(7):
             response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
 
         vulnerability_count = Vulnerability.objects.count()
@@ -71,11 +66,19 @@ class VulnerabilityViewsTestCase(TestCase):
     def test_vulnerability_list_view_vulnerability_id_link(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
+
+        expected = f"<strong>{self.vulnerability1.vulnerability_id}</strong>"
+        self.assertContains(response, expected, html=True)
+
+        self.vulnerability1.resource_url = (
+            f"https://url/vulnerabilities/{self.vulnerability1.vulnerability_id}"
+        )
+        self.vulnerability1.save()
         expected = f"""
-        <a href="vulnerablecode_url/vulnerabilities/{self.vulnerability1.vulnerability_id}"
-           target="_blank">
+        <a href="{self.vulnerability1.resource_url}" target="_blank">
            {self.vulnerability1.vulnerability_id}
            <i class="fa-solid fa-up-right-from-square mini"></i>
         </a>
         """
+        response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
         self.assertContains(response, expected, html=True)

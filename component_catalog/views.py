@@ -256,7 +256,6 @@ class TabVulnerabilityMixin:
         if not vulnerabilities_qs:
             return
 
-        vulnerablecode = VulnerableCode(self.object.dataspace)
         label = (
             f"Vulnerabilities"
             f' <span class="badge badge-vulnerability">{len(vulnerabilities_qs)}</span>'
@@ -270,7 +269,6 @@ class TabVulnerabilityMixin:
 
         context = {
             "vulnerabilities": vulnerabilities,
-            "vulnerablecode_url": vulnerablecode.service_url,
         }
 
         return {

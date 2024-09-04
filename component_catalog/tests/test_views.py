@@ -1239,7 +1239,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(29):
+        with self.assertNumQueries(28):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):

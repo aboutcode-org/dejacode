@@ -149,6 +149,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
                     ],
                 },
             ],
+            "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-q4q6-yfng-aaag",
         }
 
         vulnerability1 = Vulnerability.create_from_data(
@@ -160,6 +161,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
         self.assertEqual(vulnerability_data["references"], vulnerability1.references)
+        self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
         self.assertEqual(7.5, vulnerability1.min_score)
         self.assertEqual(7.5, vulnerability1.max_score)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])

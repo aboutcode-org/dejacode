@@ -61,6 +61,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "For example, 'VCID-2024-0001'."
         ),
     )
+    resource_url = models.URLField(
+        _("Resource URL"),
+        max_length=1024,
+        blank=True,
+        help_text=_("URL of the data source for this Vulnerability."),
+    )
     summary = models.TextField(
         help_text=_("A brief summary of the vulnerability, outlining its nature and impact."),
         blank=True,
@@ -203,10 +209,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             for instance in affected_instances
         ]
 
-        source_url = f"https://public.vulnerablecode.io/vulnerabilities/{self.vulnerability_id}"
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
-            url=source_url,
+            url=self.resource_url,
         )
 
         references = []
