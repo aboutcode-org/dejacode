@@ -13,6 +13,7 @@ from unittest import mock
 from django.test import TestCase
 
 from component_catalog.tests import make_component
+from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.models import Dataspace
@@ -85,35 +86,48 @@ class VulnerabilitiesFetchTestCase(TestCase):
 
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
-        vulnerablity1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
-        self.assertEqual(package1, vulnerablity1.affected_packages.get())
-        self.assertEqual(vulnerablity1, package1.affected_by_vulnerabilities.get())
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
+        self.assertEqual(package1, vulnerability1.affected_packages.get())
+        self.assertEqual(vulnerability1, package1.affected_by_vulnerabilities.get())
+
+    def test_vulnerability_model_affected_by_vulnerability_relationship_delete(self):
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
+        package1.delete()
+        self.assertEqual(vulnerability1, Vulnerability.objects.get())
+        self.assertEqual(0, Package.objects.count())
+
+        package1 = make_package(self.dataspace)
+        vulnerability1.add_affected(package1)
+        vulnerability1.delete()
+        self.assertEqual(package1, Package.objects.get())
+        self.assertEqual(0, Vulnerability.objects.count())
 
     def test_vulnerability_model_add_affected(self):
-        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
         package1 = make_package(self.dataspace)
         package2 = make_package(self.dataspace)
-        vulnerablity1.add_affected(package1)
-        vulnerablity1.add_affected([package2])
-        self.assertEqual(2, vulnerablity1.affected_packages.count())
+        vulnerability1.add_affected(package1)
+        vulnerability1.add_affected([package2])
+        self.assertEqual(2, vulnerability1.affected_packages.count())
 
-        vulnerablity2 = make_vulnerability(dataspace=self.dataspace)
+        vulnerability2 = make_vulnerability(dataspace=self.dataspace)
         component1 = make_component(self.dataspace)
-        vulnerablity2.add_affected([component1, package1])
-        self.assertQuerySetEqual(vulnerablity2.affected_packages.all(), [package1])
-        self.assertQuerySetEqual(vulnerablity2.affected_components.all(), [component1])
+        vulnerability2.add_affected([component1, package1])
+        self.assertQuerySetEqual(vulnerability2.affected_packages.all(), [package1])
+        self.assertQuerySetEqual(vulnerability2.affected_components.all(), [component1])
 
     def test_vulnerability_model_fixed_packages_count_generated_field(self):
-        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
-        self.assertEqual(0, vulnerablity1.fixed_packages_count)
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
+        self.assertEqual(0, vulnerability1.fixed_packages_count)
 
-        vulnerablity1.fixed_packages = [
+        vulnerability1.fixed_packages = [
             {"purl": "pkg:pypi/gitpython@3.1.41", "is_vulnerable": True},
             {"purl": "pkg:pypi/gitpython@3.2", "is_vulnerable": False},
         ]
-        vulnerablity1.save()
-        vulnerablity1.refresh_from_db()
-        self.assertEqual(2, vulnerablity1.fixed_packages_count)
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual(2, vulnerability1.fixed_packages_count)
 
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
@@ -164,8 +178,8 @@ class VulnerabilitiesFetchTestCase(TestCase):
     def test_vulnerability_model_queryset_count_methods(self):
         package1 = make_package(self.dataspace)
         package2 = make_package(self.dataspace)
-        vulnerablity1 = make_vulnerability(dataspace=self.dataspace)
-        vulnerablity1.add_affected([package1, package2])
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
+        vulnerability1.add_affected([package1, package2])
         make_product(self.dataspace, inventory=[package1, package2])
 
         qs = (

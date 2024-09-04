@@ -256,19 +256,14 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         )
 
 
-# TODO: Review cascade
 class AffectedByVulnerabilityRelationship(DataspacedModel):
     vulnerability = models.ForeignKey(
         to="vulnerabilities.Vulnerability",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     class Meta:
         abstract = True
-
-    def save(self, *args, **kwargs):
-        self.dataspace = self.vulnerability.dataspace
-        super().save(*args, **kwargs)
 
 
 class AffectedByVulnerabilityMixin(models.Model):
