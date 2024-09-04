@@ -1136,6 +1136,7 @@ class ProductTabVulnerabilitiesView(
                 "page_obj": page_obj,
                 "total_count": total_count,
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
+                "vulnerablecode_url": VulnerableCode(product.dataspace).service_url,
             }
         )
 
