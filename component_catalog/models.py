@@ -80,6 +80,7 @@ from license_library.models import LicenseChoice
 from policy.models import SetPolicyFromLicenseMixin
 from policy.models import UsagePolicyMixin
 from vulnerabilities.models import AffectedByVulnerabilityMixin
+from vulnerabilities.models import AffectedByVulnerabilityRelationship
 from workflow.models import RequestMixin
 
 logger = logging.getLogger("dje")
@@ -2502,31 +2503,20 @@ class PackageAssignedLicense(DataspacedModel):
         return f"{self.package} is under {self.license}."
 
 
-# TODO: Review cascade
-class PackageAffectedByVulnerability(DataspacedModel):
+class PackageAffectedByVulnerability(AffectedByVulnerabilityRelationship):
     package = models.ForeignKey(
         to="component_catalog.Package",
         on_delete=models.CASCADE,
-    )
-
-    vulnerability = models.ForeignKey(
-        to="vulnerabilities.Vulnerability",
-        on_delete=models.PROTECT,
     )
 
     class Meta:
         unique_together = (("package", "vulnerability"), ("dataspace", "uuid"))
 
 
-class ComponentAffectedByVulnerability(DataspacedModel):
+class ComponentAffectedByVulnerability(AffectedByVulnerabilityRelationship):
     component = models.ForeignKey(
         to="component_catalog.Component",
         on_delete=models.CASCADE,
-    )
-
-    vulnerability = models.ForeignKey(
-        to="vulnerabilities.Vulnerability",
-        on_delete=models.PROTECT,
     )
 
     class Meta:

@@ -14,7 +14,6 @@ from django.test import TestCase
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
-from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentType
@@ -26,6 +25,7 @@ from dje.tests import create_user
 from license_library.models import License
 from organization.models import Owner
 from policy.models import UsagePolicy
+from vulnerabilities.filters import VulnerabilityFilterSet
 from vulnerabilities.tests import make_vulnerability
 
 

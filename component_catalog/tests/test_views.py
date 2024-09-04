@@ -39,8 +39,6 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
-from component_catalog.tests import make_component
-from component_catalog.tests import make_package
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageTabScanView
@@ -49,7 +47,6 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.copier import copy_object
 from dje.models import Dataspace
-from dje.models import DataspaceConfiguration
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
@@ -70,7 +67,6 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
-from vulnerabilities.models import Vulnerability
 from vulnerabilities.tests import make_vulnerability
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -1735,7 +1731,7 @@ class PackageUserViewsTestCase(TestCase):
             Package.objects.filter(download_url=collected_data["download_url"]).exists()
         )
 
-    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
+    @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.fetch_vulnerabilities")
     def test_package_create_ajax_view_fetch_vulnerabilities(self, mock_fetch_vulnerabilities):
         mock_fetch_vulnerabilities.return_value = None
         package_add_url = reverse("component_catalog:package_add_urls")
@@ -3400,7 +3396,7 @@ class PackageUserViewsTestCase(TestCase):
         }
         self.assertEqual(expected, response.context["form"].initial)
 
-    @mock.patch("component_catalog.models.VulnerabilityMixin.fetch_vulnerabilities")
+    @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.fetch_vulnerabilities")
     def test_component_catalog_package_add_view_fetch_vulnerabilities(
         self, mock_fetch_vulnerabilities
     ):
@@ -4815,63 +4811,3 @@ class ComponentCrossDataspaceAccessControlTestCase(TestCase):
         self.assertEqual(404, self.client.get(self.d1c2.get_absolute_url()).status_code)
         self.assertEqual(200, self.client.get(self.dmc1.get_absolute_url()).status_code)
         self.assertEqual(200, self.client.get(self.dmc2.get_absolute_url()).status_code)
-
-
-class VulnerabilityViewsTestCase(TestCase):
-    def setUp(self):
-        self.dataspace = Dataspace.objects.create(
-            name="Dataspace",
-            enable_vulnerablecodedb_access=True,
-        )
-        DataspaceConfiguration.objects.create(
-            dataspace=self.dataspace,
-            vulnerablecode_url="vulnerablecode_url/",
-        )
-        self.super_user = create_superuser("super_user", self.dataspace)
-
-        self.component1 = make_component(self.dataspace)
-        self.component2 = make_component(self.dataspace)
-        self.package1 = make_package(self.dataspace)
-        self.package2 = make_package(self.dataspace)
-        self.vulnerability_p1 = make_vulnerability(self.dataspace, affecting=self.component1)
-        self.vulnerability_c1 = make_vulnerability(self.dataspace, affecting=self.package1)
-        self.vulnerability1 = make_vulnerability(self.dataspace)
-
-    def test_vulnerability_list_view_num_queries(self):
-        self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(8):
-            response = self.client.get(reverse("component_catalog:vulnerability_list"))
-
-        vulnerability_count = Vulnerability.objects.count()
-        expected = f'<a class="nav-link disabled">{vulnerability_count} results</a>'
-        self.assertContains(response, expected, html=True)
-
-    def test_vulnerability_list_view_enable_vulnerablecodedb_access(self):
-        self.client.login(username=self.super_user.username, password="secret")
-        vulnerability_list_url = reverse("component_catalog:vulnerability_list")
-        response = self.client.get(vulnerability_list_url)
-        self.assertEqual(200, response.status_code)
-        vulnerability_header_link = (
-            f'<a class="dropdown-item active" href="{vulnerability_list_url}">'
-        )
-        self.assertContains(response, vulnerability_header_link)
-
-        self.dataspace.enable_vulnerablecodedb_access = False
-        self.dataspace.save()
-        response = self.client.get(reverse("component_catalog:vulnerability_list"))
-        self.assertEqual(404, response.status_code)
-
-        response = self.client.get(reverse("component_catalog:package_list"))
-        self.assertNotContains(response, vulnerability_header_link)
-
-    def test_vulnerability_list_view_vulnerability_id_link(self):
-        self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(reverse("component_catalog:vulnerability_list"))
-        expected = f"""
-        <a href="vulnerablecode_url/vulnerabilities/{self.vulnerability1.vulnerability_id}"
-           target="_blank">
-           {self.vulnerability1.vulnerability_id}
-           <i class="fa-solid fa-up-right-from-square mini"></i>
-        </a>
-        """
-        self.assertContains(response, expected, html=True)

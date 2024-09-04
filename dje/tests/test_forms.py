@@ -110,8 +110,8 @@ class DJEFormsTestCase(TestCase):
 
     def test_copy_defaults_form_get_all_dataspaced_models(self):
         dataspaced_models = CopyDefaultsForm.get_all_dataspaced_models()
-        self.assertEqual(9, len(dataspaced_models))
-        self.assertEqual(8, len(dataspaced_models.get("Component Catalog")))
+        self.assertEqual(10, len(dataspaced_models))
+        self.assertEqual(7, len(dataspaced_models.get("Component Catalog")))
         self.assertIn("Subcomponent", str(dataspaced_models.get("Component Catalog")))
 
     def test_copy_defaults_formset_serialize_perms(self):

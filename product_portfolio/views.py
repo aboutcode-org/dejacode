@@ -55,7 +55,6 @@ from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
 
-from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
@@ -126,6 +125,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.filters import VulnerabilityFilterSet
 from vulnerabilities.models import Vulnerability
 
 

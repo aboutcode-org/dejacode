@@ -127,17 +127,19 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         for instance in instances:
             if isinstance(instance, Package):
-                self.affected_packages.add(instance)
+                self.add_affected_packages([instance])
             if isinstance(instance, Component):
-                self.affected_components.add(instance)
+                self.add_affected_components([instance])
 
     def add_affected_packages(self, packages):
         """Assign the ``packages`` as affected to this vulnerability."""
-        self.affected_packages.add(*packages)
+        through_defaults = {"dataspace_id": self.dataspace_id}
+        self.affected_packages.add(*packages, through_defaults=through_defaults)
 
     def add_affected_components(self, components):
         """Assign the ``components`` as affected to this vulnerability."""
-        self.affected_components.add(*components)
+        through_defaults = {"dataspace_id": self.dataspace_id}
+        self.affected_components.add(*components, through_defaults=through_defaults)
 
     @staticmethod
     def range_to_values(self, range_str):
@@ -254,6 +256,21 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         )
 
 
+# TODO: Review cascade
+class AffectedByVulnerabilityRelationship(DataspacedModel):
+    vulnerability = models.ForeignKey(
+        to="vulnerabilities.Vulnerability",
+        on_delete=models.PROTECT,
+    )
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.dataspace = self.vulnerability.dataspace
+        super().save(*args, **kwargs)
+
+
 class AffectedByVulnerabilityMixin(models.Model):
     """Add the `vulnerability` many to many field."""
 
@@ -332,4 +349,5 @@ class AffectedByVulnerabilityMixin(models.Model):
                 )
             vulnerabilities.append(vulnerability)
 
-        self.affected_by_vulnerabilities.add(*vulnerabilities)
+        through_defaults = {"dataspace_id": self.dataspace_id}
+        self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)

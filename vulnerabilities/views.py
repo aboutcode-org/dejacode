@@ -11,10 +11,10 @@ from django.db.models import F
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
-from component_catalog.filters import VulnerabilityFilterSet
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.views import DataspacedFilterView
 from dje.views import Header
+from vulnerabilities.filters import VulnerabilityFilterSet
 from vulnerabilities.models import Vulnerability
 
 
