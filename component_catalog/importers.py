@@ -30,7 +30,6 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
-from component_catalog.vulnerabilities import fetch_for_queryset
 from dje.fields import SmartFileField
 from dje.forms import JSONListField
 from dje.importers import BaseImporter
@@ -42,6 +41,7 @@ from organization.models import Owner
 from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from vulnerabilities.fetch import fetch_for_queryset
 
 keywords_help = (
     get_help_text(Component, "keywords")

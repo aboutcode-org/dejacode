@@ -127,7 +127,7 @@ class ComponentCatalogManagementCommandsTestCase(TestCase):
         expected = "Error: the following arguments are required: dataspace, username"
         self.assertEqual(expected, str(error.exception))
 
-    @mock.patch("component_catalog.vulnerabilities.fetch_from_vulnerablecode")
+    @mock.patch("vulnerabilities.fetch.fetch_from_vulnerablecode")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_fetchvulnerabilities_management_command(self, mock_is_configured, mock_fetch):
         mock_is_configured.return_value = False

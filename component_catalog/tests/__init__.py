@@ -8,8 +8,8 @@
 
 from component_catalog.models import Component
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from dje.tests import make_string
+from vulnerabilities.models import Vulnerability
 
 
 def make_package(dataspace, package_url=None, is_vulnerable=False, **data):

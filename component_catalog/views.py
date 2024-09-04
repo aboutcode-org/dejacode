@@ -73,7 +73,6 @@ from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
-from component_catalog.models import Vulnerability
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -109,6 +108,7 @@ from license_library.models import LicenseAssignedTag
 from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from vulnerabilities.models import Vulnerability
 
 License = apps.get_model("license_library", "License")
 

@@ -304,7 +304,7 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
 @job("default", timeout="3h")
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
-    from component_catalog.vulnerabilities import fetch_from_vulnerablecode
+    from vulnerabilities.fetch import fetch_from_vulnerablecode
 
     logger.info("Entering update_vulnerabilities task")
     Dataspace = apps.get_model("dje", "Dataspace")

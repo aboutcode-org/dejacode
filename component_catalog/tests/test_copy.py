@@ -12,10 +12,10 @@ from django.urls import reverse
 
 from component_catalog.models import Package
 from component_catalog.models import PackageAssignedLicense
-from component_catalog.models import Vulnerability
 from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import create_superuser
+from vulnerabilities.models import Vulnerability
 
 
 class ComponentCatalogCopyTestCase(TestCase):

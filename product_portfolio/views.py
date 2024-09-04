@@ -61,7 +61,6 @@ from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -127,6 +126,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.models import Vulnerability
 
 
 class BaseProductViewMixin:

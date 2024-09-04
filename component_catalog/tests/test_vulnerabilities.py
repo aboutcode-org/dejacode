@@ -15,9 +15,9 @@ from django.test import TestCase
 
 from component_catalog.models import Package
 from component_catalog.tests import make_package
-from component_catalog.vulnerabilities import fetch_for_queryset
-from component_catalog.vulnerabilities import fetch_from_vulnerablecode
 from dje.models import Dataspace
+from vulnerabilities.fetch import fetch_for_queryset
+from vulnerabilities.fetch import fetch_from_vulnerablecode
 
 
 class VulnerabilitiesTestCase(TestCase):
@@ -26,7 +26,7 @@ class VulnerabilitiesTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
-    @mock.patch("component_catalog.vulnerabilities.fetch_for_queryset")
+    @mock.patch("vulnerabilities.fetch.fetch_for_queryset")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_vulnerabilities_fetch_from_vulnerablecode(
         self, mock_is_configured, mock_fetch_for_queryset

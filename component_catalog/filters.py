@@ -17,7 +17,6 @@ import django_filters
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
 from dje.filters import DataspacedFilterSet
 from dje.filters import DefaultOrderingFilter
@@ -29,6 +28,7 @@ from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from license_library.models import License
+from vulnerabilities.models import Vulnerability
 
 
 class IsVulnerableFilter(HasRelationFilter):

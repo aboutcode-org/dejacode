@@ -39,7 +39,6 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
-from component_catalog.models import Vulnerability
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from component_catalog.tests import make_vulnerability
@@ -72,6 +71,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
+from vulnerabilities.models import Vulnerability
 from workflow.models import Request
 from workflow.models import RequestTemplate
 

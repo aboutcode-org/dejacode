@@ -28,9 +28,7 @@ from component_catalog.models import DefaultOnAdditionMixin
 from component_catalog.models import KeywordsMixin
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from component_catalog.models import component_mixin_factory
-from component_catalog.vulnerabilities import fetch_for_queryset
 from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
@@ -43,6 +41,8 @@ from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
+from vulnerabilities.fetch import fetch_for_queryset
+from vulnerabilities.models import Vulnerability
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "
