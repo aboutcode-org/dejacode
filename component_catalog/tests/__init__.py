@@ -8,8 +8,8 @@
 
 from component_catalog.models import Component
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from dje.tests import make_string
+from vulnerabilities.tests import make_vulnerability
 
 
 def make_package(dataspace, package_url=None, is_vulnerable=False, **data):
@@ -42,19 +42,3 @@ def make_component(dataspace, is_vulnerable=False, **data):
         make_vulnerability(dataspace, affecting=component)
 
     return component
-
-
-def make_vulnerability(dataspace, affecting=None, **data):
-    """Create a vulnerability for test purposes."""
-    if "vulnerability_id" not in data:
-        data["vulnerability_id"] = f"VCID-0000-{make_string(4)}"
-
-    vulnerability = Vulnerability.objects.create(
-        dataspace=dataspace,
-        **data,
-    )
-
-    if affecting:
-        vulnerability.add_affected(affecting)
-
-    return vulnerability

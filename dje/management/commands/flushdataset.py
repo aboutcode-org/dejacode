@@ -18,6 +18,7 @@ from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import get_unsecured_manager
 from notification.models import Webhook
+from vulnerabilities.models import Vulnerability
 
 
 class Command(DataspacedCommand):
@@ -55,6 +56,7 @@ class Command(DataspacedCommand):
                 ExternalReference,
                 ExternalSource,
                 Webhook,
+                Vulnerability,
             ]
         )
 

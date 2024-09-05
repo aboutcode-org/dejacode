@@ -11,7 +11,6 @@ from django.test import TestCase
 from cyclonedx.model import bom as cyclonedx_bom
 
 from component_catalog.tests import make_package
-from component_catalog.tests import make_vulnerability
 from dejacode import __version__ as dejacode_version
 from dje import outputs
 from dje.models import Dataspace
@@ -19,6 +18,7 @@ from dje.tests import create_superuser
 from dje.tests import create_user
 from product_portfolio.models import Product
 from product_portfolio.tests import make_product_package
+from vulnerabilities.tests import make_vulnerability
 
 
 class OutputsTestCase(TestCase):

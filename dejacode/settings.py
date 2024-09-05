@@ -344,6 +344,7 @@ PROJECT_APPS = [
     "purldb",
     "policy",
     "notification",
+    "vulnerabilities",
 ]
 
 EXTRA_APPS = env.list("EXTRA_APPS", default=[])

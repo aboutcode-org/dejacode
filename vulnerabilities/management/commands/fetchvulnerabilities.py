@@ -8,9 +8,9 @@
 
 from django.core.management.base import CommandError
 
-from component_catalog.vulnerabilities import fetch_from_vulnerablecode
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
+from vulnerabilities.fetch import fetch_from_vulnerablecode
 
 
 class Command(DataspacedCommand):

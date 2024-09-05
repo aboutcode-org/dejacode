@@ -29,7 +29,6 @@ from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
 from component_catalog.tests import make_package
-from component_catalog.tests import make_vulnerability
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
@@ -60,6 +59,7 @@ from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from product_portfolio.views import ManageComponentGridView
+from vulnerabilities.tests import make_vulnerability
 from workflow.models import Request
 from workflow.models import RequestTemplate
 

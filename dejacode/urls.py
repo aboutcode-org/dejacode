@@ -142,6 +142,7 @@ urlpatterns += [
     path("owners/", include(("organization.urls", "organization"))),
     path("requests/", include(("workflow.urls", "workflow"))),
     path("reports/", include(("reporting.urls", "reporting"))),
+    path("vulnerabilities/", include(("vulnerabilities.urls", "vulnerabilities"))),
     path("global_search/", GlobalSearchListView.as_view(), name="global_search"),
 ]
 

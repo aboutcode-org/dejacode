@@ -100,8 +100,7 @@
     "acceptable_linkages": null,
     "export_restrictions": "",
     "approved_download_location": "",
-    "approved_community_interaction": "",
-    "affected_by_vulnerabilities": []
+    "approved_community_interaction": ""
   }
 },
 {
@@ -171,8 +170,7 @@
     "acceptable_linkages": null,
     "export_restrictions": "",
     "approved_download_location": "",
-    "approved_community_interaction": "",
-    "affected_by_vulnerabilities": []
+    "approved_community_interaction": ""
   }
 },
 {
@@ -313,8 +311,7 @@
     "api_data_url": "",
     "datasource_id": "",
     "file_references": [],
-    "parties": [],
-    "affected_by_vulnerabilities": []
+    "parties": []
   }
 },
 {

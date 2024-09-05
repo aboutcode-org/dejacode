@@ -28,7 +28,6 @@ from component_catalog.models import Package
 from component_catalog.models import PackageAssignedLicense
 from component_catalog.models import Subcomponent
 from component_catalog.models import SubcomponentAssignedLicense
-from component_catalog.models import Vulnerability
 from dje.forms import DataspacedAdminForm
 from dje.mass_update import DejacodeMassUpdateForm
 from dje.models import DejacodeUser
@@ -73,6 +72,7 @@ from reporting.models import OrderField
 from reporting.models import Query
 from reporting.models import Report
 from reporting.models import get_reportable_models
+from vulnerabilities.models import Vulnerability
 from workflow.models import Request
 from workflow.models import RequestTemplate
 

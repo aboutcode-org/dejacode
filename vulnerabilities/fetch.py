@@ -14,10 +14,10 @@ from django.utils import timezone
 
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
+from vulnerabilities.models import Vulnerability
 
 
 def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):

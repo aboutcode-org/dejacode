@@ -55,13 +55,11 @@ from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
 
-from component_catalog.filters import VulnerabilityFilterSet
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
-from component_catalog.models import Vulnerability
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -127,6 +125,8 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.filters import VulnerabilityFilterSet
+from vulnerabilities.models import Vulnerability
 
 
 class BaseProductViewMixin:
@@ -1136,7 +1136,6 @@ class ProductTabVulnerabilitiesView(
                 "page_obj": page_obj,
                 "total_count": total_count,
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
-                "vulnerablecode_url": VulnerableCode(product.dataspace).service_url,
             }
         )
 
