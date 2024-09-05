@@ -1,7 +1,7 @@
 Release notes
 =============
 
-### Version 5.1.1-dev
+### Version 5.2.0
 
 - Add visual indicator in hierarchy views, when an object on the far left or far right
   also belong or have a hierarchy (relationship tree).
