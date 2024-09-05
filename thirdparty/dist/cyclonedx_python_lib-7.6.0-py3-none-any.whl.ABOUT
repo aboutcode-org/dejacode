@@ -1,0 +1,15 @@
+about_resource: cyclonedx_python_lib-7.6.0-py3-none-any.whl
+name: cyclonedx-python-lib
+version: 7.6.0
+download_url: https://files.pythonhosted.org/packages/e3/30/777e5a7860c0647c2490cbde2aaa4584dcdbd3f0388516c6cd5ca43641c2/cyclonedx_python_lib-7.6.0-py3-none-any.whl
+package_url: pkg:pypi/cyclonedx-python-lib@7.6.0
+license_expression: apache-2.0
+copyright: Copyright OWASP Foundation
+attribute: yes
+track_changes: yes
+checksum_md5: 984147d231662a7b38b221d0dca04bc2
+checksum_sha1: bb47b8a08b2557ceb3982630f3435756b321c7c5
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
