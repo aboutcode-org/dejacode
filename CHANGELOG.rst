@@ -1,6 +1,11 @@
 Release notes
 =============
 
+### Version 5.3.0-dev
+
+- Fix the models documentation navigation.
+  https://github.com/aboutcode-org/dejacode/issues/182
+
 ### Version 5.2.0
 
 - Add visual indicator in hierarchy views, when an object on the far left or far right
