@@ -6,6 +6,9 @@ Release notes
 - Fix the models documentation navigation.
   https://github.com/aboutcode-org/dejacode/issues/182
 
+- Fix the validity of SPDX outputs.
+  https://github.com/aboutcode-org/dejacode/issues/180
+
 ### Version 5.2.0
 
 - Add visual indicator in hierarchy views, when an object on the far left or far right
