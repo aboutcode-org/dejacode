@@ -1357,6 +1357,10 @@ class Component(
 
         return without_empty_values(component_data)
 
+    @property
+    def spdx_id(self):
+        return f"SPDXRef-dejacode-{self._meta.model_name}-{self.uuid}"
+
     def as_spdx(self, license_concluded=None):
         """
         Return this Component as an SPDX Package entry.
@@ -1375,7 +1379,7 @@ class Component(
 
         return spdx.Package(
             name=self.name,
-            spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
+            spdx_id=self.spdx_id,
             supplier=self.owner.as_spdx() if self.owner else "",
             license_concluded=license_concluded or self.concluded_license_expression_spdx,
             license_declared=self.declared_license_expression_spdx,
@@ -2248,6 +2252,10 @@ class Package(
 
         return about_files
 
+    @property
+    def spdx_id(self):
+        return f"SPDXRef-dejacode-{self._meta.model_name}-{self.uuid}"
+
     def as_spdx(self, license_concluded=None):
         """
         Return this Package as an SPDX Package entry.
@@ -2281,7 +2289,7 @@ class Package(
 
         return spdx.Package(
             name=self.name or self.filename,
-            spdx_id=f"dejacode-{self._meta.model_name}-{self.uuid}",
+            spdx_id=self.spdx_id,
             download_location=self.download_url,
             license_concluded=license_concluded or self.concluded_license_expression_spdx,
             license_declared=self.declared_license_expression_spdx,

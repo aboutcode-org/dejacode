@@ -43,6 +43,9 @@ class OutputsTestCase(TestCase):
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_outputs_get_spdx_document(self):
+        package = make_package(self.dataspace, package_url="pkg:type/name")
+        make_product_package(self.product1, package)
+
         document = outputs.get_spdx_document(self.product1, self.super_user)
         document.creation_info.created = "2000-01-01T01:02:03Z"
         expected = {
@@ -60,8 +63,24 @@ class OutputsTestCase(TestCase):
                 ],
                 "licenseListVersion": "3.18",
             },
-            "packages": [],
-            "documentDescribes": [],
+            "packages": [
+                {
+                    "name": "name",
+                    "SPDXID": f"SPDXRef-dejacode-package-{package.uuid}",
+                    "downloadLocation": "NOASSERTION",
+                    "licenseConcluded": "NOASSERTION",
+                    "copyrightText": "NOASSERTION",
+                    "filesAnalyzed": False,
+                    "externalRefs": [
+                        {
+                            "referenceCategory": "PACKAGE-MANAGER",
+                            "referenceType": "purl",
+                            "referenceLocator": "pkg:type/name",
+                        }
+                    ],
+                }
+            ],
+            "documentDescribes": [f"SPDXRef-dejacode-package-{package.uuid}"],
         }
         self.assertEqual(expected, document.as_dict())
 
