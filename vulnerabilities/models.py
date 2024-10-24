@@ -278,7 +278,7 @@ class VulnerabilityAnalysisMixin(models.Model):
     class Justification(models.TextChoices):
         CODE_NOT_PRESENT = "code_not_present"
         CODE_NOT_REACHABLE = "code_not_reachable"
-        PROTECTED_AT_PERIMITER = "protected_at_perimeter"
+        PROTECTED_AT_PERIMETER = "protected_at_perimeter"
         PROTECTED_AT_RUNTIME = "protected_at_runtime"
         PROTECTED_BY_COMPILER = "protected_by_compiler"
         PROTECTED_BY_MITIGATING_CONTROL = "protected_by_mitigating_control"
