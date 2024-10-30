@@ -1100,6 +1100,7 @@ class ProductTabVulnerabilitiesView(
         Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
         Header("summary", _("Summary")),
         Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+        Header("exploitability", _("Exploitability analysis"), help_text="TODO"),
     )
 
     def get_context_data(self, **kwargs):

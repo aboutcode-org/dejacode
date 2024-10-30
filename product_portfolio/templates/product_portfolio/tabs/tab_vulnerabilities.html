@@ -51,6 +51,16 @@
             {% endfor %}
           </ul>
         </td>
+        <td>
+          {% if vulnerability.product_vulnerability_analyses.get %}
+            <ul class="list-unstyled mb-0">
+              <li>State: {{ vulnerability.product_vulnerability_analyses.get.state }}</li>
+              <li>Justification: {{ vulnerability.product_vulnerability_analyses.get.justification }}</li>
+              <li>Responses: {{ vulnerability.product_vulnerability_analyses.get.responses }}</li>
+              <li>Detail: {{ vulnerability.product_vulnerability_analyses.get.detail }}</li>
+            </ul>
+          {% endif %}
+        </td>
       </tr>
     {% empty %}
       <tr>
