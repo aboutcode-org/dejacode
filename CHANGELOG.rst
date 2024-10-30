@@ -3,6 +3,8 @@ Release notes
 
 ### Version 5.3.0-dev
 
+### Version 5.2.1
+
 - Fix the models documentation navigation.
   https://github.com/aboutcode-org/dejacode/issues/182
 
