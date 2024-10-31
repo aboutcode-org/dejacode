@@ -89,7 +89,7 @@ purldb_list = json.loads(
                     "scope": "compile",
                     "is_runtime": true,
                     "is_optional": false,
-                    "is_resolved": false
+                    "is_pinned": false
                 }
             ],
             "resources": "https://purldb/api/packages/2928d61d-b113-46ba-aa11/resources/"

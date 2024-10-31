@@ -807,7 +807,7 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         "datasource_id",
         "is_runtime",
         "is_optional",
-        "is_resolved",
+        "is_pinned",
         "is_direct",
         "get_dataspace",
     )
@@ -822,7 +822,7 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         ("product", RelatedLookupListFilter),
         "is_runtime",
         "is_optional",
-        "is_resolved",
+        "is_pinned",
         "is_direct",
         ("for_package", RelatedLookupListFilter),
         ("resolved_to_package", RelatedLookupListFilter),

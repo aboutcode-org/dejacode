@@ -1259,7 +1259,7 @@ class PackageImporterTestCase(TestCase):
                     "scope": "compile",
                     "is_runtime": True,
                     "is_optional": False,
-                    "is_resolved": False,
+                    "is_pinned": False,
                 }
             ],
             "contains_source_code": None,
@@ -1294,7 +1294,7 @@ class PackageImporterTestCase(TestCase):
             "dependencies": '[\n  {\n    "purl": "pkg:maven/org.slf4j/slf4j-api",'
             '\n    "requirement": null,\n    "scope": "compile",'
             '\n    "is_runtime": true,\n    "is_optional": false,'
-            '\n    "is_resolved": false\n  }\n]',
+            '\n    "is_pinned": false\n  }\n]',
             "repository_homepage_url": (
                 "https://repo1.maven.org/maven2/org/apache/activemq/activemq-camel/5.11.0/"
             ),

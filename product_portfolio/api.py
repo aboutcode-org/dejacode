@@ -801,7 +801,7 @@ class ProductDependencyFilterSet(DataspacedAPIFilterSet):
             "datasource_id",
             "is_runtime",
             "is_optional",
-            "is_resolved",
+            "is_pinned",
             "is_direct",
             "last_modified_date",
         )
@@ -841,7 +841,7 @@ class ProductDependencySerializer(DataspacedSerializer):
             "datasource_id",
             "is_runtime",
             "is_optional",
-            "is_resolved",
+            "is_pinned",
             "is_direct",
             "created_date",
             "last_modified_date",

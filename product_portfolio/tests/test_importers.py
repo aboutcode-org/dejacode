@@ -965,7 +965,7 @@ class ProductImportFromScanTestCase(TestCase):
                 "scope": "install",
                 "is_runtime": True,
                 "is_optional": False,
-                "is_resolved": True,
+                "is_pinned": True,
                 "is_direct": True,
                 "dependency_uid": dependency_uid,
                 "for_package_uid": None,
@@ -999,7 +999,7 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual("pypi_setup_cfg", created_dependency.datasource_id)
         self.assertTrue(created_dependency.is_runtime)
         self.assertFalse(created_dependency.is_optional)
-        self.assertTrue(created_dependency.is_resolved)
+        self.assertTrue(created_dependency.is_pinned)
         self.assertTrue(created_dependency.is_direct)
         self.assertIsNone(created_dependency.for_package_id)
         self.assertIsNone(created_dependency.resolved_to_package_id)
