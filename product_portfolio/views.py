@@ -1023,7 +1023,7 @@ class ProductTabDependenciesView(
         Header("extracted_requirement", _("Extracted requirement")),
         Header("is_runtime", _("Runtime"), filter="is_runtime"),
         Header("is_optional", _("Optional"), filter="is_optional"),
-        Header("is_resolved", _("Resolved"), filter="is_resolved"),
+        Header("is_pinned", _("Pinned"), filter="is_pinned"),
     )
 
     def get_context_data(self, **kwargs):

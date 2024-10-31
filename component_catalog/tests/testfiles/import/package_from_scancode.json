@@ -154,7 +154,7 @@
                         "scope": "runtime",
                         "is_runtime": true,
                         "is_optional": false,
-                        "is_resolved": false
+                        "is_pinned": false
                     },
                     {
                         "purl": "pkg:gem/appraisal",
@@ -162,7 +162,7 @@
                         "scope": "development",
                         "is_runtime": false,
                         "is_optional": true,
-                        "is_resolved": false
+                        "is_pinned": false
                     },
                     {
                         "purl": "pkg:gem/rspec",
@@ -170,7 +170,7 @@
                         "scope": "development",
                         "is_runtime": false,
                         "is_optional": true,
-                        "is_resolved": false
+                        "is_pinned": false
                     },
                     {
                         "purl": "pkg:gem/rake",
@@ -178,7 +178,7 @@
                         "scope": "development",
                         "is_runtime": false,
                         "is_optional": true,
-                        "is_resolved": false
+                        "is_pinned": false
                     },
                     {
                         "purl": "pkg:gem/gem-release",
@@ -186,7 +186,7 @@
                         "scope": "development",
                         "is_runtime": false,
                         "is_optional": true,
-                        "is_resolved": false
+                        "is_pinned": false
                     }
                 ],
                 "contains_source_code": null,
@@ -246,7 +246,7 @@
                         "scope": "devDependencies",
                         "is_runtime": false,
                         "is_optional": true,
-                        "is_resolved": false
+                        "is_pinned": false
                     }
                 ],
                 "contains_source_code": null,
@@ -388,7 +388,7 @@
                             "scope": "runtime",
                             "is_runtime": true,
                             "is_optional": false,
-                            "is_resolved": false
+                            "is_pinned": false
                         },
                         {
                             "purl": "pkg:gem/appraisal",
@@ -396,7 +396,7 @@
                             "scope": "development",
                             "is_runtime": false,
                             "is_optional": true,
-                            "is_resolved": false
+                            "is_pinned": false
                         },
                         {
                             "purl": "pkg:gem/rspec",
@@ -404,7 +404,7 @@
                             "scope": "development",
                             "is_runtime": false,
                             "is_optional": true,
-                            "is_resolved": false
+                            "is_pinned": false
                         },
                         {
                             "purl": "pkg:gem/rake",
@@ -412,7 +412,7 @@
                             "scope": "development",
                             "is_runtime": false,
                             "is_optional": true,
-                            "is_resolved": false
+                            "is_pinned": false
                         },
                         {
                             "purl": "pkg:gem/gem-release",
@@ -420,7 +420,7 @@
                             "scope": "development",
                             "is_runtime": false,
                             "is_optional": true,
-                            "is_resolved": false
+                            "is_pinned": false
                         }
                     ],
                     "contains_source_code": null,
@@ -691,7 +691,7 @@
                             "scope": "devDependencies",
                             "is_runtime": false,
                             "is_optional": true,
-                            "is_resolved": false
+                            "is_pinned": false
                         }
                     ],
                     "contains_source_code": null,

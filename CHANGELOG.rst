@@ -3,6 +3,11 @@ Release notes
 
 ### Version 5.3.0-dev
 
+- Rename ProductDependency is_resolved to is_pinned.
+  https://github.com/aboutcode-org/dejacode/issues/189
+
+### Version 5.2.1
+
 - Fix the models documentation navigation.
   https://github.com/aboutcode-org/dejacode/issues/182
 
