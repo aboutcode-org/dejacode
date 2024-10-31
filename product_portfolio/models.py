@@ -1428,7 +1428,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         default=False,
         help_text=_("True if this dependency is an optional dependency"),
     )
-    is_resolved = models.BooleanField(
+    is_pinned = models.BooleanField(
         default=False,
         help_text=_(
             "True if this dependency version requirement has been pinned "
@@ -1451,7 +1451,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
             models.Index(fields=["scope"]),
             models.Index(fields=["is_runtime"]),
             models.Index(fields=["is_optional"]),
-            models.Index(fields=["is_resolved"]),
+            models.Index(fields=["is_pinned"]),
             models.Index(fields=["is_direct"]),
         ]
 

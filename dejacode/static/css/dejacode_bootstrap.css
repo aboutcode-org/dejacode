@@ -403,7 +403,7 @@ table.vulnerabilities-table .column-summary {
 #tab_dependencies .column-column-is_optional {
   width: 100px;
 }
-#tab_dependencies .column-column-is_resolved {
+#tab_dependencies .column-column-is_pinned {
   width: 88px;
 }
 

@@ -399,7 +399,7 @@ class DependencyFilterSet(DataspacedFilterSet):
     is_optional = BooleanChoiceFilter(
         widget=DropDownWidget(anchor="#dependencies"),
     )
-    is_resolved = BooleanChoiceFilter(
+    is_pinned = BooleanChoiceFilter(
         widget=DropDownWidget(anchor="#dependencies"),
     )
     is_direct = BooleanChoiceFilter(
@@ -417,6 +417,6 @@ class DependencyFilterSet(DataspacedFilterSet):
             "datasource_id",
             "is_runtime",
             "is_optional",
-            "is_resolved",
+            "is_pinned",
             "is_direct",
         ]
