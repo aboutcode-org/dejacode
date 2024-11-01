@@ -16,9 +16,9 @@
               {{ vulnerability.vulnerability_id }}
             {% endif %}
           </strong>
-        </td>
-        <td>
-           {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+          <div class="mt-2">
+            {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+          </div>
         </td>
         <td>
           {% if vulnerability.min_score %}
