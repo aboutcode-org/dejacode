@@ -52,6 +52,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductVulnerabilityAnalysis
 from product_portfolio.models import ScanCodeProject
 
 
@@ -945,3 +946,52 @@ class PullProjectDataForm(forms.Form):
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )
+
+
+class ProductVulnerabilityAnalysisForm(DataspacedModelForm):
+    # TODO: Replace this by proper model field
+    responses = forms.MultipleChoiceField(
+        choices=ProductVulnerabilityAnalysis.Response.choices,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        help_text=_(
+            "A response to the vulnerability by the manufacturer, supplier, or project "
+            "responsible for the affected component or service. "
+            "More than one response is allowed. "
+            "Responses are strongly encouraged for vulnerabilities where the analysis "
+            "state is exploitable."
+        ),
+    )
+
+    class Meta:
+        model = ProductVulnerabilityAnalysis
+        fields = [
+            "product",
+            "vulnerability",
+            "state",
+            "justification",
+            "responses",
+            "detail",
+        ]
+        widgets = {
+            "product": forms.widgets.HiddenInput,
+            "vulnerability": forms.widgets.HiddenInput,
+            "detail": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+
+        product_field = self.fields["product"]
+        perms = ["view_product", "change_product"]
+        product_field.queryset = Product.objects.get_queryset(user, perms=perms)
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_method = "post"
+        helper.form_id = "product-vulnerability-analysis-form"
+        helper.form_tag = False
+        helper.modal_title = "Vulnerability analysis"
+        helper.modal_id = "vulnerability-analysis-modal"
+        return helper

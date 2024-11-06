@@ -119,6 +119,7 @@
   {% if tabsets.Imports %}
     {% include 'product_portfolio/includes/scancode_project_status_modal.html' %}
   {% endif %}
+  {% include 'product_portfolio/modals/vulnerability_analysis_modal.html' %}
 {% endblock %}
 
 {% block extrastyle %}
@@ -231,6 +232,61 @@
       });
     </script>
   {% endif %}
+
+  {# TODO: Replace by htmx %]
+  <script>
+    $(document).ready(function () {
+      let vulnerability_modal = $('#vulnerability-analysis-modal');
+      vulnerability_modal.on('show.bs.modal', function (event) {
+        let modal_body = $('#vulnerability-analysis-modal-body');
+        modal_body.html('');  // Reset the modal content
+
+        let button = $(event.relatedTarget); // Button that triggered the modal
+        // Extract info from data-* attributes
+        let edit_url = button.data('edit-url');
+        let is_addition = button.data('is-addition');
+        let submit_label = is_addition ? 'Add' : 'Update';
+
+        $('#submit-vulnerability-analysis-form').data('edit-url', edit_url);
+<!--        $('#edit-productrelation-modal #title-add-update').text(submit_label);-->
+
+        $.ajax({
+          url: edit_url,
+          success: function(data) {
+            modal_body.html(data);
+          },
+          error: function() {
+            modal_body.html('Error.');
+          }
+        });
+      });
+
+      $('#submit-vulnerability-analysis-form').on('click', function(event){
+        event.preventDefault();
+        let modal_body = $('#vulnerability-analysis-modal-body');
+        let edit_url = $('#submit-vulnerability-analysis-form').data('edit-url');
+
+        $.ajax({
+          url: edit_url,
+          type: 'POST',
+          headers: {'X-CSRFToken': csrftoken},
+          data: $('#vulnerability-analysis-form').serialize(),
+          success: function(data) {
+            if (data['success']) {
+              location.reload();
+              return false;
+            }
+            modal_body.html(data);
+            edit_modal.animate({scrollTop: 0});
+          },
+          error: function(){
+            modal_body.html('Error.');
+          }
+        });
+      });
+
+    });
+  </script>
 
   {% if purldb_enabled %}
     <script>

@@ -54,12 +54,25 @@
         <td>
           {% if vulnerability.product_vulnerability_analyses.get %}
             <ul class="list-unstyled mb-0">
-              <li>State: {{ vulnerability.product_vulnerability_analyses.get.state }}</li>
-              <li>Justification: {{ vulnerability.product_vulnerability_analyses.get.justification }}</li>
-              <li>Responses: {{ vulnerability.product_vulnerability_analyses.get.responses }}</li>
-              <li>Detail: {{ vulnerability.product_vulnerability_analyses.get.detail }}</li>
+              {% if vulnerability.product_vulnerability_analyses.get.state %}
+                <li>State: <strong>{{ vulnerability.product_vulnerability_analyses.get.state }}</strong></li>
+              {% endif %}
+              {% if vulnerability.product_vulnerability_analyses.get.justification %}
+                <li>Justification: <strong>{{ vulnerability.product_vulnerability_analyses.get.justification }}</strong></li>
+              {% endif %}
+              {% if vulnerability.product_vulnerability_analyses.get.responses %}
+                <li>Responses: <strong>{{ vulnerability.product_vulnerability_analyses.get.responses|join:", " }}</strong></li>
+              {% endif %}
+              {% if vulnerability.product_vulnerability_analyses.get.detail %}
+                <li>Detail: {{ vulnerability.product_vulnerability_analyses.get.detail }}</li>
+              {% endif %}
             </ul>
           {% endif %}
+          <span data-bs-toggle="modal" data-bs-target="#vulnerability-analysis-modal" class=""
+                data-edit-url="{{ product.get_absolute_url }}vulnerability_analysis_ajax_view/?vulnerability_id={{ vulnerability.vulnerability_id }}"
+          >
+            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit"><i class="far fa-edit fa-sm"></i></button>
+          </span>
         </td>
       </tr>
     {% empty %}

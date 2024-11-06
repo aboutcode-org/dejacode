@@ -117,6 +117,7 @@ from product_portfolio.forms import ProductForm
 from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
+from product_portfolio.forms import ProductVulnerabilityAnalysisForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import CodebaseResource
@@ -2416,3 +2417,32 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         )
         messages.success(request, "Improve Packages from PurlDB in progress...")
     return redirect(f"{product.get_absolute_url()}#imports")
+
+
+@login_required
+@csrf_exempt  # TODO: Replace this
+def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
+    user = request.user
+    form_class = ProductVulnerabilityAnalysisForm
+
+    qs = Product.objects.get_queryset(user, perms="change_product")
+    product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    # TODO: Replace the following by proper view argument
+    vulnerability_id = request.GET.get("vulnerability_id")
+    vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
+    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
+
+    if request.method == "POST":
+        form = form_class(user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Vulnerability analysis successfully updated.")
+            return JsonResponse({"success": "updated"}, status=200)
+    else:
+        initial = {"product": product, "vulnerability": vulnerability}
+        form = form_class(user, initial=initial)
+
+    rendered_form = render_crispy_form(form)
+
+    return HttpResponse(rendered_form)

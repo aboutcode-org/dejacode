@@ -531,6 +531,10 @@ table.purldb-table .column-license_expression {
   vertical-align: middle;
 }
 
+#vulnerability-analysis-form fieldset legend {
+  font-size: 1rem;
+}
+
 /* -- Object form (add/edit) -- */
 .datepicker {
   width: 130px;
