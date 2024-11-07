@@ -203,11 +203,15 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         return consolidated_scores
 
-    def as_cyclonedx(self, affected_instances):
+    def as_cyclonedx(self, affected_instances, analyses=None):
         affects = [
             cdx_vulnerability.BomTarget(ref=instance.cyclonedx_bom_ref)
             for instance in affected_instances
         ]
+
+        analysis = None
+        if len(analyses) == 1:
+            analysis = analyses[0].as_cyclonedx()
 
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
@@ -259,6 +263,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             affects=affects,
             references=sorted(references),
             ratings=ratings,
+            analysis=analysis,
         )
 
 
@@ -358,6 +363,22 @@ class VulnerabilityAnalysisMixin(models.Model):
             )
 
         super().save(*args, **kwargs)
+
+    def as_cyclonedx(self):
+        state = None
+        if self.state:
+            state = cdx_vulnerability.ImpactAnalysisState(self.state)
+
+        justification = None
+        if self.justification:
+            justification = cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+
+        return cdx_vulnerability.VulnerabilityAnalysis(
+            state=state,
+            justification=justification,
+            responses=self.responses,
+            detail=self.detail,
+        )
 
 
 class AffectedByVulnerabilityRelationship(DataspacedModel):
