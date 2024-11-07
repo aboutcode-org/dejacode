@@ -52,7 +52,7 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
-from product_portfolio.models import ProductVulnerabilityAnalysis
+from vulnerabilities.models import VulnerabilityAnalysis
 from product_portfolio.models import ScanCodeProject
 
 
@@ -948,10 +948,10 @@ class PullProjectDataForm(forms.Form):
         )
 
 
-class ProductVulnerabilityAnalysisForm(DataspacedModelForm):
+class VulnerabilityAnalysisForm(DataspacedModelForm):
     # TODO: Replace this by proper model field
     responses = forms.MultipleChoiceField(
-        choices=ProductVulnerabilityAnalysis.Response.choices,
+        choices=VulnerabilityAnalysis.Response.choices,
         widget=forms.CheckboxSelectMultiple,
         required=False,
         help_text=_(
@@ -964,7 +964,7 @@ class ProductVulnerabilityAnalysisForm(DataspacedModelForm):
     )
 
     class Meta:
-        model = ProductVulnerabilityAnalysis
+        model = VulnerabilityAnalysis
         fields = [
             "product",
             "vulnerability",

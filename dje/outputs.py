@@ -135,7 +135,7 @@ def get_cyclonedx_bom(instance, user, include_components=True, include_vex=False
         vulnerabilities = [
             vulnerability.as_cyclonedx(
                 affected_instances=vulnerability.affected_packages.all(),
-                analyses=vulnerability.product_vulnerability_analyses.all(),
+                analyses=vulnerability.vulnerability_analyses.all(),
             )
             for vulnerability in vulnerability_qs
         ]

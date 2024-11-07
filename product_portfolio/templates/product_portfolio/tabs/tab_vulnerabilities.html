@@ -52,19 +52,19 @@
           </ul>
         </td>
         <td>
-          {% if vulnerability.product_vulnerability_analyses.get %}
+          {% if vulnerability.vulnerability_analyses.get %}
             <ul class="list-unstyled mb-0">
-              {% if vulnerability.product_vulnerability_analyses.get.state %}
-                <li>State: <strong>{{ vulnerability.product_vulnerability_analyses.get.state }}</strong></li>
+              {% if vulnerability.vulnerability_analyses.get.state %}
+                <li>State: <strong>{{ vulnerability.vulnerability_analyses.get.state }}</strong></li>
               {% endif %}
-              {% if vulnerability.product_vulnerability_analyses.get.justification %}
-                <li>Justification: <strong>{{ vulnerability.product_vulnerability_analyses.get.justification }}</strong></li>
+              {% if vulnerability.vulnerability_analyses.get.justification %}
+                <li>Justification: <strong>{{ vulnerability.vulnerability_analyses.get.justification }}</strong></li>
               {% endif %}
-              {% if vulnerability.product_vulnerability_analyses.get.responses %}
-                <li>Responses: <strong>{{ vulnerability.product_vulnerability_analyses.get.responses|join:", " }}</strong></li>
+              {% if vulnerability.vulnerability_analyses.get.responses %}
+                <li>Responses: <strong>{{ vulnerability.vulnerability_analyses.get.responses|join:", " }}</strong></li>
               {% endif %}
-              {% if vulnerability.product_vulnerability_analyses.get.detail %}
-                <li>Detail: {{ vulnerability.product_vulnerability_analyses.get.detail }}</li>
+              {% if vulnerability.vulnerability_analyses.get.detail %}
+                <li>Detail: {{ vulnerability.vulnerability_analyses.get.detail }}</li>
               {% endif %}
             </ul>
           {% endif %}

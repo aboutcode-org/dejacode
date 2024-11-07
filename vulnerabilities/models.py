@@ -21,6 +21,7 @@ from dje.models import DataspacedManager
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
+from dje.models import HistoryUserFieldsMixin
 
 logger = logging.getLogger("dje")
 
@@ -471,3 +472,29 @@ class AffectedByVulnerabilityMixin(models.Model):
 
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
+
+
+class VulnerabilityAnalysis(
+    VulnerabilityAnalysisMixin,
+    HistoryUserFieldsMixin,
+    DataspacedModel,
+):
+    vulnerability = models.ForeignKey(
+        to="vulnerabilities.Vulnerability",
+        related_name="vulnerability_analyses",
+        on_delete=models.CASCADE,
+    )
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        related_name="vulnerability_analyses",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text=_("Limit this analysis to the scope of a product."),
+    )
+
+    class Meta:
+        unique_together = (("product", "vulnerability"), ("dataspace", "uuid"))
+
+    def __str__(self):
+        return f"{self.vulnerability} analysis"

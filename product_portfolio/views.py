@@ -117,7 +117,7 @@ from product_portfolio.forms import ProductForm
 from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
-from product_portfolio.forms import ProductVulnerabilityAnalysisForm
+from product_portfolio.forms import VulnerabilityAnalysisForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import CodebaseResource
@@ -2423,7 +2423,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 @csrf_exempt  # TODO: Replace this
 def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
     user = request.user
-    form_class = ProductVulnerabilityAnalysisForm
+    form_class = VulnerabilityAnalysisForm
 
     qs = Product.objects.get_queryset(user, perms="change_product")
     product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
