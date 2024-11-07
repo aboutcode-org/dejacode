@@ -13,7 +13,7 @@ from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
 from urllib.parse import unquote_plus
-from django.db.models import ObjectDoesNotExist
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -26,6 +26,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import F
+from django.db.models import ObjectDoesNotExist
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -117,9 +118,9 @@ from product_portfolio.forms import ProductForm
 from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
-from product_portfolio.forms import VulnerabilityAnalysisForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
+from product_portfolio.forms import VulnerabilityAnalysisForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -1101,7 +1102,12 @@ class ProductTabVulnerabilitiesView(
         Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
         Header("summary", _("Summary")),
         Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
-        Header("exploitability", _("Exploitability analysis"), help_text="TODO"),
+        Header(
+            "exploitability",
+            _("Exploitability analysis"),
+            help_text="TODO",
+            filter="vulnerability_analyses__state",
+        ),
     )
 
     def get_context_data(self, **kwargs):

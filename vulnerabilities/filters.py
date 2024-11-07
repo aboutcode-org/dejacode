@@ -84,11 +84,15 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         model = Vulnerability
         fields = [
             "q",
+            "vulnerability_analyses__state",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.filters["max_score"].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
+        self.filters["vulnerability_analyses__state"].extra["widget"] = DropDownRightWidget(
+            anchor=self.anchor
+        )
 
     def filter_by_score_range(self, queryset, name, value):
         if value in vulnerability_score_ranges:

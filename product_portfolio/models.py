@@ -36,7 +36,6 @@ from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import History
 from dje.models import HistoryFieldsMixin
-from dje.models import HistoryUserFieldsMixin
 from dje.models import ReferenceNotesMixin
 from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
@@ -44,9 +43,7 @@ from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from vulnerabilities.fetch import fetch_for_queryset
 from vulnerabilities.models import Vulnerability
-from vulnerabilities.models import VulnerabilityAnalysisMixin
 from vulnerabilities.models import VulnerabilityAnalysis
-
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "

@@ -52,8 +52,8 @@ from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
-from vulnerabilities.models import VulnerabilityAnalysis
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 class NameVersionValidationFormMixin:
