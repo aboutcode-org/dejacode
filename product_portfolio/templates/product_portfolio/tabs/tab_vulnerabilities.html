@@ -71,7 +71,9 @@
           <span data-bs-toggle="modal" data-bs-target="#vulnerability-analysis-modal" class=""
                 data-edit-url="{{ product.get_absolute_url }}vulnerability_analysis_ajax_view/?vulnerability_id={{ vulnerability.vulnerability_id }}"
           >
-            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit"><i class="far fa-edit fa-sm"></i></button>
+            <button type="button" data-bs-toggle="tooltip" title="{% if vulnerability.vulnerability_analyses.get %}Edit{% else %}Add{% endif %}" class="btn btn-link p-0" aria-label="Edit">
+              <i class="{% if vulnerability.vulnerability_analyses.get %}far fa-edit{% else %}far fa-square-plus{% endif %} fa-sm"></i>
+            </button>
           </span>
         </td>
       </tr>

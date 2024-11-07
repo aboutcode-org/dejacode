@@ -13,7 +13,7 @@ from collections import defaultdict
 from collections import namedtuple
 from operator import attrgetter
 from urllib.parse import unquote_plus
-
+from django.db.models import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -128,6 +128,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.filters import VulnerabilityFilterSet
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 class BaseProductViewMixin:
@@ -2420,7 +2421,6 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 
 
 @login_required
-@csrf_exempt  # TODO: Replace this
 def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
     user = request.user
     form_class = VulnerabilityAnalysisForm
@@ -2433,15 +2433,23 @@ def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
     vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
 
+    try:
+        vulnerability_analysis = VulnerabilityAnalysis.objects.scope(user.dataspace).get(
+            product=product,
+            vulnerability=vulnerability,
+        )
+    except ObjectDoesNotExist:
+        vulnerability_analysis = None  # Addition
+
     if request.method == "POST":
-        form = form_class(user, data=request.POST)
+        form = form_class(user, instance=vulnerability_analysis, data=request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Vulnerability analysis successfully updated.")
             return JsonResponse({"success": "updated"}, status=200)
     else:
         initial = {"product": product, "vulnerability": vulnerability}
-        form = form_class(user, initial=initial)
+        form = form_class(user, instance=vulnerability_analysis, initial=initial)
 
     rendered_form = render_crispy_form(form)
 

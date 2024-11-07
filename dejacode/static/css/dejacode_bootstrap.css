@@ -392,6 +392,9 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-summary {
   width: 300px;
 }
+#tab_vulnerabilities .column-exploitability {
+  min-width: 300px;
+}
 
 /* -- Dependency tab -- */
 #tab_dependencies .column-for_package {
