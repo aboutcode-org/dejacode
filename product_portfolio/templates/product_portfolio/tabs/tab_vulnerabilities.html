@@ -21,16 +21,6 @@
            {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
         </td>
         <td>
-          {% if vulnerability.min_score %}
-            {{ vulnerability.min_score }} -
-          {% endif %}
-          {% if vulnerability.max_score %}
-            <strong>
-              {{ vulnerability.max_score }}
-            </strong>
-          {% endif %}
-        </td>
-        <td>
           {% if vulnerability.summary %}
             {% if vulnerability.summary|length > 120 %}
               <details>
@@ -47,6 +37,9 @@
             {% for package in vulnerability.affected_packages.all %}
               <li>
                 <a href="{{ package.get_absolute_url }}#vulnerabilities" target="_blank">{{ package }}</a>
+                {% if package.risk_score %}
+                  {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=package.risk_score only %}
+                {% endif %}
               </li>
             {% endfor %}
           </ul>

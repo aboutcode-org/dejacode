@@ -86,6 +86,9 @@ table.text-break thead {
   word-wrap: initial!important;
   word-break: initial!important;
 }
+.bg-warning-orange {
+  background-color: var(--bs-orange);
+}
 /* -- Dark there fixes -- */
 [data-bs-theme=dark] .btn-outline-dark {
   --bs-btn-color: var(--bs-tertiary-color);

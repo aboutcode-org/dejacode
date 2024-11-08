@@ -1,0 +1,11 @@
+{% if risk_score %}
+  <span class="badge
+    {% if risk_score >= 8.0 %}bg-danger
+    {% elif risk_score >= 6.0 %}bg-warning-orange
+    {% elif risk_score >= 3.0 %}bg-warning
+    {% else %}bg-secondary
+    {% endif %}
+  ">
+    risk {{ risk_score }}
+  </span>
+{% endif %}

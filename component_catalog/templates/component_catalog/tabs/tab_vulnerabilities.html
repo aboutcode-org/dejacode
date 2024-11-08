@@ -1,4 +1,14 @@
 {% load i18n %}
+<dl class="row mb-3">
+  <dt class="col-sm-1 text-end pt-2 pe-0">
+    <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="Risk score between 0.00 and 10.00, where higher values indicate greater vulnerability risk for the package.">
+      Risk score
+    </span>
+  </dt>
+  <dd class="col-sm-11">
+    <pre class="pre-bg-body-tertiary mb-1">{{ package.risk_score }}</pre>
+  </dd>
+</dl>
 <table class="table table-bordered table-hover table-md text-break">
   <thead>
     <tr>
@@ -10,11 +20,6 @@
       <th style="width: 210px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="A list of aliases for this vulnerability.">
           {% trans 'Aliases' %}
-        </span>
-      </th>
-      <th style="width: 90px;">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Severity score range.">
-          {% trans 'Score' %}
         </span>
       </th>
       <th>
@@ -46,16 +51,6 @@
         </td>
         <td>
            {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
-        </td>
-        <td>
-          {% if vulnerability.min_score %}
-            {{ vulnerability.min_score }} -
-          {% endif %}
-          {% if vulnerability.max_score %}
-            <strong>
-              {{ vulnerability.max_score }}
-            </strong>
-          {% endif %}
         </td>
         <td>
           {% if vulnerability.summary %}

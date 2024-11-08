@@ -378,6 +378,16 @@ class AffectedByVulnerabilityMixin(models.Model):
         related_name="affected_%(class)ss",
         help_text=_("Vulnerabilities affecting this object."),
     )
+    # Based on vulnerablecode.vulnerabilities.models.Package
+    risk_score = models.DecimalField(
+        null=True,
+        max_digits=4,
+        decimal_places=2,
+        help_text=_(
+            "Risk score between 0.00 and 10.00, where higher values "
+            "indicate greater vulnerability risk for the package."
+        ),
+    )
 
     class Meta:
         abstract = True

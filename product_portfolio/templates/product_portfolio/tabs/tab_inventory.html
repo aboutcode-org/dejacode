@@ -40,7 +40,7 @@
         {{ filter_productcomponent.form.object_type }}
         <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" data-bs-toggle="tooltip" data-bs-trigger="hover" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
         {% if product.dataspace.enable_vulnerablecodedb_access %}
-          <div class="float-end">
+          <span class="ms-2">
             {{ filter_productcomponent.form.is_vulnerable }}
           </div>
         {% endif %}
@@ -53,7 +53,7 @@
         {% trans 'Concluded license' %}
       </th>
       <th style="width: 140px;">
-        {% trans 'Review status' %}
+        {% trans 'Compliance status' %}
         {{ filter_productcomponent.form.review_status }}
       </th>
       <th style="width: 106px;">
@@ -64,6 +64,12 @@
         {% trans 'Modified' %}
         {{ filter_productcomponent.form.is_modified }}
       </th>
+      {% if product.dataspace.enable_vulnerablecodedb_access %}
+        <th style="width: 75;">
+          {% trans 'Risk' %}
+          {{ filter_productcomponent.form.risk_score }}
+        </th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
@@ -113,6 +119,13 @@
           <td>{{ relation.review_status|default_if_none:'' }}</td>
           <td class="text-center">{{ relation.is_deployed|as_icon }}</td>
           <td class="text-center">{{ relation.is_modified|as_icon }}</td>
+          {% if product.dataspace.enable_vulnerablecodedb_access %}
+            <td>
+              {% if relation.related_component_or_package.vulnerability_count %}
+                {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
+              {% endif %}
+            </td>
+          {% endif %}
         </tr>
         {% if relation.package and display_scan_features %}
           <tr class="{{ rowcolors }} extra-details">

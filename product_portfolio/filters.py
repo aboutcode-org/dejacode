@@ -118,6 +118,19 @@ class ProductFilterSet(DataspacedFilterSet):
         ]
 
 
+risk_score_ranges = {
+    "low": (0.1, 2.9),
+    "medium": (3.0, 5.9),
+    "high": (6.0, 7.9),
+    "critical": (8.0, 10.0),
+}
+
+RISK_SCORE_CHOICES = [
+    (key, f"{key.capitalize()} ({value[0]} - {value[1]})")
+    for key, value in risk_score_ranges.items()
+]
+
+
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
@@ -130,9 +143,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
             right_align=True,
         ),
     )
-
     is_modified = BooleanChoiceFilter()
-
     object_type = django_filters.CharFilter(
         method="filter_object_type",
         widget=DropDownWidget(
@@ -143,6 +154,15 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
                 ("custom", _("Custom Components")),
                 ("package", _("Packages")),
             ),
+        ),
+    )
+    risk_score = django_filters.ChoiceFilter(
+        label=_("Risk score"),
+        choices=RISK_SCORE_CHOICES,
+        method="filter_by_risk_score_range",
+        help_text="Select a score range to filter.",
+        widget=DropDownWidget(
+            anchor="#inventory", right_align=True
         ),
     )
 
@@ -162,6 +182,21 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
                 return queryset
 
         return queryset.none()
+
+    def filter_by_risk_score_range(self, queryset, name, value):
+        if queryset.model is ProductPackage:
+            model_name = "package"
+        else:
+            model_name = "component"
+
+        if value in risk_score_ranges:
+            low, high = risk_score_ranges[value]
+            filters = {
+                f"{model_name}__risk_score__gte": low,
+                f"{model_name}__risk_score__lte": high,
+            }
+            return queryset.filter(**filters)
+        return queryset
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
