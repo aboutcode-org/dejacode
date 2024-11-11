@@ -389,8 +389,8 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-max_score {
   width: 105px;
 }
-#tab_vulnerabilities .column-column-affected_packages {
-  width: 320px;
+#tab_vulnerabilities .column-affected_packages {
+  min-width: 350px;
 }
 
 /* -- Dependency tab -- */
