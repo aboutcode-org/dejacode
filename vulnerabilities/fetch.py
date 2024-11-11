@@ -38,7 +38,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
     if log_func:
         log_func(f"{package_count} Packages in the queue.")
 
-    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, log_func)
+    created = fetch_for_packages(package_qs, dataspace, batch_size, timeout, log_func)
     run_time = timer() - start_time
     if log_func:
         log_func(f"+ Created {intcomma(created)} vulnerabilities")
@@ -48,7 +48,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
 
 
-def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, log_func=None):
+def fetch_for_packages(queryset, dataspace, batch_size=50, timeout=None, log_func=None):
     object_count = queryset.count()
     if object_count < 1:
         return

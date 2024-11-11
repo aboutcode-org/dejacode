@@ -1397,9 +1397,9 @@ class PackageImporterTestCase(TestCase):
         self.assertContains(response, expected3)
         self.assertContains(response, expected4)
 
-    @mock.patch("component_catalog.importers.fetch_for_queryset")
-    def test_package_import_fetch_vulnerabilities(self, mock_fetch_for_queryset):
-        mock_fetch_for_queryset.return_value = None
+    @mock.patch("component_catalog.importers.fetch_for_packages")
+    def test_package_import_fetch_vulnerabilities(self, mock_fetch_for_packages):
+        mock_fetch_for_packages.return_value = None
         self.dataspace.enable_vulnerablecodedb_access = True
         self.dataspace.save()
 
@@ -1407,7 +1407,7 @@ class PackageImporterTestCase(TestCase):
         importer = PackageImporter(self.super_user, file)
         importer.save_all()
         self.assertEqual(2, len(importer.results["added"]))
-        mock_fetch_for_queryset.assert_called()
+        mock_fetch_for_packages.assert_called()
 
 
 class SubcomponentImporterTestCase(TestCase):

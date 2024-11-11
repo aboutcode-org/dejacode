@@ -161,9 +161,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         choices=RISK_SCORE_CHOICES,
         method="filter_by_risk_score_range",
         help_text="Select a score range to filter.",
-        widget=DropDownWidget(
-            anchor="#inventory", right_align=True
-        ),
+        widget=DropDownWidget(anchor="#inventory", right_align=True),
     )
 
     @staticmethod
