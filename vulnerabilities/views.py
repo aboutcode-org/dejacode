@@ -7,7 +7,6 @@
 #
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
@@ -47,18 +46,16 @@ class VulnerabilityListView(
                 "aliases",
                 "summary",
                 "fixed_packages_count",
-                "max_score",
-                "min_score",
+                "exploitability",
+                "weighted_severity",
+                "risk_score",
                 "created_date",
                 "last_modified_date",
                 "dataspace",
             )
             .with_affected_products_count()
             .with_affected_packages_count()
-            .order_by(
-                F("max_score").desc(nulls_last=True),
-                "-min_score",
-            )
+            .order_by_risk()
         )
 
     def get_context_data(self, **kwargs):

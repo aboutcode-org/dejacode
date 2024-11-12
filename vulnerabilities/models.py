@@ -40,6 +40,13 @@ class VulnerabilityQuerySet(DataspacedQuerySet):
             affected_packages_count=Count("affected_packages", distinct=True),
         )
 
+    def order_by_risk(self):
+        return self.order_by(
+            models.F("risk_score").desc(nulls_last=True),
+            models.F("weighted_severity").desc(nulls_last=True),
+            models.F("exploitability").desc(nulls_last=True),
+        )
+
 
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """

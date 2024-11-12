@@ -251,7 +251,7 @@ class TabVulnerabilityMixin:
     template = "component_catalog/tabs/tab_vulnerabilities.html"
 
     def tab_vulnerabilities(self):
-        vulnerabilities_qs = self.object.affected_by_vulnerabilities.all()
+        vulnerabilities_qs = self.object.affected_by_vulnerabilities.order_by_risk()
         if not vulnerabilities_qs:
             return
 

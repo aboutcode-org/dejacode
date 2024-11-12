@@ -25,7 +25,6 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import F
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -1111,10 +1110,7 @@ class ProductTabVulnerabilitiesView(
         package_qs = Package.objects.filter(product=product).only_rendering_fields()
         vulnerability_qs = base_vulnerability_qs.prefetch_related(
             Prefetch("affected_packages", package_qs)
-        ).order_by(
-            F("max_score").desc(nulls_last=True),
-            "-min_score",
-        )
+        ).order_by_risk()
 
         self.filterset = self.filterset_class(
             self.request.GET,
