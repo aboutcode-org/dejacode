@@ -383,14 +383,20 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-vulnerability_id {
   width: 210px;
 }
-#tab_vulnerabilities .column-aliases {
-  width: 210px;
-}
-#tab_vulnerabilities .column-max_score {
-  width: 105px;
-}
 #tab_vulnerabilities .column-affected_packages {
-  min-width: 350px;
+  min-width: 300px;
+}
+#tab_vulnerabilities .column-exploitability {
+  width: 135px;
+}
+#tab_vulnerabilities .column-weighted_severity {
+  width: 100px;
+}
+#tab_vulnerabilities .column-risk_score {
+  width: 90px;
+}
+#tab_vulnerabilities .column-summary {
+  width: 300px;
 }
 
 /* -- Dependency tab -- */

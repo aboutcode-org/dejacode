@@ -1096,10 +1096,11 @@ class ProductTabVulnerabilitiesView(
     filterset_class = VulnerabilityFilterSet
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
-        Header("aliases", _("Aliases")),
-        # Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
-        Header("summary", _("Summary")),
         Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+        Header("exploitability", _("Exploitability"), filter="max_score"),
+        Header("weighted_severity", _("Severity"), filter="max_score"),
+        Header("risk_score", _("Risk"), filter="max_score"),
+        Header("summary", _("Summary")),
     )
 
     def get_context_data(self, **kwargs):
