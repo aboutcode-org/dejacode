@@ -104,6 +104,37 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("The maximum score of the range."),
     )
+    exploitability = models.DecimalField(
+        null=True,
+        max_digits=4,
+        decimal_places=2,
+        help_text=_(
+            "Exploitability indicates the likelihood that a vulnerability in a "
+            "software package could be used by malicious actors to compromise systems, "
+            "applications, or networks. This metric is determined automatically based "
+            "on the discovery of known exploits"
+        ),
+    )
+    weighted_severity = models.DecimalField(
+        null=True,
+        max_digits=4,
+        decimal_places=2,
+        help_text=_(
+            "Weighted severity is the highest value calculated by multiplying each "
+            "severity by its corresponding weight, divided by 10."
+        ),
+    )
+    risk_score = models.DecimalField(
+        null=True,
+        max_digits=4,
+        decimal_places=2,
+        help_text=_(
+            "Risk score from 0.00 to 10.00, with higher values indicating greater "
+            "vulnerability risk. "
+            "This score is the maximum of the weighted severity multiplied by "
+            "exploitability, capped at 10."
+        ),
+    )
 
     objects = DataspacedManager.from_queryset(VulnerabilityQuerySet)()
 
