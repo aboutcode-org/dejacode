@@ -59,6 +59,7 @@ from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import Subcomponent
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -74,6 +75,7 @@ from dje.models import DejacodeUser
 from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
+from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
@@ -118,13 +120,16 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
+from product_portfolio.models import RELATION_LICENSE_EXPRESSION_HELP_TEXT
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.filters import VulnerabilityFilterSet
+from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 
 
@@ -870,6 +875,15 @@ class ProductTabInventoryView(
                     "next_url": (next_url or "") + f"#{self.tab_id}",
                 }
             )
+
+        context["help_texts"] = {
+            "purpose": get_help_text(Subcomponent, "purpose"),
+            "license_expression": RELATION_LICENSE_EXPRESSION_HELP_TEXT,
+            "review_status": get_help_text(ProductRelationshipMixin, "review_status"),
+            "is_deployed": get_help_text(ProductRelationshipMixin, "is_deployed"),
+            "is_modified": get_help_text(ProductRelationshipMixin, "is_modified"),
+            "risk_score": get_help_text(AffectedByVulnerabilityMixin, "risk_score"),
+        }
 
         return context
 

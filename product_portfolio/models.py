@@ -542,7 +542,7 @@ class ProductItemPurpose(
     label = models.CharField(
         max_length=50,
         help_text=_(
-            "Concise name to identify the Purpose of the Product Component or " "Product Package."
+            "Concise name to identify the Purpose of the Product Component or Product Package."
         ),
     )
 
