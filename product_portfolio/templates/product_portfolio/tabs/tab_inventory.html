@@ -122,7 +122,7 @@
           {% if product.dataspace.enable_vulnerablecodedb_access %}
             <td>
               {% if relation.related_component_or_package.vulnerability_count %}
-                {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
+                {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score label='risk' only %}
               {% endif %}
             </td>
           {% endif %}

@@ -6,6 +6,9 @@
     {% else %}bg-secondary
     {% endif %}
   ">
-    risk {{ risk_score }}
+    {% if label %}
+      {{ label }}
+    {% endif %}
+    {{ risk_score }}
   </span>
 {% endif %}
