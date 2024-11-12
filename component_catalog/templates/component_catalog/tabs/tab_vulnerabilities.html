@@ -17,14 +17,24 @@
           {% trans 'Affected by' %}
         </span>
       </th>
-      <th style="width: 210px;">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="A list of aliases for this vulnerability.">
-          {% trans 'Aliases' %}
-        </span>
-      </th>
-      <th>
+      <th style="width: 300px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Summary of the vulnerability.">
           {% trans 'Summary' %}
+        </span>
+      </th>
+      <th style="min-width: 130px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="TODO">
+          {% trans 'Exploitability' %}
+        </span>
+      </th>
+      <th style="min-width: 100px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="TODO">
+          {% trans 'Severity' %}
+        </span>
+      </th>
+      <th style="min-width: 90px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="TODO">
+          {% trans 'Risk' %}
         </span>
       </th>
       <th style="min-width: 320px;">
@@ -48,9 +58,9 @@
               {{ vulnerability.vulnerability_id }}
             {% endif %}
           </strong>
-        </td>
-        <td>
-           {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+          <div class="mt-2">
+            {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+          </div>
         </td>
         <td>
           {% if vulnerability.summary %}
@@ -63,6 +73,15 @@
               {{ vulnerability.summary }}
             {% endif %}
           {% endif %}
+        </td>
+        <td>
+          {{ vulnerability.exploitability|default_if_none:"" }}
+        </td>
+        <td>
+          {{ vulnerability.weighted_severity|default_if_none:"" }}
+        </td>
+        <td>
+          {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
         </td>
         <td>
           {% if vulnerability.fixed_packages_html %}
