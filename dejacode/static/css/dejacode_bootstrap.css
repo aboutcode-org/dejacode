@@ -390,13 +390,13 @@ table.vulnerabilities-table .column-summary {
   min-width: 300px;
 }
 #tab_vulnerabilities .column-exploitability {
-  width: 135px;
+  width: 150px;
 }
 #tab_vulnerabilities .column-weighted_severity {
-  width: 100px;
+  width: 115px;
 }
 #tab_vulnerabilities .column-risk_score {
-  width: 90px;
+  width: 95px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;

@@ -1097,9 +1097,9 @@ class ProductTabVulnerabilitiesView(
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
-        Header("exploitability", _("Exploitability"), filter="max_score"),
-        Header("weighted_severity", _("Severity"), filter="max_score"),
-        Header("risk_score", _("Risk"), filter="max_score"),
+        Header("exploitability", _("Exploitability"), filter="exploitability"),
+        Header("weighted_severity", _("Severity"), filter="weighted_severity"),
+        Header("risk_score", _("Risk"), filter="risk_score"),
         Header("summary", _("Summary")),
     )
 

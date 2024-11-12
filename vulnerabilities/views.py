@@ -28,9 +28,9 @@ class VulnerabilityListView(
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("summary", _("Summary")),
-        Header("exploitability", _("Exploitability"), filter="max_score"),
-        Header("weighted_severity", _("Severity"), filter="max_score"),
-        Header("risk_score", _("Risk"), filter="max_score"),
+        Header("exploitability", _("Exploitability"), filter="exploitability"),
+        Header("weighted_severity", _("Severity"), filter="weighted_severity"),
+        Header("risk_score", _("Risk"), filter="risk_score"),
         Header("affected_products_count", _("Affected products"), help_text="Affected products"),
         Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
         Header("fixed_packages_count", _("Fixed by"), help_text="Fixed by packages"),
