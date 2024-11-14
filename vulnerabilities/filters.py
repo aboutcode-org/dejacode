@@ -17,11 +17,12 @@ from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
 
-EXPLOITABILITY_RANGES = {
-    "no exploit known": (0.5, 0.9),
-    "exploit script published": (0.6, 1.5),
-    "high exploitability": (1.6, 2.0),
-}
+EXPLOITABILITY_CHOICES = [
+    (0.5, _("No exploit known (0.5)")),
+    (1.0, _("Exploit script published (1.0)")),
+    (2.0, _("High exploitability (2.0)")),
+]
+
 
 RISK_SCORE_RANGES = {
     "low": (0.1, 2.9),
@@ -96,9 +97,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         ],
         widget=SortDropDownWidget,
     )
-    exploitability = ScoreRangeFilter(
+    exploitability = django_filters.ChoiceFilter(
         label=_("Exploitability"),
-        score_ranges=EXPLOITABILITY_RANGES,
+        choices=EXPLOITABILITY_CHOICES,
     )
     weighted_severity = ScoreRangeFilter(
         label=_("Severity"),
