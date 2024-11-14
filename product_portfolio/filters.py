@@ -179,21 +179,6 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
 
         return queryset.none()
 
-    # def filter_by_risk_score_range(self, queryset, name, value):
-    #     if queryset.model is ProductPackage:
-    #         model_name = "package"
-    #     else:
-    #         model_name = "component"
-    #
-    #     if value in risk_score_ranges:
-    #         low, high = risk_score_ranges[value]
-    #         filters = {
-    #             f"{model_name}__risk_score__gte": low,
-    #             f"{model_name}__risk_score__lte": high,
-    #         }
-    #         return queryset.filter(**filters)
-    #     return queryset
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
