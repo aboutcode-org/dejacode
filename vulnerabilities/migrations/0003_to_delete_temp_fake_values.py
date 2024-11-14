@@ -10,7 +10,7 @@ def set_random_risk_score(apps, schema_editor):
 
     qs = Vulnerability.objects.all()
     for vulnerability in qs:
-        exploitability = Decimal(f"{random.uniform(0.5, 2):.2f}")  # 0.5 to 2
+        exploitability = random.choice([0.5, 1.0, 2.0])  # 0.5, 1.0, or 2.0
         weighted_severity = Decimal(f"{random.uniform(0, 10):.2f}")  # 0 to 10
         risk_score = f"{min(float(exploitability) * float(weighted_severity), 10.0):.2f}"
 

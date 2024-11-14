@@ -109,7 +109,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "Exploitability indicates the likelihood that a vulnerability in a "
             "software package could be used by malicious actors to compromise systems, "
             "applications, or networks. This metric is determined automatically based "
-            "on the discovery of known exploits"
+            "on the discovery of known exploits."
         ),
     )
     weighted_severity = models.DecimalField(
