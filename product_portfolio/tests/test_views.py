@@ -300,10 +300,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-max_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=max_score#vulnerabilities")
-        response = self.client.get(url + "?vulnerabilities-sort=max_score#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=-max_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-risk_score=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=risk_score#vulnerabilities")
+        response = self.client.get(url + "?vulnerabilities-sort=risk_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):

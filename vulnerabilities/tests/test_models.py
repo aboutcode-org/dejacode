@@ -162,20 +162,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
         self.assertEqual(vulnerability_data["references"], vulnerability1.references)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
-        self.assertEqual(7.5, vulnerability1.min_score)
-        self.assertEqual(7.5, vulnerability1.max_score)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
-
-    def test_vulnerability_model_create_from_data_computed_scores(self):
-        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
-        json_data = json.loads(response_file.read_text())
-        affected_by_vulnerabilities = json_data["results"][0]["affected_by_vulnerabilities"]
-        vulnerability1 = Vulnerability.create_from_data(
-            dataspace=self.dataspace,
-            data=affected_by_vulnerabilities[0],
-        )
-        self.assertEqual(2.1, vulnerability1.min_score)
-        self.assertEqual(7.5, vulnerability1.max_score)
 
     def test_vulnerability_model_queryset_count_methods(self):
         package1 = make_package(self.dataspace)

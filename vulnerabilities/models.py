@@ -103,6 +103,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     )
     exploitability = models.DecimalField(
         null=True,
+        blank=True,
         max_digits=4,
         decimal_places=2,
         help_text=_(
@@ -114,6 +115,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     )
     weighted_severity = models.DecimalField(
         null=True,
+        blank=True,
         max_digits=4,
         decimal_places=2,
         help_text=_(
@@ -123,6 +125,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     )
     risk_score = models.DecimalField(
         null=True,
+        blank=True,
         max_digits=4,
         decimal_places=2,
         help_text=_(
@@ -363,6 +366,7 @@ class AffectedByVulnerabilityMixin(models.Model):
     # Based on vulnerablecode.vulnerabilities.models.Package
     risk_score = models.DecimalField(
         null=True,
+        blank=True,
         max_digits=4,
         decimal_places=2,
         help_text=_(

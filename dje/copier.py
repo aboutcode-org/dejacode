@@ -66,6 +66,7 @@ ALWAYS_EXCLUDE = [
     "project_uuid",
     "default_assignee",
     "affected_by_vulnerabilities",
+    "risk_score",
 ]
 
 
