@@ -24,7 +24,7 @@ def set_random_risk_score(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('vulnerabilities', '0002_vulnerability_exploitability_and_more'),
+        ('vulnerabilities', '0002_remove_vulnerability_max_score_and_more'),
     ]
 
     operations = [

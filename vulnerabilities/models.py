@@ -101,23 +101,29 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         output_field=models.IntegerField(),
         db_persist=True,
     )
+    EXPLOITABILITY_CHOICES = [
+        (0.5, _("No exploits known")),
+        (1.0, _("Potential exploits")),
+        (2.0, _("Known exploits")),
+    ]
     exploitability = models.DecimalField(
         null=True,
         blank=True,
-        max_digits=4,
-        decimal_places=2,
+        max_digits=3,
+        decimal_places=1,
+        choices=EXPLOITABILITY_CHOICES,
         help_text=_(
-            "Exploitability indicates the likelihood that a vulnerability in a "
-            "software package could be used by malicious actors to compromise systems, "
-            "applications, or networks. This metric is determined automatically based "
-            "on the discovery of known exploits."
+            "Exploitability refers to the potential or probability of a software "
+            "package vulnerability being exploited by malicious actors to compromise "
+            "systems, applications, or networks. "
+            "It is determined automatically by discovery of exploits."
         ),
     )
     weighted_severity = models.DecimalField(
         null=True,
         blank=True,
-        max_digits=4,
-        decimal_places=2,
+        max_digits=3,
+        decimal_places=1,
         help_text=_(
             "Weighted severity is the highest value calculated by multiplying each "
             "severity by its corresponding weight, divided by 10."
@@ -126,10 +132,10 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     risk_score = models.DecimalField(
         null=True,
         blank=True,
-        max_digits=4,
-        decimal_places=2,
+        max_digits=3,
+        decimal_places=1,
         help_text=_(
-            "Risk score from 0.00 to 10.00, with higher values indicating greater "
+            "Risk score from 0.0 to 10.0, with higher values indicating greater "
             "vulnerability risk. "
             "This score is the maximum of the weighted severity multiplied by "
             "exploitability, capped at 10."
@@ -367,8 +373,8 @@ class AffectedByVulnerabilityMixin(models.Model):
     risk_score = models.DecimalField(
         null=True,
         blank=True,
-        max_digits=4,
-        decimal_places=2,
+        max_digits=3,
+        decimal_places=1,
         help_text=_(
             "Risk score between 0.00 and 10.00, where higher values "
             "indicate greater vulnerability risk for the package."

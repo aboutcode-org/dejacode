@@ -31,9 +31,9 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
-from vulnerabilities.filters import EXPLOITABILITY_CHOICES
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import Vulnerability
 
 
 class ProductFilterSet(DataspacedFilterSet):
@@ -149,7 +149,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     exploitability = django_filters.ChoiceFilter(
         label=_("Exploitability"),
         field_name="package__exploitability",
-        choices=EXPLOITABILITY_CHOICES,
+        choices=Vulnerability.EXPLOITABILITY_CHOICES,
     )
     weighted_severity = ScoreRangeFilter(
         label=_("Severity"),

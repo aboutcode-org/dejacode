@@ -31,7 +31,7 @@
           </ul>
         </td>
         <td>
-          {{ vulnerability.exploitability|default_if_none:"" }}
+          {{ vulnerability.get_exploitability_display }}
         </td>
         <td>
           {{ vulnerability.weighted_severity|default_if_none:"" }}
