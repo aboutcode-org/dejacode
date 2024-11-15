@@ -1,12 +1,12 @@
 {% load i18n %}
 <dl class="row mb-3">
-  <dt class="col-sm-1 text-end pt-2 pe-0">
+  <dt class="col-sm-1 text-end pe-0">
     <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.">
       Risk score
     </span>
   </dt>
-  <dd class="col-sm-11">
-    <pre class="pre-bg-body-tertiary mb-1">{{ package.risk_score }}</pre>
+  <dd class="col-sm-11 fs-110pct">
+    {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=package.risk_score only %}
   </dd>
 </dl>
 <table class="table table-bordered table-hover table-md text-break">
