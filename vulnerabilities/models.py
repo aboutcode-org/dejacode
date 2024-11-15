@@ -376,7 +376,7 @@ class AffectedByVulnerabilityMixin(models.Model):
         max_digits=3,
         decimal_places=1,
         help_text=_(
-            "Risk score between 0.00 and 10.00, where higher values "
+            "Risk score between 0.0 and 10.0, where higher values "
             "indicate greater vulnerability risk for the package."
         ),
     )

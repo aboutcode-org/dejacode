@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='component',
             name='risk_score',
-            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score between 0.00 and 10.00, where higher values indicate greater vulnerability risk for the package.', max_digits=3, null=True),
+            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.', max_digits=3, null=True),
         ),
         migrations.AlterField(
             model_name='package',
             name='risk_score',
-            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score between 0.00 and 10.00, where higher values indicate greater vulnerability risk for the package.', max_digits=3, null=True),
+            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.', max_digits=3, null=True),
         ),
     ]
