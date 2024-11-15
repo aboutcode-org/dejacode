@@ -134,7 +134,7 @@
           {% if product.dataspace.enable_vulnerablecodedb_access %}
             <td class="fs-110pct">
               {% if relation.related_component_or_package.vulnerability_count %}
-                {% include 'component_catalog/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
+                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
               {% endif %}
             </td>
           {% endif %}
