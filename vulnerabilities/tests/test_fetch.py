@@ -8,6 +8,7 @@
 
 import io
 import json
+from decimal import Decimal
 from pathlib import Path
 from unittest import mock
 
@@ -60,3 +61,9 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
         self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+        self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
+        self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
+        self.assertEqual(Decimal("8.4"), vulnerability.risk_score)
+
+        package1.refresh_from_db()
+        self.assertEqual(Decimal("8.4"), package1.risk_score)

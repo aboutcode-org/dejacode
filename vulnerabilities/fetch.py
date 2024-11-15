@@ -90,4 +90,7 @@ def fetch_for_packages(queryset, dataspace, batch_size=50, timeout=None, log_fun
                     created_vulnerabilities += 1
                 vulnerability.add_affected_packages(affected_packages)
 
+            if package_risk_score := vc_entry.get("risk_score"):
+                affected_packages.update(risk_score=package_risk_score)
+
     return created_vulnerabilities
