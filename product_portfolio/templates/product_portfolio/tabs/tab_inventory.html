@@ -239,7 +239,16 @@
         {% endif %}
       {% endfor %}
     {% empty %}
-      <tr><td colspan="100">No results.</td></tr>
+      <tr>
+        <td colspan="100">
+          No results.
+          {% if filter_productcomponent.is_active %}
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+              Clear search and filters
+            </a>
+          {% endif %}
+        </td>
+      </tr>
     {% endfor %}
   </tbody>
 </table>

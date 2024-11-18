@@ -95,6 +95,7 @@ function setupBackToTop() {
 }
 
 function setupHTMX() {
+  // Triggered after new content has been swapped in
   document.body.addEventListener('htmx:afterSwap', function(evt) {
     const loadedContent = evt.detail.elt;
 
@@ -116,6 +117,11 @@ function setupHTMX() {
             button.disabled = true;
         }
     }
+  });
+
+  // Triggered when an HTTP response error (non-200 or 300 response code) occurs
+  document.addEventListener('htmx:responseError', function (event) {
+    event.target.innerHTML = '<div class="h5 ms-4 text-danger">Error fetching</div>';
   });
 }
 
