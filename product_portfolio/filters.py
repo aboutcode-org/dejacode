@@ -122,6 +122,7 @@ class ProductFilterSet(DataspacedFilterSet):
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
+    field_name_prefix = None
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
         choices=(
@@ -148,17 +149,14 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     )
     exploitability = django_filters.ChoiceFilter(
         label=_("Exploitability"),
-        field_name="package__exploitability",
         choices=Vulnerability.EXPLOITABILITY_CHOICES,
     )
     weighted_severity = ScoreRangeFilter(
         label=_("Severity"),
-        field_name="package__weighted_severity",
         score_ranges=RISK_SCORE_RANGES,
     )
     risk_score = ScoreRangeFilter(
         label=_("Risk score"),
-        field_name="package__risk_score",
         score_ranges=RISK_SCORE_RANGES,
     )
 
@@ -192,12 +190,15 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
             anchor=self.anchor, right_align=True
         )
 
-        self.filters["exploitability"].extra["widget"] = DropDownWidget(anchor=self.anchor)
-        self.filters["weighted_severity"].extra["widget"] = DropDownWidget(anchor=self.anchor)
-        self.filters["risk_score"].extra["widget"] = DropDownWidget(anchor=self.anchor)
+        field_name_prefix = self.field_name_prefix
+        for field_name in ["exploitability", "weighted_severity", "risk_score"]:
+            field = self.filters[field_name]
+            field.extra["widget"] = DropDownWidget(anchor=self.anchor)
+            field.field_name = f"{field_name_prefix}__{field_name}"
 
 
 class ProductComponentFilterSet(BaseProductRelationFilterSet):
+    field_name_prefix = "component"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -246,6 +247,7 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
+    field_name_prefix = "package"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -284,10 +286,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
-
-    @staticmethod
-    def do_nothing(queryset, name, value):
-        return queryset
 
     class Meta:
         model = ProductPackage
