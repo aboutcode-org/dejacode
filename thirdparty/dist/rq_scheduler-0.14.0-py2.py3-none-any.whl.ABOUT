@@ -1,0 +1,14 @@
+about_resource: rq_scheduler-0.14.0-py2.py3-none-any.whl
+name: rq-scheduler
+version: 0.14.0
+download_url: https://files.pythonhosted.org/packages/bb/d0/28cedca9f3b321f30e69d644c2dcd7097ec21570ec9606fde56750621300/rq_scheduler-0.14.0-py2.py3-none-any.whl
+package_url: pkg:pypi/rq-scheduler@0.14.0
+license_expression: mit
+copyright: Copyright rq-scheduler project contributors
+attribute: yes
+checksum_md5: 3375aafb840fa099da62b14f3067e91c
+checksum_sha1: 694d2ee9e73111a9f311094a9941ae844441e528
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

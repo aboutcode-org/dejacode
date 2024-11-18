@@ -1,0 +1,14 @@
+about_resource: fakeredis-2.26.1-py3-none-any.whl
+name: fakeredis
+version: 2.26.1
+download_url: https://files.pythonhosted.org/packages/50/d2/1d4df87147ebb024edf1b1863fbaa4f433cd9562aac4ef8d458b6b7b77af/fakeredis-2.26.1-py3-none-any.whl
+package_url: pkg:pypi/fakeredis@2.26.1
+license_expression: bsd-new
+copyright: Copyright fakeredis project contributors
+attribute: yes
+checksum_md5: 1647f5c2746dbad2bb0ae719a6d000f0
+checksum_sha1: f2edf6ec840dd1eb5885b61eec2deafd5a761b3d
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
