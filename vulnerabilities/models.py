@@ -109,7 +109,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     exploitability = models.DecimalField(
         null=True,
         blank=True,
-        max_digits=3,
+        max_digits=2,
         decimal_places=1,
         choices=EXPLOITABILITY_CHOICES,
         help_text=_(
