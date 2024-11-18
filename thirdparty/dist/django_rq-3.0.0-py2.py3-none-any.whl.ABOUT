@@ -1,0 +1,14 @@
+about_resource: django_rq-3.0.0-py2.py3-none-any.whl
+name: django-rq
+version: 3.0.0
+download_url: https://files.pythonhosted.org/packages/fe/9a/6a9cdc19805c31019021f582728de5493ef4381c391434f64af6e4b5121c/django_rq-3.0.0-py2.py3-none-any.whl
+package_url: pkg:pypi/django-rq@3.0.0
+license_expression: mit
+copyright: Copyright django-rq project contributors
+attribute: yes
+checksum_md5: 104ce37b98b5c5e574f7b1e81c6a632c
+checksum_sha1: c61533e1b96a0d44e7df0d3aa8df042192753b23
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
