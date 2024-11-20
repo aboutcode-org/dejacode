@@ -17,6 +17,13 @@ from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
 
+RISK_SCORE_RANGES = {
+    "low": (0.1, 2.9),
+    "medium": (3.0, 5.9),
+    "high": (6.0, 7.9),
+    "critical": (8.0, 10.0),
+}
+
 
 class NullsLastOrderingFilter(django_filters.OrderingFilter):
     """
@@ -42,17 +49,26 @@ class NullsLastOrderingFilter(django_filters.OrderingFilter):
         return qs.order_by(*ordering)
 
 
-vulnerability_score_ranges = {
-    "low": (0.1, 3),
-    "medium": (4.0, 6.9),
-    "high": (7.0, 8.9),
-    "critical": (9.0, 10.0),
-}
+class ScoreRangeFilter(django_filters.ChoiceFilter):
+    def __init__(self, *args, **kwargs):
+        score_ranges = kwargs.pop("score_ranges", {})
+        choices = [
+            (key, f"{key.capitalize()} ({value[0]} - {value[1]})")
+            for key, value in score_ranges.items()
+        ]
+        kwargs["choices"] = choices
+        super().__init__(*args, **kwargs)
+        self.score_ranges = score_ranges
 
-SCORE_CHOICES = [
-    (key, f"{key.capitalize()} ({value[0]} - {value[1]})")
-    for key, value in vulnerability_score_ranges.items()
-]
+    def filter(self, qs, value):
+        if value in self.score_ranges:
+            low, high = self.score_ranges[value]
+            filters = {
+                f"{self.field_name}__gte": low,
+                f"{self.field_name}__lte": high,
+            }
+            return qs.filter(**filters)
+        return qs
 
 
 class VulnerabilityFilterSet(DataspacedFilterSet):
@@ -63,8 +79,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
     sort = NullsLastOrderingFilter(
         label=_("Sort"),
         fields=[
-            "max_score",
-            "min_score",
+            "exploitability",
+            "weighted_severity",
+            "risk_score",
             "affected_products_count",
             "affected_packages_count",
             "fixed_packages_count",
@@ -73,11 +90,13 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         ],
         widget=SortDropDownWidget,
     )
-    max_score = django_filters.ChoiceFilter(
-        choices=SCORE_CHOICES,
-        method="filter_by_score_range",
-        label="Score Range",
-        help_text="Select a score range to filter.",
+    weighted_severity = ScoreRangeFilter(
+        label=_("Severity"),
+        score_ranges=RISK_SCORE_RANGES,
+    )
+    risk_score = ScoreRangeFilter(
+        label=_("Risk score"),
+        score_ranges=RISK_SCORE_RANGES,
     )
 
     class Meta:
@@ -85,17 +104,16 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         fields = [
             "q",
             "vulnerability_analyses__state",
+            "exploitability",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["max_score"].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
-        self.filters["vulnerability_analyses__state"].extra["widget"] = DropDownRightWidget(
-            anchor=self.anchor
-        )
-
-    def filter_by_score_range(self, queryset, name, value):
-        if value in vulnerability_score_ranges:
-            low, high = vulnerability_score_ranges[value]
-            return queryset.filter(max_score__gte=low, max_score__lte=high)
-        return queryset
+        dropdown_fields = [
+            "exploitability",
+            "weighted_severity",
+            "risk_score",
+            "vulnerability_analyses__state",
+        ]
+        for field_name in dropdown_fields:
+            self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)

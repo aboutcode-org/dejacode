@@ -1,0 +1,18 @@
+about_resource: bleach-6.2.0-py3-none-any.whl
+name: bleach
+version: 6.2.0
+download_url: https://files.pythonhosted.org/packages/fc/55/96142937f66150805c25c4d0f31ee4132fd33497753400734f9dfdcbdc66/bleach-6.2.0-py3-none-any.whl
+package_url: pkg:pypi/bleach@6.2.0
+license_expression: apache-2.0 AND mit
+copyright: Copyright bleach project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 660e2e515dcab76aaba61c1ef9dac291
+checksum_sha1: 413fc1f05fd745e698b8b93068d3ba3760574e19
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

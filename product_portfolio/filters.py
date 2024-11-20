@@ -31,6 +31,9 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
+from vulnerabilities.filters import RISK_SCORE_RANGES
+from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import Vulnerability
 
 
 class ProductFilterSet(DataspacedFilterSet):
@@ -119,6 +122,7 @@ class ProductFilterSet(DataspacedFilterSet):
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
+    field_name_prefix = None
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
         choices=(
@@ -130,9 +134,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
             right_align=True,
         ),
     )
-
     is_modified = BooleanChoiceFilter()
-
     object_type = django_filters.CharFilter(
         method="filter_object_type",
         widget=DropDownWidget(
@@ -144,6 +146,18 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
                 ("package", _("Packages")),
             ),
         ),
+    )
+    exploitability = django_filters.ChoiceFilter(
+        label=_("Exploitability"),
+        choices=Vulnerability.EXPLOITABILITY_CHOICES,
+    )
+    weighted_severity = ScoreRangeFilter(
+        label=_("Severity"),
+        score_ranges=RISK_SCORE_RANGES,
+    )
+    risk_score = ScoreRangeFilter(
+        label=_("Risk score"),
+        score_ranges=RISK_SCORE_RANGES,
     )
 
     @staticmethod
@@ -176,8 +190,15 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
             anchor=self.anchor, right_align=True
         )
 
+        field_name_prefix = self.field_name_prefix
+        for field_name in ["exploitability", "weighted_severity", "risk_score"]:
+            field = self.filters[field_name]
+            field.extra["widget"] = DropDownWidget(anchor=self.anchor)
+            field.field_name = f"{field_name_prefix}__{field_name}"
+
 
 class ProductComponentFilterSet(BaseProductRelationFilterSet):
+    field_name_prefix = "component"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -226,6 +247,7 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
+    field_name_prefix = "package"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -264,10 +286,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
-
-    @staticmethod
-    def do_nothing(queryset, name, value):
-        return queryset
 
     class Meta:
         model = ProductPackage

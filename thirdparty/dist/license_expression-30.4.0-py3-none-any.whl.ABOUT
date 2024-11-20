@@ -1,14 +1,14 @@
-about_resource: license_expression-30.3.0-py3-none-any.whl
+about_resource: license_expression-30.4.0-py3-none-any.whl
 name: license-expression
-version: 30.3.0
-download_url: https://files.pythonhosted.org/packages/54/f8/985a9a17d75533a8d6f6750b9e6ce5c0134ee70cf809a7e72ef19a1be756/license_expression-30.3.0-py3-none-any.whl
-package_url: pkg:pypi/license-expression@30.3.0
+version: 30.4.0
+download_url: https://files.pythonhosted.org/packages/fc/f8/5699e6d6ea5156d53059ff07464b5d64389b084f67cb08ec97c711e587fc/license_expression-30.4.0-py3-none-any.whl
+package_url: pkg:pypi/license-expression@30.4.0
 license_expression: apache-2.0 AND cc-by-4.0 AND public-domain
 copyright: Copyright nexB Inc. and others
 attribute: yes
 track_changes: yes
-checksum_md5: 0cd7c5effb66cb6e575f925dc60cb30b
-checksum_sha1: 59992a97169f02dd2eab1ba43a4743ef0e85b1df
+checksum_md5: a2918c9754841f13855abcad2f62970c
+checksum_sha1: c208fea5eb1f2e5e9d94f8ab44f1c2b767b83a2f
 licenses:
   - key: apache-2.0
     name: Apache License 2.0

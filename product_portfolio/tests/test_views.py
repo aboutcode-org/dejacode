@@ -300,10 +300,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-max_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=max_score#vulnerabilities")
-        response = self.client.get(url + "?vulnerabilities-sort=max_score#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=-max_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-risk_score=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=risk_score#vulnerabilities")
+        response = self.client.get(url + "?vulnerabilities-sort=risk_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
@@ -341,8 +341,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         pc2_custom = ProductComponent.objects.create(
             product=self.product1, name="temporary name", is_modified=True, dataspace=self.dataspace
         )
+        self.package1.update(risk_score=1.0)
         pp1 = ProductPackage.objects.create(
-            product=self.product1, package=self.package1, dataspace=self.dataspace
+            product=self.product1,
+            package=self.package1,
+            dataspace=self.dataspace,
         )
 
         response = self.client.get(self.product1.get_absolute_url())
@@ -404,6 +407,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
+
+        response = self.client.get(url + "?inventory-risk_score=low")
+        pc_filterset = response.context["inventory_items"][""]
+        self.assertNotIn(pc_valid, pc_filterset)
+        self.assertNotIn(pc2_custom, pc_filterset)
+        self.assertIn(pp1, pc_filterset)
 
     def test_product_portfolio_detail_view_review_status_filter_in_inventory_tab(self):
         self.client.login(username="nexb_user", password="secret")

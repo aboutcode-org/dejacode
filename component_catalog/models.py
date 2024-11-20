@@ -1675,6 +1675,7 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
             *PACKAGE_URL_FIELDS,
             "filename",
             "license_expression",
+            "risk_score",
             "dataspace__name",
             "dataspace__show_usage_policy_in_user_views",
         )

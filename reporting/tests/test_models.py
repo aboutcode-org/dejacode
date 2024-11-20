@@ -2016,6 +2016,7 @@ class ColumnTemplateTestCase(TestCase):
             {"group": "Direct Fields", "value": "reference_notes", "label": "reference_notes"},
             {"group": "Direct Fields", "label": "release_date", "value": "release_date"},
             {"group": "Direct Fields", "label": "request_count", "value": "request_count"},
+            {"group": "Direct Fields", "label": "risk_score", "value": "risk_score"},
             {
                 "group": "Direct Fields",
                 "label": "sublicense_allowed",

@@ -1,4 +1,14 @@
 {% load i18n %}
+<dl class="row mb-3">
+  <dt class="col-sm-1 text-end pe-0">
+    <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.">
+      Risk score
+    </span>
+  </dt>
+  <dd class="col-sm-11 fs-110pct">
+    {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=package.risk_score only %}
+  </dd>
+</dl>
 <table class="table table-bordered table-hover table-md text-break">
   <thead>
     <tr>
@@ -7,19 +17,24 @@
           {% trans 'Affected by' %}
         </span>
       </th>
-      <th style="width: 210px;">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="A list of aliases for this vulnerability.">
-          {% trans 'Aliases' %}
-        </span>
-      </th>
-      <th style="width: 90px;">
-        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Severity score range.">
-          {% trans 'Score' %}
-        </span>
-      </th>
-      <th>
+      <th style="width: 300px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Summary of the vulnerability.">
           {% trans 'Summary' %}
+        </span>
+      </th>
+      <th style="min-width: 130px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Exploitability indicates the likelihood that a vulnerability in a software package could be used by malicious actors to compromise systems, applications, or networks. This metric is determined automatically based on the discovery of known exploits">
+          {% trans 'Exploitability' %}
+        </span>
+      </th>
+      <th style="min-width: 100px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Weighted severity is the highest value calculated by multiplying each severity by its corresponding weight, divided by 10.">
+          {% trans 'Severity' %}
+        </span>
+      </th>
+      <th style="min-width: 90px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Risk score from 0.0 to 10.0, with higher values indicating greater vulnerability risk. This score is the maximum of the weighted severity multiplied by exploitability, capped at 10.">
+          {% trans 'Risk' %}
         </span>
       </th>
       <th style="min-width: 320px;">
@@ -43,19 +58,9 @@
               {{ vulnerability.vulnerability_id }}
             {% endif %}
           </strong>
-        </td>
-        <td>
-           {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
-        </td>
-        <td>
-          {% if vulnerability.min_score %}
-            {{ vulnerability.min_score }} -
-          {% endif %}
-          {% if vulnerability.max_score %}
-            <strong>
-              {{ vulnerability.max_score }}
-            </strong>
-          {% endif %}
+          <div class="mt-2">
+            {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+          </div>
         </td>
         <td>
           {% if vulnerability.summary %}
@@ -68,6 +73,15 @@
               {{ vulnerability.summary }}
             {% endif %}
           {% endif %}
+        </td>
+        <td>
+          {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
+        </td>
+        <td>
+          {{ vulnerability.weighted_severity|default_if_none:"" }}
+        </td>
+        <td class="fs-110pct">
+          {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
         </td>
         <td>
           {% if vulnerability.fixed_packages_html %}

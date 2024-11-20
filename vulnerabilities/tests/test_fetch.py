@@ -8,6 +8,7 @@
 
 import io
 import json
+from decimal import Decimal
 from pathlib import Path
 from unittest import mock
 
@@ -16,7 +17,7 @@ from django.test import TestCase
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
-from vulnerabilities.fetch import fetch_for_queryset
+from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.fetch import fetch_from_vulnerablecode
 
 
@@ -26,24 +27,26 @@ class VulnerabilitiesFetchTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
-    @mock.patch("vulnerabilities.fetch.fetch_for_queryset")
+    @mock.patch("vulnerabilities.fetch.fetch_for_packages")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_vulnerabilities_fetch_from_vulnerablecode(
-        self, mock_is_configured, mock_fetch_for_queryset
+        self, mock_is_configured, mock_fetch_for_packages
     ):
         buffer = io.StringIO()
         make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
-        mock_fetch_for_queryset.return_value = 2
-        fetch_from_vulnerablecode(self.dataspace, batch_size=1, timeout=None, log_func=buffer.write)
+        mock_fetch_for_packages.return_value = 2
+        fetch_from_vulnerablecode(
+            self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write
+        )
         expected = "2 Packages in the queue.+ Created 2 vulnerabilitiesCompleted in 0 seconds"
         self.assertEqual(expected, buffer.getvalue())
         self.dataspace.refresh_from_db()
         self.assertIsNotNone(self.dataspace.vulnerabilities_updated_at)
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
-    def test_vulnerabilities_fetch_for_queryset(self, mock_bulk_search_by_purl):
+    def test_vulnerabilities_fetch_for_packages(self, mock_bulk_search_by_purl):
         buffer = io.StringIO()
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
@@ -52,11 +55,27 @@ class VulnerabilitiesFetchTestCase(TestCase):
         response_json = json.loads(response_file.read_text())
         mock_bulk_search_by_purl.return_value = response_json["results"]
 
-        created_vulnerabilities = fetch_for_queryset(
-            queryset, self.dataspace, batch_size=1, log_func=buffer.write
+        created_vulnerabilities = fetch_for_packages(
+            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
         self.assertEqual(1, created_vulnerabilities)
         self.assertEqual("Progress: 1/2Progress: 2/2", buffer.getvalue())
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
         self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+        self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
+        self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
+        self.assertEqual(Decimal("8.4"), vulnerability.risk_score)
+
+        package1.refresh_from_db()
+        self.assertEqual(Decimal("8.4"), package1.risk_score)
+
+        # Update
+        response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
+        mock_bulk_search_by_purl.return_value = response_json["results"]
+        created_vulnerabilities = fetch_for_packages(
+            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+        )
+        self.assertEqual(0, created_vulnerabilities)
+        vulnerability = package1.affected_by_vulnerabilities.get()
+        self.assertEqual(Decimal("10.0"), vulnerability.risk_score)

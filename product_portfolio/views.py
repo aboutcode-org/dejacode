@@ -25,7 +25,6 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import F
 from django.db.models import ObjectDoesNotExist
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
@@ -61,6 +60,7 @@ from component_catalog.license_expression_dje import build_licensing
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import Subcomponent
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -76,6 +76,7 @@ from dje.models import DejacodeUser
 from dje.models import History
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
+from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
@@ -121,13 +122,16 @@ from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.forms import VulnerabilityAnalysisForm
+from product_portfolio.models import RELATION_LICENSE_EXPRESSION_HELP_TEXT
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.filters import VulnerabilityFilterSet
+from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 
@@ -875,6 +879,15 @@ class ProductTabInventoryView(
                 }
             )
 
+        context["help_texts"] = {
+            "purpose": get_help_text(Subcomponent, "purpose"),
+            "license_expression": RELATION_LICENSE_EXPRESSION_HELP_TEXT,
+            "review_status": get_help_text(ProductRelationshipMixin, "review_status"),
+            "is_deployed": get_help_text(ProductRelationshipMixin, "is_deployed"),
+            "is_modified": get_help_text(ProductRelationshipMixin, "is_modified"),
+            "risk_score": get_help_text(AffectedByVulnerabilityMixin, "risk_score"),
+        }
+
         return context
 
     @staticmethod
@@ -1099,13 +1112,15 @@ class ProductTabVulnerabilitiesView(
     filterset_class = VulnerabilityFilterSet
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
-        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
-        Header("summary", _("Summary")),
         Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+        Header("exploitability", _("Exploitability"), filter="exploitability"),
+        Header("weighted_severity", _("Severity"), filter="weighted_severity"),
+        Header("risk_score", _("Risk"), filter="risk_score"),
+        Header("summary", _("Summary")),
         Header(
             "exploitability",
-            _("Exploitability analysis"),
-            help_text="TODO",
+            _("Status"),
+            help_text=_("Exploitability analysis"),
             filter="vulnerability_analyses__state",
         ),
     )
@@ -1118,10 +1133,7 @@ class ProductTabVulnerabilitiesView(
         package_qs = Package.objects.filter(product=product).only_rendering_fields()
         vulnerability_qs = base_vulnerability_qs.prefetch_related(
             Prefetch("affected_packages", package_qs)
-        ).order_by(
-            F("max_score").desc(nulls_last=True),
-            "-min_score",
-        )
+        ).order_by_risk()
 
         self.filterset = self.filterset_class(
             self.request.GET,

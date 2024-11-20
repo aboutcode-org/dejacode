@@ -40,6 +40,9 @@ a.dropdown-item:hover {
 .fs-85pct {
   font-size: 85%;
 }
+.fs-110pct {
+  font-size: 110%;
+}
 .header {
   margin-bottom: 1rem;
 }
@@ -86,6 +89,10 @@ table.text-break thead {
   word-wrap: initial!important;
   word-break: initial!important;
 }
+.bg-warning-orange {
+  background-color: var(--bs-orange);
+}
+
 /* -- Dark there fixes -- */
 [data-bs-theme=dark] .btn-outline-dark {
   --bs-btn-color: var(--bs-tertiary-color);
@@ -380,20 +387,20 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-vulnerability_id {
   width: 210px;
 }
-#tab_vulnerabilities .column-aliases {
-  width: 210px;
-}
-#tab_vulnerabilities .column-max_score {
-  width: 105px;
-}
 #tab_vulnerabilities .column-affected_packages {
-  min-width: 200px;
+  min-width: 300px;
+}
+#tab_vulnerabilities .column-exploitability {
+  width: 155px;
+}
+#tab_vulnerabilities .column-weighted_severity {
+  width: 125px;
+}
+#tab_vulnerabilities .column-risk_score {
+  width: 95px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;
-}
-#tab_vulnerabilities .column-exploitability {
-  min-width: 300px;
 }
 
 /* -- Dependency tab -- */

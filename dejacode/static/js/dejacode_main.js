@@ -94,6 +94,37 @@ function setupBackToTop() {
   });
 }
 
+function setupHTMX() {
+  // Triggered after new content has been swapped in
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+    const loadedContent = evt.detail.elt;
+
+    // Enables all tooltip and popover of the inserted HTML
+    Array.from(loadedContent.querySelectorAll('[data-bs-toggle="tooltip"]')).forEach(element => {
+      new bootstrap.Tooltip(element, { container: 'body' });
+    });
+    Array.from(loadedContent.querySelectorAll('[data-bs-toggle="popover"]')).forEach(element => {
+      new bootstrap.Popover(element, { container: 'body' });
+    });
+
+    // Disable the tab if a "disable-tab" CSS class if found in the loaded content
+    if (loadedContent.querySelectorAll('.disable-tab').length > 0) {
+        const tabPaneElement = loadedContent.closest('.tab-pane');
+        // Find the corresponding button using its aria-controls attribute
+        const buttonId = tabPaneElement.getAttribute('aria-labelledby');
+        const button = document.querySelector(`#${buttonId}`);
+        if (button) {
+            button.disabled = true;
+        }
+    }
+  });
+
+  // Triggered when an HTTP response error (non-200 or 300 response code) occurs
+  document.addEventListener('htmx:responseError', function (event) {
+    event.target.innerHTML = '<div class="h5 ms-4 text-danger">Error fetching</div>';
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -135,5 +166,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPopovers();
   setupSelectionCheckboxes();
   setupBackToTop();
-
+  setupHTMX();
 });
