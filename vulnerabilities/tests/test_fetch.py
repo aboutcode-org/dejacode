@@ -37,7 +37,9 @@ class VulnerabilitiesFetchTestCase(TestCase):
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
         mock_fetch_for_packages.return_value = 2
-        fetch_from_vulnerablecode(self.dataspace, batch_size=1, timeout=None, log_func=buffer.write)
+        fetch_from_vulnerablecode(
+            self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write
+        )
         expected = "2 Packages in the queue.+ Created 2 vulnerabilitiesCompleted in 0 seconds"
         self.assertEqual(expected, buffer.getvalue())
         self.dataspace.refresh_from_db()
@@ -54,7 +56,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         mock_bulk_search_by_purl.return_value = response_json["results"]
 
         created_vulnerabilities = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, log_func=buffer.write
+            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
         self.assertEqual(1, created_vulnerabilities)
         self.assertEqual("Progress: 1/2Progress: 2/2", buffer.getvalue())
@@ -67,3 +69,13 @@ class VulnerabilitiesFetchTestCase(TestCase):
 
         package1.refresh_from_db()
         self.assertEqual(Decimal("8.4"), package1.risk_score)
+
+        # Update
+        response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
+        mock_bulk_search_by_purl.return_value = response_json["results"]
+        created_vulnerabilities = fetch_for_packages(
+            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+        )
+        self.assertEqual(0, created_vulnerabilities)
+        vulnerability = package1.affected_by_vulnerabilities.get()
+        self.assertEqual(Decimal("10.0"), vulnerability.risk_score)

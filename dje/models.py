@@ -777,6 +777,11 @@ class DataspacedModel(models.Model):
         """
         Update this object instance with the provided `data`.
         The `save()` method is called only if at least one field was modified.
+
+        The user is optional, providing None, as some context of automatic update are
+        not associated to a specific user.
+        We do not want to promote this as the default behavior thus we keep the user
+        a required parameter.
         """
         model_fields = self.model_fields()
         updated_fields = []
@@ -796,8 +801,11 @@ class DataspacedModel(models.Model):
                 updated_fields.append(field_name)
 
         if updated_fields:
-            self.last_modified_by = user
-            self.save(update_fields=[*updated_fields, "last_modified_by"])
+            if user:
+                self.last_modified_by = user
+                self.save(update_fields=[*updated_fields, "last_modified_by"])
+            else:
+                self.save(update_fields=updated_fields)
 
         return updated_fields
 
