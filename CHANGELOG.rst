@@ -6,6 +6,11 @@ Release notes
 - Rename ProductDependency is_resolved to is_pinned.
   https://github.com/aboutcode-org/dejacode/issues/189
 
+- Add new fields on the Vulnerability model: `exploitability`, `weighted_severity`,
+  `risk_score`. The field are displayed in all relevant part of the UI where
+  vulnerability data is available.
+  https://github.com/aboutcode-org/dejacode/issues/98
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

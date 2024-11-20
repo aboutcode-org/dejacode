@@ -43,4 +43,10 @@ class Command(DataspacedCommand):
         if not vulnerablecode.is_configured():
             raise CommandError("VulnerableCode is not configured.")
 
-        fetch_from_vulnerablecode(self.dataspace, batch_size, timeout, log_func=self.stdout.write)
+        fetch_from_vulnerablecode(
+            self.dataspace,
+            batch_size=batch_size,
+            update=True,
+            timeout=timeout,
+            log_func=self.stdout.write,
+        )

@@ -41,7 +41,7 @@ from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
-from vulnerabilities.fetch import fetch_for_queryset
+from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import Vulnerability
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
@@ -510,7 +510,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
     def fetch_vulnerabilities(self):
         """Fetch and update the vulnerabilties of all the Package of this Product."""
-        return fetch_for_queryset(self.all_packages, self.dataspace)
+        return fetch_for_packages(self.all_packages, self.dataspace)
 
     def get_vulnerability_qs(self, prefetch_related_packages=False):
         """Return a QuerySet of all Vulnerability instances related to this product"""
@@ -542,7 +542,7 @@ class ProductItemPurpose(
     label = models.CharField(
         max_length=50,
         help_text=_(
-            "Concise name to identify the Purpose of the Product Component or " "Product Package."
+            "Concise name to identify the Purpose of the Product Component or Product Package."
         ),
     )
 

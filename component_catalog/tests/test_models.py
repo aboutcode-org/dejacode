@@ -1683,6 +1683,10 @@ class ComponentCatalogModelsTestCase(TestCase):
         package.refresh_from_db()
         self.assertEqual(new_data["filename"], package.filename)
 
+        new_data = {"filename": "new_filename2"}
+        updated_fields = package.update_from_data(user=None, data=new_data, override=True)
+        self.assertEqual(["filename"], updated_fields)
+
     @mock.patch("component_catalog.models.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
         self.assertIsNone(Package.create_from_url(url=" ", user=self.user))

@@ -13,6 +13,7 @@
             "qualifiers": {},
             "subpath": "",
             "is_vulnerable": true,
+            "risk_score": 8.4,
             "next_non_vulnerable_version": "3.7",
             "latest_non_vulnerable_version": "3.7",
             "affected_by_vulnerabilities": [
@@ -20,6 +21,9 @@
                     "url": "http://public.vulnerablecode.io/api/vulnerabilities/525663",
                     "vulnerability_id": "VCID-j3au-usaz-aaag",
                     "summary": "Internationalized Domain Names in Applications (IDNA) vulnerable to denial of service from specially crafted inputs to idna.encode",
+                    "exploitability": 2.0,
+                    "weighted_severity": 4.2,
+                    "risk_score": 8.4,
                     "references": [
                         {
                             "reference_url": "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2024-3651.json",

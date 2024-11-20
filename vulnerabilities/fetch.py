@@ -20,7 +20,7 @@ from dje.utils import humanize_time
 from vulnerabilities.models import Vulnerability
 
 
-def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
+def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=None):
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
     if not vulnerablecode.is_configured():
@@ -38,7 +38,14 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
     if log_func:
         log_func(f"{package_count} Packages in the queue.")
 
-    created = fetch_for_queryset(package_qs, dataspace, batch_size, timeout, log_func)
+    created = fetch_for_packages(
+        queryset=package_qs,
+        dataspace=dataspace,
+        batch_size=batch_size,
+        update=update,
+        timeout=timeout,
+        log_func=log_func,
+    )
     run_time = timer() - start_time
     if log_func:
         log_func(f"+ Created {intcomma(created)} vulnerabilities")
@@ -48,7 +55,9 @@ def fetch_from_vulnerablecode(dataspace, batch_size, timeout, log_func=None):
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
 
 
-def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, log_func=None):
+def fetch_for_packages(
+    queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None
+):
     object_count = queryset.count()
     if object_count < 1:
         return
@@ -56,6 +65,7 @@ def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, log_fun
     vulnerablecode = VulnerableCode(dataspace)
     vulnerability_qs = Vulnerability.objects.scope(dataspace)
     created_vulnerabilities = 0
+    updated_vulnerabilities = 0
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
         if log_func:
@@ -88,6 +98,16 @@ def fetch_for_queryset(queryset, dataspace, batch_size=50, timeout=None, log_fun
                         data=vulnerability_data,
                     )
                     created_vulnerabilities += 1
+                elif update:
+                    updated_fields = vulnerability.update_from_data(
+                        user=None, data=vulnerability_data, override=True
+                    )
+                    if updated_fields:
+                        updated_vulnerabilities += 1
+
                 vulnerability.add_affected_packages(affected_packages)
+
+            if package_risk_score := vc_entry.get("risk_score"):
+                affected_packages.update(risk_score=package_risk_score)
 
     return created_vulnerabilities

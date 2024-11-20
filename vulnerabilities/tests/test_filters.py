@@ -16,12 +16,12 @@ from vulnerabilities.tests import make_vulnerability
 class VulnerabilityFilterSetTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="Reference")
-        self.vulnerability1 = make_vulnerability(self.dataspace, max_score=10.0)
+        self.vulnerability1 = make_vulnerability(self.dataspace, risk_score=10.0)
         self.vulnerability2 = make_vulnerability(
-            self.dataspace, max_score=5.5, aliases=["ALIAS-V2"]
+            self.dataspace, risk_score=5.5, aliases=["ALIAS-V2"]
         )
-        self.vulnerability3 = make_vulnerability(self.dataspace, max_score=2.0)
-        self.vulnerability4 = make_vulnerability(self.dataspace, max_score=None)
+        self.vulnerability3 = make_vulnerability(self.dataspace, risk_score=2.0)
+        self.vulnerability4 = make_vulnerability(self.dataspace, risk_score=None)
 
     def test_vulnerability_filterset_search(self):
         data = {"q": self.vulnerability1.vulnerability_id}
@@ -33,36 +33,36 @@ class VulnerabilityFilterSetTestCase(TestCase):
         self.assertQuerySetEqual(filterset.qs, [self.vulnerability2])
 
     def test_vulnerability_filterset_sort_nulls_last_ordering(self):
-        data = {"sort": "max_score"}
+        data = {"sort": "risk_score"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             self.vulnerability3,
             self.vulnerability2,
             self.vulnerability1,
-            self.vulnerability4,  # The max_score=None are always last
+            self.vulnerability4,  # The risk_score=None are always last
         ]
         self.assertQuerySetEqual(filterset.qs, expected)
 
-        data = {"sort": "-max_score"}
+        data = {"sort": "-risk_score"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         expected = [
             self.vulnerability1,
             self.vulnerability2,
             self.vulnerability3,
-            self.vulnerability4,  # The max_score=None are always last
+            self.vulnerability4,  # The risk_score=None are always last
         ]
         self.assertQuerySetEqual(filterset.qs, expected)
 
-    def test_vulnerability_filterset_max_score(self):
-        data = {"max_score": "critical"}
+    def test_vulnerability_filterset_risk_score(self):
+        data = {"risk_score": "critical"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [self.vulnerability1])
-        data = {"max_score": "high"}
+        data = {"risk_score": "high"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [])
-        data = {"max_score": "medium"}
+        data = {"risk_score": "medium"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [self.vulnerability2])
-        data = {"max_score": "low"}
+        data = {"risk_score": "low"}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [self.vulnerability3])

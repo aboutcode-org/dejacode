@@ -7,7 +7,6 @@
 #
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
@@ -27,10 +26,10 @@ class VulnerabilityListView(
     template_list_table = "vulnerabilities/tables/vulnerability_list_table.html"
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
-        Header("aliases", _("Aliases")),
-        # Keep `max_score` to enable column sorting
-        Header("max_score", _("Score"), help_text="Severity score range", filter="max_score"),
         Header("summary", _("Summary")),
+        Header("exploitability", _("Exploitability"), filter="exploitability"),
+        Header("weighted_severity", _("Severity"), filter="weighted_severity"),
+        Header("risk_score", _("Risk"), filter="risk_score"),
         Header("affected_products_count", _("Affected products"), help_text="Affected products"),
         Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
         Header("fixed_packages_count", _("Fixed by"), help_text="Fixed by packages"),
@@ -47,18 +46,16 @@ class VulnerabilityListView(
                 "aliases",
                 "summary",
                 "fixed_packages_count",
-                "max_score",
-                "min_score",
+                "exploitability",
+                "weighted_severity",
+                "risk_score",
                 "created_date",
                 "last_modified_date",
                 "dataspace",
             )
             .with_affected_products_count()
             .with_affected_packages_count()
-            .order_by(
-                F("max_score").desc(nulls_last=True),
-                "-min_score",
-            )
+            .order_by_risk()
         )
 
     def get_context_data(self, **kwargs):

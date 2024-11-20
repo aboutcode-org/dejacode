@@ -41,7 +41,7 @@ from organization.models import Owner
 from policy.models import UsagePolicy
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
-from vulnerabilities.fetch import fetch_for_queryset
+from vulnerabilities.fetch import fetch_for_packages
 
 keywords_help = (
     get_help_text(Component, "keywords")
@@ -433,7 +433,7 @@ class PackageImporter(BaseImporter):
         if self.dataspace.enable_vulnerablecodedb_access:
             package_pks = [package.pk for package in self.results["added"]]
             package_qs = Package.objects.scope(dataspace=self.dataspace).filter(pk__in=package_pks)
-            fetch_for_queryset(package_qs, self.dataspace)
+            fetch_for_packages(package_qs, self.dataspace)
 
 
 class SubcomponentImportForm(

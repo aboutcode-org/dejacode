@@ -40,30 +40,48 @@
         {{ filter_productcomponent.form.object_type }}
         <button class="btn btn-xs btn-outline-dark ms-2 toggle-details" data-bs-toggle="tooltip" data-bs-trigger="hover" title="{% trans 'Show/hide details' %}"><i class="fas fa-plus"></i>/<i class="fas fa-minus"></i></button>
         {% if product.dataspace.enable_vulnerablecodedb_access %}
-          <div class="float-end">
+          <span class="ms-2">
             {{ filter_productcomponent.form.is_vulnerable }}
-          </div>
+          </span>
         {% endif %}
       </th>
       <th style="min-width: 100px;">
-        {% trans 'Purpose' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.purpose }}">
+          {% trans 'Purpose' %}
+        </span>
         {{ filter_productcomponent.form.purpose }}
       </th>
       <th style="min-width: 140px;">
-        {% trans 'Concluded license' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.license_expression }}">
+          {% trans 'Concluded license' %}
+        </span>
       </th>
-      <th style="width: 140px;">
-        {% trans 'Review status' %}
+      <th style="width: 175px;">
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.review_status }}">
+          {% trans 'Compliance status' %}
+        </span>
         {{ filter_productcomponent.form.review_status }}
       </th>
       <th style="width: 106px;">
-        {% trans 'Deployed' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.is_deployed }}">
+          {% trans 'Deployed' %}
+        </span>
         {{ filter_productcomponent.form.is_deployed }}
       </th>
       <th style="width: 100px;">
-        {% trans 'Modified' %}
+        <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.is_modified }}">
+          {% trans 'Modified' %}
+        </span>
         {{ filter_productcomponent.form.is_modified }}
       </th>
+      {% if product.dataspace.enable_vulnerablecodedb_access %}
+        <th style="width: 75;">
+          <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.risk_score }}">
+            {% trans 'Risk' %}
+          </span>
+          {{ filter_productcomponent.form.risk_score }}
+        </th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
@@ -113,6 +131,13 @@
           <td>{{ relation.review_status|default_if_none:'' }}</td>
           <td class="text-center">{{ relation.is_deployed|as_icon }}</td>
           <td class="text-center">{{ relation.is_modified|as_icon }}</td>
+          {% if product.dataspace.enable_vulnerablecodedb_access %}
+            <td class="fs-110pct">
+              {% if relation.related_component_or_package.vulnerability_count %}
+                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
+              {% endif %}
+            </td>
+          {% endif %}
         </tr>
         {% if relation.package and display_scan_features %}
           <tr class="{{ rowcolors }} extra-details">
