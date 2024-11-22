@@ -1,11 +1,11 @@
 {% load i18n %}
 {% include 'tabs/pagination.html' %}
-<table class="table table-bordered table-hover table-md text-break">
+<table class="table table-bordered table-md text-break">
   {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
   <tbody>
     {% for vulnerability in page_obj.object_list %}
       <tr>
-        <td>
+        <td rowspan="{{ vulnerability.affected_packages.count }}">
           <strong>
             {% if vulnerability.resource_url %}
               <a href="{{ vulnerability.resource_url }}" target="_blank">
@@ -15,69 +15,68 @@
             {% else %}
               {{ vulnerability.vulnerability_id }}
             {% endif %}
+            {% if vulnerability.summary %}
+              <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-content="{{ vulnerability.summary }}">
+                <i class="fa-solid fa-circle-info"></i>
+              </span>
+            {% endif %}
           </strong>
           <div class="mt-2">
             {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
           </div>
         </td>
-        <td>
-          <ul class="list-unstyled mb-0">
-            {% for package in vulnerability.affected_packages.all %}
-              <li>
-                <a href="{{ package.get_absolute_url }}#vulnerabilities" target="_blank">{{ package }}</a>
-                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=package.risk_score label='risk' only %}
-              </li>
-            {% endfor %}
-          </ul>
-        </td>
-        <td>
+        <td rowspan="{{ vulnerability.affected_packages.count }}">
           {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
         </td>
-        <td>
+        <td rowspan="{{ vulnerability.affected_packages.count }}">
           {{ vulnerability.weighted_severity|default_if_none:"" }}
         </td>
-        <td class="fs-110pct">
+        <td  rowspan="{{ vulnerability.affected_packages.count }}" class="fs-110pct">
           {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
         </td>
-        <td>
-          {% if vulnerability.summary %}
-            {% if vulnerability.summary|length > 120 %}
-              <details>
-                <summary>{{ vulnerability.summary|slice:":120" }}...</summary>
-                {{ vulnerability.summary|slice:"120:" }}
-              </details>
-            {% else %}
-              {{ vulnerability.summary }}
-            {% endif %}
-          {% endif %}
-        </td>
-        <td>
-          {% if vulnerability.vulnerability_analyses.get %}
+        {% for package in vulnerability.affected_packages.all %}
+          {% if not forloop.first %}<tr>{% endif %}
+          <td>
             <ul class="list-unstyled mb-0">
-              {% if vulnerability.vulnerability_analyses.get.state %}
-                <li><strong>{{ vulnerability.vulnerability_analyses.get.state|capfirst }}</strong></li>
-              {% endif %}
-              {% if vulnerability.vulnerability_analyses.get.justification %}
-                <li>Justification: {{ vulnerability.vulnerability_analyses.get.justification }}</li>
-              {% endif %}
-              {% if vulnerability.vulnerability_analyses.get.responses %}
-                <li>Responses: {{ vulnerability.vulnerability_analyses.get.responses|join:", " }}</li>
-              {% endif %}
-              {% if vulnerability.vulnerability_analyses.get.detail %}
-                <li>Detail: {{ vulnerability.vulnerability_analyses.get.detail }}</li>
-              {% endif %}
+                <li>
+                  <a href="{{ package.get_absolute_url }}#vulnerabilities" target="_blank">{{ package }}</a>
+                  {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=package.risk_score label='risk' only %}
+                </li>
             </ul>
-          {% endif %}
-        </td>
-        <td class="p-1">
-          <span data-bs-toggle="modal" data-bs-target="#vulnerability-analysis-modal" class=""
-                data-edit-url="{{ product.get_absolute_url }}vulnerability_analysis_ajax_view/?vulnerability_id={{ vulnerability.vulnerability_id }}"
-          >
-            <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
-              <i class="far fa-edit fa-sm"></i>
-            </button>
-          </span>
-        </td>
+          </td>
+          <td>
+            {% if vulnerability.vulnerability_analyses.get %}
+              <ul class="list-unstyled mb-0">
+                {% if vulnerability.vulnerability_analyses.get.state %}
+                  <li><strong>{{ vulnerability.vulnerability_analyses.get.get_state_display }}</strong></li>
+                {% endif %}
+                {% if vulnerability.vulnerability_analyses.get.detail %}
+                  <li>Detail: {{ vulnerability.vulnerability_analyses.get.detail }}</li>
+                {% endif %}
+              </ul>
+            {% endif %}
+          </td>
+          <td>
+            {% if vulnerability.vulnerability_analyses.get %}
+              {{ vulnerability.vulnerability_analyses.get.get_justification_display }}
+            {% endif %}
+          </td>
+          <td>
+            {% if vulnerability.vulnerability_analyses.get.responses %}
+              {{ vulnerability.vulnerability_analyses.get.responses|join:"<br>" }}
+            {% endif %}
+          </td>
+          <td class="p-1">
+            <span data-bs-toggle="modal" data-bs-target="#vulnerability-analysis-modal" class=""
+                  data-edit-url="{{ product.get_absolute_url }}vulnerability_analysis_ajax_view/?vulnerability_id={{ vulnerability.vulnerability_id }}"
+            >
+              <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
+                <i class="far fa-edit fa-sm"></i>
+              </button>
+            </span>
+          </td>
+          {% if not forloop.first %}</tr>{% endif %}
+        {% endfor %}
       </tr>
     {% empty %}
       <tr>

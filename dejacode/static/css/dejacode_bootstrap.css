@@ -394,10 +394,10 @@ table.vulnerabilities-table .column-summary {
   width: 155px;
 }
 #tab_vulnerabilities .column-weighted_severity {
-  width: 125px;
+  width: 120px;
 }
 #tab_vulnerabilities .column-risk_score {
-  width: 95px;
+  width: 90px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;

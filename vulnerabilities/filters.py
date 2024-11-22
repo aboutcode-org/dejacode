@@ -83,6 +83,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "weighted_severity",
             "risk_score",
             "affected_products_count",
+            "affected_packages",
             "affected_packages_count",
             "fixed_packages_count",
             "created_date",
@@ -104,6 +105,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         fields = [
             "q",
             "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
             "exploitability",
         ]
 
@@ -114,6 +116,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "weighted_severity",
             "risk_score",
             "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
         ]
         for field_name in dropdown_fields:
             self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)

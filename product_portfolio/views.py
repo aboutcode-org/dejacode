@@ -1112,16 +1112,26 @@ class ProductTabVulnerabilitiesView(
     filterset_class = VulnerabilityFilterSet
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
-        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
         Header("exploitability", _("Exploitability"), filter="exploitability"),
         Header("weighted_severity", _("Severity"), filter="weighted_severity"),
         Header("risk_score", _("Risk"), filter="risk_score"),
-        Header("summary", _("Summary")),
+        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
         Header(
-            "exploitability",
+            "vulnerability_analyses__state",
             _("Status"),
             help_text=_("Exploitability analysis"),
             filter="vulnerability_analyses__state",
+        ),
+        Header(
+            "vulnerability_analyses__justification",
+            _("Justification"),
+            help_text=_("TODO"),
+            filter="vulnerability_analyses__justification",
+        ),
+        Header(
+            "vulnerability_analyses__responses",
+            _("Responses"),
+            help_text=_("TODO"),
         ),
     )
 
