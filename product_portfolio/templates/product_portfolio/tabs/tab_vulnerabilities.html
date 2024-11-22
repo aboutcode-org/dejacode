@@ -4,8 +4,10 @@
   {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
   <tbody>
     {% for vulnerability in page_obj.object_list %}
+      {# TODO: Replace this with a value on the object %}
+      {% with affected_packages_count=vulnerability.affected_packages.count %}
       <tr>
-        <td rowspan="{{ vulnerability.affected_packages.count }}">
+        <td rowspan="{{ affected_packages_count }}">
           <strong>
             {% if vulnerability.resource_url %}
               <a href="{{ vulnerability.resource_url }}" target="_blank">
@@ -25,13 +27,13 @@
             {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
           </div>
         </td>
-        <td rowspan="{{ vulnerability.affected_packages.count }}">
+        <td rowspan="{{ affected_packages_count }}">
           {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
         </td>
-        <td rowspan="{{ vulnerability.affected_packages.count }}">
+        <td rowspan="{{ affected_packages_count }}">
           {{ vulnerability.weighted_severity|default_if_none:"" }}
         </td>
-        <td  rowspan="{{ vulnerability.affected_packages.count }}" class="fs-110pct">
+        <td  rowspan="{{ affected_packages_count }}" class="fs-110pct">
           {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
         </td>
         {% for package in vulnerability.affected_packages.all %}
@@ -78,6 +80,7 @@
           {% if not forloop.first %}</tr>{% endif %}
         {% endfor %}
       </tr>
+      {% endwith %}
     {% empty %}
       <tr>
         <td colspan="10">

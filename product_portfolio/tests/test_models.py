@@ -14,7 +14,7 @@ from django.db.models import ProtectedError
 from django.test import TestCase
 
 from guardian.shortcuts import assign_perm
-
+from vulnerabilities.tests import make_vulnerability
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import Package
@@ -23,6 +23,7 @@ from dje.models import History
 from dje.tests import add_perms
 from dje.tests import create_admin
 from dje.tests import create_superuser
+from component_catalog.tests import make_package
 from dje.tests import create_user
 from license_library.models import License
 from organization.models import Owner
@@ -497,6 +498,20 @@ class ProductPortfolioModelsTestCase(TestCase):
         updated_packages = self.product1.improve_packages_from_purldb(self.super_user)
         self.assertEqual(2, len(updated_packages))
         self.assertEqual(2, mock_update_from_purldb.call_count)
+
+    def test_product_model_get_vulnerability_qs(self):
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1, package2])
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[package1, package2])
+        pp1 = make_product_package(self.product1, package=package1)
+        pp2 = make_product_package(self.product1, package=package2)
+
+        queryset = self.product1.get_vulnerability_qs()
+        # Makeing sure the distinct() is properly applied
+        self.assertEqual(2, len(queryset))
+        self.assertIn(vulnerability1, queryset)
+        self.assertIn(vulnerability2, queryset)
 
     def test_productcomponent_model_license_expression_handle_assigned_licenses(self):
         p1 = ProductComponent.objects.create(

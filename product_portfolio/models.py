@@ -515,7 +515,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
     def get_vulnerability_qs(self, prefetch_related_packages=False):
         """Return a QuerySet of all Vulnerability instances related to this product"""
-        vulnerability_qs = Vulnerability.objects.filter(affected_packages__in=self.packages.all())
+        vulnerability_qs = Vulnerability.objects.filter(
+            affected_packages__in=self.packages.all()
+        ).distinct()
 
         if prefetch_related_packages:
             package_qs = Package.objects.filter(product=self).only_rendering_fields()
