@@ -148,3 +148,8 @@ class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
             "vulnerability_analyses__justification",
             "exploitability",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
+        self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
