@@ -244,11 +244,10 @@
         let button = $(event.relatedTarget); // Button that triggered the modal
         // Extract info from data-* attributes
         let edit_url = button.data('edit-url');
-        let is_addition = button.data('is-addition');
-        let submit_label = is_addition ? 'Add' : 'Update';
+        let vulnerability_id = button.data('vulnerability-id');
 
         $('#submit-vulnerability-analysis-form').data('edit-url', edit_url);
-<!--        $('#edit-productrelation-modal #title-add-update').text(submit_label);-->
+        $('#vulnerability-analysis-modal #analysis-vulnerability-id').text(vulnerability_id);
 
         $.ajax({
           url: edit_url,
