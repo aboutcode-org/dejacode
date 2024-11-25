@@ -130,7 +130,7 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
-from vulnerabilities.filters import VulnerabilityFilterSet
+from vulnerabilities.filters import ProductVulnerabilityFilterSet
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
@@ -1109,7 +1109,7 @@ class ProductTabVulnerabilitiesView(
     query_dict_page_param = "vulnerabilities-page"
     tab_id = "vulnerabilities"
     table_model = Vulnerability
-    filterset_class = VulnerabilityFilterSet
+    filterset_class = ProductVulnerabilityFilterSet
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
         Header("exploitability", _("Exploitability"), filter="exploitability"),
@@ -1119,19 +1119,23 @@ class ProductTabVulnerabilitiesView(
         Header(
             "vulnerability_analyses__state",
             _("Status"),
-            help_text=_("Exploitability analysis"),
+            help_text=_("Exploitability analysis status"),
             filter="vulnerability_analyses__state",
         ),
         Header(
             "vulnerability_analyses__justification",
             _("Justification"),
-            help_text=_("TODO"),
+            help_text=_("The rationale of why the impact analysis state was asserted."),
             filter="vulnerability_analyses__justification",
         ),
         Header(
             "vulnerability_analyses__responses",
             _("Responses"),
-            help_text=_("TODO"),
+            help_text=_(
+                "A response to the vulnerability by the manufacturer, supplier, or project "
+                "responsible for the affected component or service."
+            ),
+            filter="responses",
         ),
     )
 

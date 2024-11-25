@@ -402,6 +402,15 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-summary {
   width: 300px;
 }
+#tab_vulnerabilities .column-vulnerability_analyses__state {
+  min-width: 100px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__justification {
+  min-width: 130px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__responses {
+  min-width: 120px;
+}
 
 /* -- Dependency tab -- */
 #tab_dependencies .column-for_package {

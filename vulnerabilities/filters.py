@@ -16,6 +16,7 @@ from dje.filters import SearchFilter
 from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysisMixin
 
 RISK_SCORE_RANGES = {
     "low": (0.1, 2.9),
@@ -104,8 +105,6 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         model = Vulnerability
         fields = [
             "q",
-            "vulnerability_analyses__state",
-            "vulnerability_analyses__justification",
             "exploitability",
         ]
 
@@ -115,8 +114,45 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "exploitability",
             "weighted_severity",
             "risk_score",
+        ]
+        for field_name in dropdown_fields:
+            self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
+
+
+# Add few filters specific to the Product Vulnerabilities tab.
+class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
+    sort = NullsLastOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            "exploitability",
+            "weighted_severity",
+            "risk_score",
+            "affected_packages",
+            "vulnerability_analyses__state",
+        ],
+        widget=SortDropDownWidget,
+    )
+    responses = django_filters.ChoiceFilter(
+        field_name="vulnerability_analyses__responses",
+        lookup_expr="icontains",
+        choices=VulnerabilityAnalysisMixin.Response.choices,
+    )
+
+    class Meta:
+        model = Vulnerability
+        fields = [
+            "q",
             "vulnerability_analyses__state",
             "vulnerability_analyses__justification",
+            "exploitability",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        dropdown_fields = [
+            "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
+            "responses",
         ]
         for field_name in dropdown_fields:
             self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)

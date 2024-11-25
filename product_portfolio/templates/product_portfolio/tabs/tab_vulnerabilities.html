@@ -4,7 +4,7 @@
   {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
   <tbody>
     {% for vulnerability in page_obj.object_list %}
-      {# TODO: Replace this with a value on the object %}
+      {# TODO: Replace this with a value on the object #}
       {% with affected_packages_count=vulnerability.affected_packages.count %}
       <tr>
         <td rowspan="{{ affected_packages_count }}">
