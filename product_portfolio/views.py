@@ -2456,18 +2456,25 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
     user = request.user
     form_class = VulnerabilityAnalysisForm
+    perms = "change_product"
 
-    qs = Product.objects.get_queryset(user, perms="change_product")
+    # TODO: Make a URL containing PP and vulnerability, not the product.
+    qs = Product.objects.get_queryset(user, perms=perms)
     product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
 
     # TODO: Replace the following by proper view argument
     vulnerability_id = request.GET.get("vulnerability_id")
+    package_uuid = request.GET.get("package_uuid")
     vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
+    product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
+    product_package = get_object_or_404(
+        product_package_qs, product=product, package__uuid=package_uuid
+    )
 
     try:
         vulnerability_analysis = VulnerabilityAnalysis.objects.scope(user.dataspace).get(
-            product=product,
+            product_package=product_package,
             vulnerability=vulnerability,
         )
     except ObjectDoesNotExist:
@@ -2480,7 +2487,7 @@ def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
             messages.success(request, "Vulnerability analysis successfully updated.")
             return JsonResponse({"success": "updated"}, status=200)
     else:
-        initial = {"product": product, "vulnerability": vulnerability}
+        initial = {"product_package": product_package, "vulnerability": vulnerability}
         form = form_class(user, instance=vulnerability_analysis, initial=initial)
 
     rendered_form = render_crispy_form(form)

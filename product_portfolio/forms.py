@@ -966,7 +966,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
     class Meta:
         model = VulnerabilityAnalysis
         fields = [
-            "product",
+            "product_package",
             "vulnerability",
             "state",
             "justification",
@@ -974,7 +974,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
             "detail",
         ]
         widgets = {
-            "product": forms.widgets.HiddenInput,
+            "product_package": forms.widgets.HiddenInput,
             "vulnerability": forms.widgets.HiddenInput,
             "detail": forms.Textarea(attrs={"rows": 3}),
         }
@@ -982,9 +982,9 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
 
-        product_field = self.fields["product"]
+        product_package_field = self.fields["product_package"]
         perms = ["view_product", "change_product"]
-        product_field.queryset = Product.objects.get_queryset(user, perms=perms)
+        product_package_field.queryset = ProductPackage.objects.product_secured(user, perms=perms)
 
     @property
     def helper(self):

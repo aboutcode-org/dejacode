@@ -486,17 +486,16 @@ class VulnerabilityAnalysis(
         related_name="vulnerability_analyses",
         on_delete=models.CASCADE,
     )
-    product = models.ForeignKey(
-        to="product_portfolio.Product",
+    product_package = models.ForeignKey(
+        to="product_portfolio.ProductPackage",
         related_name="vulnerability_analyses",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        help_text=_("Limit this analysis to the scope of a product."),
     )
 
     class Meta:
-        unique_together = (("product", "vulnerability"), ("dataspace", "uuid"))
+        unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
 
     def __str__(self):
         return f"{self.vulnerability} analysis"
