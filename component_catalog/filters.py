@@ -49,6 +49,10 @@ class ComponentFilterSet(DataspacedFilterSet):
         "primary_language",
         "usage_policy",
     ]
+    dropdown_fields = [
+        "type",
+        "usage_policy",
+    ]
     q = MatchOrderedSearchFilter(
         label=_("Search"),
         match_order_fields=["name"],
@@ -122,9 +126,7 @@ class ComponentFilterSet(DataspacedFilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.filters["usage_policy"].extra["to_field_name"] = "label"
-        self.filters["usage_policy"].extra["widget"] = DropDownRightWidget()
         self.filters["type"].extra["to_field_name"] = "label"
-        self.filters["type"].extra["widget"] = DropDownRightWidget()
 
     @cached_property
     def sort_value(self):
@@ -180,6 +182,7 @@ class PackageSearchFilter(MatchOrderedSearchFilter):
 
 
 class PackageFilterSet(DataspacedFilterSet):
+    dropdown_fields = ["usage_policy"]
     q = PackageSearchFilter(
         label=_("Search"),
         match_order_fields=[
@@ -262,7 +265,6 @@ class PackageFilterSet(DataspacedFilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.filters["usage_policy"].extra["to_field_name"] = "label"
-        self.filters["usage_policy"].extra["widget"] = DropDownRightWidget()
 
     @cached_property
     def sort_value(self):

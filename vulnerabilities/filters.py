@@ -13,7 +13,6 @@ import django_filters
 
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
-from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
@@ -73,6 +72,11 @@ class ScoreRangeFilter(django_filters.ChoiceFilter):
 
 
 class VulnerabilityFilterSet(DataspacedFilterSet):
+    dropdown_fields = [
+        "exploitability",
+        "weighted_severity",
+        "risk_score",
+    ]
     q = SearchFilter(
         label=_("Search"),
         search_fields=["vulnerability_id", "aliases"],
@@ -108,19 +112,17 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "exploitability",
         ]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        dropdown_fields = [
-            "exploitability",
-            "weighted_severity",
-            "risk_score",
-        ]
-        for field_name in dropdown_fields:
-            self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
-
 
 # Add few filters specific to the Product Vulnerabilities tab.
 class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
+    dropdown_fields = [
+        "exploitability",
+        "weighted_severity",
+        "risk_score",
+        "vulnerability_analyses__state",
+        "vulnerability_analyses__justification",
+        "responses",
+    ]
     sort = NullsLastOrderingFilter(
         label=_("Sort"),
         fields=[
@@ -146,13 +148,3 @@ class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
             "vulnerability_analyses__justification",
             "exploitability",
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        dropdown_fields = [
-            "vulnerability_analyses__state",
-            "vulnerability_analyses__justification",
-            "responses",
-        ]
-        for field_name in dropdown_fields:
-            self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)

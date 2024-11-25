@@ -403,7 +403,7 @@ table.vulnerabilities-table .column-summary {
   width: 300px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__state {
-  min-width: 100px;
+  min-width: 105px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__justification {
   min-width: 130px;
