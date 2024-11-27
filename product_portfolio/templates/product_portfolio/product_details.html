@@ -245,11 +245,11 @@
         // Extract info from data-* attributes
         let edit_url = button.data('edit-url');
         let vulnerability_id = button.data('vulnerability-id');
-        let package_purl = button.data('package-purl');
+        let package_identifier = button.data('package-identifier');
 
         $('#submit-vulnerability-analysis-form').data('edit-url', edit_url);
         $('#vulnerability-analysis-modal #analysis-vulnerability-id').text(vulnerability_id);
-        $('#vulnerability-analysis-modal #analysis-package-purl').text(package_purl);
+        $('#vulnerability-analysis-modal #analysis-package-identifier').text(package_identifier);
 
         $.ajax({
           url: edit_url,

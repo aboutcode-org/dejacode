@@ -490,8 +490,6 @@ class VulnerabilityAnalysis(
         to="product_portfolio.ProductPackage",
         related_name="vulnerability_analyses",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
 
     class Meta:

@@ -33,7 +33,7 @@
         <td rowspan="{{ affected_packages_count }}">
           {{ vulnerability.weighted_severity|default_if_none:"" }}
         </td>
-        <td  rowspan="{{ affected_packages_count }}" class="fs-110pct">
+        <td rowspan="{{ affected_packages_count }}" class="fs-110pct">
           {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
         </td>
         {% for package in vulnerability.affected_packages.all %}
@@ -72,7 +72,7 @@
             <span data-bs-toggle="modal"
                   data-bs-target="#vulnerability-analysis-modal"
                   data-vulnerability-id="{{ vulnerability.vulnerability_id }}"
-                  data-package-purl="{{ package.package_url }}"
+                  data-package-identifier="{{ package.identifier }}"
                   data-edit-url="{{ product.get_absolute_url }}vulnerability_analysis_ajax_view/?vulnerability_id={{ vulnerability.vulnerability_id }}&package_uuid={{ package.uuid }}"
             >
               <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
