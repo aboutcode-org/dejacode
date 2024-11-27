@@ -1145,9 +1145,13 @@ class ProductTabVulnerabilitiesView(
         total_count = base_vulnerability_qs.count()
 
         package_qs = Package.objects.filter(product=product).only_rendering_fields()
-        vulnerability_qs = base_vulnerability_qs.prefetch_related(
-            Prefetch("affected_packages", package_qs)
-        ).order_by_risk()
+        vulnerability_qs = (
+            base_vulnerability_qs.prefetch_related(
+                Prefetch("affected_packages", package_qs),
+            )
+            .annotate(affected_packages_count=Count("affected_packages"))
+            .order_by_risk()
+        )
 
         self.filterset = self.filterset_class(
             self.request.GET,
