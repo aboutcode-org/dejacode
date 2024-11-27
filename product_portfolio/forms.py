@@ -949,18 +949,10 @@ class PullProjectDataForm(forms.Form):
 
 
 class VulnerabilityAnalysisForm(DataspacedModelForm):
-    # TODO: Replace this by proper model field
     responses = forms.MultipleChoiceField(
         choices=VulnerabilityAnalysis.Response.choices,
         widget=forms.CheckboxSelectMultiple,
         required=False,
-        help_text=_(
-            "A response to the vulnerability by the manufacturer, supplier, or project "
-            "responsible for the affected component or service. "
-            "More than one response is allowed. "
-            "Responses are strongly encouraged for vulnerabilities where the analysis "
-            "state is exploitable."
-        ),
     )
 
     class Meta:
@@ -981,6 +973,9 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(user, *args, **kwargs)
+
+        responses_model_field = self._meta.model._meta.get_field("responses")
+        self.fields["responses"].help_text = responses_model_field.help_text
 
         product_package_field = self.fields["product_package"]
         perms = ["view_product", "change_product"]
