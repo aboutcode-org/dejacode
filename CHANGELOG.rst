@@ -11,6 +11,18 @@ Release notes
   vulnerability data is available.
   https://github.com/aboutcode-org/dejacode/issues/98
 
+- Introduce a new VulnerabilityAnalysis model based on CycloneDX spec:
+  https://cyclonedx.org/docs/1.6/json/#vulnerabilities_items_analysis
+  A VulnerabilityAnalysis is always assigned to a Vulnerability object and a
+  ProductPackage relation.
+  The values for a VulnerabilityAnalysis are display in the Product "Vulnerabilities"
+  tab.
+  A "Edit" button can be used to open a form in a model to provided analysis data.
+  Those new VEX related columns can be sorted and filtered.
+  The VulnerabilityAnalysis data is exported in the VEX (only) and SBOM+VEX (combined)
+  outputs.
+  https://github.com/aboutcode-org/dejacode/issues/98
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
