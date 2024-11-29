@@ -45,25 +45,25 @@
             </ul>
           </td>
           <td>
-            {% if vulnerability.vulnerability_analyses.get %}
+            {% if package.vulnerability_analysis %}
               <ul class="list-unstyled mb-0">
-                {% if vulnerability.vulnerability_analyses.get.state %}
-                  <li><strong>{{ vulnerability.vulnerability_analyses.get.get_state_display }}</strong></li>
+                {% if package.vulnerability_analysis.state %}
+                  <li><strong>{{ package.vulnerability_analysis.get_state_display }}</strong></li>
                 {% endif %}
-                {% if vulnerability.vulnerability_analyses.get.detail %}
-                  <li>Detail: {{ vulnerability.vulnerability_analyses.get.detail }}</li>
+                {% if package.vulnerability_analysis.detail %}
+                  <li>Detail: {{ package.vulnerability_analysis.detail }}</li>
                 {% endif %}
               </ul>
             {% endif %}
           </td>
           <td>
-            {% if vulnerability.vulnerability_analyses.get %}
-              {{ vulnerability.vulnerability_analyses.get.get_justification_display }}
+            {% if package.vulnerability_analysis.justification %}
+              {{ package.vulnerability_analysis.get_justification_display }}
             {% endif %}
           </td>
           <td>
-            {% if vulnerability.vulnerability_analyses.get.responses %}
-              {{ vulnerability.vulnerability_analyses.get.responses|join:"<br>" }}
+            {% if package.vulnerability_analysis.responses %}
+              {{ package.vulnerability_analysis.responses|join:"<br>" }}
             {% endif %}
           </td>
           <td class="p-1">

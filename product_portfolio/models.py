@@ -521,7 +521,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
         if prefetch_related_packages:
             package_qs = Package.objects.filter(product=self).only_rendering_fields()
-            analysis_qs = VulnerabilityAnalysis.objects.filter(product=self)
+            analysis_qs = VulnerabilityAnalysis.objects.filter(product=self).select_related(
+                "package"
+            )
             vulnerability_qs = vulnerability_qs.prefetch_related(
                 models.Prefetch("affected_packages", package_qs),
                 models.Prefetch("vulnerability_analyses", analysis_qs),

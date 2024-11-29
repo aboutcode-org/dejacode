@@ -1141,14 +1141,9 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        base_vulnerability_qs = product.get_vulnerability_qs()
-        total_count = base_vulnerability_qs.count()
-
-        package_qs = Package.objects.filter(product=product).only_rendering_fields()
+        total_count = product.get_vulnerability_qs().count()
         vulnerability_qs = (
-            base_vulnerability_qs.prefetch_related(
-                Prefetch("affected_packages", package_qs),
-            )
+            product.get_vulnerability_qs(prefetch_related_packages=True)
             .annotate(affected_packages_count=Count("affected_packages"))
             .order_by_risk()
         )
@@ -1167,6 +1162,16 @@ class ProductTabVulnerabilitiesView(
         paginator = Paginator(self.filterset.qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
+
+        # Set the proper VulnerabilityAnalysis instance on the Package instance
+        for vulnerability in page_obj.object_list:
+            for package in vulnerability.affected_packages.all():
+                # Using the following instead of .filter(package=package) to avoid
+                # duplicated queries.
+                for analysis in vulnerability.vulnerability_analyses.all():
+                    if analysis.package == package:
+                        package.vulnerability_analysis = analysis
+                        continue
 
         context_data.update(
             {

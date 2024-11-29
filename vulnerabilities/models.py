@@ -481,15 +481,28 @@ class VulnerabilityAnalysis(
     HistoryUserFieldsMixin,
     DataspacedModel,
 ):
-    vulnerability = models.ForeignKey(
-        to="vulnerabilities.Vulnerability",
-        related_name="vulnerability_analyses",
-        on_delete=models.CASCADE,
-    )
     product_package = models.ForeignKey(
         to="product_portfolio.ProductPackage",
-        related_name="vulnerability_analyses",
         on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+        help_text=_("The ProductPackage relationship being analyzed."),
+    )
+    vulnerability = models.ForeignKey(
+        to="vulnerabilities.Vulnerability",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+        help_text=_("The vulnerability being analyzed in the context of the ProductPackage."),
+    )
+    # Shortcut fields to simplify QuerySets filtering
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+    )
+    package = models.ForeignKey(
+        to="component_catalog.Package",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
     )
 
     class Meta:
@@ -497,3 +510,8 @@ class VulnerabilityAnalysis(
 
     def __str__(self):
         return f"{self.vulnerability} analysis"
+
+    def save(self, *args, **kwargs):
+        self.product_id = self.product_package.product_id
+        self.package_id = self.product_package.package_id
+        super().save(*args, **kwargs)
