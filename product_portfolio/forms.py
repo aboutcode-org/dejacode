@@ -990,3 +990,10 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         helper.modal_title = "Vulnerability analysis"
         helper.modal_id = "vulnerability-analysis-modal"
         return helper
+
+    def clean(self):
+        main_fields = ["state", "justification", "responses", "detail"]
+        if not any(self.cleaned_data.get(field_name) for field_name in main_fields):
+            raise ValidationError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
