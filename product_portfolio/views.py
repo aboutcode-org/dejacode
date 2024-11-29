@@ -35,6 +35,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -2499,6 +2500,6 @@ def vulnerability_analysis_ajax_view(request, dataspace, name, version=""):
         initial = {"product_package": product_package, "vulnerability": vulnerability}
         form = form_class(user, instance=vulnerability_analysis, initial=initial)
 
-    rendered_form = render_crispy_form(form)
+    rendered_form = render_crispy_form(form, context=csrf(request))
 
     return HttpResponse(rendered_form)
