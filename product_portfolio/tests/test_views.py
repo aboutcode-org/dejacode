@@ -335,6 +335,41 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         """
         self.assertContains(response, expected, html=True)
 
+    def test_product_portfolio_tab_vulnerability_view_queries(self):
+        self.client.login(username="nexb_user", password="secret")
+        # Each have a unique vulnerability, and p1 p2 are sharing a common one.
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p3 = make_package(self.dataspace, is_vulnerable=True)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p2, p3])
+        product1 = make_product(self.dataspace, inventory=[p3])
+
+        product_package1 = make_product_package(product1, package=p1)
+        product_package2 = make_product_package(product1, package=p2)
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package2,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package2,
+            vulnerability=vulnerability2,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+
+        url = product1.get_url("tab_vulnerabilities")
+        with self.assertNumQueries(10):
+            self.client.get(url)
+
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
