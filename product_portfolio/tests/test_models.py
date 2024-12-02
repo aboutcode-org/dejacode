@@ -18,6 +18,7 @@ from guardian.shortcuts import assign_perm
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.models import History
 from dje.tests import add_perms
@@ -40,6 +41,7 @@ from product_portfolio.models import ProductSecuredManager
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product_package
+from vulnerabilities.tests import make_vulnerability
 from workflow.models import RequestTemplate
 
 
@@ -497,6 +499,35 @@ class ProductPortfolioModelsTestCase(TestCase):
         updated_packages = self.product1.improve_packages_from_purldb(self.super_user)
         self.assertEqual(2, len(updated_packages))
         self.assertEqual(2, mock_update_from_purldb.call_count)
+
+    def test_product_model_get_vulnerability_qs(self):
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1, package2])
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[package1, package2])
+        make_product_package(self.product1, package=package1)
+        make_product_package(self.product1, package=package2)
+
+        queryset = self.product1.get_vulnerability_qs()
+        # Makeing sure the distinct() is properly applied
+        self.assertEqual(2, len(queryset))
+        self.assertIn(vulnerability1, queryset)
+        self.assertIn(vulnerability2, queryset)
+
+    def test_product_model_vulnerability_count_property(self):
+        self.assertEqual(0, self.product1.vulnerability_count)
+
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1, package2])
+        make_vulnerability(self.dataspace, affecting=[package1, package2])
+        make_product_package(self.product1, package=package1)
+        make_product_package(self.product1, package=package2)
+
+        # Still 0 on the instance as it is a cached_property
+        self.assertEqual(0, self.product1.vulnerability_count)
+        self.product1 = Product.unsecured_objects.get(pk=self.product1.pk)
+        self.assertEqual(2, self.product1.vulnerability_count)
 
     def test_productcomponent_model_license_expression_handle_assigned_licenses(self):
         p1 = ProductComponent.objects.create(

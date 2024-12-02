@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import ObjectDoesNotExist
 from django.db.models import Prefetch
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -34,6 +35,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -128,9 +130,11 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
-from vulnerabilities.filters import VulnerabilityFilterSet
+from vulnerabilities.filters import ProductVulnerabilityFilterSet
+from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 class BaseProductViewMixin:
@@ -535,8 +539,7 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        vulnerability_qs = self.object.get_vulnerability_qs()
-        vulnerability_count = vulnerability_qs.count()
+        vulnerability_count = self.object.vulnerability_count
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
@@ -1106,25 +1109,44 @@ class ProductTabVulnerabilitiesView(
     query_dict_page_param = "vulnerabilities-page"
     tab_id = "vulnerabilities"
     table_model = Vulnerability
-    filterset_class = VulnerabilityFilterSet
+    filterset_class = ProductVulnerabilityFilterSet
     table_headers = (
         Header("vulnerability_id", _("Vulnerability")),
-        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
         Header("exploitability", _("Exploitability"), filter="exploitability"),
         Header("weighted_severity", _("Severity"), filter="weighted_severity"),
         Header("risk_score", _("Risk"), filter="risk_score"),
-        Header("summary", _("Summary")),
+        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+        Header(
+            "vulnerability_analyses__state",
+            _("Status"),
+            help_text=_("Exploitability analysis status"),
+            filter="vulnerability_analyses__state",
+        ),
+        Header(
+            "vulnerability_analyses__justification",
+            _("Justification"),
+            help_text=_("The rationale of why the impact analysis state was asserted."),
+            filter="vulnerability_analyses__justification",
+        ),
+        Header(
+            "vulnerability_analyses__responses",
+            _("Responses"),
+            help_text=_(
+                "A response to the vulnerability by the manufacturer, supplier, or project "
+                "responsible for the affected component or service."
+            ),
+            filter="responses",
+        ),
     )
 
     def get_context_data(self, **kwargs):
         product = self.object
-        base_vulnerability_qs = product.get_vulnerability_qs()
-        total_count = base_vulnerability_qs.count()
-
-        package_qs = Package.objects.filter(product=product).only_rendering_fields()
-        vulnerability_qs = base_vulnerability_qs.prefetch_related(
-            Prefetch("affected_packages", package_qs)
-        ).order_by_risk()
+        total_count = product.get_vulnerability_qs().count()
+        vulnerability_qs = (
+            product.get_vulnerability_qs(prefetch_related_packages=True)
+            .annotate(affected_packages_count=Count("affected_packages"))
+            .order_by_risk()
+        )
 
         self.filterset = self.filterset_class(
             self.request.GET,
@@ -1140,6 +1162,16 @@ class ProductTabVulnerabilitiesView(
         paginator = Paginator(self.filterset.qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
+
+        # Set the proper VulnerabilityAnalysis instance on the Package instance
+        for vulnerability in page_obj.object_list:
+            for package in vulnerability.affected_packages.all():
+                # Using the following instead of .filter(package=package) to avoid
+                # duplicated queries.
+                for analysis in vulnerability.vulnerability_analyses.all():
+                    if analysis.package == package:
+                        package.vulnerability_analysis = analysis
+                        continue
 
         context_data.update(
             {
@@ -2427,3 +2459,41 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         )
         messages.success(request, "Improve Packages from PurlDB in progress...")
     return redirect(f"{product.get_absolute_url()}#imports")
+
+
+@login_required
+def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, package_uuid):
+    user = request.user
+    form_class = VulnerabilityAnalysisForm
+    perms = "change_product"
+
+    qs = Product.objects.get_queryset(user, perms=perms)
+    product = get_object_or_404(qs, uuid=product_uuid)
+    vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
+    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
+    product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
+    product_package = get_object_or_404(
+        product_package_qs, product=product, package__uuid=package_uuid
+    )
+
+    try:
+        vulnerability_analysis = VulnerabilityAnalysis.objects.scope(user.dataspace).get(
+            product_package=product_package,
+            vulnerability=vulnerability,
+        )
+    except ObjectDoesNotExist:
+        vulnerability_analysis = None  # Addition
+
+    if request.method == "POST":
+        form = form_class(user, instance=vulnerability_analysis, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Vulnerability analysis successfully updated.")
+            return JsonResponse({"success": "updated"}, status=200)
+    else:
+        initial = {"product_package": product_package, "vulnerability": vulnerability}
+        form = form_class(user, instance=vulnerability_analysis, initial=initial)
+
+    rendered_form = render_crispy_form(form, context=csrf(request))
+
+    return HttpResponse(rendered_form)

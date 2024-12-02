@@ -92,6 +92,7 @@ table.text-break thead {
 .bg-warning-orange {
   background-color: var(--bs-orange);
 }
+
 /* -- Dark there fixes -- */
 [data-bs-theme=dark] .btn-outline-dark {
   --bs-btn-color: var(--bs-tertiary-color);
@@ -390,16 +391,25 @@ table.vulnerabilities-table .column-summary {
   min-width: 300px;
 }
 #tab_vulnerabilities .column-exploitability {
-  width: 150px;
+  width: 155px;
 }
 #tab_vulnerabilities .column-weighted_severity {
-  width: 115px;
+  width: 120px;
 }
 #tab_vulnerabilities .column-risk_score {
-  width: 95px;
+  width: 90px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__state {
+  min-width: 105px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__justification {
+  min-width: 130px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__responses {
+  min-width: 120px;
 }
 
 /* -- Dependency tab -- */
@@ -538,6 +548,10 @@ table.purldb-table .column-license_expression {
   color: #fff;
   background-color: #dc3545;
   vertical-align: middle;
+}
+
+#vulnerability-analysis-form fieldset legend {
+  font-size: 1rem;
 }
 
 /* -- Object form (add/edit) -- */

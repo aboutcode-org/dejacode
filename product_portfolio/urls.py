@@ -37,6 +37,7 @@ from product_portfolio.views import improve_packages_from_purldb_view
 from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_status_view
+from product_portfolio.views import vulnerability_analysis_form_view
 
 # WARNING: For views that takes a Product instance in the URL, we need
 # 2 patterns to support Product with and without version, as the version
@@ -79,7 +80,13 @@ urlpatterns = [
         edit_productrelation_ajax_view,
         name="edit_productrelation_ajax",
     ),
+    path(
+        "<uuid:product_uuid>/vulnerability_analysis/<str:vulnerability_id>/<uuid:package_uuid>/",
+        vulnerability_analysis_form_view,
+        name="vulnerability_analysis_form",
+    ),
     *product_path("add_customcomponent_ajax", add_customcomponent_ajax_view),
+    *product_path("vulnerability_analysis_form", vulnerability_analysis_form_view),
     *product_path("scan_all_packages", scan_all_packages_view),
     *product_path("improve_packages_from_purldb", improve_packages_from_purldb_view),
     *product_path("about_files", ProductSendAboutFilesView.as_view()),

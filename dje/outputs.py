@@ -132,10 +132,20 @@ def get_cyclonedx_bom(instance, user, include_components=True, include_vex=False
 
     if include_vex:
         vulnerability_qs = instance.get_vulnerability_qs(prefetch_related_packages=True)
-        vulnerabilities = [
-            vulnerability.as_cyclonedx(affected_instances=vulnerability.affected_packages.all())
-            for vulnerability in vulnerability_qs
-        ]
+        vulnerabilities = []
+        for vulnerability in vulnerability_qs:
+            analysis = None
+            vulnerability_analyses = vulnerability.vulnerability_analyses.all()
+            if len(vulnerability_analyses) == 1:
+                analysis = vulnerability_analyses[0]
+
+            vulnerabilities.append(
+                vulnerability.as_cyclonedx(
+                    affected_instances=vulnerability.affected_packages.all(),
+                    analysis=analysis,
+                )
+            )
+
         bom.vulnerabilities = vulnerabilities
 
     return bom

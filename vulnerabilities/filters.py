@@ -13,9 +13,9 @@ import django_filters
 
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
-from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysisMixin
 
 RISK_SCORE_RANGES = {
     "low": (0.1, 2.9),
@@ -72,6 +72,11 @@ class ScoreRangeFilter(django_filters.ChoiceFilter):
 
 
 class VulnerabilityFilterSet(DataspacedFilterSet):
+    dropdown_fields = [
+        "exploitability",
+        "weighted_severity",
+        "risk_score",
+    ]
     q = SearchFilter(
         label=_("Search"),
         search_fields=["vulnerability_id", "aliases"],
@@ -83,6 +88,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "weighted_severity",
             "risk_score",
             "affected_products_count",
+            "affected_packages",
             "affected_packages_count",
             "fixed_packages_count",
             "created_date",
@@ -106,8 +112,44 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "exploitability",
         ]
 
+
+# Add few filters specific to the Product Vulnerabilities tab.
+class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
+    dropdown_fields = [
+        "exploitability",
+        "weighted_severity",
+        "risk_score",
+        "vulnerability_analyses__state",
+        "vulnerability_analyses__justification",
+        "responses",
+    ]
+    sort = NullsLastOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            "exploitability",
+            "weighted_severity",
+            "risk_score",
+            "affected_packages",
+            "vulnerability_analyses__state",
+        ],
+        widget=SortDropDownWidget,
+    )
+    responses = django_filters.ChoiceFilter(
+        field_name="vulnerability_analyses__responses",
+        lookup_expr="icontains",
+        choices=VulnerabilityAnalysisMixin.Response.choices,
+    )
+
+    class Meta:
+        model = Vulnerability
+        fields = [
+            "q",
+            "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
+            "exploitability",
+        ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["exploitability"].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
-        self.filters["weighted_severity"].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
-        self.filters["risk_score"].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
+        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
+        self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"

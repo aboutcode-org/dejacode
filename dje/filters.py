@@ -43,6 +43,7 @@ from dje.utils import database_re_escape
 from dje.utils import extract_name_version
 from dje.utils import get_uuids_list_sorted
 from dje.utils import remove_field_from_query_dict
+from dje.widgets import DropDownRightWidget
 
 IS_FILTER_LOOKUP_VAR = "_filter_lookup"
 
@@ -80,6 +81,7 @@ class FilterSetUtilsMixin:
 
 class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
     related_only = []
+    dropdown_fields = []
 
     def __init__(self, *args, **kwargs):
         try:
@@ -90,6 +92,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
         self.dynamic_qs = kwargs.pop("dynamic_qs", True)
         self.parent_qs_cache = {}
         self.anchor = kwargs.pop("anchor", None)
+        self.dropdown_fields = kwargs.pop("dropdown_fields", []) or self.dropdown_fields
 
         super().__init__(*args, **kwargs)
 
@@ -105,6 +108,9 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
         if usage_policy:
             model_name = self._meta.model._meta.model_name
             usage_policy.queryset = usage_policy.queryset.filter(content_type__model=model_name)
+
+        for field_name in self.dropdown_fields:
+            self.filters[field_name].extra["widget"] = DropDownRightWidget(anchor=self.anchor)
 
     def apply_related_only(self, field_name, filter_):
         """

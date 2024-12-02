@@ -21,6 +21,7 @@ from dje.models import DataspacedManager
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
+from dje.models import HistoryUserFieldsMixin
 
 logger = logging.getLogger("dje")
 
@@ -194,11 +195,13 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         return instance
 
-    def as_cyclonedx(self, affected_instances):
+    def as_cyclonedx(self, affected_instances, analysis=None):
         affects = [
             cdx_vulnerability.BomTarget(ref=instance.cyclonedx_bom_ref)
             for instance in affected_instances
         ]
+
+        analysis = analysis.as_cyclonedx() if analysis else None
 
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
@@ -250,6 +253,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             affects=affects,
             references=sorted(references),
             ratings=ratings,
+            analysis=analysis,
         )
 
 
@@ -269,7 +273,7 @@ class VulnerabilityAnalysisMixin(models.Model):
     class Justification(models.TextChoices):
         CODE_NOT_PRESENT = "code_not_present"
         CODE_NOT_REACHABLE = "code_not_reachable"
-        PROTECTED_AT_PERIMITER = "protected_at_perimeter"
+        PROTECTED_AT_PERIMETER = "protected_at_perimeter"
         PROTECTED_AT_RUNTIME = "protected_at_runtime"
         PROTECTED_BY_COMPILER = "protected_by_compiler"
         PROTECTED_BY_MITIGATING_CONTROL = "protected_by_mitigating_control"
@@ -349,6 +353,22 @@ class VulnerabilityAnalysisMixin(models.Model):
             )
 
         super().save(*args, **kwargs)
+
+    def as_cyclonedx(self):
+        state = None
+        if self.state:
+            state = cdx_vulnerability.ImpactAnalysisState(self.state)
+
+        justification = None
+        if self.justification:
+            justification = cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+
+        return cdx_vulnerability.VulnerabilityAnalysis(
+            state=state,
+            justification=justification,
+            responses=self.responses,
+            detail=self.detail,
+        )
 
 
 class AffectedByVulnerabilityRelationship(DataspacedModel):
@@ -452,3 +472,45 @@ class AffectedByVulnerabilityMixin(models.Model):
 
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
+
+
+class VulnerabilityAnalysis(
+    VulnerabilityAnalysisMixin,
+    HistoryUserFieldsMixin,
+    DataspacedModel,
+):
+    product_package = models.ForeignKey(
+        to="product_portfolio.ProductPackage",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+        help_text=_("The ProductPackage relationship being analyzed."),
+    )
+    vulnerability = models.ForeignKey(
+        to="vulnerabilities.Vulnerability",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+        help_text=_("The vulnerability being analyzed in the context of the ProductPackage."),
+    )
+    # Shortcut fields to simplify QuerySets filtering
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+    )
+    package = models.ForeignKey(
+        to="component_catalog.Package",
+        on_delete=models.CASCADE,
+        related_name="vulnerability_analyses",
+    )
+
+    class Meta:
+        unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
+
+    def __str__(self):
+        return f"{self.vulnerability} analysis"
+
+    def save(self, *args, **kwargs):
+        """Set the product and package fields values from the product_package FK."""
+        self.product_id = self.product_package.product_id
+        self.package_id = self.product_package.package_id
+        super().save(*args, **kwargs)

@@ -43,6 +43,7 @@ from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "
@@ -335,6 +336,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             models.Q(id__in=self.packages.all()) | models.Q(component__in=self.components.all())
         ).distinct()
 
+    @cached_property
+    def vulnerability_count(self):
+        return self.get_vulnerability_qs().count()
+
     def get_merged_descendant_ids(self):
         """
         Return a list of Component ids collected on the Product descendants:
@@ -514,13 +519,21 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
     def get_vulnerability_qs(self, prefetch_related_packages=False):
         """Return a QuerySet of all Vulnerability instances related to this product"""
-        qs = Vulnerability.objects.filter(affected_packages__in=self.packages.all())
+        vulnerability_qs = Vulnerability.objects.filter(
+            affected_packages__in=self.packages.all()
+        ).distinct()
 
         if prefetch_related_packages:
             package_qs = Package.objects.filter(product=self).only_rendering_fields()
-            qs = qs.prefetch_related(models.Prefetch("affected_packages", package_qs))
+            analysis_qs = VulnerabilityAnalysis.objects.filter(product=self).select_related(
+                "package"
+            )
+            vulnerability_qs = vulnerability_qs.prefetch_related(
+                models.Prefetch("affected_packages", package_qs),
+                models.Prefetch("vulnerability_analyses", analysis_qs),
+            )
 
-        return qs
+        return vulnerability_qs
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):

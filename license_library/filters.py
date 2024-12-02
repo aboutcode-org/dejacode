@@ -29,6 +29,10 @@ class LicenseFilterSet(DataspacedFilterSet):
         "license_profile",
         "usage_policy",
     ]
+    dropdown_fields = [
+        "category__license_type",
+        "usage_policy",
+    ]
     q = MatchOrderedSearchFilter(
         label=_("Search"),
         match_order_fields=["short_name", "key", "name"],
@@ -101,6 +105,3 @@ class LicenseFilterSet(DataspacedFilterSet):
         self.filters["usage_policy"].extra["to_field_name"] = "label"
         self.filters["usage_policy"].label = _("Policy")
         self.filters["category__license_type"].label = _("Type")
-
-        for filter_name in ["category__license_type", "usage_policy"]:
-            self.filters[filter_name].extra["widget"] = DropDownRightWidget()

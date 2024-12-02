@@ -59,6 +59,7 @@ from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from product_portfolio.views import ManageComponentGridView
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -274,7 +275,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
-    def test_product_portfolio_detail_view_tab_vulnerability_view(self):
+    def test_product_portfolio_detail_view_tab_vulnerability_queryset(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
 
@@ -296,7 +297,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
-    def test_product_portfolio_detail_view_tab_vulnerability_view_filters(self):
+    def test_product_portfolio_tab_vulnerability_view_filters(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
@@ -304,6 +305,149 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, "?vulnerabilities-sort=risk_score#vulnerabilities")
         response = self.client.get(url + "?vulnerabilities-sort=risk_score#vulnerabilities")
         self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
+
+    def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
+        self.client.login(username="nexb_user", password="secret")
+        # Each have a unique vulnerability, and p1 p2 are sharing a common one.
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p3 = make_package(self.dataspace, is_vulnerable=True)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+
+        url = product1.get_url("tab_vulnerabilities")
+        response = self.client.get(url)
+        expected = f'<td rowspan="2"><strong>{vulnerability1.vcid}</strong></td>'
+        self.assertContains(response, expected, html=True)
+
+        expected = f"""
+        <span data-bs-toggle="modal"
+              data-bs-target="#vulnerability-analysis-modal"
+              data-vulnerability-id="{vulnerability1.vcid}"
+              data-package-identifier="{p1}"
+              data-edit-url="/products/{product1.uuid}/vulnerability_analysis/{vulnerability1.vcid}/{p1.uuid}/"
+        >
+        <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
+                aria-label="Edit">
+            <i class="far fa-edit fa-sm"></i>
+          </button>
+        </span>
+        """
+        self.assertContains(response, expected, html=True)
+
+    def test_product_portfolio_tab_vulnerability_view_queries(self):
+        self.client.login(username="nexb_user", password="secret")
+        # Each have a unique vulnerability, and p1 p2 are sharing a common one.
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p3 = make_package(self.dataspace, is_vulnerable=True)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p2, p3])
+        product1 = make_product(self.dataspace, inventory=[p3])
+
+        product_package1 = make_product_package(product1, package=p1)
+        product_package2 = make_product_package(product1, package=p2)
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package2,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package2,
+            vulnerability=vulnerability2,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            dataspace=self.dataspace,
+        )
+
+        url = product1.get_url("tab_vulnerabilities")
+        with self.assertNumQueries(9):
+            self.client.get(url)
+
+    def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
+        self.client.login(username="nexb_user", password="secret")
+        # Each have a unique vulnerability, and p1 p2 are sharing a common one.
+        p1 = make_package(self.dataspace, is_vulnerable=True)
+        p2 = make_package(self.dataspace, is_vulnerable=True)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
+        product1 = make_product(self.dataspace)
+        product_package1 = make_product_package(product1, package=p1)
+        make_product_package(product1, package=p2)
+
+        analysis = VulnerabilityAnalysis.objects.create(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            responses=[
+                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
+                VulnerabilityAnalysis.Response.ROLLBACK,
+            ],
+            detail="detail",
+            dataspace=self.dataspace,
+        )
+
+        url = product1.get_url("tab_vulnerabilities")
+        response = self.client.get(url)
+
+        # Make sure the Analysis was set on the proper package instance.
+        vulnerabilities = response.context["page_obj"].object_list
+        packages = {
+            package.uuid: package
+            for vulnerability in vulnerabilities
+            for package in vulnerability.affected_packages.all()
+        }
+        self.assertTrue(hasattr(packages.get(p1.uuid), "vulnerability_analysis"))
+        self.assertEqual(analysis, packages.get(p1.uuid).vulnerability_analysis)
+        self.assertFalse(hasattr(packages.get(p2.uuid), "vulnerability_analysis"))
+
+        expected = """
+        <td>
+          <strong>Resolved</strong>
+          <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
+                data-bs-html="true" data-bs-content="detail">
+            <i class="fa-solid fa-circle-info"></i>
+          </span>
+        </td>
+        <td>Code Not Present</td>
+        <td>can_not_fix<br>rollback</td>
+        """
+        self.assertContains(response, expected, html=True)
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_product_portfolio_detail_view_include_tab_vulnerability_analysis_modal(
+        self, mock_is_configured
+    ):
+        mock_is_configured.return_value = True
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_absolute_url()
+        modal_id = 'id="vulnerability-analysis-modal"'
+        modal_js = "$('#vulnerability-analysis-modal')"
+
+        self.assertFalse(self.dataspace.enable_vulnerablecodedb_access)
+        response = self.client.get(url)
+        self.assertNotContains(response, modal_id)
+        self.assertNotContains(response, modal_js)
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        self.assertEqual(0, self.product1.get_vulnerability_qs().count())
+        response = self.client.get(url)
+        self.assertNotContains(response, modal_id)
+        self.assertNotContains(response, modal_js)
+
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        make_product_package(self.product1, package=package1)
+        self.assertEqual(1, self.product1.get_vulnerability_qs().count())
+        response = self.client.get(url)
+        self.assertContains(response, modal_id)
+        self.assertContains(response, modal_js)
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
@@ -322,9 +466,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected)
 
         package1 = make_package(self.dataspace, is_vulnerable=True)
-        ProductPackage.objects.create(
-            product=self.product1, package=package1, dataspace=self.dataspace
-        )
+        make_product_package(self.product1, package=package1)
         response = self.client.get(url)
         expected = '<span class="badge badge-vulnerability">1</span>'
         self.assertContains(response, expected)
@@ -3234,3 +3376,36 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(import_project.status, ScanCodeProject.Status.SUCCESS)
         expected = ["Improved packages from PurlDB:", "pkg1, pkg2"]
         self.assertEqual(expected, import_project.import_log)
+
+    def test_product_portfolio_vulnerability_analysis_form_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        url = reverse(
+            "product_portfolio:vulnerability_analysis_form",
+            args=[product1.uuid, vulnerability1.vulnerability_id, package1.uuid],
+        )
+
+        response = self.client.get(url)
+        self.assertContains(response, 'name="csrfmiddlewaretoken')
+        self.assertContains(response, 'name="product_package"')
+        self.assertContains(response, 'name="state"')
+        self.assertContains(response, 'name="justification"')
+        self.assertEqual(0, VulnerabilityAnalysis.objects.count())
+
+        product_package = ProductPackage.objects.get(product=product1, package=package1)
+        data = {
+            "product_package": product_package.pk,
+            "vulnerability": vulnerability1.pk,
+            "state": "resolved",
+        }
+        response = self.client.post(url, data=data)
+        self.assertEqual(b'{"success": "updated"}', response.content)
+        self.assertEqual(1, VulnerabilityAnalysis.objects.count())
+        analysis = VulnerabilityAnalysis.objects.get()
+        self.assertEqual(product_package, analysis.product_package)
+        self.assertEqual(vulnerability1, analysis.vulnerability)
+        self.assertEqual("resolved", analysis.state)

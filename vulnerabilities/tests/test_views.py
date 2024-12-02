@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -16,8 +15,6 @@ from dje.models import Dataspace
 from dje.tests import create_superuser
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.tests import make_vulnerability
-
-User = get_user_model()
 
 
 class VulnerabilityViewsTestCase(TestCase):
