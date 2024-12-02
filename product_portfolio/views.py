@@ -122,7 +122,6 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.forms import TableInlineFormSetHelper
-from product_portfolio.forms import VulnerabilityAnalysisForm
 from product_portfolio.models import RELATION_LICENSE_EXPRESSION_HELP_TEXT
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
@@ -132,6 +131,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.filters import ProductVulnerabilityFilterSet
+from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis

@@ -195,15 +195,13 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         return instance
 
-    def as_cyclonedx(self, affected_instances, analyses=None):
+    def as_cyclonedx(self, affected_instances, analysis=None):
         affects = [
             cdx_vulnerability.BomTarget(ref=instance.cyclonedx_bom_ref)
             for instance in affected_instances
         ]
 
-        analysis = None
-        if len(analyses) == 1:
-            analysis = analyses[0].as_cyclonedx()
+        analysis = analysis.as_cyclonedx() if analysis else None
 
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
@@ -512,6 +510,7 @@ class VulnerabilityAnalysis(
         return f"{self.vulnerability} analysis"
 
     def save(self, *args, **kwargs):
+        """Set the product and package fields values from the product_package FK."""
         self.product_id = self.product_package.product_id
         self.package_id = self.product_package.package_id
         super().save(*args, **kwargs)

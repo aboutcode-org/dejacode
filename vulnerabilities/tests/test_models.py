@@ -18,11 +18,13 @@ from component_catalog.tests import make_package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.models import Dataspace
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_package
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 
 
-class VulnerabilitiesFetchTestCase(TestCase):
+class VulnerabilitiesModelsTestCase(TestCase):
     data = Path(__file__).parent / "data"
 
     def setUp(self):
@@ -204,3 +206,54 @@ class VulnerabilitiesFetchTestCase(TestCase):
         #     expected_location.write_text(results)
 
         self.assertJSONEqual(results, expected_location.read_text())
+
+        product1 = make_product(self.dataspace)
+        product_package1 = make_product_package(product1, package=package1)
+        analysis = VulnerabilityAnalysis(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            responses=[
+                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
+                VulnerabilityAnalysis.Response.ROLLBACK,
+            ],
+            detail="detail",
+            dataspace=self.dataspace,
+        )
+        vulnerability1_as_cdx = vulnerability1.as_cyclonedx(
+            affected_instances=[package1], analysis=analysis
+        )
+        as_dict = json.loads(vulnerability1_as_cdx.as_json())
+        expected = {
+            "detail": "detail",
+            "justification": "code_not_present",
+            "response": ["can_not_fix", "rollback"],
+            "state": "resolved",
+        }
+        self.assertEqual(expected, as_dict["analysis"])
+
+    def test_vulnerability_model_vulnerability_analysis_save(self):
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
+        product_package1 = make_product_package(make_product(self.dataspace))
+
+        analysis = VulnerabilityAnalysis(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            dataspace=self.dataspace,
+        )
+
+        msg = "At least one of state, justification, responses or detail must be provided."
+        with self.assertRaisesMessage(ValueError, msg):
+            analysis.save()
+
+        analysis.state = VulnerabilityAnalysis.State.RESOLVED
+        analysis.save()
+
+        # Refresh from db
+        analysis = VulnerabilityAnalysis.objects.get(pk=analysis.pk)
+        self.assertEqual(vulnerability1, analysis.vulnerability)
+        self.assertEqual(product_package1, analysis.product_package)
+        self.assertEqual(product_package1.product, analysis.product)
+        self.assertEqual(product_package1.package, analysis.package)
+        self.assertEqual(VulnerabilityAnalysis.State.RESOLVED, analysis.state)
