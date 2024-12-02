@@ -119,7 +119,7 @@
   {% if tabsets.Imports %}
     {% include 'product_portfolio/includes/scancode_project_status_modal.html' %}
   {% endif %}
-  {% if request.user.dataspace.enable_vulnerablecodedb_access and not tabsets.Vulnerabilities.disabled %}
+  {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     {% include 'product_portfolio/modals/vulnerability_analysis_modal.html' %}
   {% endif %}
 {% endblock %}
@@ -235,7 +235,7 @@
     </script>
   {% endif %}
 
-  {% if request.user.dataspace.enable_vulnerablecodedb_access and not tabsets.Vulnerabilities.disabled %}
+  {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     <script>
       $(document).ready(function () {
         let vulnerability_modal = $('#vulnerability-analysis-modal');

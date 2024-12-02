@@ -336,6 +336,10 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             models.Q(id__in=self.packages.all()) | models.Q(component__in=self.components.all())
         ).distinct()
 
+    @cached_property
+    def vulnerability_count(self):
+        return self.get_vulnerability_qs().count()
+
     def get_merged_descendant_ids(self):
         """
         Return a list of Component ids collected on the Product descendants:

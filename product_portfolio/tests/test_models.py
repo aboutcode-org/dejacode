@@ -514,6 +514,21 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertIn(vulnerability1, queryset)
         self.assertIn(vulnerability2, queryset)
 
+    def test_product_model_vulnerability_count_property(self):
+        self.assertEqual(0, self.product1.vulnerability_count)
+
+        package1 = make_package(self.dataspace)
+        package2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1, package2])
+        make_vulnerability(self.dataspace, affecting=[package1, package2])
+        make_product_package(self.product1, package=package1)
+        make_product_package(self.product1, package=package2)
+
+        # Still 0 on the instance as it is a cached_property
+        self.assertEqual(0, self.product1.vulnerability_count)
+        self.product1 = Product.unsecured_objects.get(pk=self.product1.pk)
+        self.assertEqual(2, self.product1.vulnerability_count)
+
     def test_productcomponent_model_license_expression_handle_assigned_licenses(self):
         p1 = ProductComponent.objects.create(
             product=self.product1, name="p1", dataspace=self.dataspace

@@ -539,8 +539,7 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        vulnerability_qs = self.object.get_vulnerability_qs()
-        vulnerability_count = vulnerability_qs.count()
+        vulnerability_count = self.object.vulnerability_count
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {

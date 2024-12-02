@@ -306,6 +306,35 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
+    def test_product_portfolio_detail_view_include_tab_vulnerability_analysis_modal(
+        self, mock_is_configured
+    ):
+        mock_is_configured.return_value = True
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_absolute_url()
+        modal_id = 'id="vulnerability-analysis-modal"'
+        modal_js = "$('#vulnerability-analysis-modal')"
+
+        self.assertFalse(self.dataspace.enable_vulnerablecodedb_access)
+        response = self.client.get(url)
+        self.assertNotContains(response, modal_id)
+        self.assertNotContains(response, modal_js)
+
+        self.dataspace.enable_vulnerablecodedb_access = True
+        self.dataspace.save()
+        self.assertEqual(0, self.product1.get_vulnerability_qs().count())
+        response = self.client.get(url)
+        self.assertNotContains(response, modal_id)
+        self.assertNotContains(response, modal_js)
+
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        make_product_package(self.product1, package=package1)
+        self.assertEqual(1, self.product1.get_vulnerability_qs().count())
+        response = self.client.get(url)
+        self.assertContains(response, modal_id)
+        self.assertContains(response, modal_js)
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
         mock_is_configured.return_value = True
         self.client.login(username="nexb_user", password="secret")
@@ -322,9 +351,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected)
 
         package1 = make_package(self.dataspace, is_vulnerable=True)
-        ProductPackage.objects.create(
-            product=self.product1, package=package1, dataspace=self.dataspace
-        )
+        make_product_package(self.product1, package=package1)
         response = self.client.get(url)
         expected = '<span class="badge badge-vulnerability">1</span>'
         self.assertContains(response, expected)
