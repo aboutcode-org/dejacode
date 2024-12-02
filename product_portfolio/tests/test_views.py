@@ -325,7 +325,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-bs-target="#vulnerability-analysis-modal"
               data-vulnerability-id="{vulnerability1.vcid}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/nexB/{product1}/vulnerability_analysis_ajax_view/?vulnerability_id={vulnerability1.vcid}&package_uuid={p1.uuid}"
+              data-edit-url="/products/{product1.uuid}/vulnerability_analysis/{vulnerability1.vcid}/{p1.uuid}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -367,7 +367,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
@@ -3376,3 +3376,36 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(import_project.status, ScanCodeProject.Status.SUCCESS)
         expected = ["Improved packages from PurlDB:", "pkg1, pkg2"]
         self.assertEqual(expected, import_project.import_log)
+
+    def test_product_portfolio_vulnerability_analysis_form_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        url = reverse(
+            "product_portfolio:vulnerability_analysis_form",
+            args=[product1.uuid, vulnerability1.vulnerability_id, package1.uuid],
+        )
+
+        response = self.client.get(url)
+        self.assertContains(response, 'name="csrfmiddlewaretoken')
+        self.assertContains(response, 'name="product_package"')
+        self.assertContains(response, 'name="state"')
+        self.assertContains(response, 'name="justification"')
+        self.assertEqual(0, VulnerabilityAnalysis.objects.count())
+
+        product_package = ProductPackage.objects.get(product=product1, package=package1)
+        data = {
+            "product_package": product_package.pk,
+            "vulnerability": vulnerability1.pk,
+            "state": "resolved",
+        }
+        response = self.client.post(url, data=data)
+        self.assertEqual(b'{"success": "updated"}', response.content)
+        self.assertEqual(1, VulnerabilityAnalysis.objects.count())
+        analysis = VulnerabilityAnalysis.objects.get()
+        self.assertEqual(product_package, analysis.product_package)
+        self.assertEqual(vulnerability1, analysis.vulnerability)
+        self.assertEqual("resolved", analysis.state)
