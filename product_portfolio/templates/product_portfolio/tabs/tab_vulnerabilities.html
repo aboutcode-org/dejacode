@@ -16,7 +16,7 @@
               {{ vulnerability.vulnerability_id }}
             {% endif %}
             {% if vulnerability.summary %}
-              <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-content="{{ vulnerability.summary }}">
+              <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
                 <i class="fa-solid fa-circle-info"></i>
               </span>
             {% endif %}
@@ -46,14 +46,14 @@
           </td>
           <td>
             {% if package.vulnerability_analysis %}
-              <ul class="list-unstyled mb-0">
-                {% if package.vulnerability_analysis.state %}
-                  <li><strong>{{ package.vulnerability_analysis.get_state_display }}</strong></li>
-                {% endif %}
-                {% if package.vulnerability_analysis.detail %}
-                  <li>Detail: {{ package.vulnerability_analysis.detail }}</li>
-                {% endif %}
-              </ul>
+              {% if package.vulnerability_analysis.state %}
+                <strong>{{ package.vulnerability_analysis.get_state_display }}</strong>
+              {% endif %}
+              {% if package.vulnerability_analysis.detail %}
+                <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ package.vulnerability_analysis.detail|linebreaksbr }}">
+                  <i class="fa-solid fa-circle-info"></i>
+                </span>
+              {% endif %}
             {% endif %}
           </td>
           <td>
