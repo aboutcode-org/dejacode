@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+
 from django.test import TestCase
 
 from cyclonedx.model import bom as cyclonedx_bom
@@ -18,6 +20,7 @@ from dje.tests import create_superuser
 from dje.tests import create_user
 from product_portfolio.models import Product
 from product_portfolio.tests import make_product_package
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 
 
@@ -97,7 +100,7 @@ class OutputsTestCase(TestCase):
 
     def test_outputs_get_cyclonedx_bom_include_vex(self):
         package_in_product = make_package(self.dataspace, package_url="pkg:type/name")
-        make_product_package(self.product1, package_in_product)
+        product_package1 = make_product_package(self.product1, package_in_product)
         package_not_in_product = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(
             self.dataspace, affecting=[package_in_product, package_not_in_product]
@@ -112,6 +115,24 @@ class OutputsTestCase(TestCase):
         self.assertIsInstance(bom, cyclonedx_bom.Bom)
         self.assertEqual(1, len(bom.vulnerabilities))
         self.assertEqual(vulnerability1.vulnerability_id, bom.vulnerabilities[0].id)
+        self.assertIsNone(bom.vulnerabilities[0].analysis)
+
+        VulnerabilityAnalysis.objects.create(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            detail="detail",
+            dataspace=self.dataspace,
+        )
+        bom = outputs.get_cyclonedx_bom(
+            instance=self.product1,
+            user=self.super_user,
+            include_vex=True,
+        )
+        analysis = bom.vulnerabilities[0].analysis
+        expected = {"detail": "detail", "justification": "code_not_present", "state": "resolved"}
+        self.assertEqual(expected, json.loads(analysis.as_json()))
 
     def test_outputs_get_cyclonedx_bom_json(self):
         bom = outputs.get_cyclonedx_bom(instance=self.product1, user=self.super_user)
