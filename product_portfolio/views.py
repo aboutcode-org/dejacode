@@ -2467,17 +2467,22 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
     form_class = VulnerabilityAnalysisForm
     perms = "change_product"
 
-    qs = Product.objects.get_queryset(user, perms=perms)
-    product = get_object_or_404(qs, uuid=product_uuid)
+    product_qs = Product.objects.get_queryset(user, perms=perms)
+    product = get_object_or_404(product_qs, uuid=product_uuid)
     vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
     product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
     product_package = get_object_or_404(
         product_package_qs, product=product, package__uuid=package_uuid
     )
+    vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(user.dataspace)
+    affected_products = product_qs.filter(
+        packages__uuid=package_uuid,
+        packages__affected_by_vulnerabilities=vulnerability,
+    ).exclude(pk=product.pk)
 
     try:
-        vulnerability_analysis = VulnerabilityAnalysis.objects.scope(user.dataspace).get(
+        vulnerability_analysis = vulnerability_analysis_qs.get(
             product_package=product_package,
             vulnerability=vulnerability,
         )
@@ -2485,14 +2490,24 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
         vulnerability_analysis = None  # Addition
 
     if request.method == "POST":
-        form = form_class(user, instance=vulnerability_analysis, data=request.POST)
+        form = form_class(
+            user,
+            instance=vulnerability_analysis,
+            data=request.POST,
+            affected_products=affected_products,
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Vulnerability analysis successfully updated.")
             return JsonResponse({"success": "updated"}, status=200)
     else:
         initial = {"product_package": product_package, "vulnerability": vulnerability}
-        form = form_class(user, instance=vulnerability_analysis, initial=initial)
+        form = form_class(
+            user,
+            instance=vulnerability_analysis,
+            initial=initial,
+            affected_products=affected_products,
+        )
 
     rendered_form = render_crispy_form(form, context=csrf(request))
 
