@@ -53,7 +53,6 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
     def helper(self):
         helper = FormHelper()
         helper.form_method = "post"
-        helper.form_id = "product-vulnerability-analysis-form"
         helper.form_tag = False
         helper.modal_title = "Vulnerability analysis"
         helper.modal_id = "vulnerability-analysis-modal"

@@ -411,6 +411,14 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-vulnerability_analyses__responses {
   min-width: 120px;
 }
+/* -- Vulnerability analysis modal -- */
+#vulnerability-analysis-modal #div_id_responses .form-check {
+  display: inline-block;
+  margin-right: 1rem;
+}
+#vulnerability-analysis-modal .form-label {
+  font-weight: 600;
+}
 
 /* -- Dependency tab -- */
 #tab_dependencies .column-for_package {
