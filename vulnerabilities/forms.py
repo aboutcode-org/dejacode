@@ -25,14 +25,14 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False,
     )
-    affected_products = forms.MultipleChoiceField(
+    propagate_to_products = forms.MultipleChoiceField(
         label="Propagate analysis to products:",
         widget=forms.CheckboxSelectMultiple,
         required=False,
         help_text=(
             "The listed products share the same vulnerable package. "
             "The analysis values will be applied to all selected products."
-        )
+        ),
     )
 
     class Meta:
@@ -44,7 +44,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
             "justification",
             "responses",
             "detail",
-            "affected_products",
+            "propagate_to_products",
         ]
         widgets = {
             "product_package": forms.widgets.HiddenInput,
@@ -56,11 +56,13 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         affected_products = kwargs.pop("affected_products", [])
         super().__init__(user, *args, **kwargs)
 
-        affected_products_field = self.fields["affected_products"]
-        affected_products_choices = [(product.uuid, str(product)) for product in affected_products]
-        affected_products_field.choices = affected_products_choices
-        if not affected_products_choices:
-            affected_products_field.widget = forms.widgets.HiddenInput()
+        propagate_to_products_field = self.fields["propagate_to_products"]
+        propagate_to_products_choices = [
+            (product.uuid, str(product)) for product in affected_products
+        ]
+        propagate_to_products_field.choices = propagate_to_products_choices
+        if not propagate_to_products_choices:
+            propagate_to_products_field.widget = forms.widgets.HiddenInput()
 
         responses_model_field = self._meta.model._meta.get_field("responses")
         self.fields["responses"].help_text = responses_model_field.help_text
@@ -79,13 +81,24 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         helper.layout = Layout(
             Fieldset(
                 "",
+                "product_package",
+                "vulnerability",
                 Group("state", "justification"),
                 "responses",
                 "detail",
-                "affected_products",
+                "propagate_to_products",
             ),
         )
         return helper
+
+    def save(self, *args, **kwargs):
+        instance = super().save(*args, **kwargs)
+
+        if products := self.cleaned_data.get("propagate_to_products"):
+            for product_uuid in products:
+                instance.propagate(product_uuid, self.user)
+
+        return instance
 
     def clean(self):
         main_fields = ["state", "justification", "responses", "detail"]
