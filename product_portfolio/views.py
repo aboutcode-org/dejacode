@@ -2465,21 +2465,26 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 @login_required
 def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, package_uuid):
     user = request.user
+    dataspace = user.dataspace
     form_class = VulnerabilityAnalysisForm
     perms = "change_product"
 
     product_qs = Product.objects.get_queryset(user, perms=perms)
     product = get_object_or_404(product_qs, uuid=product_uuid)
-    vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
+    vulnerability_qs = Vulnerability.objects.scope(dataspace)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
     product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
     product_package = get_object_or_404(
         product_package_qs, product=product, package__uuid=package_uuid
     )
-    vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(user.dataspace)
+    vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(dataspace)
 
     # Fetch the existing Analysis values for each affected products
-    product_analysis = vulnerability_analysis_qs.filter(product=OuterRef("pk"))
+    product_analysis = vulnerability_analysis_qs.filter(
+        product=OuterRef("pk"),
+        package=OuterRef("packages__pk"),
+        vulnerability=OuterRef("packages__affected_by_vulnerabilities__pk"),
+    )
     affected_products = (
         product_qs.exclude(pk=product.pk)
         .filter(

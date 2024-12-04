@@ -539,14 +539,16 @@ class VulnerabilityAnalysis(
             "dataspace": self.dataspace,
         }
 
-        if VulnerabilityAnalysis.objects.filter(**target_analysis_base_data).exists():
-            return  # Update not yet supported.
-
-        target_analysis = VulnerabilityAnalysis(
-            **target_analysis_base_data,
-            created_by=user,
-            last_modified_by=user,
-        )
+        existing_analysis = VulnerabilityAnalysis.objects.filter(**target_analysis_base_data)
+        if existing_analysis:  # Update
+            target_analysis = existing_analysis[0]
+            target_analysis.last_modified_by = user
+        else:  # New
+            target_analysis = VulnerabilityAnalysis(
+                **target_analysis_base_data,
+                created_by=user,
+                last_modified_by=user,
+            )
 
         fields_to_clone = [
             "state",
