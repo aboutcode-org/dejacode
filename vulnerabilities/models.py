@@ -505,6 +505,10 @@ class VulnerabilityAnalysis(
 
     class Meta:
         unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
+        indexes = [
+            models.Index(fields=["state"]),
+            models.Index(fields=["justification"]),
+        ]
 
     def __str__(self):
         return f"{self.vulnerability} analysis"
