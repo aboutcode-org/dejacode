@@ -257,6 +257,9 @@
             url: edit_url,
             success: function(data) {
               modal_body.html(data);
+              setupTooltips();
+              setupPopovers();
+              setupSelectionCheckboxes();
             },
             error: function() {
               modal_body.html('Error.');

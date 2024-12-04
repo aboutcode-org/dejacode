@@ -412,9 +412,7 @@ table.vulnerabilities-table .column-summary {
   min-width: 120px;
 }
 /* -- Vulnerability analysis modal -- */
-#vulnerability-analysis-modal #div_id_responses .form-check,
-#vulnerability-analysis-modal #div_id_propagate_to_products .form-check
-{
+#vulnerability-analysis-modal #div_id_responses .form-check {
   display: inline-block;
   margin-right: 1rem;
 }

@@ -1,0 +1,63 @@
+{% load crispy_forms_filters %}
+{% load l10n %}
+
+<hr>
+
+<div id="div_{{ field.auto_id }}" class="{% if 'form-horizontal' in form_class %} row{% endif %}{% if wrapper_class %} {{ wrapper_class }}{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
+  {% if field.label %}
+    <legend for="{{ field.id_for_label }}"  class="{{ label_class }}{% if 'form-horizontal' in form_class %} col-form-label pt-0{% else %} form-label{% endif %}{% if field.field.required %} requiredField{% endif %}">
+      {{ field.label }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+    </legend>
+  {% endif %}
+
+  <div {% if field_class %}class="{{ field_class }}"{% endif %}{% if flat_attrs %} {{ flat_attrs }}{% endif %}>
+      <table class="table table-bordered table-md text-break checkbox-table mb-0">
+        <tr>
+          <th class="column-selection"></th>
+          <th>Product</th>
+          <th>State</th>
+          <th>Justification</th>
+          <th>Response</th>
+        </tr>
+        {% for group, options, index in field|optgroups %}
+          {% for option in options %}
+            {% with product=option.label %}
+              <tr>
+                <td><input type="{{option.type}}" class="form-check-input{% if field.errors %} is-invalid{% endif %}"  name="{{ field.html_name }}" value="{{ option.value|unlocalize }}" {% include "bootstrap5/layout/attrs.html" with widget=option %}></td>
+                <td>
+                  <a href="{{ product.get_absolute_url }}" target="_blank">{{ product }}</a>
+                  {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
+                    {% include 'bootstrap5/layout/field_errors_block.html' %}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if product.analysis_state %}
+                    {{ product.analysis_state }}
+                  {% endif %}
+                  {% if product.analysis_detail %}
+                    <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ product.analysis_detail|linebreaksbr }}">
+                      <i class="fa-solid fa-circle-info"></i>
+                    </span>
+                  {% endif %}
+                </td>
+                <td>
+                  {{ product.analysis_justification|default_if_none:"" }}
+                </td>
+                <td>
+                  {% if product.analysis_responses %}
+                    {{ product.analysis_responses|join:"<br>" }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        {% endfor %}
+      </table>
+  </div>
+  {% if field.errors and inline_class %}
+      {% for error in field.errors %}
+          <p id="error_{{ forloop.counter }}_{{ field.auto_id }}" class="invalid-feedback"><strong>{{ error }}</strong></p>
+      {% endfor %}
+  {% endif %}
+  {% include 'bootstrap5/layout/help_text.html' %}
+</div>

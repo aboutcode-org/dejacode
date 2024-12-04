@@ -10,6 +10,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Field
 from crispy_forms.layout import Fieldset
 from crispy_forms.layout import Layout
 
@@ -26,7 +27,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         required=False,
     )
     propagate_to_products = forms.MultipleChoiceField(
-        label="Propagate analysis to products:",
+        label="Propagate analysis to:",
         widget=forms.CheckboxSelectMultiple,
         required=False,
         help_text=(
@@ -56,13 +57,13 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         affected_products = kwargs.pop("affected_products", [])
         super().__init__(user, *args, **kwargs)
 
-        propagate_to_products_field = self.fields["propagate_to_products"]
-        propagate_to_products_choices = [
-            (product.uuid, str(product)) for product in affected_products
-        ]
-        propagate_to_products_field.choices = propagate_to_products_choices
+        propagate_to_field = self.fields["propagate_to_products"]
+        # Note: the whole `product` object is set as the label to be fully used in the
+        # template rendering.
+        propagate_to_products_choices = [(product.uuid, product) for product in affected_products]
+        propagate_to_field.choices = propagate_to_products_choices
         if not propagate_to_products_choices:
-            propagate_to_products_field.widget = forms.widgets.HiddenInput()
+            propagate_to_field.widget = forms.widgets.HiddenInput()
 
         responses_model_field = self._meta.model._meta.get_field("responses")
         self.fields["responses"].help_text = responses_model_field.help_text
@@ -86,7 +87,10 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
                 Group("state", "justification"),
                 "responses",
                 "detail",
-                "propagate_to_products",
+                Field(
+                    "propagate_to_products",
+                    template="vulnerabilities/forms/widgets/propagate_to_table.html",
+                ),
             ),
         )
         return helper

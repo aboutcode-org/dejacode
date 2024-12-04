@@ -25,8 +25,9 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import ObjectDoesNotExist
+from django.db.models import OuterRef
 from django.db.models import Prefetch
+from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import Http404
@@ -2476,18 +2477,27 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
         product_package_qs, product=product, package__uuid=package_uuid
     )
     vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(user.dataspace)
-    affected_products = product_qs.filter(
-        packages__uuid=package_uuid,
-        packages__affected_by_vulnerabilities=vulnerability,
-    ).exclude(pk=product.pk)
 
-    try:
-        vulnerability_analysis = vulnerability_analysis_qs.get(
-            product_package=product_package,
-            vulnerability=vulnerability,
+    # Fetch the existing Analysis values for each affected products
+    product_analysis = vulnerability_analysis_qs.filter(product=OuterRef("pk"))
+    affected_products = (
+        product_qs.exclude(pk=product.pk)
+        .filter(
+            packages__uuid=package_uuid,
+            packages__affected_by_vulnerabilities=vulnerability,
         )
-    except ObjectDoesNotExist:
-        vulnerability_analysis = None  # Addition
+        .annotate(
+            analysis_state=Subquery(product_analysis.values("state")[:1]),
+            analysis_justification=Subquery(product_analysis.values("justification")[:1]),
+            analysis_responses=Subquery(product_analysis.values("responses")[:1]),
+            analysis_detail=Subquery(product_analysis.values("detail")[:1]),
+        )
+    )
+
+    vulnerability_analysis = vulnerability_analysis_qs.get_or_none(
+        product_package=product_package,
+        vulnerability=vulnerability,
+    )
 
     if request.method == "POST":
         form = form_class(
