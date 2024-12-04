@@ -49,7 +49,11 @@
                   </td>
                   <td>
                     {% if product.analysis_responses %}
-                      {{ product.analysis_responses|join:"<br>" }}
+                      <ul class="ps-3 m-0">
+                        {% for response in product.analysis_responses %}
+                          <li>{{ response }}</li>
+                        {% endfor %}
+                      </ul>
                     {% endif %}
                   </td>
                 </tr>
