@@ -31,7 +31,10 @@ function setupPopovers() {
 
 function setupSelectionCheckboxes() {
   const selectAllCheckbox = document.getElementById("checkbox-select-all");
-  const rowCheckboxes = document.querySelectorAll("table#object-list-table tbody input[type='checkbox']");
+  if (!selectAllCheckbox) return;
+
+  const parentTable = selectAllCheckbox.closest("table");
+  const rowCheckboxes = parentTable.querySelectorAll("tbody input[type='checkbox']");
   let lastChecked; // Store the last checked checkbox
 
   if (!rowCheckboxes) return;

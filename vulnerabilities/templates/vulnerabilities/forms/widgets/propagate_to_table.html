@@ -13,7 +13,9 @@
   <div {% if field_class %}class="{{ field_class }}"{% endif %}{% if flat_attrs %} {{ flat_attrs }}{% endif %}>
       <table class="table table-bordered table-md text-break checkbox-table mb-0">
         <tr>
-          <th class="column-selection"></th>
+          <th class="column-selection">
+            <input id="checkbox-select-all" class="form-check-input" type="checkbox" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="hover" title="Select all" aria-label="Select all rows">
+          </th>
           <th>Product</th>
           <th>State</th>
           <th>Justification</th>
