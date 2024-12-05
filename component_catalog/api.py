@@ -24,6 +24,7 @@ from rest_framework.schemas import AutoSchema
 
 from component_catalog.admin import ComponentAdmin
 from component_catalog.admin import PackageAdmin
+from component_catalog.filters import IsVulnerableFilter
 from component_catalog.fuzzy import FuzzyPackageNameSearch
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import normalize_and_validate_expression
@@ -426,6 +427,13 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
     name_version = NameVersionFilter(
         label="Name:Version",
     )
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = Component
@@ -450,6 +458,8 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "name_version",
             "keywords",
+            "is_vulnerable",
+            "affected_by",
         )
 
 
@@ -777,6 +787,13 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
     last_modified_date = LastModifiedDateFilter()
     fuzzy = FuzzyPackageNameSearch(widget=HiddenInput)
     purl = PackageURLFilter(label="Package URL")
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = Package
@@ -801,6 +818,8 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "fuzzy",
             "purl",
+            "is_vulnerable",
+            "affected_by",
         )
 
 

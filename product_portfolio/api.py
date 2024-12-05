@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
 from component_catalog.api import ValidateLicenseExpressionMixin
+from component_catalog.filters import IsVulnerableFilter
 from component_catalog.license_expression_dje import clean_related_expression
 from dje.api import AboutCodeFilesActionMixin
 from dje.api import CreateRetrieveUpdateListViewSet
@@ -184,6 +185,13 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         help_text="Keyword label contains (case-insensitive)",
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="packages__affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = Product
@@ -200,6 +208,8 @@ class ProductFilterSet(DataspacedAPIFilterSet):
             "configuration_status",
             "license_expression",
             "last_modified_date",
+            "is_vulnerable",
+            "affected_by",
         )
 
 
@@ -528,6 +538,9 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
         help_text='Supported values: "catalog", "custom".',
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="component__affected_by_vulnerabilities",
+    )
 
     class Meta:
         model = ProductComponent
@@ -538,8 +551,11 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
             "review_status",
             "purpose",
             "feature",
+            "is_deployed",
+            "is_modified",
             "completeness",
             "last_modified_date",
+            "is_vulnerable",
         )
 
 
@@ -664,6 +680,9 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         help_text="Exact feature label.",
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="package__affected_by_vulnerabilities",
+    )
 
     class Meta:
         model = ProductPackage
@@ -675,6 +694,7 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
             "purpose",
             "feature",
             "last_modified_date",
+            "is_vulnerable",
         )
 
 

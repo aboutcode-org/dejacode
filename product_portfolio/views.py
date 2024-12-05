@@ -161,7 +161,7 @@ class ProductListView(
     put_results_in_session = False
     group_name_version = True
     table_headers = (
-        Header("name", "Product name"),
+        Header("name", "Product name", filter="is_vulnerable"),
         Header("version", "Version"),
         Header("license_expression", "License", filter="licenses"),
         Header("primary_language", "Language", filter="primary_language"),
