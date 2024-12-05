@@ -17,6 +17,7 @@ from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.models import Dataspace
+from dje.tests import create_superuser
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.models import Vulnerability
@@ -29,6 +30,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("super_user", self.dataspace)
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
     def test_vulnerability_mixin_get_entry_for_package(self, mock_request_get):
@@ -257,3 +259,43 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(product_package1.product, analysis.product)
         self.assertEqual(product_package1.package, analysis.package)
         self.assertEqual(VulnerabilityAnalysis.State.RESOLVED, analysis.state)
+
+    def test_vulnerability_model_vulnerability_propagate(self):
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
+        product_package1 = make_product_package(make_product(self.dataspace))
+        analysis = VulnerabilityAnalysis.objects.create(
+            product_package=product_package1,
+            vulnerability=vulnerability1,
+            dataspace=self.dataspace,
+            state=VulnerabilityAnalysis.State.RESOLVED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            responses=[
+                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
+                VulnerabilityAnalysis.Response.ROLLBACK,
+            ],
+            detail="detail",
+        )
+
+        product2 = make_product(self.dataspace)
+        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        self.assertIsNone(new_analysis)
+
+        new_product_package = make_product_package(product2, package=product_package1.package)
+        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        self.assertIsNotNone(new_analysis)
+        self.assertNotEqual(analysis.pk, new_analysis.pk)
+        self.assertEqual(vulnerability1, new_analysis.vulnerability)
+        self.assertEqual(new_product_package, new_analysis.product_package)
+        self.assertEqual(product2, new_analysis.product)
+        self.assertEqual(new_product_package.package, new_analysis.package)
+        self.assertEqual(self.super_user, new_analysis.created_by)
+        self.assertEqual(self.super_user, new_analysis.last_modified_by)
+        self.assertEqual(analysis.state, new_analysis.state)
+        self.assertEqual(analysis.justification, new_analysis.justification)
+        self.assertEqual(analysis.detail, new_analysis.detail)
+        self.assertEqual(analysis.responses, new_analysis.responses)
+
+        # Update
+        analysis.update(state=VulnerabilityAnalysis.State.EXPLOITABLE)
+        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        self.assertEqual(VulnerabilityAnalysis.State.EXPLOITABLE, new_analysis.state)

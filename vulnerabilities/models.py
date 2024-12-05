@@ -524,8 +524,9 @@ class VulnerabilityAnalysis(
         from product_portfolio.models import ProductPackage
 
         # Get the equivalent ProductPackage in the target product.
+        product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
         try:
-            product_package = ProductPackage.objects.get(
+            product_package = product_package_qs.get(
                 product__uuid=product_uuid,
                 package=self.package,
                 dataspace=self.dataspace,
