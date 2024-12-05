@@ -29,6 +29,10 @@ Release notes
   analysed are listed and can be selected for "analysis propagation".
   https://github.com/aboutcode-org/dejacode/issues/105
 
+- Add vulnerabilities REST API endpoint that mimics the content and features of the
+  vulnerabilities list view.
+  https://github.com/aboutcode-org/dejacode/issues/104
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
