@@ -257,6 +257,9 @@
             url: edit_url,
             success: function(data) {
               modal_body.html(data);
+              setupTooltips();
+              setupPopovers();
+              setupSelectionCheckboxes();
             },
             error: function() {
               modal_body.html('Error.');
@@ -280,7 +283,7 @@
                 return false;
               }
               modal_body.html(data);
-              edit_modal.animate({scrollTop: 0});
+              vulnerability_modal.animate({scrollTop: 0});
             },
             error: function(){
               modal_body.html('Error.');

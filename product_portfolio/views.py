@@ -25,8 +25,9 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import ObjectDoesNotExist
+from django.db.models import OuterRef
 from django.db.models import Prefetch
+from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import Http404
@@ -2464,35 +2465,64 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 @login_required
 def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, package_uuid):
     user = request.user
+    dataspace = user.dataspace
     form_class = VulnerabilityAnalysisForm
     perms = "change_product"
 
-    qs = Product.objects.get_queryset(user, perms=perms)
-    product = get_object_or_404(qs, uuid=product_uuid)
-    vulnerability_qs = Vulnerability.objects.scope(user.dataspace)
+    product_qs = Product.objects.get_queryset(user, perms=perms)
+    product = get_object_or_404(product_qs, uuid=product_uuid)
+    vulnerability_qs = Vulnerability.objects.scope(dataspace)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
     product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
     product_package = get_object_or_404(
         product_package_qs, product=product, package__uuid=package_uuid
     )
+    vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(dataspace)
 
-    try:
-        vulnerability_analysis = VulnerabilityAnalysis.objects.scope(user.dataspace).get(
-            product_package=product_package,
-            vulnerability=vulnerability,
+    # Fetch the existing Analysis values for each affected products
+    product_analysis = vulnerability_analysis_qs.filter(
+        product=OuterRef("pk"),
+        package=OuterRef("packages__pk"),
+        vulnerability=OuterRef("packages__affected_by_vulnerabilities__pk"),
+    )
+    affected_products = (
+        product_qs.exclude(pk=product.pk)
+        .filter(
+            packages__uuid=package_uuid,
+            packages__affected_by_vulnerabilities=vulnerability,
         )
-    except ObjectDoesNotExist:
-        vulnerability_analysis = None  # Addition
+        .annotate(
+            analysis_state=Subquery(product_analysis.values("state")[:1]),
+            analysis_justification=Subquery(product_analysis.values("justification")[:1]),
+            analysis_responses=Subquery(product_analysis.values("responses")[:1]),
+            analysis_detail=Subquery(product_analysis.values("detail")[:1]),
+        )
+    )
+
+    vulnerability_analysis = vulnerability_analysis_qs.get_or_none(
+        product_package=product_package,
+        vulnerability=vulnerability,
+    )
 
     if request.method == "POST":
-        form = form_class(user, instance=vulnerability_analysis, data=request.POST)
+        form = form_class(
+            user,
+            instance=vulnerability_analysis,
+            data=request.POST,
+            affected_products=affected_products,
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Vulnerability analysis successfully updated.")
             return JsonResponse({"success": "updated"}, status=200)
     else:
         initial = {"product_package": product_package, "vulnerability": vulnerability}
-        form = form_class(user, instance=vulnerability_analysis, initial=initial)
+        form = form_class(
+            user,
+            instance=vulnerability_analysis,
+            initial=initial,
+            affected_products=affected_products,
+        )
 
     rendered_form = render_crispy_form(form, context=csrf(request))
 

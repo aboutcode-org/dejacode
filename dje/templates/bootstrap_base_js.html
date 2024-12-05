@@ -2,29 +2,4 @@
 <script>
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
-
-  NEXB.displayOverlay = function(text) {
-    const overlay = document.createElement('div');
-    overlay.id = 'overlay';
-    overlay.textContent = text;
-
-    Object.assign(overlay.style, {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, .5)',
-        zIndex: 10000,
-        verticalAlign: 'middle',
-        paddingTop: '300px',
-        textAlign: 'center',
-        color: '#fff',
-        fontSize: '30px',
-        fontWeight: 'bold',
-        cursor: 'wait'
-    });
-
-    document.body.appendChild(overlay);
-  }
 </script>

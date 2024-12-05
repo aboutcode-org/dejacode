@@ -505,6 +505,10 @@ class VulnerabilityAnalysis(
 
     class Meta:
         unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
+        indexes = [
+            models.Index(fields=["state"]),
+            models.Index(fields=["justification"]),
+        ]
 
     def __str__(self):
         return f"{self.vulnerability} analysis"
@@ -514,3 +518,49 @@ class VulnerabilityAnalysis(
         self.product_id = self.product_package.product_id
         self.package_id = self.product_package.package_id
         super().save(*args, **kwargs)
+
+    def propagate(self, product_uuid, user):
+        """Propagate this Analysis to another Product."""
+        from product_portfolio.models import ProductPackage
+
+        # Get the equivalent ProductPackage in the target product.
+        product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
+        try:
+            product_package = product_package_qs.get(
+                product__uuid=product_uuid,
+                package=self.package,
+                dataspace=self.dataspace,
+            )
+        except models.ObjectDoesNotExist:
+            return
+
+        target_analysis_base_data = {
+            "product_package": product_package,
+            "vulnerability": self.vulnerability,
+            "dataspace": self.dataspace,
+        }
+
+        existing_analysis = VulnerabilityAnalysis.objects.filter(**target_analysis_base_data)
+        if existing_analysis:  # Update
+            target_analysis = existing_analysis[0]
+            target_analysis.last_modified_by = user
+        else:  # New
+            target_analysis = VulnerabilityAnalysis(
+                **target_analysis_base_data,
+                created_by=user,
+                last_modified_by=user,
+            )
+
+        fields_to_clone = [
+            "state",
+            "justification",
+            "responses",
+            "detail",
+        ]
+        for field_name in fields_to_clone:
+            field_value = getattr(self, field_name, None)
+            if field_value is not None:
+                setattr(target_analysis, field_name, field_value)
+
+        target_analysis.save()
+        return target_analysis

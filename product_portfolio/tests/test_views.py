@@ -416,7 +416,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
           </span>
         </td>
         <td>Code Not Present</td>
-        <td>can_not_fix<br>rollback</td>
+        <td>
+          <ul class="ps-3 m-0">
+            <li>can_not_fix</li>
+            <li>rollback</li>
+          </ul>
+        </td>
         """
         self.assertContains(response, expected, html=True)
 

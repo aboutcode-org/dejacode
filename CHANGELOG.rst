@@ -23,6 +23,12 @@ Release notes
   outputs.
   https://github.com/aboutcode-org/dejacode/issues/98
 
+- Add the ability to propagate vulnerability analysis data to other affected products.
+  A new "Propagate analysis to:" section in now displayed the "Vulnerability analysis"
+  modal. The list of products containing the same package as the one currently being
+  analysed are listed and can be selected for "analysis propagation".
+  https://github.com/aboutcode-org/dejacode/issues/105
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

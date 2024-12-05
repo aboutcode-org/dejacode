@@ -65,7 +65,11 @@
           </td>
           <td>
             {% if package.vulnerability_analysis.responses %}
-              {{ package.vulnerability_analysis.responses|join:"<br>" }}
+              <ul class="ps-3 m-0">
+                {% for response in package.vulnerability_analysis.responses %}
+                  <li>{{ response }}</li>
+                {% endfor %}
+              </ul>
             {% endif %}
           </td>
           <td class="p-1">

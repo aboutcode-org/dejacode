@@ -48,3 +48,36 @@ class VulnerabilitiesFormsTestCase(TestCase):
         self.assertEqual(product_package1.product, analysis.product)
         self.assertEqual(product_package1.package, analysis.package)
         self.assertEqual(data["detail"], analysis.detail)
+
+    def test_vulnerability_forms_vulnerability_analysis_propagate_to_products(self):
+        product_package1 = make_product_package(make_product(self.dataspace))
+        vulnerability1 = make_vulnerability(
+            dataspace=self.dataspace, affecting=[product_package1.package]
+        )
+        product2 = make_product(self.dataspace)
+
+        data = {
+            "product_package": product_package1,
+            "vulnerability": vulnerability1,
+            "detail": "Analysis detail",
+            "propagate_to_products": [str(product2.uuid)],
+        }
+
+        form = VulnerabilityAnalysisForm(user=self.super_user, data=data)
+        self.assertEqual([], form.fields["propagate_to_products"].choices)
+        self.assertFalse(form.is_valid())
+        msg = f"Select a valid choice. {product2.uuid} is not one of the available choices."
+        self.assertEqual({"propagate_to_products": [msg]}, form.errors)
+
+        new_product_package = make_product_package(product2, package=product_package1.package)
+        form = VulnerabilityAnalysisForm(
+            user=self.super_user, data=data, affected_products=[product2]
+        )
+        self.assertEqual([(product2.uuid, product2)], form.fields["propagate_to_products"].choices)
+        self.assertTrue(form.is_valid())
+        analysis = form.save()
+        new_analysis = new_product_package.vulnerability_analyses.get()
+        self.assertEqual(vulnerability1, new_analysis.vulnerability)
+        self.assertEqual(product2, new_analysis.product)
+        self.assertEqual(new_product_package.package, new_analysis.package)
+        self.assertEqual(data["detail"], analysis.detail)
