@@ -696,6 +696,10 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
     is_vulnerable = IsVulnerableFilter(
         field_name="package__affected_by_vulnerabilities",
     )
+    affected_by = django_filters.CharFilter(
+        field_name="package__affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = ProductPackage
@@ -708,6 +712,7 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
             "feature",
             "last_modified_date",
             "is_vulnerable",
+            "affected_by",
         )
 
 
