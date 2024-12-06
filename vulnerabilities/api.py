@@ -9,8 +9,8 @@
 
 from django.db.models import Prefetch
 
-from rest_framework import viewsets
 from rest_framework import serializers
+from rest_framework import viewsets
 
 from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
@@ -19,10 +19,10 @@ from dje.api import ExtraPermissionsViewSetMixin
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
+from product_portfolio.models import Product
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
-from product_portfolio.models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -123,7 +123,7 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
             .scope(self.request.user.dataspace)
             .prefetch_related(
                 Prefetch("affected_packages", queryset=package_qs),
-                Prefetch('affected_packages__productpackages__product'),
+                Prefetch("affected_packages__productpackages__product"),
             )
             .order_by_risk()
         )
