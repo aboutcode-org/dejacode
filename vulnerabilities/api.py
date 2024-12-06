@@ -12,6 +12,7 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 from rest_framework import viewsets
 
+from component_catalog.api import PackageSerializer
 from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedSerializer
@@ -19,30 +20,22 @@ from dje.api import ExtraPermissionsViewSetMixin
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
-from product_portfolio.models import Product
+from product_portfolio.api import ProductSerializer
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    display_name = serializers.ReadOnlyField(source="__str__")
-
-    class Meta:
-        model = Product
-        fields = (
+class VulnerabilitySerializer(DataspacedSerializer):
+    affected_packages = PackageSerializer(
+        read_only=True,
+        many=True,
+        fields=[
             "display_name",
             "api_url",
-        )
-        extra_kwargs = {
-            "api_url": {
-                "view_name": "api_v2:product-detail",
-                "lookup_field": "uuid",
-            },
-        }
-
-
-class VulnerabilitySerializer(DataspacedSerializer):
+            "uuid",
+        ],
+    )
     affected_products = serializers.SerializerMethodField()
 
     class Meta:
@@ -66,10 +59,6 @@ class VulnerabilitySerializer(DataspacedSerializer):
                 "view_name": "api_v2:vulnerability-detail",
                 "lookup_field": "uuid",
             },
-            "affected_packages": {
-                "view_name": "api_v2:package-detail",
-                "lookup_field": "uuid",
-            },
         }
 
     def get_affected_products(self, obj):
@@ -78,7 +67,12 @@ class VulnerabilitySerializer(DataspacedSerializer):
             for package in obj.affected_packages.all()
             for product_package in package.productpackages.all()
         )
-        return ProductSerializer(products, many=True, context=self.context).data
+        fields = [
+            "display_name",
+            "api_url",
+            "uuid",
+        ]
+        return ProductSerializer(products, many=True, context=self.context, fields=fields).data
 
 
 class VulnerabilityFilterSet(DataspacedAPIFilterSet):
@@ -115,7 +109,7 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
     )
 
     def get_queryset(self):
-        package_qs = Package.objects.only("uuid", "dataspace__name")
+        package_qs = Package.objects.only_rendering_fields()
 
         return (
             super()
