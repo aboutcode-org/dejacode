@@ -620,6 +620,7 @@ class PackageSerializer(
         required=False,
         allow_null=True,
     )
+    affected_by_vulnerabilities = serializers.SerializerMethodField()
 
     class Meta:
         model = Package
@@ -679,6 +680,7 @@ class PackageSerializer(
             "created_date",
             "last_modified_date",
             "collect_data",
+            "affected_by_vulnerabilities",
         )
         extra_kwargs = {
             "api_url": {
@@ -689,10 +691,28 @@ class PackageSerializer(
                 "view_name": "api_v2:license-detail",
                 "lookup_field": "uuid",
             },
+            "affected_by_vulnerabilities": {
+                "view_name": "api_v2:vulnerability-detail",
+                "lookup_field": "uuid",
+            },
         }
         exclude_from_validate = [
             "collect_data",
         ]
+
+    def get_affected_by_vulnerabilities(self, obj):
+        # Using a SerializerMethodField to workaround circular imports
+        from vulnerabilities.api import VulnerabilitySerializer
+
+        vulnerabilities = obj.affected_by_vulnerabilities.all()
+        fields = [
+            "vulnerability_id",
+            "api_url",
+            "uuid",
+        ]
+        return VulnerabilitySerializer(
+            vulnerabilities, many=True, context=self.context, fields=fields
+        ).data
 
     def create(self, validated_data):
         """Collect data, purl, and submit scan if `collect_data` is provided."""
@@ -896,6 +916,7 @@ class PackageViewSet(
             .prefetch_related(
                 "component_set__owner",
                 "licenses__category",
+                "affected_by_vulnerabilities",
                 external_references_prefetch,
             )
         )
