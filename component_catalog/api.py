@@ -21,7 +21,8 @@ from rest_framework.decorators import action
 from rest_framework.fields import ListField
 from rest_framework.response import Response
 from rest_framework.schemas import AutoSchema
-
+from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.filters import RISK_SCORE_RANGES
 from component_catalog.admin import ComponentAdmin
 from component_catalog.admin import PackageAdmin
 from component_catalog.filters import IsVulnerableFilter
@@ -689,6 +690,7 @@ class PackageSerializer(
             "created_date",
             "last_modified_date",
             "collect_data",
+            "risk_score",
             "affected_by_vulnerabilities",
         )
         extra_kwargs = {
@@ -805,6 +807,7 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
         field_name="affected_by_vulnerabilities__vulnerability_id",
         label="Affected by (vulnerability_id)",
     )
+    risk_score = ScoreRangeFilter(score_ranges=RISK_SCORE_RANGES)
 
     class Meta:
         model = Package
@@ -831,6 +834,7 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
             "purl",
             "is_vulnerable",
             "affected_by",
+            "risk_score",
         )
 
 
