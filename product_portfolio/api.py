@@ -48,6 +48,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
 base_extra_kwargs = {
     "licenses": {
@@ -104,6 +105,10 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
     keywords = KeywordsField(
         required=False,
     )
+    vulnerability_analyses = VulnerabilityAnalysisSerializer(
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = Product
@@ -120,6 +125,7 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
             "licenses",
             "components",
             "packages",
+            "vulnerability_analyses",
             "keywords",
             "release_date",
             "description",
@@ -330,6 +336,8 @@ class ProductViewSet(
                 "components",
                 "packages",
                 "licenses",
+                "vulnerability_analyses__vulnerability",
+                "vulnerability_analyses__product_package",
             )
         )
 
@@ -622,6 +630,10 @@ class ProductPackageSerializer(BaseProductRelationSerializer):
         source="package",
         read_only=True,
     )
+    vulnerability_analyses = VulnerabilityAnalysisSerializer(
+        many=True,
+        exclude_fields=["product_package"],
+    )
 
     class Meta:
         model = ProductPackage
@@ -644,6 +656,7 @@ class ProductPackageSerializer(BaseProductRelationSerializer):
             "package_paths",
             "reference_notes",
             "issue_ref",
+            "vulnerability_analyses",
             "created_date",
             "last_modified_date",
         )
@@ -711,6 +724,15 @@ class ProductPackageViewSet(ProductRelationViewSet):
         "created_date",
         "last_modified_date",
     )
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                "vulnerability_analyses__vulnerability",
+            )
+        )
 
 
 class CodebaseResourceSerializer(DataspacedSerializer):

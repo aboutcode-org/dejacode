@@ -22,6 +22,7 @@ from dje.filters import MultipleUUIDFilter
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 class VulnerabilitySerializer(DataspacedSerializer):
@@ -125,3 +126,30 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
             )
             .order_by_risk()
         )
+
+
+class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSerializer):
+    vulnerability_id = serializers.ReadOnlyField(source="vulnerability.vulnerability_id")
+
+    class Meta:
+        model = VulnerabilityAnalysis
+        fields = (
+            "uuid",
+            "product_package",
+            "vulnerability",
+            "vulnerability_id",
+            "state",
+            "justification",
+            "responses",
+            "detail",
+        )
+        extra_kwargs = {
+            "product_package": {
+                "view_name": "api_v2:productpackage-detail",
+                "lookup_field": "uuid",
+            },
+            "vulnerability": {
+                "view_name": "api_v2:vulnerability-detail",
+                "lookup_field": "uuid",
+            },
+        }
