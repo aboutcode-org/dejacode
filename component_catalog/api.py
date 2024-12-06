@@ -55,6 +55,7 @@ from dje.models import external_references_prefetch
 from dje.views import SendAboutFilesMixin
 from license_library.models import License
 from organization.api import OwnerEmbeddedSerializer
+from vulnerabilities.api import VulnerabilitySerializer
 
 
 class LicenseSummaryMixin:
@@ -620,7 +621,15 @@ class PackageSerializer(
         required=False,
         allow_null=True,
     )
-    affected_by_vulnerabilities = serializers.SerializerMethodField()
+    affected_by_vulnerabilities = VulnerabilitySerializer(
+        read_only=True,
+        many=True,
+        fields=[
+            "display_name",
+            "api_url",
+            "uuid",
+        ],
+    )
 
     class Meta:
         model = Package
@@ -691,28 +700,10 @@ class PackageSerializer(
                 "view_name": "api_v2:license-detail",
                 "lookup_field": "uuid",
             },
-            "affected_by_vulnerabilities": {
-                "view_name": "api_v2:vulnerability-detail",
-                "lookup_field": "uuid",
-            },
         }
         exclude_from_validate = [
             "collect_data",
         ]
-
-    def get_affected_by_vulnerabilities(self, obj):
-        # Using a SerializerMethodField to workaround circular imports
-        from vulnerabilities.api import VulnerabilitySerializer
-
-        vulnerabilities = obj.affected_by_vulnerabilities.all()
-        fields = [
-            "vulnerability_id",
-            "api_url",
-            "uuid",
-        ]
-        return VulnerabilitySerializer(
-            vulnerabilities, many=True, context=self.context, fields=fields
-        ).data
 
     def create(self, validated_data):
         """Collect data, purl, and submit scan if `collect_data` is provided."""

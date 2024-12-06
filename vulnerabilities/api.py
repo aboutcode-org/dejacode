@@ -12,7 +12,6 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 from rest_framework import viewsets
 
-from component_catalog.api import PackageSerializer
 from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedSerializer
@@ -20,22 +19,14 @@ from dje.api import ExtraPermissionsViewSetMixin
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
-from product_portfolio.api import ProductSerializer
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
 
 
 class VulnerabilitySerializer(DataspacedSerializer):
-    affected_packages = PackageSerializer(
-        read_only=True,
-        many=True,
-        fields=[
-            "display_name",
-            "api_url",
-            "uuid",
-        ],
-    )
+    # Using SerializerMethodField to workaround circular imports
+    affected_packages = serializers.SerializerMethodField()
     affected_products = serializers.SerializerMethodField()
 
     class Meta:
@@ -61,7 +52,20 @@ class VulnerabilitySerializer(DataspacedSerializer):
             },
         }
 
+    def get_affected_packages(self, obj):
+        from component_catalog.api import PackageSerializer
+
+        packages = obj.affected_packages.all()
+        fields = [
+            "display_name",
+            "api_url",
+            "uuid",
+        ]
+        return PackageSerializer(packages, many=True, context=self.context, fields=fields).data
+
     def get_affected_products(self, obj):
+        from product_portfolio.api import ProductSerializer
+
         products = (
             product_package.product
             for package in obj.affected_packages.all()
