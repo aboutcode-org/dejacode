@@ -203,7 +203,7 @@ Clone and Configure
 
 #. Create an environment file::
 
-    make envfile
+    make envfile_dev
 
 Database
 --------
@@ -212,6 +212,11 @@ Database
 To set up the database user, database, and table, run::
 
     make postgresdb
+
+To entirely delete the database user, database, and tables, run::
+
+    make postgresdb_clean
+
 
 Tests
 -----
