@@ -52,6 +52,7 @@ from product_portfolio.api import ProductDependencyViewSet
 from product_portfolio.api import ProductPackageViewSet
 from product_portfolio.api import ProductViewSet
 from reporting.api import ReportViewSet
+from vulnerabilities.api import VulnerabilityViewSet
 from workflow.api import RequestTemplateViewSet
 from workflow.api import RequestViewSet
 
@@ -78,6 +79,7 @@ api_router.register("requests", RequestViewSet)
 api_router.register("reports", ReportViewSet)
 api_router.register("external_references", ExternalReferenceViewSet)
 api_router.register("usage_policies", UsagePolicyViewSet)
+api_router.register("vulnerabilities", VulnerabilityViewSet)
 
 
 urlpatterns = [
