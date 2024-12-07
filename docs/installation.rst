@@ -168,7 +168,7 @@ Supported Platforms
 
 **DejaCode** has been tested and is supported on the following operating systems:
 
-#. **Debian-based** Linux distributions
+#. **Debian-based** Linux distributions. It is reported to work well Fedora.
 #. **macOS** 10.14 and up
 
 .. warning::
@@ -183,6 +183,10 @@ Before you install DejaCode, make sure you have the following prerequisites:
 #. **Git**: most recent release available at https://git-scm.com/
 #. **PostgreSQL**: release 16 or later found at https://www.postgresql.org/ or
    https://postgresapp.com/ on macOS
+#. **ldap** development libraries to build python-ldap on Linux.
+   For instance on Debian::
+
+    apt-get install -y libldap2-dev libsasl2-dev
 
 .. _system_dependencies:
 
@@ -199,7 +203,7 @@ Clone and Configure
 
 #. Create an environment file::
 
-    make envfile
+    make envfile_dev
 
 Database
 --------
@@ -208,6 +212,11 @@ Database
 To set up the database user, database, and table, run::
 
     make postgresdb
+
+To entirely delete the database user, database, and tables, run::
+
+    make postgresdb_clean
+
 
 Tests
 -----
