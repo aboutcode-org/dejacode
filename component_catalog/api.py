@@ -21,8 +21,7 @@ from rest_framework.decorators import action
 from rest_framework.fields import ListField
 from rest_framework.response import Response
 from rest_framework.schemas import AutoSchema
-from vulnerabilities.filters import ScoreRangeFilter
-from vulnerabilities.filters import RISK_SCORE_RANGES
+
 from component_catalog.admin import ComponentAdmin
 from component_catalog.admin import PackageAdmin
 from component_catalog.filters import IsVulnerableFilter
@@ -57,6 +56,8 @@ from dje.views import SendAboutFilesMixin
 from license_library.models import License
 from organization.api import OwnerEmbeddedSerializer
 from vulnerabilities.api import VulnerabilitySerializer
+from vulnerabilities.filters import RISK_SCORE_RANGES
+from vulnerabilities.filters import ScoreRangeFilter
 
 
 class LicenseSummaryMixin:
