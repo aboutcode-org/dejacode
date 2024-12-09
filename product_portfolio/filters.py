@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 import django_filters
 from packageurl.contrib.django.utils import purl_to_lookups
 
+from component_catalog.filters import IsVulnerableFilter
 from component_catalog.models import ComponentKeyword
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
 from dje.filters import BooleanChoiceFilter
@@ -23,6 +24,7 @@ from dje.filters import HasRelationFilter
 from dje.filters import MatchOrderedSearchFilter
 from dje.filters import SearchFilter
 from dje.widgets import BootstrapSelectMultipleWidget
+from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
 from license_library.models import License
 from product_portfolio.models import CodebaseResource
@@ -104,6 +106,10 @@ class ProductFilterSet(DataspacedFilterSet):
         widget=BootstrapSelectMultipleWidget(
             search_placeholder="Search keywords",
         ),
+    )
+    is_vulnerable = IsVulnerableFilter(
+        field_name="packages__affected_by_vulnerabilities",
+        widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
         field_name="packages__affected_by_vulnerabilities__vulnerability_id",
@@ -223,13 +229,8 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
+    is_vulnerable = IsVulnerableFilter(
         field_name="component__affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
         widget=DropDownWidget(
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
@@ -275,13 +276,8 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_modified",
         ],
     )
-    is_vulnerable = HasRelationFilter(
-        label=_("Is Vulnerable"),
+    is_vulnerable = IsVulnerableFilter(
         field_name="package__affected_by_vulnerabilities",
-        choices=(
-            ("yes", _("Affected by vulnerabilities")),
-            ("no", _("No vulnerabilities found")),
-        ),
         widget=DropDownWidget(
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),

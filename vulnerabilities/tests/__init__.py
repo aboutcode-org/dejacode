@@ -8,6 +8,7 @@
 
 from dje.tests import make_string
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 def make_vulnerability(dataspace, affecting=None, **data):
@@ -24,3 +25,19 @@ def make_vulnerability(dataspace, affecting=None, **data):
         vulnerability.add_affected(affecting)
 
     return vulnerability
+
+
+def make_vulnerability_analysis(product_package, vulnerability, **data):
+    return VulnerabilityAnalysis.objects.create(
+        dataspace=product_package.dataspace,
+        product_package=product_package,
+        vulnerability=vulnerability,
+        state=VulnerabilityAnalysis.State.RESOLVED,
+        justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+        responses=[
+            VulnerabilityAnalysis.Response.CAN_NOT_FIX,
+            VulnerabilityAnalysis.Response.ROLLBACK,
+        ],
+        detail="detail",
+        **data,
+    )

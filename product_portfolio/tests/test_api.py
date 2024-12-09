@@ -46,6 +46,8 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.tests import make_vulnerability_analysis
 
 
 class ProductAPITestCase(MaxQueryMixin, TestCase):
@@ -1108,6 +1110,74 @@ class ProductRelatedAPITestCase(TestCase):
         add_perm(self.admin_user, "add_productpackage")
         response = self.client.post(self.productpackage_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+    def test_api_productpackage_endpoint_vulnerabilities_features(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
+        vulnerability2 = make_vulnerability(self.dataspace)
+        analysis1 = make_vulnerability_analysis(self.pp1, vulnerability1)
+
+        response = self.client.get(self.pp1_detail_url)
+        response_analysis = response.data["vulnerability_analyses"][0]
+        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(analysis1.state, response_analysis["state"])
+        self.assertEqual(analysis1.justification, response_analysis["justification"])
+
+        data = {"is_vulnerable": "no"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(0, response.data["count"])
+        self.assertNotContains(response, self.pp1_detail_url)
+
+        data = {"is_vulnerable": "yes"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.pp1_detail_url)
+
+        data = {"affected_by": vulnerability1.vulnerability_id}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.pp1_detail_url)
+
+        data = {"affected_by": vulnerability2.vulnerability_id}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(0, response.data["count"])
+        self.assertNotContains(response, self.pp1_detail_url)
+
+    def test_api_product_endpoint_vulnerabilities_features(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
+        vulnerability2 = make_vulnerability(self.dataspace)
+        analysis1 = make_vulnerability_analysis(self.pp1, vulnerability1)
+
+        response = self.client.get(self.product1_detail_url)
+        response_analysis = response.data["vulnerability_analyses"][0]
+        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(analysis1.state, response_analysis["state"])
+        self.assertEqual(analysis1.justification, response_analysis["justification"])
+
+        data = {"is_vulnerable": "no"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertNotContains(response, self.product1_detail_url)
+        self.assertContains(response, self.product2_detail_url)
+
+        data = {"is_vulnerable": "yes"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.product1_detail_url)
+        self.assertNotContains(response, self.product2_detail_url)
+
+        data = {"affected_by": vulnerability1.vulnerability_id}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.product1_detail_url)
+        self.assertNotContains(response, self.product2_detail_url)
+
+        data = {"affected_by": vulnerability2.vulnerability_id}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(0, response.data["count"])
+        self.assertNotContains(response, self.product1_detail_url)
+        self.assertNotContains(response, self.product2_detail_url)
 
     def test_api_codebaseresource_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")

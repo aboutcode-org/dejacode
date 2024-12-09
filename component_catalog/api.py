@@ -24,6 +24,7 @@ from rest_framework.schemas import AutoSchema
 
 from component_catalog.admin import ComponentAdmin
 from component_catalog.admin import PackageAdmin
+from component_catalog.filters import IsVulnerableFilter
 from component_catalog.fuzzy import FuzzyPackageNameSearch
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import normalize_and_validate_expression
@@ -54,6 +55,9 @@ from dje.models import external_references_prefetch
 from dje.views import SendAboutFilesMixin
 from license_library.models import License
 from organization.api import OwnerEmbeddedSerializer
+from vulnerabilities.api import VulnerabilitySerializer
+from vulnerabilities.filters import RISK_SCORE_RANGES
+from vulnerabilities.filters import ScoreRangeFilter
 
 
 class LicenseSummaryMixin:
@@ -426,6 +430,13 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
     name_version = NameVersionFilter(
         label="Name:Version",
     )
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = Component
@@ -450,6 +461,8 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "name_version",
             "keywords",
+            "is_vulnerable",
+            "affected_by",
         )
 
 
@@ -610,6 +623,15 @@ class PackageSerializer(
         required=False,
         allow_null=True,
     )
+    affected_by_vulnerabilities = VulnerabilitySerializer(
+        read_only=True,
+        many=True,
+        fields=[
+            "vulnerability_id",
+            "api_url",
+            "uuid",
+        ],
+    )
 
     class Meta:
         model = Package
@@ -669,6 +691,8 @@ class PackageSerializer(
             "created_date",
             "last_modified_date",
             "collect_data",
+            "risk_score",
+            "affected_by_vulnerabilities",
         )
         extra_kwargs = {
             "api_url": {
@@ -777,6 +801,14 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
     last_modified_date = LastModifiedDateFilter()
     fuzzy = FuzzyPackageNameSearch(widget=HiddenInput)
     purl = PackageURLFilter(label="Package URL")
+    is_vulnerable = IsVulnerableFilter(
+        field_name="affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
+    risk_score = ScoreRangeFilter(score_ranges=RISK_SCORE_RANGES)
 
     class Meta:
         model = Package
@@ -801,6 +833,9 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "fuzzy",
             "purl",
+            "is_vulnerable",
+            "affected_by",
+            "risk_score",
         )
 
 
@@ -877,6 +912,7 @@ class PackageViewSet(
             .prefetch_related(
                 "component_set__owner",
                 "licenses__category",
+                "affected_by_vulnerabilities",
                 external_references_prefetch,
             )
         )

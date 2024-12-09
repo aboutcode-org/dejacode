@@ -23,6 +23,7 @@ from product_portfolio.tests import make_product_package
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.tests import make_vulnerability_analysis
 
 
 class VulnerabilitiesModelsTestCase(TestCase):
@@ -211,20 +212,9 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
         product1 = make_product(self.dataspace)
         product_package1 = make_product_package(product1, package=package1)
-        analysis = VulnerabilityAnalysis(
-            product_package=product_package1,
-            vulnerability=vulnerability1,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-            responses=[
-                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
-                VulnerabilityAnalysis.Response.ROLLBACK,
-            ],
-            detail="detail",
-            dataspace=self.dataspace,
-        )
+        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
         vulnerability1_as_cdx = vulnerability1.as_cyclonedx(
-            affected_instances=[package1], analysis=analysis
+            affected_instances=[package1], analysis=analysis1
         )
         as_dict = json.loads(vulnerability1_as_cdx.as_json())
         expected = {
@@ -263,39 +253,28 @@ class VulnerabilitiesModelsTestCase(TestCase):
     def test_vulnerability_model_vulnerability_propagate(self):
         vulnerability1 = make_vulnerability(dataspace=self.dataspace)
         product_package1 = make_product_package(make_product(self.dataspace))
-        analysis = VulnerabilityAnalysis.objects.create(
-            product_package=product_package1,
-            vulnerability=vulnerability1,
-            dataspace=self.dataspace,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-            responses=[
-                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
-                VulnerabilityAnalysis.Response.ROLLBACK,
-            ],
-            detail="detail",
-        )
+        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
 
         product2 = make_product(self.dataspace)
-        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        new_analysis = analysis1.propagate(product2.uuid, self.super_user)
         self.assertIsNone(new_analysis)
 
         new_product_package = make_product_package(product2, package=product_package1.package)
-        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        new_analysis = analysis1.propagate(product2.uuid, self.super_user)
         self.assertIsNotNone(new_analysis)
-        self.assertNotEqual(analysis.pk, new_analysis.pk)
+        self.assertNotEqual(analysis1.pk, new_analysis.pk)
         self.assertEqual(vulnerability1, new_analysis.vulnerability)
         self.assertEqual(new_product_package, new_analysis.product_package)
         self.assertEqual(product2, new_analysis.product)
         self.assertEqual(new_product_package.package, new_analysis.package)
         self.assertEqual(self.super_user, new_analysis.created_by)
         self.assertEqual(self.super_user, new_analysis.last_modified_by)
-        self.assertEqual(analysis.state, new_analysis.state)
-        self.assertEqual(analysis.justification, new_analysis.justification)
-        self.assertEqual(analysis.detail, new_analysis.detail)
-        self.assertEqual(analysis.responses, new_analysis.responses)
+        self.assertEqual(analysis1.state, new_analysis.state)
+        self.assertEqual(analysis1.justification, new_analysis.justification)
+        self.assertEqual(analysis1.detail, new_analysis.detail)
+        self.assertEqual(analysis1.responses, new_analysis.responses)
 
         # Update
-        analysis.update(state=VulnerabilityAnalysis.State.EXPLOITABLE)
-        new_analysis = analysis.propagate(product2.uuid, self.super_user)
+        analysis1.update(state=VulnerabilityAnalysis.State.EXPLOITABLE)
+        new_analysis = analysis1.propagate(product2.uuid, self.super_user)
         self.assertEqual(VulnerabilityAnalysis.State.EXPLOITABLE, new_analysis.state)

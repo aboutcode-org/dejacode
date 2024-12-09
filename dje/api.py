@@ -226,7 +226,32 @@ class ExtraPermissionsViewSetMixin:
         return permission_classes + extra_permission
 
 
-class DataspacedSerializer(serializers.HyperlinkedModelSerializer):
+class DynamicFieldsSerializerMixin:
+    """
+    A Serializer mixin that takes an additional `fields` or `exclude_fields`
+    arguments to customize the field selection.
+
+    Inspired by https://www.django-rest-framework.org/api-guide/serializers/#example
+    """
+
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop("fields", [])
+        exclude_fields = kwargs.pop("exclude_fields", [])
+
+        super().__init__(*args, **kwargs)
+
+        if fields:
+            self.fields = {
+                field_name: field
+                for field_name, field in self.fields.items()
+                if field_name in fields
+            }
+
+        for field_name in exclude_fields:
+            self.fields.pop(field_name)
+
+
+class DataspacedSerializer(DynamicFieldsSerializerMixin, serializers.HyperlinkedModelSerializer):
     def __init__(self, *args, **kwargs):
         """
         Add the `dataspace` attribute from the request User Dataspace.

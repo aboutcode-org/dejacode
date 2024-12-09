@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
 from component_catalog.api import ValidateLicenseExpressionMixin
+from component_catalog.filters import IsVulnerableFilter
 from component_catalog.license_expression_dje import clean_related_expression
 from dje.api import AboutCodeFilesActionMixin
 from dje.api import CreateRetrieveUpdateListViewSet
@@ -47,6 +48,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
 base_extra_kwargs = {
     "licenses": {
@@ -103,6 +105,10 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
     keywords = KeywordsField(
         required=False,
     )
+    vulnerability_analyses = VulnerabilityAnalysisSerializer(
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = Product
@@ -119,6 +125,7 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
             "licenses",
             "components",
             "packages",
+            "vulnerability_analyses",
             "keywords",
             "release_date",
             "description",
@@ -184,6 +191,13 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         help_text="Keyword label contains (case-insensitive)",
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="packages__affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = Product
@@ -200,6 +214,8 @@ class ProductFilterSet(DataspacedAPIFilterSet):
             "configuration_status",
             "license_expression",
             "last_modified_date",
+            "is_vulnerable",
+            "affected_by",
         )
 
 
@@ -320,6 +336,8 @@ class ProductViewSet(
                 "components",
                 "packages",
                 "licenses",
+                "vulnerability_analyses__vulnerability",
+                "vulnerability_analyses__product_package",
             )
         )
 
@@ -528,6 +546,9 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
         help_text='Supported values: "catalog", "custom".',
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="component__affected_by_vulnerabilities",
+    )
 
     class Meta:
         model = ProductComponent
@@ -538,8 +559,11 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
             "review_status",
             "purpose",
             "feature",
+            "is_deployed",
+            "is_modified",
             "completeness",
             "last_modified_date",
+            "is_vulnerable",
         )
 
 
@@ -606,6 +630,11 @@ class ProductPackageSerializer(BaseProductRelationSerializer):
         source="package",
         read_only=True,
     )
+    vulnerability_analyses = VulnerabilityAnalysisSerializer(
+        many=True,
+        read_only=True,
+        exclude_fields=["product_package"],
+    )
 
     class Meta:
         model = ProductPackage
@@ -628,6 +657,7 @@ class ProductPackageSerializer(BaseProductRelationSerializer):
             "package_paths",
             "reference_notes",
             "issue_ref",
+            "vulnerability_analyses",
             "created_date",
             "last_modified_date",
         )
@@ -664,6 +694,13 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         help_text="Exact feature label.",
     )
     last_modified_date = LastModifiedDateFilter()
+    is_vulnerable = IsVulnerableFilter(
+        field_name="package__affected_by_vulnerabilities",
+    )
+    affected_by = django_filters.CharFilter(
+        field_name="package__affected_by_vulnerabilities__vulnerability_id",
+        label="Affected by (vulnerability_id)",
+    )
 
     class Meta:
         model = ProductPackage
@@ -675,6 +712,8 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
             "purpose",
             "feature",
             "last_modified_date",
+            "is_vulnerable",
+            "affected_by",
         )
 
 
@@ -691,6 +730,15 @@ class ProductPackageViewSet(ProductRelationViewSet):
         "created_date",
         "last_modified_date",
     )
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                "vulnerability_analyses__vulnerability",
+            )
+        )
 
 
 class CodebaseResourceSerializer(DataspacedSerializer):

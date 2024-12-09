@@ -45,6 +45,7 @@ from license_library.models import LicenseCategory
 from license_library.models import LicenseChoice
 from organization.models import Owner
 from policy.models import UsagePolicy
+from vulnerabilities.tests import make_vulnerability
 
 
 @override_settings(
@@ -1034,6 +1035,14 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, self.package1_detail_url)
         self.assertNotContains(response, self.package2_detail_url)
 
+        self.package1.risk_score = 9.0
+        self.package1.save()
+        data = {"risk_score": "critical"}
+        response = self.client.get(self.package_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.package1_detail_url)
+        self.assertNotContains(response, self.package2_detail_url)
+
     def test_api_package_list_endpoint_multiple_char_filters(self):
         self.client.login(username="super_user", password="secret")
         filters = "?md5={}&md5={}".format(self.package1.md5, self.package2.md5)
@@ -1324,6 +1333,37 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.package1.refresh_from_db()
         self.assertEqual(self.base_user, self.package1.created_by)
         self.assertEqual(self.super_user, self.package1.last_modified_by)
+
+    def test_api_package_endpoint_vulnerabilities_features(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
+        vulnerability2 = make_vulnerability(self.dataspace)
+        self.package1.update(risk_score=9.0)
+
+        data = {"is_vulnerable": "yes"}
+        response = self.client.get(self.package_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.package1_detail_url)
+        self.assertNotContains(response, self.package2_detail_url)
+
+        results = response.data["results"]
+        self.assertEqual("9.0", results[0]["risk_score"])
+        self.assertEqual(
+            vulnerability1.vulnerability_id,
+            results[0]["affected_by_vulnerabilities"][0]["vulnerability_id"],
+        )
+
+        data = {"affected_by": vulnerability1.vulnerability_id}
+        response = self.client.get(self.package_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.package1_detail_url)
+        self.assertNotContains(response, self.package2_detail_url)
+
+        data = {"affected_by": vulnerability2.vulnerability_id}
+        response = self.client.get(self.package_list_url, data)
+        self.assertEqual(0, response.data["count"])
+        self.assertNotContains(response, self.package1_detail_url)
+        self.assertNotContains(response, self.package2_detail_url)
 
     def test_api_package_license_choices_fields(self):
         self.client.login(username="super_user", password="secret")

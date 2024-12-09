@@ -29,6 +29,15 @@ Release notes
   analysed are listed and can be selected for "analysis propagation".
   https://github.com/aboutcode-org/dejacode/issues/105
 
+- Add vulnerabilities REST API endpoint that mimics the content and features of the
+  vulnerabilities list view.
+  Add `risk_score` and `affected_by_vulnerabilities` fields in Package endpoint.
+  Add `vulnerability_analyses` field in Product and ProductPackage endpoints.
+  Add `is_vulnerable` and `affected_by` filters in Product, Package, and ProductPackage
+  endpoints.
+  Add `risk_score` filter in Package endpoint.
+  https://github.com/aboutcode-org/dejacode/issues/104
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
