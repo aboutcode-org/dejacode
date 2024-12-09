@@ -38,6 +38,11 @@ Release notes
   Add `risk_score` filter in Package endpoint.
   https://github.com/aboutcode-org/dejacode/issues/104
 
+- Add new `is_reachable` field on the VulnerabilityAnalysis model.
+  It can be used to declare if a this vulnerability is reachable, not reachable, or
+  if this fact is not known in the context of a Product Package.
+  https://github.com/aboutcode-org/dejacode/issues/103
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
