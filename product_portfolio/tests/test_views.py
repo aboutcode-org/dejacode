@@ -61,6 +61,7 @@ from product_portfolio.tests import make_product_package
 from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.tests import make_vulnerability_analysis
 from workflow.models import Request
 from workflow.models import RequestTemplate
 
@@ -347,24 +348,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         product_package1 = make_product_package(product1, package=p1)
         product_package2 = make_product_package(product1, package=p2)
-        VulnerabilityAnalysis.objects.create(
-            product_package=product_package1,
-            vulnerability=vulnerability1,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            dataspace=self.dataspace,
-        )
-        VulnerabilityAnalysis.objects.create(
-            product_package=product_package2,
-            vulnerability=vulnerability1,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            dataspace=self.dataspace,
-        )
-        VulnerabilityAnalysis.objects.create(
-            product_package=product_package2,
-            vulnerability=vulnerability2,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            dataspace=self.dataspace,
-        )
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        make_vulnerability_analysis(product_package2, vulnerability1)
+        make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
         with self.assertNumQueries(9):
@@ -379,19 +365,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         product1 = make_product(self.dataspace)
         product_package1 = make_product_package(product1, package=p1)
         make_product_package(product1, package=p2)
-
-        analysis = VulnerabilityAnalysis.objects.create(
-            product_package=product_package1,
-            vulnerability=vulnerability1,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-            responses=[
-                VulnerabilityAnalysis.Response.CAN_NOT_FIX,
-                VulnerabilityAnalysis.Response.ROLLBACK,
-            ],
-            detail="detail",
-            dataspace=self.dataspace,
-        )
+        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
@@ -404,7 +378,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             for package in vulnerability.affected_packages.all()
         }
         self.assertTrue(hasattr(packages.get(p1.uuid), "vulnerability_analysis"))
-        self.assertEqual(analysis, packages.get(p1.uuid).vulnerability_analysis)
+        self.assertEqual(analysis1, packages.get(p1.uuid).vulnerability_analysis)
         self.assertFalse(hasattr(packages.get(p2.uuid), "vulnerability_analysis"))
 
         expected = """

@@ -20,8 +20,8 @@ from dje.tests import create_superuser
 from dje.tests import create_user
 from product_portfolio.models import Product
 from product_portfolio.tests import make_product_package
-from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.tests import make_vulnerability_analysis
 
 
 class OutputsTestCase(TestCase):
@@ -117,21 +117,19 @@ class OutputsTestCase(TestCase):
         self.assertEqual(vulnerability1.vulnerability_id, bom.vulnerabilities[0].id)
         self.assertIsNone(bom.vulnerabilities[0].analysis)
 
-        VulnerabilityAnalysis.objects.create(
-            product_package=product_package1,
-            vulnerability=vulnerability1,
-            state=VulnerabilityAnalysis.State.RESOLVED,
-            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-            detail="detail",
-            dataspace=self.dataspace,
-        )
+        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
         bom = outputs.get_cyclonedx_bom(
             instance=self.product1,
             user=self.super_user,
             include_vex=True,
         )
         analysis = bom.vulnerabilities[0].analysis
-        expected = {"detail": "detail", "justification": "code_not_present", "state": "resolved"}
+        expected = {
+            "detail": analysis1.detail,
+            "justification": str(analysis1.justification),
+            "response": [str(response) for response in analysis1.responses],
+            "state": str(analysis1.state),
+        }
         self.assertEqual(expected, json.loads(analysis.as_json()))
 
     def test_outputs_get_cyclonedx_bom_json(self):

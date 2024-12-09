@@ -38,5 +38,6 @@ def make_vulnerability_analysis(product_package, vulnerability, **data):
             VulnerabilityAnalysis.Response.CAN_NOT_FIX,
             VulnerabilityAnalysis.Response.ROLLBACK,
         ],
+        detail="detail",
         **data,
     )
