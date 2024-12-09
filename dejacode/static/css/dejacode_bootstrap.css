@@ -388,16 +388,16 @@ table.vulnerabilities-table .column-summary {
   width: 210px;
 }
 #tab_vulnerabilities .column-affected_packages {
-  min-width: 300px;
+  min-width: 250px;
 }
 #tab_vulnerabilities .column-exploitability {
-  width: 155px;
+  width: 140px;
 }
 #tab_vulnerabilities .column-weighted_severity {
-  width: 120px;
+  width: 105px;
 }
 #tab_vulnerabilities .column-risk_score {
-  width: 90px;
+  width: 80px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;
@@ -410,6 +410,9 @@ table.vulnerabilities-table .column-summary {
 }
 #tab_vulnerabilities .column-vulnerability_analyses__responses {
   min-width: 120px;
+}
+#tab_vulnerabilities .column-vulnerability_analyses__is_reachable {
+  min-width: 80px;
 }
 /* -- Vulnerability analysis modal -- */
 #vulnerability-analysis-modal #div_id_responses .form-check {
@@ -655,11 +658,15 @@ td.sub-header {
 .table thead tr th a.sort:hover {
   color: #ccc;
   text-decoration: none;
-  margin-left: 0.0625rem;
+  margin-left: 0;
 }
 .table thead tr th a.sort.active {
   color: var(--bs-body-color);
 }
+.tab-content .table thead tr th {
+  font-size: 0.875rem;
+}
+th a.sort i {width: auto;}
 
 /* -- Better looks for the popover fake links -- */
 .tag_popover,

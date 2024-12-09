@@ -502,12 +502,21 @@ class VulnerabilityAnalysis(
         on_delete=models.CASCADE,
         related_name="vulnerability_analyses",
     )
+    # Regular fields
+    is_reachable = models.BooleanField(
+        null=True,
+        help_text=_(
+            "Indicates whether the vulnerability is reachable in the context of this "
+            "product package."
+        ),
+    )
 
     class Meta:
         unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["state"]),
             models.Index(fields=["justification"]),
+            models.Index(fields=["is_reachable"]),
         ]
 
     def __str__(self):
@@ -556,6 +565,7 @@ class VulnerabilityAnalysis(
             "justification",
             "responses",
             "detail",
+            "is_reachable",
         ]
         for field_name in fields_to_clone:
             field_value = getattr(self, field_name, None)

@@ -142,6 +142,7 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "justification",
             "responses",
             "detail",
+            "is_reachable",
         )
         extra_kwargs = {
             "product_package": {
