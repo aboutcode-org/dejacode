@@ -627,7 +627,7 @@ class PackageSerializer(
         read_only=True,
         many=True,
         fields=[
-            "display_name",
+            "vulnerability_id",
             "api_url",
             "uuid",
         ],

@@ -632,6 +632,7 @@ class ProductPackageSerializer(BaseProductRelationSerializer):
     )
     vulnerability_analyses = VulnerabilityAnalysisSerializer(
         many=True,
+        read_only=True,
         exclude_fields=["product_package"],
     )
 
