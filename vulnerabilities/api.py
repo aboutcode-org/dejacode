@@ -143,6 +143,8 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "responses",
             "detail",
             "is_reachable",
+            "first_issued",
+            "last_updated",
         )
         extra_kwargs = {
             "product_package": {
@@ -154,3 +156,20 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
                 "lookup_field": "uuid",
             },
         }
+
+
+class VulnerabilityAnalysisFilterSet(DataspacedAPIFilterSet):
+    uuid = MultipleUUIDFilter()
+    last_updated = LastModifiedDateFilter()
+
+    class Meta:
+        model = VulnerabilityAnalysis
+        fields = (
+            "uuid",
+            "state",
+            "justification",
+            "detail",
+            "is_reachable",
+            "first_issued",
+            "last_updated",
+        )

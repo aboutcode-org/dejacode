@@ -48,6 +48,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from vulnerabilities.api import VulnerabilityAnalysis
+from vulnerabilities.api import VulnerabilityAnalysisFilterSet
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
 base_extra_kwargs = {
@@ -931,5 +933,21 @@ class ProductDependencyViewSet(ProductRelatedViewSet):
             .select_related(
                 "for_package__dataspace",
                 "resolved_to_package__dataspace",
+            )
+        )
+
+
+class VulnerabilityAnalysisViewSet(ProductRelatedViewSet):
+    queryset = VulnerabilityAnalysis.objects.none()
+    serializer_class = VulnerabilityAnalysisSerializer
+    filterset_class = VulnerabilityAnalysisFilterSet
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "vulnerability",
+                "product_package",
             )
         )

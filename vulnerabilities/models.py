@@ -22,6 +22,7 @@ from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryUserFieldsMixin
+from dje.models import ProductSecuredQuerySet
 
 logger = logging.getLogger("dje")
 
@@ -510,6 +511,8 @@ class VulnerabilityAnalysis(
             "product package."
         ),
     )
+
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
 
     class Meta:
         unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
