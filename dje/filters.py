@@ -438,6 +438,8 @@ class BooleanChoiceFilter(django_filters.ChoiceFilter):
         boolean_value = {"yes": True, "no": False}.get(value)
         if boolean_value is not None:
             return qs.filter(**{self.field_name: boolean_value}).distinct()
+        elif value in ["none", "unknown"]:
+            return qs.filter(**{f"{self.field_name}__isnull": True}).distinct()
         return qs
 
 

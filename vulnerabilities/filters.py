@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 import django_filters
 
+from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
 from dje.widgets import SortDropDownWidget
@@ -122,6 +123,7 @@ class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
         "vulnerability_analyses__state",
         "vulnerability_analyses__justification",
         "responses",
+        "is_reachable",
     ]
     sort = NullsLastOrderingFilter(
         label=_("Sort"),
@@ -139,6 +141,15 @@ class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
         lookup_expr="icontains",
         choices=VulnerabilityAnalysisMixin.Response.choices,
     )
+    is_reachable = BooleanChoiceFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        empty_label="All",
+        choices=(
+            ("yes", _("Reachable")),
+            ("no", _("Not reachable")),
+            ("unknown", _("Reachability not known")),
+        ),
+    )
 
     class Meta:
         model = Vulnerability
@@ -146,6 +157,7 @@ class ProductVulnerabilityFilterSet(VulnerabilityFilterSet):
             "q",
             "vulnerability_analyses__state",
             "vulnerability_analyses__justification",
+            "is_reachable",
             "exploitability",
         ]
 

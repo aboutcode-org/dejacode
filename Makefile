@@ -17,7 +17,7 @@ PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
 ENV_FILE=.env
 DOCS_LOCATION=./docs
 DOCKER_COMPOSE=docker compose -f docker-compose.yml
-DOCKER_EXEC=${DOCKER_COMPOSE} eUSERNAMExec
+DOCKER_EXEC=${DOCKER_COMPOSE} exec
 DB_NAME=dejacode_db
 DB_USERNAME=dejacode
 DB_PASSWORD=dejacode

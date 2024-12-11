@@ -33,17 +33,15 @@ from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
 from dje.models import DataspacedModel
-from dje.models import DataspacedQuerySet
 from dje.models import History
 from dje.models import HistoryFieldsMixin
+from dje.models import ProductSecuredQuerySet
 from dje.models import ReferenceNotesMixin
 from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from vulnerabilities.fetch import fetch_for_packages
-from vulnerabilities.models import Vulnerability
-from vulnerabilities.models import VulnerabilityAnalysis
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "
@@ -519,6 +517,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
     def get_vulnerability_qs(self, prefetch_related_packages=False):
         """Return a QuerySet of all Vulnerability instances related to this product"""
+        from vulnerabilities.models import Vulnerability
+        from vulnerabilities.models import VulnerabilityAnalysis
+
         vulnerability_qs = Vulnerability.objects.filter(
             affected_packages__in=self.packages.all()
         ).distinct()
@@ -581,20 +582,6 @@ class ProductItemPurpose(
             )
 
         return self.label
-
-
-class ProductSecuredQuerySet(DataspacedQuerySet):
-    def product_secured(self, user=None, perms="view_product"):
-        """Filter based on the Product object permission."""
-        if not user:
-            return self.none()
-
-        product_qs = Product.objects.get_queryset(user, perms)
-        return self.filter(product__in=product_qs)
-
-    def product(self, product):
-        """Filter based on the provided ``product`` object."""
-        return self.filter(product=product)
 
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):

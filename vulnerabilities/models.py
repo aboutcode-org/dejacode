@@ -22,6 +22,7 @@ from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryUserFieldsMixin
+from dje.models import ProductSecuredQuerySet
 
 logger = logging.getLogger("dje")
 
@@ -502,12 +503,23 @@ class VulnerabilityAnalysis(
         on_delete=models.CASCADE,
         related_name="vulnerability_analyses",
     )
+    # Regular fields
+    is_reachable = models.BooleanField(
+        null=True,
+        help_text=_(
+            "Indicates whether the vulnerability is reachable in the context of this "
+            "product package."
+        ),
+    )
+
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
 
     class Meta:
         unique_together = (("product_package", "vulnerability"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["state"]),
             models.Index(fields=["justification"]),
+            models.Index(fields=["is_reachable"]),
         ]
 
     def __str__(self):
@@ -556,6 +568,7 @@ class VulnerabilityAnalysis(
             "justification",
             "responses",
             "detail",
+            "is_reachable",
         ]
         for field_name in fields_to_clone:
             field_value = getattr(self, field_name, None)

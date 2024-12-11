@@ -16,6 +16,7 @@ from functools import reduce
 from itertools import groupby
 from operator import attrgetter
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.admin.models import ADDITION
 from django.contrib.admin.models import CHANGE
@@ -618,6 +619,21 @@ def secure_queryset_relational_fields(queryset, user):
     if user:
         return queryset.scope(user.dataspace)
     return queryset
+
+
+class ProductSecuredQuerySet(DataspacedQuerySet):
+    def product_secured(self, user=None, perms="view_product"):
+        """Filter based on the Product object permission."""
+        if not user:
+            return self.none()
+
+        Product = apps.get_model("product_portfolio", "Product")
+        product_qs = Product.objects.get_queryset(user, perms)
+        return self.filter(product__in=product_qs)
+
+    def product(self, product):
+        """Filter based on the provided ``product`` object."""
+        return self.filter(product=product)
 
 
 class DataspacedModel(models.Model):
