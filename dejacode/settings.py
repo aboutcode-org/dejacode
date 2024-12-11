@@ -411,26 +411,31 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
-REDIS_URL = env.str("REDIS_URL", default="redis://127.0.0.1:6379")
-
 # Default setup for the cache
 # See https://docs.djangoproject.com/en/dev/topics/cache/
 CACHE_BACKEND = env.str("CACHE_BACKEND", default="django.core.cache.backends.locmem.LocMemCache")
+# Set CACHE_REDIS_URL to the URL pointing to your Redis instance available for caching,
+# using the appropriate scheme.
+# For example: "redis://[[username]:[password]]@localhost:6379/0"
+# See the redis-py docs for details on the available schemes at
+# https://redis-py.readthedocs.io/en/stable/connections.html#redis.connection.ConnectionPool.from_url
+CACHE_REDIS_URL = env.str("CACHE_REDIS_URL", default="redis://127.0.0.1:6379")
+
 CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
-        "LOCATION": REDIS_URL,
+        "LOCATION": CACHE_REDIS_URL,
         "TIMEOUT": 900,  # 15 minutes, in seconds
     },
     "licensing": {
         "BACKEND": CACHE_BACKEND,
-        "LOCATION": REDIS_URL,
+        "LOCATION": CACHE_REDIS_URL,
         "TIMEOUT": 300,  # 10 minutes, in seconds
         "KEY_PREFIX": "licensing",
     },
     "vulnerabilities": {
         "BACKEND": CACHE_BACKEND,
-        "LOCATION": REDIS_URL,
+        "LOCATION": CACHE_REDIS_URL,
         "TIMEOUT": 3600,  # 1 hour, in seconds
         "KEY_PREFIX": "vuln",
     },
@@ -439,10 +444,16 @@ CACHES = {
 # Job Queue
 RQ_QUEUES = {
     "default": {
-        "HOST": env.str("DEJACODE_REDIS_HOST", default="localhost"),
-        "PORT": env.str("DEJACODE_REDIS_PORT", default="6379"),
-        "PASSWORD": env.str("DEJACODE_REDIS_PASSWORD", default=""),
-        "DEFAULT_TIMEOUT": env.int("DEJACODE_RQ_DEFAULT_TIMEOUT", default=360),
+        "HOST": env.str("DEJACODE_RQ_REDIS_HOST", default="localhost"),
+        "PORT": env.str("DEJACODE_RQ_REDIS_PORT", default="6379"),
+        "DB": env.int("DEJACODE_RQ_REDIS_DB", default=0),
+        "USERNAME": env.str("DEJACODE_RQ_REDIS_USERNAME", default=None),
+        "PASSWORD": env.str("DEJACODE_RQ_REDIS_PASSWORD", default=""),
+        "DEFAULT_TIMEOUT": env.int("DEJACODE_RQ_REDIS_DEFAULT_TIMEOUT", default=360),
+        # Enable SSL for Redis connections when deploying DejaCode in environments where
+        # Redis is hosted on a separate system (e.g., cloud deployment or remote
+        # Redis server) to secure data in transit.
+        "SSL": env.bool("DEJACODE_RQ_REDIS_SSL", default=False),
     },
 }
 

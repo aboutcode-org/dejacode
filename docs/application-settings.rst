@@ -205,6 +205,32 @@ default the ``US/Pacific`` time zone is used::
     You can view a detailed list of time zones `here.
     <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_
 
+.. _dejacode_settings_job_queue_and_workers:
+
+Job Queue and Workers
+=====================
+
+DejaCode leverages the RQ (Redis Queue) Python library for job queuing and background
+processing with workers.
+
+By default, it is configured to use the "redis" service in the Docker Compose stack.
+
+For deployments where Redis is hosted on a separate system
+(e.g., a cloud-based deployment or a remote Redis server),
+the Redis instance used by RQ can be customized using the following settings::
+
+    DEJACODE_RQ_REDIS_HOST=localhost
+    DEJACODE_RQ_REDIS_PORT=6379
+    DEJACODE_RQ_REDIS_DB=0
+    DEJACODE_RQ_REDIS_USERNAME=<username>
+    DEJACODE_RQ_REDIS_PASSWORD=<password>
+    DEJACODE_RQ_REDIS_DEFAULT_TIMEOUT=360
+
+To enhance security, it is recommended to enable SSL for Redis connections.
+SSL is disabled by default but can be enabled with the following configuration::
+
+    DEJACODE_RQ_REDIS_SSL=True
+
 .. _dejacode_settings_aboutcode_integrations:
 
 AboutCode integrations
