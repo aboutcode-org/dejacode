@@ -45,6 +45,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
             "justification",
             "responses",
             "detail",
+            "is_reachable",
             "propagate_to_products",
         ]
         widgets = {
@@ -84,7 +85,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
                 "",
                 "product_package",
                 "vulnerability",
-                Group("state", "justification"),
+                Group("state", "justification", "is_reachable"),
                 "responses",
                 "detail",
                 Field(

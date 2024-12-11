@@ -1138,6 +1138,15 @@ class ProductTabVulnerabilitiesView(
             ),
             filter="responses",
         ),
+        Header(
+            "vulnerability_analyses__is_reachable",
+            _("Reach"),
+            help_text=_(
+                "Indicates whether the vulnerability is reachable in the context of "
+                "this product package."
+            ),
+            filter="is_reachable",
+        ),
     )
 
     def get_context_data(self, **kwargs):

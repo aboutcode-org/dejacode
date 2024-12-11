@@ -28,10 +28,9 @@ from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import DataspacedSlugRelatedField
-from dje.api import ExtraPermissionsViewSetMixin
 from dje.api import NameVersionHyperlinkedRelatedField
+from dje.api import ProductRelatedViewSet
 from dje.api import SPDXDocumentActionMixin
-from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
@@ -565,18 +564,6 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "is_vulnerable",
         )
-
-
-class ProductRelatedViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewSet):
-    lookup_field = "uuid"
-    extra_permissions = (TabPermission,)
-
-    def get_queryset(self):
-        perms = ["view_product"]
-        if self.request.method not in SAFE_METHODS:
-            perms.append("change_product")
-
-        return self.queryset.model.objects.product_secured(self.request.user, perms)
 
 
 class ProductRelationViewSet(ProductRelatedViewSet):

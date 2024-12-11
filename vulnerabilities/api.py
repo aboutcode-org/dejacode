@@ -16,6 +16,7 @@ from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedSerializer
 from dje.api import ExtraPermissionsViewSetMixin
+from dje.api import ProductRelatedViewSet
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
@@ -134,6 +135,7 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
     class Meta:
         model = VulnerabilityAnalysis
         fields = (
+            "api_url",
             "uuid",
             "product_package",
             "vulnerability",
@@ -142,6 +144,9 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "justification",
             "responses",
             "detail",
+            "is_reachable",
+            "first_issued",
+            "last_updated",
         )
         extra_kwargs = {
             "product_package": {
@@ -152,4 +157,48 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
                 "view_name": "api_v2:vulnerability-detail",
                 "lookup_field": "uuid",
             },
+            "api_url": {
+                "view_name": "api_v2:vulnerabilityanalysis-detail",
+                "lookup_field": "uuid",
+            },
         }
+
+
+class VulnerabilityAnalysisFilterSet(DataspacedAPIFilterSet):
+    uuid = MultipleUUIDFilter()
+    last_updated = LastModifiedDateFilter()
+
+    class Meta:
+        model = VulnerabilityAnalysis
+        fields = (
+            "uuid",
+            "state",
+            "justification",
+            "detail",
+            "is_reachable",
+            "first_issued",
+            "last_updated",
+        )
+
+
+class VulnerabilityAnalysisViewSet(ProductRelatedViewSet):
+    queryset = VulnerabilityAnalysis.objects.none()
+    serializer_class = VulnerabilityAnalysisSerializer
+    filterset_class = VulnerabilityAnalysisFilterSet
+    ordering_fields = (
+        "product",
+        "product_package",
+        "state",
+        "last_updated",
+    )
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .order_by("product", "product_package", "state")
+            .select_related(
+                "vulnerability",
+                "product_package",
+            )
+        )

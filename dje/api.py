@@ -536,6 +536,18 @@ class GenericForeignKeyHyperlinkedField(DataspacedHyperlinkedRelatedField):
             self.fail("does_not_exist")
 
 
+class ProductRelatedViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewSet):
+    lookup_field = "uuid"
+    extra_permissions = (TabPermission,)
+
+    def get_queryset(self):
+        perms = ["view_product"]
+        if self.request.method not in SAFE_METHODS:
+            perms.append("change_product")
+
+        return self.queryset.model.objects.product_secured(self.request.user, perms)
+
+
 class ExternalReferenceSerializer(DataspacedSerializer):
     external_source = DataspacedSlugRelatedField(slug_field="label")
     content_type = serializers.StringRelatedField(source="content_type.model")
