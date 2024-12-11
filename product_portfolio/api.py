@@ -28,10 +28,9 @@ from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import DataspacedSlugRelatedField
-from dje.api import ExtraPermissionsViewSetMixin
 from dje.api import NameVersionHyperlinkedRelatedField
+from dje.api import ProductRelatedViewSet
 from dje.api import SPDXDocumentActionMixin
-from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
@@ -48,8 +47,6 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
-from vulnerabilities.api import VulnerabilityAnalysis
-from vulnerabilities.api import VulnerabilityAnalysisFilterSet
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
 base_extra_kwargs = {
@@ -569,18 +566,6 @@ class ProductComponentFilterSet(DataspacedAPIFilterSet):
         )
 
 
-class ProductRelatedViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewSet):
-    lookup_field = "uuid"
-    extra_permissions = (TabPermission,)
-
-    def get_queryset(self):
-        perms = ["view_product"]
-        if self.request.method not in SAFE_METHODS:
-            perms.append("change_product")
-
-        return self.queryset.model.objects.product_secured(self.request.user, perms)
-
-
 class ProductRelationViewSet(ProductRelatedViewSet):
     relation_fk_field = None
 
@@ -933,21 +918,5 @@ class ProductDependencyViewSet(ProductRelatedViewSet):
             .select_related(
                 "for_package__dataspace",
                 "resolved_to_package__dataspace",
-            )
-        )
-
-
-class VulnerabilityAnalysisViewSet(ProductRelatedViewSet):
-    queryset = VulnerabilityAnalysis.objects.none()
-    serializer_class = VulnerabilityAnalysisSerializer
-    filterset_class = VulnerabilityAnalysisFilterSet
-
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related(
-                "vulnerability",
-                "product_package",
             )
         )

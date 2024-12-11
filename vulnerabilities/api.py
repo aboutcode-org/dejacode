@@ -16,6 +16,7 @@ from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
 from dje.api import DataspacedSerializer
 from dje.api import ExtraPermissionsViewSetMixin
+from dje.api import ProductRelatedViewSet
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
@@ -172,4 +173,20 @@ class VulnerabilityAnalysisFilterSet(DataspacedAPIFilterSet):
             "is_reachable",
             "first_issued",
             "last_updated",
+        )
+
+
+class VulnerabilityAnalysisViewSet(ProductRelatedViewSet):
+    queryset = VulnerabilityAnalysis.objects.none()
+    serializer_class = VulnerabilityAnalysisSerializer
+    filterset_class = VulnerabilityAnalysisFilterSet
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "vulnerability",
+                "product_package",
+            )
         )
