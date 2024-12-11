@@ -41,6 +41,10 @@ Release notes
 - Add new `is_reachable` field on the VulnerabilityAnalysis model.
   It can be used to declare if a this vulnerability is reachable, not reachable, or
   if this fact is not known in the context of a Product Package.
+  Reachability column added in the "Vulnerability" tab.
+  Add filter by "Reachability" from the column header.
+  The is_reachable value can be set from the "Vulnerability analysis" modal form.
+  Add a VulnerabilityAnalysis REST API endpoint.
   https://github.com/aboutcode-org/dejacode/issues/103
 
 ### Version 5.2.1

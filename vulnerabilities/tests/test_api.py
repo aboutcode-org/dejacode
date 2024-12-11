@@ -145,7 +145,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(self.product_package1, self.vulnerability2)
         make_vulnerability_analysis(self.product_package1, self.vulnerability3)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             response = self.client.get(detail_url)
 
         self.assertContains(response, detail_url)
@@ -191,3 +191,23 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("detail", response.data["detail"])
         self.assertEqual(["can_not_fix"], response.data["responses"])
         self.assertTrue(response.data["is_reachable"])
+
+    def test_api_vulnerability_analysis_endpoint_patch(self):
+        self.client.login(username="super_user", password="secret")
+        analysis1 = make_vulnerability_analysis(self.product_package1, self.vulnerability1)
+        self.assertIsNone(analysis1.is_reachable)
+        detail_url = reverse("api_v2:vulnerabilityanalysis-detail", args=[analysis1.uuid])
+
+        data = {"is_reachable": True}
+        response = self.client.patch(detail_url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(response.data["is_reachable"])
+        analysis1.refresh_from_db()
+        self.assertTrue(analysis1.is_reachable)
+
+        data = {"is_reachable": False}
+        response = self.client.patch(detail_url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(response.data["is_reachable"])
+        analysis1.refresh_from_db()
+        self.assertFalse(analysis1.is_reachable)
