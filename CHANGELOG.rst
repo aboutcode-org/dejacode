@@ -53,6 +53,10 @@ Release notes
   new `data` dict.
   https://github.com/aboutcode-org/dejacode/issues/202
 
+- Add `vulnerabilities_risk_threshold` field to the DataspaceConfiguration model.
+  This threshold helps prioritize and control the level of attention to vulnerabilities.
+  https://github.com/aboutcode-org/dejacode/issues/97
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

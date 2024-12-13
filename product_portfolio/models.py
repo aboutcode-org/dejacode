@@ -515,7 +515,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         """Fetch and update the vulnerabilties of all the Package of this Product."""
         return fetch_for_packages(self.all_packages, self.dataspace)
 
-    def get_vulnerability_qs(self, prefetch_related_packages=False):
+    def get_vulnerability_qs(self, prefetch_related_packages=False, risk_threshold=None):
         """Return a QuerySet of all Vulnerability instances related to this product"""
         from vulnerabilities.models import Vulnerability
         from vulnerabilities.models import VulnerabilityAnalysis
@@ -523,6 +523,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         vulnerability_qs = Vulnerability.objects.filter(
             affected_packages__in=self.packages.all()
         ).distinct()
+
+        if risk_threshold:
+            vulnerability_qs = vulnerability_qs.filter(risk_score__gte=risk_threshold)
 
         if prefetch_related_packages:
             package_qs = Package.objects.filter(product=self).only_rendering_fields()

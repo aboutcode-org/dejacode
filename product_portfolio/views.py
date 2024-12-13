@@ -1151,9 +1151,14 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        total_count = product.get_vulnerability_qs().count()
+        dataspace = self.object.dataspace
+        risk_threshold = dataspace.get_configuration("vulnerabilities_risk_threshold")
+
+        total_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         vulnerability_qs = (
-            product.get_vulnerability_qs(prefetch_related_packages=True)
+            product.get_vulnerability_qs(
+                prefetch_related_packages=True, risk_threshold=risk_threshold
+            )
             .annotate(affected_packages_count=Count("affected_packages"))
             .order_by_risk()
         )
@@ -1189,6 +1194,7 @@ class ProductTabVulnerabilitiesView(
                 "page_obj": page_obj,
                 "total_count": total_count,
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
+                "risk_threshold": risk_threshold,
             }
         )
 

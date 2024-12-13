@@ -473,6 +473,17 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
+    vulnerabilities_risk_threshold = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Enter a risk value between 0.0 and 10.0. This threshold helps prioritize "
+            "and control the level of attention to vulnerabilities."
+        ),
+    )
+
     purldb_url = models.URLField(
         _("PurlDB URL"),
         max_length=1024,
