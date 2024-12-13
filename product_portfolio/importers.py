@@ -692,7 +692,7 @@ class ImportPackageFromScanCodeIO:
             package_data["license_expression"] = license_expression
 
         if package and self.update_existing:
-            package.update_from_data(self.user, package_data, override=False)
+            package.update_from_data(self.user, package_data, override=False, override_unknown=True)
 
         if not package:
             try:

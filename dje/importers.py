@@ -605,7 +605,12 @@ class BaseImporter:
             # We need to refresh the instance from the db because form.instance has
             # the unsaved form.cleaned_data modification at that stage.
             instance.refresh_from_db()
-            updated_fields = instance.update_from_data(self.user, form.cleaned_data, override=False)
+            updated_fields = instance.update_from_data(
+                self.user,
+                form.cleaned_data,
+                override=False,
+                override_unknown=True,
+            )
             if updated_fields:
                 self.results["modified"].append(instance)
                 msg = f'Updated {", ".join(updated_fields)} from import'

@@ -216,7 +216,12 @@ class ScanCodeIO(BaseService):
                 values_from_scan["notice_text"] = notice_text
 
         if values_from_scan:
-            updated_fields = package.update_from_data(user, values_from_scan)
+            updated_fields = package.update_from_data(
+                user,
+                values_from_scan,
+                override=False,
+                override_unknown=True,
+            )
             if updated_fields:
                 msg = f'Automatically updated {", ".join(updated_fields)} from scan results'
                 logger.debug(f"{self.label}: {msg}")

@@ -789,7 +789,7 @@ class DataspacedModel(models.Model):
 
         return instance
 
-    def update_from_data(self, user, data, override=False):
+    def update_from_data(self, user, data, override=False, override_unknown=False):
         """
         Update this object instance with the provided `data`.
         The `save()` method is called only if at least one field was modified.
@@ -798,6 +798,13 @@ class DataspacedModel(models.Model):
         not associated to a specific user.
         We do not want to promote this as the default behavior thus we keep the user
         a required parameter.
+
+        By default, only empty values will be set on the instance, protecting the
+        existing values.
+        When `override` is True, all the values from the `data` dict will be set on the
+        instance, erasing any existing values.
+        When `override_unknown` is True, field value currently set as "unknown" will be
+        replace by the value from the `data` dict.
         """
         model_fields = self.model_fields()
         updated_fields = []
@@ -812,7 +819,12 @@ class DataspacedModel(models.Model):
                 continue
 
             current_value = getattr(self, field_name, None)
-            if not current_value or (current_value != value and override):
+            update_conditions = [
+                not current_value,
+                current_value != value and override,
+                current_value == "unknown" and override_unknown,
+            ]
+            if any(update_conditions):
                 setattr(self, field_name, value)
                 updated_fields.append(field_name)
 
