@@ -541,7 +541,11 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        risk_threshold = product.get_vulnerabilities_risk_threshold()
+        if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
+            risk_threshold = None
+        else:
+            risk_threshold = product.get_vulnerabilities_risk_threshold()
+
         vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
@@ -1153,7 +1157,11 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        risk_threshold = product.get_vulnerabilities_risk_threshold()
+
+        if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
+            risk_threshold = None
+        else:
+            risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         total_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         vulnerability_qs = (
