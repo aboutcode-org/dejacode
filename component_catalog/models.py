@@ -2489,7 +2489,12 @@ class Package(
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
 
-        updated_fields = self.update_from_data(user, package_data, override=False)
+        updated_fields = self.update_from_data(
+            user,
+            package_data,
+            override=False,
+            override_unknown=True,
+        )
         return updated_fields
 
 

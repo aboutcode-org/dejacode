@@ -47,6 +47,12 @@ Release notes
   Add a VulnerabilityAnalysis REST API endpoint.
   https://github.com/aboutcode-org/dejacode/issues/103
 
+- Add `override_unknown` option in `update_from_data` method.
+  This is enabled in the context of updating Package data from the PurlDB, a Scan, and
+  an import. Fields with "unknown" values will be override with values available in the
+  new `data` dict.
+  https://github.com/aboutcode-org/dejacode/issues/202
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

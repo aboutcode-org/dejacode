@@ -100,7 +100,9 @@ def fetch_for_packages(
                     created_vulnerabilities += 1
                 elif update:
                     updated_fields = vulnerability.update_from_data(
-                        user=None, data=vulnerability_data, override=True
+                        user=None,
+                        data=vulnerability_data,
+                        override=True,
                     )
                     if updated_fields:
                         updated_vulnerabilities += 1

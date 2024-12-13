@@ -1687,6 +1687,20 @@ class ComponentCatalogModelsTestCase(TestCase):
         updated_fields = package.update_from_data(user=None, data=new_data, override=True)
         self.assertEqual(["filename"], updated_fields)
 
+        package.update(declared_license_expression="unknown")
+        new_data = {"declared_license_expression": "apache-2.0"}
+        updated_fields = package.update_from_data(
+            user=None, data=new_data, override=False, override_unknown=False
+        )
+        self.assertEqual([], updated_fields)
+
+        updated_fields = package.update_from_data(
+            user=None, data=new_data, override=False, override_unknown=True
+        )
+        self.assertEqual(["declared_license_expression"], updated_fields)
+        package.refresh_from_db()
+        self.assertEqual("apache-2.0", package.declared_license_expression)
+
     @mock.patch("component_catalog.models.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
         self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
@@ -2540,11 +2554,16 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha1": "96ae8d8dd673d4fc92ce2cb2df9cdab6f6fd7d9f",
             "sha256": "0a1efde1b685a6c30999ba00902f23613cf5db864c5a1532d2edf3eda7896a37",
             "copyright": "(c) Copyright",
-            "declared_license_expression": "(bsd-simplified AND bsd-new) AND unknown",
+            "declared_license_expression": "(bsd-simplified AND bsd-new)",
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
-        package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
+        package1 = Package.objects.create(
+            filename="package",
+            dataspace=self.dataspace,
+            # "unknown" values are overrided
+            declared_license_expression="unknown",
+        )
         updated_fields = package1.update_from_purldb(self.user)
         # Note: PURL fields are never updated.
         expected = [
