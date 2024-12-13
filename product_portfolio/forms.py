@@ -122,6 +122,7 @@ class ProductForm(
             "configuration_status",
             "contact",
             "keywords",
+            "vulnerabilities_risk_threshold",
         ]
         field_classes = {
             "owner": OwnerChoiceField,
@@ -169,6 +170,8 @@ class ProductForm(
                 Group("primary_language", "homepage_url", "contact"),
                 HTML("<hr>"),
                 Group("is_active", "configuration_status", "release_date"),
+                HTML("<hr>"),
+                Group("vulnerabilities_risk_threshold", "", ""),
                 HTML("<hr>"),
                 Submit("submit", self.submit_label, css_class="btn-success"),
                 self.save_as_new_submit,

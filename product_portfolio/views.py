@@ -531,8 +531,9 @@ class ProductDetailsView(
         }
 
     def tab_vulnerabilities(self):
-        dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.object.dataspace)
+        product = self.object
+        dataspace = product.dataspace
+        vulnerablecode = VulnerableCode(dataspace)
         display_tab_contions = [
             dataspace.enable_vulnerablecodedb_access,
             vulnerablecode.is_configured(),
@@ -540,7 +541,8 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        vulnerability_count = self.object.vulnerability_count
+        risk_threshold = product.get_vulnerabilities_risk_threshold()
+        vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
@@ -555,7 +557,7 @@ class ProductDetailsView(
         )
 
         # Pass the current request query context to the async request
-        tab_view_url = self.object.get_url("tab_vulnerabilities")
+        tab_view_url = product.get_url("tab_vulnerabilities")
         if full_query_string := self.request.META["QUERY_STRING"]:
             tab_view_url += f"?{full_query_string}"
 
@@ -1151,8 +1153,7 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        dataspace = self.object.dataspace
-        risk_threshold = dataspace.get_configuration("vulnerabilities_risk_threshold")
+        risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         total_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         vulnerability_qs = (

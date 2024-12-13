@@ -76,7 +76,7 @@
           </td>
           <td class="text-center">
             {% if package.vulnerability_analysis.is_reachable %}
-              <i class="fa-solid fa-circle-radiation text-danger fs-5" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
+              <i class="fa-solid fa-circle-radiation text-danger fs-6" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
             {% elif package.vulnerability_analysis.is_reachable is False %}
               <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
             {% endif %}

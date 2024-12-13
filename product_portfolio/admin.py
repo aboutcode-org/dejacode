@@ -362,6 +362,7 @@ class ProductAdmin(
                     "is_active",
                     "configuration_status",
                     "contact",
+                    "vulnerabilities_risk_threshold",
                     "get_feature_datalist",
                 )
             },
