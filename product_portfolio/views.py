@@ -391,6 +391,7 @@ class ProductDetailsView(
             TabField("primary_language"),
             TabField("release_date"),
             TabField("contact"),
+            TabField("vulnerabilities_risk_threshold", condition=bool),
             TabField("vcs_url", value_func=urlize_target_blank),
             TabField("code_view_url", value_func=urlize_target_blank),
             TabField("bug_tracking_url", value_func=urlize_target_blank),
