@@ -356,6 +356,29 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         with self.assertNumQueries(10):
             self.client.get(url)
 
+    def test_product_portfolio_tab_vulnerability_risk_threshold(self):
+        self.client.login(username="nexb_user", password="secret")
+
+        p1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=1.0)
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=5.0)
+        product1 = make_product(self.dataspace)
+        make_product_package(product1, package=p1)
+        url = product1.get_url("tab_vulnerabilities")
+
+        response = self.client.get(url)
+        self.assertContains(response, vulnerability1.vcid)
+        self.assertContains(response, vulnerability2.vcid)
+        self.assertContains(response, "2 results")
+        self.assertNotContains(response, "A risk threshold filter at")
+
+        product1.update(vulnerabilities_risk_threshold=3.0)
+        response = self.client.get(url)
+        self.assertNotContains(response, vulnerability1.vcid)
+        self.assertContains(response, vulnerability2.vcid)
+        self.assertContains(response, "1 results")
+        self.assertContains(response, 'A risk threshold filter at "3.0" is currently applied.')
+
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.

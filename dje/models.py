@@ -391,6 +391,19 @@ class Dataspace(models.Model):
             return getattr(configuration, field_name, None)
         return configuration
 
+    def set_configuration(self, field_name, value):
+        """
+        Set the `value` for `field_name` on the DataspaceConfiguration linked
+        with this Dataspace instance.
+        """
+        try:
+            configuration = self.configuration
+        except ObjectDoesNotExist:
+            configuration = DataspaceConfiguration(dataspace=self)
+
+        setattr(configuration, field_name, value)
+        configuration.save()
+
     @property
     def has_configuration(self):
         """Return True if an associated DataspaceConfiguration instance exists."""
