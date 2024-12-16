@@ -509,6 +509,18 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             updated_fields = package.update_from_purldb(user)
             if updated_fields:
                 updated_packages.append(package)
+
+        # Update the Product Package relationship `license_expression` if the
+        # Package.declared_license_expression was updated from "unknwon" value using
+        # PurlDB data.
+        productpackages_unknown_licenses = self.productpackages.filter(
+            package__in=updated_packages, license_expression="unknown"
+        )
+        for product_package in productpackages_unknown_licenses:
+            package_license_expression = product_package.package.declared_license_expression
+            if package_license_expression and package_license_expression != "unknown":
+                product_package.update(license_expression=package_license_expression)
+
         return updated_packages
 
     def fetch_vulnerabilities(self):
