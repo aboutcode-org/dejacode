@@ -171,7 +171,7 @@ class ProductForm(
                 HTML("<hr>"),
                 Group("is_active", "configuration_status", "release_date"),
                 HTML("<hr>"),
-                Group("vulnerabilities_risk_threshold", "", ""),
+                Group("vulnerabilities_risk_threshold", HTML(""), HTML("")),
                 HTML("<hr>"),
                 Submit("submit", self.submit_label, css_class="btn-success"),
                 self.save_as_new_submit,
