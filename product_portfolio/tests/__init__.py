@@ -39,7 +39,7 @@ def make_product(dataspace, inventory=None, **data):
     return product
 
 
-def make_product_package(product, package=None):
+def make_product_package(product, package=None, **data):
     dataspace = product.dataspace
 
     if not package:
@@ -49,6 +49,7 @@ def make_product_package(product, package=None):
         product=product,
         package=package,
         dataspace=dataspace,
+        **data,
     )
 
 
