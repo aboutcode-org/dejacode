@@ -353,7 +353,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):

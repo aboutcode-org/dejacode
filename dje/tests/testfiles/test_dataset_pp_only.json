@@ -26,12 +26,12 @@
     "vcs_url": "",
     "code_view_url": "",
     "bug_tracking_url": "",
+    "md5": "",
+    "sha1": "",
     "sha256": "",
     "sha512": "",
     "filename": "systemu-2.5.2.gem",
     "download_url": "https://s3.amazonaws.com/production.s3.rubygems.org/gems/systemu-2.5.2.gem",
-    "sha1": "",
-    "md5": "",
     "size": null,
     "release_date": null,
     "primary_language": "",
@@ -98,7 +98,8 @@
       "nexB",
       "addd9c5d-a5ec-48ec-a565-ddb81092f49d"
     ],
-    "contact": ""
+    "contact": "",
+    "vulnerabilities_risk_threshold": null
   }
 },
 {
