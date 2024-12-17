@@ -196,8 +196,12 @@ def get_cyclonedx_filename(instance, extension="cdx"):
 
 def get_csaf_generator(product):
     csaf_gen = CSAFGenerator()
-    csaf_gen.set_title("CSAF VEX Document")
+    csaf_gen.set_title(f"CSAF VEX Document for {product}")
     csaf_gen.set_header_title(str(product))
+    csaf_gen.metadata["comment"] = "CSAF document generated from DejaCode"
+    csaf_gen.publisher_category = "vendor"
+    csaf_gen.publisher_name = product.dataspace.name
+    csaf_gen.publisher_url = product.dataspace.homepage_url
 
     product_name = product.name
     product_release = product.version or "0"
@@ -210,15 +214,35 @@ def get_csaf_generator(product):
         release=product_release,
     )
 
-    vulnerability_qs = product.get_vulnerability_qs()
+    cdx_state_to_csaf_status = {
+        "resolved": "fixed",
+        "resolved_with_pedigree": "fixed",
+        "exploitable": "known_affected",
+        "in_triage": "under_investigation",
+        "false_positive": "known_not_affected",
+        "not_affected": "known_not_affected",
+    }
+
+    vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
     for vulnerability in vulnerability_qs:
+        status = None
+        vulnerability_analyses = vulnerability.vulnerability_analyses.all()
+        if len(vulnerability_analyses) == 1:
+            analysis = vulnerability_analyses[0]
+            status = cdx_state_to_csaf_status.get(analysis.state, "under_investigation")
+
         csaf_gen.add_vulnerability(
             product_name=product_name,
             release=product_release,
+            # TODO: Only CVE is supported here
             id=vulnerability.vulnerability_id,
             description=vulnerability.summary,
-            status=None,
+            status=status,
             comment=None,
+            justification=None,
+            # TODO: Clear the default values
+            remediation=None,
+            action=None,
         )
 
     csaf_gen.generate_csaf()
