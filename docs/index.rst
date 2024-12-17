@@ -34,6 +34,7 @@ Welcome to the very start of your DejaCode journey!
     :caption: Reference
 
     reference-data-models
+    reference-vulnerability-management
     reference-1
     reference-2
 
