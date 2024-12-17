@@ -137,6 +137,7 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
             "primary_language",
             "admin_notes",
             "notice_text",
+            "vulnerabilities_risk_threshold",
             "created_date",
             "last_modified_date",
         )

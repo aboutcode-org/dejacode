@@ -212,6 +212,11 @@ class DataspacedModelTestCase(TestCase):
 
         self.assertIsNone(self.dataspace.get_configuration("non_available_field"))
 
+    def test_dataspace_set_configuration(self):
+        self.dataspace.set_configuration("vulnerabilities_risk_threshold", 5.0)
+        self.dataspace.refresh_from_db()
+        self.assertEqual(5.0, self.dataspace.get_configuration("vulnerabilities_risk_threshold"))
+
     def test_dataspace_has_configuration(self):
         self.assertFalse(self.dataspace.has_configuration)
         DataspaceConfiguration.objects.create(dataspace=self.dataspace)

@@ -2,6 +2,14 @@
 {% load as_icon from dje_tags %}
 
 {% include 'tabs/pagination.html' %}
+
+{% if risk_threshold %}
+  <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">
+    A risk threshold filter at "{{ risk_threshold }}" is currently applied.
+    <a class="ms-1" href="?vulnerabilities-bypass_risk_threshold=Yes#vulnerabilities">Click here to see all vulnerabilities.</a>
+  </small>
+{% endif %}
+
 <table class="table table-bordered table-md text-break">
   {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
   <tbody>
@@ -76,7 +84,7 @@
           </td>
           <td class="text-center">
             {% if package.vulnerability_analysis.is_reachable %}
-              <i class="fa-solid fa-circle-radiation text-danger fs-5" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
+              <i class="fa-solid fa-circle-radiation text-danger fs-6" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
             {% elif package.vulnerability_analysis.is_reachable is False %}
               <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
             {% endif %}

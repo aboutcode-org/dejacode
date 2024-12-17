@@ -508,8 +508,12 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_model_get_vulnerability_qs(self):
         package1 = make_package(self.dataspace)
         package2 = make_package(self.dataspace)
-        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1, package2])
-        vulnerability2 = make_vulnerability(self.dataspace, affecting=[package1, package2])
+        vulnerability1 = make_vulnerability(
+            self.dataspace, affecting=[package1, package2], risk_score=10.0
+        )
+        vulnerability2 = make_vulnerability(
+            self.dataspace, affecting=[package1, package2], risk_score=1.0
+        )
         make_product_package(self.product1, package=package1)
         make_product_package(self.product1, package=package2)
 
@@ -518,6 +522,12 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(2, len(queryset))
         self.assertIn(vulnerability1, queryset)
         self.assertIn(vulnerability2, queryset)
+
+        queryset = self.product1.get_vulnerability_qs(risk_threshold=5.0)
+        # Makeing sure the distinct() is properly applied
+        self.assertEqual(1, len(queryset))
+        self.assertIn(vulnerability1, queryset)
+        self.assertNotIn(vulnerability2, queryset)
 
     def test_product_model_vulnerability_count_property(self):
         self.assertEqual(0, self.product1.vulnerability_count)
@@ -533,6 +543,15 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(0, self.product1.vulnerability_count)
         self.product1 = Product.unsecured_objects.get(pk=self.product1.pk)
         self.assertEqual(2, self.product1.vulnerability_count)
+
+    def test_product_model_get_vulnerabilities_risk_threshold(self):
+        self.assertIsNone(self.product1.get_vulnerabilities_risk_threshold())
+
+        self.product1.dataspace.set_configuration("vulnerabilities_risk_threshold", 5.0)
+        self.assertEqual(5.0, self.product1.get_vulnerabilities_risk_threshold())
+
+        self.product1.update(vulnerabilities_risk_threshold=10.0)
+        self.assertEqual(10.0, self.product1.get_vulnerabilities_risk_threshold())
 
     def test_productcomponent_model_license_expression_handle_assigned_licenses(self):
         p1 = ProductComponent.objects.create(

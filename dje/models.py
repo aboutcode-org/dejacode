@@ -391,6 +391,19 @@ class Dataspace(models.Model):
             return getattr(configuration, field_name, None)
         return configuration
 
+    def set_configuration(self, field_name, value):
+        """
+        Set the `value` for `field_name` on the DataspaceConfiguration linked
+        with this Dataspace instance.
+        """
+        try:
+            configuration = self.configuration
+        except ObjectDoesNotExist:
+            configuration = DataspaceConfiguration(dataspace=self)
+
+        setattr(configuration, field_name, value)
+        configuration.save()
+
     @property
     def has_configuration(self):
         """Return True if an associated DataspaceConfiguration instance exists."""
@@ -470,6 +483,17 @@ class DataspaceConfiguration(models.Model):
         help_text=_(
             "If your private VulnerableCode instance requires an API key for access, "
             "input it here. If not, you can leave this field blank."
+        ),
+    )
+
+    vulnerabilities_risk_threshold = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Enter a risk value between 0.0 and 10.0. This threshold helps prioritize "
+            "and control the level of attention to vulnerabilities."
         ),
     )
 

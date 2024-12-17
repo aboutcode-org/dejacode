@@ -1077,6 +1077,7 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
         "scancodeio_api_key",
         "vulnerablecode_url",
         "vulnerablecode_api_key",
+        "vulnerabilities_risk_threshold",
         "purldb_url",
         "purldb_api_key",
     ]

@@ -391,6 +391,7 @@ class ProductDetailsView(
             TabField("primary_language"),
             TabField("release_date"),
             TabField("contact"),
+            TabField("vulnerabilities_risk_threshold", condition=bool),
             TabField("vcs_url", value_func=urlize_target_blank),
             TabField("code_view_url", value_func=urlize_target_blank),
             TabField("bug_tracking_url", value_func=urlize_target_blank),
@@ -531,8 +532,9 @@ class ProductDetailsView(
         }
 
     def tab_vulnerabilities(self):
-        dataspace = self.object.dataspace
-        vulnerablecode = VulnerableCode(self.object.dataspace)
+        product = self.object
+        dataspace = product.dataspace
+        vulnerablecode = VulnerableCode(dataspace)
         display_tab_contions = [
             dataspace.enable_vulnerablecodedb_access,
             vulnerablecode.is_configured(),
@@ -540,7 +542,12 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        vulnerability_count = self.object.vulnerability_count
+        if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
+            risk_threshold = None
+        else:
+            risk_threshold = product.get_vulnerabilities_risk_threshold()
+
+        vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
@@ -555,7 +562,7 @@ class ProductDetailsView(
         )
 
         # Pass the current request query context to the async request
-        tab_view_url = self.object.get_url("tab_vulnerabilities")
+        tab_view_url = product.get_url("tab_vulnerabilities")
         if full_query_string := self.request.META["QUERY_STRING"]:
             tab_view_url += f"?{full_query_string}"
 
@@ -1151,9 +1158,17 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        total_count = product.get_vulnerability_qs().count()
+
+        if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
+            risk_threshold = None
+        else:
+            risk_threshold = product.get_vulnerabilities_risk_threshold()
+
+        total_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
         vulnerability_qs = (
-            product.get_vulnerability_qs(prefetch_related_packages=True)
+            product.get_vulnerability_qs(
+                prefetch_related_packages=True, risk_threshold=risk_threshold
+            )
             .annotate(affected_packages_count=Count("affected_packages"))
             .order_by_risk()
         )
@@ -1189,6 +1204,7 @@ class ProductTabVulnerabilitiesView(
                 "page_obj": page_obj,
                 "total_count": total_count,
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
+                "risk_threshold": risk_threshold,
             }
         )
 

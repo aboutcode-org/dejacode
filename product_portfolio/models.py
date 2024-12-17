@@ -230,6 +230,17 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         ),
     )
 
+    vulnerabilities_risk_threshold = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Enter a risk value between 0.0 and 10.0. This threshold helps prioritize "
+            "and control the level of attention to vulnerabilities."
+        ),
+    )
+
     licenses = models.ManyToManyField(
         to="license_library.License",
         through="ProductAssignedLicense",
@@ -337,6 +348,16 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     @cached_property
     def vulnerability_count(self):
         return self.get_vulnerability_qs().count()
+
+    def get_vulnerabilities_risk_threshold(self):
+        """
+        Return the local vulnerabilities_risk_threshold value when defined on the
+        Product or look into the Dataspace configuration.
+        """
+        risk_threshold = self.vulnerabilities_risk_threshold
+        if not risk_threshold:
+            risk_threshold = self.dataspace.get_configuration("vulnerabilities_risk_threshold")
+        return risk_threshold
 
     def get_merged_descendant_ids(self):
         """
@@ -527,7 +548,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         """Fetch and update the vulnerabilties of all the Package of this Product."""
         return fetch_for_packages(self.all_packages, self.dataspace)
 
-    def get_vulnerability_qs(self, prefetch_related_packages=False):
+    def get_vulnerability_qs(self, prefetch_related_packages=False, risk_threshold=None):
         """Return a QuerySet of all Vulnerability instances related to this product"""
         from vulnerabilities.models import Vulnerability
         from vulnerabilities.models import VulnerabilityAnalysis
@@ -535,6 +556,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         vulnerability_qs = Vulnerability.objects.filter(
             affected_packages__in=self.packages.all()
         ).distinct()
+
+        if risk_threshold:
+            vulnerability_qs = vulnerability_qs.filter(risk_score__gte=risk_threshold)
 
         if prefetch_related_packages:
             package_qs = Package.objects.filter(product=self).only_rendering_fields()
