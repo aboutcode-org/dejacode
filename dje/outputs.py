@@ -12,6 +12,7 @@ import re
 from django.http import FileResponse
 from django.http import Http404
 
+from csaf.generator import CSAFGenerator
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
 from cyclonedx.schema import SchemaVersion
@@ -191,3 +192,40 @@ def get_cyclonedx_filename(instance, extension="cdx"):
     base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
     filename = f"{base_filename}_{instance}.{extension}.json"
     return safe_filename(filename)
+
+
+def get_csaf_generator(product):
+    csaf_gen = CSAFGenerator()
+    csaf_gen.set_title("CSAF VEX Document")
+    csaf_gen.set_header_title(str(product))
+
+    product_name = product.name
+    product_release = product.version or "0"
+    # The library does not support None as vendor
+    product_vendor = str(product.owner) if product.owner else "Unknown"
+
+    csaf_gen.add_product(
+        product_name=product_name,
+        vendor=product_vendor,
+        release=product_release,
+    )
+
+    vulnerability_qs = product.get_vulnerability_qs()
+    for vulnerability in vulnerability_qs:
+        csaf_gen.add_vulnerability(
+            product_name=product_name,
+            release=product_release,
+            id=vulnerability.vulnerability_id,
+            description=vulnerability.summary,
+            status=None,
+            comment=None,
+        )
+
+    csaf_gen.generate_csaf()
+    return csaf_gen
+
+
+def get_csaf_document_json(product):
+    csaf_generator = get_csaf_generator(product)
+    csaf_document_json = json.dumps(csaf_generator.csaf_document, indent=2)
+    return csaf_document_json

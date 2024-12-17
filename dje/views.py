@@ -2410,3 +2410,21 @@ class ExportCycloneDXBOMView(
             filename=outputs.get_cyclonedx_filename(instance, extension),
             content_type="application/json",
         )
+
+
+class ExportCSAFDocumentView(
+    LoginRequiredMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    def get(self, request, *args, **kwargs):
+        product = self.get_object()
+        csaf_document_json = outputs.get_csaf_document_json(product)
+        filename = outputs.get_cyclonedx_filename(product, extension="csaf.vex")
+
+        return outputs.get_attachment_response(
+            file_content=csaf_document_json,
+            filename=filename,
+            content_type="application/json",
+        )
