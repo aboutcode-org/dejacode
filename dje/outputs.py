@@ -223,26 +223,50 @@ def get_csaf_generator(product):
         "not_affected": "known_not_affected",
     }
 
+    cdx_response_to_csaf_remediation = {
+        "can_not_fix": "no_fix_planned",
+        "rollback": "vendor_fix",
+        "update": "vendor_fix",
+        "will_not_fix": "no_fix_planned",
+        "workaround_available": "workaround",
+    }
+
     vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
     for vulnerability in vulnerability_qs:
         status = None
+        remediation = None
+        action = None
+
         vulnerability_analyses = vulnerability.vulnerability_analyses.all()
         if len(vulnerability_analyses) == 1:
             analysis = vulnerability_analyses[0]
             status = cdx_state_to_csaf_status.get(analysis.state, "under_investigation")
 
+            if status == "known_affected":
+                if analysis.responses:
+                    response = analysis.responses[0]
+                    remediation = cdx_response_to_csaf_remediation.get(response, "none_available")
+                else:
+                    remediation = "none_available"
+                action = analysis.detail or " "
+
+        cve = None
+        for alias in vulnerability.aliases:
+            if alias.startswith("CVE-"):
+                cve = alias
+
         csaf_gen.add_vulnerability(
             product_name=product_name,
             release=product_release,
-            # TODO: Only CVE is supported here
-            id=vulnerability.vulnerability_id,
+            # TODO: Only CVE are supported here
+            id=cve or vulnerability.vulnerability_id,
+            # TODO: This is erased by the CVE URL logic
             description=vulnerability.summary,
             status=status,
             comment=None,
             justification=None,
-            # TODO: Clear the default values
-            remediation=None,
-            action=None,
+            remediation=remediation,
+            action=action,
         )
 
     csaf_gen.generate_csaf()
