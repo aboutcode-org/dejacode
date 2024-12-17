@@ -28,6 +28,7 @@ Welcome to the very start of your DejaCode journey!
     howto-1
     howto-2
     howto-3
+    howto-4
 
 .. toctree::
     :maxdepth: 1
