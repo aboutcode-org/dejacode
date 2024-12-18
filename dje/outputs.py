@@ -8,6 +8,8 @@
 
 import json
 import re
+from datetime import datetime
+from datetime import timezone
 
 from django.http import FileResponse
 from django.http import Http404
@@ -19,6 +21,7 @@ from cyclonedx.schema import SchemaVersion
 from cyclonedx.validation.json import JsonStrictValidator
 
 from dejacode import __version__ as dejacode_version
+from dejacode_toolkit import csaf
 from dejacode_toolkit import spdx
 
 CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
@@ -277,3 +280,76 @@ def get_csaf_document_json(product):
     csaf_generator = get_csaf_generator(product)
     csaf_document_json = json.dumps(csaf_generator.csaf_document, indent=2)
     return csaf_document_json
+
+
+def get_csaf_document(product):
+    """Return a csaf.Document object using the provided `product` context."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    publisher = csaf.Publisher(
+        category="vendor",
+        name=product.dataspace.name,
+        namespace=product.dataspace.homepage_url,
+    )
+    revision_history = csaf.RevisionHistoryItem(
+        date=now,
+        number="1",
+        summary="Initial version",
+    )
+    tracking = csaf.Tracking(
+        current_release_date=now,
+        id=f"CSAF-Document-{str(product.uuid)}",
+        initial_release_date=now,
+        revision_history=[revision_history],
+        status="final",
+        version="1",
+    )
+    document = csaf.Document(
+        category="csaf_vex",
+        csaf_version="2.0",
+        publisher=publisher,
+        title=f"CSAF VEX document for {product}",
+        tracking=tracking,
+    )
+    return document
+
+
+def get_csaf_product_tree(product):
+    name = product.name
+    version = product.version or "Unknown"
+    vendor = product.owner.name if product.owner else "Unknown"
+
+    product_version_branch = csaf.BranchesTItem(
+        category="product_version",
+        name=version,
+        product=csaf.FullProductNameT(
+            name=f"{vendor} {name} {version}",
+            product_id="CSAFPID-0001",
+        ),
+    )
+    product_name_branch = csaf.BranchesTItem(
+        category="product_name",
+        name=name,
+        branches=[product_version_branch],
+    )
+    product_vendor_branch = csaf.BranchesTItem(
+        category="vendor",
+        name=vendor,
+        branches=[product_name_branch],
+    )
+    product_tree = csaf.ProductTree(
+        branches=csaf.BranchesT(root=[product_vendor_branch]),
+    )
+    return product_tree
+
+
+def get_csaf_vulnerabilities(product):
+    return
+
+
+def get_csaf_security_advisory(product):
+    security_advisory = csaf.CommonSecurityAdvisoryFramework(
+        document=get_csaf_document(product),
+        product_tree=get_csaf_product_tree(product),
+        vulnerabilities=get_csaf_vulnerabilities(product),
+    )
+    return security_advisory

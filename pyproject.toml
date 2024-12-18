@@ -10,7 +10,8 @@ exclude = [
     "lib64",
     "local",
     "var",
-    "thirdparty"
+    "thirdparty",
+    "dejacode_toolkit/csaf",
 ]
 
 [tool.ruff.lint]
