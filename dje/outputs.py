@@ -14,7 +14,6 @@ from datetime import timezone
 from django.http import FileResponse
 from django.http import Http404
 
-from csaf.generator import CSAFGenerator
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
 from cyclonedx.schema import SchemaVersion
@@ -197,89 +196,22 @@ def get_cyclonedx_filename(instance, extension="cdx"):
     return safe_filename(filename)
 
 
-def get_csaf_generator(product):
-    csaf_gen = CSAFGenerator()
-    csaf_gen.set_title(f"CSAF VEX Document for {product}")
-    csaf_gen.set_header_title(str(product))
-    csaf_gen.metadata["comment"] = "CSAF document generated from DejaCode"
-    csaf_gen.publisher_category = "vendor"
-    csaf_gen.publisher_name = product.dataspace.name
-    csaf_gen.publisher_url = product.dataspace.homepage_url
+CDX_STATE_TO_CSAF_STATUS = {
+    "resolved": "fixed",
+    "resolved_with_pedigree": "fixed",
+    "exploitable": "known_affected",
+    "in_triage": "under_investigation",
+    "false_positive": "known_not_affected",
+    "not_affected": "known_not_affected",
+}
 
-    product_name = product.name
-    product_release = product.version or "0"
-    # The library does not support None as vendor
-    product_vendor = str(product.owner) if product.owner else "Unknown"
-
-    csaf_gen.add_product(
-        product_name=product_name,
-        vendor=product_vendor,
-        release=product_release,
-    )
-
-    cdx_state_to_csaf_status = {
-        "resolved": "fixed",
-        "resolved_with_pedigree": "fixed",
-        "exploitable": "known_affected",
-        "in_triage": "under_investigation",
-        "false_positive": "known_not_affected",
-        "not_affected": "known_not_affected",
-    }
-
-    cdx_response_to_csaf_remediation = {
-        "can_not_fix": "no_fix_planned",
-        "rollback": "vendor_fix",
-        "update": "vendor_fix",
-        "will_not_fix": "no_fix_planned",
-        "workaround_available": "workaround",
-    }
-
-    vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
-    for vulnerability in vulnerability_qs:
-        status = None
-        remediation = None
-        action = None
-
-        vulnerability_analyses = vulnerability.vulnerability_analyses.all()
-        if len(vulnerability_analyses) == 1:
-            analysis = vulnerability_analyses[0]
-            status = cdx_state_to_csaf_status.get(analysis.state, "under_investigation")
-
-            if status == "known_affected":
-                if analysis.responses:
-                    response = analysis.responses[0]
-                    remediation = cdx_response_to_csaf_remediation.get(response, "none_available")
-                else:
-                    remediation = "none_available"
-                action = analysis.detail or " "
-
-        cve = None
-        for alias in vulnerability.aliases:
-            if alias.startswith("CVE-"):
-                cve = alias
-
-        csaf_gen.add_vulnerability(
-            product_name=product_name,
-            release=product_release,
-            # TODO: Only CVE are supported here
-            id=cve or vulnerability.vulnerability_id,
-            # TODO: This is erased by the CVE URL logic
-            description=vulnerability.summary,
-            status=status,
-            comment=None,
-            justification=None,
-            remediation=remediation,
-            action=action,
-        )
-
-    csaf_gen.generate_csaf()
-    return csaf_gen
-
-
-def get_csaf_document_json(product):
-    csaf_generator = get_csaf_generator(product)
-    csaf_document_json = json.dumps(csaf_generator.csaf_document, indent=2)
-    return csaf_document_json
+CDX_RESPONSE_TO_CSAF_REMEDIATION = {
+    "can_not_fix": "no_fix_planned",
+    "rollback": "vendor_fix",
+    "update": "vendor_fix",
+    "will_not_fix": "no_fix_planned",
+    "workaround_available": "workaround",
+}
 
 
 def get_csaf_document(product):
@@ -342,8 +274,52 @@ def get_csaf_product_tree(product):
     return product_tree
 
 
+def get_csaf_vulnerability_ids(vulnerability):
+    ids = [csaf.Id(system_name="VulnerableCode ID", text=vulnerability.vulnerability_id)]
+
+    for alias in vulnerability.aliases:
+        ids.append(csaf.Id(system_name=alias.split("-")[0], text=alias))
+
+    return ids
+
+
+def get_csaf_vulnerability_product_status(vulnerability):
+    products = csaf.ProductsT([csaf.ProductIdT("CSAFPID-0001")])
+    status = default_status = "under_investigation"
+
+    vulnerability_analyses = vulnerability.vulnerability_analyses.all()
+    if len(vulnerability_analyses) == 1:
+        analysis = vulnerability_analyses[0]
+        status = CDX_STATE_TO_CSAF_STATUS.get(analysis.state, default_status)
+
+        # if status == "known_affected":
+        #     if analysis.responses:
+        #         response = analysis.responses[0]
+        #         remediation = CDX_RESPONSE_TO_CSAF_REMEDIATION.get(response, "none_available")
+        #     else:
+        #         remediation = "none_available"
+        #     action = analysis.detail or " "
+
+    return csaf.ProductStatus(**{status: products})
+
+
+def get_csaf_vulnerability(vulnerability):
+    summary = vulnerability.summary or "Not available"
+    note = csaf.NotesTItem(category="summary", text=summary)
+
+    csaf_vulnerability = csaf.Vulnerability(
+        cve=vulnerability.cve,
+        ids=get_csaf_vulnerability_ids(vulnerability),
+        notes=csaf.NotesT(root=[note]),
+        product_status=get_csaf_vulnerability_product_status(vulnerability),
+    )
+    return csaf_vulnerability
+
+
 def get_csaf_vulnerabilities(product):
-    return
+    vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
+    vulnerabilities = [get_csaf_vulnerability(vulnerability) for vulnerability in vulnerability_qs]
+    return vulnerabilities
 
 
 def get_csaf_security_advisory(product):

@@ -160,6 +160,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     def vcid(self):
         return self.vulnerability_id
 
+    @property
+    def cve(self):
+        for alias in self.aliases:
+            if alias.startswith("CVE-"):
+                return alias
+
     def add_affected(self, instances):
         """
         Assign the ``instances`` (Package or Component) as affected to this
