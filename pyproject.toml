@@ -11,7 +11,6 @@ exclude = [
     "local",
     "var",
     "thirdparty",
-    "dejacode_toolkit/csaf",
 ]
 
 [tool.ruff.lint]
@@ -46,3 +45,4 @@ max-complexity = 17
 [tool.ruff.lint.per-file-ignores]
 # Do not run bandit on test files.
 "**/tests/*" = ["S"]
+"dejacode_toolkit/csaf/*" = ["D", "UP", "E501"]
