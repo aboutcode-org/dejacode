@@ -297,6 +297,7 @@ def get_csaf_vulnerability_product_status(vulnerability):
     products = csaf.ProductsT([csaf.ProductIdT(product_id)])
     status = default_status = "under_investigation"
     remediations = None
+    threats = None
 
     vulnerability_analyses = vulnerability.vulnerability_analyses.all()
     if len(vulnerability_analyses) == 1:
@@ -308,20 +309,25 @@ def get_csaf_vulnerability_product_status(vulnerability):
             if analysis.responses:
                 response = analysis.responses[0]
                 category = CDX_RESPONSE_TO_CSAF_REMEDIATION.get(response, category)
+                print(response, category)
             details = analysis.detail or "Not available"
             remediations = [
                 csaf.Remediation(category=category, details=details, product_ids=products)
             ]
 
+        elif status == "known_not_affected":
+            details = analysis.detail or "Not available"
+            threats = [csaf.Threat(category="impact", details=details, product_ids=products)]
+
     product_status = csaf.ProductStatus(**{status: products})
 
-    return product_status, remediations
+    return product_status, remediations, threats
 
 
 def get_csaf_vulnerability(vulnerability):
     summary = vulnerability.summary or "Not available"
     note = csaf.NotesTItem(category="summary", text=summary)
-    product_status, remediations = get_csaf_vulnerability_product_status(vulnerability)
+    product_status, remediations, threats = get_csaf_vulnerability_product_status(vulnerability)
 
     csaf_vulnerability = csaf.Vulnerability(
         cve=vulnerability.cve,
@@ -329,6 +335,7 @@ def get_csaf_vulnerability(vulnerability):
         notes=csaf.NotesT(root=[note]),
         product_status=product_status,
         remediations=remediations,
+        threats=threats,
     )
     return csaf_vulnerability
 
