@@ -293,34 +293,42 @@ def get_csaf_vulnerability_ids(vulnerability):
 
 
 def get_csaf_vulnerability_product_status(vulnerability):
-    products = csaf.ProductsT([csaf.ProductIdT("CSAFPID-0001")])
+    product_id = "CSAFPID-0001"
+    products = csaf.ProductsT([csaf.ProductIdT(product_id)])
     status = default_status = "under_investigation"
+    remediations = None
 
     vulnerability_analyses = vulnerability.vulnerability_analyses.all()
     if len(vulnerability_analyses) == 1:
         analysis = vulnerability_analyses[0]
         status = CDX_STATE_TO_CSAF_STATUS.get(analysis.state, default_status)
 
-        # if status == "known_affected":
-        #     if analysis.responses:
-        #         response = analysis.responses[0]
-        #         remediation = CDX_RESPONSE_TO_CSAF_REMEDIATION.get(response, "none_available")
-        #     else:
-        #         remediation = "none_available"
-        #     action = analysis.detail or " "
+        if status == "known_affected":
+            category = "none_available"
+            if analysis.responses:
+                response = analysis.responses[0]
+                category = CDX_RESPONSE_TO_CSAF_REMEDIATION.get(response, category)
+            details = analysis.detail or "Not available"
+            remediations = [
+                csaf.Remediation(category=category, details=details, product_ids=products)
+            ]
 
-    return csaf.ProductStatus(**{status: products})
+    product_status = csaf.ProductStatus(**{status: products})
+
+    return product_status, remediations
 
 
 def get_csaf_vulnerability(vulnerability):
     summary = vulnerability.summary or "Not available"
     note = csaf.NotesTItem(category="summary", text=summary)
+    product_status, remediations = get_csaf_vulnerability_product_status(vulnerability)
 
     csaf_vulnerability = csaf.Vulnerability(
         cve=vulnerability.cve,
         ids=get_csaf_vulnerability_ids(vulnerability),
         notes=csaf.NotesT(root=[note]),
-        product_status=get_csaf_vulnerability_product_status(vulnerability),
+        product_status=product_status,
+        remediations=remediations,
     )
     return csaf_vulnerability
 
