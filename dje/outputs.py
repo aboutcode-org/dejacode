@@ -213,6 +213,13 @@ CDX_RESPONSE_TO_CSAF_REMEDIATION = {
     "workaround_available": "workaround",
 }
 
+ALIAS_PREFIX_TO_CSAF_SYSTEM_NAME = {
+    "CVE": "Common Vulnerabilities and Exposures",
+    "GHSA": "GitHub Security Advisory",
+    "PYSEC": "Python Packaging Advisory",
+    "USN": "Ubuntu Security Notice",
+}
+
 
 def get_csaf_document(product):
     """Return a csaf.Document object using the provided `product` context."""
@@ -275,10 +282,12 @@ def get_csaf_product_tree(product):
 
 
 def get_csaf_vulnerability_ids(vulnerability):
-    ids = [csaf.Id(system_name="VulnerableCode ID", text=vulnerability.vulnerability_id)]
+    ids = [csaf.Id(system_name="VulnerableCode", text=vulnerability.vulnerability_id)]
 
     for alias in vulnerability.aliases:
-        ids.append(csaf.Id(system_name=alias.split("-")[0], text=alias))
+        prefix = alias.split("-")[0]
+        system_name = ALIAS_PREFIX_TO_CSAF_SYSTEM_NAME.get(prefix, prefix)
+        ids.append(csaf.Id(system_name=system_name, text=alias))
 
     return ids
 
