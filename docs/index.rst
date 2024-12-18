@@ -28,7 +28,7 @@ Welcome to the very start of your DejaCode journey!
     howto-1
     howto-2
     howto-3
-    howto-4
+    howto-4-product-vulnerability-analysis
 
 .. toctree::
     :maxdepth: 1
