@@ -67,6 +67,9 @@ Release notes
   menu.
   https://github.com/aboutcode-org/dejacode/issues/107
 
+- Add exposure_factor field to the ProductItemPurpose model.
+  https://github.com/aboutcode-org/dejacode/issues/102
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
