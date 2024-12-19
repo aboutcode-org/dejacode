@@ -1,0 +1,132 @@
+{
+  "document": {
+    "category": "csaf_vex",
+    "csaf_version": "2.0",
+    "publisher": {
+      "category": "vendor",
+      "name": "nexB",
+      "namespace": "https://url.not.available/"
+    },
+    "title": "CSAF VEX document for Product1 With Space 1.0",
+    "tracking": {
+      "current_release_date": "2024-12-19T12:00:00Z",
+      "id": "CSAF-Document-b2561aa6-1092-44ef-afe2-b0b331514bab",
+      "initial_release_date": "2024-12-19T12:00:00Z",
+      "revision_history": [
+        {
+          "date": "2024-12-19T12:00:00Z",
+          "number": "1",
+          "summary": "Initial version"
+        }
+      ],
+      "status": "final",
+      "version": "1"
+    }
+  },
+  "product_tree": {
+    "branches": [
+      {
+        "branches": [
+          {
+            "branches": [
+              {
+                "category": "product_version",
+                "name": "1.0",
+                "product": {
+                  "name": "Unknown Product1 With Space 1.0",
+                  "product_id": "CSAFPID-0001"
+                }
+              }
+            ],
+            "category": "product_name",
+            "name": "Product1 With Space"
+          }
+        ],
+        "category": "vendor",
+        "name": "Unknown"
+      }
+    ]
+  },
+  "vulnerabilities": [
+    {
+      "cve": "CVE-1984-1010",
+      "ids": [
+        {
+          "system_name": "VulnerableCode",
+          "text": "VCID-0001"
+        },
+        {
+          "system_name": "Common Vulnerabilities and Exposures",
+          "text": "CVE-1984-1010"
+        }
+      ],
+      "notes": [
+        {
+          "category": "summary",
+          "text": "Not available"
+        }
+      ],
+      "product_status": {
+        "known_not_affected": [
+          "CSAFPID-0001"
+        ]
+      },
+      "threats": [
+        {
+          "category": "impact",
+          "details": "Code is not present",
+          "product_ids": [
+            "CSAFPID-0001"
+          ]
+        }
+      ]
+    },
+    {
+      "ids": [
+        {
+          "system_name": "VulnerableCode",
+          "text": "VCID-0002"
+        }
+      ],
+      "notes": [
+        {
+          "category": "summary",
+          "text": "Not available"
+        }
+      ],
+      "product_status": {
+        "known_affected": [
+          "CSAFPID-0001"
+        ]
+      },
+      "remediations": [
+        {
+          "category": "vendor_fix",
+          "details": "Need an update",
+          "product_ids": [
+            "CSAFPID-0001"
+          ]
+        }
+      ]
+    },
+    {
+      "ids": [
+        {
+          "system_name": "VulnerableCode",
+          "text": "VCID-0003"
+        }
+      ],
+      "notes": [
+        {
+          "category": "summary",
+          "text": "Not available"
+        }
+      ],
+      "product_status": {
+        "under_investigation": [
+          "CSAFPID-0001"
+        ]
+      }
+    }
+  ]
+}

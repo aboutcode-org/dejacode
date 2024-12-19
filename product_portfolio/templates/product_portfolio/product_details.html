@@ -94,6 +94,10 @@
               <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.5&content=combined">1.5</a>
               <a class="badge text-bg-secondary" href="{{ object.get_export_cyclonedx_url }}?spec_version=1.4&content=combined">1.4</a>
             </div>
+            <div class="dropdown-header">CSAF</div>
+            <a href="{{ object.get_export_csaf_url }}" class="dropdown-item" target="_blank">
+              <i class="fas fa-download"></i> CSAF VEX
+            </a>
           {% endif %}
         </div>
       </div>

@@ -58,6 +58,15 @@ Release notes
   This threshold helps prioritize and control the level of attention to vulnerabilities.
   https://github.com/aboutcode-org/dejacode/issues/97
 
+- Add the `vulnerabilities_risk_threshold` field to the Product and
+  DataspaceConfiguration models.
+  This threshold helps prioritize and control the level of attention to vulnerabilities.
+  https://github.com/aboutcode-org/dejacode/issues/97
+
+- Add the ability to download a CSAF VEX document from the Product details view "Share"
+  menu.
+  https://github.com/aboutcode-org/dejacode/issues/107
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

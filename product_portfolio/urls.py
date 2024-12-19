@@ -16,6 +16,7 @@ from product_portfolio.views import ManagePackageGridView
 from product_portfolio.views import ProductAddView
 from product_portfolio.views import ProductDeleteView
 from product_portfolio.views import ProductDetailsView
+from product_portfolio.views import ProductExportCSAFDocumentView
 from product_portfolio.views import ProductExportCycloneDXBOMView
 from product_portfolio.views import ProductExportSPDXDocumentView
 from product_portfolio.views import ProductListView
@@ -92,6 +93,7 @@ urlpatterns = [
     *product_path("about_files", ProductSendAboutFilesView.as_view()),
     *product_path("export_spdx", ProductExportSPDXDocumentView.as_view()),
     *product_path("export_cyclonedx", ProductExportCycloneDXBOMView.as_view()),
+    *product_path("export_csaf", ProductExportCSAFDocumentView.as_view()),
     *product_path("attribution", AttributionView.as_view()),
     *product_path("change", ProductUpdateView.as_view()),
     *product_path("delete", ProductDeleteView.as_view()),
