@@ -59,7 +59,6 @@ ENV PATH $VENV_LOCATION/bin:$PATH
 COPY --chown=$APP_USER:$APP_USER setup.cfg setup.py $APP_DIR/
 COPY --chown=$APP_USER:$APP_USER ./thirdparty/dist/ $APP_DIR/thirdparty/dist/
 RUN pip install --find-links=$APP_DIR/thirdparty/dist/ --no-index --no-cache-dir .
-RUN pip install pydantic==2.10.3
 
 # Copy the codebase and set the proper permissions for the APP_USER
 COPY --chown=$APP_USER:$APP_USER . $APP_DIR
