@@ -2410,3 +2410,22 @@ class ExportCycloneDXBOMView(
             filename=outputs.get_cyclonedx_filename(instance, extension),
             content_type="application/json",
         )
+
+
+class ExportCSAFDocumentView(
+    LoginRequiredMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    def get(self, request, *args, **kwargs):
+        product = self.get_object()
+        security_advisory = outputs.get_csaf_security_advisory(product)
+        security_advisory_json = security_advisory.model_dump_json(indent=2, exclude_none=True)
+        filename = outputs.get_cyclonedx_filename(product, extension="csaf.vex")
+
+        return outputs.get_attachment_response(
+            file_content=security_advisory_json,
+            filename=filename,
+            content_type="application/json",
+        )

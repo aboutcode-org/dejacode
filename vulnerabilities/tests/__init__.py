@@ -28,16 +28,19 @@ def make_vulnerability(dataspace, affecting=None, **data):
 
 
 def make_vulnerability_analysis(product_package, vulnerability, **data):
+    default_data = {
+        "state": VulnerabilityAnalysis.State.RESOLVED,
+        "justification": VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+        "responses": [
+            VulnerabilityAnalysis.Response.CAN_NOT_FIX,
+            VulnerabilityAnalysis.Response.ROLLBACK,
+        ],
+        "detail": "detail",
+    }
+
     return VulnerabilityAnalysis.objects.create(
         dataspace=product_package.dataspace,
         product_package=product_package,
         vulnerability=vulnerability,
-        state=VulnerabilityAnalysis.State.RESOLVED,
-        justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-        responses=[
-            VulnerabilityAnalysis.Response.CAN_NOT_FIX,
-            VulnerabilityAnalysis.Response.ROLLBACK,
-        ],
-        detail="detail",
-        **data,
+        **{**default_data, **data},
     )

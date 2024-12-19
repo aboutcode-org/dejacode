@@ -311,6 +311,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_improve_packages_from_purldb_url(self):
         return self.get_url("improve_packages_from_purldb")
 
+    def get_export_csaf_url(self):
+        return self.get_url("export_csaf")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)

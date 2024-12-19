@@ -7,6 +7,10 @@
 #
 
 import json
+from datetime import datetime
+from datetime import timezone
+from pathlib import Path
+from unittest import mock
 
 from django.test import TestCase
 
@@ -20,18 +24,24 @@ from dje.tests import create_superuser
 from dje.tests import create_user
 from product_portfolio.models import Product
 from product_portfolio.tests import make_product_package
+from vulnerabilities.tests import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
 
 
 class OutputsTestCase(TestCase):
+    data = Path(__file__).parent / "testfiles" / "outputs"
+
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.super_user = create_superuser("nexb_user", self.dataspace)
         self.basic_user = create_user("basic_user", self.dataspace)
 
         self.product1 = Product.objects.create(
-            name="Product1 With Space", version="1.0", dataspace=self.dataspace
+            name="Product1 With Space",
+            version="1.0",
+            uuid="b2561aa6-1092-44ef-afe2-b0b331514bab",
+            dataspace=self.dataspace,
         )
 
     def test_outputs_safe_filename(self):
@@ -142,3 +152,51 @@ class OutputsTestCase(TestCase):
             "dejacode_nexb_product_product1_with_space_1.0.cdx.json",
             outputs.get_cyclonedx_filename(instance=self.product1),
         )
+
+    def test_outputs_get_csaf_security_advisory(self):
+        package1 = make_package(self.dataspace, package_url="pkg:type/name@1.0")
+        package2 = make_package(self.dataspace, package_url="pkg:type/name@2.0")
+        package3 = make_package(self.dataspace, package_url="pkg:type/name@3.0")
+        product_package1 = make_product_package(self.product1, package1)
+        product_package2 = make_product_package(self.product1, package2)
+        make_product_package(self.product1, package3)
+        vulnerability1 = make_vulnerability(
+            self.dataspace,
+            vulnerability_id="VCID-0001",
+            aliases=["CVE-1984-1010"],
+            affecting=[package1],
+        )
+        vulnerability2 = make_vulnerability(
+            self.dataspace, vulnerability_id="VCID-0002", affecting=[package2]
+        )
+        make_vulnerability(self.dataspace, vulnerability_id="VCID-0003", affecting=[package3])
+
+        make_vulnerability_analysis(
+            product_package1,
+            vulnerability1,
+            state=VulnerabilityAnalysis.State.NOT_AFFECTED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            detail="Code is not present",
+        )
+        make_vulnerability_analysis(
+            product_package2,
+            vulnerability2,
+            state=VulnerabilityAnalysis.State.EXPLOITABLE,
+            responses=[VulnerabilityAnalysis.Response.UPDATE],
+            is_reachable=True,
+            detail="Need an update",
+        )
+
+        mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=timezone.utc)
+        with mock.patch("dje.outputs.datetime") as mock_datetime:
+            mock_datetime.now.return_value = mock_now
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+            security_advisory = outputs.get_csaf_security_advisory(self.product1)
+
+        security_advisory_json = security_advisory.model_dump_json(indent=2, exclude_none=True)
+
+        expected_location = self.data / "csaf_security_advisory.csaf.json"
+        # if True:
+        #     expected_location.write_text(security_advisory_json)
+
+        self.assertJSONEqual(security_advisory_json, expected_location.read_text())

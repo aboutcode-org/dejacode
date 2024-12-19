@@ -88,6 +88,7 @@ from dje.views import DataspacedFilterView
 from dje.views import DataspacedModelFormMixin
 from dje.views import DataspacedUpdateView
 from dje.views import DataspaceScopeMixin
+from dje.views import ExportCSAFDocumentView
 from dje.views import ExportCycloneDXBOMView
 from dje.views import ExportSPDXDocumentView
 from dje.views import GetDataspacedObjectMixin
@@ -1906,6 +1907,10 @@ class ProductExportSPDXDocumentView(BaseProductViewMixin, ExportSPDXDocumentView
 
 
 class ProductExportCycloneDXBOMView(BaseProductViewMixin, ExportCycloneDXBOMView):
+    pass
+
+
+class ProductExportCSAFDocumentView(BaseProductViewMixin, ExportCSAFDocumentView):
     pass
 
 
