@@ -1,0 +1,233 @@
+{
+"headers": [
+{
+  "tool_name": "scanpipe",
+  "tool_version": "v34.9.2-8-g414274f4",
+  "other_tools": [
+    "pkg:pypi/scancode-toolkit@32.3.0"
+  ],
+  "notice": "Generated with ScanCode.io and provided on an \"AS IS\" BASIS, WITHOUT WARRANTIES\nOR CONDITIONS OF ANY KIND, either express or implied.\nNo content created from ScanCode.io should be considered or used as legal advice.\nConsult an Attorney for any legal advice.\nScanCode.io is a free software code scanning tool from nexB Inc. and others\nlicensed under the Apache License version 2.0.\nScanCode is a trademark of nexB Inc.\nVisit https://github.com/nexB/scancode.io for support and download.\n",
+  "uuid": "164f0567-1cba-4fca-b69c-ea40d7e0abec",
+  "created_date": "2024-12-19T09:30:57.552Z",
+  "notes": "",
+  "settings": {},
+  "input_sources": [
+    {
+      "uuid": "d2354af1-6ac3-45cc-89c4-46fd12716203",
+      "filename": "dejacode_nexb_product_starship_engine_2.0.cdx.json",
+      "download_url": "",
+      "is_uploaded": true,
+      "tag": "",
+      "size": 1741,
+      "is_file": true,
+      "exists": true
+    }
+  ],
+  "runs": [
+    {
+      "pipeline_name": "load_sbom",
+      "status": "success",
+      "description": "Load package data from one or more SBOMs.",
+      "selected_groups": [],
+      "selected_steps": null,
+      "uuid": "6170dc30-f62a-4d25-a9a4-b2a623195a13",
+      "created_date": "2024-12-19T10:31:14.649130+01:00",
+      "scancodeio_version": "v34.9.2-8-g414274f4",
+      "task_id": "6170dc30-f62a-4d25-a9a4-b2a623195a13",
+      "task_start_date": "2024-12-19T10:31:14.656704+01:00",
+      "task_end_date": "2024-12-19T10:31:14.794134+01:00",
+      "task_exitcode": 0,
+      "task_output": "",
+      "log": "2024-12-19 09:31:14.657 Pipeline [load_sbom] starting\n2024-12-19 09:31:14.659 Step [download_missing_inputs] starting\n2024-12-19 09:31:14.661 Step [download_missing_inputs] completed in 0 seconds\n2024-12-19 09:31:14.663 Step [copy_inputs_to_codebase_directory] starting\n2024-12-19 09:31:14.666 Step [copy_inputs_to_codebase_directory] completed in 0 seconds\n2024-12-19 09:31:14.668 Step [extract_archives] starting\n2024-12-19 09:31:14.672 Step [extract_archives] completed in 0 seconds\n2024-12-19 09:31:14.675 Step [collect_and_create_codebase_resources] starting\n2024-12-19 09:31:14.685 Step [collect_and_create_codebase_resources] completed in 0 seconds\n2024-12-19 09:31:14.687 Step [flag_empty_files] starting\n2024-12-19 09:31:14.692 Step [flag_empty_files] completed in 0 seconds\n2024-12-19 09:31:14.694 Step [flag_ignored_resources] starting\n2024-12-19 09:31:14.701 Step [flag_ignored_resources] completed in 0 seconds\n2024-12-19 09:31:14.703 Step [get_sbom_inputs] starting\n2024-12-19 09:31:14.718 Step [get_sbom_inputs] completed in 0 seconds\n2024-12-19 09:31:14.720 Step [get_packages_from_sboms] starting\n2024-12-19 09:31:14.752 Step [get_packages_from_sboms] completed in 0 seconds\n2024-12-19 09:31:14.754 Step [create_packages_from_sboms] starting\n2024-12-19 09:31:14.783 Step [create_packages_from_sboms] completed in 0 seconds\n2024-12-19 09:31:14.785 Step [create_dependencies_from_sboms] starting\n2024-12-19 09:31:14.790 Step [create_dependencies_from_sboms] completed in 0 seconds\n2024-12-19 09:31:14.792 Pipeline completed in 0 seconds\n",
+      "execution_time": 0
+    }
+  ],
+  "extra_data": {
+    "sboms_headers": {
+      "dejacode_nexb_product_starship_engine_2.0.cdx.json": {
+        "version": 1,
+        "metadata": {
+          "tools": [
+            {
+              "name": "DejaCode",
+              "vendor": "nexB",
+              "version": "v5.2.1-17-g79699bc"
+            }
+          ],
+          "authors": [
+            {
+              "name": " "
+            }
+          ],
+          "component": {
+            "name": "Starship Engine",
+            "type": "application",
+            "bom-ref": "afee3cbb-0d69-4b63-ae6e-823e8590b1d9",
+            "version": "2.0",
+            "copyright": "",
+            "description": ""
+          },
+          "timestamp": "2024-12-19T09:30:48.428654+00:00"
+        },
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.6",
+        "serialNumber": "urn:uuid:336a12d9-35d2-43cd-b30b-7a442662e6fb"
+      }
+    }
+  }
+}],
+"packages": [
+{
+  "purl": "pkg:npm/cssstyle@1.4.0",
+  "type": "npm",
+  "namespace": "",
+  "name": "cssstyle",
+  "version": "1.4.0",
+  "qualifiers": "",
+  "subpath": "",
+  "tag": "",
+  "primary_language": "",
+  "description": "CSSStyleDeclaration Object Model implementation",
+  "notes": "",
+  "release_date": null,
+  "parties": [],
+  "keywords": [],
+  "homepage_url": "",
+  "download_url": "",
+  "bug_tracking_url": "",
+  "code_view_url": "",
+  "vcs_url": "",
+  "repository_homepage_url": "",
+  "repository_download_url": "",
+  "api_data_url": "",
+  "size": null,
+  "md5": "",
+  "sha1": "",
+  "sha256": "",
+  "sha512": "",
+  "copyright": "",
+  "holder": "",
+  "declared_license_expression": "mit",
+  "declared_license_expression_spdx": "",
+  "license_detections": [],
+  "other_license_expression": "",
+  "other_license_expression_spdx": "",
+  "other_license_detections": [],
+  "extracted_license_statement": "MIT",
+  "compliance_alert": "",
+  "notice_text": "",
+  "source_packages": [],
+  "extra_data": {
+    "bom_ref": "pkg:npm/cssstyle@1.4.0"
+  },
+  "package_uid": "pkg:npm/cssstyle@1.4.0?uuid=a0801f6b-9660-4df0-9242-cf9439888eb3",
+  "is_private": false,
+  "is_virtual": false,
+  "datasource_ids": [],
+  "datafile_paths": [],
+  "file_references": [],
+  "missing_resources": [],
+  "modified_resources": [],
+  "affected_by_vulnerabilities": []
+},
+{
+  "purl": "pkg:npm/semver@7.0.0",
+  "type": "npm",
+  "namespace": "",
+  "name": "semver",
+  "version": "7.0.0",
+  "qualifiers": "",
+  "subpath": "",
+  "tag": "",
+  "primary_language": "",
+  "description": "The semantic version parser used by npm.",
+  "notes": "",
+  "release_date": null,
+  "parties": [],
+  "keywords": [],
+  "homepage_url": "",
+  "download_url": "",
+  "bug_tracking_url": "",
+  "code_view_url": "",
+  "vcs_url": "",
+  "repository_homepage_url": "",
+  "repository_download_url": "",
+  "api_data_url": "",
+  "size": null,
+  "md5": "",
+  "sha1": "",
+  "sha256": "",
+  "sha512": "",
+  "copyright": "",
+  "holder": "",
+  "declared_license_expression": "isc",
+  "declared_license_expression_spdx": "",
+  "license_detections": [],
+  "other_license_expression": "",
+  "other_license_expression_spdx": "",
+  "other_license_detections": [],
+  "extracted_license_statement": "ISC",
+  "compliance_alert": "",
+  "notice_text": "",
+  "source_packages": [],
+  "extra_data": {
+    "bom_ref": "pkg:npm/semver@7.0.0"
+  },
+  "package_uid": "pkg:npm/semver@7.0.0?uuid=d05f2d04-5a37-4fb9-9e97-09b46303dae4",
+  "is_private": false,
+  "is_virtual": false,
+  "datasource_ids": [],
+  "datafile_paths": [],
+  "file_references": [],
+  "missing_resources": [],
+  "modified_resources": [],
+  "affected_by_vulnerabilities": []
+}],
+"dependencies": [
+],
+"files": [
+{
+  "path": "dejacode_nexb_product_starship_engine_2.0.cdx.json",
+  "type": "file",
+  "name": "dejacode_nexb_product_starship_engine_2.0.cdx.json",
+  "status": "application-package",
+  "tag": "",
+  "extension": ".json",
+  "size": 1741,
+  "md5": "be6280f400299b1c4da965c78f577a53",
+  "sha1": "dbd62bdf9a5e842ad88084f65eab80a0c859be69",
+  "sha256": "b55f08a5b27c51062ca82c549536efbb45e4942601fe97635d2cd537ce60dac9",
+  "sha512": "",
+  "mime_type": "application/json",
+  "file_type": "JSON text data",
+  "programming_language": "",
+  "is_binary": false,
+  "is_text": true,
+  "is_archive": false,
+  "is_media": false,
+  "is_legal": false,
+  "is_manifest": false,
+  "is_readme": false,
+  "is_top_level": false,
+  "is_key_file": false,
+  "detected_license_expression": "",
+  "detected_license_expression_spdx": "",
+  "license_detections": [],
+  "license_clues": [],
+  "percentage_of_license_text": null,
+  "compliance_alert": "",
+  "copyrights": [],
+  "holders": [],
+  "authors": [],
+  "package_data": [],
+  "for_packages": [
+    "pkg:npm/cssstyle@1.4.0?uuid=a0801f6b-9660-4df0-9242-cf9439888eb3",
+    "pkg:npm/semver@7.0.0?uuid=d05f2d04-5a37-4fb9-9e97-09b46303dae4"
+  ],
+  "emails": [],
+  "urls": [],
+  "extra_data": {}
+}],
+"relations": [
+]
+}
