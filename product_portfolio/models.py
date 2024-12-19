@@ -11,6 +11,8 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.html import format_html
@@ -601,6 +603,23 @@ class ProductItemPurpose(
 
     text = models.TextField(
         help_text=_("Descriptive text to define the Purpose precisely."),
+    )
+
+    exposure_factor = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=2,
+        decimal_places=1,
+        validators=[
+            MaxValueValidator(1.0),
+            MinValueValidator(0.0),
+        ],
+        help_text=_(
+            "A number between 0.0 and 1.0 that identifies the vulnerability exposure "
+            "risk of a package as it is actually used in the context of a product, "
+            "with 1.0 being the highest exposure risk and 0.0 being no exposure risk at "
+            "all."
+        ),
     )
 
     class Meta:
