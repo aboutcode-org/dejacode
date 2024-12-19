@@ -16,6 +16,9 @@ Create a Product
 3. Set a **name**, then click the :guilabel:`Add Product` button at the bottom
    of the form.
 
+.. image:: images/tutorial-4-vulnerabilities/add-product.jpg
+   :width: 500
+
 Load Scan Results to your Product
 ---------------------------------
 
@@ -31,7 +34,12 @@ Load Scan Results to your Product
      :guilabel:`Open` button.
    * Click the :guilabel:`Import` button.
 
+.. image:: images/tutorial-4-vulnerabilities/action-import-from-scan.jpg
+   :width: 300
+
 3. View your import results in the :guilabel:`Inventory` tab.
+
+.. image:: images/tutorial-4-vulnerabilities/inventory-tab.jpg
 
 Review Vulnerabilities Affecting Your Product
 ---------------------------------------------
@@ -39,21 +47,34 @@ Review Vulnerabilities Affecting Your Product
 1. Navigate to the :guilabel:`Inventory` tab on the Product details page.
    Vulnerable packages are marked with an icon.
 
+.. image:: images/tutorial-4-vulnerabilities/inventory-tab.jpg
+
 2. Open the :guilabel:`Vulnerability` tab for a comprehensive view of all
    vulnerabilities associated with your Product.
+
+.. image:: images/tutorial-4-vulnerabilities/vulnerability-icon.jpg
+   :width: 300
 
 Conduct Vulnerability Analysis
 ------------------------------
 
 1. Review each vulnerability in the :guilabel:`Vulnerability` tab.
+
+.. image:: images/tutorial-4-vulnerabilities/vulnerability-analysis-modal.jpg
+
 2. Add details or analysis for each vulnerability as needed, which will
    enhance reporting and exports.
+
+.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab-with-analysis.jpg
 
 Export CycloneDX SBOM with VEX
 ------------------------------
 
 1. On the Product details page, from the :guilabel:`Share` dropdown, select
    :guilabel:`CycloneDX SBOM + VEX`.
+
+.. image:: images/tutorial-4-vulnerabilities/share-cdx.jpg
+   :width: 300
 
 2. The analysis details you provide for product package vulnerabilities are
    included in the ``vulnerabilities`` section of the CycloneDX VEX output.
