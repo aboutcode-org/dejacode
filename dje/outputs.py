@@ -227,7 +227,7 @@ def get_csaf_document(product):
     publisher = csaf.Publisher(
         category="vendor",
         name=product.dataspace.name,
-        namespace=product.dataspace.homepage_url,
+        namespace=product.dataspace.homepage_url or "https://url.not.available",
     )
     revision_history = csaf.RevisionHistoryItem(
         date=now,
@@ -309,7 +309,6 @@ def get_csaf_vulnerability_product_status(vulnerability):
             if analysis.responses:
                 response = analysis.responses[0]
                 category = CDX_RESPONSE_TO_CSAF_REMEDIATION.get(response, category)
-                print(response, category)
             details = analysis.detail or "Not available"
             remediations = [
                 csaf.Remediation(category=category, details=details, product_ids=products)
