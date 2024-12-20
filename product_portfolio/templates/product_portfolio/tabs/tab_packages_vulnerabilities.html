@@ -1,0 +1,115 @@
+{% load i18n %}
+{% load as_icon from dje_tags %}
+
+{% include 'tabs/pagination.html' %}
+
+{% if risk_threshold %}
+  <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">
+    A risk threshold filter at "{{ risk_threshold }}" is currently applied.
+    <a class="ms-1" href="?vulnerabilities-bypass_risk_threshold=Yes#vulnerabilities">Click here to see all vulnerabilities.</a>
+  </small>
+{% endif %}
+
+<table class="table table-bordered table-md text-break">
+  {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
+  <tbody>
+    {% for product_package in page_obj.object_list %}
+      <tr>
+        <td rowspan="{{ product_package.package.vulnerability_count }}">
+          <strong>
+            <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
+          </strong>
+        </td>
+        <td rowspan="{{ product_package.package.vulnerability_count }}">
+          {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=product_package.weighted_risk_score only %}
+        </td>
+        {% for vulnerability in product_package.package.affected_by_vulnerabilities.all %}
+          {% if not forloop.first %}<tr>{% endif %}
+            <td rowspan="{{ vulnerability.affected_packages_count }}">
+              <strong>
+                {% if vulnerability.resource_url %}
+                  <a href="{{ vulnerability.resource_url }}" target="_blank">
+                    {{ vulnerability.vulnerability_id }}
+                    <i class="fa-solid fa-up-right-from-square mini"></i>
+                  </a>
+                {% else %}
+                  {{ vulnerability.vulnerability_id }}
+                {% endif %}
+                {% if vulnerability.summary %}
+                  <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
+                    <i class="fa-solid fa-circle-info"></i>
+                  </span>
+                {% endif %}
+              </strong>
+              <div>
+                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score label="Risk:" only %}
+                {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
+              </div>
+              {% if vulnerability.aliases %}
+                <div class="mt-2">
+                  {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if product_package.vulnerability_analysis %}
+                {% if product_package.vulnerability_analysis.state %}
+                  <strong>{{ product_package.vulnerability_analysis.get_state_display }}</strong>
+                {% endif %}
+                {% if product_package.vulnerability_analysis.detail %}
+                  <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ product_package.vulnerability_analysis.detail|linebreaksbr }}">
+                    <i class="fa-solid fa-circle-info"></i>
+                  </span>
+                {% endif %}
+              {% endif %}
+            </td>
+            <td>
+              {% if product_package.vulnerability_analysis.justification %}
+                {{ product_package.vulnerability_analysis.get_justification_display }}
+              {% endif %}
+            </td>
+            <td>
+              {% if product_package.vulnerability_analysis.responses %}
+                <ul class="ps-3 m-0">
+                  {% for response in product_package.vulnerability_analysis.responses %}
+                    <li>{{ response }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if product_package.vulnerability_analysis.is_reachable %}
+                <i class="fa-solid fa-circle-radiation text-danger fs-6" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
+              {% elif product_package.vulnerability_analysis.is_reachable is False %}
+                <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
+              {% endif %}
+            </td>
+            <td class="p-1">
+              <span data-bs-toggle="modal"
+                    data-bs-target="#vulnerability-analysis-modal"
+                    data-vulnerability-id="{{ vulnerability.vulnerability_id }}"
+                    data-package-identifier="{{ package.identifier }}"
+                    data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product.uuid vulnerability.vulnerability_id product_package.package.uuid %}"
+              >
+                <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
+                  <i class="far fa-edit fa-sm"></i>
+                </button>
+              </span>
+            </td>
+            {% if not forloop.first %}</tr>{% endif %}
+          {% endfor %}
+        </tr>
+    {% empty %}
+      <tr>
+        <td colspan="10">
+          No results.
+          {% if filterset.is_active %}
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+              Clear search and filters
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

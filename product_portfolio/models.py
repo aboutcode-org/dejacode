@@ -11,6 +11,8 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.html import format_html
@@ -603,6 +605,23 @@ class ProductItemPurpose(
         help_text=_("Descriptive text to define the Purpose precisely."),
     )
 
+    exposure_factor = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=2,
+        decimal_places=1,
+        validators=[
+            MaxValueValidator(1.0),
+            MinValueValidator(0.0),
+        ],
+        help_text=_(
+            "A number between 0.0 and 1.0 that identifies the vulnerability exposure "
+            "risk of a package as it is actually used in the context of a product, "
+            "with 1.0 being the highest exposure risk and 0.0 being no exposure risk at "
+            "all."
+        ),
+    )
+
     class Meta:
         unique_together = (("dataspace", "label"), ("dataspace", "uuid"))
         ordering = ["label"]
@@ -621,6 +640,13 @@ class ProductItemPurpose(
             )
 
         return self.label
+
+    def save(self, *args, **kwargs):
+        if self.exposure_factor is not None:
+            product_package_qs = ProductPackage.objects.filter(purpose=self)
+            for product_package in product_package_qs:
+                product_package.set_weighted_risk_score(save=True)
+        super().save(*args, **kwargs)
 
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):
@@ -683,6 +709,20 @@ class ProductRelationshipMixin(
         ),
     )
 
+    weighted_risk_score = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Risk score from 0.0 to 10.0, with higher values indicating greater "
+            "vulnerability risk. This score is the maximum of the weighted severity "
+            "multiplied by exploitability, capped at 10, which is then multiplied by "
+            "the associated exposure risk factor assigned to the product package "
+            "purpose (when available)."
+        ),
+    )
+
     class Meta:
         abstract = True
 
@@ -690,6 +730,8 @@ class ProductRelationshipMixin(
         is_addition = not self.pk
         if is_addition:
             self.set_review_status_from_policy()
+
+        self.set_weighted_risk_score()
         super().save(*args, **kwargs)
 
     def set_review_status_from_policy(self):
@@ -700,6 +742,22 @@ class ProductRelationshipMixin(
         if not self.review_status or self.review_status.default_on_addition:
             if status_from_policy := self.get_status_from_item_policy():
                 self.review_status = status_from_policy
+
+    def compute_weighted_risk_score(self):
+        exposure_factor = 1.0
+        if self.purpose and self.purpose.exposure_factor is not None:
+            exposure_factor = self.purpose.exposure_factor
+
+        if self.package.risk_score is not None:
+            weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
+            return weighted_risk_score
+
+    def set_weighted_risk_score(self, save=False):
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
+        if save:
+            self.save(update_fields=["weighted_risk_score"])
 
     def get_status_from_item_policy(self):
         """
