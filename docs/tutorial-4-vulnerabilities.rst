@@ -41,24 +41,27 @@ Load Scan Results to your Product
 
 .. image:: images/tutorial-4-vulnerabilities/inventory-tab.jpg
 
-Review Vulnerabilities Affecting Your Product
----------------------------------------------
-
-1. Navigate to the :guilabel:`Inventory` tab on the Product details page.
-   Vulnerable packages are marked with an icon.
-
-.. image:: images/tutorial-4-vulnerabilities/inventory-tab.jpg
-
-2. Open the :guilabel:`Vulnerability` tab for a comprehensive view of all
-   vulnerabilities associated with your Product.
+4. Vulnerable packages are marked with an icon.
 
 .. image:: images/tutorial-4-vulnerabilities/vulnerability-icon.jpg
    :width: 300
 
+Review Vulnerabilities Affecting Your Product
+---------------------------------------------
+
+1. Navigate to the :guilabel:`Vulnerabilities` tab on the Product page, which presents
+   a comprehensive view of all the Vulnerabilities for your Product filtered to those
+   with a Risk greater than the Risk Threshold defined for your Dataspace.
+
+.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab.jpg
+
+2. You can sort and filter by Risk, Exploitability and Severity, as well as other
+   fields, to focus on specific Vulnerabilities.
+
 Conduct Vulnerability Analysis
 ------------------------------
 
-1. Review each vulnerability in the :guilabel:`Vulnerability` tab.
+1. Review each vulnerability in the :guilabel:`Vulnerabilities` tab.
 
 .. image:: images/tutorial-4-vulnerabilities/vulnerability-analysis-modal.jpg
 
