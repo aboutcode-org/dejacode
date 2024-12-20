@@ -129,6 +129,7 @@ class ProductFilterSet(DataspacedFilterSet):
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
+    dropdown_fields = ["is_modified", "weighted_risk_score"]
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
         choices=(
@@ -161,7 +162,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         label=_("Severity"),
         score_ranges=RISK_SCORE_RANGES,
     )
-    risk_score = ScoreRangeFilter(
+    weighted_risk_score = ScoreRangeFilter(
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
     )
@@ -192,12 +193,8 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         self.filters["purpose"].extra["to_field_name"] = "label"
         self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
-        self.filters["is_modified"].extra["widget"] = DropDownWidget(
-            anchor=self.anchor, right_align=True
-        )
-
         field_name_prefix = self.field_name_prefix
-        for field_name in ["exploitability", "weighted_severity", "risk_score"]:
+        for field_name in ["exploitability", "weighted_severity"]:
             field = self.filters[field_name]
             field.extra["widget"] = DropDownWidget(anchor=self.anchor)
             field.field_name = f"{field_name_prefix}__{field_name}"

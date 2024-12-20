@@ -702,6 +702,20 @@ class ProductRelationshipMixin(
         ),
     )
 
+    weighted_risk_score = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Risk score from 0.0 to 10.0, with higher values indicating greater "
+            "vulnerability risk. This score is the maximum of the weighted severity "
+            "multiplied by exploitability, capped at 10, which is then multiplied by "
+            "the associated exposure risk factor assigned to the product package "
+            "purpose (when available)."
+        ),
+    )
+
     class Meta:
         abstract = True
 
@@ -709,6 +723,8 @@ class ProductRelationshipMixin(
         is_addition = not self.pk
         if is_addition:
             self.set_review_status_from_policy()
+
+        self.set_weighted_risk_score()
         super().save(*args, **kwargs)
 
     def set_review_status_from_policy(self):
@@ -719,6 +735,20 @@ class ProductRelationshipMixin(
         if not self.review_status or self.review_status.default_on_addition:
             if status_from_policy := self.get_status_from_item_policy():
                 self.review_status = status_from_policy
+
+    def compute_weighted_risk_score(self):
+        exposure_factor = 1.0
+        if self.purpose and self.purpose.exposure_factor is not None:
+            exposure_factor = self.purpose.exposure_factor
+
+        if self.package.risk_score is not None:
+            weighted_risk_score = self.package.risk_score *  exposure_factor
+            return weighted_risk_score
+
+    def set_weighted_risk_score(self):
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
 
     def get_status_from_item_policy(self):
         """
