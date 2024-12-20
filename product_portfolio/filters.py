@@ -36,6 +36,7 @@ from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysisMixin
 
 
 class ProductFilterSet(DataspacedFilterSet):
@@ -129,7 +130,10 @@ class ProductFilterSet(DataspacedFilterSet):
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
-    dropdown_fields = ["is_modified", "weighted_risk_score"]
+    dropdown_fields = [
+        "is_modified",
+        "weighted_risk_score",
+    ]
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
         choices=(
@@ -246,6 +250,14 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
     field_name_prefix = "package"
+    dropdown_fields = [
+        "is_modified",
+        "weighted_risk_score",
+        "vulnerability_analyses__state",
+        "vulnerability_analyses__justification",
+        "responses",
+        "is_reachable",
+    ]
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -271,12 +283,27 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "feature",
             "is_deployed",
             "is_modified",
+            "weighted_risk_score",
         ],
     )
     is_vulnerable = IsVulnerableFilter(
         field_name="package__affected_by_vulnerabilities",
         widget=DropDownWidget(
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
+    )
+    responses = django_filters.ChoiceFilter(
+        field_name="vulnerability_analyses__responses",
+        lookup_expr="icontains",
+        choices=VulnerabilityAnalysisMixin.Response.choices,
+    )
+    is_reachable = BooleanChoiceFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        empty_label="All",
+        choices=(
+            ("yes", _("Reachable")),
+            ("no", _("Not reachable")),
+            ("unknown", _("Reachability not known")),
         ),
     )
 
@@ -288,7 +315,16 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "object_type",
             "is_deployed",
             "is_modified",
+            "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
+            "is_reachable",
+            "exploitability",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
+        self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
 
 
 class ComponentCompletenessListFilter(admin.SimpleListFilter):

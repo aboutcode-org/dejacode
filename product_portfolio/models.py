@@ -742,7 +742,7 @@ class ProductRelationshipMixin(
             exposure_factor = self.purpose.exposure_factor
 
         if self.package.risk_score is not None:
-            weighted_risk_score = self.package.risk_score *  exposure_factor
+            weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
             return weighted_risk_score
 
     def set_weighted_risk_score(self):
