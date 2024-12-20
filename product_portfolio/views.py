@@ -198,7 +198,7 @@ class ProductListView(
                 "licenses__usage_policy",
             )
             .annotate(
-                productinventoryitem_count=Count("productinventoryitem"),
+                productinventoryitem_count=Count("productinventoryitem", distinct=True),
             )
             .order_by(
                 "name",
