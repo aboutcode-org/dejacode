@@ -641,6 +641,13 @@ class ProductItemPurpose(
 
         return self.label
 
+    def save(self, *args, **kwargs):
+        if self.exposure_factor is not None:
+            product_package_qs = ProductPackage.objects.filter(purpose=self)
+            for product_package in product_package_qs:
+                product_package.set_weighted_risk_score(save=True)
+        super().save(*args, **kwargs)
+
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):
     def catalogs(self):
@@ -745,10 +752,12 @@ class ProductRelationshipMixin(
             weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
             return weighted_risk_score
 
-    def set_weighted_risk_score(self):
+    def set_weighted_risk_score(self, save=False):
         weighted_risk_score = self.compute_weighted_risk_score()
         if weighted_risk_score != self.weighted_risk_score:
             self.weighted_risk_score = weighted_risk_score
+        if save:
+            self.save(update_fields=["weighted_risk_score"])
 
     def get_status_from_item_policy(self):
         """
