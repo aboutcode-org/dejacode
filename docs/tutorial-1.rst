@@ -29,7 +29,7 @@ Alternatively, you can conveniently download one of the provided examples from
 the following
 `GitHub repository <https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/>`_.
 
-On the Product details page, from the :guilabel:`Scan` dropdown, select
+On the Product details page, from the :guilabel:`Action` dropdown, select
 :guilabel:`Load Packages from SBOMs`:
 
 * Click the :guilabel:`Choose File` button on the **SBOM file or zip archive** field.
