@@ -21,7 +21,7 @@ Click the green :guilabel:`Add` button.
 
 DejaCode presents the new Package.
 
-- Refresh your browser page to see the :guilabel:`Scan` tab.
+- Refresh your browser page to see the :guilabel:`Action` tab.
 - Explore the scan results.
 - Select values to apply to the new Package definition, such as one or more licenses,
   a Copyright statement, and a Primary langauge.
@@ -109,7 +109,7 @@ Improve Package Data by Scanning
 Select :guilabel:`Packages` from the main menu bar.
 
 Identify and select a Package that needs to be improved.
-Click the :guilabel:`Scan` button on the Package details form.
+Click the :guilabel:`Action` button on the Package details form.
 
 Optionally follow the progress of the Scan by selecting the :guilabel:`Scans`
 option from the :guilabel:`Tools` dropdown on the main menu bar.
