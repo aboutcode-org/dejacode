@@ -1106,6 +1106,7 @@ class ProductTabDependenciesView(
         return context_data
 
 
+
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
@@ -1170,7 +1171,7 @@ class ProductTabVulnerabilitiesView(
             product.get_vulnerability_qs(
                 prefetch_related_packages=True, risk_threshold=risk_threshold
             )
-            .annotate(affected_packages_count=Count("affected_packages"))
+            .annotate(affected_packages_count=Count("affected_packages", distinct=True))
             .order_by_risk()
         )
 
