@@ -354,6 +354,20 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def vulnerability_count(self):
         return self.get_vulnerability_qs().count()
 
+    def get_vulnerable_packages(self, risk_threshold=None):
+        """Return a QuerySet of vulnerable Package instances related to this product."""
+        package_qs = self.packages.vulnerable()
+        if risk_threshold is not None:
+            package_qs = package_qs.filter(productpackages__weighted_risk_score__gte=risk_threshold)
+        return package_qs
+
+    def get_vulnerable_productpackages(self, risk_threshold=None):
+        """Return a QuerySet of vulnerable ProductPackage instances related to this product."""
+        productpackage_qs = self.productpackages.filter(package__in=self.packages.vulnerable())
+        if risk_threshold is not None:
+            productpackage_qs = productpackage_qs.filter(weighted_risk_score__gte=risk_threshold)
+        return productpackage_qs
+
     def get_vulnerabilities_risk_threshold(self):
         """
         Return the local vulnerabilities_risk_threshold value when defined on the

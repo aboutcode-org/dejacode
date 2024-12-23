@@ -542,24 +542,17 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
-        base_productpackage_qs = product.productpackages.filter(
-            package__in=product.packages.vulnerable()
-        )
-
         if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
             risk_threshold = None
         else:
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
-        if risk_threshold is not None:
-            base_productpackage_qs = base_productpackage_qs.filter(
-                weighted_risk_score__gte=risk_threshold
-            )
+        vulnerable_packages = product.get_vulnerable_packages(risk_threshold=risk_threshold)
+        vulnerable_package_count = vulnerable_packages.count()
+        vulnerabilities = Vulnerability.objects.filter(affected_packages__in=vulnerable_packages)
+        vulnerability_count = vulnerabilities.distinct().count()
 
-        vulnerable_package_count = base_productpackage_qs.count()
-        vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
-
-        if not vulnerability_count:
+        if not vulnerability_count and risk_threshold is None:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
                 "label": format_html(label),
@@ -1175,21 +1168,13 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        # TODO: Make a QS method.
-        base_productpackage_qs = product.productpackages.filter(
-            package__in=product.packages.vulnerable()
-        )
 
         if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
             risk_threshold = None
         else:
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
-        if risk_threshold is not None:
-            base_productpackage_qs = base_productpackage_qs.filter(
-                weighted_risk_score__gte=risk_threshold
-            )
-
+        base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
         vulnerability_qs = Vulnerability.objects.order_by("-risk_score")
         package_qs = (
             Package.objects.all()

@@ -103,7 +103,7 @@
               <span data-bs-toggle="modal"
                     data-bs-target="#vulnerability-analysis-modal"
                     data-vulnerability-id="{{ vulnerability.vulnerability_id }}"
-                    data-package-identifier="{{ package.identifier }}"
+                    data-package-identifier="{{ product_package.package.identifier }}"
                     data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product.uuid vulnerability.vulnerability_id product_package.package.uuid %}"
               >
                 <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
