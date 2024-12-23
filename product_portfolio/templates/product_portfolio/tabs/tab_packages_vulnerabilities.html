@@ -19,6 +19,21 @@
           <strong>
             <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
           </strong>
+          {% if product_package.purpose %}
+            <div class="text-nowrap mt-1">
+              {{ product_package.purpose.label_with_icon }}
+              {% if product_package.purpose.exposure_factor %}
+                <div>
+                  <i class="fas fa-arrow-alt-circle-right"></i>
+                  Exposure factor: {{ product_package.purpose.exposure_factor }}
+                </div>
+              {% endif %}
+              <div>
+                {{ product_package.is_deployed|as_icon }}
+                {% if product_package.is_deployed %}Deployed{% else %}Not deployed{% endif %}
+              </div>
+            </div>
+          {% endif %}
         </td>
         <td rowspan="{{ product_package.package.vulnerability_count }}">
           {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=product_package.weighted_risk_score only %}
@@ -37,7 +52,7 @@
                 {% endif %}
                 {% if vulnerability.summary %}
                   <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
-                    <i class="fa-solid fa-circle-info"></i>
+                    <i class="fa-solid fa-circle-info text-muted"></i>
                   </span>
                 {% endif %}
               </strong>
@@ -58,7 +73,7 @@
                 {% endif %}
                 {% if product_package.vulnerability_analysis.detail %}
                   <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ product_package.vulnerability_analysis.detail|linebreaksbr }}">
-                    <i class="fa-solid fa-circle-info"></i>
+                    <i class="fa-solid fa-circle-info text-muted"></i>
                   </span>
                 {% endif %}
               {% endif %}
