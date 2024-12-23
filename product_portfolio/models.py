@@ -663,7 +663,12 @@ class ProductItemPurpose(
         super().save(*args, **kwargs)
 
 
-class ProductComponentQuerySet(ProductSecuredQuerySet):
+class ProductRelationshipQuerySet(ProductSecuredQuerySet):
+    def vulnerable(self):
+        return self.filter(weighted_risk_score__isnull=False)
+
+
+class ProductComponentQuerySet(ProductRelationshipQuerySet):
     def catalogs(self):
         return self.filter(component__isnull=False)
 
@@ -987,7 +992,7 @@ class ProductPackage(ProductRelationshipMixin):
         through="ProductPackageAssignedLicense",
     )
 
-    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductRelationshipQuerySet)()
 
     class Meta:
         verbose_name = _("product package relationship")

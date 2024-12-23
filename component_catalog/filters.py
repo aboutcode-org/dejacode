@@ -43,6 +43,15 @@ class IsVulnerableFilter(HasRelationFilter):
         super().__init__(*args, **kwargs)
 
 
+class IsVulnerableBooleanFilter(IsVulnerableFilter):
+    def filter(self, qs, value):
+        if value == "yes":
+            return qs.filter(**{f"{self.field_name}": True})
+        elif value == "no":
+            return qs.filter(**{f"{self.field_name}": False})
+        return qs
+
+
 class ComponentFilterSet(DataspacedFilterSet):
     related_only = [
         "licenses",

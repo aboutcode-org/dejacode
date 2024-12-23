@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import Exists
 from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Subquery
@@ -172,6 +173,10 @@ class ProductListView(
     )
 
     def get_queryset(self):
+        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
+            product_id=OuterRef("pk")
+        )
+
         return (
             self.model.objects.get_queryset(
                 user=self.request.user,
@@ -198,6 +203,7 @@ class ProductListView(
             )
             .annotate(
                 productinventoryitem_count=Count("productinventoryitem", distinct=True),
+                is_vulnerable=Exists(vulnerable_productpackage_qs),
             )
             .order_by(
                 "name",

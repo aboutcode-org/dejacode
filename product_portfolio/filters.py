@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 import django_filters
 from packageurl.contrib.django.utils import purl_to_lookups
 
+from component_catalog.filters import IsVulnerableBooleanFilter
 from component_catalog.filters import IsVulnerableFilter
 from component_catalog.models import ComponentKeyword
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
@@ -108,8 +109,8 @@ class ProductFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
-    is_vulnerable = IsVulnerableFilter(
-        field_name="packages__affected_by_vulnerabilities",
+    is_vulnerable = IsVulnerableBooleanFilter(
+        label=_("Is Vulnerable"),
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
