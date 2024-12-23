@@ -19,6 +19,7 @@ from django.db.models import F
 from django.db.models import FloatField
 from django.db.models import Value
 from django.db.models import When
+from django.db.models.expressions import OuterRef
 from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django.utils.html import format_html
@@ -663,47 +664,49 @@ class ProductItemPurpose(
 
     def save(self, *args, **kwargs):
         is_addition = not self.pk
-
         super().save(*args, **kwargs)
-
         # No need to set when the object is created as it is not referenced yet.
         if not is_addition:
-            # TODO: We could trigger only if it was changed.
-            # TODO: Handle the case when the exposure_factor is reset to None as well.
-            if self.exposure_factor is not None:
-                product_package_qs = ProductPackage.objects.filter(purpose=self)
-                product_package_qs.update_weighted_risk_score()
+            # TODO: We could trigger only if it was changed.  -> Add test
+            # TODO: Handle the case when the exposure_factor is reset to None as well. -> Add test
+            product_package_qs = ProductPackage.objects.filter(purpose=self)
+            product_package_qs.update_weighted_risk_score()
 
 
 class ProductRelationshipQuerySet(ProductSecuredQuerySet):
     def vulnerable(self):
         return self.filter(weighted_risk_score__isnull=False)
 
-    @staticmethod
-    def get_weighted_risk_score_case():
-        return Case(
-            # Return None when the package.risk_score is not set.
-            When(
-                package__risk_score__isnull=True,
-                then=None,
+    def annotate_weighted_risk_score(self):
+        """Annotate the Queeryset with the weighted_risk_score computed value."""
+        purpose = ProductItemPurpose.objects.filter(productpackage=OuterRef("pk"))
+        package = Package.objects.filter(productpackages=OuterRef("pk"))
+
+        return self.annotate(
+            exposure_factor=models.Subquery(purpose.values("exposure_factor")[:1]),
+            risk_score=models.Subquery(package.values("risk_score")[:1]),
+            computed_weighted_risk_score=Case(
+                # Return the package.risk_score weighted by the purpose.exposure_factor
+                # when available, else return the package.risk_score.
+                # Coalesce ensures a fallback to 1.0 if exposure_factor is NULL.
+                When(
+                    risk_score__isnull=False,
+                    then=F("risk_score") * Coalesce(F("exposure_factor"), Value(1.0)),
+                ),
+                # Return None when the package.risk_score is not set.
+                default=Value(None),
+                output_field=FloatField(),
             ),
-            # Return the package.risk_score weighted by the purpose.exposure_factor
-            # when available, else return the package.risk_score.
-            # Coalesce ensures a fallback to 1.0 if exposure_factor is NULL.
-            When(
-                package__risk_score__isnull=False,
-                then=F("package__risk_score") * Coalesce(F("purpose__exposure_factor"), Value(1.0)),
-            ),
-            default=None,
-            output_field=FloatField(),
         )
 
     def update_weighted_risk_score(self):
-        return self.annotate(
-            computed_weighted_risk_score=self.get_weighted_risk_score_case(),
-        )  # .update(
-        #   weighted_risk_score=F("computed_weighted_risk_score"),
-        # )
+        """
+        Update the weighted_risk_score using the computed annotation from
+        `self.annotate_weighted_risk_score()`
+        """
+        return self.annotate_weighted_risk_score().update(
+            weighted_risk_score=F("computed_weighted_risk_score"),
+        )
 
 
 class ProductComponentQuerySet(ProductRelationshipQuerySet):

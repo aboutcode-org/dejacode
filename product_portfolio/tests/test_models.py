@@ -741,20 +741,41 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertFalse(pc1.is_custom_component)
 
     def test_product_relationship_queryset_update_weighted_risk_score(self):
-        purpose = ProductItemPurpose.objects.create(
+        purpose1 = ProductItemPurpose.objects.create(
             label="Core",
             text="Text",
-            exposure_factor=0.5,
             dataspace=self.dataspace,
         )
-        package1 = make_package(self.dataspace, risk_score=4.0)
-        pp1 = make_product_package(self.product1, package=package1, purpose=purpose)
-        qs = ProductPackage.objects.filter(pk=pp1.pk).update_weighted_risk_score()
-        print(qs[0].computed_weighted_risk_score)
 
-        package1.update(risk_score=None)
-        qs = ProductPackage.objects.filter(pk=pp1.pk).update_weighted_risk_score()
-        print(qs[0].computed_weighted_risk_score)
+        # 1. package.risk_score = None, purpose = None
+        package1 = make_package(self.dataspace)
+        pp1 = make_product_package(self.product1, package=package1)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertIsNone(pp1.weighted_risk_score)
+
+        # 2. package.risk_score = 4.0, purpose.exposure_factor = None
+        Package.objects.filter(pk=package1.pk).update(risk_score=4.0)
+        ProductPackage.objects.filter(pk=pp1.pk).update(purpose=purpose1)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertEqual(4.0, pp1.weighted_risk_score)
+
+        # 3. package.risk_score = 4.0, purpose.exposure_factor = 0.5
+        ProductItemPurpose.objects.filter(pk=purpose1.pk).update(exposure_factor=0.5)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertEqual(2.0, pp1.weighted_risk_score)
+
+        # 4. package.risk_score = None, purpose.exposure_factor = 0.5
+        Package.objects.filter(pk=package1.pk).update(risk_score=None)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertIsNone(pp1.weighted_risk_score)
 
     def test_productrelation_model_related_component_or_package_property(self):
         component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
