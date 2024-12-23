@@ -14,6 +14,12 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Case
+from django.db.models import F
+from django.db.models import FloatField
+from django.db.models import Value
+from django.db.models import When
+from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 from django.utils.html import format_html_join
@@ -656,16 +662,48 @@ class ProductItemPurpose(
         return self.label
 
     def save(self, *args, **kwargs):
-        if self.exposure_factor is not None:
-            product_package_qs = ProductPackage.objects.filter(purpose=self)
-            for product_package in product_package_qs:
-                product_package.set_weighted_risk_score(save=True)
+        is_addition = not self.pk
+
         super().save(*args, **kwargs)
+
+        # No need to set when the object is created as it is not referenced yet.
+        if not is_addition:
+            # TODO: We could trigger only if it was changed.
+            # TODO: Handle the case when the exposure_factor is reset to None as well.
+            if self.exposure_factor is not None:
+                product_package_qs = ProductPackage.objects.filter(purpose=self)
+                product_package_qs.update_weighted_risk_score()
 
 
 class ProductRelationshipQuerySet(ProductSecuredQuerySet):
     def vulnerable(self):
         return self.filter(weighted_risk_score__isnull=False)
+
+    @staticmethod
+    def get_weighted_risk_score_case():
+        return Case(
+            # Return None when the package.risk_score is not set.
+            When(
+                package__risk_score__isnull=True,
+                then=None,
+            ),
+            # Return the package.risk_score weighted by the purpose.exposure_factor
+            # when available, else return the package.risk_score.
+            # Coalesce ensures a fallback to 1.0 if exposure_factor is NULL.
+            When(
+                package__risk_score__isnull=False,
+                then=F("package__risk_score") * Coalesce(F("purpose__exposure_factor"), Value(1.0)),
+            ),
+            default=None,
+            output_field=FloatField(),
+        )
+
+    def update_weighted_risk_score(self):
+        return self.annotate(
+            computed_weighted_risk_score=self.get_weighted_risk_score_case(),
+        )  # .update(
+        #   weighted_risk_score=F("computed_weighted_risk_score"),
+        # )
 
 
 class ProductComponentQuerySet(ProductRelationshipQuerySet):
@@ -1556,7 +1594,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         help_text=_("True if this is a direct, first-level dependency relationship for a package."),
     )
 
-    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductRelationshipQuerySet)()
 
     class Meta:
         unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))

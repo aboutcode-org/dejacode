@@ -35,6 +35,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductInventoryItem
+from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
@@ -738,6 +739,22 @@ class ProductPortfolioModelsTestCase(TestCase):
         pc1.component = component1
         pc1.save()
         self.assertFalse(pc1.is_custom_component)
+
+    def test_product_relationship_queryset_update_weighted_risk_score(self):
+        purpose = ProductItemPurpose.objects.create(
+            label="Core",
+            text="Text",
+            exposure_factor=0.5,
+            dataspace=self.dataspace,
+        )
+        package1 = make_package(self.dataspace, risk_score=4.0)
+        pp1 = make_product_package(self.product1, package=package1, purpose=purpose)
+        qs = ProductPackage.objects.filter(pk=pp1.pk).update_weighted_risk_score()
+        print(qs[0].computed_weighted_risk_score)
+
+        package1.update(risk_score=None)
+        qs = ProductPackage.objects.filter(pk=pp1.pk).update_weighted_risk_score()
+        print(qs[0].computed_weighted_risk_score)
 
     def test_productrelation_model_related_component_or_package_property(self):
         component1 = Component.objects.create(name="c1", dataspace=self.dataspace)
