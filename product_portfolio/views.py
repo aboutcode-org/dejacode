@@ -1181,7 +1181,11 @@ class ProductTabVulnerabilitiesView(
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
-        vulnerability_qs = Vulnerability.objects.order_by("-risk_score")
+        vulnerability_qs = (
+            Vulnerability.objects
+            .prefetch_related("vulnerability_analyses")
+            .order_by("-risk_score")
+        )
         package_qs = (
             Package.objects.all()
             .only_rendering_fields()
@@ -1222,7 +1226,7 @@ class ProductTabVulnerabilitiesView(
         for product_package in page_obj.object_list:
             for vulnerability in product_package.package.affected_by_vulnerabilities.all():
                 for analysis in vulnerability.vulnerability_analyses.all():
-                    if analysis.product_package == product_package:
+                    if analysis.product_package_id == product_package.id:
                         product_package.vulnerability_analysis = analysis
                         continue
 
