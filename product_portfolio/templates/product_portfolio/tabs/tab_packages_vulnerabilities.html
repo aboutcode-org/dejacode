@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load as_icon from dje_tags %}
 
-{% include 'tabs/pagination.html' %}
+{% include 'tabs/pagination.html' with search_verbose_name="packages" %}
 
 {% if risk_threshold %}
   <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">

@@ -542,12 +542,23 @@ class ProductDetailsView(
         if not all(display_tab_contions):
             return
 
+        base_productpackage_qs = product.productpackages.filter(
+            package__in=product.packages.vulnerable()
+        )
+
         if self.request.GET.get("vulnerabilities-bypass_risk_threshold"):
             risk_threshold = None
         else:
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
+        if risk_threshold is not None:
+            base_productpackage_qs = base_productpackage_qs.filter(
+                weighted_risk_score__gte=risk_threshold
+            )
+
+        vulnerable_package_count = base_productpackage_qs.count()
         vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
+
         if not vulnerability_count:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
@@ -558,7 +569,11 @@ class ProductDetailsView(
             }
 
         label = (
-            f'Vulnerabilities <span class="badge badge-vulnerability">{vulnerability_count}</span>'
+            f"Vulnerabilities"
+            f'<span class="badge badge-vulnerability ps-1 ms-1">'
+            f'  <i class="fas fa-archive"></i>{vulnerable_package_count}'
+            f'  <i class="fas fa-bug"></i>{vulnerability_count}'
+            f"</span>"
         )
 
         # Pass the current request query context to the async request
@@ -1121,7 +1136,11 @@ class ProductTabVulnerabilitiesView(
     table_headers = (
         Header("affected_packages", _("Package"), help_text="Affected product packages"),
         Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
-        Header("vulnerability_id", _("Vulnerabilities"), help_text="TODO"),
+        Header(
+            "vulnerability_id",
+            _("Vulnerabilities"),
+            help_text="Vulnerabilities affecting the product package",
+        ),
         Header(
             "vulnerability_analyses__state",
             _("Status"),
@@ -1156,7 +1175,8 @@ class ProductTabVulnerabilitiesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
-        base_productpackage_qs = self.object.productpackages.filter(
+        # TODO: Make a QS method.
+        base_productpackage_qs = product.productpackages.filter(
             package__in=product.packages.vulnerable()
         )
 
