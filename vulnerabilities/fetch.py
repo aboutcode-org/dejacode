@@ -113,8 +113,8 @@ def fetch_for_packages(
 
             if package_risk_score := vc_entry.get("risk_score"):
                 affected_packages.update(risk_score=package_risk_score)
+                # TODO: This should be improved.
                 product_package_qs = ProductPackage.objects.filter(package__in=affected_packages)
-                for product_package in product_package_qs:
-                    product_package.set_weighted_risk_score(save=True)
+                product_package_qs.update_weighted_risk_score()
 
     return created_vulnerabilities

@@ -570,8 +570,8 @@ class ProductDetailsView(
         label = (
             f"Vulnerabilities"
             f'<span class="badge badge-vulnerability ps-1 ms-1">'
-            f'  <i class="fas fa-archive"></i>{vulnerable_package_count}'
-            f'  <i class="fas fa-bug"></i>{vulnerability_count}'
+            f'  <i class="fas fa-archive" style="height: auto"></i>{vulnerable_package_count}'
+            f'  <i class="fas fa-bug" style="height: auto"></i>{vulnerability_count}'
             f"</span>"
         )
 

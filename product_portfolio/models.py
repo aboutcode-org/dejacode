@@ -804,20 +804,20 @@ class ProductRelationshipMixin(
                 self.review_status = status_from_policy
 
     def compute_weighted_risk_score(self):
+        if self.package.risk_score is None:
+            return None
+
         exposure_factor = 1.0
-        if self.purpose and self.purpose.exposure_factor is not None:
+        if self.purpose and self.purpose.exposure_factor:
             exposure_factor = self.purpose.exposure_factor
 
-        if self.package.risk_score is not None:
-            weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
-            return weighted_risk_score
+        weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
+        return weighted_risk_score
 
-    def set_weighted_risk_score(self, save=False):
+    def set_weighted_risk_score(self):
         weighted_risk_score = self.compute_weighted_risk_score()
         if weighted_risk_score != self.weighted_risk_score:
             self.weighted_risk_score = weighted_risk_score
-        if save:
-            self.save(update_fields=["weighted_risk_score"])
 
     def get_status_from_item_policy(self):
         """
