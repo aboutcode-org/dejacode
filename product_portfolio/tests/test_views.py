@@ -302,10 +302,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-risk_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=risk_score#vulnerabilities")
-        response = self.client.get(url + "?vulnerabilities-sort=risk_score#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-weighted_risk_score=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
+        response = self.client.get(url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=-weighted_risk_score#vulnerabilities")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
@@ -359,13 +359,17 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):
         self.client.login(username="nexb_user", password="secret")
 
-        p1 = make_package(self.dataspace)
+        p1 = make_package(self.dataspace, risk_score=1.0)
+        p2 = make_package(self.dataspace, risk_score=5.0)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=1.0)
-        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=5.0)
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p2], risk_score=5.0)
         product1 = make_product(self.dataspace)
-        make_product_package(product1, package=p1)
-        url = product1.get_url("tab_vulnerabilities")
+        pp1 = make_product_package(product1, package=p1)
+        pp2 = make_product_package(product1, package=p2)
+        self.assertEqual(1.0, pp1.weighted_risk_score)
+        self.assertEqual(5.0, pp2.weighted_risk_score)
 
+        url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
         self.assertContains(response, vulnerability1.vcid)
         self.assertContains(response, vulnerability2.vcid)
@@ -547,7 +551,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
 
-        response = self.client.get(url + "?inventory-risk_score=low")
+        response = self.client.get(url + "?inventory-weighted_risk_score=low")
         pc_filterset = response.context["inventory_items"][""]
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertNotIn(pc2_custom, pc_filterset)
