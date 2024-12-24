@@ -673,7 +673,15 @@ class ProductItemPurpose(
             product_package_qs.update_weighted_risk_score()
 
 
-class ProductRelationshipQuerySet(ProductSecuredQuerySet):
+class ProductComponentQuerySet(ProductSecuredQuerySet):
+    def catalogs(self):
+        return self.filter(component__isnull=False)
+
+    def customs(self):
+        return self.filter(component__isnull=True)
+
+
+class ProductPackageQuerySet(ProductSecuredQuerySet):
     def vulnerable(self):
         return self.filter(weighted_risk_score__isnull=False)
 
@@ -707,14 +715,6 @@ class ProductRelationshipQuerySet(ProductSecuredQuerySet):
         return self.annotate_weighted_risk_score().update(
             weighted_risk_score=F("computed_weighted_risk_score"),
         )
-
-
-class ProductComponentQuerySet(ProductRelationshipQuerySet):
-    def catalogs(self):
-        return self.filter(component__isnull=False)
-
-    def customs(self):
-        return self.filter(component__isnull=True)
 
 
 class ProductRelationshipMixin(
@@ -769,20 +769,6 @@ class ProductRelationshipMixin(
         ),
     )
 
-    weighted_risk_score = models.DecimalField(
-        null=True,
-        blank=True,
-        max_digits=3,
-        decimal_places=1,
-        help_text=_(
-            "Risk score from 0.0 to 10.0, with higher values indicating greater "
-            "vulnerability risk. This score is the maximum of the weighted severity "
-            "multiplied by exploitability, capped at 10, which is then multiplied by "
-            "the associated exposure risk factor assigned to the product package "
-            "purpose (when available)."
-        ),
-    )
-
     class Meta:
         abstract = True
 
@@ -790,8 +776,6 @@ class ProductRelationshipMixin(
         is_addition = not self.pk
         if is_addition:
             self.set_review_status_from_policy()
-
-        self.set_weighted_risk_score()
         super().save(*args, **kwargs)
 
     def set_review_status_from_policy(self):
@@ -802,22 +786,6 @@ class ProductRelationshipMixin(
         if not self.review_status or self.review_status.default_on_addition:
             if status_from_policy := self.get_status_from_item_policy():
                 self.review_status = status_from_policy
-
-    def compute_weighted_risk_score(self):
-        if self.package.risk_score is None:
-            return None
-
-        exposure_factor = 1.0
-        if self.purpose and self.purpose.exposure_factor:
-            exposure_factor = self.purpose.exposure_factor
-
-        weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
-        return weighted_risk_score
-
-    def set_weighted_risk_score(self):
-        weighted_risk_score = self.compute_weighted_risk_score()
-        if weighted_risk_score != self.weighted_risk_score:
-            self.weighted_risk_score = weighted_risk_score
 
     def get_status_from_item_policy(self):
         """
@@ -1033,7 +1001,21 @@ class ProductPackage(ProductRelationshipMixin):
         through="ProductPackageAssignedLicense",
     )
 
-    objects = DataspacedManager.from_queryset(ProductRelationshipQuerySet)()
+    weighted_risk_score = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Risk score from 0.0 to 10.0, with higher values indicating greater "
+            "vulnerability risk. This score is the maximum of the weighted severity "
+            "multiplied by exploitability, capped at 10, which is then multiplied by "
+            "the associated exposure risk factor assigned to the product package "
+            "purpose (when available)."
+        ),
+    )
+
+    objects = DataspacedManager.from_queryset(ProductPackageQuerySet)()
 
     class Meta:
         verbose_name = _("product package relationship")
@@ -1052,6 +1034,26 @@ class ProductPackage(ProductRelationshipMixin):
     @property
     def permission_protected_fields(self):
         return {"review_status": "change_review_status_on_productpackage"}
+
+    def save(self, *args, **kwargs):
+        self.set_weighted_risk_score()
+        super().save(*args, **kwargs)
+
+    def compute_weighted_risk_score(self):
+        if self.package.risk_score is None:
+            return None
+
+        exposure_factor = 1.0
+        if self.purpose and self.purpose.exposure_factor:
+            exposure_factor = self.purpose.exposure_factor
+
+        weighted_risk_score = float(self.package.risk_score) * float(exposure_factor)
+        return weighted_risk_score
+
+    def set_weighted_risk_score(self):
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
 
 
 class ProductAssignedLicense(DataspacedModel):
@@ -1597,7 +1599,7 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         help_text=_("True if this is a direct, first-level dependency relationship for a package."),
     )
 
-    objects = DataspacedManager.from_queryset(ProductRelationshipQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
 
     class Meta:
         unique_together = (("product", "dependency_uid"), ("dataspace", "uuid"))
