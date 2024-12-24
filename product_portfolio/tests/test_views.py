@@ -304,7 +304,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, "?vulnerabilities-weighted_risk_score=#vulnerabilities")
         self.assertContains(response, "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
-        response = self.client.get(url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
+        response = self.client.get(
+            url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities"
+        )
         self.assertContains(response, "?vulnerabilities-sort=-weighted_risk_score#vulnerabilities")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):

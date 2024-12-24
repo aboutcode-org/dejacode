@@ -158,6 +158,7 @@
     ],
     "feature": "",
     "issue_ref": "",
+    "weighted_risk_score": null,
     "component": null,
     "license_expression": "apache-2.0",
     "name": "c1",
@@ -198,12 +199,12 @@
     ],
     "feature": "",
     "issue_ref": "",
+    "weighted_risk_score": null,
     "package": [
       "nexB",
       "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
     ],
-    "license_expression": "",
-    "weighted_risk_score": null
+    "license_expression": ""
   }
 },
 {

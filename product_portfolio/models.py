@@ -1361,24 +1361,61 @@ class ProductInventoryItem(ProductRelationshipMixin):
     DROP VIEW IF EXISTS product_portfolio_productinventoryitem;
     CREATE VIEW product_portfolio_productinventoryitem
     AS
-       SELECT pc.uuid, pc.component_id, NULL as package_id,
-           CONCAT(component.name, ' ', component.version) as item,  'component' as item_type,
-           pc.dataspace_id, pc.product_id,  pc.review_status_id, pc.feature,
-           component.usage_policy_id, pc.created_date, pc.last_modified_date,
-           pc.reference_notes, pc.purpose_id, pc.notes, pc.is_deployed, pc.is_modified,
-           pc.extra_attribution_text, pc.package_paths, pc.issue_ref, pc.license_expression,
-           pc.created_by_id, pc.last_modified_by_id
-       FROM product_portfolio_productcomponent AS pc
-       INNER JOIN component_catalog_component AS component ON pc.component_id=component.id
-       UNION ALL
-       SELECT pp.uuid, NULL as component_id, pp.package_id, package.filename as item,
-           'package' as item_type, pp.dataspace_id, pp.product_id, pp.review_status_id,
-           pp.feature, package.usage_policy_id, pp.created_date, pp.last_modified_date,
-           pp.reference_notes, pp.purpose_id, pp.notes, pp.is_deployed, pp.is_modified,
-           pp.extra_attribution_text, pp.package_paths, pp.issue_ref, pp.license_expression,
-           pp.created_by_id, pp.last_modified_by_id
-       FROM product_portfolio_productpackage AS pp
-       INNER JOIN component_catalog_package AS package ON pp.package_id=package.id
+      SELECT
+        pc.uuid,
+        pc.component_id,
+        NULL as package_id,
+        CONCAT(component.name, ' ', component.version) as item,
+        'component' as item_type,
+        pc.dataspace_id,
+        pc.product_id,
+        pc.review_status_id,
+        pc.feature,
+        component.usage_policy_id,
+        pc.created_date,
+        pc.last_modified_date,
+        pc.reference_notes,
+        pc.purpose_id,
+        pc.notes,
+        pc.is_deployed,
+        pc.is_modified,
+        pc.extra_attribution_text,
+        pc.package_paths,
+        pc.issue_ref,
+        pc.weighted_risk_score,
+        pc.license_expression,
+        pc.created_by_id,
+        pc.last_modified_by_id
+      FROM product_portfolio_productcomponent AS pc
+      INNER JOIN component_catalog_component AS component ON pc.component_id=component.id
+      UNION ALL
+      SELECT
+        pp.uuid,
+        NULL as component_id,
+        pp.package_id,
+        package.filename as item,
+        'package' as item_type,
+        pp.dataspace_id,
+        pp.product_id,
+        pp.review_status_id,
+        pp.feature,
+        package.usage_policy_id,
+        pp.created_date,
+        pp.last_modified_date,
+        pp.reference_notes,
+        pp.purpose_id,
+        pp.notes,
+        pp.is_deployed,
+        pp.is_modified,
+        pp.extra_attribution_text,
+        pp.package_paths,
+        pp.issue_ref,
+        pp.weighted_risk_score,
+        pp.license_expression,
+        pp.created_by_id,
+        pp.last_modified_by_id
+      FROM product_portfolio_productpackage AS pp
+      INNER JOIN component_catalog_package AS package ON pp.package_id=package.id
     ;
     """
 
