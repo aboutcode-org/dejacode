@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='productcomponent',
             name='weighted_risk_score',
-            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score from 0.0 to 10.0, with higher values indicating greater vulnerability risk. This score is the maximum of the weighted severity multiplied by exploitability, capped at 10, which is then multiplied by the associated exposure risk factor assigned to the product item purpose (when available).', max_digits=3, null=True),
+            field=models.DecimalField(blank=True, decimal_places=1, help_text="Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. Calculated as the weighted severity times exploitability (capped at 10), adjusted by the exposure risk factor of the product item's purpose.", max_digits=3, null=True),
         ),
         migrations.AddField(
             model_name='productitempurpose',
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='productpackage',
             name='weighted_risk_score',
-            field=models.DecimalField(blank=True, decimal_places=1, help_text='Risk score from 0.0 to 10.0, with higher values indicating greater vulnerability risk. This score is the maximum of the weighted severity multiplied by exploitability, capped at 10, which is then multiplied by the associated exposure risk factor assigned to the product item purpose (when available).', max_digits=3, null=True),
+            field=models.DecimalField(blank=True, decimal_places=1, help_text="Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. Calculated as the weighted severity times exploitability (capped at 10), adjusted by the exposure risk factor of the product item's purpose.", max_digits=3, null=True),
         ),
         migrations.RunSQL(
             """

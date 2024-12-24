@@ -709,14 +709,10 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
 
     def update_weighted_risk_score(self):
         """
-        Updates the `weighted_risk_score` for all objects in the queryset.
+        Update the `weighted_risk_score` for all objects in the queryset.
 
         This directly writes to the database and doesn't trigger model `save()`
         methods, so any side effects in `save()` won't be executed.
-        """
-        """
-        Update the weighted_risk_score using the computed annotation from
-        `self.annotate_weighted_risk_score()`
         """
         return self.annotate_weighted_risk_score().update(
             weighted_risk_score=F("computed_weighted_risk_score"),
@@ -781,11 +777,9 @@ class ProductRelationshipMixin(
         max_digits=3,
         decimal_places=1,
         help_text=_(
-            "Risk score from 0.0 to 10.0, with higher values indicating greater "
-            "vulnerability risk. This score is the maximum of the weighted severity "
-            "multiplied by exploitability, capped at 10, which is then multiplied by "
-            "the associated exposure risk factor assigned to the product item "
-            "purpose (when available)."
+            "Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. "
+            "Calculated as the weighted severity times exploitability (capped at 10), "
+            "adjusted by the exposure risk factor of the product item's purpose."
         ),
     )
 
@@ -820,6 +814,17 @@ class ProductRelationshipMixin(
                     return status
 
     def compute_weighted_risk_score(self):
+        """
+        Compute the weighted risk score for the current instance.
+
+        The weighted risk score is calculated as:
+            - `risk_score` of the related component or package,
+            - Multiplied by the `exposure_factor` of the item's purpose
+              (defaulting to 1.0 if unavailable).
+
+        If the related object does not exist or its `risk_score` is `None`,
+        the method returns `None`.
+        """
         related_object = self.related_component_or_package
         if not related_object:  # Custom component
             return None
@@ -836,6 +841,15 @@ class ProductRelationshipMixin(
         return weighted_risk_score
 
     def set_weighted_risk_score(self):
+        """
+        Update the `weighted_risk_score` for the current instance.
+
+        The method computes the weighted risk score using `compute_weighted_risk_score()`
+        and assigns the computed value to the `weighted_risk_score` field if it differs
+        from the current value.
+
+        This ensures that the field reflects the most up-to-date calculation.
+        """
         weighted_risk_score = self.compute_weighted_risk_score()
         if weighted_risk_score != self.weighted_risk_score:
             self.weighted_risk_score = weighted_risk_score
