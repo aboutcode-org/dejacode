@@ -58,6 +58,8 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
 def fetch_for_packages(
     queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None
 ):
+    from product_portfolio.models import ProductPackage
+
     object_count = queryset.count()
     if object_count < 1:
         return
@@ -111,5 +113,8 @@ def fetch_for_packages(
 
             if package_risk_score := vc_entry.get("risk_score"):
                 affected_packages.update(risk_score=package_risk_score)
+                # TODO: This should be improved.
+                product_package_qs = ProductPackage.objects.filter(package__in=affected_packages)
+                product_package_qs.update_weighted_risk_score()
 
     return created_vulnerabilities

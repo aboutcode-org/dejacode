@@ -385,7 +385,7 @@ table.vulnerabilities-table .column-summary {
 
 /* -- Vulnerability tab -- */
 #tab_vulnerabilities .column-vulnerability_id {
-  width: 210px;
+  width: 230px;
 }
 #tab_vulnerabilities .column-affected_packages {
   min-width: 250px;
@@ -396,23 +396,24 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-weighted_severity {
   width: 105px;
 }
-#tab_vulnerabilities .column-risk_score {
+#tab_vulnerabilities .column-risk_score,
+#tab_vulnerabilities .column-weighted_risk_score{
   width: 80px;
 }
 #tab_vulnerabilities .column-summary {
   width: 300px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__state {
-  min-width: 105px;
+  min-width: 125px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__justification {
   min-width: 130px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__responses {
-  min-width: 120px;
+  width: 185px;
 }
 #tab_vulnerabilities .column-vulnerability_analyses__is_reachable {
-  min-width: 80px;
+  width: 80px;
 }
 /* -- Vulnerability analysis modal -- */
 #vulnerability-analysis-modal #div_id_responses .form-check {

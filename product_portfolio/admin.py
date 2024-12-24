@@ -143,6 +143,7 @@ class ProductItemPurposeAdmin(ColoredIconAdminMixin, BaseStatusAdmin):
         AsColored("color_code"),
         "colored_icon",
         "default_on_addition",
+        "exposure_factor",
         "get_dataspace",
     )
     fieldsets = (
@@ -155,6 +156,7 @@ class ProductItemPurposeAdmin(ColoredIconAdminMixin, BaseStatusAdmin):
                     "icon",
                     "color_code",
                     "default_on_addition",
+                    "exposure_factor",
                     "dataspace",
                     "uuid",
                 )
