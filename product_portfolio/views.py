@@ -1202,6 +1202,7 @@ class ProductTabVulnerabilitiesView(
             )
             .order_by(
                 "-weighted_risk_score",
+                "package__name",
             )
         )
 

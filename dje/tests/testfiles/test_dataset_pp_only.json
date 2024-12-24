@@ -125,7 +125,8 @@
     "icon": "",
     "color_code": "",
     "label": "Core",
-    "text": "The functional code used to execute the application features of the product."
+    "text": "The functional code used to execute the application features of the product.",
+    "exposure_factor": null
   }
 },
 {
@@ -201,7 +202,8 @@
       "nexB",
       "b91a9a06-b709-45a4-ac8e-a57bde0c8f38"
     ],
-    "license_expression": ""
+    "license_expression": "",
+    "weighted_risk_score": null
   }
 },
 {

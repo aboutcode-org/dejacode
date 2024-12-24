@@ -382,8 +382,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
-        p1 = make_package(self.dataspace, is_vulnerable=True)
-        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p1 = make_package(self.dataspace, is_vulnerable=True, name="p1")
+        p2 = make_package(self.dataspace, is_vulnerable=True, name="p2")
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
         product1 = make_product(self.dataspace)
         product_package1 = make_product_package(product1, package=p1)
@@ -394,22 +394,17 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
 
         # Make sure the Analysis was set on the proper package instance.
-        vulnerabilities = response.context["page_obj"].object_list
-        packages = {
-            package.uuid: package
-            for vulnerability in vulnerabilities
-            for package in vulnerability.affected_packages.all()
-        }
-        self.assertTrue(hasattr(packages.get(p1.uuid), "vulnerability_analysis"))
-        self.assertEqual(analysis1, packages.get(p1.uuid).vulnerability_analysis)
-        self.assertFalse(hasattr(packages.get(p2.uuid), "vulnerability_analysis"))
+        product_packages = response.context["page_obj"].object_list
+        self.assertTrue(product_packages[0], "vulnerability_analysis")
+        self.assertEqual(analysis1, product_packages[0].vulnerability_analysis)
+        self.assertFalse(hasattr(product_packages[1], "vulnerability_analysis"))
 
         expected = """
         <td>
           <strong>Resolved</strong>
           <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
                 data-bs-html="true" data-bs-content="detail">
-            <i class="fa-solid fa-circle-info"></i>
+            <i class="fa-solid fa-circle-info text-muted"></i>
           </span>
         </td>
         <td>Code Not Present</td>
