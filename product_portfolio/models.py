@@ -709,6 +709,12 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
 
     def update_weighted_risk_score(self):
         """
+        Updates the `weighted_risk_score` for all objects in the queryset.
+
+        This directly writes to the database and doesn't trigger model `save()`
+        methods, so any side effects in `save()` won't be executed.
+        """
+        """
         Update the weighted_risk_score using the computed annotation from
         `self.annotate_weighted_risk_score()`
         """

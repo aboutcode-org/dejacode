@@ -312,15 +312,21 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
-        p1 = make_package(self.dataspace, is_vulnerable=True)
-        p2 = make_package(self.dataspace, is_vulnerable=True)
-        p3 = make_package(self.dataspace, is_vulnerable=True)
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
-        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+        make_vulnerability(self.dataspace, affecting=[p1])
+        product1 = make_product(self.dataspace, inventory=[p1, p2])
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        expected = f'<td rowspan="2"><strong>{vulnerability1.vcid}</strong></td>'
+        expected = f"""
+        <td rowspan="2">
+          <strong>
+            <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
+          </strong>
+        </td>
+        """
         self.assertContains(response, expected, html=True)
 
         expected = f"""
@@ -471,7 +477,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         make_product_package(self.product1, package=package1)
         response = self.client.get(url)
-        expected = '<span class="badge badge-vulnerability">1</span>'
+        expected = 'Vulnerabilities<span class="badge badge-vulnerability'
         self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
