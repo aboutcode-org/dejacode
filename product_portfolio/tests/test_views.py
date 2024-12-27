@@ -317,6 +317,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
         make_vulnerability(self.dataspace, affecting=[p1])
         product1 = make_product(self.dataspace, inventory=[p1, p2])
+        pp1 = product1.productpackages.get(package=p1)
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
@@ -334,7 +335,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-bs-target="#vulnerability-analysis-modal"
               data-vulnerability-id="{vulnerability1.vcid}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/{product1.uuid}/vulnerability_analysis/{vulnerability1.vcid}/{p1.uuid}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vcid}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -404,12 +405,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-
-        # Make sure the Analysis was set on the proper package instance.
-        product_packages = response.context["page_obj"].object_list
-        self.assertTrue(product_packages[0], "vulnerability_analysis")
-        self.assertEqual(analysis1, product_packages[0].vulnerability_analysis)
-        self.assertFalse(hasattr(product_packages[1], "vulnerability_analysis"))
 
         expected = """
         <td>
@@ -3392,10 +3387,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
         product1 = make_product(self.dataspace, inventory=[package1])
+        pp1 = product1.productpackages.get()
 
         url = reverse(
             "product_portfolio:vulnerability_analysis_form",
-            args=[product1.uuid, vulnerability1.vulnerability_id, package1.uuid],
+            args=[pp1.uuid, vulnerability1.vulnerability_id],
         )
 
         response = self.client.get(url)

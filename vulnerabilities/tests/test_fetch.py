@@ -39,11 +39,16 @@ class VulnerabilitiesFetchTestCase(TestCase):
         make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
-        mock_fetch_for_packages.return_value = 2
+        mock_fetch_for_packages.return_value = {"created": 2, "updated": 0}
         fetch_from_vulnerablecode(
             self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write
         )
-        expected = "2 Packages in the queue.+ Created 2 vulnerabilitiesCompleted in 0 seconds"
+        expected = (
+            "2 Packages in the queue."
+            "+ Created 2 vulnerabilities"
+            "+ Updated 0 vulnerabilities"
+            "Completed in 0 seconds"
+        )
         self.assertEqual(expected, buffer.getvalue())
         self.dataspace.refresh_from_db()
         self.assertIsNotNone(self.dataspace.vulnerabilities_updated_at)

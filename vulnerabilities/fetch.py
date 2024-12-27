@@ -48,8 +48,8 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
     )
     run_time = timer() - start_time
     if log_func:
-        log_func(f"+ Created {intcomma(results['created'])} vulnerabilities")
-        log_func(f"+ Updated {intcomma(results['updated'])} vulnerabilities")
+        log_func(f"+ Created {intcomma(results.get("created", 0))} vulnerabilities")
+        log_func(f"+ Updated {intcomma(results.get("updated", 0))} vulnerabilities")
         log_func(f"Completed in {humanize_time(run_time)}")
 
     dataspace.vulnerabilities_updated_at = timezone.now()
