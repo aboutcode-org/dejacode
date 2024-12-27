@@ -13,6 +13,7 @@ from component_catalog.tests import make_package
 from dje.tests import make_string
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 
 
@@ -63,4 +64,13 @@ def make_product_component(product, component=None):
         product=product,
         component=component,
         dataspace=dataspace,
+    )
+
+
+def make_product_item_purpose(dataspace, **data):
+    return ProductItemPurpose.objects.create(
+        label=make_string(10),
+        text=make_string(10),
+        dataspace=dataspace,
+        **data,
     )

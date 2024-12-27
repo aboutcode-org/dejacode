@@ -11,7 +11,16 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Case
+from django.db.models import F
+from django.db.models import FloatField
+from django.db.models import Value
+from django.db.models import When
+from django.db.models.expressions import OuterRef
+from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 from django.utils.html import format_html_join
@@ -352,6 +361,20 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def vulnerability_count(self):
         return self.get_vulnerability_qs().count()
 
+    def get_vulnerable_packages(self, risk_threshold=None):
+        """Return a QuerySet of vulnerable Package instances related to this product."""
+        package_qs = self.packages.vulnerable()
+        if risk_threshold is not None:
+            package_qs = package_qs.filter(productpackages__weighted_risk_score__gte=risk_threshold)
+        return package_qs
+
+    def get_vulnerable_productpackages(self, risk_threshold=None):
+        """Return a QuerySet of vulnerable ProductPackage instances related to this product."""
+        productpackage_qs = self.productpackages.filter(package__in=self.packages.vulnerable())
+        if risk_threshold is not None:
+            productpackage_qs = productpackage_qs.filter(weighted_risk_score__gte=risk_threshold)
+        return productpackage_qs
+
     def get_vulnerabilities_risk_threshold(self):
         """
         Return the local vulnerabilities_risk_threshold value when defined on the
@@ -603,6 +626,23 @@ class ProductItemPurpose(
         help_text=_("Descriptive text to define the Purpose precisely."),
     )
 
+    exposure_factor = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=2,
+        decimal_places=1,
+        validators=[
+            MaxValueValidator(1.0),
+            MinValueValidator(0.0),
+        ],
+        help_text=_(
+            "A number between 0.0 and 1.0 that identifies the vulnerability exposure "
+            "risk of a package as it is actually used in the context of a product, "
+            "with 1.0 being the highest exposure risk and 0.0 being no exposure risk at "
+            "all."
+        ),
+    )
+
     class Meta:
         unique_together = (("dataspace", "label"), ("dataspace", "uuid"))
         ordering = ["label"]
@@ -622,6 +662,19 @@ class ProductItemPurpose(
 
         return self.label
 
+    def save(self, *args, **kwargs):
+        """
+        Update the weighted_risk_score of all the product relationship using this
+        purpose instance.
+        """
+        is_addition = not self.pk
+        super().save(*args, **kwargs)
+
+        # No need to trigger the update when the purpose is created,
+        # as it is not referenced yet by any product relationship.
+        if not is_addition:
+            self.productpackage_set.update_weighted_risk_score()
+
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):
     def catalogs(self):
@@ -629,6 +682,44 @@ class ProductComponentQuerySet(ProductSecuredQuerySet):
 
     def customs(self):
         return self.filter(component__isnull=True)
+
+
+class ProductPackageQuerySet(ProductSecuredQuerySet):
+    def vulnerable(self):
+        return self.filter(weighted_risk_score__isnull=False)
+
+    def annotate_weighted_risk_score(self):
+        """Annotate the Queeryset with the weighted_risk_score computed value."""
+        purpose = ProductItemPurpose.objects.filter(productpackage=OuterRef("pk"))
+        package = Package.objects.filter(productpackages=OuterRef("pk"))
+
+        return self.annotate(
+            exposure_factor=models.Subquery(purpose.values("exposure_factor")[:1]),
+            risk_score=models.Subquery(package.values("risk_score")[:1]),
+            computed_weighted_risk_score=Case(
+                # Return the package.risk_score weighted by the purpose.exposure_factor
+                # when available, else return the package.risk_score.
+                # Coalesce ensures a fallback to 1.0 if exposure_factor is NULL.
+                When(
+                    risk_score__isnull=False,
+                    then=F("risk_score") * Coalesce(F("exposure_factor"), Value(1.0)),
+                ),
+                # Return None when the package.risk_score is not set.
+                default=Value(None),
+                output_field=FloatField(),
+            ),
+        )
+
+    def update_weighted_risk_score(self):
+        """
+        Update the `weighted_risk_score` for all objects in the queryset.
+
+        This directly writes to the database and doesn't trigger model `save()`
+        methods, so any side effects in `save()` won't be executed.
+        """
+        return self.annotate_weighted_risk_score().update(
+            weighted_risk_score=F("computed_weighted_risk_score"),
+        )
 
 
 class ProductRelationshipMixin(
@@ -683,6 +774,18 @@ class ProductRelationshipMixin(
         ),
     )
 
+    weighted_risk_score = models.DecimalField(
+        null=True,
+        blank=True,
+        max_digits=3,
+        decimal_places=1,
+        help_text=_(
+            "Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. "
+            "Calculated as the weighted severity times exploitability (capped at 10), "
+            "adjusted by the exposure risk factor of the product item's purpose."
+        ),
+    )
+
     class Meta:
         abstract = True
 
@@ -690,6 +793,8 @@ class ProductRelationshipMixin(
         is_addition = not self.pk
         if is_addition:
             self.set_review_status_from_policy()
+
+        self.set_weighted_risk_score()
         super().save(*args, **kwargs)
 
     def set_review_status_from_policy(self):
@@ -710,6 +815,47 @@ class ProductRelationshipMixin(
             if usage_policy := related_item.usage_policy:
                 if status := usage_policy.associated_product_relation_status:
                     return status
+
+    def compute_weighted_risk_score(self):
+        """
+        Compute the weighted risk score for the current instance.
+
+        The weighted risk score is calculated as:
+            - `risk_score` of the related component or package,
+            - Multiplied by the `exposure_factor` of the item's purpose
+              (defaulting to 1.0 if unavailable).
+
+        If the related object does not exist or its `risk_score` is `None`,
+        the method returns `None`.
+        """
+        related_object = self.related_component_or_package
+        if not related_object:  # Custom component
+            return None
+
+        risk_score = related_object.risk_score
+        if risk_score is None:
+            return None
+
+        exposure_factor = 1.0
+        if self.purpose and self.purpose.exposure_factor:
+            exposure_factor = self.purpose.exposure_factor
+
+        weighted_risk_score = float(risk_score) * float(exposure_factor)
+        return weighted_risk_score
+
+    def set_weighted_risk_score(self):
+        """
+        Update the `weighted_risk_score` for the current instance.
+
+        The method computes the weighted risk score using `compute_weighted_risk_score()`
+        and assigns the computed value to the `weighted_risk_score` field if it differs
+        from the current value.
+
+        This ensures that the field reflects the most up-to-date calculation.
+        """
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
 
     def as_spdx(self):
         """
@@ -915,7 +1061,7 @@ class ProductPackage(ProductRelationshipMixin):
         through="ProductPackageAssignedLicense",
     )
 
-    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+    objects = DataspacedManager.from_queryset(ProductPackageQuerySet)()
 
     class Meta:
         verbose_name = _("product package relationship")
@@ -1238,24 +1384,61 @@ class ProductInventoryItem(ProductRelationshipMixin):
     DROP VIEW IF EXISTS product_portfolio_productinventoryitem;
     CREATE VIEW product_portfolio_productinventoryitem
     AS
-       SELECT pc.uuid, pc.component_id, NULL as package_id,
-           CONCAT(component.name, ' ', component.version) as item,  'component' as item_type,
-           pc.dataspace_id, pc.product_id,  pc.review_status_id, pc.feature,
-           component.usage_policy_id, pc.created_date, pc.last_modified_date,
-           pc.reference_notes, pc.purpose_id, pc.notes, pc.is_deployed, pc.is_modified,
-           pc.extra_attribution_text, pc.package_paths, pc.issue_ref, pc.license_expression,
-           pc.created_by_id, pc.last_modified_by_id
-       FROM product_portfolio_productcomponent AS pc
-       INNER JOIN component_catalog_component AS component ON pc.component_id=component.id
-       UNION ALL
-       SELECT pp.uuid, NULL as component_id, pp.package_id, package.filename as item,
-           'package' as item_type, pp.dataspace_id, pp.product_id, pp.review_status_id,
-           pp.feature, package.usage_policy_id, pp.created_date, pp.last_modified_date,
-           pp.reference_notes, pp.purpose_id, pp.notes, pp.is_deployed, pp.is_modified,
-           pp.extra_attribution_text, pp.package_paths, pp.issue_ref, pp.license_expression,
-           pp.created_by_id, pp.last_modified_by_id
-       FROM product_portfolio_productpackage AS pp
-       INNER JOIN component_catalog_package AS package ON pp.package_id=package.id
+      SELECT
+        pc.uuid,
+        pc.component_id,
+        NULL as package_id,
+        CONCAT(component.name, ' ', component.version) as item,
+        'component' as item_type,
+        pc.dataspace_id,
+        pc.product_id,
+        pc.review_status_id,
+        pc.feature,
+        component.usage_policy_id,
+        pc.created_date,
+        pc.last_modified_date,
+        pc.reference_notes,
+        pc.purpose_id,
+        pc.notes,
+        pc.is_deployed,
+        pc.is_modified,
+        pc.extra_attribution_text,
+        pc.package_paths,
+        pc.issue_ref,
+        pc.weighted_risk_score,
+        pc.license_expression,
+        pc.created_by_id,
+        pc.last_modified_by_id
+      FROM product_portfolio_productcomponent AS pc
+      INNER JOIN component_catalog_component AS component ON pc.component_id=component.id
+      UNION ALL
+      SELECT
+        pp.uuid,
+        NULL as component_id,
+        pp.package_id,
+        package.filename as item,
+        'package' as item_type,
+        pp.dataspace_id,
+        pp.product_id,
+        pp.review_status_id,
+        pp.feature,
+        package.usage_policy_id,
+        pp.created_date,
+        pp.last_modified_date,
+        pp.reference_notes,
+        pp.purpose_id,
+        pp.notes,
+        pp.is_deployed,
+        pp.is_modified,
+        pp.extra_attribution_text,
+        pp.package_paths,
+        pp.issue_ref,
+        pp.weighted_risk_score,
+        pp.license_expression,
+        pp.created_by_id,
+        pp.last_modified_by_id
+      FROM product_portfolio_productpackage AS pp
+      INNER JOIN component_catalog_package AS package ON pp.package_id=package.id
     ;
     """
 

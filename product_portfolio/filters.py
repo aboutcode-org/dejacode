@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 import django_filters
 from packageurl.contrib.django.utils import purl_to_lookups
 
+from component_catalog.filters import IsVulnerableBooleanFilter
 from component_catalog.filters import IsVulnerableFilter
 from component_catalog.models import ComponentKeyword
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
@@ -36,6 +37,7 @@ from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysisMixin
 
 
 class ProductFilterSet(DataspacedFilterSet):
@@ -107,8 +109,8 @@ class ProductFilterSet(DataspacedFilterSet):
             search_placeholder="Search keywords",
         ),
     )
-    is_vulnerable = IsVulnerableFilter(
-        field_name="packages__affected_by_vulnerabilities",
+    is_vulnerable = IsVulnerableBooleanFilter(
+        label=_("Is Vulnerable"),
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
@@ -129,6 +131,10 @@ class ProductFilterSet(DataspacedFilterSet):
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
+    dropdown_fields = [
+        "is_modified",
+        "weighted_risk_score",
+    ]
     is_deployed = BooleanChoiceFilter(
         empty_label="All (Inventory)",
         choices=(
@@ -161,7 +167,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         label=_("Severity"),
         score_ranges=RISK_SCORE_RANGES,
     )
-    risk_score = ScoreRangeFilter(
+    weighted_risk_score = ScoreRangeFilter(
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
     )
@@ -192,12 +198,8 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         self.filters["purpose"].extra["to_field_name"] = "label"
         self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
-        self.filters["is_modified"].extra["widget"] = DropDownWidget(
-            anchor=self.anchor, right_align=True
-        )
-
         field_name_prefix = self.field_name_prefix
-        for field_name in ["exploitability", "weighted_severity", "risk_score"]:
+        for field_name in ["exploitability", "weighted_severity"]:
             field = self.filters[field_name]
             field.extra["widget"] = DropDownWidget(anchor=self.anchor)
             field.field_name = f"{field_name_prefix}__{field_name}"
@@ -249,6 +251,14 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
     field_name_prefix = "package"
+    dropdown_fields = [
+        "is_modified",
+        "weighted_risk_score",
+        "vulnerability_analyses__state",
+        "vulnerability_analyses__justification",
+        "responses",
+        "is_reachable",
+    ]
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -274,12 +284,27 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "feature",
             "is_deployed",
             "is_modified",
+            "weighted_risk_score",
         ],
     )
     is_vulnerable = IsVulnerableFilter(
         field_name="package__affected_by_vulnerabilities",
         widget=DropDownWidget(
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
+        ),
+    )
+    responses = django_filters.ChoiceFilter(
+        field_name="vulnerability_analyses__responses",
+        lookup_expr="icontains",
+        choices=VulnerabilityAnalysisMixin.Response.choices,
+    )
+    is_reachable = BooleanChoiceFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        empty_label="All",
+        choices=(
+            ("yes", _("Reachable")),
+            ("no", _("Not reachable")),
+            ("unknown", _("Reachability not known")),
         ),
     )
 
@@ -291,7 +316,16 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "object_type",
             "is_deployed",
             "is_modified",
+            "vulnerability_analyses__state",
+            "vulnerability_analyses__justification",
+            "is_reachable",
+            "exploitability",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
+        self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
 
 
 class ComponentCompletenessListFilter(admin.SimpleListFilter):

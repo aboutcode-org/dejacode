@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.db.models import Exists
 from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Subquery
@@ -132,7 +133,6 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
-from vulnerabilities.filters import ProductVulnerabilityFilterSet
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -173,6 +173,10 @@ class ProductListView(
     )
 
     def get_queryset(self):
+        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
+            product_id=OuterRef("pk")
+        )
+
         return (
             self.model.objects.get_queryset(
                 user=self.request.user,
@@ -198,7 +202,8 @@ class ProductListView(
                 "licenses__usage_policy",
             )
             .annotate(
-                productinventoryitem_count=Count("productinventoryitem"),
+                productinventoryitem_count=Count("productinventoryitem", distinct=True),
+                is_vulnerable=Exists(vulnerable_productpackage_qs),
             )
             .order_by(
                 "name",
@@ -548,8 +553,12 @@ class ProductDetailsView(
         else:
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
-        vulnerability_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
-        if not vulnerability_count:
+        vulnerable_packages = product.get_vulnerable_packages(risk_threshold=risk_threshold)
+        vulnerable_package_count = vulnerable_packages.count()
+        vulnerabilities = Vulnerability.objects.filter(affected_packages__in=vulnerable_packages)
+        vulnerability_count = vulnerabilities.distinct().count()
+
+        if not vulnerability_count and risk_threshold is None:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
                 "label": format_html(label),
@@ -559,7 +568,11 @@ class ProductDetailsView(
             }
 
         label = (
-            f'Vulnerabilities <span class="badge badge-vulnerability">{vulnerability_count}</span>'
+            f"Vulnerabilities"
+            f'<span class="badge badge-vulnerability ps-1 ms-1">'
+            f'  <i class="fas fa-archive" style="height: auto"></i>{vulnerable_package_count}'
+            f'  <i class="fas fa-bug" style="height: auto"></i>{vulnerability_count}'
+            f"</span>"
         )
 
         # Pass the current request query context to the async request
@@ -1113,18 +1126,20 @@ class ProductTabVulnerabilitiesView(
     TableHeaderMixin,
     TabContentView,
 ):
-    template_name = "product_portfolio/tabs/tab_vulnerabilities.html"
+    template_name = "product_portfolio/tabs/tab_packages_vulnerabilities.html"
     paginate_by = 50
     query_dict_page_param = "vulnerabilities-page"
     tab_id = "vulnerabilities"
-    table_model = Vulnerability
-    filterset_class = ProductVulnerabilityFilterSet
+    table_model = ProductPackage
+    filterset_class = ProductPackageFilterSet
     table_headers = (
-        Header("vulnerability_id", _("Vulnerability")),
-        Header("exploitability", _("Exploitability"), filter="exploitability"),
-        Header("weighted_severity", _("Severity"), filter="weighted_severity"),
-        Header("risk_score", _("Risk"), filter="risk_score"),
-        Header("affected_packages", _("Affected packages"), help_text="Affected product packages"),
+        Header("affected_packages", _("Package"), help_text="Affected product packages"),
+        Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
+        Header(
+            "vulnerability_id",
+            _("Vulnerabilities"),
+            help_text="Vulnerabilities affecting the product package",
+        ),
         Header(
             "vulnerability_analyses__state",
             _("Status"),
@@ -1165,18 +1180,35 @@ class ProductTabVulnerabilitiesView(
         else:
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
-        total_count = product.get_vulnerability_qs(risk_threshold=risk_threshold).count()
-        vulnerability_qs = (
-            product.get_vulnerability_qs(
-                prefetch_related_packages=True, risk_threshold=risk_threshold
+        base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
+        vulnerability_qs = Vulnerability.objects.prefetch_related(
+            "vulnerability_analyses"
+        ).order_by("-risk_score")
+        package_qs = (
+            Package.objects.all()
+            .only_rendering_fields()
+            .prefetch_related(
+                Prefetch("affected_by_vulnerabilities", vulnerability_qs),
             )
-            .annotate(affected_packages_count=Count("affected_packages"))
-            .order_by_risk()
+            .with_vulnerability_count()
+        )
+        productpackage_qs = (
+            base_productpackage_qs.select_related(
+                "review_status",
+                "purpose",
+            )
+            .prefetch_related(
+                Prefetch("package", package_qs),
+            )
+            .order_by(
+                "-weighted_risk_score",
+                "package__name",
+            )
         )
 
         self.filterset = self.filterset_class(
             self.request.GET,
-            queryset=vulnerability_qs,
+            queryset=productpackage_qs,
             dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor=f"#{self.tab_id}",
@@ -1190,20 +1222,18 @@ class ProductTabVulnerabilitiesView(
         page_obj = paginator.get_page(page_number)
 
         # Set the proper VulnerabilityAnalysis instance on the Package instance
-        for vulnerability in page_obj.object_list:
-            for package in vulnerability.affected_packages.all():
-                # Using the following instead of .filter(package=package) to avoid
-                # duplicated queries.
+        for product_package in page_obj.object_list:
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
                 for analysis in vulnerability.vulnerability_analyses.all():
-                    if analysis.package == package:
-                        package.vulnerability_analysis = analysis
+                    if analysis.product_package_id == product_package.id:
+                        vulnerability.vulnerability_analysis = analysis
                         continue
 
         context_data.update(
             {
                 "filterset": self.filterset,
                 "page_obj": page_obj,
-                "total_count": total_count,
+                "total_count": base_productpackage_qs.count(),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
             }
@@ -2493,21 +2523,19 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 
 
 @login_required
-def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, package_uuid):
+def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability_id):
     user = request.user
     dataspace = user.dataspace
     form_class = VulnerabilityAnalysisForm
     perms = "change_product"
 
     product_qs = Product.objects.get_queryset(user, perms=perms)
-    product = get_object_or_404(product_qs, uuid=product_uuid)
-    vulnerability_qs = Vulnerability.objects.scope(dataspace)
-    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
     product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
-    product_package = get_object_or_404(
-        product_package_qs, product=product, package__uuid=package_uuid
-    )
+    vulnerability_qs = Vulnerability.objects.scope(dataspace)
     vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(dataspace)
+
+    product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
+    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
 
     # Fetch the existing Analysis values for each affected products
     product_analysis = vulnerability_analysis_qs.filter(
@@ -2516,9 +2544,9 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
         vulnerability=OuterRef("packages__affected_by_vulnerabilities__pk"),
     )
     affected_products = (
-        product_qs.exclude(pk=product.pk)
+        product_qs.exclude(pk=product_package.product.pk)
         .filter(
-            packages__uuid=package_uuid,
+            packages__id=product_package.package_id,
             packages__affected_by_vulnerabilities=vulnerability,
         )
         .annotate(
@@ -2528,7 +2556,6 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
             analysis_detail=Subquery(product_analysis.values("detail")[:1]),
         )
     )
-
     vulnerability_analysis = vulnerability_analysis_qs.get_or_none(
         product_package=product_package,
         vulnerability=vulnerability,

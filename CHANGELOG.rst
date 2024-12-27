@@ -67,6 +67,19 @@ Release notes
   menu.
   https://github.com/aboutcode-org/dejacode/issues/107
 
+- Add exposure_factor field to the ProductItemPurpose model and a weighted_risk_score
+  on the ProductPackage model.
+  The weighted_risk_score is computed from the package.risk_score and
+  purpose.exposure_factor values.
+  https://github.com/aboutcode-org/dejacode/issues/102
+
+- Add the vulnerability icon in Product list view.
+  A "Is Vulnerable" filter is also available.
+  The count in the Vulnerability tab was improve to include the count of affected
+  packages and the count of unique vulnerabilities.
+  Note that those count reflect the current risk threshold.
+  https://github.com/aboutcode-org/dejacode/issues/102
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

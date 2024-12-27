@@ -40,6 +40,7 @@ from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product_item_purpose
 from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
 from workflow.models import RequestTemplate
@@ -140,6 +141,28 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertIn(package1, all_packages)
         self.assertIn(package2, all_packages)
         self.assertIn(package3, all_packages)
+
+    def test_product_model_get_vulnerable_packages(self):
+        self.assertEqual(0, self.product1.get_vulnerable_packages().count())
+
+        package1 = make_package(self.dataspace, is_vulnerable=True, risk_score=5.0)
+        make_product_package(self.product1, package1)
+        self.assertEqual(1, self.product1.get_vulnerable_packages().count())
+        self.assertEqual(0, self.product1.get_vulnerable_packages(risk_threshold=6.0).count())
+        self.assertEqual(1, self.product1.get_vulnerable_packages(risk_threshold=4.0).count())
+
+    def test_product_model_get_vulnerable_productpackages(self):
+        self.assertEqual(0, self.product1.get_vulnerable_productpackages().count())
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        pp1 = make_product_package(self.product1, package1)
+        pp1.raw_update(weighted_risk_score=5.0)
+        self.assertEqual(1, self.product1.get_vulnerable_productpackages().count())
+        self.assertEqual(
+            0, self.product1.get_vulnerable_productpackages(risk_threshold=6.0).count()
+        )
+        self.assertEqual(
+            1, self.product1.get_vulnerable_productpackages(risk_threshold=4.0).count()
+        )
 
     def test_product_model_get_feature_values_and_get_feature_datalist(self):
         ProductComponent.objects.create(
@@ -738,6 +761,127 @@ class ProductPortfolioModelsTestCase(TestCase):
         pc1.component = component1
         pc1.save()
         self.assertFalse(pc1.is_custom_component)
+
+    def test_product_relationship_queryset_vulnerable(self):
+        pp1 = make_product_package(self.product1)
+        product_package_qs = ProductPackage.objects.vulnerable()
+        self.assertEqual(0, product_package_qs.count())
+
+        pp1.raw_update(weighted_risk_score=5.0)
+        product_package_qs = ProductPackage.objects.vulnerable()
+        self.assertEqual(1, product_package_qs.count())
+        self.assertIn(pp1, product_package_qs)
+
+    def test_product_relationship_queryset_annotate_weighted_risk_score(self):
+        purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
+        package1 = make_package(self.dataspace, risk_score=4.0)
+        make_product_package(self.product1, package=package1, purpose=purpose1)
+
+        product_package_qs = ProductPackage.objects.annotate_weighted_risk_score()
+        self.assertEqual(0.5, product_package_qs[0].exposure_factor)
+        self.assertEqual(4.0, product_package_qs[0].risk_score)
+        self.assertEqual(2.0, product_package_qs[0].computed_weighted_risk_score)
+
+    def test_product_relationship_queryset_update_weighted_risk_score(self):
+        purpose1 = make_product_item_purpose(self.dataspace)
+
+        # 1. package.risk_score = None, purpose = None
+        package1 = make_package(self.dataspace)
+        pp1 = make_product_package(self.product1, package=package1)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertIsNone(pp1.weighted_risk_score)
+
+        # 2. package.risk_score = 4.0, purpose.exposure_factor = None
+        package1.raw_update(risk_score=4.0)
+        pp1.raw_update(purpose=purpose1)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertEqual(4.0, pp1.weighted_risk_score)
+
+        # 3. package.risk_score = 4.0, purpose.exposure_factor = 0.5
+        purpose1.raw_update(exposure_factor=0.5)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertEqual(2.0, pp1.weighted_risk_score)
+
+        # 4. package.risk_score = None, purpose.exposure_factor = 0.5
+        package1.raw_update(risk_score=None)
+        updated_count = ProductPackage.objects.update_weighted_risk_score()
+        self.assertEqual(1, updated_count)
+        pp1.refresh_from_db()
+        self.assertIsNone(pp1.weighted_risk_score)
+
+    def test_productrelation_model_compute_weighted_risk_score(self):
+        purpose1 = make_product_item_purpose(self.dataspace)
+
+        # 1. package.risk_score = None, purpose = None
+        package1 = make_package(self.dataspace)
+        pp1 = make_product_package(self.product1, package=package1)
+        self.assertIsNone(pp1.compute_weighted_risk_score())
+
+        # 2. package.risk_score = 4.0, purpose.exposure_factor = None
+        package1.raw_update(risk_score=4.0)
+        pp1.raw_update(purpose=purpose1)
+        self.assertEqual(4.0, pp1.compute_weighted_risk_score())
+
+        # 3. package.risk_score = 4.0, purpose.exposure_factor = 0.5
+        purpose1.raw_update(exposure_factor=0.5)
+        self.assertEqual(2.0, pp1.compute_weighted_risk_score())
+
+        # 4. package.risk_score = None, purpose.exposure_factor = 0.5
+        package1.raw_update(risk_score=None)
+        self.assertIsNone(pp1.compute_weighted_risk_score())
+
+    def test_productrelation_model_set_weighted_risk_score(self):
+        purpose1 = make_product_item_purpose(self.dataspace)
+
+        # 1. package.risk_score = None, purpose = None
+        package1 = make_package(self.dataspace)
+        pp1 = make_product_package(self.product1, package=package1)
+        pp1.set_weighted_risk_score()
+        self.assertIsNone(pp1.weighted_risk_score)
+
+        # 2. package.risk_score = 4.0, purpose.exposure_factor = None
+        package1.raw_update(risk_score=4.0)
+        pp1.raw_update(purpose=purpose1)
+        pp1.set_weighted_risk_score()
+        self.assertEqual(4.0, pp1.weighted_risk_score)
+
+        # 3. package.risk_score = 4.0, purpose.exposure_factor = 0.5
+        purpose1.raw_update(exposure_factor=0.5)
+        pp1.set_weighted_risk_score()
+        self.assertEqual(2.0, pp1.weighted_risk_score)
+
+        # 4. package.risk_score = None, purpose.exposure_factor = 0.5
+        package1.raw_update(risk_score=None)
+        pp1.set_weighted_risk_score()
+        self.assertIsNone(pp1.weighted_risk_score)
+
+    def test_product_item_purpose_update_weighted_risk_score(self):
+        purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
+
+        package1 = make_package(self.dataspace, risk_score=10.0)
+        pp1 = make_product_package(self.product1, package=package1, purpose=purpose1)
+        self.assertEqual(5.0, pp1.weighted_risk_score)
+
+        purpose1.exposure_factor = 0.2
+        purpose1.save()
+        pp1.refresh_from_db()
+        self.assertEqual(2.0, pp1.weighted_risk_score)
+
+        pp1.purpose = None
+        pp1.save()
+        pp1.refresh_from_db()
+        self.assertEqual(10.0, pp1.weighted_risk_score)
+
+        purpose1.exposure_factor = None
+        purpose1.save()
+        pp1.refresh_from_db()
+        self.assertEqual(10.0, pp1.weighted_risk_score)
 
     def test_productrelation_model_related_component_or_package_property(self):
         component1 = Component.objects.create(name="c1", dataspace=self.dataspace)

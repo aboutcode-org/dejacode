@@ -498,6 +498,7 @@ class QueryTestCase(TestCase):
             "review_status",
             "uuid",
             "version",
+            "weighted_risk_score",
         ]
         self.assertEqual(expected, fields)
 

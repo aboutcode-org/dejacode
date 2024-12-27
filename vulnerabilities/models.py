@@ -464,6 +464,8 @@ class AffectedByVulnerabilityMixin(models.Model):
             self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
 
     def create_vulnerabilities(self, vulnerabilities_data):
+        from component_catalog.models import Package
+
         vulnerabilities = []
         vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
 
@@ -479,6 +481,10 @@ class AffectedByVulnerabilityMixin(models.Model):
 
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
+
+        self.update(risk_score=vulnerability_data["risk_score"])
+        if isinstance(self, Package):
+            self.productpackages.update_weighted_risk_score()
 
 
 class VulnerabilityAnalysis(

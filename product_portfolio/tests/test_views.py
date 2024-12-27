@@ -294,7 +294,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(10):
+        with self.assertMaxQueries(11):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -302,23 +302,32 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-risk_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=risk_score#vulnerabilities")
-        response = self.client.get(url + "?vulnerabilities-sort=risk_score#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=-risk_score#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-weighted_risk_score=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
+        response = self.client.get(
+            url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities"
+        )
+        self.assertContains(response, "?vulnerabilities-sort=-weighted_risk_score#vulnerabilities")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
-        p1 = make_package(self.dataspace, is_vulnerable=True)
-        p2 = make_package(self.dataspace, is_vulnerable=True)
-        p3 = make_package(self.dataspace, is_vulnerable=True)
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
-        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+        make_vulnerability(self.dataspace, affecting=[p1])
+        product1 = make_product(self.dataspace, inventory=[p1, p2])
+        pp1 = product1.productpackages.get(package=p1)
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        expected = f'<td rowspan="2"><strong>{vulnerability1.vcid}</strong></td>'
+        expected = f"""
+        <td rowspan="2">
+          <strong>
+            <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
+          </strong>
+        </td>
+        """
         self.assertContains(response, expected, html=True)
 
         expected = f"""
@@ -326,7 +335,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-bs-target="#vulnerability-analysis-modal"
               data-vulnerability-id="{vulnerability1.vcid}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/{product1.uuid}/vulnerability_analysis/{vulnerability1.vcid}/{p1.uuid}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vcid}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -353,19 +362,23 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):
         self.client.login(username="nexb_user", password="secret")
 
-        p1 = make_package(self.dataspace)
+        p1 = make_package(self.dataspace, risk_score=1.0)
+        p2 = make_package(self.dataspace, risk_score=5.0)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=1.0)
-        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p1], risk_score=5.0)
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=[p2], risk_score=5.0)
         product1 = make_product(self.dataspace)
-        make_product_package(product1, package=p1)
-        url = product1.get_url("tab_vulnerabilities")
+        pp1 = make_product_package(product1, package=p1)
+        pp2 = make_product_package(product1, package=p2)
+        self.assertEqual(1.0, pp1.weighted_risk_score)
+        self.assertEqual(5.0, pp2.weighted_risk_score)
 
+        url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
         self.assertContains(response, vulnerability1.vcid)
         self.assertContains(response, vulnerability2.vcid)
@@ -382,34 +395,23 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
     def test_product_portfolio_tab_vulnerability_view_analysis_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
-        p1 = make_package(self.dataspace, is_vulnerable=True)
-        p2 = make_package(self.dataspace, is_vulnerable=True)
+        p1 = make_package(self.dataspace, is_vulnerable=True, name="p1")
+        p2 = make_package(self.dataspace, is_vulnerable=True, name="p2")
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[p1, p2])
         product1 = make_product(self.dataspace)
         product_package1 = make_product_package(product1, package=p1)
         make_product_package(product1, package=p2)
-        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
+        make_vulnerability_analysis(product_package1, vulnerability1)
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-
-        # Make sure the Analysis was set on the proper package instance.
-        vulnerabilities = response.context["page_obj"].object_list
-        packages = {
-            package.uuid: package
-            for vulnerability in vulnerabilities
-            for package in vulnerability.affected_packages.all()
-        }
-        self.assertTrue(hasattr(packages.get(p1.uuid), "vulnerability_analysis"))
-        self.assertEqual(analysis1, packages.get(p1.uuid).vulnerability_analysis)
-        self.assertFalse(hasattr(packages.get(p2.uuid), "vulnerability_analysis"))
 
         expected = """
         <td>
           <strong>Resolved</strong>
           <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
                 data-bs-html="true" data-bs-content="detail">
-            <i class="fa-solid fa-circle-info"></i>
+            <i class="fa-solid fa-circle-info text-muted"></i>
           </span>
         </td>
         <td>Code Not Present</td>
@@ -470,7 +472,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         make_product_package(self.product1, package=package1)
         response = self.client.get(url)
-        expected = '<span class="badge badge-vulnerability">1</span>'
+        expected = 'Vulnerabilities<span class="badge badge-vulnerability'
         self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
@@ -552,7 +554,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(pc2_custom, pc_filterset)
         self.assertNotIn(pp1, pc_filterset)
 
-        response = self.client.get(url + "?inventory-risk_score=low")
+        response = self.client.get(url + "?inventory-weighted_risk_score=low")
         pc_filterset = response.context["inventory_items"][""]
         self.assertNotIn(pc_valid, pc_filterset)
         self.assertNotIn(pc2_custom, pc_filterset)
@@ -3385,10 +3387,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
         product1 = make_product(self.dataspace, inventory=[package1])
+        pp1 = product1.productpackages.get()
 
         url = reverse(
             "product_portfolio:vulnerability_analysis_form",
-            args=[product1.uuid, vulnerability1.vulnerability_id, package1.uuid],
+            args=[pp1.uuid, vulnerability1.vulnerability_id],
         )
 
         response = self.client.get(url)

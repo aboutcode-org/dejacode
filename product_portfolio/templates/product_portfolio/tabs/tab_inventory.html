@@ -79,7 +79,7 @@
           <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.risk_score }}">
             {% trans 'Risk' %}
           </span>
-          {{ filter_productcomponent.form.risk_score }}
+          {{ filter_productcomponent.form.weighted_risk_score }}
         </th>
       {% endif %}
     </tr>
@@ -134,7 +134,7 @@
           {% if product.dataspace.enable_vulnerablecodedb_access %}
             <td class="fs-110pct">
               {% if relation.related_component_or_package.vulnerability_count %}
-                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=relation.related_component_or_package.risk_score only %}
+                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=relation.weighted_risk_score only %}
               {% endif %}
             </td>
           {% endif %}

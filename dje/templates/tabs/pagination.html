@@ -4,7 +4,7 @@
     <ul class="nav nav-pills">
       <li class="nav-item">
         <form id="tab-{{ tab_id }}-search-form" class="mt-md-0 me-sm-2">
-          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-{{ tab_id }}-search-input" name="{{ tab_id }}-q" placeholder="Search {{ tab_id }}" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+          <input style="width: 250px;" type="text" class="form-control form-control-sm" id="tab-{{ tab_id }}-search-input" name="{{ tab_id }}-q" placeholder="Search {% if search_verbose_name %}{{ search_verbose_name }}{% else %}{{ tab_id }}{% endif %}" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
         </form>
       </li>
       <li class="nav-item">

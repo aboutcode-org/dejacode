@@ -17,6 +17,9 @@ from django.test import TestCase
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_item_purpose
+from product_portfolio.tests import make_product_package
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.fetch import fetch_from_vulnerablecode
 
@@ -36,11 +39,16 @@ class VulnerabilitiesFetchTestCase(TestCase):
         make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
-        mock_fetch_for_packages.return_value = 2
+        mock_fetch_for_packages.return_value = {"created": 2, "updated": 0}
         fetch_from_vulnerablecode(
             self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write
         )
-        expected = "2 Packages in the queue.+ Created 2 vulnerabilitiesCompleted in 0 seconds"
+        expected = (
+            "2 Packages in the queue."
+            "+ Created 2 vulnerabilities"
+            "+ Updated 0 vulnerabilities"
+            "Completed in 0 seconds"
+        )
         self.assertEqual(expected, buffer.getvalue())
         self.dataspace.refresh_from_db()
         self.assertIsNotNone(self.dataspace.vulnerabilities_updated_at)
@@ -49,33 +57,42 @@ class VulnerabilitiesFetchTestCase(TestCase):
     def test_vulnerabilities_fetch_for_packages(self, mock_bulk_search_by_purl):
         buffer = io.StringIO()
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
-        make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
+        product1 = make_product(self.dataspace)
+        pp1 = make_product_package(product1, package=package1)
         queryset = Package.objects.scope(self.dataspace)
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         mock_bulk_search_by_purl.return_value = response_json["results"]
 
-        created_vulnerabilities = fetch_for_packages(
+        results = fetch_for_packages(
             queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
-        self.assertEqual(1, created_vulnerabilities)
-        self.assertEqual("Progress: 1/2Progress: 2/2", buffer.getvalue())
+        self.assertEqual(results, {"created": 1, "updated": 0})
+
+        self.assertEqual("Progress: 1/1", buffer.getvalue())
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
         self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
         self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
         self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
         self.assertEqual(Decimal("8.4"), vulnerability.risk_score)
-
         package1.refresh_from_db()
+        pp1.refresh_from_db()
         self.assertEqual(Decimal("8.4"), package1.risk_score)
+        self.assertEqual(Decimal("8.4"), pp1.weighted_risk_score)
 
         # Update
+        purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
+        pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
         mock_bulk_search_by_purl.return_value = response_json["results"]
-        created_vulnerabilities = fetch_for_packages(
+        results = fetch_for_packages(
             queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
-        self.assertEqual(0, created_vulnerabilities)
+        self.assertEqual(results, {"created": 0, "updated": 1})
         vulnerability = package1.affected_by_vulnerabilities.get()
         self.assertEqual(Decimal("10.0"), vulnerability.risk_score)
+        package1.refresh_from_db()
+        pp1.refresh_from_db()
+        self.assertEqual(Decimal("8.4"), package1.risk_score)
+        self.assertEqual(Decimal("4.2"), pp1.weighted_risk_score)

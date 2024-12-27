@@ -863,14 +863,37 @@ class DataspacedModel(models.Model):
 
     def update(self, **kwargs):
         """
-        Update this instance with the provided ``kwargs`` values.
-        The full ``save()`` process will be triggered, including signals, and the
-        ``update_fields`` is automatically set.
+        Update this instance with the provided field values.
+
+        This method modifies the specified fields on the current instance and triggers
+        the full ``save()`` lifecycle, including calling signals like ``pre_save`` and
+        ``post_save``.
+        The ``update_fields`` parameter is automatically set to limit the save
+        operation to the updated fields.
         """
         for field_name, value in kwargs.items():
             setattr(self, field_name, value)
 
         self.save(update_fields=list(kwargs.keys()))
+
+    def raw_update(self, **kwargs):
+        """
+         Perform a direct SQL UPDATE on this instance.
+
+        This method updates the specified fields in the database without triggering
+        the ``save()`` lifecycle or related signals. It bypasses field validation and
+        other ORM hooks for improved performance, but requires careful usage to avoid
+        inconsistent states.
+
+        The instance's in-memory attributes are updated to reflect the changes.
+        """
+        updated_rows = self.__class__.objects.filter(pk=self.pk).update(**kwargs)
+
+        # Update the instance's attributes in memory
+        for field_name, value in kwargs.items():
+            setattr(self, field_name, value)
+
+        return updated_rows
 
     def as_json(self):
         try:
