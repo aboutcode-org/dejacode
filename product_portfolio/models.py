@@ -663,14 +663,17 @@ class ProductItemPurpose(
         return self.label
 
     def save(self, *args, **kwargs):
+        """
+        Update the weighted_risk_score of all the product relationship using this
+        purpose instance.
+        """
         is_addition = not self.pk
         super().save(*args, **kwargs)
-        # No need to set when the object is created as it is not referenced yet.
+
+        # No need to trigger the update when the purpose is created,
+        # as it is not referenced yet by any product relationship.
         if not is_addition:
-            # TODO: We could trigger only if it was changed.  -> Add test
-            # TODO: Handle the case when the exposure_factor is reset to None as well. -> Add test
-            product_package_qs = ProductPackage.objects.filter(purpose=self)
-            product_package_qs.update_weighted_risk_score()
+            self.productpackage_set.update_weighted_risk_score()
 
 
 class ProductComponentQuerySet(ProductSecuredQuerySet):
