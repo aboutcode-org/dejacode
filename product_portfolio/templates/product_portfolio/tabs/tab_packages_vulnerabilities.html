@@ -67,35 +67,35 @@
               {% endif %}
             </td>
             <td>
-              {% if product_package.vulnerability_analysis %}
-                {% if product_package.vulnerability_analysis.state %}
-                  <strong>{{ product_package.vulnerability_analysis.get_state_display }}</strong>
+              {% if vulnerability.vulnerability_analysis %}
+                {% if vulnerability.vulnerability_analysis.state %}
+                  <strong>{{ vulnerability.vulnerability_analysis.get_state_display }}</strong>
                 {% endif %}
-                {% if product_package.vulnerability_analysis.detail %}
-                  <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ product_package.vulnerability_analysis.detail|linebreaksbr }}">
+                {% if vulnerability.vulnerability_analysis.detail %}
+                  <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.vulnerability_analysis.detail|linebreaksbr }}">
                     <i class="fa-solid fa-circle-info text-muted"></i>
                   </span>
                 {% endif %}
               {% endif %}
             </td>
             <td>
-              {% if product_package.vulnerability_analysis.justification %}
-                {{ product_package.vulnerability_analysis.get_justification_display }}
+              {% if vulnerability.vulnerability_analysis.justification %}
+                {{ vulnerability.vulnerability_analysis.get_justification_display }}
               {% endif %}
             </td>
             <td>
-              {% if product_package.vulnerability_analysis.responses %}
+              {% if vulnerability.vulnerability_analysis.responses %}
                 <ul class="ps-3 m-0">
-                  {% for response in product_package.vulnerability_analysis.responses %}
+                  {% for response in vulnerability.vulnerability_analysis.responses %}
                     <li>{{ response }}</li>
                   {% endfor %}
                 </ul>
               {% endif %}
             </td>
             <td class="text-center">
-              {% if product_package.vulnerability_analysis.is_reachable %}
+              {% if vulnerability.vulnerability_analysis.is_reachable %}
                 <i class="fa-solid fa-circle-radiation text-danger fs-6" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
-              {% elif product_package.vulnerability_analysis.is_reachable is False %}
+              {% elif vulnerability.vulnerability_analysis.is_reachable is False %}
                 <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
               {% endif %}
             </td>

@@ -1226,7 +1226,7 @@ class ProductTabVulnerabilitiesView(
             for vulnerability in product_package.package.affected_by_vulnerabilities.all():
                 for analysis in vulnerability.vulnerability_analyses.all():
                     if analysis.product_package_id == product_package.id:
-                        product_package.vulnerability_analysis = analysis
+                        vulnerability.vulnerability_analysis = analysis
                         continue
 
         context_data.update(
