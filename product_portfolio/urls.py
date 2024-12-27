@@ -82,7 +82,7 @@ urlpatterns = [
         name="edit_productrelation_ajax",
     ),
     path(
-        "<uuid:product_uuid>/vulnerability_analysis/<str:vulnerability_id>/<uuid:package_uuid>/",
+        "vulnerability_analysis/<uuid:productpackage_uuid>/<str:vulnerability_id>/",
         vulnerability_analysis_form_view,
         name="vulnerability_analysis_form",
     ),

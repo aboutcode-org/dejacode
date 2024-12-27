@@ -2523,21 +2523,19 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 
 
 @login_required
-def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, package_uuid):
+def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability_id):
     user = request.user
     dataspace = user.dataspace
     form_class = VulnerabilityAnalysisForm
     perms = "change_product"
 
     product_qs = Product.objects.get_queryset(user, perms=perms)
-    product = get_object_or_404(product_qs, uuid=product_uuid)
-    vulnerability_qs = Vulnerability.objects.scope(dataspace)
-    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
     product_package_qs = ProductPackage.objects.product_secured(user, perms=perms)
-    product_package = get_object_or_404(
-        product_package_qs, product=product, package__uuid=package_uuid
-    )
+    vulnerability_qs = Vulnerability.objects.scope(dataspace)
     vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(dataspace)
+
+    product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
+    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
 
     # Fetch the existing Analysis values for each affected products
     product_analysis = vulnerability_analysis_qs.filter(
@@ -2546,9 +2544,9 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
         vulnerability=OuterRef("packages__affected_by_vulnerabilities__pk"),
     )
     affected_products = (
-        product_qs.exclude(pk=product.pk)
+        product_qs.exclude(pk=product_package.product.pk)
         .filter(
-            packages__uuid=package_uuid,
+            packages__id=product_package.package_id,
             packages__affected_by_vulnerabilities=vulnerability,
         )
         .annotate(
@@ -2558,7 +2556,6 @@ def vulnerability_analysis_form_view(request, product_uuid, vulnerability_id, pa
             analysis_detail=Subquery(product_analysis.values("detail")[:1]),
         )
     )
-
     vulnerability_analysis = vulnerability_analysis_qs.get_or_none(
         product_package=product_package,
         vulnerability=vulnerability,
