@@ -142,6 +142,28 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertIn(package2, all_packages)
         self.assertIn(package3, all_packages)
 
+    def test_product_model_get_vulnerable_packages(self):
+        self.assertEqual(0, self.product1.get_vulnerable_packages().count())
+
+        package1 = make_package(self.dataspace, is_vulnerable=True, risk_score=5.0)
+        make_product_package(self.product1, package1)
+        self.assertEqual(1, self.product1.get_vulnerable_packages().count())
+        self.assertEqual(0, self.product1.get_vulnerable_packages(risk_threshold=6.0).count())
+        self.assertEqual(1, self.product1.get_vulnerable_packages(risk_threshold=4.0).count())
+
+    def test_product_model_get_vulnerable_productpackages(self):
+        self.assertEqual(0, self.product1.get_vulnerable_productpackages().count())
+        package1 = make_package(self.dataspace, is_vulnerable=True)
+        pp1 = make_product_package(self.product1, package1)
+        pp1.raw_update(weighted_risk_score=5.0)
+        self.assertEqual(1, self.product1.get_vulnerable_productpackages().count())
+        self.assertEqual(
+            0, self.product1.get_vulnerable_productpackages(risk_threshold=6.0).count()
+        )
+        self.assertEqual(
+            1, self.product1.get_vulnerable_productpackages(risk_threshold=4.0).count()
+        )
+
     def test_product_model_get_feature_values_and_get_feature_datalist(self):
         ProductComponent.objects.create(
             product=self.product1, name="p1", feature="f1", dataspace=self.dataspace
