@@ -82,12 +82,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
         self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
         self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+
+        self.assertEqual(8.4, package1.risk_score)
+        self.assertEqual("8.4", str(product1.productpackages.get().weighted_risk_score))
 
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)

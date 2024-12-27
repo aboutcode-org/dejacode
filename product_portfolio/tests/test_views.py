@@ -401,7 +401,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         product1 = make_product(self.dataspace)
         product_package1 = make_product_package(product1, package=p1)
         make_product_package(product1, package=p2)
-        analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)
+        make_vulnerability_analysis(product_package1, vulnerability1)
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
