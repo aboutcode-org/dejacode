@@ -10,6 +10,7 @@ from timeit import default_timer as timer
 
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
+from django.urls import reverse
 from django.utils import timezone
 
 from component_catalog.models import PACKAGE_URL_FIELDS
@@ -17,6 +18,7 @@ from component_catalog.models import Package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
+from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
 
@@ -132,3 +134,40 @@ def create_or_update_vulnerability(
 
     vulnerability.add_affected_packages(affected_packages)
     return vulnerability
+
+
+def notify_vulnerability_data_update(dataspace):
+    """
+    Trigger the notifications related to fetching vulnerability data from
+    VulnerableCode.
+    """
+    today = timezone.now().date()
+    vulnerability_qs = Vulnerability.objects.scope(dataspace).filter(last_modified_date__date=today)
+    package_qs = Package.objects.scope(dataspace).filter(
+        affected_by_vulnerabilities=vulnerability_qs
+    )
+    # product_qs = Product.objects.scope(dataspace).filter(packages=package_qs)
+
+    vulnerability_count = vulnerability_qs.count()
+    if not vulnerability_count:
+        return
+
+    package_count = package_qs.count()
+    subject = "[DejaCode] New vulnerabilities detected!"
+
+    package_list_url = reverse("component_catalog:package_list")
+    vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
+
+    # TODO: Add filter by ?last_modified_date=today
+    message = (
+        f"{vulnerability_count} vulnerabilities at {vulnerability_list_url}\n"
+        f"{package_count} packages affected at {package_list_url}?is_vulnerable=yes\n"
+    )
+
+    find_and_fire_hook(
+        "vulnerability.data_update",
+        instance=None,
+        dataspace=dataspace,
+        payload_override={"text": f"{subject}\n{message}"},
+    )
+    print(f"{subject}\n{message}")
