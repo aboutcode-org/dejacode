@@ -658,6 +658,9 @@ HOOK_EVENTS = {
 # Provide context variables to the `Webhook` values such as `extra_headers`.
 HOOK_ENV = env.dict("HOOK_ENV", default={})
 
+# Internal notifications
+DJANGO_NOTIFICATIONS_CONFIG = {"USE_JSONFIELD": True}
+
 # Django-axes
 # Enable or disable Axes plugin functionality
 AXES_ENABLED = env.bool("AXES_ENABLED", default=False)

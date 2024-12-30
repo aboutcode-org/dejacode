@@ -1,0 +1,24 @@
+<div class="d-flex w-100 justify-content-between">
+  <div class="h6 mb-1">
+    {% if notice.actor != request.user %}
+      {{ notice.actor }}
+    {% endif %}
+    {{ notice.verb }}
+    {% if notice.action_object %}
+      {{ notice.action_object }}
+    {% elif action_object_content_type|slugify == 'package' %}
+      <i>(object not found)</i>
+    {% endif %}
+    {% if notice.target %}
+      of {{ notice.target }}
+    {% endif %}
+  </div>
+  <small class="text-muted">
+    {{ notice.timesince }} ago
+  </small>
+</div>
+{% if notice.description %}
+  <small class="mb-0 text-muted">
+    {{ notice.description|safe|linebreaksbr }}
+  </small>
+{% endif %}

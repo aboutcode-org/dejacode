@@ -9,6 +9,7 @@
 from timeit import default_timer as timer
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
 from django.urls import reverse
@@ -109,7 +110,7 @@ def fetch_for_packages(
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
-        break
+        break  # TODO: Remove
 
     return results
 
@@ -145,8 +146,10 @@ def notify_vulnerability_data_update(dataspace):
     Trigger the notifications related to fetching vulnerability data from
     VulnerableCode.
     """
-    today = timezone.now().date()
-    vulnerability_qs = Vulnerability.objects.scope(dataspace)  #.filter(last_modified_date__date=today)
+    # today = timezone.now().date()
+    vulnerability_qs = Vulnerability.objects.scope(
+        dataspace
+    )  # .filter(last_modified_date__date=today)
     package_qs = Package.objects.scope(dataspace).filter(
         affected_by_vulnerabilities__in=vulnerability_qs
     )
@@ -159,14 +162,19 @@ def notify_vulnerability_data_update(dataspace):
     package_count = package_qs.count()
     subject = "[DejaCode] New vulnerabilities detected!"
 
-    package_list_url = reverse("component_catalog:package_list")
-    vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
-
     # TODO: Add filter by ?last_modified_date=today
-    message = (
-        f"{vulnerability_count} vulnerabilities at {vulnerability_list_url}\n"
-        f"{package_count} packages affected at {package_list_url}?is_vulnerable=yes\n"
+    package_list_url = reverse("component_catalog:package_list")
+    package_link = (
+        f'<a href="{package_list_url}?is_vulnerable=yes" target="_blank">'
+        f"{package_count} packages</a>"
     )
+    vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
+    vulnerability_link = (
+        f'<a href="{vulnerability_list_url}" target="_blank">{vulnerability_count} '
+        f"vulnerabilities</a>"
+    )
+
+    message = f"{vulnerability_link} affecting {package_link}"
 
     # 1. Webhooks
     find_and_fire_hook(
@@ -183,4 +191,5 @@ def notify_vulnerability_data_update(dataspace):
         verb="New vulnerabilities detected",
         recipient=users_to_notify,
         description=f"{message}",
+        action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
     )
