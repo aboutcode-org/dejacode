@@ -1347,6 +1347,7 @@ class DejacodeUserAdmin(
         "data_email_notification",
         "workflow_email_notification",
         "updates_email_notification",
+        "vulnerability_impact_notification",
         "company",
         "last_login",
         "last_api_access",
@@ -1379,6 +1380,7 @@ class DejacodeUserAdmin(
                     "data_email_notification",
                     "workflow_email_notification",
                     "updates_email_notification",
+                    "vulnerability_impact_notification",
                 )
             },
         ),

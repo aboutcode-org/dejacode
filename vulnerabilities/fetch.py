@@ -8,10 +8,13 @@
 
 from timeit import default_timer as timer
 
+from django.contrib.auth import get_user_model
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
 from django.urls import reverse
 from django.utils import timezone
+
+from notifications.signals import notify
 
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
@@ -106,6 +109,7 @@ def fetch_for_packages(
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
+        break
 
     return results
 
@@ -142,9 +146,9 @@ def notify_vulnerability_data_update(dataspace):
     VulnerableCode.
     """
     today = timezone.now().date()
-    vulnerability_qs = Vulnerability.objects.scope(dataspace).filter(last_modified_date__date=today)
+    vulnerability_qs = Vulnerability.objects.scope(dataspace)  #.filter(last_modified_date__date=today)
     package_qs = Package.objects.scope(dataspace).filter(
-        affected_by_vulnerabilities=vulnerability_qs
+        affected_by_vulnerabilities__in=vulnerability_qs
     )
     # product_qs = Product.objects.scope(dataspace).filter(packages=package_qs)
 
@@ -164,10 +168,19 @@ def notify_vulnerability_data_update(dataspace):
         f"{package_count} packages affected at {package_list_url}?is_vulnerable=yes\n"
     )
 
+    # 1. Webhooks
     find_and_fire_hook(
         "vulnerability.data_update",
         instance=None,
         dataspace=dataspace,
         payload_override={"text": f"{subject}\n{message}"},
     )
-    print(f"{subject}\n{message}")
+
+    # 2. Internal notifications
+    users_to_notify = get_user_model().objects.get_vulnerability_notifications_users(dataspace)
+    notify.send(
+        sender=Vulnerability,
+        verb="New vulnerabilities detected",
+        recipient=users_to_notify,
+        description=f"{message}",
+    )
