@@ -108,7 +108,6 @@ def fetch_for_packages(
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
-        break  # TODO: Remove
 
     return results
 
@@ -145,8 +144,10 @@ def notify_vulnerability_data_update(dataspace):
     VulnerableCode.
     """
     vulnerability_qs = Vulnerability.objects.scope(dataspace).added_or_updated_today()
-    package_qs = Package.objects.scope(dataspace).filter(
-        affected_by_vulnerabilities__in=vulnerability_qs
+    package_qs = (
+        Package.objects.scope(dataspace)
+        .filter(affected_by_vulnerabilities__in=vulnerability_qs)
+        .distinct()
     )
 
     vulnerability_count = vulnerability_qs.count()
@@ -166,16 +167,15 @@ def notify_vulnerability_data_update(dataspace):
     )
 
     # 2. Internal notifications (message with internal links)
-    # TODO: Add filter by ?last_modified_date=today
-    package_list_url = reverse("component_catalog:package_list")
-    package_link = (
-        f'<a href="{package_list_url}?is_vulnerable=yes" target="_blank">'
-        f"{package_count} packages</a>"
-    )
     vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
     vulnerability_link = (
-        f'<a href="{vulnerability_list_url}" target="_blank">{vulnerability_count} '
-        f"vulnerabilities</a>"
+        f'<a href="{vulnerability_list_url}?last_modified_date=today" target="_blank">'
+        f"{vulnerability_count} vulnerabilities</a>"
+    )
+    package_list_url = reverse("component_catalog:package_list")
+    package_link = (
+        f'<a href="{package_list_url}?is_vulnerable=yes&affected_by_last_modified_date=today" '
+        f'target="_blank"> {package_count} packages</a>'
     )
     message = f"{vulnerability_link} affecting {package_link}"
 

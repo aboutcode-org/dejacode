@@ -262,6 +262,11 @@ class PackageFilterSet(DataspacedFilterSet):
         field_name="affected_by_vulnerabilities__vulnerability_id",
         label=_("Affected by"),
     )
+    affected_by_last_modified_date = django_filters.DateRangeFilter(
+        field_name="affected_by_vulnerabilities__last_modified_date",
+        label=_("Affected by update"),
+    )
+    last_modified_date = django_filters.DateRangeFilter()
 
     class Meta:
         model = Package

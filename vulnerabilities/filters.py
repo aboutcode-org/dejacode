@@ -105,6 +105,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
     )
+    last_modified_date = django_filters.DateRangeFilter()
 
     class Meta:
         model = Vulnerability
