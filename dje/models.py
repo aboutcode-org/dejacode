@@ -1757,6 +1757,14 @@ class DejacodeUser(AbstractUser):
             **self.serialize_user_data(),
         }
 
+    def internal_notify(self, verb, **data):
+        """Similar to ``notify.send`` without relying on the Signal system."""
+        return Notification.objects.create(
+            recipient=self,
+            verb=verb,
+            **data,
+        )
+
 
 @receiver(models.signals.post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

@@ -8,18 +8,16 @@
 
 from timeit import default_timer as timer
 
-from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
 from django.urls import reverse
 from django.utils import timezone
 
-from notifications.signals import notify
-
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 from notification.models import find_and_fire_hook
@@ -185,11 +183,11 @@ def notify_vulnerability_data_update(dataspace):
     )
 
     # 2. Internal notifications
-    users_to_notify = get_user_model().objects.get_vulnerability_notifications_users(dataspace)
-    notify.send(
-        sender=Vulnerability,
-        verb="New vulnerabilities detected",
-        recipient=users_to_notify,
-        description=f"{message}",
-        action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
-    )
+    users_to_notify = DejacodeUser.objects.get_vulnerability_notifications_users(dataspace)
+    for user in users_to_notify:
+        user.internal_notify(
+            verb="New vulnerabilities detected",
+            description=f"{message}",
+            actor_content_type=ContentType.objects.get_for_model(Vulnerability),
+            action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
+        )
