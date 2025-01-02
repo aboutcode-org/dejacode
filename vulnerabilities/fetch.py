@@ -144,14 +144,10 @@ def notify_vulnerability_data_update(dataspace):
     Trigger the notifications related to fetching vulnerability data from
     VulnerableCode.
     """
-    # today = timezone.now().date()
-    vulnerability_qs = Vulnerability.objects.scope(
-        dataspace
-    )  # .filter(last_modified_date__date=today)
+    vulnerability_qs = Vulnerability.objects.scope(dataspace).added_or_updated_today()
     package_qs = Package.objects.scope(dataspace).filter(
         affected_by_vulnerabilities__in=vulnerability_qs
     )
-    # product_qs = Product.objects.scope(dataspace).filter(packages=package_qs)
 
     vulnerability_count = vulnerability_qs.count()
     if not vulnerability_count:
@@ -160,6 +156,16 @@ def notify_vulnerability_data_update(dataspace):
     package_count = package_qs.count()
     subject = "[DejaCode] New vulnerabilities detected!"
 
+    # 1. Webhooks (simple message)
+    message = f"{vulnerability_count} vulnerabilities affecting {package_count} packages"
+    find_and_fire_hook(
+        "vulnerability.data_update",
+        instance=None,
+        dataspace=dataspace,
+        payload_override={"text": f"{subject}\n{message}"},
+    )
+
+    # 2. Internal notifications (message with internal links)
     # TODO: Add filter by ?last_modified_date=today
     package_list_url = reverse("component_catalog:package_list")
     package_link = (
@@ -171,18 +177,8 @@ def notify_vulnerability_data_update(dataspace):
         f'<a href="{vulnerability_list_url}" target="_blank">{vulnerability_count} '
         f"vulnerabilities</a>"
     )
-
     message = f"{vulnerability_link} affecting {package_link}"
 
-    # 1. Webhooks
-    find_and_fire_hook(
-        "vulnerability.data_update",
-        instance=None,
-        dataspace=dataspace,
-        payload_override={"text": f"{subject}\n{message}"},
-    )
-
-    # 2. Internal notifications
     users_to_notify = DejacodeUser.objects.get_vulnerability_notifications_users(dataspace)
     for user in users_to_notify:
         user.internal_notify(
