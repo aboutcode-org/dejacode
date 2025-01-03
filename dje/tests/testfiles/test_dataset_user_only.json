@@ -47,6 +47,7 @@
     "data_email_notification": false,
     "workflow_email_notification": false,
     "updates_email_notification": false,
+    "vulnerability_impact_notification": false,
     "company": "",
     "last_api_access": null,
     "groups": [],

@@ -14,14 +14,18 @@ from unittest import mock
 
 from django.test import TestCase
 
+from notifications.models import Notification
+
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.tests import create_user
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_item_purpose
 from product_portfolio.tests import make_product_package
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.fetch import fetch_from_vulnerablecode
+from vulnerabilities.fetch import notify_vulnerability_data_update
 
 
 class VulnerabilitiesFetchTestCase(TestCase):
@@ -96,3 +100,15 @@ class VulnerabilitiesFetchTestCase(TestCase):
         pp1.refresh_from_db()
         self.assertEqual(Decimal("8.4"), package1.risk_score)
         self.assertEqual(Decimal("4.2"), pp1.weighted_risk_score)
+
+    @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
+    def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):
+        notify_vulnerability_data_update(self.dataspace)
+        mock_fire_hook.assert_not_called()
+        self.assertEqual(0, Notification.objects.count())
+
+        make_package(self.dataspace, is_vulnerable=True)
+        create_user("test", self.dataspace, vulnerability_impact_notification=True)
+        notify_vulnerability_data_update(self.dataspace)
+        mock_fire_hook.assert_called_once()
+        self.assertEqual(1, Notification.objects.count())

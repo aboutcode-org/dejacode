@@ -12,6 +12,7 @@ import logging
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Count
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from cyclonedx.model import vulnerability as cdx_vulnerability
@@ -48,6 +49,10 @@ class VulnerabilityQuerySet(DataspacedQuerySet):
             models.F("weighted_severity").desc(nulls_last=True),
             models.F("exploitability").desc(nulls_last=True),
         )
+
+    def added_or_updated_today(self):
+        today = timezone.now().replace(hour=0, minute=0, second=0)
+        return self.filter(last_modified_date__gte=today)
 
 
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):

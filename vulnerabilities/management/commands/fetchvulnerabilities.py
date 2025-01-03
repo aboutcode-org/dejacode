@@ -10,7 +10,7 @@ from django.core.management.base import CommandError
 
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.management.commands import DataspacedCommand
-from vulnerabilities.fetch import fetch_from_vulnerablecode
+from vulnerabilities import fetch
 
 
 class Command(DataspacedCommand):
@@ -30,6 +30,11 @@ class Command(DataspacedCommand):
             default=30,
             help="Request timeout in seconds",
         )
+        parser.add_argument(
+            "--no-notification",
+            action="store_true",
+            help="Do not trigger any notifications.",
+        )
 
     def handle(self, *args, **options):
         super().handle(*args, **options)
@@ -43,10 +48,13 @@ class Command(DataspacedCommand):
         if not vulnerablecode.is_configured():
             raise CommandError("VulnerableCode is not configured.")
 
-        fetch_from_vulnerablecode(
+        fetch.fetch_from_vulnerablecode(
             self.dataspace,
             batch_size=batch_size,
             update=True,
             timeout=timeout,
             log_func=self.stdout.write,
         )
+
+        if not options["no_notification"]:
+            fetch.notify_vulnerability_data_update(self.dataspace)

@@ -72,6 +72,13 @@ class EmailNotificationTest(TestCase):
             email_list, get_user_model().objects.get_data_update_recipients(self.dataspace)
         )
 
+    def test_get_vulnerability_notifications_users(self):
+        qs = get_user_model().objects.get_vulnerability_notifications_users(self.dataspace)
+        self.assertEqual(0, qs.count())
+        self.user.vulnerability_impact_notification = True
+        self.user.save()
+        self.assertEqual(1, qs.count())
+
     def test_send_notification_email(self):
         request = self.factory.get("")
         request.user = self.user
