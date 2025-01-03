@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 import django_filters
 
+from dje.widgets import DropDownRightWidget
 from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
@@ -105,7 +106,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
     )
-    last_modified_date = django_filters.DateRangeFilter()
+    last_modified_date = django_filters.DateRangeFilter(
+        widget=DropDownRightWidget(link_content='<i class="fa-regular fa-calendar-days"></i>'),
+    )
 
     class Meta:
         model = Vulnerability
