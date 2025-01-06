@@ -417,17 +417,11 @@ class UsersTestCase(TestCase):
         self.assertNotContains(response, card_layout_other.name)
 
     def test_user_model_send_internal_notification(self):
-        notification = self.nexb_user.send_internal_notification(verb="a", actor=Dataspace)
-        self.assertEqual("a", notification.verb)
-        self.assertEqual("dataspace", notification.actor_content_type.model)
-        self.assertEqual(0, notification.actor_object_id)
-
-        notification = self.nexb_user.send_internal_notification(
-            verb="b", actor=self.nexb_dataspace
-        )
-        self.assertEqual("b", notification.verb)
-        self.assertEqual("dataspace", notification.actor_content_type.model)
-        self.assertEqual(self.nexb_dataspace.pk, notification.actor_object_id)
+        notification = self.nexb_user.send_internal_notification(verb="Updated", description="details")
+        self.assertEqual("Updated", notification.verb)
+        self.assertEqual("details", notification.description)
+        self.assertEqual("dejacodeuser", notification.actor_content_type.model)
+        self.assertEqual(self.nexb_user.id, notification.actor_object_id)
 
 
 class UsersPasswordTestCase(TestCase):

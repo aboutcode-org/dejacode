@@ -1717,7 +1717,6 @@ def send_scan_notification(request, key):
 
     user.send_internal_notification(
         verb=f"Scan {scan_status}",
-        actor=user,
         action_object=package,
         description=description,
     )

@@ -1581,7 +1581,6 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
         self.created_by.send_internal_notification(
             verb=verb,
             action_object=self.product,
-            actor=self.created_by,
             description=description,
         )
 

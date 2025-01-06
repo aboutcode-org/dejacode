@@ -293,7 +293,6 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
 
     user.send_internal_notification(
         verb=verb,
-        actor=user,
         action_object=product,
         description=description,
     )
