@@ -3381,6 +3381,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = ["Improved packages from PurlDB:", "pkg1, pkg2"]
         self.assertEqual(expected, import_project.import_log)
 
+        notification = Notification.objects.get()
+        self.assertEqual("Improved packages from PurlDB:", notification.verb)
+        self.assertEqual("pkg1, pkg2", notification.description)
+        self.assertEqual("dejacodeuser", notification.actor_content_type.model)
+        self.assertEqual(self.product1, notification.action_object)
+
     def test_product_portfolio_vulnerability_analysis_form_view(self):
         self.client.login(username=self.super_user.username, password="secret")
 

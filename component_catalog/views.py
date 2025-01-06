@@ -46,7 +46,6 @@ from django.views.generic.edit import BaseFormView
 
 from crispy_forms.utils import render_crispy_form
 from natsort import natsorted
-from notifications.signals import notify
 from packageurl import PackageURL
 from packageurl.contrib import purl2url
 
@@ -1716,11 +1715,10 @@ def send_scan_notification(request, key):
                 + description
             )
 
-    notify.send(
-        sender=user,
+    user.send_internal_notification(
         verb=f"Scan {scan_status}",
+        actor=user,
         action_object=package,
-        recipient=user,
         description=description,
     )
 

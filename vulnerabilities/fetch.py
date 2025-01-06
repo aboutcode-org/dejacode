@@ -184,6 +184,6 @@ def notify_vulnerability_data_update(dataspace):
         user.send_internal_notification(
             verb="New vulnerabilities detected",
             description=f"{message}",
-            actor_instance_or_class=Vulnerability,
+            actor=Vulnerability,
             action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
         )

@@ -27,7 +27,6 @@ from django.utils.html import format_html_join
 from django.utils.translation import gettext_lazy as _
 
 import guardian.shortcuts
-from notifications.signals import notify
 
 from component_catalog.models import CONFIGURATION_STATUS_HELP
 from component_catalog.models import BaseStatusMixin
@@ -1579,11 +1578,10 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
 
     def notify(self, verb, description):
         """Send a notification about this instance."""
-        notify.send(
-            sender=self.created_by,
+        self.created_by.send_internal_notification(
             verb=verb,
             action_object=self.product,
-            recipient=self.created_by,
+            actor=self.created_by,
             description=description,
         )
 
