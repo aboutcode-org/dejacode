@@ -11,10 +11,10 @@ from django.utils.translation import gettext_lazy as _
 
 import django_filters
 
-from dje.widgets import DropDownRightWidget
 from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
+from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin

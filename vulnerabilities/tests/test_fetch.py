@@ -112,3 +112,5 @@ class VulnerabilitiesFetchTestCase(TestCase):
         notify_vulnerability_data_update(self.dataspace)
         mock_fire_hook.assert_called_once()
         self.assertEqual(1, Notification.objects.count())
+        notification = Notification.objects.get()
+        self.assertEqual("New vulnerabilities detected", notification.verb)

@@ -6,11 +6,13 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import datetime
 import json
 from pathlib import Path
 from unittest import mock
 
 from django.test import TestCase
+from django.utils.timezone import make_aware
 
 from component_catalog.models import Package
 from component_catalog.tests import make_component
@@ -187,6 +189,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
         )
         self.assertEqual(2, qs[0].affected_packages_count)
         self.assertEqual(1, qs[0].affected_products_count)
+
+    def test_vulnerability_model_queryset_added_or_updated_today(self):
+        base_qs = Vulnerability.objects.scope(self.dataspace)
+
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace)
+        self.assertEqual(1, base_qs.added_or_updated_today().count())
+
+        older_date = make_aware(datetime.datetime(2018, 6, 21, 3, 38, 24, 139528))
+        vulnerability1.raw_update(last_modified_date=older_date)
+        self.assertEqual(0, base_qs.added_or_updated_today().count())
 
     def test_vulnerability_model_as_cyclonedx(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"

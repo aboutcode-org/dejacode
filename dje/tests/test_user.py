@@ -416,6 +416,21 @@ class UsersTestCase(TestCase):
         self.assertContains(response, card_layout_nexb.name)
         self.assertNotContains(response, card_layout_other.name)
 
+    def test_user_model_send_internal_notification(self):
+        notification = self.nexb_user.send_internal_notification(
+            verb="a", actor_instance_or_class=Dataspace
+        )
+        self.assertEqual("a", notification.verb)
+        self.assertEqual("dataspace", notification.actor_content_type.model)
+        self.assertEqual(0, notification.actor_object_id)
+
+        notification = self.nexb_user.send_internal_notification(
+            verb="b", actor_instance_or_class=self.nexb_dataspace
+        )
+        self.assertEqual("b", notification.verb)
+        self.assertEqual("dataspace", notification.actor_content_type.model)
+        self.assertEqual(self.nexb_dataspace.pk, notification.actor_object_id)
+
 
 class UsersPasswordTestCase(TestCase):
     def setUp(self):

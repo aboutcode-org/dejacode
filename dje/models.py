@@ -1757,11 +1757,18 @@ class DejacodeUser(AbstractUser):
             **self.serialize_user_data(),
         }
 
-    def internal_notify(self, verb, **data):
+    def send_internal_notification(self, verb, actor_instance_or_class, **data):
         """Similar to ``notify.send`` without relying on the Signal system."""
+        actor_content_type = ContentType.objects.get_for_model(actor_instance_or_class)
+        actor_object_id = 0
+        if isinstance(actor_instance_or_class, models.Model):
+            actor_object_id = actor_instance_or_class.pk
+
         return Notification.objects.create(
             recipient=self,
             verb=verb,
+            actor_content_type=actor_content_type,
+            actor_object_id=actor_object_id,
             **data,
         )
 

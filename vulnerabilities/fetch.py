@@ -181,9 +181,9 @@ def notify_vulnerability_data_update(dataspace):
 
     users_to_notify = DejacodeUser.objects.get_vulnerability_notifications_users(dataspace)
     for user in users_to_notify:
-        user.internal_notify(
+        user.send_internal_notification(
             verb="New vulnerabilities detected",
             description=f"{message}",
-            actor_content_type=ContentType.objects.get_for_model(Vulnerability),
+            actor_instance_or_class=Vulnerability,
             action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
         )
