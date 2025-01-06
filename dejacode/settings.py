@@ -650,9 +650,6 @@ HOOK_EVENTS = {
     "request_comment.added": "workflow.RequestComment.created+",
     "user.added_or_updated": None,
     "user.locked_out": None,
-    # "vulnerability.added": "vulnerabilities.Vulnerability.created+",
-    # "vulnerability.packages_affected": None,
-    # "vulnerability.products_affected": None,
     "vulnerability.data_update": None,
 }
 # Provide context variables to the `Webhook` values such as `extra_headers`.
