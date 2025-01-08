@@ -417,7 +417,9 @@ class UsersTestCase(TestCase):
         self.assertNotContains(response, card_layout_other.name)
 
     def test_user_model_send_internal_notification(self):
-        notification = self.nexb_user.send_internal_notification(verb="Updated", description="details")
+        notification = self.nexb_user.send_internal_notification(
+            verb="Updated", description="details"
+        )
         self.assertEqual("Updated", notification.verb)
         self.assertEqual("details", notification.description)
         self.assertEqual("dejacodeuser", notification.actor_content_type.model)
