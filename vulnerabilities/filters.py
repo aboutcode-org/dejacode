@@ -14,6 +14,7 @@ import django_filters
 from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
+from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
@@ -104,6 +105,9 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
     risk_score = ScoreRangeFilter(
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
+    )
+    last_modified_date = django_filters.DateRangeFilter(
+        widget=DropDownRightWidget(link_content='<i class="fa-regular fa-calendar-days"></i>'),
     )
 
     class Meta:

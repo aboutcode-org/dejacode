@@ -21,7 +21,6 @@ from django.template.defaultfilters import pluralize
 
 from django_rq import job
 from guardian.shortcuts import get_perms as guardian_get_perms
-from notifications.signals import notify
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.utils import is_available
@@ -292,11 +291,9 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
         import_log=[verb, description],
     )
 
-    notify.send(
-        sender=user,
+    user.send_internal_notification(
         verb=verb,
         action_object=product,
-        recipient=user,
         description=description,
     )
 

@@ -644,11 +644,13 @@ HOOK_FINDER = "notification.models.find_and_fire_hook"
 HOOK_DELIVERER = "notification.tasks.deliver_hook_wrapper"
 HOOK_EVENTS = {
     # 'any.event.name': 'App.Model.Action' (created/updated/deleted)
+    # If you want a Hook to be triggered for all users, add '+' to built-in Hooks.
     "request.added": "workflow.Request.created+",
     "request.updated": "workflow.Request.updated+",
     "request_comment.added": "workflow.RequestComment.created+",
     "user.added_or_updated": None,
     "user.locked_out": None,
+    "vulnerability.data_update": None,
 }
 # Provide context variables to the `Webhook` values such as `extra_headers`.
 HOOK_ENV = env.dict("HOOK_ENV", default={})

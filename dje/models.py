@@ -1575,6 +1575,12 @@ class DejacodeUserManager(BaseUserManager, DataspacedManager.from_queryset(Dejac
         # Need to be converted as a list to be serializable
         return list(qs.distinct().values_list("email", flat=True))
 
+    def get_vulnerability_notifications_users(self, dataspace):
+        """Return the Users with `vulnerability_notification` enabled for a given dataspace."""
+        return self.get_queryset().filter(
+            vulnerability_impact_notification=True, dataspace=dataspace
+        )
+
 
 class DejacodeUser(AbstractUser):
     uuid = models.UUIDField(
@@ -1613,6 +1619,14 @@ class DejacodeUser(AbstractUser):
         help_text=_(
             "Check this to receive email notifications with updates on DejaCode "
             "features and news."
+        ),
+    )
+
+    vulnerability_impact_notification = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Enable to receive internal notifications about new and updated vulnerabilities, "
+            "including their impact on your packages and products."
         ),
     )
 
@@ -1742,6 +1756,15 @@ class DejacodeUser(AbstractUser):
             "hook": hook.dict(),
             **self.serialize_user_data(),
         }
+
+    def send_internal_notification(self, verb, **data):
+        """Similar to ``notify.send`` without relying on the Signal system."""
+        return Notification.objects.create(
+            recipient=self,
+            actor=self,
+            verb=verb,
+            **data,
+        )
 
 
 @receiver(models.signals.post_save, sender=settings.AUTH_USER_MODEL)

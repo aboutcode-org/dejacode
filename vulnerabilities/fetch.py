@@ -8,15 +8,19 @@
 
 from timeit import default_timer as timer
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.management.base import CommandError
+from django.urls import reverse
 from django.utils import timezone
 
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
+from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
 
@@ -132,3 +136,53 @@ def create_or_update_vulnerability(
 
     vulnerability.add_affected_packages(affected_packages)
     return vulnerability
+
+
+def notify_vulnerability_data_update(dataspace):
+    """
+    Trigger the notifications related to fetching vulnerability data from
+    VulnerableCode.
+    """
+    vulnerability_qs = Vulnerability.objects.scope(dataspace).added_or_updated_today()
+    package_qs = (
+        Package.objects.scope(dataspace)
+        .filter(affected_by_vulnerabilities__in=vulnerability_qs)
+        .distinct()
+    )
+
+    vulnerability_count = vulnerability_qs.count()
+    if not vulnerability_count:
+        return
+
+    package_count = package_qs.count()
+    subject = "[DejaCode] New vulnerabilities detected!"
+
+    # 1. Webhooks (simple message)
+    message = f"{vulnerability_count} vulnerabilities affecting {package_count} packages"
+    find_and_fire_hook(
+        "vulnerability.data_update",
+        instance=None,
+        dataspace=dataspace,
+        payload_override={"text": f"{subject}\n{message}"},
+    )
+
+    # 2. Internal notifications (message with internal links)
+    vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
+    vulnerability_link = (
+        f'<a href="{vulnerability_list_url}?last_modified_date=today" target="_blank">'
+        f"{vulnerability_count} vulnerabilities</a>"
+    )
+    package_list_url = reverse("component_catalog:package_list")
+    package_link = (
+        f'<a href="{package_list_url}?is_vulnerable=yes&affected_by_last_modified_date=today" '
+        f'target="_blank"> {package_count} packages</a>'
+    )
+    message = f"{vulnerability_link} affecting {package_link}"
+
+    users_to_notify = DejacodeUser.objects.get_vulnerability_notifications_users(dataspace)
+    for user in users_to_notify:
+        user.send_internal_notification(
+            verb="New vulnerabilities detected",
+            description=f"{message}",
+            action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
+        )

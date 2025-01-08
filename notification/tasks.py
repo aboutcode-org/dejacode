@@ -8,6 +8,8 @@
 
 import json
 
+from django.template.defaultfilters import truncatechars
+
 import requests
 from django_rq import job
 from rest_framework.utils import encoders
@@ -32,7 +34,7 @@ def deliver_hook_task(
     if extra_headers:
         session.headers.update(extra_headers)
 
-    logger.info(f"Delivering Webhook hook_id={hook_id} to target={target}")
+    logger.info(f"Delivering Webhook hook_id={hook_id} to target={truncatechars(target, 25)}")
     try:
         session.post(url=target, data=payload)
     except requests.ConnectionError:
