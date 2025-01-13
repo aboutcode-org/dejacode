@@ -155,6 +155,16 @@ class WorkflowModelsTestCase(TestCase):
             self.request1.get_serialized_data_as_html(html_template="{value}"),
         )
 
+    def test_request_model_get_serialized_data_as_html_escape_curly_braces(self):
+        comment = RequestComment.objects.create(
+            request=self.request1,
+            user=self.basic_user,
+            text="word {var_format} word",
+            dataspace=self.nexb_dataspace,
+        )
+        expected = "<p>word {var_format} word</p>"
+        self.assertEqual(expected, comment.as_html())
+
     def test_request_model_get_involved_users(self):
         self.assertIsNone(self.request1.assignee)
         expected = {self.request1.requester}

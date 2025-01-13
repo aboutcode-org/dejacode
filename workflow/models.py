@@ -23,6 +23,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 import markdown
@@ -623,7 +624,7 @@ class RequestComment(AbstractRequestEvent):
         )
         html = cleaner.clean(unsafe_html)
 
-        return format_html(html)
+        return mark_safe(html)
 
     def serialize_hook(self, hook):
         if "hooks.slack.com" in hook.target:
