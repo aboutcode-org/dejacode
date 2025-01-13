@@ -1252,6 +1252,21 @@ class RequestUserViewsTestCase(TestCase):
         self.client.login(username="basic_user", password="secret")
         self.assertEqual(200, self.client.get(url).status_code)
 
+    def test_workflow_request_details_view_comment_content_escape_curly_braces(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("workflow:request_details", args=[self.request1.uuid])
+
+        RequestComment.objects.create(
+            request=self.request1,
+            user=self.basic_user,
+            text="word {var_format} word",
+            dataspace=self.nexb_dataspace,
+        )
+
+        response = self.client.get(url)
+        expected = "<p>word {var_format} word</p>"
+        self.assertContains(response, expected, html=True)
+
     def test_show_all_in_requests_list_view(self):
         self.assertFalse(self.basic_user.is_superuser)
         self.assertNotEqual(self.basic_user, self.request1.requester)
