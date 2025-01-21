@@ -608,7 +608,7 @@ class BaseProductImportFormView(forms.Form):
             "If checked, the discovered packages from the manifest that are already "
             "existing in your Dataspace will be updated with ScanCode data. "
             "Note that only the empty fields will be updated. "
-            "By default (un-checked), existing packages will be assign to the product "
+            "By default (un-checked), existing packages will be assigned to the product "
             "without any modification."
         ),
     )
