@@ -25,5 +25,5 @@ the REST API:
 
 Replace ``{uuid}`` with the unique identifier of your product.
 
-You can also provide your prefered CycloneDX spec version using the ``spec_version``
+You can also provide your preferred CycloneDX spec version using the ``spec_version``
 query argument such as: ``/api/v2/products/{uuid}/cyclonedx_sbom/?spec_version=1.6``

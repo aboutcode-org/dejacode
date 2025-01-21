@@ -22,6 +22,7 @@ Welcome to the very start of your DejaCode journey!
     tutorial-3
     tutorial-4-vulnerabilities
     tutorial-5-sboms
+    tutorial-6-vuln-report
 
 .. toctree::
     :maxdepth: 1
