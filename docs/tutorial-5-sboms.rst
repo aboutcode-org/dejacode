@@ -25,7 +25,7 @@ Load an SBOM to your Product
 
 1. Download and unzip the following SBOM example from:
 
-   `<https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/storm-core-1.0.cdx.json.zip>`_.
+   `<https://github.com/aboutcode-org/dejacode/raw/refs/heads/main/docs/sboms/storm-core-1.0.1.cdx.json.zip>`_.
 
 2. On the Product details page, from the :guilabel:`Action` dropdown, select
    :guilabel:`Load Packages from SBOMs`:
