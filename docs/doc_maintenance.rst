@@ -28,7 +28,7 @@ That will create a /dejacode directory in your working directory.
 Now you can install the dependencies in a virtualenv::
 
     cd dejacode
-    python3.12 -m venv .
+    python3.13 -m venv .
     source bin/activate
 
 Now you can build the HTML documents locally::
