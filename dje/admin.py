@@ -1426,9 +1426,7 @@ class DejacodeUserAdmin(
 
         permission_details_url = reverse("admin:auth_group_permission_details")
         label_template = (
-            '{} <a href="{}" target="_blank" class="group-details-link">'
-            "  (permission details)"
-            "</a>"
+            '{} <a href="{}" target="_blank" class="group-details-link">  (permission details)</a>'
         )
         groups_field.label = format_html(label_template, groups_field.label, permission_details_url)
 

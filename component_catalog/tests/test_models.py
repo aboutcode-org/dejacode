@@ -1897,7 +1897,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("", package.subpath)
         package.save()
 
-        package_url = f'pkg:maven/mysql/mysql-connector-java@%40MYSQL_CJ_.{"version"*100}'
+        package_url = f"pkg:maven/mysql/mysql-connector-java@%40MYSQL_CJ_.{'version' * 100}"
         with self.assertRaises(ValidationError) as e:
             package.set_package_url(package_url)
         self.assertEqual('Value too long for field "version".', e.exception.message)

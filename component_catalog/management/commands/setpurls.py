@@ -88,8 +88,7 @@ class Command(DataspacedCommand):
                 )
             except Exception:
                 self.stderr.write(
-                    f"Error encountered when processing Package:"
-                    f" {str(package)} ({package.uuid})"
+                    f"Error encountered when processing Package: {str(package)} ({package.uuid})"
                 )
                 self.stderr.write(traceback.format_exc())
                 error_count += 1
@@ -108,4 +107,4 @@ class Command(DataspacedCommand):
         self.stdout.write(self.style.SUCCESS(msg))
         self.stdout.write("Pre-update: " + pre_update_summary)
         self.stdout.write("Post-update: " + self.get_purl_summary(packages))
-        self.stdout.write(f"Number of errors encountered when updating Packages: " f"{error_count}")
+        self.stdout.write(f"Number of errors encountered when updating Packages: {error_count}")

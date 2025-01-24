@@ -1509,7 +1509,7 @@ class RequestUserViewsTestCase(TestCase):
 
         self.client.logout()
         response = self.client.get(attachment_url)
-        self.assertRedirects(response, f'{reverse("login")}?next={attachment_url}')
+        self.assertRedirects(response, f"{reverse('login')}?next={attachment_url}")
 
     def test_workflow_request_details_view_product_context_links(self):
         self.client.login(username=self.nexb_user.username, password="secret")

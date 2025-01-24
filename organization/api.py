@@ -95,7 +95,7 @@ class OwnerFilterSet(DataspacedAPIFilterSet):
     type = django_filters.ChoiceFilter(
         choices=Owner.OWNER_TYPE_CHOICES,
         help_text=f"Exact owner type. Supported values: "
-        f'{", ".join(type[0] for type in Owner.OWNER_TYPE_CHOICES)}',
+        f"{', '.join(type[0] for type in Owner.OWNER_TYPE_CHOICES)}",
     )
     last_modified_date = LastModifiedDateFilter()
 

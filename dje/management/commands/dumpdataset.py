@@ -55,7 +55,7 @@ class ExcludeFieldsSerializer(Serializer):
 
 
 class Command(BaseCommand):
-    help = "Output the contents of the all DejaCode data for the " "given Dataspace as a fixture."
+    help = "Output the contents of the all DejaCode data for the given Dataspace as a fixture."
 
     def add_arguments(self, parser):
         parser.add_argument("dataspace_name", help="Name of the Dataspace.")

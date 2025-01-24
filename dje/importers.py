@@ -613,7 +613,7 @@ class BaseImporter:
             )
             if updated_fields:
                 self.results["modified"].append(instance)
-                msg = f'Updated {", ".join(updated_fields)} from import'
+                msg = f"Updated {', '.join(updated_fields)} from import"
                 History.log_change(self.user, instance, message=msg)
                 return
 

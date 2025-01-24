@@ -52,7 +52,7 @@ class Command(BaseCommand):
         special_tags = ["reporting"], ["expression"]
         if options["all_dataspaces"] and tags not in special_tags:
             raise CommandError(
-                "--all-dataspaces only usable with `--tag reporting` or " "`--tag expression`"
+                "--all-dataspaces only usable with `--tag reporting` or `--tag expression`"
             )
 
         app_configs = {}

@@ -574,7 +574,7 @@ class ComponentAdmin(
             return super().changeform_view(request, object_id, form_url, extra_context)
         except FormDataOutdated:
             messages.error(
-                request, "Form data outdated or inconsistent. " "The form data has been refreshed."
+                request, "Form data outdated or inconsistent. The form data has been refreshed."
             )
             return redirect(request.path)
 
@@ -1019,7 +1019,7 @@ class PackageAdmin(
             if update_fields:
                 package.last_modified_by = request.user
                 package.save()
-                message = f'Data collected for: {", ".join(update_fields)}.'
+                message = f"Data collected for: {', '.join(update_fields)}."
                 History.log_change(request.user, package, message, serialized_data)
                 update_count += 1
 

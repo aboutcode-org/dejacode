@@ -46,3 +46,4 @@ max-complexity = 17
 # Do not run bandit on test files.
 "**/tests/*" = ["S"]
 "dejacode_toolkit/csaf/*" = ["D", "UP", "E501", "F401"]
+"dejacode_toolkit/spdx.py" = ["UP"]

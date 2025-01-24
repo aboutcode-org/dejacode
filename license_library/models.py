@@ -106,7 +106,7 @@ class LicenseTag(DataspacedModel):
     label = models.CharField(
         max_length=50,
         help_text=_(
-            "Organization-defined Label to identify a Tag that can be applied to a " "Tag Group."
+            "Organization-defined Label to identify a Tag that can be applied to a Tag Group."
         ),
     )
 
@@ -311,13 +311,13 @@ class LicenseStatus(DataspacedModel):
     code = models.CharField(
         max_length=50,
         help_text=_(
-            "Organization-defined Code to identify a Status that can be applied to a " "License."
+            "Organization-defined Code to identify a Status that can be applied to a License."
         ),
     )
 
     text = models.TextField(
         help_text=_(
-            "Text to describe a Status that can be applied to a License by an " "Organization."
+            "Text to describe a Status that can be applied to a License by an Organization."
         ),
     )
 
@@ -456,9 +456,7 @@ class LicenseSymbolMixin:
 
         if show_policy and self.usage_policy_id:
             rendered = (
-                f'<span class="text-nowrap">'
-                f"{rendered}{self.get_usage_policy_icon_tooltip()}"
-                f"</span>"
+                f'<span class="text-nowrap">{rendered}{self.get_usage_policy_icon_tooltip()}</span>'
             )
 
         return rendered
@@ -572,8 +570,7 @@ class License(
         _("Text URLs"),
         blank=True,
         help_text=_(
-            "URLs to the text of the license (plain text or HTML) on the main site of "
-            "this license."
+            "URLs to the text of the license (plain text or HTML) on the main site of this license."
         ),
     )
 

@@ -140,7 +140,7 @@ class Query(HistoryFieldsMixin, DataspacedModel):
         limit_choices_to=CT_LIMIT,
         verbose_name=_("object type"),
         help_text=_(
-            "Choose the primary data source for your query: licenses, components, " "or owners."
+            "Choose the primary data source for your query: licenses, components, or owners."
         ),
     )
 
@@ -704,7 +704,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
     description = models.TextField(
         blank=True,
         help_text=_(
-            "Provide a description of the report to explain its purpose " "to DejaCode users."
+            "Provide a description of the report to explain its purpose to DejaCode users."
         ),
     )
 
@@ -718,7 +718,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
         to="reporting.ColumnTemplate",
         on_delete=models.PROTECT,
         help_text=_(
-            "Choose one of your Column templates to define the data " "columns for your report."
+            "Choose one of your Column templates to define the data columns for your report."
         ),
     )
 

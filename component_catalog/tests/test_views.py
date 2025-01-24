@@ -1723,7 +1723,7 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get("/packages/")
         messages = list(response.context["messages"])
         msg = (
-            f'{collected_data["download_url"]} already exists in your Dataspace as '
+            f"{collected_data['download_url']} already exists in your Dataspace as "
             f'<a href="{new_package.get_absolute_url()}">{new_package}</a>'
         )
         self.assertEqual(str(messages[0]), msg)
