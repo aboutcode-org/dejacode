@@ -1,0 +1,14 @@
+about_resource: python_mimeparse-2.0.0-py3-none-any.whl
+name: python-mimeparse
+version: 2.0.0
+download_url: https://files.pythonhosted.org/packages/65/d9/1093a9d6d22d04d433003c96b9b1d46741b43fee5b11ece5098297737fce/python_mimeparse-2.0.0-py3-none-any.whl
+package_url: pkg:pypi/python-mimeparse@2.0.0
+license_expression: mit
+copyright: Copyright python-mimeparse project contributors
+attribute: yes
+checksum_md5: 050e64fa810eae5073b5936775044bed
+checksum_sha1: 44351b55d6d231bbaec776791a9e27b2522675f1
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

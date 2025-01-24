@@ -1,0 +1,14 @@
+about_resource: django_ipware-7.0.1-py2.py3-none-any.whl
+name: django-ipware
+version: 7.0.1
+download_url: https://files.pythonhosted.org/packages/11/33/bf539925b102d68200da5b1d3eacb8aa5d5d9a065972e8b8724d0d53bb0d/django_ipware-7.0.1-py2.py3-none-any.whl
+package_url: pkg:pypi/django-ipware@7.0.1
+license_expression: mit
+copyright: Copyright django-ipware project contributors
+attribute: yes
+checksum_md5: 484b30de32a2dfc4a1291a6a78cd5eb6
+checksum_sha1: e6e482e64ceef0964ef6a453f202956b5aba7746
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

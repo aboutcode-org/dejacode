@@ -1,0 +1,14 @@
+about_resource: django_model_utils-5.0.0-py3-none-any.whl
+name: django-model-utils
+version: 5.0.0
+download_url: https://files.pythonhosted.org/packages/fd/13/87a42048700c54bfce35900a34e2031245132775fb24363fc0e33664aa9c/django_model_utils-5.0.0-py3-none-any.whl
+package_url: pkg:pypi/django-model-utils@5.0.0
+license_expression: bsd-new
+copyright: Copyright django-model-utils project contributors
+attribute: yes
+checksum_md5: 6c3d2c064410a4a0669499f0981cfab0
+checksum_sha1: 4a62b381d311daa03a5b48fe5c6e3cf44fcf56b0
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

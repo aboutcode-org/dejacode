@@ -1,0 +1,14 @@
+about_resource: smmap-5.0.2-py3-none-any.whl
+name: smmap
+version: 5.0.2
+download_url: https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl
+package_url: pkg:pypi/smmap@5.0.2
+license_expression: bsd-new
+copyright: Copyright smmap project contributors
+attribute: yes
+checksum_md5: 1a8eaba35da37e91943659f5cb7f2787
+checksum_sha1: cf5ba495ae740067de11bc380b2e0229596475ed
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

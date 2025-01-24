@@ -1,0 +1,14 @@
+about_resource: python_ipware-3.0.0-py3-none-any.whl
+name: python-ipware
+version: 3.0.0
+download_url: https://files.pythonhosted.org/packages/08/bd/ccd7416fdb30f104ddf6cfd8ee9f699441c7d9880a26f9b3089438adee05/python_ipware-3.0.0-py3-none-any.whl
+package_url: pkg:pypi/python-ipware@3.0.0
+license_expression: mit
+copyright: Copyright python-ipware project contributors
+attribute: yes
+checksum_md5: 496007d3a571b727aafbe236f6f7a5d0
+checksum_sha1: b33f2a42cc745ebb5ab3061d84fa1387f31727ef
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,56 @@
+about_resource: markupsafe-3.0.2.tar.gz
+name: markupsafe
+version: 3.0.2
+download_url: https://files.pythonhosted.org/packages/b2/97/5d42485e71dfc078108a86d6de8fa46db44a1a9295e89c5d6d4a06e23a62/markupsafe-3.0.2.tar.gz
+description: |
+  Safely add untrusted strings to HTML/XML markup.
+  # MarkupSafe
+
+  MarkupSafe implements a text object that escapes characters so it is
+  safe to use in HTML and XML. Characters that have special meanings are
+  replaced so that they display as the actual characters. This mitigates
+  injection attacks, meaning untrusted user input can safely be displayed
+  on a page.
+
+
+  ## Examples
+
+  ```pycon
+  >>> from markupsafe import Markup, escape
+
+  >>> # escape replaces special characters and wraps in Markup
+  >>> escape("<script>alert(document.cookie);</script>")
+  Markup('&lt;script&gt;alert(document.cookie);&lt;/script&gt;')
+
+  >>> # wrap in Markup to mark text "safe" and prevent escaping
+  >>> Markup("<strong>Hello</strong>")
+  Markup('<strong>hello</strong>')
+
+  >>> escape(Markup("<strong>Hello</strong>"))
+  Markup('<strong>hello</strong>')
+
+  >>> # Markup is a str subclass
+  >>> # methods and operators escape their arguments
+  >>> template = Markup("Hello <em>{name}</em>")
+  >>> template.format(name='"World"')
+  Markup('Hello <em>&#34;World&#34;</em>')
+  ```
+
+  ## Donate
+
+  The Pallets organization develops and supports MarkupSafe and other
+  popular packages. In order to grow the community of contributors and
+  users, and allow the maintainers to devote more time to the projects,
+  [please donate today][].
+
+  [please donate today]: https://palletsprojects.com/donate
+package_url: pkg:pypi/markupsafe@3.0.2
+license_expression: bsd-new
+copyright: Copyright Pallets
+attribute: yes
+checksum_md5: cb0071711b573b155cc8f86e1de72167
+checksum_sha1: b99c84f6c6e966a5221346989fa530afc0997884
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

@@ -1,0 +1,14 @@
+about_resource: et_xmlfile-2.0.0-py3-none-any.whl
+name: et-xmlfile
+version: 2.0.0
+download_url: https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl
+package_url: pkg:pypi/et-xmlfile@2.0.0
+license_expression: mit
+copyright: Copyright et-xmlfile project contributors
+attribute: yes
+checksum_md5: 2a0e42a250b2d8a56497969eb14a979d
+checksum_sha1: faedf5285befc808795a60bd400c12f00c1a939d
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -1,0 +1,14 @@
+about_resource: pyrsistent-0.20.0-py3-none-any.whl
+name: pyrsistent
+version: 0.20.0
+download_url: https://files.pythonhosted.org/packages/23/88/0acd180010aaed4987c85700b7cc17f9505f3edb4e5873e4dc67f613e338/pyrsistent-0.20.0-py3-none-any.whl
+package_url: pkg:pypi/pyrsistent@0.20.0
+license_expression: mit
+copyright: Copyright pyrsistent project contributors
+attribute: yes
+checksum_md5: 2936d62f94b0e025bbdd11296c05b306
+checksum_sha1: 28ea80c386309e5e7bd9418b3b7071854e86b55a
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

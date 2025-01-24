@@ -1,0 +1,14 @@
+about_resource: pyasn1_modules-0.4.1-py3-none-any.whl
+name: pyasn1-modules
+version: 0.4.1
+download_url: https://files.pythonhosted.org/packages/77/89/bc88a6711935ba795a679ea6ebee07e128050d6382eaa35a0a47c8032bdc/pyasn1_modules-0.4.1-py3-none-any.whl
+package_url: pkg:pypi/pyasn1-modules@0.4.1
+license_expression: bsd-new
+copyright: Copyright Ilya Etingof
+attribute: yes
+checksum_md5: 00f5f725276542ac7740532ca742e194
+checksum_sha1: 3c23b3f6a40aba58b87b72c670f996df9363e852
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

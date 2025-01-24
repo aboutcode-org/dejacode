@@ -1,0 +1,14 @@
+about_resource: sphinx-8.1.3-py3-none-any.whl
+name: sphinx
+version: 8.1.3
+download_url: https://files.pythonhosted.org/packages/26/60/1ddff83a56d33aaf6f10ec8ce84b4c007d9368b21008876fceda7e7381ef/sphinx-8.1.3-py3-none-any.whl
+package_url: pkg:pypi/sphinx@8.1.3
+license_expression: bsd-new
+copyright: Copyright sphinx project contributors
+attribute: yes
+checksum_md5: 3bcca8b62843f94429276a0bf1c90c28
+checksum_sha1: 67dc18611c44f712539585db41aaee4b0a7ec646
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
