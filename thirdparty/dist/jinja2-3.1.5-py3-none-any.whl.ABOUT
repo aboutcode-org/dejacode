@@ -1,0 +1,14 @@
+about_resource: jinja2-3.1.5-py3-none-any.whl
+name: jinja2
+version: 3.1.5
+download_url: https://files.pythonhosted.org/packages/bd/0f/2ba5fbcd631e3e88689309dbe978c5769e883e4b84ebfe7da30b43275c5a/jinja2-3.1.5-py3-none-any.whl
+package_url: pkg:pypi/jinja2@3.1.5
+license_expression: bsd-new
+copyright: Copyright jinja2 project contributors
+attribute: yes
+checksum_md5: 837dcd1af6bb3940d8d6730977f2dcad
+checksum_sha1: 4d6f9a569e41943cf569f4c3eff67d14c6586e9c
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

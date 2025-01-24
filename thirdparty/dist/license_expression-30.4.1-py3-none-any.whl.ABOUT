@@ -1,0 +1,21 @@
+about_resource: license_expression-30.4.1-py3-none-any.whl
+name: license-expression
+version: 30.4.1
+download_url: https://files.pythonhosted.org/packages/53/84/8a89614b2e7eeeaf0a68a4046d6cfaea4544c8619ea02595ebeec9b2bae3/license_expression-30.4.1-py3-none-any.whl
+package_url: pkg:pypi/license-expression@30.4.1
+license_expression: apache-2.0 AND cc-by-4.0 AND public-domain
+copyright: Copyright nexB Inc. and others
+attribute: yes
+track_changes: yes
+checksum_md5: 965ece13e5daf4d68fd3f6a48556eaa5
+checksum_sha1: a1dfb4a5dfd8aaf1800eaaf236e8058ccda71bc8
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: public-domain
+    name: Public Domain
+    file: public-domain.LICENSE
+  - key: cc-by-4.0
+    name: Creative Commons Attribution 4.0 International Public License
+    file: cc-by-4.0.LICENSE

@@ -1,0 +1,14 @@
+about_resource: pytz-2024.2-py2.py3-none-any.whl
+name: pytz
+version: '2024.2'
+download_url: https://files.pythonhosted.org/packages/11/c3/005fcca25ce078d2cc29fd559379817424e94885510568bc1bc53d7d5846/pytz-2024.2-py2.py3-none-any.whl
+package_url: pkg:pypi/pytz@2024.2
+license_expression: mit
+copyright: Copyright pytz project contributors
+attribute: yes
+checksum_md5: be9df8e09f036da011e2d46970be039e
+checksum_sha1: 64ab8283251830199343a43db2ce10d4b04fc03b
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

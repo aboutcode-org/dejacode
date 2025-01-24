@@ -1,0 +1,14 @@
+about_resource: GitPython-3.1.44-py3-none-any.whl
+name: gitpython
+version: 3.1.44
+download_url: https://files.pythonhosted.org/packages/1d/9a/4114a9057db2f1462d5c8f8390ab7383925fe1ac012eaa42402ad65c2963/GitPython-3.1.44-py3-none-any.whl
+package_url: pkg:pypi/gitpython@3.1.44
+license_expression: bsd-new
+copyright: Copyright gitpython project contributors
+attribute: yes
+checksum_md5: 01f7b1c5f5e54ead375eadd25b72ad74
+checksum_sha1: 6ed3638b5a7223401743c653e5ef64634c242dc6
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

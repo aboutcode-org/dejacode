@@ -1,0 +1,14 @@
+about_resource: gitdb-4.0.12-py3-none-any.whl
+name: gitdb
+version: 4.0.12
+download_url: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
+package_url: pkg:pypi/gitdb@4.0.12
+license_expression: bsd-new
+copyright: Copyright gitdb project contributors
+attribute: yes
+checksum_md5: 662e9c84460d11983aba4b49c3354549
+checksum_sha1: c8bbc0aeafd6493651e03764b7193800967117db
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
