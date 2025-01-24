@@ -1,0 +1,14 @@
+about_resource: Django-5.0.11-py3-none-any.whl
+name: django
+version: 5.0.11
+download_url: https://files.pythonhosted.org/packages/da/d7/da8d8f62f33c3cd45ad7e9cb456d7c95457d15ee26166d2d033f461aedf7/Django-5.0.11-py3-none-any.whl
+package_url: pkg:pypi/django@5.0.11
+license_expression: bsd-new
+copyright: Copyright django project contributors
+attribute: yes
+checksum_md5: 9c326096c4501178dd97b0fcd38499b1
+checksum_sha1: dd6e29c05fe32dc820e20a8425443b49ad561e90
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

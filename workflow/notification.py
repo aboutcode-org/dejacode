@@ -45,7 +45,7 @@ def send_request_notification(http_request, req, created, extra=None):
     }
 
     subject = (
-        "Request {req}{content_object_verbose} {action} " "by {action_user} in {req.dataspace}"
+        "Request {req}{content_object_verbose} {action} by {action_user} in {req.dataspace}"
     ).format(**data)
 
     template = "request_created_email.txt" if created else "request_updated_email.txt"
@@ -89,7 +89,7 @@ def send_request_comment_notification(http_request, comment, closed=False):
     }
 
     subject = (
-        "Request {req}{content_object_verbose} " "{action} by {comment.user} in " "{req.dataspace}"
+        "Request {req}{content_object_verbose} {action} by {comment.user} in {req.dataspace}"
     ).format(**data)
 
     body = render_to_string("workflow/comment_created_email.txt", data)

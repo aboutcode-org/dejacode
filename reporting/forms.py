@@ -128,7 +128,7 @@ FIELDS_WHITELIST = {
 }
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_model_data_for_query():
     """
     Return a dict-based data structure of the models and their fields available
@@ -148,7 +148,7 @@ def get_model_data_for_query():
     )
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_model_data_for_order_field():
     """
     Return a dict-based data structure of the models and their fields available

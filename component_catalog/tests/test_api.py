@@ -273,7 +273,7 @@ class ComponentAPITestCase(TestCase):
         expected = {
             "uuid": [
                 ErrorDetail(
-                    string="Select a valid choice. invalid is not one of " "the available choices.",
+                    string="Select a valid choice. invalid is not one of the available choices.",
                     code="invalid_choice",
                 )
             ]

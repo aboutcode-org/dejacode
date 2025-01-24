@@ -112,9 +112,7 @@ class ComponentCatalogManagementCommandsTestCase(TestCase):
         with self.assertRaises(CommandError) as error:
             management.call_command("collectcpes", stdout=output)
 
-        expected = (
-            "Error: the following arguments are required: dataspace, " "cpe_dictionary_location"
-        )
+        expected = "Error: the following arguments are required: dataspace, cpe_dictionary_location"
         self.assertEqual(expected, str(error.exception))
 
     def test_componentfrompackage_management_command(self):

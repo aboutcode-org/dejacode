@@ -1,0 +1,14 @@
+about_resource: sqlparse-0.5.3-py3-none-any.whl
+name: sqlparse
+version: 0.5.3
+download_url: https://files.pythonhosted.org/packages/a9/5c/bfd6bd0bf979426d405cc6e71eceb8701b148b16c21d2dc3c261efc61c7b/sqlparse-0.5.3-py3-none-any.whl
+package_url: pkg:pypi/sqlparse@0.5.3
+license_expression: bsd-new
+copyright: Copyright sqlparse project contributors
+attribute: yes
+checksum_md5: 28a0ac4500fe5b9b0d7c7e593b21e6df
+checksum_sha1: 1522ee6a87f0edc9bcee1513ee41d40904b4d916
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

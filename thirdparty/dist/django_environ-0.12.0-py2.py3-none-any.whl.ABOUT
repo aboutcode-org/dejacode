@@ -1,0 +1,14 @@
+about_resource: django_environ-0.12.0-py2.py3-none-any.whl
+name: django-environ
+version: 0.12.0
+download_url: https://files.pythonhosted.org/packages/83/b3/0a3bec4ecbfee960f39b1842c2f91e4754251e0a6ed443db9fe3f666ba8f/django_environ-0.12.0-py2.py3-none-any.whl
+package_url: pkg:pypi/django-environ@0.12.0
+license_expression: mit
+copyright: Copyright django-environ project contributors
+attribute: yes
+checksum_md5: efbd8fac490598baa52a18e5664c07db
+checksum_sha1: a6e6ba302cd823af6de754418244a3b00cee4525
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

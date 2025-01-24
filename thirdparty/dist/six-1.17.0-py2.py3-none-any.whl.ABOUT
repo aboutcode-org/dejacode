@@ -1,0 +1,14 @@
+about_resource: six-1.17.0-py2.py3-none-any.whl
+name: six
+version: 1.17.0
+download_url: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
+package_url: pkg:pypi/six@1.17.0
+license_expression: mit
+copyright: Copyright six project contributors
+attribute: yes
+checksum_md5: 090bac7d568f9c1f64b671de641ccdee
+checksum_sha1: 6e8f2653019f7cfb05196f8f08b9a905eab3d8dd
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

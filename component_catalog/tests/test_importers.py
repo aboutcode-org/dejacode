@@ -795,7 +795,7 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(importer.formset.is_valid())
         expected = {
             "primary_language": [
-                '"What" is not in standard languages list.' "\nSuggestion(s): WebDNA, Whitespace."
+                '"What" is not in standard languages list.\nSuggestion(s): WebDNA, Whitespace.'
             ]
         }
         self.assertEqual(expected, importer.formset.forms[0].warnings)

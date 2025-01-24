@@ -672,7 +672,7 @@ class StrongTextWidget(forms.Widget):
         if value:
             return (
                 f'<div class="object_display">'
-                f'<strong>{value.get_absolute_link(target="_blank")}</strong>'
+                f"<strong>{value.get_absolute_link(target='_blank')}</strong>"
                 f"</div>"
             )
 

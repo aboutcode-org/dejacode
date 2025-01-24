@@ -180,10 +180,7 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(expected, list(self.product1.get_feature_values(pc_queryset)))
 
         expected = (
-            '<datalist id="feature_datalist">'
-            "<option>f1</option>"
-            "<option>f2</option>"
-            "</datalist>"
+            '<datalist id="feature_datalist"><option>f1</option><option>f2</option></datalist>'
         )
         self.assertEqual(expected, self.product1.get_feature_datalist())
 

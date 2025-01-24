@@ -222,7 +222,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
         scancode_project.append_to_log(msg)
 
     for object_type, values in errors.items():
-        msg = f"- {len(values)} {object_type} error{pluralize(values)} " f"occurred during import."
+        msg = f"- {len(values)} {object_type} error{pluralize(values)} occurred during import."
         scancode_project.append_to_log(msg)
 
     scancode_project.save()

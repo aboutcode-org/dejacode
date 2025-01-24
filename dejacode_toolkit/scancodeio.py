@@ -223,7 +223,7 @@ class ScanCodeIO(BaseService):
                 override_unknown=True,
             )
             if updated_fields:
-                msg = f'Automatically updated {", ".join(updated_fields)} from scan results'
+                msg = f"Automatically updated {', '.join(updated_fields)} from scan results"
                 logger.debug(f"{self.label}: {msg}")
                 History.log_change(user, package, message=msg)
 

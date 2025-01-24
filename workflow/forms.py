@@ -55,7 +55,7 @@ save_draft = StrictSubmit(
     css_class="btn-outline-success",
     data_placement="top",
     data_toggle="tooltip",
-    title='Self-assign this request with the "Draft" status. ' "Notifications are not sent.",
+    title='Self-assign this request with the "Draft" status. Notifications are not sent.',
 )
 
 

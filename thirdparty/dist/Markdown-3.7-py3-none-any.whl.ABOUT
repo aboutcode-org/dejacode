@@ -1,0 +1,14 @@
+about_resource: Markdown-3.7-py3-none-any.whl
+name: markdown
+version: '3.7'
+download_url: https://files.pythonhosted.org/packages/3f/08/83871f3c50fc983b88547c196d11cf8c3340e37c32d2e9d6152abe2c61f7/Markdown-3.7-py3-none-any.whl
+package_url: pkg:pypi/markdown@3.7
+license_expression: bsd-new
+copyright: Copyright The Python Markdown Project, Yuri Takhteyev, Manfred Stienstra
+attribute: yes
+checksum_md5: b8116c94af09aa5b83cef992fa2328b7
+checksum_sha1: d1612629884c2f4483fdecf39107399b70220fbd
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

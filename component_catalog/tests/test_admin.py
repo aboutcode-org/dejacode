@@ -1471,7 +1471,7 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(url, data)
         expected = {
             "license_expression": [
-                "Unknown license key(s): license2<br>" "Available licenses: license1"
+                "Unknown license key(s): license2<br>Available licenses: license1"
             ]
         }
         self.assertEqual(expected, response.context_data["adminform"].form.errors)
@@ -2485,7 +2485,7 @@ class PackageDataCollectionTestCase(TransactionTestCase):
 
         response = self.client.post(add_url, data, follow=True)
         expected = (
-            f'The SHA1, MD5, and Size fields collection from {data["download_url"]} is in progress.'
+            f"The SHA1, MD5, and Size fields collection from {data['download_url']} is in progress."
         )
         self.assertEqual(expected, list(response.context["messages"])[0].message)
 

@@ -75,7 +75,7 @@ class Priority(DataspacedModel):
         max_length=7,
         blank=True,
         help_text=_(
-            "You can specify a valid HTML color code (e.g. #FFFFFF) to apply " "to your Priority."
+            "You can specify a valid HTML color code (e.g. #FFFFFF) to apply to your Priority."
         ),
     )
 
@@ -671,8 +671,7 @@ class RequestTemplate(HistoryFieldsMixin, DataspacedModel):
     description = models.TextField(
         verbose_name=_("Request header text"),
         help_text=_(
-            "Provide a title and/or general instructions to the Requestor about this "
-            "Request form."
+            "Provide a title and/or general instructions to the Requestor about this Request form."
         ),
     )
 
@@ -774,7 +773,7 @@ class Question(DataspacedModel):
     help_text = models.TextField(
         blank=True,
         help_text=_(
-            "Descriptive text (instructions) to display to the Requestor below the " "question."
+            "Descriptive text (instructions) to display to the Requestor below the question."
         ),
     )
 

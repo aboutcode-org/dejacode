@@ -1460,7 +1460,7 @@ def colored_icon_mixin_factory(verbose_name, icon_blank):
             blank=True,
             max_length=7,
             help_text=_(
-                "You can specify a valid HTML color code (e.g. #FFFFFF) to apply " "to your icon."
+                "You can specify a valid HTML color code (e.g. #FFFFFF) to apply to your icon."
             ),
         )
 
@@ -1617,8 +1617,7 @@ class DejacodeUser(AbstractUser):
     updates_email_notification = models.BooleanField(
         default=False,
         help_text=_(
-            "Check this to receive email notifications with updates on DejaCode "
-            "features and news."
+            "Check this to receive email notifications with updates on DejaCode features and news."
         ),
     )
 
@@ -1932,13 +1931,13 @@ class History(models.Model):
 class ExternalSource(DataspacedModel):
     label = models.CharField(
         max_length=50,
-        help_text=_("A Label is a concise name of the external source as it " "is commonly known."),
+        help_text=_("A Label is a concise name of the external source as it is commonly known."),
     )
 
     notes = models.TextField(
         blank=True,
         help_text=_(
-            "Notes describe the purpose and special characteristics " "of the external source."
+            "Notes describe the purpose and special characteristics of the external source."
         ),
     )
 

@@ -1,0 +1,14 @@
+about_resource: swapper-1.4.0-py2.py3-none-any.whl
+name: swapper
+version: 1.4.0
+download_url: https://files.pythonhosted.org/packages/e9/53/c59363308ef97507a680372471e25e1ebab2e706a45a7c416eea6474c928/swapper-1.4.0-py2.py3-none-any.whl
+package_url: pkg:pypi/swapper@1.4.0
+license_expression: mit
+copyright: Copyright swapper project contributors
+attribute: yes
+checksum_md5: d1ec32580d41a09bd5afed8dcaa99db1
+checksum_sha1: 87571076dfefba79ad35c2a4488d6932b57df606
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

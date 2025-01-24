@@ -2054,7 +2054,7 @@ class Package(
 
         if save:
             self.save(update_fields=update_fields)
-            tasks_logger.info(f'Package field(s) updated: {", ".join(update_fields)}')
+            tasks_logger.info(f"Package field(s) updated: {', '.join(update_fields)}")
 
         return update_fields
 

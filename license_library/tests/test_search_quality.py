@@ -196,8 +196,8 @@ def search_tst(query, expected_results, ordered, exact, field, rownum, notes):
 
     # build a reasonably unique and valid function name
     # based on the up to 50 chars from the query and a row number
-    test_func_name = "test_search_%04d_" % rownum + python_safe(
-        query[:50] + str(notes) if notes else ""
+    test_func_name = "test_search_{}_".format(
+        rownum + python_safe(query[:50] + str(notes) if notes else "")
     )
     # these are needed to ensure we can use the tests name for selection in discovery
     search_test_func.__name__ = str(test_func_name)
@@ -225,7 +225,7 @@ def build_tsts_from_csv(csv_path, test_class):
      - 7 and other columns: Expected results: Each column contains a license: use * if this
           can be any license.
     """
-    with open(csv_path, "rU") as fin:
+    with open(csv_path) as fin:
         import csv
 
         reader = csv.reader(fin)
@@ -239,7 +239,7 @@ def build_tsts_from_csv(csv_path, test_class):
             query = row[0]
             if not query:
                 raise RuntimeError(
-                    "Missing test query for row: %d of CSV file:%r" % (i + 1, csv_path)
+                    "Missing test query for row: {} of CSV file:{}".format(i + 1, csv_path)
                 )
             notes = row[1] if len(row) >= 2 else False
             ordered = row[2] if len(row) >= 3 else False

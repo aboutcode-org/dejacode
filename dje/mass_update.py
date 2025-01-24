@@ -220,7 +220,7 @@ def mass_update_action(modeladmin, request, queryset):
                 messages.info(request, _(f"Updated {updated} records"))
 
             if errors:
-                messages.error(request, _(f'{len(errors)} error(s): {", ".join(errors)}'))
+                messages.error(request, _(f"{len(errors)} error(s): {', '.join(errors)}"))
 
             action_end.send(
                 sender=modeladmin.model,

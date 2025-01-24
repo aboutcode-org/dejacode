@@ -219,7 +219,7 @@ def get_productrelation_review_status_summary(product):
                 link = (
                     f'<a href="{product_url}?{tab}-review_status={quote_plus(status_label)}'
                     f'&{tab}-object_type={object_type}#{tab}">'
-                    f'  {status_label} ({data["count"]})'
+                    f"  {status_label} ({data['count']})"
                     f"</a>"
                 )
                 links.append(link)

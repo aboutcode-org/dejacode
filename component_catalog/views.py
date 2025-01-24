@@ -810,7 +810,7 @@ class BaseAdminActionFormView(FormView):
                 if obj.dataspace != request.user.dataspace:
                     messages.error(
                         request,
-                        ("The dataspace of the selected objects did " "not match your dataspace."),
+                        ("The dataspace of the selected objects did not match your dataspace."),
                     )
                     return redirect(self.success_url)
         return super().dispatch(request, *args, **kwargs)
@@ -1392,7 +1392,7 @@ class PackageDetailsView(
         if form.is_valid():
             if form.changed_data:
                 form.save()
-                msg = f'Values for {", ".join(form.changed_data)} assigned to the package.'
+                msg = f"Values for {', '.join(form.changed_data)} assigned to the package."
                 messages.success(request, msg)
             else:
                 messages.warning(request, "No new values to assign.")
@@ -1711,7 +1711,7 @@ def send_scan_notification(request, key):
         updated_fields = scancodeio.update_from_scan(package, user)
         if updated_fields:
             description = (
-                f'Automatically updated {", ".join(updated_fields)} from scan results\n'
+                f"Automatically updated {', '.join(updated_fields)} from scan results\n"
                 + description
             )
 
@@ -2286,7 +2286,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     (
                         f'<input type="{input_type}" name="{model_field_name}"'
                         f' value="{escape(entry.get("value"))}">'
-                        f' {escape(entry.get("value"))}'
+                        f" {escape(entry.get('value'))}"
                         f' <span class="badge text-bg-secondary rounded-pill">{entry.get("count")}'
                         f"</span>"
                     )

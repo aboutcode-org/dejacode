@@ -1,0 +1,14 @@
+about_resource: PyJWT-2.10.1-py3-none-any.whl
+name: pyjwt
+version: 2.10.1
+download_url: https://files.pythonhosted.org/packages/61/ad/689f02752eeec26aed679477e80e632ef1b682313be70793d798c1d5fc8f/PyJWT-2.10.1-py3-none-any.whl
+package_url: pkg:pypi/pyjwt@2.10.1
+license_expression: mit
+copyright: Copyright pyjwt project contributors
+attribute: yes
+checksum_md5: dcd961185ca574bdf86b92026d714cb6
+checksum_sha1: b10d7244e16cc654d5c91ba9cf82174658afb93c
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

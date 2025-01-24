@@ -1,0 +1,14 @@
+about_resource: zipp-3.21.0-py3-none-any.whl
+name: zipp
+version: 3.21.0
+download_url: https://files.pythonhosted.org/packages/b7/1a/7e4798e9339adc931158c9d69ecc34f5e6791489d469f5e50ec15e35f458/zipp-3.21.0-py3-none-any.whl
+package_url: pkg:pypi/zipp@3.21.0
+license_expression: mit
+copyright: Copyright zipp project contributors
+attribute: yes
+checksum_md5: b7151ef99fdd9e649f88086423ba2cdf
+checksum_sha1: b4337a7c096e7356a76c9e4ee9ec71f9786318e9
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

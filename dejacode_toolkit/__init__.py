@@ -71,7 +71,7 @@ class BaseService:
             self.basic_auth_user = get_settings(f"{self.settings_prefix}_USER")
             self.basic_auth_password = get_settings(f"{self.settings_prefix}_PASSWORD")
 
-        self.api_url = f'{self.service_url.rstrip("/")}/api/'
+        self.api_url = f"{self.service_url.rstrip('/')}/api/"
 
     def get_session(self):
         session = requests.Session()

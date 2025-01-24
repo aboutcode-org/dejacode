@@ -839,7 +839,7 @@ class ProductRelatedAPITestCase(TestCase):
         data["license_expression"] = self.license2.key
         expected = {
             "license_expression": [
-                "Unknown license key(s): license2<br>" "Available licenses: license1"
+                "Unknown license key(s): license2<br>Available licenses: license1"
             ]
         }
         response = self.client.post(self.productcomponent_list_url, data)
