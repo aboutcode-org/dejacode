@@ -1173,8 +1173,8 @@ class PackageUserViewsTestCase(TestCase):
     def test_package_list_view_content(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("component_catalog:package_list"))
-        self.assertContains(response, self.package1.get_absolute_link())
-        self.assertContains(response, self.package2.get_absolute_link())
+        self.assertContains(response, self.package1.get_absolute_link(), html=True)
+        self.assertContains(response, self.package2.get_absolute_link(), html=True)
         self.assertContains(response, self.component1)
         self.assertContains(response, self.component2)
 
