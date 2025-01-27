@@ -21,7 +21,7 @@
           </div>
           <h1 class="header-title text-break">
             {% block header_title %}
-              {{ object }}
+              {{ object|truncatechars:100 }}
               <small class="ms-1" style="font-size: 70%">
                 {% if is_user_dataspace %}
                   {% if has_change_permission %}
