@@ -403,6 +403,16 @@ class UsersTestCase(TestCase):
         response = self.client.get(url)
         self.assertContains(response, reverse("admin:auth_group_permission_details"))
 
+    def test_user_admin_changeform_submit_row_delete_button_label(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.pk])
+        response = self.client.get(url)
+        expected = (
+            f'<a href="/admin/dje/dejacodeuser/{self.other_user.pk}/delete/" '
+            f'class="grp-button grp-delete-link">Disable</a>'
+        )
+        self.assertContains(response, expected, html=True)
+
     def test_user_admin_form_scope_homepage_layout_choices(self):
         self.client.login(username=self.nexb_user.username, password="secret")
         url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])

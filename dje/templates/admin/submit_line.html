@@ -2,11 +2,19 @@
 <footer class="grp-module grp-submit-row grp-fixed-footer">
     <header style="display:none"><h1>Submit Options</h1></header>
     <ul>
+        {# DJE CUSTOM #}
         {% if show_delete_link %}
             {% url opts|admin_urlname:'delete' original.pk|admin_urlquote as delete_url %}
-            <li class="grp-float-left"><a href="{% add_preserved_filters delete_url %}" class="grp-button grp-delete-link">{% trans "Delete" %}</a></li>
+            <li class="grp-float-left">
+                <a href="{% add_preserved_filters delete_url %}" class="grp-button grp-delete-link">
+                    {% if delete_button_label %}
+                        {% trans delete_button_label %}
+                    {% else %}
+                        {% trans "Delete" %}
+                    {% endif %}
+                </a>
+            </li>
         {% endif %}
-        {# DJE CUSTOM: Add #}
         <li class="grp-float-left">
             {% if not is_popup %}
                 {% url opts|admin_urlname:'changelist' as changelist_url %}

@@ -31,6 +31,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.views import LogoutView
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.messages.api import get_messages
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist
 from django.core.exceptions import FieldError
@@ -1394,6 +1395,7 @@ class DejacodeUserAdmin(
     add_form = DejacodeUserCreationForm
     change_list_template = "admin/change_list_extended.html"
     add_form_template = "admin/dje/dejacode_user/change_form.html"
+    delete_confirmation_template = "admin/dje/dejacode_user/delete_confirmation.html"
     change_form_template = add_form_template
     activity_log = True
     readonly_fields = ("last_login", "last_api_access", "date_joined")
@@ -1505,6 +1507,30 @@ class DejacodeUserAdmin(
         send_activation_email(object, request)
         self.message_user(request, self.activation_email_msg, messages.SUCCESS)
         return super().log_addition(request, object, change_message)
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["delete_button_label"] = _("Disable")
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def response_delete(self, request, obj_display, obj_id):
+        """Use the "disabled" label in place of "deleted"."""
+        response = super().response_delete(request, obj_display, obj_id)
+
+        updated_messages = []
+        # Iterate over messages and modify the one you want
+        for message in get_messages(request):
+            if "deleted" in message.message:
+                new_message = message.message.replace("deleted", "disabled")
+                updated_messages.append(new_message)
+            else:
+                updated_messages.append(message.message)
+
+        # Clear the existing messages and add updated ones
+        for msg in updated_messages:
+            messages.success(request, msg)
+
+        return response
 
     def delete_model(self, request, obj):
         """
