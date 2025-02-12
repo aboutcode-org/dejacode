@@ -80,6 +80,9 @@ Release notes
   Note that those count reflect the current risk threshold.
   https://github.com/aboutcode-org/dejacode/issues/102
 
+- Enable the delete_selected action on RequestTemplateAdmin.
+  https://github.com/aboutcode-org/dejacode/issues/243
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
