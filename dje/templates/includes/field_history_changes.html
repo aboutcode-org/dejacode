@@ -14,7 +14,7 @@
         {% with change_message=history_entry.get_change_message %}
           <li class="timeline-item {% if 'Added' in change_message %}timeline-item-addition{% elif 'Deleted' in change_message %}timeline-item-deletion{% endif %} mb-3">
             {{ change_message }}
-            <small class="text-muted-darker d-block" title="{{ history_entry.action_time|date:'N j, Y, f A' }}">
+            <small class="text-muted-darker d-block" title="{{ history_entry.action_time }}">
               {{ history_entry.action_time|naturaltime }} by <strong>{{ history_entry.user }}</strong>
             </small>
           </li>

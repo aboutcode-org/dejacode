@@ -34,7 +34,7 @@
               </div>
             {% endif %}
             <div class="smaller text-muted-darker">
-              <span title="{{ scancode_project.created_date|date:'N j, Y, f A' }}">
+              <span title="{{ scancode_project.created_date }}">
                 {{ scancode_project.created_date|naturaltime_short }}
               </span>
               by {{ scancode_project.created_by }}

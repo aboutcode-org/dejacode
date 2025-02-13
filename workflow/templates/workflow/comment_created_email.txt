@@ -1,4 +1,4 @@
-{% autoescape off %}Request {{ req }} {% if action == 'closed' %}closed{% else %}has a new comment{% endif %} in the {{ comment.dataspace }} dataspace on {{ comment.created_date|date:'N d, Y, h:ia' }}
+{% autoescape off %}Request {{ req }} {% if action == 'closed' %}closed{% else %}has a new comment{% endif %} in the {{ comment.dataspace }} dataspace on {{ comment.created_date }}
 
 Comment by {{ comment.user }}:
 '{{ comment.text }}'

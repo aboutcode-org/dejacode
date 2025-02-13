@@ -64,14 +64,14 @@
                           <i class="fas fa-lock help_text"></i>
                         </span>
                       {% endif %}
-                      Created <span title="{{ req.created_date|date:'N j, Y, f A T' }}">{{ req.created_date|naturaltime }}</span> by
+                      Created <span title="{{ req.created_date }}">{{ req.created_date|naturaltime }}</span> by
                       {% if filter.form.requester %}
                         <a href="?{{ filter.form.requester.name }}={{ req.requester.username }}" class="text-muted-light" title="Requests created by {{ req.requester.username }}">{{ req.requester.username }}</a>
                       {% else %}
                         {{ req.requester.username }}
                       {% endif %}
                       {% if req.last_modified_by %}
-                        &#8226; Last edited <span title="{{ req.last_modified_date|date:'N j, Y, f A T' }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                        &#8226; Last edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
                       {% endif %}
                     </div>
                     {% if not exclude_product_context and req.product_context %}
