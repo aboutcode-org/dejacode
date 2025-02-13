@@ -7,7 +7,6 @@
 #
 
 import uuid
-from zoneinfo import available_timezones
 
 from django import forms
 from django.conf import settings
@@ -37,6 +36,7 @@ from crispy_forms.layout import Layout
 from dje.copier import copy_object
 from dje.copier import get_copy_defaults
 from dje.copier import get_object_in
+from dje.fields import TimeZoneChoiceField
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
 from dje.models import History
@@ -258,9 +258,8 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
 class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
     username = forms.CharField(disabled=True, required=False)
     email = forms.CharField(disabled=True, required=False)
-    timezone = forms.ChoiceField(
+    timezone = TimeZoneChoiceField(
         label=_("Time zone"),
-        choices=[("", "Select Time zone")] + [(tz, tz) for tz in sorted(available_timezones())],
         required=False,
         widget=forms.Select(attrs={"aria-label": "Select Time Zone"}),
     )

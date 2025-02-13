@@ -6,6 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import zoneinfo
+from datetime import datetime
+
 from django import forms
 from django.conf import settings
 from django.db import models
@@ -202,3 +205,55 @@ class JSONListField(models.JSONField):
     def __init__(self, *args, **kwargs):
         kwargs["default"] = list
         super().__init__(*args, **kwargs)
+
+
+class TimeZoneChoiceField(forms.ChoiceField):
+    def __init__(self, *args, **kwargs):
+        choices = [("", "Select Time zone")]
+        timezone_offsets = []
+
+        # Collect timezones with numeric offsets
+        for tz in zoneinfo.available_timezones():
+            # Skip POSIX-style timezones
+            skip_list = ("Etc/GMT", "GMT", "PST", "CST", "EST", "MST", "UCT", "UTC", "WET", "MET")
+            if tz.startswith(skip_list):
+                continue
+
+            offset_hours, formatted_offset = self.get_timezone_offset(tz)
+            city = tz.split("/")[-1].replace("_", " ")
+            formatted_name = f"{formatted_offset} {city}"
+            timezone_offsets.append((tz, offset_hours, formatted_name))
+
+        # Correctly sort by numeric offset value
+        timezone_offsets.sort(key=lambda x: x[1])  # Sort by UTC offset number
+
+        # Populate choices in correct order
+        for tz, _offset_hours, formatted_name in timezone_offsets:
+            choices.append((tz, formatted_name))
+
+        # Assign the choices to the field
+        kwargs["choices"] = choices
+
+        # Call the parent class initialization
+        super().__init__(*args, **kwargs)
+
+        # You can also handle help_text or other customizations here
+        if "help_text" not in kwargs:
+            kwargs["help_text"] = "Select your preferred time zone."
+
+    @staticmethod
+    def get_timezone_offset(tz):
+        """Return the numeric offset for sorting and formatted offset for display."""
+        tz_info = zoneinfo.ZoneInfo(tz)
+        now = datetime.now(tz_info)
+        offset_seconds = now.utcoffset().total_seconds()
+        offset_hours = offset_seconds / 3600
+
+        # Format offset as GMT+XX:XX or GMT-XX:XX
+        sign = "+" if offset_hours >= 0 else "-"
+        hours = int(abs(offset_hours))
+        minutes = int((abs(offset_hours) - hours) * 60)
+        formatted_offset = f"(GMT{sign}{hours:02}:{minutes:02})"
+
+        # Return numeric value for sorting & formatted string
+        return offset_hours, formatted_offset
