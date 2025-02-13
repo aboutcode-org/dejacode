@@ -32,7 +32,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
-from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.html import format_html
 from django.utils.text import normalize_newlines
@@ -86,6 +85,7 @@ from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
 from dje.utils import is_uuid4
+from dje.utils import localized_datetime
 from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -1375,11 +1375,6 @@ class PackageDetailsView(
 
         return {"fields": [(None, context, None, template)]}
 
-    @staticmethod
-    def readable_date(date):
-        if date:
-            return date_format(parse_datetime(date), "N j, Y, f A T")
-
     def post_scan_to_package(self, form_class):
         request = self.request
 
@@ -2299,11 +2294,6 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         scan_summary_fields.append(FieldSeparator)
         return scan_summary_fields
 
-    @staticmethod
-    def readable_date(date):
-        if date:
-            return date_format(parse_datetime(date), "N j, Y, f A T")
-
     def scan_status_fields(self, scan):
         scan_status_fields = []
         scan_run = scan.get("runs", [{}])[-1]
@@ -2329,9 +2319,9 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         scan_status_fields.extend(
             [
                 ("Status", f"Scan {status}"),
-                ("Created date", self.readable_date(scan_run.get("created_date"))),
-                ("Start date", self.readable_date(scan_run.get("task_start_date"))),
-                ("End date", self.readable_date(scan_run.get("task_end_date"))),
+                ("Created date", localized_datetime(scan_run.get("created_date"))),
+                ("Start date", localized_datetime(scan_run.get("task_start_date"))),
+                ("End date", localized_datetime(scan_run.get("task_end_date"))),
                 ("ScanCode.io version", scan_run.get("scancodeio_version")),
             ]
         )

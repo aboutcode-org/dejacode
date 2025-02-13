@@ -25,6 +25,10 @@ from django.http.request import HttpRequest
 from django.urls import Resolver404
 from django.urls import resolve
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.formats import date_format
+from django.utils.formats import get_format
 from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
@@ -662,3 +666,24 @@ def humanize_time(seconds):
         message += f" ({seconds / 60:.1f} minutes)"
 
     return message
+
+
+def localized_datetime(datetime):
+    """
+    Format a given datetime string into the application's default display format,
+    ensuring it is timezone-aware and localized to match Django's template behavior.
+    """
+    if not datetime:
+        return
+
+    dt = parse_datetime(datetime)
+
+    # Ensure timezone awareness (use default if naive)
+    if dt and not timezone.is_aware(dt):
+        dt = dt.replace(tzinfo=timezone.get_default_timezone())
+
+    # Convert to local time to match template behavior
+    dt = timezone.localtime(dt)
+
+    default_format = get_format("DATETIME_FORMAT")
+    return date_format(dt, default_format)
