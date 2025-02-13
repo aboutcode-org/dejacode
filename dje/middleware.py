@@ -8,6 +8,7 @@
 
 import json
 import logging
+import zoneinfo
 from datetime import datetime
 
 from django.http import Http404
@@ -87,4 +88,19 @@ class ProhibitInQueryStringMiddleware:
             if string in query_string:
                 raise Http404
 
+        return self.get_response(request)
+
+
+class TimezoneMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated and request.user.timezone:
+            try:
+                timezone.activate(zoneinfo.ZoneInfo(request.user.timezone))
+            except zoneinfo.ZoneInfoNotFoundError:
+                timezone.deactivate()
+        else:
+            timezone.deactivate()
         return self.get_response(request)
