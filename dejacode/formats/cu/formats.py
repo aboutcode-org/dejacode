@@ -6,5 +6,5 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-DATE_FORMAT = "N d, Y"
-DATETIME_FORMAT = "N d, Y, h:i:s a T"
+DATE_FORMAT = "M d, Y"
+DATETIME_FORMAT = "M d, Y, g:i A T"
