@@ -2079,14 +2079,16 @@ class PackageUserViewsTestCase(TestCase):
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
           <pre class="pre-bg-body-tertiary mb-1 field-created-date">
-            June 21, 2018, 12:32 PM UTC
+            Jun 21, 2018, 12:32 PM UTC
           </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-start-date">
+            Jun 21, 2018, 12:32 PM UTC
+          </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
         <dd class="col-sm-10 clipboard">

@@ -281,9 +281,7 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.get("instance")
         super().__init__(*args, **kwargs)
-
-        model = self._meta.model
-        self.fields["timezone"].help_text = get_help_text(model, "timezone")
+        self.fields["timezone"].help_text = get_help_text(self._meta.model, "timezone")
 
     def save(self, commit=True):
         instance = super().save(commit)

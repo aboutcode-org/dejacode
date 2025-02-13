@@ -97,10 +97,14 @@ class TimezoneMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated and request.user.timezone:
-            try:
-                timezone.activate(zoneinfo.ZoneInfo(request.user.timezone))
-            except zoneinfo.ZoneInfoNotFoundError:
-                timezone.deactivate()
+            self.activate_user_profile_timezone(user=request.user)
         else:
             timezone.deactivate()
         return self.get_response(request)
+
+    @staticmethod
+    def activate_user_profile_timezone(user):
+        try:
+            timezone.activate(zoneinfo.ZoneInfo(user.timezone))
+        except zoneinfo.ZoneInfoNotFoundError:
+            timezone.deactivate()
