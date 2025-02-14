@@ -1657,6 +1657,17 @@ class DejacodeUser(AbstractUser):
         ),
     )
 
+    timezone = models.CharField(
+        verbose_name=_("time zone"),
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text=_(
+            "Select your preferred time zone. This will affect how times are displayed "
+            "across the app. If you don't set a timezone, UTC will be used by default."
+        ),
+    )
+
     objects = DejacodeUserManager()
 
     class Meta:

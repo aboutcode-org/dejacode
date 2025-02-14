@@ -16,11 +16,11 @@
           <div class="small text-muted-darker">
             {% if req.last_modified_by %}
               <div>
-                Last edited <span title="{{ req.last_modified_date|date:'N j, Y, f A T' }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                Last edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
               </div>
             {% else %}
               <div>
-                Created <span title="{{ req.created_date|date:'N j, Y, f A T' }}">{{ req.created_date|naturaltime }}</span> by {{ req.requester.username }}
+                Created <span title="{{ req.created_date }}">{{ req.created_date|naturaltime }}</span> by {{ req.requester.username }}
               </div>
             {% endif %}
             {% if req.assignee and filter_name != 'assignee' %}

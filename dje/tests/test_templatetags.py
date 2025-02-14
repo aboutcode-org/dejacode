@@ -11,45 +11,12 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 
-from dje.models import Dataspace
 from dje.templatetags.dje_tags import naturaltime_short
 from dje.templatetags.dje_tags import urlize_target_blank
-from dje.tests import create_superuser
-from organization.models import Owner
-
-
-class URNResolverTestCase(TestCase):
-    def setUp(self):
-        self.dataspace1 = Dataspace.objects.create(name="Dataspace")
-        self.owner1 = Owner.objects.create(
-            name="CCAD - Combined Conditional Access Development, LLC.", dataspace=self.dataspace1
-        )
-
-    def test_organization_get_urn(self):
-        expected = "urn:dje:owner:CCAD+-+Combined+Conditional+Access+Development%2C+LLC."
-        self.assertEqual(expected, self.owner1.urn)
-
-    def test_org_urns_with_colons_in_name_are_valid_urns(self):
-        org = Owner.objects.create(name="some:org", dataspace=self.dataspace1)
-        self.assertEqual("urn:dje:owner:some%3Aorg", org.urn)
-
-
-class MiddlewareTestCase(TestCase):
-    def setUp(self):
-        self.dataspace = Dataspace.objects.create(name="nexB")
-        self.super_user = create_superuser("nexb_user", self.dataspace)
-
-    def test_prohibit_in_query_string_middleware(self):
-        response = self.client.get("/?a=%00", follow=True)
-        self.assertEqual(404, response.status_code)
-
-        self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get("/?a=%00")
-        self.assertEqual(404, response.status_code)
 
 
 class TemplateTagsTestCase(TestCase):
-    def test_dje_templatetag_urlize_target_blank_template_tag(self):
+    def test_dje_templatetags_urlize_target_blank_template_tag(self):
         inputs = [
             (
                 "domain.com",
@@ -75,7 +42,7 @@ class TemplateTagsTestCase(TestCase):
         for url, expected in inputs:
             self.assertEqual(expected, urlize_target_blank(url))
 
-    def test_dje_templatetag_naturaltime_short(self):
+    def test_dje_templatetags_naturaltime_short(self):
         now = timezone.now()
 
         test_list = [

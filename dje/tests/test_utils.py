@@ -7,6 +7,7 @@
 #
 
 import zipfile
+import zoneinfo
 from unittest import mock
 
 from django.apps import apps
@@ -18,6 +19,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.urls import ResolverMatch
 from django.urls import resolve
+from django.utils import timezone
 
 from dejacode_toolkit.utils import md5
 from dejacode_toolkit.utils import sha1
@@ -34,6 +36,7 @@ from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
 from dje.utils import is_available
 from dje.utils import is_purl_str
+from dje.utils import localized_datetime
 from dje.utils import merge_relations
 from dje.utils import normalize_newlines_as_CR_plus_LF
 from dje.utils import remove_field_from_query_dict
@@ -498,3 +501,18 @@ class DJEUtilsTestCase(TestCase):
 
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0"))
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0", validate=True))
+
+    def test_utils_localized_datetime(self):
+        self.assertIsNone(localized_datetime(None))
+
+        timezone.deactivate()
+        dt = "2025-01-13T19:11:08.216188"
+        self.assertEqual("Jan 13, 2025, 7:11 PM UTC", localized_datetime(dt))
+        dt = "2025-01-13T19:11:08.216188+01:00"
+        self.assertEqual("Jan 13, 2025, 6:11 PM UTC", localized_datetime(dt))
+
+        timezone.activate(zoneinfo.ZoneInfo("America/Los_Angeles"))
+        dt = "2025-01-13T19:11:08.216188"
+        self.assertEqual("Jan 13, 2025, 11:11 AM PST", localized_datetime(dt))
+        dt = "2025-01-13T19:11:08.216188+01:00"
+        self.assertEqual("Jan 13, 2025, 10:11 AM PST", localized_datetime(dt))

@@ -6,6 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import zoneinfo
+from datetime import datetime
+
 from django import forms
 from django.conf import settings
 from django.db import models
@@ -202,3 +205,84 @@ class JSONListField(models.JSONField):
     def __init__(self, *args, **kwargs):
         kwargs["default"] = list
         super().__init__(*args, **kwargs)
+
+
+class TimeZoneChoiceField(forms.ChoiceField):
+    """Field for selecting time zones, displaying human-readable names with offsets."""
+
+    STANDARD_TIMEZONE_NAMES = {
+        "America/Argentina": "Argentina Standard Time",
+        "America/Indiana": "Indiana Time",
+        "America/Kentucky": "Kentucky Time",
+        "America/North_Dakota": "North Dakota Time",
+    }
+
+    def __init__(self, *args, **kwargs):
+        choices = [("", "Select Time Zone")]
+        timezone_groups = {}
+
+        # Collect timezones with offsets
+        for tz in sorted(zoneinfo.available_timezones()):
+            skip_list = ("Etc/GMT", "GMT", "PST", "CST", "EST", "MST", "UCT", "UTC", "WET", "MET")
+            if tz.startswith(skip_list):
+                continue
+
+            offset_hours, formatted_offset = self.get_timezone_offset(tz)
+            standard_name, city = self.get_timezone_parts(tz)
+
+            formatted_name = f"{formatted_offset}"
+            if standard_name:
+                formatted_name += f" {standard_name} - {city}"
+            else:
+                formatted_name += f" {city}"
+
+            if offset_hours not in timezone_groups:
+                timezone_groups[offset_hours] = []
+            timezone_groups[offset_hours].append((tz, formatted_name))
+
+        # Sort within each offset group and compile final sorted choices
+        sorted_offsets = sorted(timezone_groups.keys())  # Sort by GMT offset
+        for offset in sorted_offsets:
+            for tz, formatted_name in sorted(timezone_groups[offset], key=lambda x: x[1]):
+                choices.append((tz, formatted_name))
+
+        kwargs["choices"] = choices
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def get_timezone_offset(tz):
+        """Return the numeric offset for sorting and formatted offset for display."""
+        tz_info = zoneinfo.ZoneInfo(tz)
+        now = datetime.now(tz_info)
+        offset_seconds = now.utcoffset().total_seconds()
+        offset_hours = offset_seconds / 3600
+
+        # Format offset as GMT+XX:XX or GMT-XX:XX
+        sign = "+" if offset_hours >= 0 else "-"
+        hours = int(abs(offset_hours))
+        minutes = int((abs(offset_hours) - hours) * 60)
+        formatted_offset = f"(GMT{sign}{hours:02}:{minutes:02})"
+
+        return offset_hours, formatted_offset
+
+    @classmethod
+    def get_standard_timezone_name(cls, tz):
+        """Return a human-friendly standard timezone name if available."""
+        for key in cls.STANDARD_TIMEZONE_NAMES:
+            if tz.startswith(key):
+                return cls.STANDARD_TIMEZONE_NAMES[key]
+
+        if default := tz.split("/")[0]:
+            return default
+
+    @classmethod
+    def get_timezone_parts(cls, tz):
+        """Extract standard timezone name and city for display."""
+        parts = tz.split("/")
+        region = "/".join(parts[:-1])  # Everything except last part
+        city = parts[-1].replace("_", " ")  # City with spaces
+
+        # Get human-readable timezone name
+        standard_name = cls.get_standard_timezone_name(region)
+
+        return standard_name, city

@@ -74,12 +74,12 @@
   {% endif %}
 
   <p class="mb-2 text-muted-light">
-    Created <span title="{{ request_instance.created_date|date:'N j, Y, f A T' }}">{{ request_instance.created_date|naturaltime }}</span> by <strong>{{ request_instance.requester.username }}</strong>
+    Created <span title="{{ request_instance.created_date }}">{{ request_instance.created_date|naturaltime }}</span> by <strong>{{ request_instance.requester.username }}</strong>
     {% if request_instance.assignee %}
       &#8226; Assigned to <strong>{{ request_instance.assignee.username }}</strong>
     {% endif %}
     {% if request_instance.last_modified_by %}
-      &#8226; Last edited <span title="{{ request_instance.last_modified_date|date:'N j, Y, f A T' }}">{{ request_instance.last_modified_date|naturaltime }}</span> by <strong>{{ request_instance.last_modified_by.username }}</strong>
+      &#8226; Last edited <span title="{{ request_instance.last_modified_date }}">{{ request_instance.last_modified_date|naturaltime }}</span> by <strong>{{ request_instance.last_modified_by.username }}</strong>
     {% endif %}
   </p>
 

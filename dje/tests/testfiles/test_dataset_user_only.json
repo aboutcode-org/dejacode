@@ -50,6 +50,7 @@
     "vulnerability_impact_notification": false,
     "company": "",
     "last_api_access": null,
+    "timezone": null,
     "groups": [],
     "user_permissions": []
   }

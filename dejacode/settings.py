@@ -89,7 +89,7 @@ TEMPLATE_DATASPACE = env.str("TEMPLATE_DATASPACE", default=None)
 # although not all choices may be available on all operating systems.
 # On Unix systems, a value of None will cause Django to use the same
 # timezone as the operating system.
-TIME_ZONE = env.str("TIME_ZONE", default="US/Pacific")
+TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 
 SITE_URL = env.str("SITE_URL", default="")
 
@@ -187,6 +187,7 @@ MIDDLEWARE = [
     # OTPMiddleware needs to come after AuthenticationMiddleware
     "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "dje.middleware.TimezoneMiddleware",
     "dje.middleware.LastAPIAccessMiddleware",
     *EXTRA_MIDDLEWARE,
     # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
