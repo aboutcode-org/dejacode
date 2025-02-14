@@ -1,9 +1,9 @@
 {{ client_data|json_script:"client_data" }}
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    NEXB = {};
-    NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
+  NEXB = {};
+  NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
 
+  document.addEventListener("DOMContentLoaded", function () {
     // Detects the user's current timezone using the browser's API
     // and stores it in a cookie to be used by the backend for localization.
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
