@@ -83,6 +83,22 @@ Release notes
 - Enable the delete_selected action on RequestTemplateAdmin.
   https://github.com/aboutcode-org/dejacode/issues/243
 
+- The data rendering format was simplified for improved readability from
+  "Jan. 27, 2025, 07:55:54 a.m. UTC" to "Jan 27, 2025, 7:55 AM UTC".
+  The dates are now always rendered using this same format across the app.
+  The user timezone is automatically discovered and activated to the whole app using
+  the browser JavaScript `timeZone` API
+  The user's automatic timezone can be overridden using the new
+  ``DejacodeUser.timezone`` database field.
+  The timezone value can be defined from the User > "Profile Settings" form.
+  This value always takes precedence when defined.
+  In case the timezone is not defined by the user, or cannot be detected from the
+  browser, the date rendering always fallback to UTC.
+  Note: all the "humanized dates" such as "Modified 23 hours ago" have the whole
+  date syntax available in their `title` option, available on hovering the text with
+  the cursor for a couple seconds.
+  https://github.com/aboutcode-org/dejacode/issues/243
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
