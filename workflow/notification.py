@@ -94,13 +94,11 @@ def send_request_comment_notification(http_request, comment, closed=False):
 
     body = render_to_string("workflow/comment_created_email.txt", data)
 
-    recipients = req.get_involved_users()
+    # Exclude the `comment.user` from any notifications
+    recipients = req.get_involved_users(exclude=comment.user)
 
     emails = get_recipient_emails(recipients, req.cc_emails)
     send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, emails)
-
-    # Remove the `comment.user` from the internal notification recipients
-    recipients.discard(comment.user)
 
     internal_notification.send(
         sender=comment.user,
