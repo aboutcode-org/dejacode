@@ -580,7 +580,6 @@ class HistoryActionTimeListFilter(filters.SimpleListFilter):
             current_tz = timezone.get_current_timezone()
             now = now.astimezone(current_tz)
             if hasattr(current_tz, "normalize"):
-                # available for pytz time zones
                 now = current_tz.normalize(now)
 
         today = now.replace(hour=0, minute=0, second=0, microsecond=0)
