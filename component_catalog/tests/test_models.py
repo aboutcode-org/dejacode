@@ -1767,6 +1767,25 @@ class ComponentCatalogModelsTestCase(TestCase):
         for field_name, value in purldb_entry.items():
             self.assertEqual(value, getattr(package, field_name))
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.update_from_scan")
+    def test_package_model_update_from_scan(self, mock_update_from_scan, mock_is_configured):
+        mock_is_configured.return_value = True
+        package1 = make_package(self.dataspace)
+
+        results = package1.update_from_scan(user=self.user)
+        mock_update_from_scan.assert_not_called()
+        self.assertIsNone(results)
+
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.update_packages_from_scan = True
+        self.dataspace.save()
+
+        mock_update_from_scan.return_value = ["updated_field"]
+        results = package1.update_from_scan(user=self.user)
+        mock_update_from_scan.assert_called()
+        self.assertEqual(["updated_field"], results)
+
     def test_package_model_get_url_methods(self):
         package = Package(
             filename="filename.zip",

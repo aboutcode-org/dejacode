@@ -55,6 +55,7 @@ from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
+from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import urn
 from dje.copier import post_copy
 from dje.copier import post_update
@@ -2496,6 +2497,20 @@ class Package(
             override_unknown=True,
         )
         return updated_fields
+
+    def update_from_scan(self, user):
+        scancodeio = ScanCodeIO(self.dataspace)
+        can_update_from_scan = all(
+            [
+                self.dataspace.enable_package_scanning,
+                self.dataspace.update_packages_from_scan,
+                scancodeio.is_configured(),
+            ]
+        )
+
+        if can_update_from_scan:
+            updated_fields = scancodeio.update_from_scan(package=self, user=user)
+            return updated_fields
 
 
 class PackageAssignedLicense(DataspacedModel):
