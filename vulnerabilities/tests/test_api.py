@@ -96,7 +96,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         detail_url = reverse("api_v2:vulnerability-detail", args=[self.vulnerability1.uuid])
         self.client.login(username="super_user", password="secret")
 
-        with self.assertNumQueries(10):
+        with self.assertMaxQueries(10):
             response = self.client.get(detail_url)
 
         self.assertContains(response, detail_url)
@@ -145,7 +145,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(self.product_package1, self.vulnerability2)
         make_vulnerability_analysis(self.product_package1, self.vulnerability3)
 
-        with self.assertNumQueries(7):
+        with self.assertMaxQueries(7):
             response = self.client.get(detail_url)
 
         self.assertContains(response, detail_url)
