@@ -145,6 +145,15 @@ class ProductForm(
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["owner"].dataspace = self.dataspace
+        self.fields["owner"].help_text = (
+            "Owner is the creator or maintainer of a Product, typically the current "
+            "copyright holder. This field is optional but recommended."
+        )
+
     def assign_object_perms(self, user):
         assign_perm("view_product", user, self.instance)
 

@@ -825,7 +825,11 @@ class DefaultOnAdditionLabelMixin:
 class OwnerChoiceField(forms.ModelChoiceField):
     def to_python(self, value):
         try:
-            return self.queryset.get(name=value)
+            obj, _created = self.queryset.get_or_create(
+                name=value,
+                defaults={"dataspace": self.dataspace},
+            )
+            return obj
         except ObjectDoesNotExist:
             return super().to_python(value)
 
