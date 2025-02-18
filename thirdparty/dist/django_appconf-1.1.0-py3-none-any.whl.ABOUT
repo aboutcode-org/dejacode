@@ -1,0 +1,14 @@
+about_resource: django_appconf-1.1.0-py3-none-any.whl
+name: django-appconf
+version: 1.1.0
+download_url: https://files.pythonhosted.org/packages/62/9e/f3a899991e4aaae4b69c1aa187ba4a32e34742475c91eb13010ee7fbe9db/django_appconf-1.1.0-py3-none-any.whl
+package_url: pkg:pypi/django-appconf@1.1.0
+license_expression: bsd-new
+copyright: Copyright django-appconf project contributors
+attribute: yes
+checksum_md5: e47a5eafb8fc17609c7bff5701176421
+checksum_sha1: b48f3a059915364284cf9d27200bd00a8f11592f
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
