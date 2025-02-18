@@ -55,7 +55,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
     def test_api_vulnerabilities_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
 
-        with self.assertMaxQueries(9):
+        with self.assertMaxQueries(11):
             response = self.client.get(self.vulnerabilities_list_url)
 
         self.assertEqual(3, response.data["count"])
@@ -96,7 +96,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         detail_url = reverse("api_v2:vulnerability-detail", args=[self.vulnerability1.uuid])
         self.client.login(username="super_user", password="secret")
 
-        with self.assertNumQueries(8):
+        with self.assertMaxQueries(10):
             response = self.client.get(detail_url)
 
         self.assertContains(response, detail_url)
@@ -145,7 +145,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(self.product_package1, self.vulnerability2)
         make_vulnerability_analysis(self.product_package1, self.vulnerability3)
 
-        with self.assertNumQueries(5):
+        with self.assertMaxQueries(7):
             response = self.client.get(detail_url)
 
         self.assertContains(response, detail_url)

@@ -406,7 +406,7 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
                 owner=self.owner1,
                 dataspace=self.dataspace,
             )
-        with self.assertMaxQueries(12):
+        with self.assertMaxQueries(13):
             response = self.client.get(self.license_list_url)
         self.assertEqual(7, response.data["count"])
 

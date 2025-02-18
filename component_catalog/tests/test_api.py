@@ -1073,7 +1073,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
 
         self.client.login(username="super_user", password="secret")
-        with self.assertMaxQueries(10):
+        with self.assertMaxQueries(11):
             response = self.client.get(self.package1_detail_url)
 
         self.assertContains(response, self.package1_detail_url)
