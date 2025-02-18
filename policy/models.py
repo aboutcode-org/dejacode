@@ -202,6 +202,8 @@ class SetPolicyFromLicenseMixin:
 
         if set_usage_policy:
             self.usage_policy = self.policy_from_primary_license
+            if "update_fields" in kwargs:
+                kwargs["update_fields"].append("usage_policy")
 
         super().save(*args, **kwargs)
 

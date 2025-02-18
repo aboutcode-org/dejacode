@@ -23,6 +23,7 @@ from django_rq import job
 from guardian.shortcuts import get_perms as guardian_get_perms
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
 from dje.utils import is_available
 
 logger = logging.getLogger(__name__)
@@ -112,7 +113,8 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     scancodeio = ScanCodeIO(user.dataspace)
     for uri in uris:
         if is_available(uri):
-            scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
+            response_json = scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
+            check_for_existing_scan_workaround(response_json, uri, user)
         else:
             logger.info(f'uri="{uri}" is not reachable.')
 

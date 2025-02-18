@@ -5,3 +5,16 @@
 # See https://github.com/aboutcode-org/dejacode for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
+
+from dje.tests import make_string
+from organization.models import Owner
+
+
+def make_owner(dataspace, **data):
+    if "name" not in data:
+        data["name"] = make_string(10)
+
+    return Owner.objects.create(
+        dataspace=dataspace,
+        **data,
+    )
