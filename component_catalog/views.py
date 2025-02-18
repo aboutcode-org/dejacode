@@ -1677,7 +1677,6 @@ def send_scan_notification(request, key):
         raise Http404("Provided key is not a valid UUID.")
 
     user = get_object_or_404(DejacodeUser, uuid=user_uuid)
-    dataspace = user.dataspace
 
     project = json_data.get("project")
     input_sources = project.get("input_sources")
@@ -1688,27 +1687,16 @@ def send_scan_notification(request, key):
     package = get_object_or_404(Package, download_url=download_url, dataspace=user.dataspace)
     description = package.download_url
 
+    # Triggers the Package data automatic update from Scan results, if enabled.
     run = json_data.get("run")
     scan_status = run.get("status")
-    scancodeio = ScanCodeIO(dataspace)
+    if scan_status.lower() == "success":
+        updated_fields = package.update_from_scan(user)
 
-    update_package_from_scan = all(
-        [
-            dataspace.enable_package_scanning,
-            dataspace.update_packages_from_scan,
-            scan_status.lower() == "success",
-            scancodeio.is_configured(),
-        ]
-    )
-
-    # Triggers the Package data automatic update from Scan results, if enabled.
-    if update_package_from_scan:
-        updated_fields = scancodeio.update_from_scan(package, user)
-        if updated_fields:
-            description = (
-                f"Automatically updated {', '.join(updated_fields)} from scan results\n"
-                + description
-            )
+    if updated_fields:
+        description = (
+            f"Automatically updated {', '.join(updated_fields)} from scan results\n" + description
+        )
 
     user.send_internal_notification(
         verb=f"Scan {scan_status}",

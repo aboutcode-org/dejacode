@@ -99,6 +99,12 @@ Release notes
   the cursor for a couple seconds.
   https://github.com/aboutcode-org/dejacode/issues/243
 
+- Set the "usage_policy" in update_fields list in SetPolicyFromLicenseMixin.
+  The associated package/license policy was properly set on the model in
+  SetPolicyFromLicenseMixin but the usage_policy entry was missing from the
+  update_fields. As a result the usage_policy value was not included in the UPDATE.
+  https://github.com/aboutcode-org/dejacode/issues/200
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

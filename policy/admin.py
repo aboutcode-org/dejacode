@@ -99,8 +99,11 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
     )
 
     def associated_policies(self, obj):
-        return "\n".join(
-            association.to_policy.str_with_content_type() for association in obj.to_policies.all()
+        return format_html(
+            "<br>".join(
+                association.to_policy.str_with_content_type()
+                for association in obj.to_policies.all()
+            )
         )
 
     def get_queryset(self, request):

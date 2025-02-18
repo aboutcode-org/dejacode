@@ -15,7 +15,9 @@ from django.test import TestCase
 import requests
 
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
 from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_notice_text_from_key_files
 from dje.models import Dataspace
@@ -24,7 +26,9 @@ from dje.tasks import scancodeio_submit_scan
 from dje.tests import create_superuser
 from dje.tests import create_user
 from license_library.models import License
-from organization.models import Owner
+from license_library.tests import make_license
+from policy.tests import make_associated_policy
+from policy.tests import make_usage_policy
 
 
 class ScanCodeIOTestCase(TestCase):
@@ -35,14 +39,9 @@ class ScanCodeIOTestCase(TestCase):
         self.basic_user = create_user("basic_user", self.dataspace)
         self.super_user = create_superuser("super_user", self.dataspace)
 
-        self.owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
-        self.license1 = License.objects.create(
-            key="l1", name="L1", short_name="L1", dataspace=self.dataspace, owner=self.owner1
-        )
-        self.license2 = License.objects.create(
-            key="l2", name="L2", short_name="L2", dataspace=self.dataspace, owner=self.owner1
-        )
-        self.package1 = Package.objects.create(
+        self.license1 = make_license(key="l1", dataspace=self.dataspace)
+        self.license2 = make_license(key="l2", dataspace=self.dataspace)
+        self.package1 = make_package(
             filename="package1", download_url="http://url.com/package1", dataspace=self.dataspace
         )
         self.package1.license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
@@ -68,7 +67,9 @@ class ScanCodeIOTestCase(TestCase):
 
         expected = [
             mock.call("http://okurl.com", user_uuid, dataspace_uuid),
+            mock.call().__bool__(),
             mock.call("https://okurl2.com", user_uuid, dataspace_uuid),
+            mock.call().__bool__(),
         ]
         self.assertEqual(expected, mock_submit_scan.mock_calls)
 
@@ -168,6 +169,13 @@ class ScanCodeIOTestCase(TestCase):
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_scan_results):
+        license_policy = make_usage_policy(self.dataspace, model=License)
+        package_policy = make_usage_policy(self.dataspace, model=Package)
+        make_associated_policy(license_policy, package_policy)
+        license_mit = make_license(self.dataspace, key="mit", usage_policy=license_policy)
+        self.dataspace.set_usage_policy_on_new_component_from_licenses = True
+        self.dataspace.save()
+
         self.package1.license_expression = ""
         self.package1.save()
         scancodeio = ScanCodeIO(self.dataspace)
@@ -207,6 +215,7 @@ class ScanCodeIOTestCase(TestCase):
 
         self.package1.refresh_from_db()
         self.assertEqual("mit", self.package1.license_expression)
+        self.assertQuerySetEqual(self.package1.licenses.all(), [license_mit])
         self.assertEqual("mit", self.package1.declared_license_expression)
         self.assertEqual("apache-2.0", self.package1.other_license_expression)
         self.assertEqual("Jeremy Thomas", self.package1.holder)
@@ -216,6 +225,9 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual("Copyright Jeremy Thomas", self.package1.copyright)
         expected_keywords = ["css", "sass", "scss", "flexbox", "grid", "responsive", "framework"]
         self.assertEqual(expected_keywords, self.package1.keywords)
+
+        # Policy from license set in SetPolicyFromLicenseMixin.save()
+        self.assertEqual(package_policy, self.package1.usage_policy)
 
         self.assertEqual(self.super_user, self.package1.last_modified_by)
         history_entry = History.objects.get_for_object(self.package1).get()
@@ -317,3 +329,21 @@ class ScanCodeIOTestCase(TestCase):
         scan_summary = {"key_files": [key_file_data1]}
         notice_text = get_notice_text_from_key_files(scan_summary)
         self.assertEqual("", notice_text)
+
+    @mock.patch("component_catalog.models.Package.update_from_scan")
+    def test_scancodeio_check_for_existing_scan_workaround(self, mock_update_from_scan):
+        mock_update_from_scan.return_value = ["updated_field"]
+        download_url = self.package1.download_url
+        user = self.basic_user
+
+        response_json = None
+        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        self.assertIsNone(results)
+
+        response_json = {"success": True}
+        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        self.assertIsNone(results)
+
+        response_json = {"name": "project with this name already exists."}
+        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        self.assertEqual(["updated_field"], results)
