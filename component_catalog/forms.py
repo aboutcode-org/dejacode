@@ -161,12 +161,7 @@ class ComponentForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.fields["owner"].dataspace = self.dataspace
-        self.fields["owner"].help_text = (
-            "Owner is the creator or maintainer of a Component, typically the current "
-            "copyright holder. This field is optional but recommended."
-        )
 
     def clean_packages_ids(self):
         packages_ids = self.cleaned_data.get("packages_ids")
