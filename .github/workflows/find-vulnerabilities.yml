@@ -9,6 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          path: scancode-inputs
           sparse-checkout: setup.cfg
           sparse-checkout-cone-mode: false
 
