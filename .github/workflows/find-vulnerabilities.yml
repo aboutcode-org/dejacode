@@ -1,0 +1,19 @@
+name: Find dependencies vulnerabilities
+
+on: [push]
+
+jobs:
+  scan-codebase:
+    runs-on: ubuntu-24.04
+    name: Inspect packages with ScanCode.io
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: setup.cfg
+          sparse-checkout-cone-mode: false
+
+      - uses: nexB/scancode-action@alpha
+        with:
+          pipelines: "inspect_packages:StaticResolver,find_vulnerabilities"
+        env:
+          VULNERABLECODE_URL: https://public.vulnerablecode.io/
