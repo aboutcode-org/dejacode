@@ -147,7 +147,7 @@ class ProductForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["owner"].dataspace = self.dataspace
+        self.fields["owner"].user = self.user
 
     def assign_object_perms(self, user):
         assign_perm("view_product", user, self.instance)

@@ -105,6 +105,10 @@ Release notes
   update_fields. As a result the usage_policy value was not included in the UPDATE.
   https://github.com/aboutcode-org/dejacode/issues/200
 
+- Improve the Owner assignment process on a Product/Component form.
+  Owner not found in the Dataspace are now automatically created.
+  https://github.com/aboutcode-org/dejacode/issues/239
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

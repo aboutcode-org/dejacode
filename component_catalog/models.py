@@ -716,7 +716,6 @@ def component_mixin_factory(verbose_name):
             ),
         )
 
-
         release_date = models.DateField(
             null=True,
             blank=True,
