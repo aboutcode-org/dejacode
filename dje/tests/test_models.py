@@ -245,3 +245,16 @@ class DataspacedModelTestCase(TestCase):
     def test_dataspaced_model_clean_extra_spaces_in_identifier_fields(self):
         owner = Owner.objects.create(name="contains  extra     spaces", dataspace=self.dataspace)
         self.assertEqual("contains extra spaces", owner.name)
+
+    def test_dataspaced_queryset_copy_or_create(self):
+        owner_in_reference = Owner.objects.create(name="Owner1", dataspace=self.nexb_user.dataspace)
+        self.assertTrue(self.nexb_user.dataspace.is_reference)
+        copied_owner = Owner.objects.copy_or_create(
+            self.alternate_user, name=owner_in_reference.name
+        )
+        self.assertEqual(self.alternate_dataspace, copied_owner.dataspace)
+        self.assertEqual(owner_in_reference.name, copied_owner.name)
+
+        created_owner = Owner.objects.copy_or_create(self.alternate_user, name="Owner2")
+        self.assertEqual(self.alternate_dataspace, copied_owner.dataspace)
+        self.assertEqual("Owner2", created_owner.name)

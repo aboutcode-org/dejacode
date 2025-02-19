@@ -709,13 +709,9 @@ def component_mixin_factory(verbose_name):
             blank=True,
             on_delete=models.PROTECT,
             help_text=format_lazy(
-                "Owner is an optional field selected by the user to identify the original "
-                "creator (copyright holder) of the  {verbose_name}. "
-                "If this {verbose_name} is in its original, unmodified state, the {verbose_name}"
-                " owner is associated with the original author/publisher. "
-                "If this {verbose_name} has been copied and modified, "
-                "the {verbose_name}  owner should be the owner that has copied and "
-                "modified it.",
+                "Owner is the creator or maintainer of a {verbose_name}, typically the "
+                "current copyright holder. "
+                "This field is optional but recommended.",
                 verbose_name=_(verbose_name),
             ),
         )

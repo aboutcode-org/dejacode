@@ -824,10 +824,21 @@ class DefaultOnAdditionLabelMixin:
 
 class OwnerChoiceField(forms.ModelChoiceField):
     def to_python(self, value):
-        try:
-            return self.queryset.get(name=value)
-        except ObjectDoesNotExist:
+        if not value:
             return super().to_python(value)
+
+        # 1. Get from the current Dataspace.
+        if obj := self.queryset.get_or_none(name=value):
+            return obj
+
+        # 2. Attempt to copy from reference if already existing there,
+        # or create in local Dataspace.
+        # This requires the `user` object to be set to this field instance.
+        if user := getattr(self, "user", None):
+            if obj := self.queryset.copy_or_create(user, name=value):
+                return obj
+
+        return super().to_python(value)
 
     def prepare_value(self, value):
         try:

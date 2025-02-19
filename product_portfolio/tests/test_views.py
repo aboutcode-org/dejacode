@@ -1770,7 +1770,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         data = {
             "name": "Name",
             "version": "1.0",
-            "owner": owner1.name,
+            "owner": "Unknown",
             "license_expression": l1.key,
             "copyright": "Copyright",
             "notice_text": "Notice",
@@ -1787,7 +1787,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.post(add_url, data, follow=True)
         product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
-        self.assertEqual(owner1, product.owner)
+        self.assertEqual("Unknown", product.owner.name)
         self.assertEqual(configuration_status, product.configuration_status)
         self.assertEqual(l1.key, product.license_expression)
         expected = "Product &quot;Name 1.0&quot; was successfully created."

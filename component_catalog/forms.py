@@ -159,6 +159,10 @@ class ComponentForm(
             "dependencies": forms.Textarea(attrs={"rows": 2}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["owner"].user = self.user
+
     def clean_packages_ids(self):
         packages_ids = self.cleaned_data.get("packages_ids")
         if packages_ids:
