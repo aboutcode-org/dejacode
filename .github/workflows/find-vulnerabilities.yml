@@ -25,10 +25,15 @@ jobs:
           scanpipe shell --command '
           from scanpipe.models import Project
           project = Project.objects.get()
-          vulnerability_count = (
-              project.discoveredpackages.vulnerable().count() +
-              project.discovereddependencies.vulnerable().count()
-          )
-          print(vulnerability_count, "vulnerabilities found")
-          exit(1) if vulnerability_count else exit(0)
+          packages_qs = project.discoveredpackages.vulnerable()
+          dependencies_qs = project.discovereddependencies.vulnerable()
+          vulnerability_count = packages_qs.count() + dependencies_qs.count()
+          if vulnerability_count:
+              print(vulnerability_count, "vulnerabilities found:")
+              for entry in [*packages_qs, *dependencies_qs]:
+                  print(entry)
+              exit(1)
+          else:
+              print("No vulnerabilities found")
+              exit(0)
           '
