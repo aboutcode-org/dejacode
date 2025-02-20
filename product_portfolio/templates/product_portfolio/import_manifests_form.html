@@ -23,45 +23,49 @@
 
   {% include 'includes/messages_alert.html' %}
 
-  <div class="alert alert-success">
-    <div>
-      Supports resolving packages for:
-      <ul class="mt-2">
-        <li><strong>Python</strong>: requirements.txt and setup.py manifest files.</li>
-      </ul>
-    </div>
-    <strong>Multiple Manifests:</strong>
-    You can provide multiple Manifests by packaging them into a <strong>zip archive</strong>.
-    DejaCode will handle and process them accordingly.
-  </div>
-
-  <div class="alert alert-primary" role="alert">
-    When you upload your <strong>Manifest file to DejaCode</strong>,
-    the following process will occur:
-    <ul class="mb-0 mt-2">
-      <li>
-        <strong>Submission to ScanCode.io</strong>
-        Your Manifest file will be submitted to ScanCode.io for thorough scan inspection.
-      </li>
-      <li>
-        <strong>Package Discovery</strong>
-        ScanCode.io will identify and discover packages within your Manifest.
-      </li>
-      <li>
-        <strong>Package Importation</strong>
-        DejaCode will retrieve the discovered packages from ScanCode.io and import them into its system.
-      </li>
-      <li>
-        <strong>Package Assignment</strong>
-        The imported packages will be assigned to the corresponding product within DejaCode.
-      </li>
-    </ul>
-  </div>
-
   <div class="row">
-    <div class="col-8">
-      {% include 'includes/form_errors_alert.html' %}
-      {% crispy form %}
+    <div class="col-9">
+      <div class="alert alert-success">
+        <div>
+          Supports resolving packages for:
+          <ul class="mt-1 mb-2">
+            <li><strong>Python</strong>: requirements.txt and setup.py manifest files.</li>
+          </ul>
+        </div>
+        <strong>Multiple manifests:</strong>
+        You can provide multiple manifests by packaging them into a <strong>zip archive</strong>.
+        DejaCode will process them accordingly.
+      </div>
+
+      <div class="alert alert-primary" role="alert">
+        When you upload your <strong>manifest file to DejaCode</strong>,
+        the following process will occur:
+        <ul class="mt-2 mb-0">
+          <li>
+            <strong>Submission to ScanCode.io</strong>
+            Your manifest file will be submitted to ScanCode.io for thorough scan inspection.
+          </li>
+          <li>
+            <strong>Package Discovery</strong>
+            ScanCode.io will identify and discover packages within your manifest.
+          </li>
+          <li>
+            <strong>Package Importation</strong>
+            DejaCode will retrieve the discovered packages from ScanCode.io and import them into its system.
+          </li>
+          <li>
+            <strong>Package Assignment</strong>
+            The imported packages will be assigned to the corresponding product within DejaCode.
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          {% include 'includes/form_errors_alert.html' %}
+          {% crispy form %}
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
@@ -70,7 +74,9 @@
   <script>
     $(document).ready(function () {
       $('form#import-manifest-form').on('submit', function () {
-        NEXB.displayOverlay("Load Packages from Manifest...");
+        // Prevent from re-submitting the form by mistake
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Import in progress...");
       })
     });
   </script>

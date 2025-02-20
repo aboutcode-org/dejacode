@@ -38,6 +38,7 @@ from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
 from dje.forms import DataspacedModelForm
 from dje.forms import DefaultOnAdditionLabelMixin
+from dje.forms import StrictSubmit
 from dje.forms import Group
 from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
@@ -569,7 +570,16 @@ class ImportFromScanForm(forms.Form):
     @property
     def helper(self):
         helper = FormHelper()
-        helper.add_input(Submit("submit", "Import", css_class="btn-success"))
+        helper.attrs = {"autocomplete": "off"}
+        helper.layout = Layout(
+            Fieldset(
+                None,
+                "upload_file",
+                "create_codebase_resources",
+                "stop_on_error",
+                StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
+            ),
+        )
         return helper
 
     def save(self, product):
@@ -634,7 +644,15 @@ class BaseProductImportFormView(forms.Form):
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(Submit("submit", "Import", css_class="btn-success"))
+        helper.layout = Layout(
+            Fieldset(
+                None,
+                "input_file",
+                "update_existing_packages",
+                "scan_all_packages",
+                StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
+            ),
+        )
         return helper
 
     def submit(self, product, user):

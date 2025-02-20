@@ -357,7 +357,7 @@ class ProductViewSet(
         * AboutCode .ABOUT files,
 
         Multiple SBOMs: You can provide multiple SBOMs by packaging them into a zip
-        archive. DejaCode will handle and process them accordingly.
+        archive. DejaCode will process them accordingly.
         """
         product = self.get_object()
 
@@ -374,7 +374,7 @@ class ProductViewSet(
         Import Packages from Manifests.
 
         Multiple Manifests: You can provide multiple files by packaging them into a zip
-        archive. DejaCode will handle and process them accordingly.
+        archive. DejaCode will process them accordingly.
         """
         product = self.get_object()
 
