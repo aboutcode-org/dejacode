@@ -37,17 +37,17 @@
         <div class="dropdown-menu dropdown-menu-end">
           <div class="dropdown-header">Import</div>
           {% if has_change_permission %}
-            <a class="dropdown-item" href="{{ object.get_import_from_scan_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import data from Scan' %}</a>
             {% if request.user.dataspace.enable_package_scanning %}
-              <a class="dropdown-item" href="{{ object.get_load_sboms_url }}"><i class="fas fa-file-upload"></i> {% trans 'Load Packages from SBOMs' %}</a>
-              <a class="dropdown-item" href="{{ object.get_import_manifests_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import Packages from manifests' %}</a>
+              <a class="dropdown-item" href="{{ object.get_load_sboms_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import SBOM' %}</a>
+              <a class="dropdown-item" href="{{ object.get_import_manifests_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import Package manifests' %}</a>
             {% endif %}
+            <a class="dropdown-item" href="{{ object.get_import_from_scan_url }}"><i class="fas fa-file-upload"></i> {% trans 'Import ScanCode scan results' %}</a>
             {% if pull_project_data_form %}
-              <a class="dropdown-item" style="margin-left: -3px;" href="#" data-bs-toggle="modal" data-bs-target="#pull-project-data-modal"><i class="fas fa-cloud-download-alt"></i> {% trans 'Pull ScanCode.io Project data' %}</a>
+              <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#pull-project-data-modal"><i class="fas fa-file-upload"></i> {% trans 'Import ScanCode.io project' %}</a>
             {% endif %}
           {% endif %}
           {% if has_scan_all_packages %}
-            <div class="dropdown-header">ScanCode.io</div>
+            <div class="dropdown-header">Scan</div>
             <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal"><i class="fas fa-barcode"></i> {% trans 'Scan all Packages' %}</a>
           {% endif %}
           {% if request.user.dataspace.enable_purldb_access %}

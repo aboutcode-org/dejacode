@@ -590,9 +590,11 @@ div.awesomplete {
 [data-bs-theme=dark] .awesomplete > ul {
   background: var(--bs-black);
 }
-
 #div_id_component .awesomplete {
   display: inline-block !important;
+}
+label.requiredField {
+  font-weight: bolder;
 }
 
 /* -- Products comparison -- */

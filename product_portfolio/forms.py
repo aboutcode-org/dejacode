@@ -535,7 +535,10 @@ class ProductCustomComponentForm(
 
 
 class ImportFromScanForm(forms.Form):
-    upload_file = SmartFileField(extensions=["json"])
+    upload_file = SmartFileField(
+        label=_("Scan results JSON file"),
+        extensions=["json"],
+    )
     create_codebase_resources = forms.BooleanField(
         label=_('Create Codebase Resources (from <code>"files"</code>)'),
         required=False,
@@ -566,7 +569,7 @@ class ImportFromScanForm(forms.Form):
     @property
     def helper(self):
         helper = FormHelper()
-        helper.add_input(Submit("import", "Import"))
+        helper.add_input(Submit("submit", "Import", css_class="btn-success"))
         return helper
 
     def save(self, product):
@@ -636,7 +639,7 @@ class BaseProductImportFormView(forms.Form):
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
+        helper.add_input(Submit("submit", "Import", css_class="btn-success"))
         return helper
 
     def submit(self, product, user):

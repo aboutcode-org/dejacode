@@ -349,7 +349,7 @@ class ProductViewSet(
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
     def load_sboms(self, request, *args, **kwargs):
         """
-        Load Packages from SBOMs.
+        Import SBOM.
 
         DejaCode supports the following SBOM formats:
         * CycloneDX BOM as JSON bom.json and .cdx.json,
