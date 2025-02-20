@@ -1460,9 +1460,9 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     """Wrap a ScanCode.io Project."""
 
     class ProjectType(models.TextChoices):
-        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
-        LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
-        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
+        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import Package manifests")
+        LOAD_SBOMS = "LOAD_SBOMS", _("Import SBOM")
+        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Import ScanCode.io project")
         IMPROVE_FROM_PURLDB = "IMPROVE_FROM_PURLDB", _("Improve from PurlDB")
 
     class Status(models.TextChoices):

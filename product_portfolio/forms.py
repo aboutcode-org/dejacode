@@ -600,7 +600,6 @@ class ImportFromScanForm(forms.Form):
 
 class BaseProductImportFormView(forms.Form):
     project_type = None
-    input_label = ""
 
     input_file = SmartFileField(
         label=_("file or zip archive"),
@@ -628,10 +627,6 @@ class BaseProductImportFormView(forms.Form):
             "for all of the packages assigned to your product."
         ),
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["input_file"].label = _(f"{self.input_label} file or zip archive")
 
     @property
     def helper(self):
@@ -664,14 +659,23 @@ class BaseProductImportFormView(forms.Form):
 
 class LoadSBOMsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.LOAD_SBOMS
-    input_label = "SBOM"
     pipeline_name = "load_sbom"
+
+    input_file = SmartFileField(
+        label=_("SBOM file or zip archive"),
+        extensions=["json", "ABOUT", "zip"],
+        required=True,
+    )
 
 
 class ImportManifestsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
-    input_label = "Manifest"
     pipeline_name = "resolve_dependencies"
+
+    input_file = SmartFileField(
+        label=_("Manifest file or zip archive"),
+        required=True,
+    )
 
 
 class StrongTextWidget(forms.Widget):
