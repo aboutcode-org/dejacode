@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -38,10 +40,10 @@ from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
 from dje.forms import DataspacedModelForm
 from dje.forms import DefaultOnAdditionLabelMixin
-from dje.forms import StrictSubmit
 from dje.forms import Group
 from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
+from dje.forms import StrictSubmit
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
 from dje.models import History
@@ -675,6 +677,29 @@ class BaseProductImportFormView(forms.Form):
         )
 
 
+def validate_sbom_file(value):
+    """Validator for SBOM JSON file."""
+    filename = value.name.lower()
+    if not filename.endswith(".json"):
+        return
+
+    try:
+        file_content = value.read().decode("utf-8")
+        json_data = json.loads(file_content)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise ValidationError(_("Invalid JSON file. Please provide a properly formatted JSON."))
+    finally:
+        value.seek(0)  # Reset file pointer after reading
+
+    if headers := json_data.get("headers", []):
+        tool_name = headers[0].get("tool_name", "")
+        if "scan" in tool_name.lower():
+            raise ValidationError(
+                'Your file appears to be a ScanCode scan results. '
+                'You want to use the "Import ScanCode scan results" action instead.'
+            )
+
+
 class LoadSBOMsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.LOAD_SBOMS
     pipeline_name = "load_sbom"
@@ -682,6 +707,7 @@ class LoadSBOMsForm(BaseProductImportFormView):
     input_file = SmartFileField(
         label=_("SBOM file or zip archive"),
         extensions=["json", "ABOUT", "zip"],
+        validators=[validate_sbom_file],
         required=True,
     )
 
