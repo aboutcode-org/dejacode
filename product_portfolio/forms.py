@@ -678,7 +678,7 @@ class BaseProductImportFormView(forms.Form):
 
 
 def validate_sbom_file(value):
-    """Validator for SBOM JSON file."""
+    """Validate SBOM JSON file content."""
     filename = value.name.lower()
     if not filename.endswith(".json"):
         return
@@ -695,7 +695,7 @@ def validate_sbom_file(value):
         tool_name = headers[0].get("tool_name", "")
         if "scan" in tool_name.lower():
             raise ValidationError(
-                'Your file appears to be a ScanCode scan results. '
+                "Your file appears to be a ScanCode scan results. "
                 'You want to use the "Import ScanCode scan results" action instead.'
             )
 

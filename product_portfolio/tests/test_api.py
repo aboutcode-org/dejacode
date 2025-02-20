@@ -371,7 +371,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
 
         data = {
-            "input_file": ContentFile("Content", name="sbom.json"),
+            "input_file": ContentFile("{}", name="sbom.json"),
             "update_existing_packages": False,
             "scan_all_packages": False,
         }
