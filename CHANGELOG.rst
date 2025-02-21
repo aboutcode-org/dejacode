@@ -109,6 +109,17 @@ Release notes
   Owner not found in the Dataspace are now automatically created.
   https://github.com/aboutcode-org/dejacode/issues/239
 
+- Updated the label of the following Product actions.
+  The labels were updated everywhere in the UI (page title, documentation,
+  import log, etc...) for consistency:
+  - Import data from Scan -> Import ScanCode scan results
+  - Load Packages from SBOMs -> Import SBOM
+  - Import Packages from manifests -> Import Package manifests
+  - Pull ScanCode.io Project data -> Import ScanCode.io project
+  Improve the rendering and layout of the Import related forms for consistency,
+  simplicity, and readability.
+  https://github.com/aboutcode-org/dejacode/issues/241
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block page_title %}
-  Import from Scan
+  Import ScanCode scan results
 {% endblock %}
 
 {% block content %}
@@ -17,50 +17,56 @@
             <a href="{{ product.get_absolute_url }}">{{ product }}</a>
           </div>
           <h1 class="header-title">
-            Import from Scan
+            Import ScanCode scan results
           </h1>
         </div>
       </div>
     </div>
   </div>
 
-  {% include 'includes/messages_alert.html' %}
+  <div class="row">
+    <div class="col-9">
+      {% include 'includes/messages_alert.html' %}
 
-  <div class="alert alert-primary" role="alert">
-    When you upload your <strong>JSON-formatted ScanCode output results</strong>, DejaCode will:
-    <ul class="mb-0 mt-2">
-      <li><strong>Create new Packages</strong> using the ScanCode data if those Packages do not yet exist in your dataspace.</li>
-      <li><strong>Assign the Packages</strong> identified in the ScanCode data to the Product you are updating.</li>
-      {# <li><strong>Create new Custom Components</strong>  on the Product you are updating, based on data produced by the ScanCode "consolidate" feature, which summarizes related files from the scanned codebase.</li>#}
-      <li>Return you to the Product details so that you can review and edit the results as necessary. DejaCode shows you the Source name of the original ScanCode file with each new object that it created on your Product. Note that you can import multiple scans to your Product. You can also generate Attribution for your Product at any time to see what your new data will look like when you are ready to publish Attribution for your third-party software usage.</li>
-    </ul>
-  </div>
+      <div class="alert alert-primary" role="alert">
+        When you upload your <strong>JSON-formatted ScanCode output results</strong>, DejaCode will:
+        <ul class="mb-0 mt-2">
+          <li><strong>Create new Packages</strong> using the ScanCode data if those Packages do not yet exist in your dataspace.</li>
+          <li><strong>Assign the Packages</strong> identified in the ScanCode data to the Product you are updating.</li>
+          <li><strong>Return you to the Product details</strong> so that you can review and edit the results as necessary.</li>
+        </ul>
+      </div>
 
-  <div class="alert alert-dark bg-body-tertiary">
-    <h5>Option 1: From a ScanCode-toolkit scan output</h5>
-    <div class="mb-2">
-      Upload a ScanCode-toolkit JSON output file, generated with <strong>version 31.2.3 or later</strong>, the following <strong>options are mandatory</strong>:
+      <div class="alert alert-dark bg-body-tertiary">
+        <h5>Option 1: from a ScanCode-toolkit scan output</h5>
+        <div class="mb-2">
+          Upload a ScanCode-toolkit JSON output file, generated with <strong>version 31.2.3 or later</strong>, the following <strong>options are mandatory</strong>:
+        </div>
+        <kbd>$ scancode --copyright --license --info --package --json {file_output.json} {input_directory}</kbd>
+      </div>
+
+      <div class="alert alert-dark bg-body-tertiary">
+        <h5>Option 2: from ScanCode.io pipeline results</h5>
+        <p class="mb-1">
+          Upload a ScanCode.io JSON output file, <strong>generated with one of the following pipelines:</strong>
+        </p>
+        <p class="mb-0">
+          <code>analyze_docker_image</code>,
+          <code>analyze_windows_docker_image</code>,
+          <code>inspect_packages</code>,
+          <code>scan_codebase</code>,
+          <code>scan_single_package</code>
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          {% include 'includes/form_errors_alert.html' %}
+          {% crispy form %}
+        </div>
+      </div>
     </div>
-    <kbd>$ scancode --copyright --license --info --package --json {file_output.json} {input_directory}</kbd>
   </div>
-
-  <div class="alert alert-dark bg-body-tertiary">
-    <h5>Option 2: From ScanCode.io pipeline results</h5>
-    <p class="mb-1">
-      Upload a ScanCode.io JSON output file, <strong>generated with one of the following pipelines:</strong>
-    </p>
-    <p class="mb-0">
-      <code>analyze_docker_image</code>,
-      <code>analyze_windows_docker_image</code>,
-      <code>inspect_packages</code>,
-      <code>scan_codebase</code>,
-      <code>scan_single_package</code>
-    </p>
-  </div>
-
-  {{ form.errors }}
-  {% crispy form %}
-
 {% endblock %}
 
 {% block javascripts %}

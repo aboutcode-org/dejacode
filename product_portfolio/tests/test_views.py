@@ -223,13 +223,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         htmx_refresh = 'hx-trigger="load delay:10s" hx-swap="outerHTML"'
         self.assertContains(response, htmx_refresh)
         self.assertContains(response, "Imports are currently in progress.")
-        self.assertContains(response, "Load SBOMs")
+        self.assertContains(response, "Import SBOM")
 
         project.status = ScanCodeProject.Status.SUCCESS
         project.save()
         response = self.client.get(url)
         self.assertFalse(response.context["has_projects_in_progress"])
-        self.assertContains(response, "Load SBOMs")
+        self.assertContains(response, "Import SBOM")
         self.assertNotContains(response, "hx-trigger")
         self.assertNotContains(response, "Imports are currently in progress.")
 
@@ -3087,19 +3087,19 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_load_sboms_url()
         response = self.client.get(url)
-        expected = "Load Packages from SBOMs"
+        expected = "Import SBOM"
         self.assertContains(response, expected)
 
-        data = {"input_file": ContentFile("Data")}
+        data = {"input_file": ContentFile('{"data": "data"}', name="file.json")}
         response = self.client.post(url, data=data, follow=True)
         expected = "SBOM file submitted to ScanCode.io for inspection."
         self.assertContains(response, expected)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+        data = {"input_file": ContentFile('{"data": "data"}', name="file2.json")}
         with override_settings(CLAMD_ENABLED=True):
             with mock.patch("dje.fields.SmartFileField.scan_file_for_virus") as scan:
-                data = {"input_file": ContentFile("Data")}
-                self.client.post(url, data=data, follow=True)
+                response = self.client.post(url, data=data, follow=True)
                 scan.assert_called_once()
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
@@ -3108,7 +3108,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_import_manifests_url()
         response = self.client.get(url)
-        expected = "Import Packages from manifests"
+        expected = "Import Package manifests"
         self.assertContains(response, expected)
 
         data = {"input_file": ContentFile("Data")}
@@ -3190,7 +3190,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         notif = Notification.objects.get()
         self.assertTrue(notif.unread)
         self.assertEqual(self.super_user, notif.actor)
-        self.assertEqual("Load Packages from SBOMs", notif.verb)
+        self.assertEqual("Import SBOM", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
         expected_message = "- Imported 1 package.\n- 1 dependency error occurred during import."

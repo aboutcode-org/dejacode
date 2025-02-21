@@ -197,7 +197,7 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
     )
 
     if scancode_project.type == scancode_project.ProjectType.LOAD_SBOMS:
-        notification_verb = "Load Packages from SBOMs"
+        notification_verb = "Import SBOM"
     else:
         notification_verb = "Import packages from ScanCode.io"
 

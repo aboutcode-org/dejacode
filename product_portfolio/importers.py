@@ -45,6 +45,7 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
+from product_portfolio.models import ScanCodeProject
 
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
@@ -394,6 +395,7 @@ class ImportFromScan:
         self.created_counts = {}
         self.warnings = []
         self.product_packages_by_id = {}
+        self.scancode_project = None
 
         self.resource_additional_fields = [
             "programming_language",
@@ -408,22 +410,21 @@ class ImportFromScan:
         ]
 
     def save(self):
+        self.create_scancode_project()
         self.load_data_from_file()
         self.validate_headers()
         self.import_packages()
         if self.create_codebase_resources:
             self.import_codebase_resources()
-
+        self.update_scancode_project()
         return self.warnings, self.created_counts
 
     def load_data_from_file(self):
-        with self.upload_file.open() as f:
-            file_content = f.read()
-
         try:
-            self.data = json.loads(file_content)
-        except json.JSONDecodeError:
-            raise ValidationError("The file content is not proper JSON.")
+            with self.upload_file.open("r", encoding="utf-8") as f:
+                self.data = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValidationError(f"Invalid JSON file: {e}")
 
     def validate_headers(self):
         """
@@ -603,6 +604,37 @@ class ImportFromScan:
 
             if codebase_resources_count:
                 self.created_counts["Codebase Resources"] = codebase_resources_count
+
+    def create_scancode_project(self):
+        """Create a ScanCodeProject entry to log this import on the Product."""
+        self.scancode_project = ScanCodeProject.objects.create(
+            product=self.product,
+            dataspace=self.product.dataspace,
+            type=ScanCodeProject.ProjectType.IMPORT_SCAN_RESULTS,
+            input_file=self.upload_file,
+            created_by=self.user,
+            status=ScanCodeProject.Status.IMPORT_STARTED,
+        )
+
+    def update_scancode_project(self):
+        """Update the ScanCodeProject entry with import results."""
+        if self.created_counts:
+            status = ScanCodeProject.Status.SUCCESS
+            import_log = [
+                f"- Imported {count} {label.lower()}"
+                for label, count in self.created_counts.items()
+            ]
+        else:
+            status = ScanCodeProject.Status.WARNING
+            import_log = ["Nothing imported."]
+
+        if self.warnings:
+            import_log.extend(self.warnings)
+
+        self.scancode_project.update(
+            status=status,
+            import_log=import_log,
+        )
 
 
 class ImportPackageFromScanCodeIO:

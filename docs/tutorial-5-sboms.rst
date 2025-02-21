@@ -27,8 +27,8 @@ Load an SBOM to your Product
 
    `<https://github.com/aboutcode-org/dejacode/raw/refs/heads/main/docs/sboms/storm-core-1.0.1.cdx.json.zip>`_.
 
-2. On the Product details page, from the :guilabel:`Action` dropdown, select
-   :guilabel:`Load Packages from SBOMs`:
+2. On the Product details page, from the :guilabel:`Actions` dropdown, select
+   :guilabel:`Import SBOM`:
 
    * Click the Browse field beneath :guilabel:`SBOM file or zip archive`
    * Select the **storm-core-1.0.cdx.json** file and leave the additional options
@@ -46,7 +46,7 @@ Load an SBOM to your Product
 .. image:: images/tutorial-5-sboms/inventory-tab-1.jpg
 
 5. You can enrich the data provided by your supplier,
-   From the :guilabel:`Action` dropdown, select
+   From the :guilabel:`Actions` dropdown, select
    :guilabel:`Improve Packages from PurlDB`:
 
 .. image:: images/tutorial-5-sboms/improve-packages-from-purldb.jpg

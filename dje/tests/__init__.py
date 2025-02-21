@@ -14,6 +14,7 @@ from importlib import reload
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import DEFAULT_DB_ALIAS
 from django.db import connections
 from django.test.runner import DiscoverRunner
@@ -124,3 +125,20 @@ class MaxQueryMixin:
 
         with context:
             func(*args, **kwargs)
+
+
+def wrap_as_temp_uploaded_file(file_path):
+    """Wrap an existing file as a Django TemporaryUploadedFile"""
+    temp_file = TemporaryUploadedFile(
+        name=file_path.name,
+        content_type="application/json",
+        size=file_path.stat().st_size,
+        charset="utf-8",
+    )
+
+    # Read and copy file content into the temporary file
+    with open(file_path, "rb") as f:
+        temp_file.write(f.read())
+
+    temp_file.seek(0)  # Reset pointer after writing
+    return temp_file

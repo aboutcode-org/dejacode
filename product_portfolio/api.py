@@ -349,7 +349,7 @@ class ProductViewSet(
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
     def load_sboms(self, request, *args, **kwargs):
         """
-        Load Packages from SBOMs.
+        Import SBOM.
 
         DejaCode supports the following SBOM formats:
         * CycloneDX BOM as JSON bom.json and .cdx.json,
@@ -357,7 +357,7 @@ class ProductViewSet(
         * AboutCode .ABOUT files,
 
         Multiple SBOMs: You can provide multiple SBOMs by packaging them into a zip
-        archive. DejaCode will handle and process them accordingly.
+        archive. DejaCode will process them accordingly.
         """
         product = self.get_object()
 
@@ -374,7 +374,7 @@ class ProductViewSet(
         Import Packages from Manifests.
 
         Multiple Manifests: You can provide multiple files by packaging them into a zip
-        archive. DejaCode will handle and process them accordingly.
+        archive. DejaCode will process them accordingly.
         """
         product = self.get_object()
 

@@ -29,8 +29,8 @@ Alternatively, you can conveniently download one of the provided examples from
 the following
 `GitHub repository <https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/>`_.
 
-On the Product details page, from the :guilabel:`Action` dropdown, select
-:guilabel:`Load Packages from SBOMs`:
+On the Product details page, from the :guilabel:`Actions` dropdown, select
+:guilabel:`Import SBOM`:
 
 * Click the :guilabel:`Choose File` button on the **SBOM file or zip archive** field.
 * Select your SBOM (.cdx.json or .spdx.json) and click the :guilabel:`Open` button.
