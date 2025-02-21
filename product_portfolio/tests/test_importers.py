@@ -37,6 +37,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
+from product_portfolio.models import ScanCodeProject
 
 
 class ProductRelationImporterTestCase(TestCase):
@@ -751,12 +752,29 @@ class ProductImportFromScanTestCase(TestCase):
         }
         self.assertDictEqual(expected_details, resource.additional_details)
 
+        scancode_project = importer.scancode_project
+        self.assertEqual(self.product1, scancode_project.product)
+        self.assertEqual(self.dataspace, scancode_project.dataspace)
+        self.assertEqual(ScanCodeProject.ProjectType.IMPORT_SCAN_RESULTS, scancode_project.type)
+        self.assertTrue(scancode_project.input_file.name.endswith("import_from_scan.json"))
+        self.assertEqual(self.super_user, scancode_project.created_by)
+        self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
+        extecped = [
+            "- Imported 1 packages",
+            "- Imported 1 product packages",
+            "- Imported 3 codebase resources",
+        ]
+        self.assertEqual(extecped, scancode_project.import_log)
+
         # Make sure we do not create duplicates on re-importing
         upload_file = wrap_as_temp_uploaded_file(scan_input_location)
         importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual({}, created_counts)
+        scancode_project = importer.scancode_project
+        self.assertEqual(ScanCodeProject.Status.WARNING, scancode_project.status)
+        self.assertEqual(["Nothing imported."], scancode_project.import_log)
 
     def test_product_portfolio_product_import_from_scan_scanpipe_results(self):
         scan_input_location = self.testfiles_path / "scancodeio_scan_codebase_results.json"
