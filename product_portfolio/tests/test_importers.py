@@ -22,6 +22,7 @@ from component_catalog.models import Package
 from dje.models import Dataspace
 from dje.tests import create_admin
 from dje.tests import create_superuser
+from dje.tests import wrap_as_temp_uploaded_file
 from license_library.models import License
 from license_library.models import LicenseChoice
 from organization.models import Owner
@@ -714,7 +715,8 @@ class ProductImportFromScanTestCase(TestCase):
 
     def test_product_portfolio_product_import_from_scan_proper(self):
         scan_input_location = self.testfiles_path / "import_from_scan.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual(
@@ -750,14 +752,16 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertDictEqual(expected_details, resource.additional_details)
 
         # Make sure we do not create duplicates on re-importing
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual({}, created_counts)
 
     def test_product_portfolio_product_import_from_scan_scanpipe_results(self):
         scan_input_location = self.testfiles_path / "scancodeio_scan_codebase_results.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual(
@@ -790,21 +794,24 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertDictEqual(expected_details, resource.additional_details)
 
         # Make sure we do not create duplicates on re-importing
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual({}, created_counts)
 
     def test_product_portfolio_product_import_from_scan_package_without_purl(self):
         scan_input_location = self.testfiles_path / "package_without_purl.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         self.assertEqual([], warnings)
         self.assertEqual({}, created_counts)
 
     def test_product_portfolio_product_import_from_scan_duplicated_purl_are_imported_once(self):
         scan_input_location = self.testfiles_path / "duplicated_purl.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
 
         self.assertEqual([], warnings)
@@ -828,28 +835,32 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertIn("artifacts/six-1.14.0/setup.py", codebase_resources)
 
     def test_product_portfolio_product_import_from_scan_input_file_errors(self):
-        expected = "The file content is not proper JSON."
+        expected = "Invalid JSON file: Expecting value: line 1 column 1 (char 0)"
         scan_input_location = Path(__file__)
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
         expected = "The uploaded file is not a proper ScanCode output results."
         scan_input_location = self.testfiles_path / "json_but_not_scan_results.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
         options_str = "--copyright --package"
         expected = f"The Scan run is missing those required options: {options_str}"
         scan_input_location = self.testfiles_path / "missing_scancode_options.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
         expected = "'This ScanCode.io output does not include packages nor dependencies data."
         scan_input_location = self.testfiles_path / "missing_correct_pipeline.json"
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
@@ -859,13 +870,13 @@ class ProductImportFromScanTestCase(TestCase):
             "Ensure this value has at most 1024 characters (it has 3466)."
         )
         scan_input_location = self.testfiles_path / "package_data_validation_error.json"
-        importer = ImportFromScan(
-            self.product1, self.super_user, scan_input_location, stop_on_error=True
-        )
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file, stop_on_error=True)
         with self.assertRaisesMessage(ValidationError, expected):
             importer.save()
 
-        importer = ImportFromScan(self.product1, self.super_user, scan_input_location)
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(self.product1, self.super_user, upload_file)
         warnings, created_counts = importer.save()
         expected = [
             "pkg:pypi/six?uuid=bbe2794a-d81a-4728-a66d-5700a3735977 license_expression: "
