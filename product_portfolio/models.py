@@ -1457,19 +1457,21 @@ class ScanCodeProjectQuerySet(ProductSecuredQuerySet):
 
 
 class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
-    """Wrap a ScanCode.io Project."""
+    """Wrap Product imports, such as a ScanCode.io Project."""
 
     class ProjectType(models.TextChoices):
         IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import Package manifests")
         LOAD_SBOMS = "LOAD_SBOMS", _("Import SBOM")
         PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Import ScanCode.io project")
         IMPROVE_FROM_PURLDB = "IMPROVE_FROM_PURLDB", _("Improve from PurlDB")
+        IMPORT_SCAN_RESULTS = "IMPORT_SCAN_RESULTS", _("Import ScanCode scan results")
 
     class Status(models.TextChoices):
         SUBMITTED = "submitted"
         IMPORT_STARTED = "importing"
         SUCCESS = "success", _("Completed")
         FAILURE = "failure"
+        WARNING = "warning"
 
     uuid = models.UUIDField(
         _("UUID"),

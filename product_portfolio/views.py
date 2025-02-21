@@ -2016,7 +2016,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 messages.success(request, format_html(msg))
             if warnings:
                 messages.warning(request, format_html("<br>".join(warnings)))
-            return redirect(product)
+            return redirect(f"{product.get_absolute_url()}#imports")
     else:
         form = form_class(request.user)
 

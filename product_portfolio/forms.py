@@ -543,7 +543,7 @@ class ImportFromScanForm(forms.Form):
         extensions=["json"],
     )
     create_codebase_resources = forms.BooleanField(
-        label=_('Create Codebase Resources (from <code>"files"</code>)'),
+        label=_('Create Codebase Resources (from "files" resources)'),
         required=False,
         initial=False,
         help_text=_(

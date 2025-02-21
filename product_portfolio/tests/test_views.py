@@ -3090,15 +3090,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = "Import SBOM"
         self.assertContains(response, expected)
 
-        data = {"input_file": ContentFile("{}", name="file.json")}
+        data = {"input_file": ContentFile('{"data": "data"}', name="file.json")}
         response = self.client.post(url, data=data, follow=True)
         expected = "SBOM file submitted to ScanCode.io for inspection."
         self.assertContains(response, expected)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+        data = {"input_file": ContentFile('{"data": "data"}', name="file2.json")}
         with override_settings(CLAMD_ENABLED=True):
             with mock.patch("dje.fields.SmartFileField.scan_file_for_virus") as scan:
-                self.client.post(url, data=data, follow=True)
+                response = self.client.post(url, data=data, follow=True)
                 scan.assert_called_once()
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
