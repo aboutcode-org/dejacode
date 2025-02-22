@@ -1325,7 +1325,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         expected = """
         <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled">
-          <i class="far fa-clone"></i> Compare
+          <i class="fa-solid fa-code-compare"></i> Compare
         </button>
         """
         self.assertContains(response, expected, html=True)

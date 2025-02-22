@@ -157,7 +157,7 @@ class ProductListView(
     model = Product
     filterset_class = ProductFilterSet
     template_name = "product_portfolio/product_list.html"
-    template_list_table = "product_portfolio/includes/product_list_table.html"
+    template_list_table = "product_portfolio/tables/product_list_table.html"
     paginate_by = 50
     put_results_in_session = False
     group_name_version = True
