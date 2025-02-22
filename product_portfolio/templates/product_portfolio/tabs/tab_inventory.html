@@ -62,24 +62,29 @@
         </span>
         {{ filter_productcomponent.form.review_status }}
       </th>
-      <th style="width: 106px;">
+      <th style="width: 75px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.is_deployed }}">
-          {% trans 'Deployed' %}
+          {% trans 'Dep.' %}
         </span>
         {{ filter_productcomponent.form.is_deployed }}
       </th>
-      <th style="width: 100px;">
+      <th style="width: 75px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.is_modified }}">
-          {% trans 'Modified' %}
+          {% trans 'Mod.' %}
         </span>
         {{ filter_productcomponent.form.is_modified }}
       </th>
       {% if product.dataspace.enable_vulnerablecodedb_access %}
-        <th style="width: 75;">
+        <th style="width: 75px;">
           <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="{{ help_texts.risk_score }}">
             {% trans 'Risk' %}
           </span>
           {{ filter_productcomponent.form.weighted_risk_score }}
+        </th>
+      {% endif %}
+      {% if display_scan_features %}
+        <th style="width: 90px;">
+          {% trans 'Scan' %}
         </th>
       {% endif %}
     </tr>
@@ -138,24 +143,20 @@
               {% endif %}
             </td>
           {% endif %}
-        </tr>
-        {% if relation.package and display_scan_features %}
-          <tr class="{{ rowcolors }} extra-details">
-            <td colspan="100" class="ps-4">
-              <div class="col-2 p-0">
-                {% if relation.scan %}
-                  <strong>{% trans 'Scan' %}:</strong> {% include 'component_catalog/includes/scan_progress.html' with scan=relation.scan view_url=relation.package.get_absolute_url compact_mode=True only %}
-                {% else %}
-                  {% with relation.package.download_url as download_url %}
-                    <span{% if download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace relation.package.uuid %}"{% endif %}>
-                      <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}" data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}"><i class="fas fa-barcode"></i> Scan</button>
-                    </span>
-                  {% endwith %}
-                {% endif %}
-              </div>
+          {% if display_scan_features %}
+            <td>
+              {% if relation.scan %}
+                {% include 'product_portfolio/tables/scan_progress_cell.html' with scan=relation.scan view_url=relation.package.get_absolute_url compact_mode=True only %}
+              {% elif relation.package %}
+                {% with relation.package.download_url as download_url %}
+                  <span{% if download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace relation.package.uuid %}"{% endif %}>
+                    <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}" data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}"><i class="fas fa-barcode"></i> Scan</button>
+                  </span>
+                {% endwith %}
+              {% endif %}
             </td>
-          </tr>
-        {% endif %}
+          {% endif %}
+        </tr>
         {% if relation.package.download_url %}
           <tr class="{{ rowcolors }} extra-details">
             <td colspan="100" class="ps-4 text-break">
