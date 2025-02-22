@@ -1,4 +1,4 @@
-name: Publish Docker image on GHCR
+name: Publish Docker image on GitHub Container Registry
 # https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions
 
 on:
@@ -16,7 +16,7 @@ env:
 
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
