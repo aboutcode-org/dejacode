@@ -1,4 +1,4 @@
-name: Test CI
+name: Run unit tests
 
 on:
   push:
@@ -14,7 +14,7 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -54,9 +54,6 @@ jobs:
 
       - name: Start Redis
         uses: supercharge/redis-github-action@1.5.0
-
-#      - name: Check Django deployment settings
-#        run: make check-deploy
 
       - name: Build the documentation
         run: make docs
