@@ -950,6 +950,9 @@ class ProductTabInventoryView(
                 scan = scans_by_uri.get(productpackage.package.download_url)
                 if scan:
                     scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                    scan["delete_url"] = reverse(
+                        "component_catalog:scan_delete", args=[scan.get("uuid")]
+                    )
                     productpackage.scan = scan
                 injected_productpackages.append(productpackage)
 

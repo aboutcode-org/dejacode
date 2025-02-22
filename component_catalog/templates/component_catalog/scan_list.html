@@ -36,9 +36,11 @@
   {{ block.super }}
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      $('.scan_delete_link').on('click', function() {
-        let delete_url = $(this).data('delete-url');
-        $('#scan-delete-modal a.delete-confirm').attr('href', delete_url);
+      document.querySelectorAll('.scan_delete_link').forEach(link => {
+        link.addEventListener('click', function() {
+          let deleteUrl = this.getAttribute('data-delete-url');
+          document.querySelector('#scan-delete-modal a.delete-confirm').setAttribute('href', deleteUrl);
+        });
       });
     });
   </script>
