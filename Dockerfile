@@ -16,19 +16,19 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 ARG APP_UID=1000
 ARG APP_GID=1000
 
-ENV APP_NAME dejacode
-ENV APP_USER app
-ENV APP_UID ${APP_UID}
-ENV APP_GID ${APP_GID}
-ENV APP_DIR /opt/$APP_NAME
-ENV VENV_LOCATION /opt/$APP_NAME/.venv
+ENV APP_NAME=dejacode
+ENV APP_USER=app
+ENV APP_UID=${APP_UID}
+ENV APP_GID=${APP_GID}
+ENV APP_DIR=/opt/$APP_NAME
+ENV VENV_LOCATION=/opt/$APP_NAME/.venv
 
 # Force Python unbuffered stdout and stderr (they are flushed to terminal immediately)
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 # Do not write Python .pyc files
-ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONDONTWRITEBYTECODE=1
 # Add the app dir in the Python path for entry points availability
-ENV PYTHONPATH $PYTHONPATH:$APP_DIR
+ENV PYTHONPATH=$PYTHONPATH:$APP_DIR
 
 # OS requirements
 RUN apt-get update \
@@ -59,7 +59,7 @@ RUN mkdir -p /var/$APP_NAME/static/ /var/$APP_NAME/media/
 # Create the virtualenv
 RUN python -m venv $VENV_LOCATION
 # Enable the virtualenv, similar effect as "source activate"
-ENV PATH $VENV_LOCATION/bin:$PATH
+ENV PATH=$VENV_LOCATION/bin:$PATH
 
 # Install the dependencies before the codebase COPY for proper Docker layer caching
 COPY --chown=$APP_USER:$APP_USER setup.cfg setup.py $APP_DIR/
