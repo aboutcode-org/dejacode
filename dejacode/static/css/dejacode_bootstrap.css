@@ -693,6 +693,19 @@ a[data-category-pk]:focus,
 body.signup-form {
   background-color: var(--bs-djc-blue-bg);
 }
+body.signup-form .nav-link {
+  color: white;
+}
+body.signup-form .nav-link.active {
+  color: white;
+  background-color: var(--bs-djc-blue-bg);
+}
+body.signup-form .nav-item.show .nav-link,
+body.signup-form .nav-link.active {
+  border-top-width: 1px;
+  border-top-color: initial;
+  border-bottom-color: var(--bs-djc-blue-bg);
+}
 body.signup-form label {
   display: none;
 }
