@@ -165,14 +165,14 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                 ),
                 Div(
                     Field("updates_email_notification"),
-                    css_class="alert alert-primary px-2",
+                    css_class="alert alert-primary px-2 py-2",
                 ),
                 "hcaptcha",
                 tos,
                 Div(
                     StrictSubmit(
                         "submit",
-                        _("Create your account"),
+                        _("Create account"),
                         css_class="btn btn-warning",
                     ),
                     css_class="d-grid",
