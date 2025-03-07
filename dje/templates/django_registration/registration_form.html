@@ -4,10 +4,13 @@
 
 {% block page_title %}{% trans 'Sign Up' %}{% endblock %}
 
-{% block header %}{% endblock %}
+{% block header %}
+  <script async defer src="https://eu.altcha.org/js/latest/altcha.min.js" type="module"></script>
+{% endblock %}
 {% block bodyclass %}signup-form{% endblock %}
 
 {% block content %}
+  {{ form.errors }}
   <div class="row">
     <div class="col-sm-5 text-white" style="font-size: 1.1rem !important;">
       <ul class="nav nav-tabs nav-fill" role="tablist">
