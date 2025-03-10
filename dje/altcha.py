@@ -9,9 +9,7 @@
 
 from django import forms
 from django.forms.widgets import HiddenInput
-from django.http import JsonResponse
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_GET
 
 # TODO: Add as a dependency
 import altcha
@@ -90,8 +88,31 @@ class AltchaField(forms.Field):
         "required": _("Altcha CAPTCHA token is missing."),
     }
 
+    # TODO: This is only called once on Form declaration.
+    # Making the challenge always the same.
     def __init__(self, *args, **kwargs):
-        widget_options = {key: kwargs.pop(key, None) for key in AltchaWidget.default_options}
+        import json
+
+        challengeurl = kwargs.pop("challengeurl", None)
+        challengejson = kwargs.pop("challengejson", None)
+
+        # If no ``challengeurl`` is provided, auto-generate ``challengejson``
+        if challengeurl is None and challengejson is None:
+            challenge = get_altcha_challenge()
+            challengejson = json.dumps(challenge.__dict__)
+
+        # Prepare widget options
+        widget_options = {
+            "challengeurl": challengeurl,
+            "challengejson": challengejson,
+        }
+
+        # Include any other ALTCHA options passed
+        for key in AltchaWidget.default_options:
+            if key not in widget_options:
+                widget_options[key] = kwargs.pop(key, None)
+
+        # Assign the updated widget
         kwargs["widget"] = AltchaWidget(**widget_options)
         super().__init__(*args, **kwargs)
 
@@ -124,12 +145,3 @@ def get_altcha_challenge():
         )
     )
     return challenge
-
-
-@require_GET
-def get_altcha_challenge_view(request):
-    try:
-        challenge = get_altcha_challenge()
-        return JsonResponse(challenge.__dict__)
-    except Exception as e:
-        return JsonResponse({"error": f"Failed to create challenge: {str(e)}"}, status=500)

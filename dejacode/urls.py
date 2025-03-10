@@ -28,7 +28,6 @@ from component_catalog.api import SubcomponentViewSet
 from component_catalog.views import send_scan_notification
 from dje import two_factor
 from dje.admin import dejacode_site
-from dje.altcha import get_altcha_challenge_view
 from dje.api import ExternalReferenceViewSet
 from dje.forms import DejaCodeAuthenticationForm
 from dje.registration import DejaCodeActivationView
@@ -196,7 +195,6 @@ if settings.ENABLE_SELF_REGISTRATION:
             name="django_registration_register",
         ),
         path("account/", include("django_registration.backends.activation.urls")),
-        path("altcha/", get_altcha_challenge_view, name="get_altcha_challenge"),
     ]
 
 if settings.DEBUG and settings.DEBUG_TOOLBAR:

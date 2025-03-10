@@ -88,8 +88,10 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
     use_required_attribute = False
     captcha = AltchaField(
-        challengeurl="/altcha/",
+        # challengeurl="/altcha/",
+        # strings={"label": "I'm not a robot"},
         # floating=True,
+        hidefooter=True,
         debug=True,
     )
 
