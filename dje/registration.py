@@ -86,12 +86,11 @@ class DejaCodeActivationView(ActivationView):
 class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
     """Used in `registration.backends.hmac.views.RegistrationView`."""
 
-    use_required_attribute = False
+    use_required_attribute = True
     captcha = AltchaField(
         # strings={"label": "I'm not a robot"},
         floating=True,
         hidefooter=True,
-        debug=True,
     )
 
     class Meta(RegistrationFormUniqueEmail.Meta):

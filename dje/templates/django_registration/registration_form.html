@@ -8,7 +8,6 @@
 {% block bodyclass %}signup-form{% endblock %}
 
 {% block content %}
-  {{ form.errors }}
   <div class="row">
     <div class="col-sm-5 text-white" style="font-size: 1.1rem !important;">
       <ul class="nav nav-tabs nav-fill" role="tablist">
@@ -75,13 +74,13 @@
     </div>
 
     <div class="col-sm-5 offset-sm-1">
-      <h1 class="text-white mt-0 mb-2">Create your DejaCode account</h1>
+      <h1 class="text-white mt-0 mb-3">Create your DejaCode account</h1>
       <div class="card">
         <div class="card-body">
           {% crispy form %}
         </div>
       </div>
-      <div class="text-center fw-normal m-4">
+      <div class="text-center fw-normal my-3">
         <a href="{% url 'login' %}" class="text-white">Already have an account?</a>
       </div>
     </div>
