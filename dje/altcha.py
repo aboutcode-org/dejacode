@@ -16,12 +16,17 @@ from django.views.decorators.http import require_GET
 import altcha
 from altcha import ChallengeOptions
 from altcha import create_challenge
+from django.forms.widgets import HiddenInput
 
 ALTCHA_HMAC_KEY = "your-altcha-hmac-key"
 
 
+class AltchaWidget(HiddenInput):
+    template_name = "widgets/altcha.html"
+
+
 class AltchaField(forms.Field):
-    widget = forms.HiddenInput
+    widget = AltchaWidget
     default_error_messages = {
         "error": _("Failed to process CAPTCHA token"),
         "invalid": _("Invalid CAPTCHA token."),
@@ -48,19 +53,21 @@ class AltchaField(forms.Field):
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
 
 
+def get_altcha_challenge():
+    # Create the challenge using your options
+    challenge = create_challenge(
+        ChallengeOptions(
+            hmac_key=ALTCHA_HMAC_KEY,
+            max_number=50000,
+        )
+    )
+    return challenge
+
+
 @require_GET
 def get_altcha_challenge_view(request):
     try:
-        # Create the challenge using your options
-        challenge = create_challenge(
-            ChallengeOptions(
-                hmac_key=ALTCHA_HMAC_KEY,
-                max_number=50000,
-            )
-        )
-        # Return the challenge as a JSON response
-        return JsonResponse(challenge.__dict__)  # Use JsonResponse to send JSON data
-
+        challenge = get_altcha_challenge()
+        return JsonResponse(challenge.__dict__)
     except Exception as e:
-        # Handle exceptions and return an error response
         return JsonResponse({"error": f"Failed to create challenge: {str(e)}"}, status=500)

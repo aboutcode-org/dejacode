@@ -166,8 +166,6 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                     css_class="alert alert-primary px-2 py-2",
                 ),
                 "altcha_token",
-                # TODO: Integrate this into the field widget directly! Include the JS as well.
-                HTML('<altcha-widget challengeurl="/altcha/" name="altcha_token"></altcha-widget>'),
                 tos,
                 Div(
                     StrictSubmit(
