@@ -8,6 +8,7 @@
 
 
 from django import forms
+from django.forms.widgets import HiddenInput
 from django.http import JsonResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
@@ -16,23 +17,68 @@ from django.views.decorators.http import require_GET
 import altcha
 from altcha import ChallengeOptions
 from altcha import create_challenge
-from django.forms.widgets import HiddenInput
 
 ALTCHA_HMAC_KEY = "your-altcha-hmac-key"
 
 
 class AltchaWidget(HiddenInput):
     template_name = "widgets/altcha.html"
+    default_options = {
+        # Required: URL of your server to fetch the challenge from.
+        "challengeurl": None,
+        # Required: JSON-encoded challenge data
+        # (use instead of challengeurl to avoid HTTP request).
+        "challengejson": None,
+        # Automatically verify without user interaction.
+        # Possible values: "off", "onfocus", "onload", "onsubmit".
+        "auto": None,
+        # Artificial delay before verification (in milliseconds, default: 0).
+        "delay": None,
+        # Challenge expiration duration (in milliseconds).
+        "expire": None,
+        # Enable floating UI.
+        # Possible values: "auto", "top", "bottom".
+        "floating": None,
+        # CSS selector of the “anchor” to which the floating UI is attached.
+        # Default: submit button in the related form.
+        "floatinganchor": None,
+        # Y offset from the anchor element for the floating UI (in pixels, default: 12).
+        "floatingoffset": None,
+        # Hide the footer (ALTCHA link).
+        "hidefooter": None,
+        # Hide the ALTCHA logo.
+        "hidelogo": None,
+        # Max number to iterate to (default: 1,000,000).
+        "maxnumber": None,
+        # JSON-encoded translation strings for customization.
+        "strings": None,
+        # Automatically re-fetch and re-validate when the challenge expires
+        # (default: true).
+        "refetchonexpire": None,
+        # Number of workers for Proof of Work (PoW).
+        # Default: navigator.hardwareConcurrency or 8 (max value: 16).
+        "workers": None,
+        # URL of the Worker script (default: ./worker.js, only for external builds).
+        "workerurl": None,
+        # Print log messages in the console (for debugging).
+        "debug": None,
+        # Causes verification to always fail with a "mock" error.
+        "mockerror": None,
+        # Generates a “mock” challenge within the widget, bypassing the request to
+        # challengeurl.
+        "test": None,
+    }
 
-    def __init__(self, challengeurl=None, floating=False, attrs=None):
-        super().__init__(attrs)
-        self.challengeurl = challengeurl
-        self.floating = floating
+    def __init__(self, **kwargs):
+        """Initialize the ALTCHA widget with configurable options."""
+        super().__init__()
+        self.options = {
+            key: kwargs.get(key, self.default_options[key]) for key in self.default_options
+        }
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        context["widget"]["challengeurl"] = self.challengeurl
-        context["widget"]["floating"] = self.floating
+        context["widget"]["altcha_options"] = self.options  # Pass options to template
         return context
 
 
@@ -44,8 +90,9 @@ class AltchaField(forms.Field):
         "required": _("Altcha CAPTCHA token is missing."),
     }
 
-    def __init__(self, challengeurl=None, floating=False, *args, **kwargs):
-        kwargs["widget"] = AltchaWidget(challengeurl=challengeurl, floating=floating)
+    def __init__(self, *args, **kwargs):
+        widget_options = {key: kwargs.pop(key, None) for key in AltchaWidget.default_options}
+        kwargs["widget"] = AltchaWidget(**widget_options)
         super().__init__(*args, **kwargs)
 
     def validate(self, value):

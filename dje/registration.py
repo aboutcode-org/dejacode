@@ -90,6 +90,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
     captcha = AltchaField(
         challengeurl="/altcha/",
         # floating=True,
+        debug=True,
     )
 
     class Meta(RegistrationFormUniqueEmail.Meta):

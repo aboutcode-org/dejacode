@@ -1,7 +1,11 @@
 <script async defer src="https://eu.altcha.org/js/latest/altcha.min.js" type="module"></script>
 {% include "django/forms/widgets/input.html" %}
-<altcha-widget
-    name="{{ widget.name }}"
-    {% if widget.challengeurl %} challengeurl="{{ widget.challengeurl }}" {% endif %}
-    {% if widget.floating %} floating {% endif %}
+<altcha-widget name="{{ widget.name }}"
+    {% for key, value in widget.altcha_options.items %}
+        {% if value is not None %}
+            {% if value is True %} {{ key }}
+            {% else %} {{ key }}="{{ value }}"
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 ></altcha-widget>
