@@ -117,7 +117,15 @@ class AltchaWidget(HiddenInput):
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context["js_src_url"] = self.js_src_url
-        context["widget"]["altcha_options"] = self.options  # Pass options to template
+
+        # Generate challengejson if no challengeurl is provided.
+        # A new challenge is generated each time the widget is rendered.
+        challengeurl = self.options.get("challengeurl")
+        if not challengeurl:
+            challenge = get_altcha_challenge()
+            self.options["challengejson"] = json.dumps(challenge.__dict__)
+
+        context["widget"]["altcha_options"] = self.options
         return context
 
 
@@ -130,22 +138,8 @@ class AltchaField(forms.Field):
     }
 
     # TODO: This is only called once on Form declaration.
-    # Making the challenge always the same.
     def __init__(self, *args, **kwargs):
-        challengeurl = kwargs.pop("challengeurl", None)
-        challengejson = kwargs.pop("challengejson", None)
-
-        # If no ``challengeurl`` is provided, auto-generate ``challengejson``
-        if challengeurl is None and challengejson is None:
-            challenge = get_altcha_challenge()
-            challengejson = json.dumps(challenge.__dict__)
-
-        # Prepare widget options
-        widget_options = {
-            "challengeurl": challengeurl,
-            "challengejson": challengejson,
-        }
-
+        widget_options = {}
         # Include any other ALTCHA options passed
         for key in AltchaWidget.default_options:
             if key not in widget_options:
@@ -153,7 +147,6 @@ class AltchaField(forms.Field):
 
         # Assign the updated widget
         kwargs["widget"] = AltchaWidget(**widget_options)
-        kwargs["widget"].attrs.update()
         super().__init__(*args, **kwargs)
 
     def validate(self, value):
