@@ -1,4 +1,4 @@
-<script async defer src="https://eu.altcha.org/js/latest/altcha.min.js" type="module"></script>
+<script async defer src="{{ js_src_url }}" type="module"></script>
 {% include "django/forms/widgets/input.html" %}
 <altcha-widget name="{{ widget.name }}"
     {% for key, value in widget.altcha_options.items %}
