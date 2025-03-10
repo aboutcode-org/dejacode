@@ -28,7 +28,7 @@ from django_registration.backends.activation.views import ActivationView
 from django_registration.exceptions import ActivationError
 from django_registration.forms import RegistrationFormUniqueEmail
 
-from dje.altcha import AltchaField
+from django_altcha import AltchaField
 from dje.forms import StrictSubmit
 from dje.models import Dataspace
 from dje.models import History
@@ -88,9 +88,8 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
     use_required_attribute = False
     captcha = AltchaField(
-        # challengeurl="/altcha/",
         # strings={"label": "I'm not a robot"},
-        # floating=True,
+        floating=True,
         hidefooter=True,
         debug=True,
     )

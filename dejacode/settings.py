@@ -332,7 +332,7 @@ PREREQ_APPS = [
     "axes",
     "django_otp",
     "django_otp.plugins.otp_totp",
-    "hcaptcha_field",
+    "django_altcha",
 ]
 
 PROJECT_APPS = [

@@ -1,26 +1,65 @@
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.
-# DejaCode is a trademark of nexB Inc.
-# SPDX-License-Identifier: AGPL-3.0-only
-# See https://github.com/aboutcode-org/dejacode for support or download.
+# SPDX-License-Identifier: MIT
+# See https://github.com/aboutcode-org/django-altcha for support or download.
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+import secrets
 
 from django import forms
+from django.conf import settings
 from django.forms.widgets import HiddenInput
 from django.utils.translation import gettext_lazy as _
 
 # TODO: Add as a dependency
 import altcha
-from altcha import ChallengeOptions
-from altcha import create_challenge
 
-ALTCHA_HMAC_KEY = "your-altcha-hmac-key"
+"""
+1. Add "to INSTALLED_APPS:
+
+INSTALLED_APPS = [
+    # ...
+    "django_altcha"
+]
+
+2. Add the field on your forms:
+
+from django_altcha import AltchaField
+
+class Form(forms.Form):
+    captcha = AltchaField()
+
+
+You can provide any configuration options available at
+https://altcha.org/docs/website-integration/ such as:
+
+class Form(forms.Form):
+    captcha = AltchaField(
+        floating=True,
+        debug=True,
+        # ...
+    )
+"""
+
+# Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present
+ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
+
+
+def get_altcha_challenge():
+    """Return an ALTCHA challenge."""
+    challenge = altcha.create_challenge(
+        altcha.ChallengeOptions(
+            hmac_key=ALTCHA_HMAC_KEY,
+            max_number=50000,
+        )
+    )
+    return challenge
 
 
 class AltchaWidget(HiddenInput):
-    template_name = "widgets/altcha.html"
+    template_name = "altcha_widget.html"
     default_options = {
         # Required: URL of your server to fetch the challenge from.
         "challengeurl": None,
@@ -91,8 +130,6 @@ class AltchaField(forms.Field):
     # TODO: This is only called once on Form declaration.
     # Making the challenge always the same.
     def __init__(self, *args, **kwargs):
-        import json
-
         challengeurl = kwargs.pop("challengeurl", None)
         challengejson = kwargs.pop("challengejson", None)
 
@@ -134,14 +171,3 @@ class AltchaField(forms.Field):
 
         if not verified:
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
-
-
-def get_altcha_challenge():
-    # Create the challenge using your options
-    challenge = create_challenge(
-        ChallengeOptions(
-            hmac_key=ALTCHA_HMAC_KEY,
-            max_number=50000,
-        )
-    )
-    return challenge
