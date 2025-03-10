@@ -24,6 +24,17 @@ ALTCHA_HMAC_KEY = "your-altcha-hmac-key"
 class AltchaWidget(HiddenInput):
     template_name = "widgets/altcha.html"
 
+    def __init__(self, challengeurl=None, floating=False, attrs=None):
+        super().__init__(attrs)
+        self.challengeurl = challengeurl
+        self.floating = floating
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["challengeurl"] = self.challengeurl
+        context["widget"]["floating"] = self.floating
+        return context
+
 
 class AltchaField(forms.Field):
     widget = AltchaWidget
@@ -32,6 +43,10 @@ class AltchaField(forms.Field):
         "invalid": _("Invalid CAPTCHA token."),
         "required": _("Altcha CAPTCHA token is missing."),
     }
+
+    def __init__(self, challengeurl=None, floating=False, *args, **kwargs):
+        kwargs["widget"] = AltchaWidget(challengeurl=challengeurl, floating=floating)
+        super().__init__(*args, **kwargs)
 
     def validate(self, value):
         super().validate(value)

@@ -1,3 +1,7 @@
 <script async defer src="https://eu.altcha.org/js/latest/altcha.min.js" type="module"></script>
 {% include "django/forms/widgets/input.html" %}
-<altcha-widget challengeurl="/altcha/" name="altcha_token" floating></altcha-widget>
+<altcha-widget
+    name="{{ widget.name }}"
+    {% if widget.challengeurl %} challengeurl="{{ widget.challengeurl }}" {% endif %}
+    {% if widget.floating %} floating {% endif %}
+></altcha-widget>

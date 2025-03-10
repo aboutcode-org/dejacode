@@ -87,7 +87,10 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
     """Used in `registration.backends.hmac.views.RegistrationView`."""
 
     use_required_attribute = False
-    altcha_token = AltchaField()
+    captcha = AltchaField(
+        challengeurl="/altcha/",
+        # floating=True,
+    )
 
     class Meta(RegistrationFormUniqueEmail.Meta):
         model = User
@@ -98,7 +101,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
             "last_name",
             "company",
             "password1",
-            "altcha_token",
+            "captcha",
             "updates_email_notification",
         ]
 
@@ -165,7 +168,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                     Field("updates_email_notification"),
                     css_class="alert alert-primary px-2 py-2",
                 ),
-                "altcha_token",
+                "captcha",
                 tos,
                 Div(
                     StrictSubmit(
