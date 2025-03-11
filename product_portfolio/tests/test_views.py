@@ -1097,7 +1097,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_absolute_url()
 
         expected1 = '<div class="dropdown-header">PurlDB</div>'
-        expected2 = "Improve Packages from PurlDB"
+        expected2 = "<strong>Improve</strong> Packages from PurlDB"
         expected3 = self.product1.get_url("improve_packages_from_purldb")
 
         response = self.client.get(url)

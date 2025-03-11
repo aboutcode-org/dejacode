@@ -52,7 +52,7 @@
               <i class="fas fa-barcode"></i> <strong>Scan</strong> all Packages
             </a>
           {% endif %}
-          {% if purldb_enabled %}
+          {% if request.user.dataspace.enable_purldb_access %}
             <div class="dropdown-header">PurlDB</div>
             <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}">
               <i class="fas fa-database"></i> <strong>Improve</strong> Packages from PurlDB
