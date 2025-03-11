@@ -23,6 +23,31 @@ services:
       - redis_data:/data
     restart: always
 
+  # This service is responsible for ensuring the correct ownership of files
+  # in the shared volumes used by the application (static and media).
+  # It ensures that all files inside the `/var/dejacode/` directory are owned
+  # by the user and group with the UID and GID defined in the environment variables
+  # APP_UID and APP_GID, which default to 1000 if not set.
+  #
+  # The service runs only once (due to "restart: no") and performs a `chown` operation
+  # to change the ownership of the static and media directories, ensuring proper
+  # file access rights for the running application containers.
+  #
+  # Volumes mounted:
+  # - static: Ensures the ownership of static files in the /var/dejacode/static directory
+  # - media: Ensures the ownership of media files in the /var/dejacode/media directory
+  #
+  # Notes: This service can be removed once DejaCode 5.3.0 will be released.
+  chown:
+    image: alpine:latest
+    restart: "no"
+    command: chown -R ${APP_UID:-1000}:${APP_GID:-1000} /var/dejacode/
+    env_file:
+      - docker.env
+    volumes:
+      - static:/var/dejacode/static
+      - media:/var/dejacode/media
+
   web:
     build: .
     command: sh -c "
@@ -46,6 +71,8 @@ services:
         condition: service_started
       clamav:
         condition: service_started
+      chown:
+        condition: service_completed_successfully
 
   worker:
     build: .
@@ -63,6 +90,7 @@ services:
       - redis
       - db
       - web
+      - chown
 
   scheduler:
     build: .
@@ -78,6 +106,7 @@ services:
       - redis
       - db
       - web
+      - chown
 
   nginx:
     image: nginx:alpine

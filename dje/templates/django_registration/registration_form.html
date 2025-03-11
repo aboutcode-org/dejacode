@@ -9,38 +9,72 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-sm-6 text-white">
-      <h2 class="mb-3">Explore DejaCode now</h2>
-      <p>
-        A free DejaCode trial account allows you to use DejaCode in a shared public dataspace!
-      </p>
-      <p>When you sign in to the DejaCode public evaluation dataspace with your free trial account, you can:</p>
-      <ul>
-        <li>Explore, create, and modify components, packages, licenses and assign usage policies to them.</li>
-        <li>Create your own test products and generate attribution.</li>
-        <li>Exercise the DejaCode API and DejaCode integrations with open source tools, such as ScanCode.io.</li>
-        <li>Run reports and use workflow requests.</li>
+    <div class="col-sm-5 text-white" style="font-size: 1.1rem !important;">
+      <ul class="nav nav-tabs nav-fill" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" role="tab" aria-controls="explore-now-tab" aria-current="page" data-bs-toggle="tab" data-bs-target="#explore-now-tab" href="#">Explore now</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" role="tab" aria-controls="about-tab" data-bs-toggle="tab" data-bs-target="#about-tab" href="#">About DejaCode</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" role="tab" aria-controls="private-evaluation-tab" data-bs-toggle="tab" data-bs-target="#private-evaluation-tab" href="#">Private Evaluation</a>
+        </li>
       </ul>
-      <p>To get started, sign up for a free DejaCode trial account via the form on this page.</p>
-
-      <h2 class="mt-4 mb-3">Securely use your own data</h2>
-      <p>
-        We can set up a private instance for evaluating DejaCode using your own data,
-        with access to all features including:
-      </p>
-      <ul>
-        <li>Import your own data privately and securely, including proprietary and third-party software components and licenses.</li>
-        <li>Design and apply your own usage policies.</li>
-        <li>Create your own workflow requests and reports.</li>
-        <li>Generate FOSS compliance artifacts, including Software Bill of Materials (SBOM) for your products and attribution notices.</li>
-      </ul>
-      <p>Each private evaluation is limited to 30 days with unlimited use of DejaCode and free support.</p>
-      <a class="btn btn-warning" href="https://nexb.com/evaluation/" target="_blank">
-        Request private evaluation
-      </a>
+      <div class="tab-content p-3">
+        <div class="tab-pane fade show active" id="explore-now-tab" role="tabpanel" aria-labelledby="explore-now-tab">
+          <h4 class="text-warning mb-3 mt-2">Get Started with DejaCode for Free</h4>
+          <p>
+            Sign up for a <strong>free DejaCode account</strong> and access a shared public dataspace where you can:
+          </p>
+          <ul class="list-unstyled ms-3">
+            <li class="mb-3">✅ <strong class="text-warning">Explore Packages, Components, and Licenses</strong></li>
+            <li class="mb-3">✅ <strong class="text-warning">Create & Track Products</strong> – Manage your software inventory effortlessly and Generate attribution.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Assign Usage Policies</strong> – Define and apply license policies on your inventory items.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Leverage Powerful Integrations</strong> – Leverage tools like <a class="text-warning text-decoration-underline" href="https://github.com/aboutcode-org/scancode.io" target="_blank">ScanCode.io</a> for seamless code scanning, and <a class="text-warning text-decoration-underline" href="https://github.com/aboutcode-org/vulnerablecode" target="_blank">VulnerableCode</a> for vulnerability management.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Run Reports & Automate Workflows</strong> – Gain insights with built-in reporting and workflow automation.</li>
+          </ul>
+          <p>
+            <strong>Ready to get started?</strong> Sign up now for a <strong>free DejaCode trial</strong> using the form on this page!
+          </p>
+        </div>
+        <div class="tab-pane fade" id="about-tab" role="tabpanel" aria-labelledby="about-tab">
+          <h4 class="text-warning mb-3 mt-2">Automate Enterprise-Wide Continuous Compliance with DejaCode</h4>
+          <p>
+            <strong>Your system of record for SBOMs, backed by open data.</strong>
+          </p>
+          <ul class="list-unstyled ms-3">
+            <li class="mb-3">✅ <strong class="text-warning">Scan & Track Open Source and Third-Party Components</strong> – Identify and manage all open source and third-party software used in your projects.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Enforce Compliance Policies</strong> – Apply usage policies at the license or package level and integrate with ScanCode to ensure compliance.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Capture & Maintain SBOMs</strong> – Generate, store, and manage Software Bill of Materials (SBOMs) while keeping historical data for audits.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Enterprise-Grade Compliance & DevOps Integration</strong> – Leverage advanced compliance features with seamless integration into DevOps and software workflows.</li>
+          </ul>
+        </div>
+        <div class="tab-pane fade" id="private-evaluation-tab" role="tabpanel" aria-labelledby="private-evaluation-tab">
+          <h4 class="text-warning mb-3 mt-2">Private DejaCode Evaluation Instance</h4>
+          <p>
+            We can set up a private instance for evaluating DejaCode using your own data, with access to all features, including:
+          </p>
+          <ul class="list-unstyled ms-3">
+            <li class="mb-3">✅ <strong class="text-warning">Import your own data privately and securely</strong>, including proprietary and third-party software components and licenses.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Design and apply your own usage policies</strong>.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Create your own workflow requests and reports</strong>.</li>
+            <li class="mb-3">✅ <strong class="text-warning">Generate FOSS compliance artifacts</strong>, including Software Bill of Materials (SBOM) for your products and attribution notices.</li>
+          </ul>
+          <p>
+            <strong>Each private evaluation is limited to 30 days</strong> with unlimited use of DejaCode and free support.
+          </p>
+          <div class="d-grid">
+            <a class="btn btn-warning" href="https://nexb.com/evaluation/" target="_blank">
+              Request private evaluation
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="col-sm-5 offset-sm-1">
+      <h1 class="text-white mt-0 mb-2">Create your DejaCode account</h1>
       <div class="card">
         <div class="card-body">
           {% crispy form %}
@@ -53,4 +87,12 @@
   </div>
 {% endblock %}
 
-{% block footer %}{% endblock %}
+{% block footer %}
+  <footer class="mt-auto">
+    <div class="container">
+      <p class="text-center text-white mb-2">
+        Copyright (c) nexB Inc., AboutCode and others.
+      </p>
+    </div>
+  </footer>
+{% endblock %}

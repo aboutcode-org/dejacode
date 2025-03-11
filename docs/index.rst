@@ -41,6 +41,7 @@ Welcome to the very start of your DejaCode journey!
     reference-vulnerability-management
     reference-1
     reference-2
+    reference-3-cravex
 
 .. toctree::
    :maxdepth: 1
