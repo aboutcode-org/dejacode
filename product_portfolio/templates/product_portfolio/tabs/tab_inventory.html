@@ -150,7 +150,11 @@
               {% elif relation.package %}
                 {% with relation.package.download_url as download_url %}
                   <span{% if download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace relation.package.uuid %}"{% endif %}>
-                    <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}" data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}"><i class="fas fa-barcode"></i> Scan</button>
+                    <span data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}">
+                      <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}">
+                        <i class="fas fa-barcode"></i> Scan
+                      </button>
+                    </span>
                   </span>
                 {% endwith %}
               {% endif %}

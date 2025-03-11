@@ -48,11 +48,15 @@
           {% endif %}
           {% if has_scan_all_packages %}
             <div class="dropdown-header">Scan</div>
-            <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal"><i class="fas fa-barcode"></i> {% trans 'Scan all Packages' %}</a>
+            <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal">
+              <i class="fas fa-barcode"></i> <strong>Scan</strong>
+            </a>
           {% endif %}
-          {% if request.user.dataspace.enable_purldb_access %}
+          {% if purldb_enabled %}
             <div class="dropdown-header">PurlDB</div>
-            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
+            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}">
+              <i class="fas fa-database"></i> <strong>Improve</strong> Packages from PurlDB
+            </a>
           {% endif %}
           </div>
       </div>
@@ -132,7 +136,7 @@
 {% block extrastyle %}
   {{ block.super }}
   {% if has_edit_productpackage or has_edit_productcomponent %}
-    <link href="{% static "awesomplete/awesomplete-1.1.5.css" %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
+    <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
   {% endif %}
 {% endblock %}
 
