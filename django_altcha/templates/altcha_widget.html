@@ -1,0 +1,11 @@
+<script async defer src="{{ js_src_url }}" type="module"></script>
+{% include "django/forms/widgets/input.html" %}
+<altcha-widget name="{{ widget.name }}"
+    {% for key, value in widget.altcha_options.items %}
+        {% if value is not None %}
+            {% if value is True %} {{ key }}
+            {% else %} {{ key }}="{{ value }}"
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+></altcha-widget>

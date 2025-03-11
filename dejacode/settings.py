@@ -94,8 +94,6 @@ TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 SITE_URL = env.str("SITE_URL", default="")
 
 ENABLE_SELF_REGISTRATION = env.bool("ENABLE_SELF_REGISTRATION", default=False)
-HCAPTCHA_SITEKEY = env.str("HCAPTCHA_SITEKEY", default="")
-HCAPTCHA_SECRET = env.str("HCAPTCHA_SECRET", default="")
 
 # This instructs the browser to only send these cookies over HTTPS connections.
 # Note that this will mean that sessions will not work over HTTP, and the CSRF
@@ -166,9 +164,6 @@ FILE_UPLOAD_PERMISSIONS = 0o644  # -rw-rw-r--
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#data-upload-max-number-fields
 DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
-
-# hCaptcha script location for registration form
-HCAPTCHA_JS_API_URL = env.str("HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
 
 EXTRA_MIDDLEWARE = env.list("EXTRA_MIDDLEWARE", default=[])
 
@@ -332,7 +327,7 @@ PREREQ_APPS = [
     "axes",
     "django_otp",
     "django_otp.plugins.otp_totp",
-    "hcaptcha_field",
+    "django_altcha",
 ]
 
 PROJECT_APPS = [
