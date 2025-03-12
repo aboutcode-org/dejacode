@@ -99,7 +99,7 @@
       {% for relation in relationships %}
         {% cycle 'table-odd' '' as rowcolors silent %}
         <tr class="{{ rowcolors }}{% if show_licenses_policy and relation.inventory_item_compliance_alert %} {{ relation.compliance_table_class }}{% endif %}">
-          <td{% if relation.package %} data-purl="{{ relation.package.package_url }}"{% endif %}>
+          <td{% if relation.package %} data-purl="{{ relation.package.package_url }} data-package-uuid="{{ relation.package.uuid }}"{% endif %}>
             <ul class="list-inline float-end mb-0">
               {% if request.user.is_authenticated and is_user_dataspace and relation.related_component_or_package.request_count %}
                 <li class="list-inline-item me-1">
@@ -146,17 +146,9 @@
           {% if display_scan_features %}
             <td>
               {% if relation.scan %}
-                {% include 'product_portfolio/tables/scan_progress_cell.html' with scan=relation.scan view_url=relation.package.get_absolute_url compact_mode=True only %}
+                {% include 'product_portfolio/tables/scan_progress_cell.html' with scan=relation.scan view_url=relation.package.get_absolute_url only %}
               {% elif relation.package %}
-                {% with relation.package.download_url as download_url %}
-                  <span{% if download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace relation.package.uuid %}"{% endif %}>
-                    <span data-bs-toggle="tooltip" title="{% if download_url %}{% trans 'Submit Scan Request' %}{% else %}{% trans 'Download URL not available' %}{% endif %}">
-                      <button type="button" class="btn btn-outline-dark btn-sm{% if not download_url %} disabled{% endif %}">
-                        <i class="fas fa-barcode"></i> Scan
-                      </button>
-                    </span>
-                  </span>
-                {% endwith %}
+                {% include 'product_portfolio/tables/scan_action_cell.html' with package=relation.package user=request.user only %}
               {% endif %}
             </td>
           {% endif %}
@@ -321,7 +313,12 @@
     document.querySelectorAll('.scan_delete_link').forEach(link => {
       link.addEventListener('click', function() {
         let deleteUrl = this.getAttribute('data-delete-url');
-        document.querySelector('#scan-delete-modal a.delete-confirm').setAttribute('href', deleteUrl);
+        let scanUUID = this.getAttribute('data-scan-uuid');
+        let confirmButton = document.querySelector('#scan-delete-modal button.delete-confirm');
+
+        confirmButton.setAttribute('hx-delete', deleteUrl);
+        confirmButton.setAttribute('hx-target', `#scan-progress-${scanUUID}`);
+        htmx.process(confirmButton);  // Notify HTMX about the hx-delete change.
       });
     });
   {% endif %}
