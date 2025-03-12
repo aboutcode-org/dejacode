@@ -17,9 +17,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Cancel
         </button>
-        <button hx-delete=""
-                hx-target=""
-                hx-swap="outerHTML"
+        <button hx-swap="outerHTML"
                 hx-on--before-request="
                   let target = document.querySelector(this.getAttribute('hx-target'));
                   if (target) target.innerHTML = 'Deleting...';

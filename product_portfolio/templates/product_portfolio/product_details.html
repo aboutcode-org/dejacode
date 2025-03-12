@@ -153,20 +153,22 @@
 
   {% if display_scan_features %}
     <script>
-      $(document).ready(function () {
-        $('#scan-package-modal').on('show.bs.modal', function (event) {
-          let button = $(event.relatedTarget); // Button that triggered the modal
-          let recipient = button.data('package-scan-url'); // Extract info from data-* attributes
-          $(this).find('a#submit-scan-request').attr('href', recipient);
-        })
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("scan-package-modal").addEventListener("show.bs.modal", function (event) {
+          let button = event.relatedTarget; // Button that triggered the modal
+          let recipient = button.getAttribute("data-package-scan-url"); // Extract info from data-* attribute
+          let submitLink = this.querySelector("a#submit-scan-request");
+          submitLink.setAttribute("href", recipient);
+          submitLink.setAttribute("target", "_blank");
+        });
       });
     </script>
   {% endif %}
 
   {% if has_scan_all_packages %}
     <script>
-      $(document).ready(function () {
-        $('#scan_all_packages_submit').on('click', function (event) {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector('#scan_all_packages_submit').addEventListener('click', function() {
           NEXB.displayOverlay("Submitting Scan Request...");
         })
       });

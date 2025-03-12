@@ -16,7 +16,12 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <a id="submit-scan-request" href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}" class="btn btn-success">Submit Scan Request</a>
+        <a id="submit-scan-request"
+           href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}"
+           class="btn btn-success"
+        >
+          Submit Scan Request
+        </a>
       </div>
     </div>
   </div>
