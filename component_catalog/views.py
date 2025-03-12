@@ -1432,15 +1432,6 @@ class PackageDetailsView(
         return super().post(request, *args, **kwargs)
 
 
-def render_scan_action_cell(request, package):
-    template = "product_portfolio/tables/scan_action_cell.html"
-    context = {
-        "package": package,
-        "user": request.user,
-    }
-    return render(request, template, context)
-
-
 @login_required
 def package_scan_view(request, dataspace, uuid):
     user = request.user
@@ -1460,7 +1451,17 @@ def package_scan_view(request, dataspace, uuid):
             )
 
             if is_hxr:
-                return render_scan_action_cell(request, package)
+                template = "product_portfolio/tables/scan_progress_cell.html"
+                scan = scancodeio.get_scan_results(
+                    download_url=download_url,
+                    dataspace=dataspace,
+                )
+                scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                context = {
+                    "scan": scan,
+                    "view_url": package.get_absolute_url(),
+                }
+                return render(request, template, context)
 
             scancode_msg = "The Package URL was submitted to ScanCode.io for scanning."
             messages.success(request, scancode_msg)

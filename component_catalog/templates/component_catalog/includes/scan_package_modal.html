@@ -20,7 +20,19 @@
           <button hx-swap="innerHTML"
                   hx-on--before-request="
                     let target = document.querySelector(this.getAttribute('hx-target'));
-                    if (target) target.innerHTML = 'Scanning...';
+                    if (target) {
+                      const spinner = document.createElement('div');
+                      spinner.classList.add('spinner-border', 'spinner-border-md');
+                      // Create the span for accessibility
+                      const span = document.createElement('span');
+                      span.classList.add('visually-hidden');
+                      span.textContent = 'Submitting Scan Request...';
+                      // Append the span to the spinner div
+                      spinner.appendChild(span);
+                      // Replace the inner content of the target with the spinner
+                      target.innerHTML = ''; // Clear any existing content
+                      target.appendChild(spinner);
+                    }
                   "
                   hx-on--error="
                     let target = document.querySelector(this.getAttribute('hx-target'));

@@ -65,7 +65,6 @@ from component_catalog.license_expression_dje import parse_expression
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
-from component_catalog.views import render_scan_action_cell
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
@@ -2614,4 +2613,10 @@ def delete_scan_htmx_view(request, project_uuid, package_uuid):
     if not deleted:
         raise Http404("Scan could not be deleted.")
 
-    return render_scan_action_cell(request, package)
+    # Return the rendered scan action cell content.
+    template = "product_portfolio/tables/scan_action_cell.html"
+    context = {
+        "package": package,
+        "user": request.user,
+    }
+    return render(request, template, context)
