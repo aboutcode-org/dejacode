@@ -687,3 +687,8 @@ def localized_datetime(datetime):
 
     default_format = get_format("DATETIME_FORMAT")
     return date_format(dt, default_format)
+
+
+def is_hx_request(request):
+    """Return True if the request is made from HTMX."""
+    return request.headers.get("HX-Request") == "true"

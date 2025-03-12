@@ -29,6 +29,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
@@ -84,6 +85,7 @@ from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
+from dje.utils import is_hx_request
 from dje.utils import is_uuid4
 from dje.utils import localized_datetime
 from dje.utils import remove_empty_values
@@ -1430,12 +1432,22 @@ class PackageDetailsView(
         return super().post(request, *args, **kwargs)
 
 
+def render_scan_action_cell(request, package):
+    template = "product_portfolio/tables/scan_action_cell.html"
+    context = {
+        "package": package,
+        "user": request.user,
+    }
+    return render(request, template, context)
+
+
 @login_required
 def package_scan_view(request, dataspace, uuid):
     user = request.user
     dataspace = user.dataspace
     package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     download_url = package.download_url
+    is_hxr = is_hx_request(request)
 
     scancodeio = ScanCodeIO(dataspace)
     if scancodeio.is_configured() and dataspace.enable_package_scanning:
@@ -1446,11 +1458,21 @@ def package_scan_view(request, dataspace, uuid):
                 user_uuid=user.uuid,
                 dataspace_uuid=dataspace.uuid,
             )
+
+            if is_hxr:
+                return render_scan_action_cell(request, package)
+
             scancode_msg = "The Package URL was submitted to ScanCode.io for scanning."
             messages.success(request, scancode_msg)
         else:
+            if is_hxr:
+                return HttpResponse("URL is not reachable.")
+
             scancode_msg = f"The URL {download_url} is not reachable."
             messages.error(request, scancode_msg)
+
+    if is_hxr:
+        return Http404
 
     return redirect(f"{package.details_url}#scan")
 

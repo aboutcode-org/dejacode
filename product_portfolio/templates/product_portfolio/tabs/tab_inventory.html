@@ -318,7 +318,7 @@
 
         confirmButton.setAttribute('hx-delete', deleteUrl);
         confirmButton.setAttribute('hx-target', `#scan-progress-${scanUUID}`);
-        htmx.process(confirmButton);  // Notify HTMX about the hx-delete change.
+        htmx.process(confirmButton); // Notify HTMX about the attribute changes.
       });
     });
   {% endif %}

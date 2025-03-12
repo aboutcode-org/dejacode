@@ -16,12 +16,26 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <a id="submit-scan-request"
-           href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}"
-           class="btn btn-success"
-        >
-          Submit Scan Request
-        </a>
+        {% if is_xhr %}
+          <button hx-swap="innerHTML"
+                  hx-on--before-request="
+                    let target = document.querySelector(this.getAttribute('hx-target'));
+                    if (target) target.innerHTML = 'Scanning...';
+                  "
+                  hx-on--error="
+                    let target = document.querySelector(this.getAttribute('hx-target'));
+                    if (target) target.innerHTML = 'Error!';
+                  "
+                  class="btn btn-success scan-confirm"
+                  data-bs-dismiss="modal"
+          >
+            Submit Scan Request
+          </button>
+        {% else %}
+          <a id="submit-scan-request" class="btn btn-success" href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}">
+            Submit Scan Request
+          </a>
+        {% endif %}
       </div>
     </div>
   </div>
