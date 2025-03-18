@@ -63,6 +63,7 @@ from dje.filters import MissingInFilter
 from dje.filters import RelatedLookupListFilter
 from dje.list_display import AsJoinList
 from dje.list_display import AsLink
+from dje.list_display import ListDisplayItem
 from dje.list_display import AsLinkList
 from dje.list_display import AsNaturalTime
 from dje.list_display import AsURL
@@ -912,6 +913,7 @@ class PackageAdmin(
         return (
             super()
             .get_queryset(request)
+            .annotate_sortable_identifier()
             .select_related(
                 "usage_policy",
             )
@@ -1052,6 +1054,10 @@ class PackageAdmin(
         if inferred_url := obj.inferred_url:
             return urlize_target_blank(inferred_url)
         return ""
+
+    @admin.display(ordering="sortable_identifier")
+    def identifier(self, obj):
+        return obj.identifier
 
     def save_formset(self, request, form, formset, change):
         """
