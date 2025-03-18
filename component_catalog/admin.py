@@ -774,7 +774,17 @@ class PackageAdmin(
         "get_dataspace",
     )
     list_display_links = ("identifier",)
-    search_fields = ("filename", "download_url", "project")
+    search_fields = (
+        "type",
+        "namespace",
+        "name",
+        "version",
+        "filename",
+        "download_url",
+        "sha1",
+        "md5",
+        "project",
+    )
     ordering = ("-last_modified_date",)
     list_filter = (
         ("component", HierarchyRelatedLookupListFilter),
@@ -912,6 +922,7 @@ class PackageAdmin(
         return (
             super()
             .get_queryset(request)
+            .annotate_sortable_identifier()
             .select_related(
                 "usage_policy",
             )
@@ -937,6 +948,16 @@ class PackageAdmin(
         ]
 
         return urls + super().get_urls()
+
+    def get_search_results(self, request, queryset, search_term):
+        """Add searching on provided PackageURL identifier."""
+        use_distinct = False
+
+        is_purl = "/" in search_term
+        if is_purl:
+            return queryset.for_package_url(search_term), use_distinct
+
+        return super().get_search_results(request, queryset, search_term)
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         """
@@ -1052,6 +1073,10 @@ class PackageAdmin(
         if inferred_url := obj.inferred_url:
             return urlize_target_blank(inferred_url)
         return ""
+
+    @admin.display(ordering="sortable_identifier")
+    def identifier(self, obj):
+        return obj.identifier
 
     def save_formset(self, request, form, formset, change):
         """

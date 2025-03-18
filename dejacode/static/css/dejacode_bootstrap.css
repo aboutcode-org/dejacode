@@ -426,19 +426,22 @@ table.vulnerabilities-table .column-summary {
 
 /* -- Dependency tab -- */
 #tab_dependencies .column-for_package {
-  width: 250px;
+  min-width: 300px;
 }
 #tab_dependencies .column-resolved_to_package {
-  width: 250px;
+  min-width: 300px;
 }
 #tab_dependencies .column-is_runtime {
-  width: 100px;
+  width: 85px;
+  font-size: 0.75rem;
 }
-#tab_dependencies .column-column-is_optional {
-  width: 100px;
+#tab_dependencies .column-is_optional {
+  width: 85px;
+  font-size: 0.75rem;
 }
-#tab_dependencies .column-column-is_pinned {
-  width: 88px;
+#tab_dependencies .column-is_pinned {
+  width: 80px;
+  font-size: 0.75rem;
 }
 
 /* -- Package Details -- */
@@ -661,7 +664,6 @@ td.sub-header {
 .table thead tr th a.sort:hover {
   color: #ccc;
   text-decoration: none;
-  margin-left: 0;
 }
 .table thead tr th a.sort.active {
   color: var(--bs-body-color);

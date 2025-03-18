@@ -1602,7 +1602,6 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         related_name="declared_dependencies",
         help_text=_("The package that declares this dependency."),
         on_delete=models.CASCADE,
-        editable=False,
         blank=True,
         null=True,
     )
@@ -1614,7 +1613,6 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
             "If empty, it indicates the dependency is unresolved."
         ),
         on_delete=models.SET_NULL,
-        editable=False,
         blank=True,
         null=True,
     )

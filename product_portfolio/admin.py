@@ -814,6 +814,28 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         "is_direct",
         "get_dataspace",
     )
+    fieldsets = (
+        (None, {"fields": ["product"]}),
+        (
+            None,
+            {
+                "fields": [
+                    "dependency_uid",
+                    "for_package",
+                    "resolved_to_package",
+                    "declared_dependency",
+                    "extracted_requirement",
+                    "scope",
+                    "datasource_id",
+                    "is_runtime",
+                    "is_optional",
+                    "is_pinned",
+                    "is_direct",
+                ]
+            },
+        ),
+        get_additional_information_fieldset(),
+    )
     raw_id_fields = [
         "product",
         "for_package",
@@ -832,6 +854,7 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         ReportingQueryListFilter,
     )
     actions_to_remove = ["copy_to", "compare_with"]
+    form = ProductRelatedAdminForm
 
     def get_queryset(self, request):
         return (
