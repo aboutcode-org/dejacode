@@ -71,6 +71,7 @@ from dje.tasks import package_collect_data
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import CHANGELIST_LINK_TEMPLATE
 from dje.utils import get_instance_from_referer
+from dje.utils import is_purl_fragment
 from license_library.models import License
 from reporting.filters import ReportingQueryListFilter
 
@@ -953,9 +954,9 @@ class PackageAdmin(
         """Add searching on provided PackageURL identifier."""
         use_distinct = False
 
-        is_purl = "/" in search_term
-        if is_purl:
-            return queryset.for_package_url(search_term), use_distinct
+        if is_purl_fragment(search_term):
+            if results := queryset.for_package_url(search_term):
+                return results, use_distinct
 
         return super().get_search_results(request, queryset, search_term)
 

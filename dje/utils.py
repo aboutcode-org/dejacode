@@ -644,6 +644,18 @@ def is_purl_str(url, validate=False):
     return True
 
 
+def is_purl_fragment(string):
+    """
+    Check if the given string could be a valid Package URL (PURL) or a recognizable
+    fragment of it.
+
+    A valid PURL typically follows the format:
+    `pkg://type/namespace/name@version?qualifiers#subpath`
+    """
+    purl_connectors = ["pkg:", "/", "@", "?", "#"]
+    return any(connector in string for connector in purl_connectors)
+
+
 def remove_empty_values(input_dict):
     """
     Return a new dict not including empty value entries from `input_dict`.

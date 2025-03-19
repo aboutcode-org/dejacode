@@ -120,6 +120,9 @@ Release notes
   simplicity, and readability.
   https://github.com/aboutcode-org/dejacode/issues/241
 
+- Refine the way the PURL fragments are handled in searches.
+  https://github.com/aboutcode-org/dejacode/issues/286
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

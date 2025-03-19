@@ -33,13 +33,14 @@ from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
-from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductInventoryItem
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_item_purpose
 from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
@@ -1118,11 +1119,10 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_dependency_model_save_validation(self):
         package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
         with self.assertRaises(ValidationError) as cm:
-            ProductDependency.objects.create(
+            make_product_dependency(
                 product=self.product1,
                 for_package=package1,
                 resolved_to_package=package1,
-                dataspace=self.dataspace,
             )
         self.assertEqual(
             ["The 'for_package' cannot be the same as 'resolved_to_package'."],
@@ -1130,20 +1130,18 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
 
     def test_product_dependency_prackage_queryset_declared_dependencies_count(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
-        ProductDependency.objects.create(
+        package1 = make_package(filename="package1", dataspace=self.dataspace)
+        package2 = make_package(filename="package2", dataspace=self.dataspace)
+        make_product_dependency(
             product=self.product1,
             for_package=package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        ProductDependency.objects.create(
+        product2 = make_product(name="Product2", dataspace=self.dataspace)
+        make_product_dependency(
             product=product2,
             for_package=package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
 
         self.assertEqual(2, package1.declared_dependencies.count())

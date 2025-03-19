@@ -50,13 +50,13 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
-from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_package
 from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
@@ -243,33 +243,25 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
         # Unresolved package dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             for_package=self.package1,
-            dataspace=self.dataspace,
         )
         # Resolved package dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             for_package=self.package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
         # Unresolved Product dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             declared_dependency="pkg:type/name",
-            dataspace=self.dataspace,
         )
         # Unresolved Product dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
 
         with self.assertMaxQueries(9):
