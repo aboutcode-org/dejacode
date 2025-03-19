@@ -567,9 +567,13 @@ class ProductDetailsView(
                 "tooltip": "No vulnerabilities found in this Product",
             }
 
+        badge_class = "text-bg-secondary"
+        if vulnerability_count > 0:
+            badge_class = "badge-vulnerability"
+
         label = (
             f"Vulnerabilities"
-            f'<span class="badge badge-vulnerability ps-1 ms-1">'
+            f'<span class="badge {badge_class} ps-1 ms-1">'
             f'  <i class="fas fa-archive" style="height: auto"></i>{vulnerable_package_count}'
             f'  <i class="fas fa-bug" style="height: auto"></i>{vulnerability_count}'
             f"</span>"
