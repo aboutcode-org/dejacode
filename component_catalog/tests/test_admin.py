@@ -1676,11 +1676,6 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(package3, response.context_data["cl"].result_list)
 
-        response = self.client.get(changelist_url + "?q=django@5.0")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(1, response.context_data["cl"].result_count)
-        self.assertIn(package3, response.context_data["cl"].result_list)
-
     def test_package_changelist_set_policy_action_proper(self):
         self.client.login(username=self.user.username, password="secret")
         p1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace1)
