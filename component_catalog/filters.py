@@ -22,6 +22,7 @@ from dje.filters import DefaultOrderingFilter
 from dje.filters import HasRelationFilter
 from dje.filters import MatchOrderedSearchFilter
 from dje.filters import RelatedLookupListFilter
+from dje.utils import is_purl_fragment
 from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
@@ -183,9 +184,9 @@ class PackageSearchFilter(MatchOrderedSearchFilter):
         if not value:
             return qs
 
-        is_purl = "/" in value
-        if is_purl:
-            return qs.for_package_url(value)
+        if is_purl_fragment(value):
+            if results := qs.for_package_url(value):
+                return results
 
         return super().filter(qs, value)
 

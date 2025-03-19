@@ -672,7 +672,8 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url, data=data)
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active ms-1" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active ms-1" '
+            'aria-label="Sort">',
         )
         self.assertContains(
             response,

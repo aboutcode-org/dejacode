@@ -22,6 +22,7 @@ from django.utils.translation import gettext_lazy as _
 
 from guardian.admin import GuardedModelAdminMixin
 from guardian.shortcuts import get_perms as guardian_get_perms
+from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.admin import AwesompleteAdminMixin
 from component_catalog.admin import BaseStatusAdmin
@@ -44,6 +45,7 @@ from dje.list_display import AsNaturalTime
 from dje.list_display import AsURL
 from dje.permissions import assign_all_object_permissions
 from dje.permissions import get_limited_perms_for_model
+from dje.utils import is_purl_fragment
 from product_portfolio.filters import ComponentCompletenessListFilter
 from product_portfolio.forms import ProductAdminForm
 from product_portfolio.forms import ProductComponentAdminForm
@@ -842,7 +844,18 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
         "resolved_to_package",
     ]
     autocomplete_lookup_fields = {"fk": raw_id_fields}
-    search_fields = ("path",)
+    search_fields = (
+        "dependency_uid",
+        "for_package__type",
+        "for_package__namespace",
+        "for_package__name",
+        "for_package__version",
+        "resolved_to_package__type",
+        "resolved_to_package__namespace",
+        "resolved_to_package__name",
+        "resolved_to_package__version",
+        "declared_dependency",
+    )
     list_filter = (
         ("product", RelatedLookupListFilter),
         "is_runtime",
@@ -865,3 +878,24 @@ class ProductDependencyAdmin(ProductRelatedAdminMixin):
                 "resolved_to_package__dataspace",
             )
         )
+
+    def get_search_results(self, request, queryset, search_term):
+        """Add searching on provided PackageURL identifier."""
+        use_distinct = False
+
+        if is_purl_fragment(search_term):
+            if lookups := purl_to_lookups(search_term, encode=True):
+                purl_fields = ["for_package", "resolved_to_package"]
+
+                query = models.Q()
+                for field in purl_fields:
+                    field_purl_lookup = models.Q()
+                    for key, value in lookups.items():
+                        field_purl_lookup &= models.Q(**{f"{field}__{key}": value})
+                    # Combine the AND conditions for each field with OR
+                    query |= field_purl_lookup
+
+                if results := queryset.filter(query):
+                    return results, use_distinct
+
+        return super().get_search_results(request, queryset, search_term)
