@@ -217,7 +217,7 @@ class PurlDBViewsTestCase(TestCase):
         )
         self.assertContains(
             response,
-            '<a href="?type=pypi&sort=version" class="sort" aria-label="Sort">'
+            '<a href="?type=pypi&sort=version" class="sort ms-1" aria-label="Sort">'
             '<i class="fas fa-sort"></i>'
             "</a>",
             html=True,
