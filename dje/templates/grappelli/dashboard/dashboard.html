@@ -1,0 +1,37 @@
+{% load i18n grp_dashboard_tags %}
+
+{{ dashboard.media }}
+
+{# DJE CUSTOM #}
+{% if dashboard.short_description %}
+    <div id="short_description" class="g-d-c" style="margin-bottom:10px;">
+        <p style="padding-right:10px;">
+            {{ dashboard.short_description|linebreaksbr }}
+        </p>
+    </div>
+{% endif %}
+{# /DJE CUSTOM #}
+
+<div class="g-d-c">
+    <div class="g-d-12 g-d-f" id="column_1">
+        {% for module in dashboard.children %}
+            {% if module.column == 1 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="g-d-6" id="column_2">
+        {% for module in dashboard.children %}
+            {% if module.column == 2 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="g-d-6 g-d-l" id="column_3">
+        {% for module in dashboard.children %}
+            {% if module.column == 3 %}
+                {% grp_render_dashboard_module module forloop.counter %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
