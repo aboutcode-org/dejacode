@@ -1,0 +1,7 @@
+<span{% if package.download_url %} data-bs-toggle="modal" data-bs-target="#scan-package-modal" data-package-scan-url="{% url 'component_catalog:package_scan' user.dataspace package.uuid %}"{% endif %}>
+  <span data-bs-toggle="tooltip" title="{% if package.download_url %}Submit Scan Request{% else %}Download URL not available{% endif %}">
+    <button type="button" class="btn btn-outline-dark btn-sm{% if not package.download_url %} disabled{% endif %}">
+      <i class="fas fa-barcode"></i> Scan
+    </button>
+  </span>
+</span>
