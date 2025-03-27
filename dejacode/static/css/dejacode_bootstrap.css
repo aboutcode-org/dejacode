@@ -741,11 +741,6 @@ body.signup-form h1 {
 body.signup-form .asteriskField {
   display: none;
 }
-body.signup-form .hcaptchawidget {
-  height:85px !important;
-  border:0;
-  text-align:center;
-}
 
 /* -- Cards -- */
 .card-border-color {
