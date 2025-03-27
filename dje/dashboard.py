@@ -15,6 +15,14 @@ from grappelli.dashboard import modules
 
 
 class DejaCodeDashboard(Dashboard):
+    short_description = (
+        "The Administration section of DejaCode is intended primarily for application "
+        "administrators (superusers) to maintain the data that supports organization "
+        "policies and to configure the experience of the general user.\n"
+        "Most of the routine activities regarding products, packages, components, "
+        "licenses and owners can be performed in the User View section of DejaCode."
+    )
+
     def init_with_context(self, context):
         user = context["request"].user
         dataspace = user.dataspace

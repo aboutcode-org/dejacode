@@ -35,6 +35,7 @@ from dje.utils import get_referer_resolver
 from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
 from dje.utils import is_available
+from dje.utils import is_purl_fragment
 from dje.utils import is_purl_str
 from dje.utils import localized_datetime
 from dje.utils import merge_relations
@@ -501,6 +502,28 @@ class DJEUtilsTestCase(TestCase):
 
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0"))
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0", validate=True))
+
+    def test_utils_is_purl_fragment(self):
+        valid_fragments = [
+            "pkg:npm/package@1.0.0",  # Valid full PURL
+            "npm/package@1.0.0",  # PURL without pkg: prefix
+            "npm/type",  # Fragment with type and namespace
+            "name@version",  # Fragment with name and version
+            "namespace/name",  # Fragment with namespace and name
+            "npm/package",  # Type and package name
+            "package@1.0.0",  # Name and version
+        ]
+
+        invalid_fragments = [
+            "package",  # Just the package name
+            "package 1.0.0",  # No connector
+        ]
+
+        for fragment in valid_fragments:
+            self.assertTrue(is_purl_fragment(fragment), msg=fragment)
+
+        for fragment in invalid_fragments:
+            self.assertFalse(is_purl_fragment(fragment), msg=fragment)
 
     def test_utils_localized_datetime(self):
         self.assertIsNone(localized_datetime(None))

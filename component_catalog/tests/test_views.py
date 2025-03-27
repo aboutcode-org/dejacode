@@ -642,16 +642,16 @@ class ComponentUserViewsTestCase(TestCase):
         # Sort filter
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort ms-1" aria-label="Sort">',
         )
         # Sort in the headers
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort ms-1" aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
@@ -659,12 +659,12 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url, data=data)
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=-name" class="sort active" '
+            '<a href="?q=a&amp;licenses=license1&sort=-name" class="sort active ms-1" '
             'aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
@@ -672,11 +672,12 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url, data=data)
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active ms-1" '
+            'aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
