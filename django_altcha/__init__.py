@@ -13,7 +13,7 @@ from django.conf import settings
 from django.forms.widgets import HiddenInput
 from django.utils.translation import gettext_lazy as _
 
-# TODO: Add as a dependency
+# TODO: Add as a dependency (add a setup.py)
 import altcha
 
 """
@@ -31,8 +31,7 @@ from django_altcha import AltchaField
 class Form(forms.Form):
     captcha = AltchaField()
 
-
-You can provide any configuration options available at
+3. Configure: You can provide any configuration options available at
 https://altcha.org/docs/website-integration/ such as:
 
 class Form(forms.Form):
@@ -45,6 +44,7 @@ class Form(forms.Form):
 
 # Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present
 ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
+ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
 
 def get_altcha_challenge():
@@ -81,6 +81,9 @@ class AltchaWidget(HiddenInput):
         "floatinganchor": None,
         # Y offset from the anchor element for the floating UI (in pixels, default: 12).
         "floatingoffset": None,
+        # Enable a “persistent” mode to keep the widget visible under specific conditions.
+        # Possible values: "true", "focus".
+        "floatingpersist": None,
         # Hide the footer (ALTCHA link).
         "hidefooter": None,
         # Hide the ALTCHA logo.
@@ -109,7 +112,7 @@ class AltchaWidget(HiddenInput):
     def __init__(self, **kwargs):
         """Initialize the ALTCHA widget with configurable options."""
         super().__init__()
-        self.js_src_url = "/static/altcha/altcha.min.js"
+        self.js_src_url = ALTCHA_JS_URL
         self.options = {
             key: kwargs.get(key, self.default_options[key]) for key in self.default_options
         }
