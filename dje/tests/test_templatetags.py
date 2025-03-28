@@ -37,6 +37,12 @@ class TemplateTagsTestCase(TestCase):
                 '<a target="_blank" href="ftp://domain.com" rel="noreferrer nofollow">'
                 "ftp://domain.com</a>",
             ),
+            (
+                "https://repo1.maven.org/maven2/{0/group_id}/{0.version}.jar",
+                '<a target="_blank" href="https://repo1.maven.org/maven2/%7B0/'
+                'group_id%7D/%7B0.version%7D.jar" rel="nofollow">'
+                "https://repo1.maven.org/maven2/{0/group_id}/{0.version}.jar</a>",
+            ),
         ]
 
         for url, expected in inputs:

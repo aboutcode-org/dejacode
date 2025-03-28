@@ -21,6 +21,7 @@ from django.urls import resolve
 from django.utils.html import format_html
 from django.utils.html import urlize as _urlize
 from django.utils.http import urlencode
+from django.utils.safestring import mark_safe
 
 register = Library()
 
@@ -139,7 +140,7 @@ def urlize_target_blank(value, autoescape=True):
     else:
         link = _urlize(value, nofollow=True, autoescape=autoescape)
         link = link.replace("<a", '<a target="_blank"')
-    return format_html(link)
+    return mark_safe(link)
 
 
 @register.filter
