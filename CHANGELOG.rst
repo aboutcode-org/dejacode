@@ -123,6 +123,8 @@ Release notes
 - Refine the way the PURL fragments are handled in searches.
   https://github.com/aboutcode-org/dejacode/issues/286
 
+- Fix an issue with ``urlize_target_blank`` when the URL contains curly braces.
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
