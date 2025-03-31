@@ -1,0 +1,15 @@
+about_resource: django_altcha-0.1.1-py3-none-any.whl
+name: django-altcha
+version: 0.1.1
+download_url: https://files.pythonhosted.org/packages/fe/4b/59574e2ceb4e3f2f3fffaf5ff3a5613d497f3dcbf021db280ef0fbcd2e05/django_altcha-0.1.1-py3-none-any.whl
+package_url: pkg:pypi/django-altcha@0.1.1
+license_expression: mit
+copyright: Copyright django-altcha project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 03aaaf44215f912077dd31c9d328dad2
+checksum_sha1: 879970a4383c6ad513eae09332fc427509128ba8
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
