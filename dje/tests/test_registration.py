@@ -105,7 +105,7 @@ class DejaCodeUserRegistrationTestCase(TestCase):
                 "This password is too short. It must contain at least 8 characters.",
                 "Your password must contain at least one special character.",
             ],
-            "captcha": ["Altcha CAPTCHA token is missing."],
+            "captcha": ["ALTCHA CAPTCHA token is missing."],
         }
         self.assertEqual(expected, response.context["form"].errors)
         self.captcha_patch.start()
