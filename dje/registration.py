@@ -24,11 +24,11 @@ from crispy_forms.layout import Div
 from crispy_forms.layout import Field
 from crispy_forms.layout import Fieldset
 from crispy_forms.layout import Layout
+from django_altcha import AltchaField
 from django_registration.backends.activation.views import ActivationView
 from django_registration.exceptions import ActivationError
 from django_registration.forms import RegistrationFormUniqueEmail
 
-from django_altcha import AltchaField
 from dje.forms import StrictSubmit
 from dje.models import Dataspace
 from dje.models import History

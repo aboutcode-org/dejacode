@@ -16,9 +16,9 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from django_altcha import AltchaField
 from django_registration.backends.activation.views import RegistrationView
 
-from django_altcha import AltchaField
 from dje.registration import REGISTRATION_DEFAULT_GROUPS
 from dje.tests import refresh_url_cache
 
