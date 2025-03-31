@@ -1,0 +1,14 @@
+about_resource: Django-5.1.7-py3-none-any.whl
+name: django
+version: 5.1.7
+download_url: https://files.pythonhosted.org/packages/ba/0f/7e042df3d462d39ae01b27a09ee76653692442bc3701fbfa6cb38e12889d/Django-5.1.7-py3-none-any.whl
+package_url: pkg:pypi/django@5.1.7
+license_expression: bsd-new
+copyright: Copyright django project contributors
+attribute: yes
+checksum_md5: bf291218572733211f4f41fab183d2e4
+checksum_sha1: e5d18f470b91eb56f0a50ce1573348a69bc944d6
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

@@ -24,10 +24,10 @@ from crispy_forms.layout import Div
 from crispy_forms.layout import Field
 from crispy_forms.layout import Fieldset
 from crispy_forms.layout import Layout
+from django_altcha import AltchaField
 from django_registration.backends.activation.views import ActivationView
 from django_registration.exceptions import ActivationError
 from django_registration.forms import RegistrationFormUniqueEmail
-from hcaptcha_field import hCaptchaField
 
 from dje.forms import StrictSubmit
 from dje.models import Dataspace
@@ -86,8 +86,11 @@ class DejaCodeActivationView(ActivationView):
 class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
     """Used in `registration.backends.hmac.views.RegistrationView`."""
 
-    use_required_attribute = False
-    hcaptcha = hCaptchaField()
+    use_required_attribute = True
+    captcha = AltchaField(
+        floating=True,
+        hidefooter=True,
+    )
 
     class Meta(RegistrationFormUniqueEmail.Meta):
         model = User
@@ -98,7 +101,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
             "last_name",
             "company",
             "password1",
-            "hcaptcha",
+            "captcha",
             "updates_email_notification",
         ]
 
@@ -123,8 +126,6 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
         self.fields["company"].required = True
-
-        self.fields["hcaptcha"].label = ""
 
         notification_label = "Receive updates on DejaCode features and news"
         self.fields["updates_email_notification"].label = notification_label
@@ -167,7 +168,7 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
                     Field("updates_email_notification"),
                     css_class="alert alert-primary px-2 py-2",
                 ),
-                "hcaptcha",
+                "captcha",
                 tos,
                 Div(
                     StrictSubmit(

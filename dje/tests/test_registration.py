@@ -16,8 +16,8 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from django_altcha import AltchaField
 from django_registration.backends.activation.views import RegistrationView
-from hcaptcha_field import hCaptchaField
 
 from dje.registration import REGISTRATION_DEFAULT_GROUPS
 from dje.tests import refresh_url_cache
@@ -33,8 +33,8 @@ class DejaCodeUserRegistrationTestCase(TestCase):
     def setUp(self):
         refresh_url_cache()
 
-        self.hcaptcha_patch = patch.object(hCaptchaField, "validate", return_value=True)
-        self.hcaptcha_patch.start()
+        self.captcha_patch = patch.object(AltchaField, "validate", return_value=True)
+        self.captcha_patch.start()
 
         self.registration_data = {
             "username": "username",
@@ -46,7 +46,7 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         }
 
     def tearDown(self):
-        self.hcaptcha_patch.stop()
+        self.captcha_patch.stop()
 
     def test_user_registration_form_submit(self):
         url = reverse("django_registration_register")
@@ -84,6 +84,8 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         self.assertTrue("New registration for user username username@company.com" in body)
 
     def test_user_registration_form_validators(self):
+        self.captcha_patch.stop()
+
         url = reverse("django_registration_register")
         self.registration_data["username"] = "ab"
         self.registration_data["email"] = "wrong"
@@ -103,8 +105,10 @@ class DejaCodeUserRegistrationTestCase(TestCase):
                 "This password is too short. It must contain at least 8 characters.",
                 "Your password must contain at least one special character.",
             ],
+            "captcha": ["ALTCHA CAPTCHA token is missing."],
         }
         self.assertEqual(expected, response.context["form"].errors)
+        self.captcha_patch.start()
 
     def test_user_registration_account_activation(self):
         url = reverse("django_registration_register")
