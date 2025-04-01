@@ -1,0 +1,249 @@
+[33mcommit 01132b63fc5b802d538c64bde67d16450f6dfe32[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature-branch[m[33m, [m[1;31morigin/feature-branch[m[33m)[m
+Author: hemant chilkuri <hemant_189@outlook.com>
+Date:   Wed Apr 2 00:11:40 2025 +0530
+
+    Added XLSX export functionality to the share feature
+
+[33mcommit 092510f8f861ecb60a5d618a160bab2676a85185[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: tdruez <tdruez@nexb.com>
+Date:   Mon Mar 31 16:22:41 2025 +0400
+
+    Add How-To documentation for assigning object permissions to a Product #285
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 35ad74699b067b94545d36d45c5f3d8ae05a4ac0[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Mon Mar 31 15:57:04 2025 +0400
+
+    Replace hCaptcha with Altcha #235 (#278)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit d702daff93b5289ec5c48fb163732ef1ec7f7f03[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Mar 28 12:06:56 2025 +0400
+
+    Fix an issue with urlize_target_blank when the URL contains curly braces (#292)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 30aa2ebc92dcd5f7ab6c03e686a4500faf9da472[m
+Author: tdruez <tdruez@nexb.com>
+Date:   Wed Mar 26 19:00:12 2025 +0400
+
+    Add Admin description in the dashboard header #253
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit d13a1af76b1850dc4269918e42856c2db4ab1acc[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Mar 19 19:01:46 2025 +0400
+
+    Add PURL fragment search in ProductDependencyAdmin #286 (#288)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 3abc0c75d5ba195bfe8209989bf16334538e8cf1[m
+Author: tdruez <tdruez@nexb.com>
+Date:   Wed Mar 19 11:22:58 2025 +0400
+
+    Display a grey badge when the vulnerability count is 0 #286
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit fecc9a64d040ec0b4bd532a19260f53cd59fe60d[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Tue Mar 18 19:14:37 2025 +0400
+
+    Fix the ProductDependencyAdmin form (#287)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit d4aa38356ab021f79a8b81935f00a686991726ae[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Mar 7 10:38:45 2025 +0400
+
+    Add "CRAVEX support in DejaCode" reference documentation #242 (#277)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 02e5f56e65859d62f98104dc86263bf75180ee58[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Tue Mar 4 09:20:07 2025 +0400
+
+    Improve Evaluation Sign Up UX #233 (#274)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit f6842724021709fe23c4828975cbdd84c934dab6[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Mon Mar 3 18:02:39 2025 +0400
+
+    Use deterministic UID/GID in Dockerfile #230 (#270)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit c260cce7398cc093b3e2511c215599bc14042110[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Feb 21 14:36:02 2025 -1000
+
+    Refine the GitHub workflows (#269)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 1f6db43741b802c5176c8c4ca2a191cd634061e4[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Feb 21 13:31:51 2025 -1000
+
+    Refine the consistency of Product import actions #241 (#268)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 4e3b875aae12d5ab281bef730b3cfedb78b7546e[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Feb 19 11:11:35 2025 -1000
+
+    Add "Find vulnerabilities" workflow based on scancode-action (#267)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit b4b8cab66053494f26aa8c45b16df3d5fa5ac812[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Feb 19 07:44:37 2025 -1000
+
+    Create missing Owner from the Product/Component form #239 (#264)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 91bed238490fd5bf5e18135768b4eb6d717ddb99[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Tue Feb 18 12:20:15 2025 -1000
+
+    Upgrade multiple dependencies to their latest versions (#265)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 7fc145e5811dceba1dc010f618967a9e8b09d21d[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Tue Feb 18 10:01:45 2025 -1000
+
+    Fix package usage policy not getting set automatically from the license #200 (#262)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit d94fc4afb649ea1ece6e5a22698358bde2882d7e[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Feb 14 11:18:25 2025 -1000
+
+    Django 5.1.x (#261)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 3f38603ac4397422a2d6d88824294e33569c2c95[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Thu Feb 13 15:28:29 2025 -1000
+
+    Add user time zone and use consistent rendering of date across the app #240 (#260)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 88be9cc7c80e53867b81dc9b6273570cd79fc4e0[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Thu Feb 13 05:37:27 2025 +0900
+
+    Enable the delete_selected action on RequestTemplateAdmin #243 (#259)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+    
+    ---------
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit a28d351b5fcdd72901c35a639622aaac2d8b2445[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Mon Jan 27 18:02:15 2025 +0900
+
+    Truncate the display of very long PURLs #227 (#248)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 0057531b35d23f9ad2e2a8417f3bed894104436b[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Mon Jan 27 16:12:34 2025 +0900
+
+    Used the "disable" label in place of "delete" in User admin #245 (#247)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit ed25634c9d0f301dcb94e4a0c1e71a165cf3f59c[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Jan 24 17:26:05 2025 +0900
+
+    Dependencies upgrade (#246)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit b446d3e4e45d8c0765e79a44407c8a2374934c31[m
+Author: tdruez <tdruez@nexb.com>
+Date:   Wed Jan 22 17:02:12 2025 +0900
+
+    Update the SBOM zip file without the MACOS zip metadata #229
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 47f55877e14878ff24a07687f647a67a17df929d[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Jan 22 08:54:39 2025 +0900
+
+    Add a new "Create a Product Vulnerability Report" tutorial #226 (#232)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 74df785b9d0cbf6b1a4575567303b95a8c87b89f[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Jan 22 08:05:42 2025 +0900
+
+    Add a new "Working with SBOMs in a Product" tutorial #225 (#231)
+    
+    * Add a new "Working with SBOMs in a Product" tutorial #225
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+    
+    * Update the SBOM download URL #225
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+    
+    ---------
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 9c80abf29f9962ddbf972540e57a70fa62843259[m
+Author: Philippe Ombredanne <pombredanne@nexb.com>
+Date:   Wed Jan 22 00:05:08 2025 +0100
+
+    Fix minor typo in SBOM load form (#228)
+    
+    Signed-off-by: Philippe Ombredanne <pombredanne@nexb.com>
+
+[33mcommit 78e2e8af2ad626c760583c61408833bf54fb3ef3[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Mon Jan 13 12:21:09 2025 +0100
+
+    Fix error when Request comment contains curly braces (#224)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit 61f31a8c6ebe50deb8cd9a18a764bc359a1c119b[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Wed Jan 8 11:04:11 2025 +0100
+
+    106 vulnerabilities notification (#220)
+    
+    Signed-off-by: tdruez <tdruez@nexb.com>
+
+[33mcommit e9fb4aa7012a3911c3e475f77ce8fb6c8037c9bc[m
+Author: tdruez <489057+tdruez@users.noreply.github.com>
+Date:   Fri Dec 27 20:18:14 2024 +0100
+
+    Add exposure_factor field to th
