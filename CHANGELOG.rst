@@ -125,6 +125,9 @@ Release notes
 
 - Fix an issue with ``urlize_target_blank`` when the URL contains curly braces.
 
+- Add the ability to download Product "Imports" input file.
+  https://github.com/aboutcode-org/dejacode/issues/156
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

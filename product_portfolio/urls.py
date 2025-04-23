@@ -37,6 +37,7 @@ from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
 from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
+from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
 from product_portfolio.views import vulnerability_analysis_form_view
 
@@ -70,6 +71,11 @@ urlpatterns = [
         "scancodeio_project_status/<uuid:scancodeproject_uuid>/",
         scancodeio_project_status_view,
         name="scancodeio_project_status",
+    ),
+    path(
+        "scancodeio_project_download_input/<uuid:scancodeproject_uuid>/",
+        scancodeio_project_download_input_view,
+        name="scancodeio_project_download_input",
     ),
     path(
         "compare/<uuid:left_uuid>/<uuid:right_uuid>/",
