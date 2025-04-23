@@ -31,6 +31,7 @@ from django.db.models import Prefetch
 from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
+from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -2484,6 +2485,18 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
     }
 
     return TemplateResponse(request, template, context)
+
+
+@login_required
+def scancodeio_project_download_input_view(request, scancodeproject_uuid):
+    secured_qs = ScanCodeProject.objects.product_secured(user=request.user)
+    scancode_project = get_object_or_404(secured_qs, uuid=scancodeproject_uuid)
+    input_file = scancode_project.input_file
+
+    if not input_file or not input_file.storage.exists(input_file.name):
+        raise Http404
+
+    return FileResponse(input_file.open("rb"), as_attachment=True)
 
 
 @login_required

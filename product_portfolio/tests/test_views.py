@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -232,6 +233,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, "Import SBOM")
         self.assertNotContains(response, "hx-trigger")
         self.assertNotContains(response, "Imports are currently in progress.")
+
+        expected = "File:"
+        download_url = reverse(
+            "product_portfolio:scancodeio_project_download_input", args=[str(project.uuid)]
+        )
+        self.assertNotContains(response, expected)
+        self.assertNotContains(response, download_url)
+        project.input_file = ContentFile("Data", name="data.json")
+        project.save()
+        response = self.client.get(url)
+        self.assertContains(response, expected)
+        self.assertContains(response, download_url)
 
     def test_product_portfolio_detail_view_tab_dependency_view(self):
         self.client.login(username="nexb_user", password="secret")
@@ -3331,6 +3344,45 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages already in progress...")
+
+    def test_product_portfolio_scancodeio_project_download_input_view(self):
+        test_file_content = b"dummy input file content"
+        test_file = SimpleUploadedFile(
+            "input.zip", test_file_content, content_type="application/zip"
+        )
+
+        # Create a ScanCodeProject with file
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            input_file=test_file,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUCCESS,
+        )
+
+        download_url = reverse(
+            "product_portfolio:scancodeio_project_download_input", args=[str(scancode_project.uuid)]
+        )
+
+        # No permission initially
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 404)
+
+        # Grant permission
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 200)
+        downloaded_content = b"".join(response.streaming_content)
+        self.assertEqual(test_file_content, downloaded_content)
+        self.assertEqual(
+            response["Content-Disposition"], f'attachment; filename="{test_file.name}"'
+        )
+
+        # Remove the file and test for 404
+        scancode_project.input_file.delete(save=True)
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 404)
 
     @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
     def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):

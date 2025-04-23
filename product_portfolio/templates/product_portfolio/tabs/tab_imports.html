@@ -44,7 +44,7 @@
             <strong>
               {{ scancode_project.get_status_display|title }}
               {% if scancode_project.has_errors %}
-                <div class="float-start"> with errors</div>
+                <span class="float-start"> with errors</span>
               {% endif %}
             </strong>
             {% if scancode_project.project_uuid %}
@@ -56,7 +56,7 @@
           </td>
           <td>
             {% if scancode_project.input_file %}
-              File: {{ scancode_project.input_file_filename }}
+              File: <a href="{% url 'product_portfolio:scancodeio_project_download_input' scancode_project.uuid %}" target="_blank">{{ scancode_project.input_file_filename }}</a>
             {% elif scancode_project.project_uuid %}
               Project: {{ scancode_project.project_uuid }}
             {% endif %}
