@@ -253,10 +253,11 @@ dd.reduced pre {
 
 /* -- Object list table -- */
 #object-list-table thead {
-    position: sticky;
-    top: 52px;
-    z-index: 1;
-    font-size: 0.875rem;
+  position: sticky;
+  top: 52px;
+  z-index: 1;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 0 var(--bs-border-color);
 }
 th.column-grouping {
   width: 36px;
