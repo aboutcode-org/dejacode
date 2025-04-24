@@ -10,7 +10,6 @@ import json
 from collections import defaultdict
 
 from django import forms
-from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import IntegrityError
@@ -694,16 +693,14 @@ class ImportPackageFromScanCodeIO:
         package_data.pop("affected_by_vulnerabilities", None)
 
         unique_together_lookups = {
-            field: value
-            for field in self.unique_together_fields
-            if (value := package_data.get(field))
+            field: package_data.get(field, "") for field in self.unique_together_fields
         }
 
         # Check if the Package already exists in the local Dataspace
         try:
             package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
             self.existing["package"].append(str(package))
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
+        except ObjectDoesNotExist:
             package = None
 
         # Check if the Package already exists in the reference Dataspace

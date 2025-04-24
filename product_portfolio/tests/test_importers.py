@@ -19,6 +19,7 @@ from guardian.shortcuts import assign_perm
 
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import create_admin
 from dje.tests import create_superuser
@@ -1055,3 +1056,67 @@ class ProductImportFromScanTestCase(TestCase):
             )
             importer.save()
             mock_fetch.assert_called()
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_multiple_package_objs(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
+        filename = "activemq-camel.zip"
+
+        package_data = {
+            "type": "maven",
+            "namespace": "org.apache.activemq",
+            "name": "activemq-camel",
+            "version": "5.11.0",
+            "primary_language": "Java",
+            "purl": purl,
+            "declared_license_expression": "bsd-new",
+        }
+        mock_fetch_packages.return_value = [package_data]
+        mock_fetch_dependencies.return_value = []
+
+        package1 = make_package(self.dataspace, package_url=purl)
+        package2 = make_package(self.dataspace, package_url=purl, filename=filename)
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        self.assertEqual({}, created)
+        self.assertEqual(purl, existing["package"][0])
+        self.assertEqual({}, errors)
+        # The package without the filename or download_url is used
+        self.assertEqual(package1, self.product1.packages.get())
+
+        self.product1.productpackages.all().delete()
+        package_data["filename"] = filename
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        self.assertEqual({}, created)
+        self.assertEqual(purl, existing["package"][0])
+        self.assertEqual({}, errors)
+        # The package with the filename is used
+        self.assertEqual(package2, self.product1.packages.get())
+
+        self.product1.productpackages.all().delete()
+        package_data["filename"] = "DO_NOT_EXISTS"
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        # New package is created.
+        self.assertEqual(
+            {"package": ["pkg:maven/org.apache.activemq/activemq-camel@5.11.0"]}, created
+        )
+        self.assertEqual({}, existing)
+        self.assertEqual({}, errors)

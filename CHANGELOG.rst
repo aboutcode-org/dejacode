@@ -128,6 +128,11 @@ Release notes
 - Add the ability to download Product "Imports" input file.
   https://github.com/aboutcode-org/dejacode/issues/156
 
+- Fix a logic issue in the ImportPackageFromScanCodeIO.import_package that occurs when
+  multiple packages with the same PURL, but different download_url or filename,
+  are present in the Dataspace.
+  https://github.com/aboutcode-org/dejacode/issues/295
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
