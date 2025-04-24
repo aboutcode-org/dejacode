@@ -693,8 +693,7 @@ class ImportPackageFromScanCodeIO:
         package_data.pop("affected_by_vulnerabilities", None)
 
         unique_together_lookups = {
-            field: package_data.get(field, "")
-            for field in self.unique_together_fields
+            field: package_data.get(field, "") for field in self.unique_together_fields
         }
 
         # Check if the Package already exists in the local Dataspace
