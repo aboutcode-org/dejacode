@@ -3283,7 +3283,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
         expected = [
             "- Imported 1 package.",
-            "- 1 package already available in the Dataspace.",
+            "- 1 package skipped: already available in the dataspace.",
             "- 1 package error occurred during import.",
         ]
         self.assertEqual(expected, scancode_project.import_log)

@@ -1120,3 +1120,92 @@ class ProductImportFromScanTestCase(TestCase):
         )
         self.assertEqual({}, existing)
         self.assertEqual({}, errors)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_duplicate_dependency(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        for_package_purl = "pkg:pypi/package@1.0"
+        for_package_uid = "6eb9d787-2f2a-40f3-8815-fbf8f6c373de"
+        resolved_to_package_purl = "pkg:pypi/dep@0.5"
+        resolved_to_package_uid = "895de5cb-2d40-4532-ae46-56104cd6a1bf"
+        mock_fetch_packages.return_value = [
+            {
+                "type": "pypi",
+                "name": "package",
+                "version": "1.0",
+                "purl": for_package_purl,
+                "package_uid": for_package_uid,
+            },
+            {
+                "type": "pypi",
+                "name": "dep",
+                "version": "0.5",
+                "purl": resolved_to_package_purl,
+                "package_uid": resolved_to_package_uid,
+            },
+        ]
+
+        dependency_uid = "12a4113b-99d2-455a-a96d-468ca29861d6"
+        mock_fetch_dependencies.return_value = [
+            {
+                "dependency_uid": dependency_uid,
+                "for_package_uid": for_package_uid,
+                "resolved_to_package_uid": resolved_to_package_uid,
+            }
+        ]
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        expected = {
+            "package": ["pkg:pypi/package@1.0", "pkg:pypi/dep@0.5"],
+            "dependency": ["12a4113b-99d2-455a-a96d-468ca29861d6"],
+        }
+        self.assertEqual(expected, created)
+        self.assertEqual({}, existing)
+        self.assertEqual({}, errors)
+        self.assertEqual(2, self.product1.packages.count())
+        self.assertEqual(1, self.product1.dependencies.count())
+
+        # Re-run the importer and make sure no duplicate entries are created
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        self.assertEqual({}, created)
+        self.assertEqual(expected, existing)
+        self.assertEqual({}, errors)
+        self.assertEqual(2, self.product1.packages.count())
+        self.assertEqual(1, self.product1.dependencies.count())
+
+        # Change the dependency_uid to make sure the match happen on the FKs as well.
+        dependency_uid = "a46c682f-51a7-44a4-a00f-ccfc826befc6"
+        mock_fetch_dependencies.return_value = [
+            {
+                "dependency_uid": dependency_uid,
+                "for_package_uid": for_package_uid,
+                "resolved_to_package_uid": resolved_to_package_uid,
+            }
+        ]
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        self.assertEqual({}, created)
+        expected = {
+            "package": ["pkg:pypi/package@1.0", "pkg:pypi/dep@0.5"],
+            "dependency": ["a46c682f-51a7-44a4-a00f-ccfc826befc6"],
+        }
+        self.assertEqual(expected, existing)
+        self.assertEqual({}, errors)
+        self.assertEqual(2, self.product1.packages.count())
+        self.assertEqual(1, self.product1.dependencies.count())

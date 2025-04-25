@@ -218,9 +218,12 @@ def pull_project_data_from_scancodeio(scancodeproject_uuid):
         scancode_project.append_to_log(msg)
 
     for object_type, values in existing.items():
-        msg = (
-            f"- {len(values)} {object_type}{pluralize(values)} already available in the Dataspace."
-        )
+        object_type_plural = f"{object_type}{pluralize(values)}"
+        object_type_plural = object_type_plural.replace("dependencys", "dependencies")
+        reason = "already available in the dataspace"
+        if object_type == "dependency":
+            reason = "already defined on the product"
+        msg = f"- {len(values)} {object_type_plural} skipped: {reason}."
         scancode_project.append_to_log(msg)
 
     for object_type, values in errors.items():

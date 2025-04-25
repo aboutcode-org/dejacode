@@ -747,18 +747,30 @@ class ImportPackageFromScanCodeIO:
     def import_dependency(self, dependency_data):
         dependency_uid = dependency_data.get("dependency_uid")
 
-        dependency_qs = ProductDependency.objects.scope(self.user.dataspace)
-        if dependency_qs.filter(product=self.product, dependency_uid=dependency_uid).exists():
+        dependency_qs = self.product.dependencies.all()
+        if dependency_qs.filter(dependency_uid=dependency_uid).exists():
             self.existing["dependency"].append(str(dependency_uid))
             return
 
+        for_package = None
+        resolved_to_package = None
         dependency_data["product"] = self.product
         if for_package_uid := dependency_data.get("for_package_uid"):
-            dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
+            for_package = self.package_uid_mapping.get(for_package_uid)
+            dependency_data["for_package"] = for_package
         if resolved_to_package_uid := dependency_data.get("resolved_to_package_uid"):
-            dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
-                resolved_to_package_uid
+            resolved_to_package = self.package_uid_mapping.get(resolved_to_package_uid)
+            dependency_data["resolved_to_package"] = resolved_to_package
+
+        # Check if the dependency entry already exists in the product.
+        if for_package and resolved_to_package:
+            resolved_dependency_qs = dependency_qs.filter(
+                for_package=for_package,
+                resolved_to_package=resolved_to_package,
             )
+            if resolved_dependency_qs.exists():
+                self.existing["dependency"].append(str(dependency_uid))
+                return
 
         if purl := dependency_data.get("purl"):
             dependency_data["declared_dependency"] = purl
