@@ -1143,6 +1143,7 @@ class PackageDetailsView(
                 "components",
             ],
         },
+        "package_set": {},
         "product_usage": {},
         "activity": {},
         "external_references": {
@@ -1296,6 +1297,14 @@ class PackageDetailsView(
             return
 
         return {"fields": fields}
+
+    def tab_package_set(self):
+        plain_url = self.object.plain_package_url
+        related_packages = self.get_queryset().for_package_url(plain_url)
+
+        template = "component_catalog/tabs/tab_package_set.html"
+        if len(related_packages) > 1:
+            return {"fields": [(None, related_packages, None, template)]}
 
     def tab_product_usage(self):
         user = self.request.user

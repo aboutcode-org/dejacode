@@ -18,10 +18,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import models
+from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
+from django.db.models import F
 from django.db.models import OuterRef
+from django.db.models import Value
+from django.db.models import When
 from django.db.models.functions import Concat
 from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
@@ -1647,6 +1651,86 @@ class ComponentKeyword(DataspacedModel):
         return self.label
 
 
+class PackageContentFieldMixin(models.Model):
+    # Keep in sync with purldb/packagedb.models.PackageContentType
+    class PackageTypes(models.IntegerChoices):
+        CURATION = 1, "curation"
+        PATCH = 2, "patch"
+        SOURCE_REPO = 3, "source_repo"
+        SOURCE_ARCHIVE = 4, "source_archive"
+        BINARY = 5, "binary"
+        TEST = 6, "test"
+        DOC = 7, "doc"
+
+    package_content = models.IntegerField(
+        null=True,
+        choices=PackageTypes.choices,
+        help_text=_("Content of this package as one of: {}".format(", ".join(PackageTypes.labels))),
+    )
+
+    class Meta:
+        abstract = True
+
+
+def get_plain_package_url_expression():
+    """
+    Return a Django expression to compute the "PLAIN" Package URL (purl).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    plain_package_url = Concat(
+        Value("pkg:"),
+        F("type"),
+        Case(
+            When(namespace="", then=Value("")),
+            default=Concat(Value("/"), F("namespace")),
+            output_field=CharField(),
+        ),
+        Value("/"),
+        F("name"),
+        Case(
+            When(version="", then=Value("")),
+            default=Concat(Value("@"), F("version")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=plain_package_url,
+        output_field=CharField(),
+    )
+
+
+def get_package_url_expression():
+    """
+    Return a Django expression to compute the "FULL" Package URL (purl).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    package_url = Concat(
+        get_plain_package_url_expression(),
+        Case(
+            When(qualifiers="", then=Value("")),
+            default=Concat(Value("?"), F("qualifiers")),
+            output_field=CharField(),
+        ),
+        Case(
+            When(subpath="", then=Value("")),
+            default=Concat(Value("#"), F("subpath")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=package_url,
+        output_field=CharField(),
+    )
+
+
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
@@ -1664,6 +1748,13 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         return self.annotate(
             sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
         )
+
+    def annotate_plain_purl(self):
+        """
+        Annotate the QuerySet with a database computed "PLAIN" PURL value that combines
+        the base Package URL fields: `type, `namespace`, `name`, `version`.
+        """
+        return self.annotate(plain_purl=get_plain_package_url_expression())
 
     def only_rendering_fields(self):
         """Minimum requirements to render a Package element in the UI."""
@@ -1707,6 +1798,7 @@ class Package(
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
+    PackageContentFieldMixin,
     DataspacedModel,
 ):
     filename = models.CharField(
@@ -1850,6 +1942,11 @@ class Package(
         related_name="affected_%(class)ss",
         help_text=_("Vulnerabilities affecting this object."),
     )
+    # related_packages = models.ManyToManyField(
+    #     to="component_catalog.PackageSet",
+    #     # related_name="packages",
+    #     help_text=_("A set representing the Package sets this Package is a member of."),
+    # )
 
     objects = DataspacedManager.from_queryset(PackageQuerySet)()
 
@@ -2536,6 +2633,39 @@ class PackageAffectedByVulnerability(AffectedByVulnerabilityRelationship):
 
     class Meta:
         unique_together = (("package", "vulnerability"), ("dataspace", "uuid"))
+
+
+# class PackageSet(DataspacedModel):
+#     """A group of related Packages by their plain PURL."""
+#
+#     type = models.CharField(
+#         max_length=16,
+#         blank=True,
+#     )
+#     namespace = models.CharField(
+#         max_length=255,
+#         blank=True,
+#     )
+#     name = models.CharField(
+#         max_length=100,
+#         blank=True,
+#     )
+#     version = models.CharField(
+#         max_length=100,
+#         blank=True,
+#     )
+#
+#     def add_to_package_set(self, package):
+#         self.packages.add(package)
+#
+#     def get_package_set_members(self):
+#         """Return related Packages"""
+#         return self.packages.order_by(
+#             "package_content",
+#         )
+#
+#     class Meta:
+#         unique_together = [("dataspace", "uuid")]
 
 
 class ComponentAffectedByVulnerability(AffectedByVulnerabilityRelationship):
