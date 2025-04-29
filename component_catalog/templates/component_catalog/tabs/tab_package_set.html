@@ -6,6 +6,7 @@
       <th>{% trans 'Package URL' %}</th>
       <th>{% trans 'Download URL' %}</th>
       <th>{% trans 'Filename' %}</th>
+      <th>{% trans 'Concluded license' %}</th>
     </tr>
   </thead>
   <tbody>
@@ -21,8 +22,9 @@
             <a href="{{ package.get_absolute_url }}" target="_blank">{{ package.package_url }}</a>
           {% endif %}
         </td>
-        <td>{{ package.download_url|default_if_none:"" }}</td>
         <td>{{ package.filename|default_if_none:"" }}</td>
+        <td>{{ package.download_url|default_if_none:"" }}</td>
+        <td>{{ package.license_expression|default_if_none:"" }}</td>
       </tr>
     {% endfor %}
   </tbody>

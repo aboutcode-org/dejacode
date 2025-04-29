@@ -67,6 +67,7 @@ from component_catalog.license_expression_dje import get_formatted_expression
 from component_catalog.license_expression_dje import get_unique_license_keys
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
@@ -1300,7 +1301,24 @@ class PackageDetailsView(
 
     def tab_package_set(self):
         plain_url = self.object.plain_package_url
-        related_packages = self.get_queryset().for_package_url(plain_url)
+        related_packages = (
+            self.model.objects.scope(self.object.dataspace)
+            .for_package_url(plain_url)
+            .only(
+                "uuid",
+                *PACKAGE_URL_FIELDS,
+                "filename",
+                "download_url",
+                "license_expression",
+                "dataspace__name",
+            )
+            .order_by(
+                *PACKAGE_URL_FIELDS,
+                "filename",
+                "download_url",
+            )
+            .distinct()
+        )
 
         template = "component_catalog/tabs/tab_package_set.html"
         if len(related_packages) > 1:
