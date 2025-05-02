@@ -8,6 +8,7 @@
 
 import json
 from collections import defaultdict
+from contextlib import suppress
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -692,29 +693,8 @@ class ImportPackageFromScanCodeIO:
         # Vulnerabilities are fetched post import.
         package_data.pop("affected_by_vulnerabilities", None)
 
-        unique_together_lookups = {
-            field: package_data.get(field, "") for field in self.unique_together_fields
-        }
-
-        # Check if the Package already exists in the local Dataspace
-        try:
-            package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
-            self.existing["package"].append(str(package))
-        except ObjectDoesNotExist:
-            package = None
-
-        # Check if the Package already exists in the reference Dataspace
-        reference_dataspace = Dataspace.objects.get_reference()
-        user_dataspace = self.user.dataspace
-        if not package and user_dataspace != reference_dataspace:
-            qs = Package.objects.scope(reference_dataspace).filter(**unique_together_lookups)
-            if qs.exists():
-                reference_object = qs.first()
-                try:
-                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
-                    self.created["package"].append(str(package))
-                except IntegrityError as error:
-                    self.errors["package"].append(str(error))
+        # Check if the package already exists to prevent duplication.
+        package = self.look_for_existing_package(package_data)
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -786,3 +766,43 @@ class ImportPackageFromScanCodeIO:
             return
 
         self.created["dependency"].append(str(dependency.dependency_uid))
+
+    def look_for_existing_package(self, package_data):
+        package = None
+        package_qs = Package.objects.scope(self.user.dataspace)
+
+        # 1. Check if the Package already exists in the local Dataspace
+        # Using exact match first: purl + download_url + filename
+        exact_match_lookups = {
+            field: package_data.get(field, "") for field in self.unique_together_fields
+        }
+        with suppress(ObjectDoesNotExist):
+            package = package_qs.get(**exact_match_lookups)
+            self.existing["package"].append(str(package))
+            return package
+
+        # 2. If the package data does not include a download_url value:
+        # Attemp to find an existing package using purl-only match.
+        if not package_data.get("download_url"):
+            purl_lookups = {field: package_data.get(field, "") for field in PACKAGE_URL_FIELDS}
+            same_purl_packages = package_qs.filter(**purl_lookups)
+            if len(same_purl_packages) == 1:
+                package = same_purl_packages[0]
+                self.existing["package"].append(str(package))
+                return package
+
+        # Check if the Package already exists in the reference Dataspace
+        # Using exact match only: purl + download_url + filename
+        reference_dataspace = Dataspace.objects.get_reference()
+        user_dataspace = self.user.dataspace
+        if not package and user_dataspace != reference_dataspace:
+            qs = Package.objects.scope(reference_dataspace).filter(**exact_match_lookups)
+            if qs.exists():
+                reference_object = qs.first()
+                try:
+                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
+                    self.created["package"].append(str(package))
+                except IntegrityError as error:
+                    self.errors["package"].append(str(error))
+
+        return package
