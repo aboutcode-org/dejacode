@@ -1123,6 +1123,49 @@ class ProductImportFromScanTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_look_for_existing_package(
+            self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
+        filename = "activemq-camel.zip"
+        download_url = "https://download.url/activemq-camel.zip"
+        package1 = make_package(self.dataspace, package_url=purl)
+        package2 = make_package(self.dataspace, package_url=purl, filename=filename)
+
+        package_data = {
+            "type": "maven",
+            "namespace": "org.apache.activemq",
+            "name": "activemq-camel",
+            "version": "5.11.0",
+            "purl": purl,
+        }
+        mock_fetch_packages.return_value = [package_data]
+        mock_fetch_dependencies.return_value = []
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+
+        # Check if the Package already exists in the local Dataspace
+        # Using exact match first: purl + download_url + filename
+        package = importer.look_for_existing_package(package_data)
+        self.assertEqual(package1, package)
+
+        # 2 packages are matched, cannot defined the one that should be used
+        package1.update(download_url=download_url)
+        package = importer.look_for_existing_package(package_data)
+        self.assertIsNone(package)
+
+        # If the package data does not include a download_url value:
+        # Attemp to find an existing package using purl-only match.
+        package2.delete()
+        package = importer.look_for_existing_package(package_data)
+        self.assertEqual(package1, package)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
     def test_product_portfolio_import_packages_from_scio_importer_duplicate_dependency(
         self, mock_fetch_packages, mock_fetch_dependencies
     ):
