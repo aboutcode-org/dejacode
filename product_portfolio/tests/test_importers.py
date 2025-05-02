@@ -1124,7 +1124,7 @@ class ProductImportFromScanTestCase(TestCase):
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
     def test_product_portfolio_import_packages_from_scio_importer_look_for_existing_package(
-            self, mock_fetch_packages, mock_fetch_dependencies
+        self, mock_fetch_packages, mock_fetch_dependencies
     ):
         purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
         filename = "activemq-camel.zip"
