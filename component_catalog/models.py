@@ -2635,39 +2635,6 @@ class PackageAffectedByVulnerability(AffectedByVulnerabilityRelationship):
         unique_together = (("package", "vulnerability"), ("dataspace", "uuid"))
 
 
-# class PackageSet(DataspacedModel):
-#     """A group of related Packages by their plain PURL."""
-#
-#     type = models.CharField(
-#         max_length=16,
-#         blank=True,
-#     )
-#     namespace = models.CharField(
-#         max_length=255,
-#         blank=True,
-#     )
-#     name = models.CharField(
-#         max_length=100,
-#         blank=True,
-#     )
-#     version = models.CharField(
-#         max_length=100,
-#         blank=True,
-#     )
-#
-#     def add_to_package_set(self, package):
-#         self.packages.add(package)
-#
-#     def get_package_set_members(self):
-#         """Return related Packages"""
-#         return self.packages.order_by(
-#             "package_content",
-#         )
-#
-#     class Meta:
-#         unique_together = [("dataspace", "uuid")]
-
-
 class ComponentAffectedByVulnerability(AffectedByVulnerabilityRelationship):
     component = models.ForeignKey(
         to="component_catalog.Component",
