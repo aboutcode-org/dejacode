@@ -275,13 +275,16 @@ def improve_packages_from_purldb(product_uuid, user_uuid):
         created_by=user,
     )
 
+    updated_packages = []
     try:
         updated_packages = product.improve_packages_from_purldb(user)
     except Exception as e:
+        logger.error(f"[improve_packages_from_purldb]: {e}.")
         scancode_project.update(
             status=ScanCodeProject.Status.FAILURE,
-            import_log=str(e),
+            import_log=["Error:", str(e)],
         )
+        return
 
     logger.info(f"[improve_packages_from_purldb]: {len(updated_packages)} updated from PurlDB.")
     verb = "Improved packages from PurlDB:"

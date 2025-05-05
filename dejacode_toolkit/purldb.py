@@ -56,7 +56,7 @@ class PurlDB(BaseService):
 
     def get_package_by_purl(self, package_url):
         """Get a Package details entry providing its `package_url`."""
-        if results := self.find_packages({"purl": package_url}):
+        if results := self.find_packages(payload={"purl": package_url}):
             return results[0]
 
     def find_packages(self, payload, timeout=None):

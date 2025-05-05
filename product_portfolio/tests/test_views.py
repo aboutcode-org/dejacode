@@ -15,6 +15,7 @@ from urllib.parse import quote
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -3384,6 +3385,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(download_url)
         self.assertEqual(response.status_code, 404)
 
+    # HERE!
     @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
     def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):
         mock_improve.return_value = ["pkg1", "pkg2"]
@@ -3430,6 +3432,27 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual("pkg1, pkg2", notification.description)
         self.assertEqual("dejacodeuser", notification.actor_content_type.model)
         self.assertEqual(self.product1, notification.action_object)
+
+    @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
+    def test_product_portfolio_improve_packages_from_purldb_task_exception(self, mock_improve):
+        mock_improve.side_effect = IntegrityError("duplicate key value violates unique constraint")
+
+        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
+        with self.assertLogs(tasks_logger) as cm:
+            results = improve_packages_from_purldb(self.product1.uuid, self.super_user.uuid)
+        self.assertIsNone(results)
+
+        import_project = self.product1.scancodeprojects.get()
+        self.assertEqual(import_project.type, ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB)
+        self.assertEqual(import_project.status, ScanCodeProject.Status.FAILURE)
+        expected = ["Error:", "duplicate key value violates unique constraint"]
+        self.assertEqual(expected, import_project.import_log)
+
+        expected = (
+            "ERROR:dje.tasks:[improve_packages_from_purldb]: "
+            "duplicate key value violates unique constraint."
+        )
+        self.assertIn(expected, cm.output)
 
     def test_product_portfolio_vulnerability_analysis_form_view(self):
         self.client.login(username=self.super_user.username, password="secret")
