@@ -134,6 +134,7 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import improve_packages_from_purldb_task
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -2530,7 +2531,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: tasks.improve_packages_from_purldb(
+            lambda: improve_packages_from_purldb_task(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )
