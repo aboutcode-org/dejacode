@@ -2620,7 +2620,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
-        package_with_download_url = make_package(self.dataspace, package_url=package_url, download_url=download_url)
+        make_package(self.dataspace, package_url=package_url, download_url=download_url)
         package_no_download_url = make_package(self.dataspace, package_url=package_url)
 
         # Updating the package with the download_url form purldb_entry would violates the

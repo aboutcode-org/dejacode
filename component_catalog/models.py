@@ -17,6 +17,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
+from django.db import IntegrityError
 from django.db import models
 from django.db.models import CharField
 from django.db.models import Count
@@ -31,7 +32,6 @@ from django.utils.text import format_lazy
 from django.utils.text import get_valid_filename
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext_lazy as _
-from django.db import IntegrityError
 
 from attributecode.model import About
 from cyclonedx import model as cyclonedx_model
