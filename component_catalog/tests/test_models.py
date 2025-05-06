@@ -2607,6 +2607,27 @@ class ComponentCatalogModelsTestCase(TestCase):
         for field_name in updated_fields:
             self.assertEqual(purldb_entry[field_name], getattr(package1, field_name))
 
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):
+        package_url = "pkg:pypi/django@3.0"
+        download_url = "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz"
+        purldb_entry = {
+            "purl": package_url,
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "download_url": download_url,
+        }
+
+        mock_get_purldb_entries.return_value = [purldb_entry]
+        package_with_download_url = make_package(self.dataspace, package_url=package_url, download_url=download_url)
+        package_no_download_url = make_package(self.dataspace, package_url=package_url)
+
+        # Updating the package with the download_url form purldb_entry would violates the
+        # unique constraint. This is handle properly by update_from_purldb.
+        updated_fields = package_no_download_url.update_from_purldb(self.user)
+        self.assertEqual([], updated_fields)
+
     def test_package_model_vulnerability_queryset_mixin(self):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         package2 = make_package(self.dataspace)

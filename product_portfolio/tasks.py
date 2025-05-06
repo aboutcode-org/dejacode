@@ -139,10 +139,8 @@ def pull_project_data_from_scancodeio_task(scancodeproject_uuid):
 
 @job("default", timeout=1200)
 def improve_packages_from_purldb_task(product_uuid, user_uuid):
-    logger.info(
-        f"Entering improve_packages_from_purldb task with "
-        f"product_uuid={product_uuid} user_uuid={user_uuid}"
-    )
+    task_name = "improve_packages_from_purldb"
+    logger.info(f"Entering {task_name} task with product_uuid={product_uuid} user_uuid={user_uuid}")
 
     DejacodeUser = apps.get_model("dje", "DejacodeUser")
     History = apps.get_model("dje", "History")
@@ -152,21 +150,19 @@ def improve_packages_from_purldb_task(product_uuid, user_uuid):
     try:
         user = DejacodeUser.objects.get(uuid=user_uuid)
     except ObjectDoesNotExist:
-        logger.error(f"[improve_packages_from_purldb]: User uuid={user_uuid} does not exists.")
+        logger.error(f"[{task_name}]: User uuid={user_uuid} does not exists.")
         return
 
     try:
         product = Product.objects.get_queryset(user).get(uuid=product_uuid)
     except ObjectDoesNotExist:
-        logger.error(
-            f"[improve_packages_from_purldb]: Product uuid={product_uuid} does not exists."
-        )
+        logger.error(f"[{task_name}]: Product uuid={product_uuid} does not exists.")
         return
 
     perms = guardian_get_perms(user, product)
     has_change_permission = "change_product" in perms
     if not has_change_permission:
-        logger.error("[improve_packages_from_purldb]: Permission denied.")
+        logger.error(f"[{task_name}]: Permission denied.")
         return
 
     scancode_project = ScanCodeProject.objects.create(
@@ -180,14 +176,14 @@ def improve_packages_from_purldb_task(product_uuid, user_uuid):
     try:
         updated_packages = product.improve_packages_from_purldb(user)
     except Exception as e:
-        logger.error(f"[improve_packages_from_purldb]: {e}.")
+        logger.error(f"[{task_name}]: {e}.")
         scancode_project.update(
             status=ScanCodeProject.Status.FAILURE,
             import_log=["Error:", str(e)],
         )
         return
 
-    logger.info(f"[improve_packages_from_purldb]: {len(updated_packages)} updated from PurlDB.")
+    logger.info(f"[{task_name}]: {len(updated_packages)} updated from PurlDB.")
     verb = "Improved packages from PurlDB:"
     if updated_packages:
         description = ", ".join([str(package) for package in updated_packages])

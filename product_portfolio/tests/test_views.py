@@ -1663,7 +1663,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("153", response["content-length"])
 
-    @mock.patch("product_portfolio.views.tasks.scancodeio_submit_scan.delay")
+    @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
     def test_product_scan_all_packages_view(self, mock_is_configured, mock_scancodeio_submit_scan):
         mock_is_configured.return_value = True

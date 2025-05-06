@@ -31,6 +31,7 @@ from django.utils.text import format_lazy
 from django.utils.text import get_valid_filename
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext_lazy as _
+from django.db import IntegrityError
 
 from attributecode.model import About
 from cyclonedx import model as cyclonedx_model
@@ -2486,12 +2487,17 @@ class Package(
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
 
-        updated_fields = self.update_from_data(
-            user,
-            package_data,
-            override=False,
-            override_unknown=True,
-        )
+        try:
+            updated_fields = self.update_from_data(
+                user,
+                package_data,
+                override=False,
+                override_unknown=True,
+            )
+        except IntegrityError as e:
+            logger.error(f"[update_from_purldb] Skipping {self} due to IntegrityError: {e}")
+            return []
+
         return updated_fields
 
     def update_from_scan(self, user):
