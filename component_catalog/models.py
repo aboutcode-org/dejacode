@@ -2455,6 +2455,7 @@ class Package(
         is nothing was found.
         """
         payloads = []
+        purldb_entries = []
 
         package_url = self.package_url
         if package_url:
@@ -2469,8 +2470,15 @@ class Package(
             if max_request_call and index >= max_request_call:
                 return
 
-            if packages_data := purldb.find_packages(payload, timeout):
-                return packages_data
+            if purldb_entries := purldb.find_packages(payload, timeout):
+                break
+
+        # Cleanup the PurlDB entries:
+        # - Packages with different PURL are excluded.
+        if package_url:
+            purldb_entries = [entry for entry in purldb_entries if entry.get("purl") == package_url]
+
+        return purldb_entries
 
     def update_from_purldb(self, user):
         """

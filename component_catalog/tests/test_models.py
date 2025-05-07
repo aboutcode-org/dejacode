@@ -2556,6 +2556,27 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_url)
 
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries(self, mock_find_packages):
+        purl = "pkg:pypi/django@3.0"
+        package1 = make_package(self.dataspace, package_url=purl)
+        purldb_entry1 = {
+            "purl": purl,
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+        }
+        purldb_entry2 = {
+            "purl": "pkg:pypi/django",
+            "type": "pypi",
+            "name": "django",
+        }
+
+        mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+        # The purldb_entry2 is excluded as the PURL differs
+        self.assertEqual([purldb_entry1], purldb_entries)
+
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb(self, mock_get_purldb_entries):
         purldb_entry = {
