@@ -1194,20 +1194,20 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(reverse("component_catalog:package_list"))
 
         expected = f"""
-        <td title="{self.package1.download_url}">
+        <div title="{self.package1.download_url}">
           <a href="{self.package1.download_url}">
               {self.package1.filename}
           </a>
-        </td>
+        </div>
         """
         self.assertContains(response, expected, html=True)
 
         expected = f"""
-        <td title="{self.package2.download_url}" class="text-truncate">
+        <div title="{self.package2.download_url}" class="text-truncate">
           <a href="{self.package2.download_url}">
             {self.package2.download_url}
           </a>
-        </td>
+        </div>
         """
         self.assertContains(response, expected, html=True)
 
