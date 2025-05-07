@@ -2473,6 +2473,9 @@ class Package(
             if purldb_entries := purldb.find_packages(payload, timeout):
                 break
 
+        if not purldb_entries:
+            return []
+
         # Cleanup the PurlDB entries:
         # - Packages with different PURL are excluded.
         if package_url:

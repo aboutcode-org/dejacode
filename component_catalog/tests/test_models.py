@@ -2572,6 +2572,9 @@ class ComponentCatalogModelsTestCase(TestCase):
             "name": "django",
         }
 
+        mock_find_packages.return_value = None
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+
         mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
         purldb_entries = package1.get_purldb_entries(user=self.user)
         # The purldb_entry2 is excluded as the PURL differs
