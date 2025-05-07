@@ -2670,16 +2670,25 @@ class ComponentCatalogModelsTestCase(TestCase):
             "name": "django",
             "version": "3.0",
             "download_url": download_url,
+            "description": "This value will be updated",
+            "md5": "This value is skipped",
+            "sha1": "This value is skipped",
         }
-
         mock_get_purldb_entries.return_value = [purldb_entry]
+
+        # 2 packages with the same "pkg:pypi/django@3.0" PURL:
+        # - 1 with a `download_url` value
+        # - 1 without a `download_url` value
         make_package(self.dataspace, package_url=package_url, download_url=download_url)
         package_no_download_url = make_package(self.dataspace, package_url=package_url)
 
-        # Updating the package with the download_url form purldb_entry would violates the
-        # unique constraint. This is handle properly by update_from_purldb.
+        # Updating the package with the `download_url` from the purldb_entry data
+        # would violates the unique constraint.
+        # This is handle properly by update_from_purldb.
         updated_fields = package_no_download_url.update_from_purldb(self.user)
-        self.assertEqual([], updated_fields)
+        self.assertEqual(["description"], updated_fields)
+        package_no_download_url.refresh_from_db()
+        self.assertEqual(purldb_entry["description"], package_no_download_url.description)
 
     def test_package_model_vulnerability_queryset_mixin(self):
         package1 = make_package(self.dataspace, is_vulnerable=True)

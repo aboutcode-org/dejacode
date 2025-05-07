@@ -17,7 +17,6 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
-from django.db import IntegrityError
 from django.db import models
 from django.db.models import CharField
 from django.db.models import Count
@@ -2505,16 +2504,42 @@ class Package(
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
 
-        try:
-            updated_fields = self.update_from_data(
-                user,
-                package_data,
-                override=False,
-                override_unknown=True,
-            )
-        except IntegrityError as e:
-            logger.error(f"[update_from_purldb] Skipping {self} due to IntegrityError: {e}")
-            return []
+        # Avoid raising an IntegrityError when the values in `package_data` for the
+        # identifier fields already exist on another Package instance.
+        #
+        # This situation can occur when a complete package (with both `purl` and
+        # `download_url`) already exists in the Dataspace, and `update_from_purldb` is
+        # called on a different package that has the same `purl` but no `download_url`.
+        #
+        # If we try to assign the same `download_url` to the second package, it would
+        # violate the unique constraints defined in the Package model (since the
+        # combination of fields must be unique).
+        unique_filters_lookups = {
+            field_name: package_data.get(field_name, "")
+            for field_name in self.get_identifier_fields()
+        }
+        unique_filters_qs = (
+            Package.objects.scope(self.dataspace)
+            .filter(**unique_filters_lookups)
+            .exclude(pk=self.pk)
+        )
+        if unique_filters_qs.exists():
+            # Remove the problematic "identifier_fields" values and the checksum values
+            hash_field_names = [field.name for field in HashFieldsMixin._meta.fields]
+            identifier_fields = self.get_identifier_fields()
+            for field_name in [*hash_field_names, *identifier_fields]:
+                package_data.pop(field_name, None)
+
+        # try:
+        updated_fields = self.update_from_data(
+            user,
+            package_data,
+            override=False,
+            override_unknown=True,
+        )
+        # except IntegrityError as e:
+        #     logger.error(f"[update_from_purldb] Skipping {self} due to IntegrityError: {e}")
+        #     return []
 
         return updated_fields
 
