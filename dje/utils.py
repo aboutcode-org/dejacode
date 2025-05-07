@@ -699,3 +699,23 @@ def localized_datetime(datetime):
 
     default_format = get_format("DATETIME_FORMAT")
     return date_format(dt, default_format)
+
+
+def merge_common_non_empty_values(dicts):
+    """
+    Merge a list of dictionaries by extracting only the key-value pairs
+    that are common and non-empty across all dictionaries.
+    Missing keys are treated as empty values.
+    """
+    merged_result = {}
+    # Collect all unique keys from all dictionaries
+    all_keys = set().union(*dicts)
+
+    for key in all_keys:
+        values = [value for entry in dicts if (value := entry.get(key)) not in EMPTY_VALUES]
+
+        # Include key only if all values are identical
+        if values and all(value == values[0] for value in values):
+            merged_result[key] = values[0]
+
+    return merged_result

@@ -1,0 +1,19 @@
+<div title="{{ package.download_url }}"{% if not package.filename %} class="text-truncate"{% endif %}>
+  {% if package.download_url %}
+    <a href="{{ package.download_url }}">
+      {% if display_icons %}
+        <i class="fa-solid fa-download me-1"></i>
+      {% endif %}
+      {% if package.filename %}
+        {{ package.filename }}
+      {% else %}
+        {{ package.download_url|truncatechars:40 }}
+      {% endif %}
+    </a>
+  {% elif package.filename %}
+    {% if display_icons %}
+      <i class="fa-solid fa-file me-1"></i>
+    {% endif %}
+    {{ package.filename }}
+  {% endif %}
+</div>
