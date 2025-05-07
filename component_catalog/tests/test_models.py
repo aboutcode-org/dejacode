@@ -2598,9 +2598,9 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
-        package1 = Package.objects.create(
+        package1 = make_package(
+            self.dataspace,
             filename="package",
-            dataspace=self.dataspace,
             # "unknown" values are overrided
             declared_license_expression="unknown",
         )
@@ -2627,6 +2627,38 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         for field_name in updated_fields:
             self.assertEqual(purldb_entry[field_name], getattr(package1, field_name))
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_multiple_entries(self, mock_get_purldb_entries):
+        purldb_entry1 = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/django@3.0",
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "keywords": ["Keyword1", "Keyword2"],
+            "filename": "Django-3.0.tar.gz",
+            "download_url": "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz",
+        }
+        purldb_entry2 = {
+            "uuid": "e133e70b-8dd3-4cf1-9711-72b1f57523a0",
+            "purl": "pkg:pypi/django@3.0",
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "primary_language": "Python",
+            "keywords": ["Keyword1", "Keyword2"],
+            "download_url": "https://another.url/Django-3.0.tar.gz",
+        }
+
+        mock_get_purldb_entries.return_value = [purldb_entry1, purldb_entry2]
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@3.0")
+        updated_fields = package1.update_from_purldb(self.user)
+        expected = ["filename", "keywords", "primary_language"]
+        self.assertEqual(expected, sorted(updated_fields))
+        self.assertEqual("Django-3.0.tar.gz", package1.filename)
+        self.assertEqual(["Keyword1", "Keyword2"], package1.keywords)
+        self.assertEqual("Python", package1.primary_language)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):

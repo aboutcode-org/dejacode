@@ -73,6 +73,7 @@ from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
 from dje.utils import is_purl_str
+from dje.utils import merge_common_non_empty_values
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -2482,14 +2483,23 @@ class Package(
 
     def update_from_purldb(self, user):
         """
-        Find this Package in the PurlDB and update empty fields with PurlDB data
-        when available.
+        Update this Package instance with data from PurlDB.
+
+        - Retrieves matching entries from PurlDB using the given user.
+        - If exactly one match is found, its data is used directly.
+        - If multiple entries are found, only values that are non-empty and
+          common across all entries are merged and used to update the Package.
         """
         purldb_entries = self.get_purldb_entries(user)
         if not purldb_entries:
             return
 
-        package_data = purldb_entries[0]
+        purldb_entries_count = len(purldb_entries)
+        if purldb_entries_count == 1:
+            package_data = purldb_entries[0]
+        else:
+            package_data = merge_common_non_empty_values(purldb_entries)
+
         # The format from PURLDB is "2019-11-18T00:00:00Z"
         if release_date := package_data.get("release_date"):
             package_data["release_date"] = release_date.split("T")[0]
