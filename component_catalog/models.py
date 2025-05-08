@@ -18,10 +18,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import models
+from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
+from django.db.models import F
 from django.db.models import OuterRef
+from django.db.models import Value
+from django.db.models import When
 from django.db.models.functions import Concat
 from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
@@ -1651,6 +1655,65 @@ class ComponentKeyword(DataspacedModel):
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
+def get_plain_package_url_expression():
+    """
+    Return a Django expression to compute the "PLAIN" Package URL (PURL).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    plain_package_url = Concat(
+        Value("pkg:"),
+        F("type"),
+        Case(
+            When(namespace="", then=Value("")),
+            default=Concat(Value("/"), F("namespace")),
+            output_field=CharField(),
+        ),
+        Value("/"),
+        F("name"),
+        Case(
+            When(version="", then=Value("")),
+            default=Concat(Value("@"), F("version")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=plain_package_url,
+        output_field=CharField(),
+    )
+
+
+def get_package_url_expression():
+    """
+    Return a Django expression to compute the "FULL" Package URL (PURL).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    package_url = Concat(
+        get_plain_package_url_expression(),
+        Case(
+            When(qualifiers="", then=Value("")),
+            default=Concat(Value("?"), F("qualifiers")),
+            output_field=CharField(),
+        ),
+        Case(
+            When(subpath="", then=Value("")),
+            default=Concat(Value("#"), F("subpath")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=package_url,
+        output_field=CharField(),
+    )
+
+
 class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, DataspacedQuerySet):
     def has_package_url(self):
         """Return objects with Package URL defined."""
@@ -1665,6 +1728,26 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         return self.annotate(
             sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
         )
+
+    def annotate_plain_package_url(self):
+        """
+        Annotate the QuerySet with a computed 'plain' Package URL (PURL).
+
+        This plain PURL is a simplified version that includes only the core fields:
+        `type`, `namespace`, `name`, and `version`. It omits any qualifiers or
+        subpath components, providing a normalized and minimal representation
+        of the Package URL.
+        """
+        return self.annotate(plain_purl=get_plain_package_url_expression())
+
+    def annotate_package_url(self):
+        """
+        Annotate the QuerySet with a fully-computed Package URL (PURL).
+
+        This includes the core PURL fields (`type`, `namespace`, `name`, `version`)
+        as well as any qualifiers and subpath components.
+        """
+        return self.annotate(purl=get_package_url_expression())
 
     def only_rendering_fields(self):
         """Minimum requirements to render a Package element in the UI."""

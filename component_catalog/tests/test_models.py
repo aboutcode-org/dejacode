@@ -2709,3 +2709,32 @@ class ComponentCatalogModelsTestCase(TestCase):
         package2 = make_package(self.dataspace)
         self.assertTrue(package1.is_vulnerable)
         self.assertFalse(package2.is_vulnerable)
+
+    def test_package_queryset_has_package_url(self):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        make_package(self.dataspace)
+        qs = Package.objects.has_package_url()
+        self.assertQuerySetEqual(qs, [package1])
+
+    def test_package_queryset_annotate_sortable_identifier(self):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_sortable_identifier()
+        self.assertEqual("pypidjango5.0", qs.get(pk=package1.pk).sortable_identifier)
+        self.assertEqual(package2.filename, qs.get(pk=package2.pk).sortable_identifier)
+
+    def test_package_queryset_annotate_package_url(self):
+        package_url = "pkg:pypi/django@5.0?qualifier=true#path"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_package_url()
+        self.assertEqual(package_url, qs.get(pk=package1.pk).purl)
+        self.assertEqual("", qs.get(pk=package2.pk).purl)
+
+    def test_package_queryset_annotate_plain_package_url(self):
+        package_url = "pkg:pypi/django@5.0?qualifier=true#path"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_plain_package_url()
+        self.assertEqual("pkg:pypi/django@5.0", qs.get(pk=package1.pk).plain_purl)
+        self.assertEqual("", qs.get(pk=package2.pk).plain_purl)
