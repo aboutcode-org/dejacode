@@ -2462,9 +2462,12 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
         }
         tab_fields.append(("", alert_context, None, "includes/field_alert.html"))
 
-        if len(purldb_entries) > 1:
+        len_purldb_entries = len(purldb_entries)
+        if len_purldb_entries > 1:
             alert_context = {
-                "message": "There are multiple entries in the PurlDB for this Package.",
+                "message": (
+                    f"There are {len_purldb_entries} entries in the PurlDB for this Package."
+                ),
                 "full_width": True,
                 "alert_class": "alert-warning",
             }

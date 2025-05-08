@@ -115,6 +115,9 @@
                 <i class="fas fa-user me-2"></i>{{ relation.component.owner.get_absolute_link }}{{ relation.owner }}
               </div>
             {% endif %}
+            {% if relation.package %}
+              {% include 'component_catalog/includes/package_filename_as_link.html' with package=relation.package display_icons=True %}
+            {% endif %}
           </td>
           <td>
             {% if relation.purpose %}

@@ -57,12 +57,8 @@
       <td>
         {{ object.primary_language }}
       </td>
-      <td title="{{ object.download_url }}"{% if not object.filename %} class="text-truncate"{% endif %}>
-        {% if object.download_url %}
-          <a href="{{ object.download_url }}">
-            {% if object.filename %}{{ object.filename }}{% else %}{{ object.download_url }}{% endif %}
-          </a>
-        {% endif %}
+      <td>
+        {% include 'component_catalog/includes/package_filename_as_link.html' with package=object %}
       </td>
       <td>
         {% with components=object.component_set.all %}

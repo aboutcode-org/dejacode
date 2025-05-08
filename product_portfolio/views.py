@@ -72,7 +72,6 @@ from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
-from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
 from dje.filters import HasCountFilter
@@ -134,6 +133,8 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import improve_packages_from_purldb_task
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -1312,7 +1313,7 @@ class ProductTabImportsView(
         if run_status != project.status:
             if run_status == "success":
                 transaction.on_commit(
-                    lambda: tasks.pull_project_data_from_scancodeio.delay(
+                    lambda: pull_project_data_from_scancodeio_task.delay(
                         scancodeproject_uuid=project.uuid,
                     )
                 )
@@ -2452,7 +2453,7 @@ def import_packages_from_scancodeio_view(request, key):
     get_object_or_404(product_qs, id=scancode_project.product_id)
 
     transaction.on_commit(
-        lambda: tasks.pull_project_data_from_scancodeio.delay(
+        lambda: pull_project_data_from_scancodeio_task.delay(
             scancodeproject_uuid=scancode_project.uuid,
         )
     )
@@ -2530,7 +2531,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: tasks.improve_packages_from_purldb(
+            lambda: improve_packages_from_purldb_task(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )

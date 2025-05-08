@@ -137,6 +137,18 @@ Release notes
   prevent the creation of duplicated "resolved" dependencies.
   https://github.com/aboutcode-org/dejacode/issues/297
 
+- Display the filename/download_url in the Inventory tab.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Improve exception support in improve_packages_from_purldb task.
+  In case of an exception, the error is properly logged on the Import instance.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Refine the ``update_from_purldb`` function to avoid any IntegrityError.
+  Also, when multiple entries are returned from the PurlDB, only the common values are
+  merged and kept for the data update.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

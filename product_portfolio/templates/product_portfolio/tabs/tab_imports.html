@@ -25,7 +25,7 @@
     </thead>
     <tbody>
       {% for scancode_project in scancode_projects %}
-        <tr class="{% cycle 'odd' '' %}">
+        <tr class="{% cycle 'odd' '' %}" data-uuid="{{ scancode_project.uuid }}">
           <td>
             {{ scancode_project.get_type_display }}
             {% if scancode_project.update_existing_packages %}
