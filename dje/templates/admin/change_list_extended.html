@@ -96,8 +96,8 @@
                 {% if cl.search_fields %}
                     $("#grp-changelist-search-form")
                         .attr("style", "width: 90%;")
-                        .attr("data-hint", "Search fields: {{ cl.search_fields|join:', ' }}")
-                        .addClass("hint--bottom");
+                        .attr("data-hint", "Search fields: {{ cl.get_search_fields_for_hint_display|join:', ' }}")
+                        .addClass("hint--bottom hint--large");
                 {% endif %}
 
                 // Opens actions listed in `target_blank_actions` in a new tab.

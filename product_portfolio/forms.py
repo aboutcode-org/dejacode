@@ -34,7 +34,6 @@ from component_catalog.license_expression_dje import LicenseExpressionFormMixin
 from component_catalog.models import Component
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dje import tasks
 from dje.fields import SmartFileField
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
@@ -56,6 +55,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
+from product_portfolio.tasks import scancodeio_submit_project_task
 
 
 class NameVersionValidationFormMixin:
@@ -669,7 +670,7 @@ class BaseProductImportFormView(forms.Form):
         )
 
         transaction.on_commit(
-            lambda: tasks.scancodeio_submit_project.delay(
+            lambda: scancodeio_submit_project_task.delay(
                 scancodeproject_uuid=scancode_project.uuid,
                 user_uuid=user.uuid,
                 pipeline_name=self.pipeline_name,
@@ -999,7 +1000,7 @@ class PullProjectDataForm(forms.Form):
         )
 
         transaction.on_commit(
-            lambda: tasks.pull_project_data_from_scancodeio.delay(
+            lambda: pull_project_data_from_scancodeio_task.delay(
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )

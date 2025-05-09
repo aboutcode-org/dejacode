@@ -1,4 +1,5 @@
 {% load i18n %}
+{% spaceless %}
 <thead class="text-break-initial">
   <tr>
     {% if is_grouping_active %}
@@ -27,10 +28,10 @@
           {% with query_no_sort=filter.get_query_no_sort %}
             {% if filter.form.sort.data and header.field_name in filter.form.sort.data.0 %}
               {# The sort for this field is currently active #}
-              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}{% if tab_id %}{{ tab_id }}-{% endif %}sort={% if '-' not in filter.form.sort.data.0 %}-{% endif %}{{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort active" aria-label="Sort"><i class="fas fa-sort-{% if '-' not in filter.form.sort.data.0 %}up{% else %}down{% endif %}"></i></a>
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}{% if tab_id %}{{ tab_id }}-{% endif %}sort={% if '-' not in filter.form.sort.data.0 %}-{% endif %}{{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort active ms-1" aria-label="Sort"><i class="fas fa-sort-{% if '-' not in filter.form.sort.data.0 %}up{% else %}down{% endif %}"></i></a>
             {% else %}
               {# The sort for this field is NOT active #}
-              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}{% if tab_id %}{{ tab_id }}-{% endif %}sort={{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort" aria-label="Sort"><i class="fas fa-sort"></i></a>
+              <a href="?{% if query_no_sort %}{{ query_no_sort }}&{% endif %}{% if tab_id %}{{ tab_id }}-{% endif %}sort={{ header.field_name }}{% if tab_id %}#{{ tab_id }}{% endif %}" class="sort ms-1" aria-label="Sort"><i class="fas fa-sort"></i></a>
             {% endif %}
           {% endwith %}
         {% endif %}
@@ -41,3 +42,4 @@
     {% endif %}
   </tr>
 </thead>
+{% endspaceless %}

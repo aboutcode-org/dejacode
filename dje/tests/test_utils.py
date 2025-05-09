@@ -35,8 +35,10 @@ from dje.utils import get_referer_resolver
 from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
 from dje.utils import is_available
+from dje.utils import is_purl_fragment
 from dje.utils import is_purl_str
 from dje.utils import localized_datetime
+from dje.utils import merge_common_non_empty_values
 from dje.utils import merge_relations
 from dje.utils import normalize_newlines_as_CR_plus_LF
 from dje.utils import remove_field_from_query_dict
@@ -502,6 +504,28 @@ class DJEUtilsTestCase(TestCase):
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0"))
         self.assertTrue(is_purl_str("pkg:npm/is-npm@1.0.0", validate=True))
 
+    def test_utils_is_purl_fragment(self):
+        valid_fragments = [
+            "pkg:npm/package@1.0.0",  # Valid full PURL
+            "npm/package@1.0.0",  # PURL without pkg: prefix
+            "npm/type",  # Fragment with type and namespace
+            "name@version",  # Fragment with name and version
+            "namespace/name",  # Fragment with namespace and name
+            "npm/package",  # Type and package name
+            "package@1.0.0",  # Name and version
+        ]
+
+        invalid_fragments = [
+            "package",  # Just the package name
+            "package 1.0.0",  # No connector
+        ]
+
+        for fragment in valid_fragments:
+            self.assertTrue(is_purl_fragment(fragment), msg=fragment)
+
+        for fragment in invalid_fragments:
+            self.assertFalse(is_purl_fragment(fragment), msg=fragment)
+
     def test_utils_localized_datetime(self):
         self.assertIsNone(localized_datetime(None))
 
@@ -516,3 +540,32 @@ class DJEUtilsTestCase(TestCase):
         self.assertEqual("Jan 13, 2025, 11:11 AM PST", localized_datetime(dt))
         dt = "2025-01-13T19:11:08.216188+01:00"
         self.assertEqual("Jan 13, 2025, 10:11 AM PST", localized_datetime(dt))
+
+    def test_utils_merge_common_non_empty_values(self):
+        entry1 = {
+            "name": "django",
+            "version": "3.0",
+            "description": "A web framework",  # present
+            "uuid": "1234",  # different
+            "empty_field": "",  # empty
+            "missing_in_other": "value",
+            "keywords": ["Keyword1", "Keyword2"],
+            "parties": ["a", "b"],
+        }
+        entry2 = {
+            "name": "django",  # same
+            "version": "3.0",  # same
+            "description": "",  # empty
+            "uuid": "5678",  # different → excluded
+            # "missing_in_other" is missing
+            "keywords": ["Keyword1"],
+            "parties": ["a", "b"],
+        }
+        expected = {
+            "name": "django",
+            "version": "3.0",
+            "description": "A web framework",
+            "missing_in_other": "value",
+            "parties": ["a", "b"],
+        }
+        self.assertEqual(expected, merge_common_non_empty_values([entry1, entry2]))

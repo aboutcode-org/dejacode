@@ -31,6 +31,7 @@ from django.db.models import Prefetch
 from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
+from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -72,7 +73,6 @@ from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
-from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
 from dje.filters import HasCountFilter
@@ -134,6 +134,8 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import improve_packages_from_purldb_task
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -568,9 +570,13 @@ class ProductDetailsView(
                 "tooltip": "No vulnerabilities found in this Product",
             }
 
+        badge_class = "text-bg-secondary"
+        if vulnerability_count > 0:
+            badge_class = "badge-vulnerability"
+
         label = (
             f"Vulnerabilities"
-            f'<span class="badge badge-vulnerability ps-1 ms-1">'
+            f'<span class="badge {badge_class} ps-1 ms-1">'
             f'  <i class="fas fa-archive" style="height: auto"></i>{vulnerable_package_count}'
             f'  <i class="fas fa-bug" style="height: auto"></i>{vulnerability_count}'
             f"</span>"
@@ -1312,7 +1318,7 @@ class ProductTabImportsView(
         if run_status != project.status:
             if run_status == "success":
                 transaction.on_commit(
-                    lambda: tasks.pull_project_data_from_scancodeio.delay(
+                    lambda: pull_project_data_from_scancodeio_task.delay(
                         scancodeproject_uuid=project.uuid,
                     )
                 )
@@ -2452,7 +2458,7 @@ def import_packages_from_scancodeio_view(request, key):
     get_object_or_404(product_qs, id=scancode_project.product_id)
 
     transaction.on_commit(
-        lambda: tasks.pull_project_data_from_scancodeio.delay(
+        lambda: pull_project_data_from_scancodeio_task.delay(
             scancodeproject_uuid=scancode_project.uuid,
         )
     )
@@ -2488,6 +2494,18 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
 
 
 @login_required
+def scancodeio_project_download_input_view(request, scancodeproject_uuid):
+    secured_qs = ScanCodeProject.objects.product_secured(user=request.user)
+    scancode_project = get_object_or_404(secured_qs, uuid=scancodeproject_uuid)
+    input_file = scancode_project.input_file
+
+    if not input_file or not input_file.storage.exists(input_file.name):
+        raise Http404
+
+    return FileResponse(input_file.open("rb"), as_attachment=True)
+
+
+@login_required
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
     guarded_qs = Product.objects.get_queryset(user)
@@ -2518,7 +2536,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: tasks.improve_packages_from_purldb(
+            lambda: improve_packages_from_purldb_task(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )

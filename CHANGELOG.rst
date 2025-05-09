@@ -120,6 +120,39 @@ Release notes
   simplicity, and readability.
   https://github.com/aboutcode-org/dejacode/issues/241
 
+- Refine the way the PURL fragments are handled in searches.
+  https://github.com/aboutcode-org/dejacode/issues/286
+
+- Fix an issue with ``urlize_target_blank`` when the URL contains curly braces.
+
+- Add the ability to download Product "Imports" input file.
+  https://github.com/aboutcode-org/dejacode/issues/156
+
+- Fix a logic issue in the ``ImportPackageFromScanCodeIO.import_package`` that occurs when
+  multiple packages with the same PURL, but different download_url or filename,
+  are present in the Dataspace.
+  https://github.com/aboutcode-org/dejacode/issues/295
+
+- Fix a logic issue in the ``ImportPackageFromScanCodeIO.import_dependencies`` to
+  prevent the creation of duplicated "resolved" dependencies.
+  https://github.com/aboutcode-org/dejacode/issues/297
+
+- Display the filename/download_url in the Inventory tab.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Improve exception support in improve_packages_from_purldb task.
+  In case of an exception, the error is properly logged on the Import instance.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Refine the ``update_from_purldb`` function to avoid any IntegrityError.
+  Also, when multiple entries are returned from the PurlDB, only the common values are
+  merged and kept for the data update.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Add a new "Package Set" tab to the Package details view.
+  This tab displays related packages grouped by their normalized ("plain") Package URL.
+  https://github.com/aboutcode-org/dejacode/issues/276
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.

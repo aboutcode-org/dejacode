@@ -1,0 +1,41 @@
+{% load i18n %}
+{% spaceless %}
+<table class="table table-bordered table-hover table-md text-break">
+  <thead>
+    <tr>
+      <th>{% trans 'Package URL' %}</th>
+      <th>{% trans 'Filename' %}</th>
+      <th>{% trans 'Download URL' %}</th>
+      <th>{% trans 'Concluded license' %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for package in values %}
+      <tr data-uuid="{{ package.uuid }}">
+        <td class="fw-bold">
+          {% if package.uuid == object.uuid %}
+            {{ package.package_url }}
+            <div>
+              <span class="badge bg-secondary">Current package</span>
+            </div>
+          {% else %}
+            <a href="{{ package.get_absolute_url }}" target="_blank">
+              {{ package.package_url }}
+            </a>
+          {% endif %}
+        </td>
+        <td>{{ package.filename|default_if_none:"" }}</td>
+        <td>
+          {% if package.download_url %}
+            <i class="fa-solid fa-download me-1"></i>
+            {{ package.download_url|urlize }}
+          {% endif %}
+        </td>
+        <td>
+          {{ package.license_expression_linked|default_if_none:"" }}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endspaceless %}

@@ -66,6 +66,7 @@ from component_catalog.forms import SetPolicyForm
 from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
 from component_catalog.license_expression_dje import get_unique_license_keys
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
@@ -1146,6 +1147,7 @@ class PackageDetailsView(
             ],
         },
         "product_usage": {},
+        "package_set": {},
         "activity": {},
         "external_references": {
             "fields": [
@@ -1298,6 +1300,24 @@ class PackageDetailsView(
             return
 
         return {"fields": fields}
+
+    def tab_package_set(self):
+        related_packages_qs = self.object.get_related_packages_qs()
+        if related_packages_qs is None:
+            return
+
+        related_packages = related_packages_qs.only(
+            "uuid",
+            *PACKAGE_URL_FIELDS,
+            "filename",
+            "download_url",
+            "license_expression",
+            "dataspace__name",
+        ).prefetch_related("licenses")
+
+        template = "component_catalog/tabs/tab_package_set.html"
+        if len(related_packages) > 1:
+            return {"fields": [(None, related_packages, None, template)]}
 
     def tab_product_usage(self):
         user = self.request.user
@@ -2458,9 +2478,12 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
         }
         tab_fields.append(("", alert_context, None, "includes/field_alert.html"))
 
-        if len(purldb_entries) > 1:
+        len_purldb_entries = len(purldb_entries)
+        if len_purldb_entries > 1:
             alert_context = {
-                "message": "There are multiple entries in the PurlDB for this Package.",
+                "message": (
+                    f"There are {len_purldb_entries} entries in the PurlDB for this Package."
+                ),
                 "full_width": True,
                 "alert_class": "alert-warning",
             }

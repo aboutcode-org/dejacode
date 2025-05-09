@@ -644,6 +644,18 @@ def is_purl_str(url, validate=False):
     return True
 
 
+def is_purl_fragment(string):
+    """
+    Check if the given string could be a valid Package URL (PURL) or a recognizable
+    fragment of it.
+
+    A valid PURL typically follows the format:
+    `pkg://type/namespace/name@version?qualifiers#subpath`
+    """
+    purl_connectors = ["pkg:", "/", "@", "?", "#"]
+    return any(connector in string for connector in purl_connectors)
+
+
 def remove_empty_values(input_dict):
     """
     Return a new dict not including empty value entries from `input_dict`.
@@ -692,3 +704,23 @@ def localized_datetime(datetime):
 def is_hx_request(request):
     """Return True if the request is made from HTMX."""
     return request.headers.get("HX-Request") == "true"
+
+
+def merge_common_non_empty_values(dicts):
+    """
+    Merge a list of dictionaries by extracting only the key-value pairs
+    that are common and non-empty across all dictionaries.
+    Missing keys are treated as empty values.
+    """
+    merged_result = {}
+    # Collect all unique keys from all dictionaries
+    all_keys = set().union(*dicts)
+
+    for key in all_keys:
+        values = [value for entry in dicts if (value := entry.get(key)) not in EMPTY_VALUES]
+
+        # Include key only if all values are identical
+        if values and all(value == values[0] for value in values):
+            merged_result[key] = values[0]
+
+    return merged_result

@@ -8,9 +8,9 @@
 
 import json
 from collections import defaultdict
+from contextlib import suppress
 
 from django import forms
-from django.core.exceptions import MultipleObjectsReturned
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import IntegrityError
@@ -693,31 +693,8 @@ class ImportPackageFromScanCodeIO:
         # Vulnerabilities are fetched post import.
         package_data.pop("affected_by_vulnerabilities", None)
 
-        unique_together_lookups = {
-            field: value
-            for field in self.unique_together_fields
-            if (value := package_data.get(field))
-        }
-
-        # Check if the Package already exists in the local Dataspace
-        try:
-            package = Package.objects.scope(self.user.dataspace).get(**unique_together_lookups)
-            self.existing["package"].append(str(package))
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            package = None
-
-        # Check if the Package already exists in the reference Dataspace
-        reference_dataspace = Dataspace.objects.get_reference()
-        user_dataspace = self.user.dataspace
-        if not package and user_dataspace != reference_dataspace:
-            qs = Package.objects.scope(reference_dataspace).filter(**unique_together_lookups)
-            if qs.exists():
-                reference_object = qs.first()
-                try:
-                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
-                    self.created["package"].append(str(package))
-                except IntegrityError as error:
-                    self.errors["package"].append(str(error))
+        # Check if the package already exists to prevent duplication.
+        package = self.look_for_existing_package(package_data)
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -750,18 +727,30 @@ class ImportPackageFromScanCodeIO:
     def import_dependency(self, dependency_data):
         dependency_uid = dependency_data.get("dependency_uid")
 
-        dependency_qs = ProductDependency.objects.scope(self.user.dataspace)
-        if dependency_qs.filter(product=self.product, dependency_uid=dependency_uid).exists():
+        dependency_qs = self.product.dependencies.all()
+        if dependency_qs.filter(dependency_uid=dependency_uid).exists():
             self.existing["dependency"].append(str(dependency_uid))
             return
 
+        for_package = None
+        resolved_to_package = None
         dependency_data["product"] = self.product
         if for_package_uid := dependency_data.get("for_package_uid"):
-            dependency_data["for_package"] = self.package_uid_mapping.get(for_package_uid)
+            for_package = self.package_uid_mapping.get(for_package_uid)
+            dependency_data["for_package"] = for_package
         if resolved_to_package_uid := dependency_data.get("resolved_to_package_uid"):
-            dependency_data["resolved_to_package"] = self.package_uid_mapping.get(
-                resolved_to_package_uid
+            resolved_to_package = self.package_uid_mapping.get(resolved_to_package_uid)
+            dependency_data["resolved_to_package"] = resolved_to_package
+
+        # Check if the dependency entry already exists in the product.
+        if for_package and resolved_to_package:
+            resolved_dependency_qs = dependency_qs.filter(
+                for_package=for_package,
+                resolved_to_package=resolved_to_package,
             )
+            if resolved_dependency_qs.exists():
+                self.existing["dependency"].append(str(dependency_uid))
+                return
 
         if purl := dependency_data.get("purl"):
             dependency_data["declared_dependency"] = purl
@@ -777,3 +766,43 @@ class ImportPackageFromScanCodeIO:
             return
 
         self.created["dependency"].append(str(dependency.dependency_uid))
+
+    def look_for_existing_package(self, package_data):
+        package = None
+        package_qs = Package.objects.scope(self.user.dataspace)
+
+        # 1. Check if the Package already exists in the local Dataspace
+        # Using exact match first: purl + download_url + filename
+        exact_match_lookups = {
+            field: package_data.get(field, "") for field in self.unique_together_fields
+        }
+        with suppress(ObjectDoesNotExist):
+            package = package_qs.get(**exact_match_lookups)
+            self.existing["package"].append(str(package))
+            return package
+
+        # 2. If the package data does not include a download_url value:
+        # Attemp to find an existing package using purl-only match.
+        if not package_data.get("download_url"):
+            purl_lookups = {field: package_data.get(field, "") for field in PACKAGE_URL_FIELDS}
+            same_purl_packages = package_qs.filter(**purl_lookups)
+            if len(same_purl_packages) == 1:
+                package = same_purl_packages[0]
+                self.existing["package"].append(str(package))
+                return package
+
+        # Check if the Package already exists in the reference Dataspace
+        # Using exact match only: purl + download_url + filename
+        reference_dataspace = Dataspace.objects.get_reference()
+        user_dataspace = self.user.dataspace
+        if not package and user_dataspace != reference_dataspace:
+            qs = Package.objects.scope(reference_dataspace).filter(**exact_match_lookups)
+            if qs.exists():
+                reference_object = qs.first()
+                try:
+                    package = copy_object(reference_object, user_dataspace, self.user, update=False)
+                    self.created["package"].append(str(package))
+                except IntegrityError as error:
+                    self.errors["package"].append(str(error))
+
+        return package

@@ -18,10 +18,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.validators import EMPTY_VALUES
 from django.db import models
+from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
+from django.db.models import F
 from django.db.models import OuterRef
+from django.db.models import Value
+from django.db.models import When
 from django.db.models.functions import Concat
 from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
@@ -72,6 +76,7 @@ from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
 from dje.utils import is_purl_str
+from dje.utils import merge_common_non_empty_values
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -1650,6 +1655,65 @@ class ComponentKeyword(DataspacedModel):
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
+def get_plain_package_url_expression():
+    """
+    Return a Django expression to compute the "PLAIN" Package URL (PURL).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    plain_package_url = Concat(
+        Value("pkg:"),
+        F("type"),
+        Case(
+            When(namespace="", then=Value("")),
+            default=Concat(Value("/"), F("namespace")),
+            output_field=CharField(),
+        ),
+        Value("/"),
+        F("name"),
+        Case(
+            When(version="", then=Value("")),
+            default=Concat(Value("@"), F("version")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=plain_package_url,
+        output_field=CharField(),
+    )
+
+
+def get_package_url_expression():
+    """
+    Return a Django expression to compute the "FULL" Package URL (PURL).
+    Return an empty string if the required `type` or `name` values are missing.
+    """
+    package_url = Concat(
+        get_plain_package_url_expression(),
+        Case(
+            When(qualifiers="", then=Value("")),
+            default=Concat(Value("?"), F("qualifiers")),
+            output_field=CharField(),
+        ),
+        Case(
+            When(subpath="", then=Value("")),
+            default=Concat(Value("#"), F("subpath")),
+            output_field=CharField(),
+        ),
+        output_field=CharField(),
+    )
+
+    return Case(
+        When(type="", then=Value("")),
+        When(name="", then=Value("")),
+        default=package_url,
+        output_field=CharField(),
+    )
+
+
 class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, DataspacedQuerySet):
     def has_package_url(self):
         """Return objects with Package URL defined."""
@@ -1664,6 +1728,26 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         return self.annotate(
             sortable_identifier=Concat(*PACKAGE_URL_FIELDS, "filename", output_field=CharField())
         )
+
+    def annotate_plain_package_url(self):
+        """
+        Annotate the QuerySet with a computed 'plain' Package URL (PURL).
+
+        This plain PURL is a simplified version that includes only the core fields:
+        `type`, `namespace`, `name`, and `version`. It omits any qualifiers or
+        subpath components, providing a normalized and minimal representation
+        of the Package URL.
+        """
+        return self.annotate(plain_purl=get_plain_package_url_expression())
+
+    def annotate_package_url(self):
+        """
+        Annotate the QuerySet with a fully-computed Package URL (PURL).
+
+        This includes the core PURL fields (`type`, `namespace`, `name`, `version`)
+        as well as any qualifiers and subpath components.
+        """
+        return self.annotate(purl=get_package_url_expression())
 
     def only_rendering_fields(self):
         """Minimum requirements to render a Package element in the UI."""
@@ -2454,6 +2538,7 @@ class Package(
         is nothing was found.
         """
         payloads = []
+        purldb_entries = []
 
         package_url = self.package_url
         if package_url:
@@ -2468,23 +2553,68 @@ class Package(
             if max_request_call and index >= max_request_call:
                 return
 
-            if packages_data := purldb.find_packages(payload, timeout):
-                return packages_data
+            if purldb_entries := purldb.find_packages(payload, timeout):
+                break
+
+        if not purldb_entries:
+            return []
+
+        # Cleanup the PurlDB entries:
+        # - Packages with different PURL are excluded.
+        if package_url:
+            purldb_entries = [entry for entry in purldb_entries if entry.get("purl") == package_url]
+
+        return purldb_entries
 
     def update_from_purldb(self, user):
         """
-        Find this Package in the PurlDB and update empty fields with PurlDB data
-        when available.
+        Update this Package instance with data from PurlDB.
+
+        - Retrieves matching entries from PurlDB using the given user.
+        - If exactly one match is found, its data is used directly.
+        - If multiple entries are found, only values that are non-empty and
+          common across all entries are merged and used to update the Package.
         """
         purldb_entries = self.get_purldb_entries(user)
         if not purldb_entries:
             return
 
-        package_data = purldb_entries[0]
+        purldb_entries_count = len(purldb_entries)
+        if purldb_entries_count == 1:
+            package_data = purldb_entries[0]
+        else:
+            package_data = merge_common_non_empty_values(purldb_entries)
+
         # The format from PURLDB is "2019-11-18T00:00:00Z"
         if release_date := package_data.get("release_date"):
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
+
+        # Avoid raising an IntegrityError when the values in `package_data` for the
+        # identifier fields already exist on another Package instance.
+        #
+        # This situation can occur when a complete package (with both `purl` and
+        # `download_url`) already exists in the Dataspace, and `update_from_purldb` is
+        # called on a different package that has the same `purl` but no `download_url`.
+        #
+        # If we try to assign the same `download_url` to the second package, it would
+        # violate the unique constraints defined in the Package model (since the
+        # combination of fields must be unique).
+        unique_filters_lookups = {
+            field_name: package_data.get(field_name, "")
+            for field_name in self.get_identifier_fields()
+        }
+        unique_filters_qs = (
+            Package.objects.scope(self.dataspace)
+            .filter(**unique_filters_lookups)
+            .exclude(pk=self.pk)
+        )
+        if unique_filters_qs.exists():
+            # Remove the problematic "identifier_fields" values and the checksum values
+            hash_field_names = [field.name for field in HashFieldsMixin._meta.fields]
+            identifier_fields = self.get_identifier_fields()
+            for field_name in [*hash_field_names, *identifier_fields]:
+                package_data.pop(field_name, None)
 
         updated_fields = self.update_from_data(
             user,
@@ -2507,6 +2637,32 @@ class Package(
         if can_update_from_scan:
             updated_fields = scancodeio.update_from_scan(package=self, user=user)
             return updated_fields
+
+    def get_related_packages_qs(self):
+        """
+        Return a QuerySet of packages that are considered part of the same
+        "Package Set".
+
+        A "Package Set" consists of all packages that share the same "plain"
+        Package URL (PURL), meaning they have identical values for the following PURL
+        components:
+        `type`, `namespace`, `name`, and `version`.
+        The `qualifiers` and `subpath` components  are ignored for this comparison.
+        """
+        plain_package_url = self.plain_package_url
+        if not plain_package_url:
+            return None
+
+        return (
+            self.__class__.objects.scope(self.dataspace)
+            .for_package_url(plain_package_url, exact_match=True)
+            .order_by(
+                *PACKAGE_URL_FIELDS,
+                "filename",
+                "download_url",
+            )
+            .distinct()
+        )
 
 
 class PackageAssignedLicense(DataspacedModel):

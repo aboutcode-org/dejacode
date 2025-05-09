@@ -2556,6 +2556,30 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_url)
 
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries(self, mock_find_packages):
+        purl = "pkg:pypi/django@3.0"
+        package1 = make_package(self.dataspace, package_url=purl)
+        purldb_entry1 = {
+            "purl": purl,
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+        }
+        purldb_entry2 = {
+            "purl": "pkg:pypi/django",
+            "type": "pypi",
+            "name": "django",
+        }
+
+        mock_find_packages.return_value = None
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+
+        mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+        # The purldb_entry2 is excluded as the PURL differs
+        self.assertEqual([purldb_entry1], purldb_entries)
+
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb(self, mock_get_purldb_entries):
         purldb_entry = {
@@ -2577,9 +2601,9 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
-        package1 = Package.objects.create(
+        package1 = make_package(
+            self.dataspace,
             filename="package",
-            dataspace=self.dataspace,
             # "unknown" values are overrided
             declared_license_expression="unknown",
         )
@@ -2607,6 +2631,82 @@ class ComponentCatalogModelsTestCase(TestCase):
         for field_name in updated_fields:
             self.assertEqual(purldb_entry[field_name], getattr(package1, field_name))
 
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_multiple_entries(self, mock_get_purldb_entries):
+        purldb_entry1 = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/django@3.0",
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "keywords": ["Keyword1", "Keyword2"],
+            "filename": "Django-3.0.tar.gz",
+            "download_url": "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz",
+        }
+        purldb_entry2 = {
+            "uuid": "e133e70b-8dd3-4cf1-9711-72b1f57523a0",
+            "purl": "pkg:pypi/django@3.0",
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "primary_language": "Python",
+            "keywords": ["Keyword1", "Keyword2"],
+            "download_url": "https://another.url/Django-3.0.tar.gz",
+        }
+
+        mock_get_purldb_entries.return_value = [purldb_entry1, purldb_entry2]
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@3.0")
+        updated_fields = package1.update_from_purldb(self.user)
+        expected = ["filename", "keywords", "primary_language"]
+        self.assertEqual(expected, sorted(updated_fields))
+        self.assertEqual("Django-3.0.tar.gz", package1.filename)
+        self.assertEqual(["Keyword1", "Keyword2"], package1.keywords)
+        self.assertEqual("Python", package1.primary_language)
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):
+        package_url = "pkg:pypi/django@3.0"
+        download_url = "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz"
+        purldb_entry = {
+            "purl": package_url,
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+            "download_url": download_url,
+            "description": "This value will be updated",
+            "md5": "This value is skipped",
+            "sha1": "This value is skipped",
+        }
+        mock_get_purldb_entries.return_value = [purldb_entry]
+
+        # 2 packages with the same "pkg:pypi/django@3.0" PURL:
+        # - 1 with a `download_url` value
+        # - 1 without a `download_url` value
+        make_package(self.dataspace, package_url=package_url, download_url=download_url)
+        package_no_download_url = make_package(self.dataspace, package_url=package_url)
+
+        # Updating the package with the `download_url` from the purldb_entry data
+        # would violates the unique constraint.
+        # This is handle properly by update_from_purldb.
+        updated_fields = package_no_download_url.update_from_purldb(self.user)
+        self.assertEqual(["description"], updated_fields)
+        package_no_download_url.refresh_from_db()
+        self.assertEqual(purldb_entry["description"], package_no_download_url.description)
+
+    def test_package_model_get_related_packages_qs(self):
+        package_url = "pkg:pypi/django@5.0"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        related_packages_qs = package1.get_related_packages_qs()
+        self.assertQuerySetEqual(related_packages_qs, [package1])
+
+        package2 = make_package(
+            self.dataspace,
+            package_url=package_url,
+            filename="Django-5.0.tar.gz",
+        )
+        related_packages_qs = package1.get_related_packages_qs()
+        self.assertQuerySetEqual(related_packages_qs, [package1, package2])
+
     def test_package_model_vulnerability_queryset_mixin(self):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         package2 = make_package(self.dataspace)
@@ -2623,3 +2723,32 @@ class ComponentCatalogModelsTestCase(TestCase):
         package2 = make_package(self.dataspace)
         self.assertTrue(package1.is_vulnerable)
         self.assertFalse(package2.is_vulnerable)
+
+    def test_package_queryset_has_package_url(self):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        make_package(self.dataspace)
+        qs = Package.objects.has_package_url()
+        self.assertQuerySetEqual(qs, [package1])
+
+    def test_package_queryset_annotate_sortable_identifier(self):
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_sortable_identifier()
+        self.assertEqual("pypidjango5.0", qs.get(pk=package1.pk).sortable_identifier)
+        self.assertEqual(package2.filename, qs.get(pk=package2.pk).sortable_identifier)
+
+    def test_package_queryset_annotate_package_url(self):
+        package_url = "pkg:pypi/django@5.0?qualifier=true#path"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_package_url()
+        self.assertEqual(package_url, qs.get(pk=package1.pk).purl)
+        self.assertEqual("", qs.get(pk=package2.pk).purl)
+
+    def test_package_queryset_annotate_plain_package_url(self):
+        package_url = "pkg:pypi/django@5.0?qualifier=true#path"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        package2 = make_package(self.dataspace)
+        qs = Package.objects.annotate_plain_package_url()
+        self.assertEqual("pkg:pypi/django@5.0", qs.get(pk=package1.pk).plain_purl)
+        self.assertEqual("", qs.get(pk=package2.pk).plain_purl)
