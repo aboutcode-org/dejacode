@@ -2693,6 +2693,20 @@ class ComponentCatalogModelsTestCase(TestCase):
         package_no_download_url.refresh_from_db()
         self.assertEqual(purldb_entry["description"], package_no_download_url.description)
 
+    def test_package_model_get_related_packages_qs(self):
+        package_url = "pkg:pypi/django@5.0"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        related_packages_qs = package1.get_related_packages_qs()
+        self.assertQuerySetEqual(related_packages_qs, [package1])
+
+        package2 = make_package(
+            self.dataspace,
+            package_url=package_url,
+            filename="Django-5.0.tar.gz",
+        )
+        related_packages_qs = package1.get_related_packages_qs()
+        self.assertQuerySetEqual(related_packages_qs, [package1, package2])
+
     def test_package_model_vulnerability_queryset_mixin(self):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         package2 = make_package(self.dataspace)

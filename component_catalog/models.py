@@ -2616,17 +2616,12 @@ class Package(
             for field_name in [*hash_field_names, *identifier_fields]:
                 package_data.pop(field_name, None)
 
-        # try:
         updated_fields = self.update_from_data(
             user,
             package_data,
             override=False,
             override_unknown=True,
         )
-        # except IntegrityError as e:
-        #     logger.error(f"[update_from_purldb] Skipping {self} due to IntegrityError: {e}")
-        #     return []
-
         return updated_fields
 
     def update_from_scan(self, user):
@@ -2642,6 +2637,32 @@ class Package(
         if can_update_from_scan:
             updated_fields = scancodeio.update_from_scan(package=self, user=user)
             return updated_fields
+
+    def get_related_packages_qs(self):
+        """
+        Return a QuerySet of packages that are considered part of the same
+        "Package Set".
+
+        A "Package Set" consists of all packages that share the same "plain"
+        Package URL (PURL), meaning they have identical values for the following PURL
+        components:
+        `type`, `namespace`, `name`, and `version`.
+        The `qualifiers` and `subpath` components  are ignored for this comparison.
+        """
+        plain_package_url = self.plain_package_url
+        if not plain_package_url:
+            return None
+
+        return (
+            self.__class__.objects.scope(self.dataspace)
+            .for_package_url(plain_package_url, exact_match=True)
+            .order_by(
+                *PACKAGE_URL_FIELDS,
+                "filename",
+                "download_url",
+            )
+            .distinct()
+        )
 
 
 class PackageAssignedLicense(DataspacedModel):
