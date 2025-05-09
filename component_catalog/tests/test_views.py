@@ -39,6 +39,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.tests import make_package
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageTabScanView
@@ -1239,8 +1240,21 @@ class PackageUserViewsTestCase(TestCase):
         )
 
     def test_package_details_view_num_queries(self):
+        # Create a Package Set
+        package_url = "pkg:pypi/django@5.0"
+        self.package1.set_package_url(package_url)
+        self.package1.save()
+        license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        make_package(self.dataspace, package_url=package_url, license_expression=license_expression)
+        make_package(
+            self.dataspace,
+            package_url=package_url,
+            license_expression=license_expression,
+            filename="Django-5.0.tar.gz",
+        )
+
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(28):
+        with self.assertNumQueries(30):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -1331,6 +1345,25 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, 'id="tab_aboutcode"')
         self.assertContains(response, "This tab renders a preview of the AboutCode files")
         self.assertContains(response, "about_resource: package1")
+
+    def test_package_details_view_tab_package_set(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package_url = "pkg:pypi/django@5.0"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        details_url = package1.get_absolute_url()
+
+        expected = 'id="tab_package-set-tab"'
+        response = self.client.get(details_url)
+        self.assertNotContains(response, expected)
+
+        make_package(
+            self.dataspace,
+            package_url=package_url,
+            filename="Django-5.0.tar.gz",
+        )
+        response = self.client.get(details_url)
+        self.assertContains(response, expected)
 
     def test_package_list_view_add_to_product(self):
         user = create_user("user", self.dataspace)

@@ -149,6 +149,10 @@ Release notes
   merged and kept for the data update.
   https://github.com/aboutcode-org/dejacode/issues/303
 
+- Add a new "Package Set" tab to the Package details view.
+  This tab displays related packages grouped by their normalized ("plain") Package URL.
+  https://github.com/aboutcode-org/dejacode/issues/276
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
