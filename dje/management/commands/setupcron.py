@@ -57,7 +57,7 @@ class Command(BaseCommand):
         self.stdout.write("Schedule vulnerabilities update:")
         forever = None
         scheduler.cron(
-            cron_string="*/2 * * * *",
+            cron_string=settings.DEJACODE_VULNERABILITIES_CRON,  # 3am daily by default
             func=update_vulnerabilities,
             result_ttl=300,
             repeat=forever,
