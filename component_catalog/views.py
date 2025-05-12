@@ -40,6 +40,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.generic import FormView
 from django.views.generic.edit import BaseFormView
@@ -1477,9 +1478,17 @@ def package_scan_view(request, dataspace, uuid):
                     dataspace=dataspace,
                 )
                 scan["download_result_url"] = get_scan_results_as_file_url(scan)
+
+                status = scancodeio.get_status_from_scan_results(scan)
+                needs_refresh = False
+                if status in ["running", "not_started", "queued"]:
+                    needs_refresh = True
+
                 context = {
+                    "package": package,
                     "scan": scan,
                     "view_url": package.get_absolute_url(),
+                    "needs_refresh": needs_refresh,
                 }
                 return render(request, template, context)
 
@@ -1496,6 +1505,36 @@ def package_scan_view(request, dataspace, uuid):
         return Http404
 
     return redirect(f"{package.details_url}#scan")
+
+
+@login_required
+@require_GET
+def get_scan_progress_htmx_view(request, dataspace, uuid):
+    template = "product_portfolio/tables/scan_progress_cell.html"
+    dataspace = request.user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
+    scancodeio = ScanCodeIO(dataspace)
+
+    scan = scancodeio.get_scan_results(
+        download_url=package.download_url,
+        dataspace=dataspace,
+    )
+    if not scan:
+        raise Http404("Scan not found.")
+
+    status = scancodeio.get_status_from_scan_results(scan)
+    needs_refresh = False
+    if status in ["running", "not_started", "queued"]:
+        needs_refresh = True
+
+    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+    context = {
+        "package": package,
+        "scan": scan,
+        "view_url": package.get_absolute_url(),
+        "needs_refresh": needs_refresh,
+    }
+    return render(request, template, context)
 
 
 @login_required

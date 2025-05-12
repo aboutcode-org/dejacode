@@ -1,4 +1,10 @@
-<div id="scan-progress-{{ scan.uuid }}">
+<div id="scan-progress-{{ scan.uuid }}"
+     {% if needs_refresh %}
+     hx-get="{% url 'component_catalog:scan_progress_htmx' package.dataspace.name package.uuid %}"
+     hx-trigger="load delay:10s"
+     hx-swap="innerHTML"
+     {% endif %}
+>
   {% include 'component_catalog/includes/scan_status.html' with status=scan.runs.0.status only %}
   <ul class="list-inline mt-1 mb-0">
     {% if view_url %}

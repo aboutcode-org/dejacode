@@ -156,6 +156,13 @@ class ScanCodeIO(BaseService):
             logger.debug(f"{self.label} [Exception] {exception}")
         return False
 
+    @staticmethod
+    def get_status_from_scan_results(scan_results):
+        status = ""
+        if runs := scan_results.get("runs"):
+            status = runs[0].get("status", "")
+        return status
+
     def update_from_scan(self, package, user):
         """
         Update the provided `package` instance using values from Scan results.

@@ -149,7 +149,7 @@
           {% if display_scan_features %}
             <td>
               {% if relation.scan %}
-                {% include 'product_portfolio/tables/scan_progress_cell.html' with scan=relation.scan view_url=relation.package.get_absolute_url only %}
+                {% include 'product_portfolio/tables/scan_progress_cell.html' with scan=relation.scan view_url=relation.package.get_absolute_url package=relation.packages only %}
               {% elif relation.package %}
                 {% include 'product_portfolio/tables/scan_action_cell.html' with package=relation.package user=request.user only %}
               {% endif %}

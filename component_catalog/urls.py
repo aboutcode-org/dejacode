@@ -23,6 +23,7 @@ from component_catalog.views import PackageUpdateView
 from component_catalog.views import ScanListView
 from component_catalog.views import component_create_ajax_view
 from component_catalog.views import delete_scan_view
+from component_catalog.views import get_scan_progress_htmx_view
 from component_catalog.views import package_create_ajax_view
 from component_catalog.views import package_scan_view
 from component_catalog.views import send_scan_data_as_file_view
@@ -97,6 +98,11 @@ packages_patterns = [
         "packages/<str:dataspace>/<uuid:uuid>/scan/",
         package_scan_view,
         name="package_scan",
+    ),
+    path(
+        "packages/<str:dataspace>/<uuid:uuid>/scan_progress_htmx/",
+        get_scan_progress_htmx_view,
+        name="scan_progress_htmx",
     ),
     path(
         "packages/<str:dataspace>/<uuid:uuid>/tab_scan/",
