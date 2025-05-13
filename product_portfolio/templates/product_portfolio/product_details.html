@@ -48,11 +48,15 @@
           {% endif %}
           {% if has_scan_all_packages %}
             <div class="dropdown-header">Scan</div>
-            <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal"><i class="fas fa-barcode"></i> {% trans 'Scan all Packages' %}</a>
+            <a class="dropdown-item{% if not tabsets.Inventory %} disabled{% endif %}" href="#" data-bs-toggle="modal" data-bs-target="#scan-all-packages-modal">
+              <i class="fas fa-barcode"></i> <strong>Scan</strong> all Packages
+            </a>
           {% endif %}
           {% if request.user.dataspace.enable_purldb_access %}
             <div class="dropdown-header">PurlDB</div>
-            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}"><i class="fas fa-database"></i> {% trans 'Improve Packages from PurlDB' %}</a>
+            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}">
+              <i class="fas fa-database"></i> <strong>Improve</strong> Packages from PurlDB
+            </a>
           {% endif %}
           </div>
       </div>
@@ -109,19 +113,20 @@
 {% block content %}
   {{ block.super }}
   {% if has_scan_all_packages %}
-    {% include 'product_portfolio/includes/scan_all_packages_modal.html' %}
+    {% include 'product_portfolio/modals/scan_all_packages_modal.html' %}
   {% endif %}
   {% if display_scan_features %}
-    {% include 'component_catalog/includes/scan_package_modal.html' %}
+    {% include 'component_catalog/includes/scan_package_modal.html' with is_xhr=True only %}
+    {% include 'product_portfolio/modals/scan_delete_htmx_modal.html' %}
   {% endif %}
   {% if pull_project_data_form %}
-    {% include 'product_portfolio/includes/pull_project_data_modal.html' %}
+    {% include 'product_portfolio/modals/pull_project_data_modal.html' %}
   {% endif %}
   {% if has_edit_productpackage or has_edit_productcomponent %}
-    {% include 'product_portfolio/includes/edit_productpackage_modal.html' %}
+    {% include 'product_portfolio/modals/edit_productpackage_modal.html' %}
   {% endif %}
   {% if tabsets.Imports %}
-    {% include 'product_portfolio/includes/scancode_project_status_modal.html' %}
+    {% include 'product_portfolio/modals/scancode_project_status_modal.html' %}
   {% endif %}
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     {% include 'product_portfolio/modals/vulnerability_analysis_modal.html' %}
@@ -131,7 +136,7 @@
 {% block extrastyle %}
   {{ block.super }}
   {% if has_edit_productpackage or has_edit_productcomponent %}
-    <link href="{% static "awesomplete/awesomplete-1.1.5.css" %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
+    <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
   {% endif %}
 {% endblock %}
 
@@ -148,20 +153,28 @@
 
   {% if display_scan_features %}
     <script>
-      $(document).ready(function () {
-        $('#scan-package-modal').on('show.bs.modal', function (event) {
-          let button = $(event.relatedTarget); // Button that triggered the modal
-          let recipient = button.data('package-scan-url'); // Extract info from data-* attributes
-          $(this).find('a#submit-scan-request').attr('href', recipient);
-        })
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("scan-package-modal").addEventListener("show.bs.modal", function (event) {
+          let triggerButton = event.relatedTarget; // Button that triggered the modal
+          let PackageScanURL = triggerButton.getAttribute("data-package-scan-url"); // Extract info from data-* attribute
+          let confirmButton = document.querySelector('#scan-package-modal button.scan-confirm');
+
+          let td = triggerButton.closest("td");
+          // Ensure the td has an ID (assign one if missing)
+          if (!td.id) td.id = "td-" + Math.random().toString(36).substr(2, 9); // Generate a random ID
+
+          confirmButton.setAttribute('hx-get', PackageScanURL);
+          confirmButton.setAttribute("hx-target", `#${td.id}`); // Set hx-target to the ID
+          htmx.process(confirmButton); // Notify HTMX about the attribute changes.
+        });
       });
     </script>
   {% endif %}
 
   {% if has_scan_all_packages %}
     <script>
-      $(document).ready(function () {
-        $('#scan_all_packages_submit').on('click', function (event) {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector('#scan_all_packages_submit').addEventListener('click', function() {
           NEXB.displayOverlay("Submitting Scan Request...");
         })
       });

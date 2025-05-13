@@ -92,6 +92,11 @@ table.text-break thead {
 .bg-warning-orange {
   background-color: var(--bs-orange);
 }
+.spinner-border-md {
+  --bs-spinner-width: 1.5rem;
+  --bs-spinner-height: 1.5rem;
+  --bs-spinner-border-width: 0.2em;
+}
 
 /* -- Dark there fixes -- */
 [data-bs-theme=dark] .btn-outline-dark {

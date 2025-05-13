@@ -161,6 +161,9 @@ Release notes
 - Fix the validity of SPDX outputs.
   https://github.com/aboutcode-org/dejacode/issues/180
 
+- Add ability to start and delete package scans from the Product inventory tab.
+  https://github.com/aboutcode-org/dejacode/pull/281
+
 ### Version 5.2.0
 
 - Add visual indicator in hierarchy views, when an object on the far left or far right

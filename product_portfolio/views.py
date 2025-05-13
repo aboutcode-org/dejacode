@@ -45,6 +45,7 @@ from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
@@ -159,7 +160,7 @@ class ProductListView(
     model = Product
     filterset_class = ProductFilterSet
     template_name = "product_portfolio/product_list.html"
-    template_list_table = "product_portfolio/includes/product_list_table.html"
+    template_list_table = "product_portfolio/tables/product_list_table.html"
     paginate_by = 50
     put_results_in_session = False
     group_name_version = True
@@ -953,9 +954,13 @@ class ProductTabInventoryView(
             for productpackage in productpackages:
                 if not isinstance(productpackage, ProductPackage):
                     continue
-                scan = scans_by_uri.get(productpackage.package.download_url)
+                package = productpackage.package
+                scan = scans_by_uri.get(package.download_url)
                 if scan:
                     scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                    scan["delete_url"] = reverse(
+                        "product_portfolio:scan_delete_htmx", args=[scan.get("uuid"), package.uuid]
+                    )
                     productpackage.scan = scan
                 injected_productpackages.append(productpackage)
 
@@ -2602,3 +2607,34 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability
     rendered_form = render_crispy_form(form, context=csrf(request))
 
     return HttpResponse(rendered_form)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_scan_htmx_view(request, project_uuid, package_uuid):
+    dataspace = request.user.dataspace
+    package = get_object_or_404(Package, uuid=package_uuid, dataspace=dataspace)
+
+    if not dataspace.enable_package_scanning:
+        raise Http404
+
+    scancodeio = ScanCodeIO(dataspace)
+    scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
+
+    if not scan_list or scan_list.get("count") != 1:
+        raise Http404("Scan not found.")
+
+    scan_detail_url = scancodeio.get_scan_detail_url(project_uuid)
+    deleted = scancodeio.delete_scan(scan_detail_url)
+
+    if not deleted:
+        raise Http404("Scan could not be deleted.")
+
+    # Return the rendered scan action cell content.
+    template = "product_portfolio/tables/scan_action_cell.html"
+    context = {
+        "package": package,
+        "user": request.user,
+    }
+    return render(request, template, context)

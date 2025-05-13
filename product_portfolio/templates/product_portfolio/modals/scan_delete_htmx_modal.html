@@ -14,8 +14,22 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <a class="btn btn-danger delete-confirm" href="">Delete Scan</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button hx-swap="outerHTML"
+                hx-on--before-request="
+                  let target = document.querySelector(this.getAttribute('hx-target'));
+                  if (target) target.innerHTML = 'Deleting...';
+                "
+                hx-on--error="
+                  let target = document.querySelector(this.getAttribute('hx-target'));
+                  if (target) target.innerHTML = 'Error!';
+                "
+                class="btn btn-danger delete-confirm"
+                data-bs-dismiss="modal">
+          Delete Scan
+        </button>
       </div>
     </div>
   </div>

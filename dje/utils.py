@@ -701,6 +701,11 @@ def localized_datetime(datetime):
     return date_format(dt, default_format)
 
 
+def is_hx_request(request):
+    """Return True if the request is made from HTMX."""
+    return request.headers.get("HX-Request") == "true"
+
+
 def merge_common_non_empty_values(dicts):
     """
     Merge a list of dictionaries by extracting only the key-value pairs

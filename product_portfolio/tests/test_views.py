@@ -1097,7 +1097,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_absolute_url()
 
         expected1 = '<div class="dropdown-header">PurlDB</div>'
-        expected2 = "Improve Packages from PurlDB"
+        expected2 = "<strong>Improve</strong> Packages from PurlDB"
         expected3 = self.product1.get_url("improve_packages_from_purldb")
 
         response = self.client.get(url)
@@ -1325,7 +1325,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         expected = """
         <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled">
-          <i class="far fa-clone"></i> Compare
+          <i class="fa-solid fa-code-compare"></i> Compare
         </button>
         """
         self.assertContains(response, expected, html=True)
