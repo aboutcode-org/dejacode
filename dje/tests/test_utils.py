@@ -31,6 +31,7 @@ from dje.utils import get_duplicates
 from dje.utils import get_instance_from_referer
 from dje.utils import get_instance_from_resolver
 from dje.utils import get_object_compare_diff
+from dje.utils import get_plain_purl
 from dje.utils import get_referer_resolver
 from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
@@ -525,6 +526,15 @@ class DJEUtilsTestCase(TestCase):
 
         for fragment in invalid_fragments:
             self.assertFalse(is_purl_fragment(fragment), msg=fragment)
+
+    def test_utils_get_plain_purl(self):
+        self.assertEqual("", get_plain_purl(""))
+        self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
+        self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
+        self.assertEqual("pkg:npm/is-npm@1.0.0", get_plain_purl("pkg:npm/is-npm@1.0.0"))
+        self.assertEqual(
+            "pkg:npm/is-npm@1.0.0", get_plain_purl("pkg:npm/is-npm@1.0.0?qualifier=1#frament")
+        )
 
     def test_utils_localized_datetime(self):
         self.assertIsNone(localized_datetime(None))
