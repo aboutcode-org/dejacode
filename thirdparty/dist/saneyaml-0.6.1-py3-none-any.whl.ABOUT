@@ -1,0 +1,15 @@
+about_resource: saneyaml-0.6.1-py3-none-any.whl
+name: saneyaml
+version: 0.6.1
+download_url: https://files.pythonhosted.org/packages/ea/c0/b41733920cef3d87ee7d1fd5a618c7bb5240ba80dd2f29c73ec3416b3e04/saneyaml-0.6.1-py3-none-any.whl
+package_url: pkg:pypi/saneyaml@0.6.1
+license_expression: apache-2.0
+copyright: Copyright saneyaml project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 47c80e3186ef3116ff2b0eb6d5c1fa71
+checksum_sha1: 34ea073247a790381a8a14e6ce3923e157187349
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

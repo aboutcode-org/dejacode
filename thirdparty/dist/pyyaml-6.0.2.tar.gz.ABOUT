@@ -1,7 +1,7 @@
-about_resource: PyYAML-6.0.tar.gz
+about_resource: pyyaml-6.0.2.tar.gz
 name: pyyaml
-version: '6.0'
-download_url: https://files.pythonhosted.org/packages/36/2b/61d51a2c4f25ef062ae3f74576b01638bebad5e045f747ff12643df63844/PyYAML-6.0.tar.gz
+version: 6.0.2
+download_url: https://files.pythonhosted.org/packages/54/ed/79a089b6be93607fa5cdaedf301d7dfb23af5f25c398d5ead2525b063e17/pyyaml-6.0.2.tar.gz
 description: |
   YAML parser and emitter for Python
   YAML is a data serialization format designed for human readability
@@ -16,15 +16,12 @@ description: |
   PyYAML is applicable for a broad range of tasks from complex
   configuration files to object serialization and persistence.
 homepage_url: https://pyyaml.org/
-package_url: pkg:pypi/pyyaml@6.0
+package_url: pkg:pypi/pyyaml@6.0.2
 license_expression: mit
-copyright: Copyright (c) Ingy döt Net, Kirill Simonov
-notice_file: PyYAML-6.0.tar.gz.NOTICE
+copyright: Copyright Ingy, Kirill Simonov
 attribute: yes
-owner: Kirill Simonov
-owner_url: http://www.yaml.org/
-checksum_md5: 1d19c798f25e58e3e582f0f8c977dbb8
-checksum_sha1: a8c40a3ae9d4c159382a58db3153d83e5521c51e
+checksum_md5: 9600ee49b2b4e1a0237cf4173b6dc594
+checksum_sha1: 28ff04429be8b54e1e73a7349b5e36034295cf5e
 licenses:
   - key: mit
     name: MIT License

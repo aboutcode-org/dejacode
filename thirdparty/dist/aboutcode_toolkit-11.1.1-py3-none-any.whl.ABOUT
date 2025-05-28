@@ -1,0 +1,15 @@
+about_resource: aboutcode_toolkit-11.1.1-py3-none-any.whl
+name: aboutcode-toolkit
+version: 11.1.1
+download_url: https://files.pythonhosted.org/packages/14/ee/ba139231e3de1287189c2f7940e7e0f8a135421050ff1b4f0145813ae8b9/aboutcode_toolkit-11.1.1-py3-none-any.whl
+package_url: pkg:pypi/aboutcode-toolkit@11.1.1
+license_expression: apache-2.0
+copyright: Copyright aboutcode-toolkit project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 8b274d62b7d390eb2ae080d90035d3be
+checksum_sha1: a72560aac87a281507122ad580590a265b0bd17b
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
