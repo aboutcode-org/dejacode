@@ -2558,16 +2558,24 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries(self, mock_find_packages):
-        purl = "pkg:pypi/django@3.0"
-        package1 = make_package(self.dataspace, package_url=purl)
+        purl1 = "pkg:pypi/django@3.0"
+        purl2 = "pkg:pypi/django@3.0?file_name=Django-3.0.tar.gz"
+        purl3 = "pkg:pypi/django"
+        package1 = make_package(self.dataspace, package_url=purl1)
         purldb_entry1 = {
-            "purl": purl,
+            "purl": purl1,
             "type": "pypi",
             "name": "django",
             "version": "3.0",
         }
         purldb_entry2 = {
-            "purl": "pkg:pypi/django",
+            "purl": purl2,
+            "type": "pypi",
+            "name": "django",
+            "version": "3.0",
+        }
+        purldb_entry3 = {
+            "purl": purl3,
             "type": "pypi",
             "name": "django",
         }
@@ -2575,10 +2583,10 @@ class ComponentCatalogModelsTestCase(TestCase):
         mock_find_packages.return_value = None
         purldb_entries = package1.get_purldb_entries(user=self.user)
 
-        mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
+        mock_find_packages.return_value = [purldb_entry1, purldb_entry2, purldb_entry3]
         purldb_entries = package1.get_purldb_entries(user=self.user)
         # The purldb_entry2 is excluded as the PURL differs
-        self.assertEqual([purldb_entry1], purldb_entries)
+        self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb(self, mock_get_purldb_entries):

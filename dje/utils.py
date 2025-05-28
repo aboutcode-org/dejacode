@@ -656,6 +656,11 @@ def is_purl_fragment(string):
     return any(connector in string for connector in purl_connectors)
 
 
+def get_plain_purl(purl_str):
+    """Remove the qualifiers and subpath from the `purl_str```."""
+    return purl_str.split("?")[0]
+
+
 def remove_empty_values(input_dict):
     """
     Return a new dict not including empty value entries from `input_dict`.

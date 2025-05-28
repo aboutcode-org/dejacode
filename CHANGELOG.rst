@@ -153,6 +153,10 @@ Release notes
   This tab displays related packages grouped by their normalized ("plain") Package URL.
   https://github.com/aboutcode-org/dejacode/issues/276
 
+- Refine get_purldb_entries to compare on plain PackageURL.
+  Including the qualifiers and subpaths in the comparison was too restrictive.
+  https://github.com/aboutcode-org/dejacode/issues/307
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
