@@ -1,0 +1,15 @@
+about_resource: importlib_metadata-8.6.1-py3-none-any.whl
+name: importlib-metadata
+version: 8.6.1
+download_url: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
+package_url: pkg:pypi/importlib-metadata@8.6.1
+license_expression: apache-2.0
+copyright: Copyright importlib-metadata project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 31257bdced44d66200144ee3516572fa
+checksum_sha1: 8f28096be59c0645d70f677e14a15ca3b422bc4a
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

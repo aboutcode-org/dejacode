@@ -1,0 +1,17 @@
+about_resource: requests_oauthlib-2.0.0-py2.py3-none-any.whl
+name: requests-oauthlib
+version: 2.0.0
+download_url: https://files.pythonhosted.org/packages/3b/5d/63d4ae3b9daea098d5d6f5da83984853c1bbacd5dc826764b249fe119d24/requests_oauthlib-2.0.0-py2.py3-none-any.whl
+package_url: pkg:pypi/requests-oauthlib@2.0.0
+license_expression: bsd-new AND isc
+copyright: Copyright requests-oauthlib project contributors
+attribute: yes
+checksum_md5: 68df2f3e274ac34fb2c5f32b15374156
+checksum_sha1: 6ffca7abd905afcd371ddcb95ef58ecaa0ffeba6
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: isc
+    name: ISC License
+    file: isc.LICENSE

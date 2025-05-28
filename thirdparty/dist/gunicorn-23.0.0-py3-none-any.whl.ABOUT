@@ -1,0 +1,14 @@
+about_resource: gunicorn-23.0.0-py3-none-any.whl
+name: gunicorn
+version: 23.0.0
+download_url: https://files.pythonhosted.org/packages/cb/7d/6dac2a6e1eba33ee43f318edbed4ff29151a49b5d37f080aad1e6469bca4/gunicorn-23.0.0-py3-none-any.whl
+package_url: pkg:pypi/gunicorn@23.0.0
+license_expression: mit
+copyright: Copyright gunicorn project contributors
+attribute: yes
+checksum_md5: 032e405fc337d2f3620c4aa3591ed9a4
+checksum_sha1: cd4c15b80880335f974e976ec1d293dd715aa457
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
