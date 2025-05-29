@@ -922,6 +922,51 @@ class PackageViewSet(
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
 
+    # TODO: Remove duplication with send_scan_data_as_file_view
+    @action(detail=True)
+    def download_scan_data(self, request, uuid):
+        import io
+        import json
+        import zipfile
+
+        from django.http import FileResponse
+
+        from rest_framework import status
+        from rest_framework.response import Response
+
+        package = self.get_object()
+        dataspace = request.user.dataspace
+
+        scancodeio = ScanCodeIO(dataspace)
+        if not scancodeio.is_available():
+            message = {"error": "The ScanCode.io service is not available"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+        scan_infos = scancodeio.get_scan_results(
+            download_url=package.download_url,
+            dataspace=dataspace,
+        )
+        project_uuid = scan_infos.get("uuid")
+
+        scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
+        scan_results = scancodeio.fetch_scan_data(scan_results_url)
+        scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
+        scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
+
+        filename = package.filename or package.package_url_filename
+        in_memory_zip = io.BytesIO()
+        with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
+            zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
+            zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
+        in_memory_zip.seek(0)
+
+        return FileResponse(
+            in_memory_zip,
+            filename=filename,
+            as_attachment=True,
+            content_type="application/zip",
+        )
+
     download_url_description = (
         "A single, or list of, Download URL(s).<br><br>"
         '<b>cURL style</b>: <code>-d "download_url=url1&download_url=url2"</code><br><br>'

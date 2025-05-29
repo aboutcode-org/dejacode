@@ -1642,6 +1642,9 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
+    if not scancodeio.is_available():
+        raise Http404("The ScanCode.io service is not available")
+
     scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
     scan_results = scancodeio.fetch_scan_data(scan_results_url)
     scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")

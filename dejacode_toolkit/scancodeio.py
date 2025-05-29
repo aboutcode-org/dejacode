@@ -39,6 +39,7 @@ class ScanCodeIO(BaseService):
         detail_url = self.get_scan_detail_url(project_uuid)
         return f"{detail_url}{action_name}/"
 
+    # TODO: Rename as get_project_infos
     def get_scan_results(self, download_url, dataspace):
         scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
 
