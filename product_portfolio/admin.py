@@ -317,6 +317,7 @@ class ProductAdmin(
         AsLink("owner"),
         AsJoinList("keywords", "<br>", short_description="Keywords"),
         "is_active",
+        "is_locked",
         "configuration_status",
         "primary_language",
         "contact",
@@ -332,6 +333,7 @@ class ProductAdmin(
         ReportingQueryListFilter,
         ("configuration_status", LimitToDataspaceListFilter),
         "is_active",
+        "is_locked",
     )
     search_fields = (
         "name",
@@ -364,6 +366,7 @@ class ProductAdmin(
                     "primary_language",
                     "admin_notes",
                     "is_active",
+                    "is_locked",
                     "configuration_status",
                     "contact",
                     "vulnerabilities_risk_threshold",

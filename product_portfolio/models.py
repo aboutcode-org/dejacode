@@ -221,6 +221,16 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         ),
     )
 
+    is_locked = models.BooleanField(
+        verbose_name=_("Locked"),
+        default=False,
+        db_index=True,
+        help_text=_(
+            "Marks this product vertsion as read-only, preventing any modifications to "
+            "its inventory."
+        ),
+    )
+
     configuration_status = models.ForeignKey(
         to="product_portfolio.ProductStatus",
         on_delete=models.PROTECT,

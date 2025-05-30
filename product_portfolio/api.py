@@ -119,6 +119,7 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
             "name",
             "version",
             "owner",
+            "is_locked",
             "configuration_status",
             "license_expression",
             "licenses",
