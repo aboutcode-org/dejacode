@@ -19,6 +19,11 @@
           </th>
           <th scope="row">
             <ul class="list-inline float-end mb-0 list-inline-margin-sm">
+              {% if product.is_locked %}
+                <li class="list-inline-item text-secondary">
+                  <i class="fas fa-lock" data-bs-toggle="tooltip" title="Inventory is locked"></i>
+                </li>
+              {% endif %}
               {% if request.user.is_authenticated and product.request_count %}
                 <li class="list-inline-item">
                   <a href="{% inject_preserved_filters product.get_absolute_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>

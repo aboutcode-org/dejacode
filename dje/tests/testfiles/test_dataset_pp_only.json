@@ -61,7 +61,8 @@
     "default_on_addition": false,
     "label": "Approved",
     "text": "Approved",
-    "request_to_generate": null
+    "request_to_generate": null,
+    "is_locked": false
   }
 },
 {
