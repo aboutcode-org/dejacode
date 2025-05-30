@@ -226,7 +226,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         default=False,
         db_index=True,
         help_text=_(
-            "Marks this product vertsion as read-only, preventing any modifications to "
+            "Marks this product version as read-only, preventing any modifications to "
             "its inventory."
         ),
     )

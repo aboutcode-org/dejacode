@@ -625,7 +625,9 @@ class BaseAddToProductForm(
 
         product_field = self.fields["product"]
         perms = ["view_product", "change_product"]
-        product_field.queryset = Product.objects.get_queryset(user, perms=perms)
+        product_field.queryset = Product.objects.get_queryset(user, perms=perms).filter(
+            is_locked=False
+        )
 
         if relation_instance:
             help_text = f'"{relation_instance}" will be assigned to the selected product.'
@@ -708,9 +710,11 @@ class AddToProductAdminForm(forms.Form):
         self.model = model
         self.relation_model = relation_model
         self.dataspace = request.user.dataspace
-        self.fields["product"].queryset = Product.objects.get_queryset(
-            request.user, perms=["view_product", "change_product"]
+        product_qs = Product.objects.get_queryset(
+            user=request.user,
+            perms=["view_product", "change_product"],
         )
+        self.fields["product"].queryset = product_qs.filter(is_locked=False)
 
     def get_selected_objects(self):
         ids = self.initial.get("ids") or self.cleaned_data["ids"]

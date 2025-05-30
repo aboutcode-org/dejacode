@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='is_locked',
-            field=models.BooleanField(db_index=True, default=False, help_text='Marks this product vertsion as read-only, preventing any modifications to its inventory.', verbose_name='Locked'),
+            field=models.BooleanField(db_index=True, default=False, help_text='Marks this product version as read-only, preventing any modifications to its inventory.', verbose_name='Locked'),
         ),
         migrations.AlterField(
             model_name='productdependency',
