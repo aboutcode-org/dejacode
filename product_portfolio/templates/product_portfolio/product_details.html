@@ -4,7 +4,13 @@
 
 {% block pager-toolbar %}
   {% if is_user_dataspace %}
-    {% if has_edit_productcomponent or has_edit_productpackage or has_change_codebaseresource_permission or has_add_productcomponent %}
+    {% if product.is_locked %}
+      <span class="d-inline-block" data-bs-toggle="tooltip" title="Inventory is locked">
+        <button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>
+          <i class="fas fa-tasks"></i> Manage
+        </button>
+      </span>
+    {% elif has_edit_productcomponent or has_edit_productpackage or has_change_codebaseresource_permission or has_add_productcomponent %}
       <div class="dropdown btn-group">
         <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="fas fa-tasks"></i> {% trans 'Manage' %}</a>
         <div class="dropdown-menu dropdown-menu-end">
@@ -31,9 +37,17 @@
       </div>
     {% endif %}
 
-    {% if has_scan_all_packages or has_change_permission %}
+    {% if product.is_locked %}
+      <span class="d-inline-block" data-bs-toggle="tooltip" title="Inventory is locked">
+        <button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>
+          <i class="fas fa-toolbox"></i> Actions
+        </button>
+      </span>
+    {% elif has_scan_all_packages or has_change_permission %}
       <div class="dropdown btn-group">
-        <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="fas fa-toolbox"></i>&nbsp;Actions</a>
+        <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#">
+          <i class="fas fa-toolbox"></i> Actions
+        </a>
         <div class="dropdown-menu dropdown-menu-end">
           <div class="dropdown-header">Import</div>
           {% if has_change_permission %}
@@ -111,11 +125,6 @@
 {% endblock %}
 
 {% block content %}
-  {% if product.is_locked %}
-    <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">
-      This product version is marked as read-only, preventing any modifications to its inventory.
-    </small>
-  {% endif %}
   {{ block.super }}
   {% if has_scan_all_packages %}
     {% include 'product_portfolio/modals/scan_all_packages_modal.html' %}
@@ -136,6 +145,19 @@
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     {% include 'product_portfolio/modals/vulnerability_analysis_modal.html' %}
   {% endif %}
+{% endblock %}
+
+{% block messages-alert %}
+  {% if product.is_locked %}
+    <div class="container pe-0">
+      <div class="alert alert-warning alert-dismissible mb-2 py-2" role="alert">
+        <strong>
+          This product version is marked as read-only, preventing any modifications to its inventory.
+        </strong>
+      </div>
+    </div>
+  {% endif %}
+  {{ block.super }}
 {% endblock %}
 
 {% block extrastyle %}
