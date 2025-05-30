@@ -194,7 +194,6 @@ class ProductListView(
                 "primary_language",
                 "keywords",
                 "configuration_status",
-                "is_locked",
                 "request_count",
                 "dataspace",
             )

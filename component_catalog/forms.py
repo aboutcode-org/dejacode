@@ -624,9 +624,10 @@ class BaseAddToProductForm(
         super().__init__(user, *args, **kwargs)
 
         product_field = self.fields["product"]
-        perms = ["view_product", "change_product"]
-        product_field.queryset = Product.objects.get_queryset(user, perms=perms).filter(
-            is_locked=False
+        product_field.queryset = Product.objects.get_queryset(
+            user=user,
+            perms=["view_product", "change_product"],
+            exclude_locked=True,
         )
 
         if relation_instance:
@@ -710,11 +711,11 @@ class AddToProductAdminForm(forms.Form):
         self.model = model
         self.relation_model = relation_model
         self.dataspace = request.user.dataspace
-        product_qs = Product.objects.get_queryset(
+        self.fields["product"].queryset = Product.objects.get_queryset(
             user=request.user,
             perms=["view_product", "change_product"],
+            exclude_locked=True,
         )
-        self.fields["product"].queryset = product_qs.filter(is_locked=False)
 
     def get_selected_objects(self):
         ids = self.initial.get("ids") or self.cleaned_data["ids"]

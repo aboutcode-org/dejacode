@@ -115,6 +115,15 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
             "fields, since DejaCode will be creating the Request automatically."
         ),
     )
+    is_locked = models.BooleanField(
+        verbose_name=_("Locked inventory"),
+        default=False,
+        db_index=True,
+        help_text=_(
+            "Marks this product version as read-only, preventing any modifications to "
+            "its inventory."
+        ),
+    )
 
     class Meta(BaseStatusMixin.Meta):
         verbose_name_plural = _("product status")
@@ -141,7 +150,9 @@ class ProductSecuredManager(DataspacedManager):
         """
         return self.model.unsecured_objects.get(dataspace__name=dataspace_name, uuid=uuid)
 
-    def get_queryset(self, user=None, perms="view_product", include_inactive=False):
+    def get_queryset(
+        self, user=None, perms="view_product", include_inactive=False, exclude_locked=False
+    ):
         """
         Force the object level protection at the QuerySet level.
         Always Return an empty QuerySet unless a `user` is provided.
@@ -161,6 +172,9 @@ class ProductSecuredManager(DataspacedManager):
         queryset = guardian.shortcuts.get_objects_for_user(
             user, perms, klass=queryset_class, accept_global_perms=False
         ).scope(user.dataspace)
+
+        if exclude_locked:
+            queryset = queryset.exclude(configuration_status__is_locked=True)
 
         if include_inactive:
             return queryset
@@ -218,16 +232,6 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             "in use (active). When set to No, this field indicates that a product is deprecated "
             "(inactive), is no longer used, and the product will not appear in the user views. "
             "Note that this indicator applies only to a specific product version."
-        ),
-    )
-
-    is_locked = models.BooleanField(
-        verbose_name=_("Locked"),
-        default=False,
-        db_index=True,
-        help_text=_(
-            "Marks this product version as read-only, preventing any modifications to "
-            "its inventory."
         ),
     )
 
@@ -359,6 +363,11 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
                 requester=self.last_modified_by,
                 object_id=self.id,
             )
+
+    @cached_property
+    def is_locked(self):
+        if self.configuration_status_id:
+            return self.configuration_status.is_locked
 
     @cached_property
     def all_packages(self):

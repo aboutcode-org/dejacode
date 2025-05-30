@@ -126,7 +126,6 @@ class ProductFilterSet(DataspacedFilterSet):
             "primary_language",
             "configuration_status",
             "keywords",
-            "is_locked",
         ]
 
 
