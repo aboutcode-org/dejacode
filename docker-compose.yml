@@ -46,8 +46,6 @@ services:
         condition: service_started
       clamav:
         condition: service_started
-      chown:
-        condition: service_completed_successfully
 
   worker:
     build: .
@@ -65,7 +63,6 @@ services:
       - redis
       - db
       - web
-      - chown
 
   scheduler:
     build: .
@@ -81,7 +78,6 @@ services:
       - redis
       - db
       - web
-      - chown
 
   nginx:
     image: nginx:alpine

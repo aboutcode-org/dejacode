@@ -419,7 +419,7 @@ class LoginAttemptsTrackingTestCase(TestCase):
         self.assertEqual(1, attempt.failures_since_start)
 
         response = self.client.post(login_url, data=credentials)
-        self.assertContains(response, "Account locked", status_code=403)
+        self.assertContains(response, "Account locked", status_code=429)
         attempt = AccessAttempt.objects.get(username=credentials["username"])
         self.assertEqual(2, attempt.failures_since_start)
 
@@ -434,7 +434,7 @@ class LoginAttemptsTrackingTestCase(TestCase):
         self.assertEqual(1, attempt.failures_since_start)
 
         response = self.client.post(login_url, data=credentials)
-        self.assertContains(response, "Account locked", status_code=403)
+        self.assertContains(response, "Account locked", status_code=429)
         attempt = AccessAttempt.objects.get(username=credentials["username"])
         self.assertEqual(2, attempt.failures_since_start)
 
@@ -457,7 +457,7 @@ class LoginAttemptsTrackingTestCase(TestCase):
         }
         self.client.post(login_url, data=credentials)
         response = self.client.post(login_url, data=credentials)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(429, response.status_code)
 
         subject = "[DejaCode] Login attempt on locked account requires review!"
         self.assertEqual(1, len(mail.outbox))
@@ -487,7 +487,7 @@ class LoginAttemptsTrackingTestCase(TestCase):
         response = self.client.post(login_url, data=credentials)
         self.assertEqual(200, response.status_code)
         response = self.client.post(login_url, data=credentials)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(429, response.status_code)
         self.assertIn(
             '"real_user" is an existing DejaCode user in Dataspace "nexB"', mail.outbox[2].body
         )

@@ -1,0 +1,17 @@
+about_resource: qrcode-8.2-py3-none-any.whl
+name: qrcode
+version: '8.2'
+download_url: https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl
+package_url: pkg:pypi/qrcode@8.2
+license_expression: bsd-new AND proprietary-license
+copyright: Copyright qrcode project contributors
+attribute: yes
+checksum_md5: 569dcb4ddf30cf606654f79506d57415
+checksum_sha1: d4f78a51b490042cce4fe0d689a7c6854d1efd7b
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: proprietary-license
+    name: Proprietary License
+    file: proprietary-license.LICENSE
