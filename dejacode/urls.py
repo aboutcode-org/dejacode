@@ -10,6 +10,7 @@ from django.conf import settings
 from django.conf.urls import include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.urls import path
 from django.views.defaults import page_not_found
@@ -179,11 +180,8 @@ api_docs_view = get_schema_view(
     public=False,
 )
 
-# TODO: Force login_required on all API documentation URLs.
-# for doc_url in api_docs_urls[0]:
-#     doc_url.callback = login_required(doc_url.callback)
 api_docs_patterns = [
-    path("", api_docs_view.with_ui("redoc", cache_timeout=0), name="docs-index"),
+    path("", login_required(api_docs_view.with_ui("redoc", cache_timeout=0)), name="docs-index"),
 ]
 
 urlpatterns += [
