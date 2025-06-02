@@ -1,6 +1,12 @@
 Release notes
 =============
 
+### Version 5.3.1-dev (unreleased)
+
+- Add new `is_locked` "Locked inventory" field to the ProductStatus model.
+  When a Product is locked through his status, its inventory cannot be modified.
+  https://github.com/aboutcode-org/dejacode/issues/189
+
 ### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.

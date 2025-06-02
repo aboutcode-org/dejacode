@@ -368,7 +368,7 @@ table.packages-table .column-primary_language {
   width: 130px;
 }
 .list-inline-margin-sm .list-inline-item:not(:last-child) {
-  margin-right: 0.3rem;
+  margin-right: 0.125rem;
 }
 
 /* -- Vulnerability List -- */
