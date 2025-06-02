@@ -54,6 +54,7 @@ from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_package
+from product_portfolio.tests import make_product_status
 from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
@@ -1112,6 +1113,31 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
         self.assertContains(response, expected3)
+
+    def test_product_portfolio_detail_view_status_is_locked(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_absolute_url()
+        expected1 = (
+            '<button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>'
+            '<i class="fas fa-tasks"></i> Manage'
+            "</button>"
+        )
+        expected2 = (
+            '<button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>'
+            '<i class="fas fa-toolbox"></i> Actions'
+            "</button>"
+        )
+        expected3 = (
+            "This product version is marked as read-only, preventing any modifications "
+            "to its inventory."
+        )
+
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        self.product1.update(configuration_status=locked_status)
+        response = self.client.get(url)
+        self.assertContains(response, expected1, html=True)
+        self.assertContains(response, expected2, html=True)
+        self.assertContains(response, expected3, html=True)
 
     def test_product_portfolio_list_view_secured_queryset(self):
         self.client.login(username=self.basic_user.username, password="secret")

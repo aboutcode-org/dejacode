@@ -368,6 +368,7 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def is_locked(self):
         if self.configuration_status_id:
             return self.configuration_status.is_locked
+        return False
 
     @cached_property
     def all_packages(self):
