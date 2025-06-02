@@ -1,0 +1,14 @@
+about_resource: pip-25.1.1-py3-none-any.whl
+name: pip
+version: 25.1.1
+download_url: https://files.pythonhosted.org/packages/29/a2/d40fb2460e883eca5199c62cfc2463fd261f760556ae6290f88488c362c0/pip-25.1.1-py3-none-any.whl
+package_url: pkg:pypi/pip@25.1.1
+license_expression: mit
+copyright: Copyright pip project contributors
+attribute: yes
+checksum_md5: 6a01d861bf88ee075c6942419a04839d
+checksum_sha1: 30c8926cbf1c22cb4b692e0f80d7f86c7bc38cdb
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

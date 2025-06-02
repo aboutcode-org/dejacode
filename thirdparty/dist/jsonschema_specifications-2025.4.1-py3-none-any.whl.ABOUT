@@ -1,0 +1,14 @@
+about_resource: jsonschema_specifications-2025.4.1-py3-none-any.whl
+name: jsonschema-specifications
+version: 2025.4.1
+download_url: https://files.pythonhosted.org/packages/01/0e/b27cdbaccf30b890c40ed1da9fd4a3593a5cf94dae54fb34f8a4b74fcd3f/jsonschema_specifications-2025.4.1-py3-none-any.whl
+package_url: pkg:pypi/jsonschema-specifications@2025.4.1
+license_expression: mit
+copyright: Copyright jsonschema-specifications project contributors
+attribute: yes
+checksum_md5: 228e6ee38058d79f9cbd0ca19e6bca3c
+checksum_sha1: 4092eb7a822b78f81f865feebe06f97b2a5d6966
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
