@@ -230,7 +230,10 @@ class ComponentAdminViewsTestCase(TestCase):
         del data["name"]
         response = self.client.post(url, data)
         self.assertContains(response, '<p class="errornote">Please correct the error below.</p>')
-        self.assertContains(response, '<ul class="errorlist"><li>This field is required.</li>')
+        self.assertContains(
+            response,
+            '<ul class="errorlist" id="id_name_error"><li>This field is required.</li></ul>',
+        )
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_component_admin_form_clean_validate_against_reference_data(self):
