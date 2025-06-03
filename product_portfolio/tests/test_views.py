@@ -8,12 +8,12 @@
 
 import io
 import json
-import uuid
 from unittest import mock
 from urllib.parse import quote
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -33,10 +33,6 @@ from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
 from dje.models import History
 from dje.outputs import get_spdx_extracted_licenses
-from dje.tasks import improve_packages_from_purldb
-from dje.tasks import logger as tasks_logger
-from dje.tasks import pull_project_data_from_scancodeio
-from dje.tasks import scancodeio_submit_project
 from dje.tests import MaxQueryMixin
 from dje.tests import add_perms
 from dje.tests import create_superuser
@@ -50,14 +46,15 @@ from product_portfolio.forms import ProductPackageForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
-from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_package
+from product_portfolio.tests import make_product_status
 from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
@@ -223,15 +220,27 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         htmx_refresh = 'hx-trigger="load delay:10s" hx-swap="outerHTML"'
         self.assertContains(response, htmx_refresh)
         self.assertContains(response, "Imports are currently in progress.")
-        self.assertContains(response, "Load SBOMs")
+        self.assertContains(response, "Import SBOM")
 
         project.status = ScanCodeProject.Status.SUCCESS
         project.save()
         response = self.client.get(url)
         self.assertFalse(response.context["has_projects_in_progress"])
-        self.assertContains(response, "Load SBOMs")
+        self.assertContains(response, "Import SBOM")
         self.assertNotContains(response, "hx-trigger")
         self.assertNotContains(response, "Imports are currently in progress.")
+
+        expected = "File:"
+        download_url = reverse(
+            "product_portfolio:scancodeio_project_download_input", args=[str(project.uuid)]
+        )
+        self.assertNotContains(response, expected)
+        self.assertNotContains(response, download_url)
+        project.input_file = ContentFile("Data", name="data.json")
+        project.save()
+        response = self.client.get(url)
+        self.assertContains(response, expected)
+        self.assertContains(response, download_url)
 
     def test_product_portfolio_detail_view_tab_dependency_view(self):
         self.client.login(username="nexb_user", password="secret")
@@ -243,33 +252,25 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
         # Unresolved package dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             for_package=self.package1,
-            dataspace=self.dataspace,
         )
         # Resolved package dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             for_package=self.package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
         # Unresolved Product dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             declared_dependency="pkg:type/name",
-            dataspace=self.dataspace,
         )
         # Unresolved Product dependency
-        ProductDependency.objects.create(
-            dependency_uid=str(uuid.uuid4()),
+        make_product_dependency(
             product=self.product1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
 
         with self.assertMaxQueries(9):
@@ -1097,7 +1098,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_absolute_url()
 
         expected1 = '<div class="dropdown-header">PurlDB</div>'
-        expected2 = "Improve Packages from PurlDB"
+        expected2 = "<strong>Improve</strong> Packages from PurlDB"
         expected3 = self.product1.get_url("improve_packages_from_purldb")
 
         response = self.client.get(url)
@@ -1112,6 +1113,31 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
         self.assertContains(response, expected3)
+
+    def test_product_portfolio_detail_view_status_is_locked(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_absolute_url()
+        expected1 = (
+            '<button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>'
+            '<i class="fas fa-tasks"></i> Manage'
+            "</button>"
+        )
+        expected2 = (
+            '<button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>'
+            '<i class="fas fa-toolbox"></i> Actions'
+            "</button>"
+        )
+        expected3 = (
+            "This product version is marked as read-only, preventing any modifications "
+            "to its inventory."
+        )
+
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        self.product1.update(configuration_status=locked_status)
+        response = self.client.get(url)
+        self.assertContains(response, expected1, html=True)
+        self.assertContains(response, expected2, html=True)
+        self.assertContains(response, expected3, html=True)
 
     def test_product_portfolio_list_view_secured_queryset(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -1325,7 +1351,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         expected = """
         <button id="compare_button" href="/products/compare/" class="btn btn-outline-dark disabled">
-          <i class="far fa-clone"></i> Compare
+          <i class="fa-solid fa-code-compare"></i> Compare
         </button>
         """
         self.assertContains(response, expected, html=True)
@@ -1663,7 +1689,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("153", response["content-length"])
 
-    @mock.patch("product_portfolio.views.tasks.scancodeio_submit_scan.delay")
+    @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
     def test_product_scan_all_packages_view(self, mock_is_configured, mock_scancodeio_submit_scan):
         mock_is_configured.return_value = True
@@ -1770,7 +1796,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         data = {
             "name": "Name",
             "version": "1.0",
-            "owner": owner1.name,
+            "owner": "Unknown",
             "license_expression": l1.key,
             "copyright": "Copyright",
             "notice_text": "Notice",
@@ -1787,7 +1813,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.post(add_url, data, follow=True)
         product = Product.objects.get_queryset(self.super_user).get(name="Name", version="1.0")
-        self.assertEqual(owner1, product.owner)
+        self.assertEqual("Unknown", product.owner.name)
         self.assertEqual(configuration_status, product.configuration_status)
         self.assertEqual(l1.key, product.license_expression)
         expected = "Product &quot;Name 1.0&quot; was successfully created."
@@ -3042,64 +3068,24 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(vulnerability1.vulnerability_id, response_str)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
-    def test_scancodeio_submit_project_task(self, mock_submit_project):
-        scancodeproject = ScanCodeProject.objects.create(
-            product=self.product1,
-            dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-            input_file=ContentFile("Data", name="data.json"),
-        )
-
-        mock_submit_project.return_value = None
-        scancodeio_submit_project(
-            scancodeproject_uuid=scancodeproject.uuid,
-            user_uuid=self.super_user.uuid,
-            pipeline_name="load_sboms",
-        )
-        scancodeproject.refresh_from_db()
-        self.assertEqual("failure", scancodeproject.status)
-        self.assertIsNone(scancodeproject.project_uuid)
-        expected = ["- Error: File could not be submitted to ScanCode.io"]
-        self.assertEqual(expected, scancodeproject.import_log)
-
-        # Reset the instance values
-        scancodeproject.status = ""
-        scancodeproject.import_log = []
-        scancodeproject.save()
-
-        project_uuid = uuid.uuid4()
-        mock_submit_project.return_value = {"uuid": project_uuid}
-        scancodeio_submit_project(
-            scancodeproject_uuid=scancodeproject.uuid,
-            user_uuid=self.super_user.uuid,
-            pipeline_name="load_sboms",
-        )
-
-        scancodeproject.refresh_from_db()
-        self.assertEqual("submitted", scancodeproject.status)
-        self.assertEqual(project_uuid, scancodeproject.project_uuid)
-        expected = ["- File submitted to ScanCode.io for inspection"]
-        self.assertEqual(expected, scancodeproject.import_log)
-
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_product_portfolio_load_sbom_view(self, mock_submit):
         mock_submit.return_value = None
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_load_sboms_url()
         response = self.client.get(url)
-        expected = "Load Packages from SBOMs"
+        expected = "Import SBOM"
         self.assertContains(response, expected)
 
-        data = {"input_file": ContentFile("Data")}
+        data = {"input_file": ContentFile('{"data": "data"}', name="file.json")}
         response = self.client.post(url, data=data, follow=True)
         expected = "SBOM file submitted to ScanCode.io for inspection."
         self.assertContains(response, expected)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+        data = {"input_file": ContentFile('{"data": "data"}', name="file2.json")}
         with override_settings(CLAMD_ENABLED=True):
             with mock.patch("dje.fields.SmartFileField.scan_file_for_virus") as scan:
-                data = {"input_file": ContentFile("Data")}
-                self.client.post(url, data=data, follow=True)
+                response = self.client.post(url, data=data, follow=True)
                 scan.assert_called_once()
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
@@ -3108,7 +3094,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_import_manifests_url()
         response = self.client.get(url)
-        expected = "Import Packages from manifests"
+        expected = "Import Package manifests"
         self.assertContains(response, expected)
 
         data = {"input_file": ContentFile("Data")}
@@ -3190,7 +3176,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         notif = Notification.objects.get()
         self.assertTrue(notif.unread)
         self.assertEqual(self.super_user, notif.actor)
-        self.assertEqual("Load Packages from SBOMs", notif.verb)
+        self.assertEqual("Import SBOM", notif.verb)
         self.assertEqual(self.product1, notif.action_object)
         self.assertEqual(self.super_user, notif.recipient)
         expected_message = "- Imported 1 package.\n- 1 dependency error occurred during import."
@@ -3241,75 +3227,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(ScanCodeProject.Status.SUBMITTED, project.status)
         self.assertEqual(self.super_user, project.created_by)
 
-    @mock.patch("product_portfolio.models.ScanCodeProject.import_data_from_scancodeio")
-    def test_product_portfolio_pull_project_data_from_scancodeio_task(self, mock_import_data):
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.product1,
-            dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
-            created_by=self.super_user,
-        )
-
-        mock_import_data.side_effect = Exception("Error")
-        pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
-        scancode_project.refresh_from_db()
-        self.assertEqual(ScanCodeProject.Status.FAILURE, scancode_project.status)
-        self.assertEqual(["Error"], scancode_project.import_log)
-        notif = Notification.objects.get()
-        self.assertTrue(notif.unread)
-        self.assertEqual(self.super_user, notif.actor)
-        self.assertEqual("Import packages from ScanCode.io", notif.verb)
-        self.assertEqual(self.product1, notif.action_object)
-        self.assertEqual(self.super_user, notif.recipient)
-        self.assertEqual("Import failed.", notif.description)
-
-        Notification.objects.all().delete()
-        scancode_project.import_log = []
-        scancode_project.status = ScanCodeProject.Status.SUBMITTED
-        scancode_project.save()
-        mock_import_data.side_effect = None
-        mock_import_data.return_value = (
-            {"package": ["package1"]},
-            {"package": ["package2"]},
-            {"package": ["error1"]},
-        )
-        pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
-        scancode_project.refresh_from_db()
-        self.assertEqual(ScanCodeProject.Status.SUCCESS, scancode_project.status)
-        expected = [
-            "- Imported 1 package.",
-            "- 1 package already available in the Dataspace.",
-            "- 1 package error occurred during import.",
-        ]
-        self.assertEqual(expected, scancode_project.import_log)
-
-        notif = Notification.objects.get()
-        self.assertTrue(notif.unread)
-        self.assertEqual(self.super_user, notif.actor)
-        self.assertEqual("Import packages from ScanCode.io", notif.verb)
-        self.assertEqual(self.product1, notif.action_object)
-        self.assertEqual(self.super_user, notif.recipient)
-        self.assertEqual("\n".join(scancode_project.import_log), notif.description)
-
-    def test_product_portfolio_pull_project_data_from_scancodeio_task_can_start_import(self):
-        scancode_project = ScanCodeProject.objects.create(
-            product=self.product1,
-            dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO,
-            status=ScanCodeProject.Status.IMPORT_STARTED,
-            created_by=self.super_user,
-        )
-
-        with self.assertLogs(tasks_logger) as cm:
-            pull_project_data_from_scancodeio(scancodeproject_uuid=scancode_project.uuid)
-
-        expected = [
-            f"INFO:dje.tasks:Entering pull_project_data_from_scancodeio task with "
-            f"scancodeproject_uuid={scancode_project.uuid}",
-            "ERROR:dje.tasks:Cannot start import",
-        ]
-        self.assertEqual(expected, cm.output)
-
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
     def test_product_portfolio_improve_packages_from_purldb_view(self, mock_is_configured):
         mock_is_configured.return_value = True
@@ -3340,52 +3257,44 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages already in progress...")
 
-    @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
-    def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):
-        mock_improve.return_value = ["pkg1", "pkg2"]
-
-        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
-        with self.assertLogs(tasks_logger) as cm:
-            improve_packages_from_purldb(self.product1.uuid, self.basic_user.uuid)
-
-        expected = (
-            "ERROR:dje.tasks:[improve_packages_from_purldb]: "
-            f"Product uuid={self.product1.uuid} does not exists."
+    def test_product_portfolio_scancodeio_project_download_input_view(self):
+        test_file_content = b"dummy input file content"
+        test_file = SimpleUploadedFile(
+            "input.zip", test_file_content, content_type="application/zip"
         )
-        self.assertIn(expected, cm.output)
 
+        # Create a ScanCodeProject with file
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            input_file=test_file,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUCCESS,
+        )
+
+        download_url = reverse(
+            "product_portfolio:scancodeio_project_download_input", args=[str(scancode_project.uuid)]
+        )
+
+        # No permission initially
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 404)
+
+        # Grant permission
         assign_perm("view_product", self.basic_user, self.product1)
-        self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
-        with self.assertLogs(tasks_logger) as cm:
-            improve_packages_from_purldb(self.product1.uuid, self.basic_user.uuid)
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 200)
+        downloaded_content = b"".join(response.streaming_content)
+        self.assertEqual(test_file_content, downloaded_content)
+        self.assertEqual(
+            response["Content-Disposition"], f'attachment; filename="{test_file.name}"'
+        )
 
-        expected = "ERROR:dje.tasks:[improve_packages_from_purldb]: Permission denied."
-        self.assertIn(expected, cm.output)
-
-        self.assertTrue(self.super_user.has_perm("change_product", self.product1))
-        with self.assertLogs(tasks_logger) as cm:
-            improve_packages_from_purldb(self.product1.uuid, self.super_user.uuid)
-
-        mock_improve.assert_called_once()
-        expected = [
-            "INFO:dje.tasks:Entering improve_packages_from_purldb task with "
-            f"product_uuid={self.product1.uuid} "
-            f"user_uuid={self.super_user.uuid}",
-            "INFO:dje.tasks:[improve_packages_from_purldb]: 2 updated from PurlDB.",
-        ]
-        self.assertEqual(expected, cm.output)
-
-        import_project = self.product1.scancodeprojects.get()
-        self.assertEqual(import_project.type, ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB)
-        self.assertEqual(import_project.status, ScanCodeProject.Status.SUCCESS)
-        expected = ["Improved packages from PurlDB:", "pkg1, pkg2"]
-        self.assertEqual(expected, import_project.import_log)
-
-        notification = Notification.objects.get()
-        self.assertEqual("Improved packages from PurlDB:", notification.verb)
-        self.assertEqual("pkg1, pkg2", notification.description)
-        self.assertEqual("dejacodeuser", notification.actor_content_type.model)
-        self.assertEqual(self.product1, notification.action_object)
+        # Remove the file and test for 404
+        scancode_project.input_file.delete(save=True)
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 404)
 
     def test_product_portfolio_vulnerability_analysis_form_view(self):
         self.client.login(username=self.super_user.username, password="secret")

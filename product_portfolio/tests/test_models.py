@@ -33,15 +33,16 @@ from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
-from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductInventoryItem
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
-from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_item_purpose
 from product_portfolio.tests import make_product_package
+from product_portfolio.tests import make_product_status
 from vulnerabilities.tests import make_vulnerability
 from workflow.models import RequestTemplate
 
@@ -68,19 +69,15 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
 
     def test_product_model_default_status_on_product_addition(self):
-        status1 = ProductStatus.objects.create(
-            label="S1", text="Status1", default_on_addition=True, dataspace=self.dataspace
-        )
-        status2 = ProductStatus.objects.create(label="S2", text="Status2", dataspace=self.dataspace)
+        status1 = make_product_status(default_on_addition=True, dataspace=self.dataspace)
+        status2 = make_product_status(dataspace=self.dataspace)
 
         # No status given at creation time, the default is set
-        p1 = Product.objects.create(name="P1", dataspace=self.dataspace)
+        p1 = make_product(dataspace=self.dataspace, name="P1")
         self.assertEqual(status1, p1.configuration_status)
 
         # A status is given at creation time, no default is set
-        p2 = Product.objects.create(
-            name="P2", configuration_status=status2, dataspace=self.dataspace
-        )
+        p2 = make_product(dataspace=self.dataspace, name="P2", configuration_status=status2)
         self.assertEqual(status2, p2.configuration_status)
 
     def test_product_model_get_attribution_url(self):
@@ -103,6 +100,19 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         self.assertEqual(1, Product.objects.get_queryset(self.super_user).count())
         self.assertIn(self.product1, Product.objects.get_queryset(self.super_user))
+
+    def test_product_model_secured_manager_get_queryset_exclude_locked(self):
+        qs = Product.objects.get_queryset(self.super_user)
+        self.assertIn(self.product1, qs)
+        qs = Product.objects.get_queryset(self.super_user, exclude_locked=True)
+        self.assertIn(self.product1, qs)
+
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        self.product1.update(configuration_status=locked_status)
+        qs = Product.objects.get_queryset(self.super_user)
+        self.assertIn(self.product1, qs)
+        qs = Product.objects.get_queryset(self.super_user, exclude_locked=True)
+        self.assertNotIn(self.product1, qs)
 
     def test_product_model_is_active(self):
         qs = Product.objects.get_queryset(self.super_user)
@@ -489,14 +499,12 @@ class ProductPortfolioModelsTestCase(TestCase):
             dataspace=self.super_user.dataspace,
             content_type=product_ct,
         )
-
-        status1 = ProductStatus.objects.create(
+        status1 = make_product_status(
+            self.dataspace,
             label="status1",
             text="status1",
             request_to_generate=request_template1,
-            dataspace=self.dataspace,
         )
-
         product.configuration_status = status1
         product.last_modified_by = self.super_user
         self.assertTrue(product.has_changed("configuration_status_id"))
@@ -507,6 +515,19 @@ class ProductPortfolioModelsTestCase(TestCase):
 
         product.refresh_from_db()
         self.assertEqual(1, product.request_count)
+
+    def test_product_model_is_locked_property(self):
+        product = make_product(self.dataspace)
+        self.assertFalse(product.is_locked)
+
+        status1 = make_product_status(self.dataspace, is_locked=False)
+        product.update(configuration_status=status1)
+        product = Product.unsecured_objects.get(pk=product.pk)
+        self.assertFalse(product.is_locked)
+
+        status1.update(is_locked=True)
+        product = Product.unsecured_objects.get(pk=product.pk)
+        self.assertTrue(product.is_locked)
 
     @mock.patch("component_catalog.models.Package.update_from_purldb")
     def test_product_model_improve_packages_from_purldb(self, mock_update_from_purldb):
@@ -1118,11 +1139,10 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_dependency_model_save_validation(self):
         package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
         with self.assertRaises(ValidationError) as cm:
-            ProductDependency.objects.create(
+            make_product_dependency(
                 product=self.product1,
                 for_package=package1,
                 resolved_to_package=package1,
-                dataspace=self.dataspace,
             )
         self.assertEqual(
             ["The 'for_package' cannot be the same as 'resolved_to_package'."],
@@ -1130,20 +1150,18 @@ class ProductPortfolioModelsTestCase(TestCase):
         )
 
     def test_product_dependency_prackage_queryset_declared_dependencies_count(self):
-        package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)
-        package2 = Package.objects.create(filename="package2", dataspace=self.dataspace)
-        ProductDependency.objects.create(
+        package1 = make_package(filename="package1", dataspace=self.dataspace)
+        package2 = make_package(filename="package2", dataspace=self.dataspace)
+        make_product_dependency(
             product=self.product1,
             for_package=package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
-        product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
-        ProductDependency.objects.create(
+        product2 = make_product(name="Product2", dataspace=self.dataspace)
+        make_product_dependency(
             product=product2,
             for_package=package1,
             resolved_to_package=package2,
-            dataspace=self.dataspace,
         )
 
         self.assertEqual(2, package1.declared_dependencies.count())

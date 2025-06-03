@@ -26,8 +26,8 @@ Load Scan Results to your Product
 
    `<https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/starship_engine_2.0_scan_results.json>`_.
 
-2. On the Product details page, from the :guilabel:`Action` dropdown, select
-   :guilabel:`Import from Scan`:
+2. On the Product details page, from the :guilabel:`Actions` dropdown, select
+   :guilabel:`Import ScanCode scan results`:
 
    * Click the :guilabel:`Choose File` button under the **Upload file** field.
    * Select the **starship_engine_2.0_scan_results.json** file and click the

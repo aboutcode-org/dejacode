@@ -11,8 +11,6 @@ from collections import defaultdict
 from django.db import transaction
 from django.forms.widgets import HiddenInput
 
-import coreapi
-import coreschema
 import django_filters
 from packageurl.contrib import url2purl
 from packageurl.contrib.django.filters import PackageURLFilter
@@ -20,7 +18,6 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.fields import ListField
 from rest_framework.response import Response
-from rest_framework.schemas import AutoSchema
 
 from component_catalog.admin import ComponentAdmin
 from component_catalog.admin import PackageAdmin
@@ -922,24 +919,7 @@ class PackageViewSet(
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
 
-    download_url_description = (
-        "A single, or list of, Download URL(s).<br><br>"
-        '<b>cURL style</b>: <code>-d "download_url=url1&download_url=url2"</code><br><br>'
-        '<b>Python</b>: <code>data = {"download_url": ["url1", "url2"]}</code>'
-    )
-
-    add_action_schema = AutoSchema(
-        manual_fields=[
-            coreapi.Field(
-                "download_url",
-                required=True,
-                location="body",
-                schema=coreschema.String(description=download_url_description),
-            ),
-        ]
-    )
-
-    @action(detail=False, methods=["post"], name="Package Add", schema=add_action_schema)
+    @action(detail=False, methods=["post"], name="Package Add")
     def add(self, request):
         """
         Alternative way to add a package providing only its `download_url`.

@@ -572,6 +572,33 @@ class DataspacedQuerySet(models.QuerySet):
         with suppress(self.model.DoesNotExist, ValidationError):
             return self.get(*args, **kwargs)
 
+    def copy_or_create(self, user, *args, **kwargs):
+        """
+        Look for the object in the reference Dataspace and copy it to the user
+        Dataspace.
+        If the object is not found in the reference Dataspace, the object is directly
+        create in the user Dataspace.
+        """
+        from dje.copier import copy_object
+
+        model_class = self.model
+        dataspace = user.dataspace
+        reference_dataspace = Dataspace.objects.get_reference()
+        reference_object = None
+
+        if dataspace and reference_dataspace and dataspace != reference_dataspace:
+            with suppress(ObjectDoesNotExist):
+                reference_object = model_class.objects.get(
+                    *args,
+                    **kwargs,
+                    dataspace=reference_dataspace,
+                )
+
+        if reference_object:
+            return copy_object(reference_object, dataspace, user)
+
+        return self.create(*args, **kwargs, dataspace=dataspace)
+
     def group_by(self, field_name):
         """Return a dict of QS instances grouped by the given `field_name`."""
         # Not using a dict comprehension to support QS without `.order_by(field_name)`.
@@ -1654,6 +1681,17 @@ class DejacodeUser(AbstractUser):
         help_text=_(
             "Select a Card layout that provides the query results on the "
             "DejaCode homepage that are useful and interesting to you."
+        ),
+    )
+
+    timezone = models.CharField(
+        verbose_name=_("time zone"),
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text=_(
+            "Select your preferred time zone. This will affect how times are displayed "
+            "across the app. If you don't set a timezone, UTC will be used by default."
         ),
     )
 

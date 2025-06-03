@@ -39,6 +39,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.tests import make_package
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageTabScanView
@@ -642,16 +643,16 @@ class ComponentUserViewsTestCase(TestCase):
         # Sort filter
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort ms-1" aria-label="Sort">',
         )
         # Sort in the headers
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort ms-1" aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
@@ -659,12 +660,12 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url, data=data)
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=-name" class="sort active" '
+            '<a href="?q=a&amp;licenses=license1&sort=-name" class="sort active ms-1" '
             'aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
@@ -672,11 +673,12 @@ class ComponentUserViewsTestCase(TestCase):
         response = self.client.get(url, data=data)
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active" aria-label="Sort">',
+            '<a href="?q=a&amp;licenses=license1&sort=name" class="sort active ms-1" '
+            'aria-label="Sort">',
         )
         self.assertContains(
             response,
-            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort" '
+            '<a href="?q=a&amp;licenses=license1&sort=primary_language" class="sort ms-1" '
             'aria-label="Sort">',
         )
 
@@ -1173,8 +1175,8 @@ class PackageUserViewsTestCase(TestCase):
     def test_package_list_view_content(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("component_catalog:package_list"))
-        self.assertContains(response, self.package1.get_absolute_link())
-        self.assertContains(response, self.package2.get_absolute_link())
+        self.assertContains(response, self.package1.get_absolute_link(), html=True)
+        self.assertContains(response, self.package2.get_absolute_link(), html=True)
         self.assertContains(response, self.component1)
         self.assertContains(response, self.component2)
 
@@ -1193,20 +1195,20 @@ class PackageUserViewsTestCase(TestCase):
         response = self.client.get(reverse("component_catalog:package_list"))
 
         expected = f"""
-        <td title="{self.package1.download_url}">
+        <div title="{self.package1.download_url}">
           <a href="{self.package1.download_url}">
               {self.package1.filename}
           </a>
-        </td>
+        </div>
         """
         self.assertContains(response, expected, html=True)
 
         expected = f"""
-        <td title="{self.package2.download_url}" class="text-truncate">
+        <div title="{self.package2.download_url}" class="text-truncate">
           <a href="{self.package2.download_url}">
             {self.package2.download_url}
           </a>
-        </td>
+        </div>
         """
         self.assertContains(response, expected, html=True)
 
@@ -1238,8 +1240,21 @@ class PackageUserViewsTestCase(TestCase):
         )
 
     def test_package_details_view_num_queries(self):
+        # Create a Package Set
+        package_url = "pkg:pypi/django@5.0"
+        self.package1.set_package_url(package_url)
+        self.package1.save()
+        license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
+        make_package(self.dataspace, package_url=package_url, license_expression=license_expression)
+        make_package(
+            self.dataspace,
+            package_url=package_url,
+            license_expression=license_expression,
+            filename="Django-5.0.tar.gz",
+        )
+
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(28):
+        with self.assertNumQueries(30):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -1330,6 +1345,25 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, 'id="tab_aboutcode"')
         self.assertContains(response, "This tab renders a preview of the AboutCode files")
         self.assertContains(response, "about_resource: package1")
+
+    def test_package_details_view_tab_package_set(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package_url = "pkg:pypi/django@5.0"
+        package1 = make_package(self.dataspace, package_url=package_url)
+        details_url = package1.get_absolute_url()
+
+        expected = 'id="tab_package-set-tab"'
+        response = self.client.get(details_url)
+        self.assertNotContains(response, expected)
+
+        make_package(
+            self.dataspace,
+            package_url=package_url,
+            filename="Django-5.0.tar.gz",
+        )
+        response = self.client.get(details_url)
+        self.assertContains(response, expected)
 
     def test_package_list_view_add_to_product(self):
         user = create_user("user", self.dataspace)
@@ -2079,14 +2113,16 @@ class PackageUserViewsTestCase(TestCase):
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
           <pre class="pre-bg-body-tertiary mb-1 field-created-date">
-            June 21, 2018, 12:32 PM UTC
+            Jun 21, 2018, 12:32 PM UTC
           </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
         <dd class="col-sm-10 clipboard">
           <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
           <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-start-date">June 21, 2018, 12:32 PM UTC</pre>
+          <pre class="pre-bg-body-tertiary mb-1 field-start-date">
+            Jun 21, 2018, 12:32 PM UTC
+          </pre>
         </dd>
         <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
         <dd class="col-sm-10 clipboard">

@@ -31,12 +31,14 @@ from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
 from product_portfolio.views import add_customcomponent_ajax_view
 from product_portfolio.views import check_package_version_ajax_view
+from product_portfolio.views import delete_scan_htmx_view
 from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
 from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
+from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
 from product_portfolio.views import vulnerability_analysis_form_view
 
@@ -72,6 +74,11 @@ urlpatterns = [
         name="scancodeio_project_status",
     ),
     path(
+        "scancodeio_project_download_input/<uuid:scancodeproject_uuid>/",
+        scancodeio_project_download_input_view,
+        name="scancodeio_project_download_input",
+    ),
+    path(
         "compare/<uuid:left_uuid>/<uuid:right_uuid>/",
         ProductTreeComparisonView.as_view(),
         name="product_tree_comparison",
@@ -85,6 +92,11 @@ urlpatterns = [
         "vulnerability_analysis/<uuid:productpackage_uuid>/<str:vulnerability_id>/",
         vulnerability_analysis_form_view,
         name="vulnerability_analysis_form",
+    ),
+    path(
+        "scans/<uuid:project_uuid>/<uuid:package_uuid>/delete/",
+        delete_scan_htmx_view,
+        name="scan_delete_htmx",
     ),
     *product_path("add_customcomponent_ajax", add_customcomponent_ajax_view),
     *product_path("vulnerability_analysis_form", vulnerability_analysis_form_view),

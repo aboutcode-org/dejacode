@@ -34,6 +34,7 @@ from component_catalog.models import ComponentType
 from component_catalog.models import Package
 from component_catalog.models import PackageAssignedLicense
 from component_catalog.models import Subcomponent
+from component_catalog.tests import make_package
 from dje.copier import copy_object
 from dje.filters import DataspaceFilter
 from dje.models import Dataspace
@@ -229,7 +230,10 @@ class ComponentAdminViewsTestCase(TestCase):
         del data["name"]
         response = self.client.post(url, data)
         self.assertContains(response, '<p class="errornote">Please correct the error below.</p>')
-        self.assertContains(response, '<ul class="errorlist"><li>This field is required.</li>')
+        self.assertContains(
+            response,
+            '<ul class="errorlist" id="id_name_error"><li>This field is required.</li></ul>',
+        )
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_component_admin_form_clean_validate_against_reference_data(self):
@@ -1650,6 +1654,8 @@ class ComponentAdminViewsTestCase(TestCase):
         p2 = Package.objects.create(
             filename="p2", download_url="https://url.com/p2.zip", dataspace=self.dataspace1
         )
+        package_url = "pkg:pypi/django@5.0"
+        package3 = make_package(self.dataspace1, package_url)
 
         self.client.login(username="test", password="secret")
         changelist_url = reverse("admin:component_catalog_package_changelist")
@@ -1662,6 +1668,16 @@ class ComponentAdminViewsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.context_data["cl"].result_count)
         self.assertIn(p2, response.context_data["cl"].result_list)
+
+        response = self.client.get(changelist_url + f"?q={package_url}")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, response.context_data["cl"].result_count)
+        self.assertIn(package3, response.context_data["cl"].result_list)
+
+        response = self.client.get(changelist_url + "?q=pypi/django")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, response.context_data["cl"].result_count)
+        self.assertIn(package3, response.context_data["cl"].result_list)
 
     def test_package_changelist_set_policy_action_proper(self):
         self.client.login(username=self.user.username, password="secret")

@@ -285,11 +285,11 @@ class RequestUserViewsTestCase(TestCase):
         self.assertIn("Submitted by: {}".format(requester), body)
         self.assertIn("A comment content '&<", body)
 
-        # The creator of the comment `nexb_user` is not notified.
+        # The creator of the new comment `nexb_user` is not notified.
         expected_recipients = {
-            self.request1.requester.email,
-            self.request1.assignee.email,
-            commenter.email,
+            self.request1.requester.email,  # requester@test.com
+            self.request1.assignee.email,  # assignee@test.com
+            commenter.email,  # commenter@test.com
         }
         self.assertEqual(expected_recipients, set(mail.outbox[0].recipients()))
 

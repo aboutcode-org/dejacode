@@ -1,0 +1,29 @@
+{% extends 'admin/delete_confirmation.html' %}
+
+{% load i18n admin_urls %}
+
+{% block content %}
+    <div class="g-d-c">
+        {% if perms_lacking or protected %}
+            <div class="grp-group">
+              <h2>You cannot disable this user.</h2>
+            </div>
+        {% else %}
+            <div class="grp-group">
+                <h2>{% blocktrans with escaped_object=object %}Are you sure you want to disable the {{ object_name }} "{{ escaped_object }}"?{% endblocktrans %}</h2>
+            </div>
+            <form action="" method="post" novalidate>{% csrf_token %}
+                <div class="grp-module grp-submit-row grp-fixed-footer">
+                    <ul>
+                        {% url opts|admin_urlname:'change' object.pk|admin_urlquote as object_url %}
+                        <li class="grp-float-left"><a href="{% add_preserved_filters object_url %}" class="grp-button grp-cancel-link">{% trans "No, take me back" %}</a></li>
+                        <li><input type="submit" value="{% trans "Yes, I’m sure" %}" class="grp-button grp-default" /></li>
+                    </ul>
+                    <input type="hidden" name="post" value="yes" />
+                    {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1" />{% endif %}
+                    {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}" />{% endif %}
+                </div>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

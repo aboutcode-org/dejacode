@@ -152,19 +152,21 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.owner2.name, response.data["results"][1].get("name"))
 
     def test_api_owner_detail_endpoint(self):
+        from component_catalog.tests import make_component
         from license_library.models import License
 
-        self.license = License.objects.create(
+        license = License.objects.create(
             key="key",
             owner=self.owner1,
             name="name",
             short_name="short_name",
             dataspace=self.dataspace,
         )
-        from component_catalog.models import Component
 
-        self.component = Component.objects.create(
-            name="component", owner=self.owner1, dataspace=self.dataspace
+        component = make_component(
+            name="component",
+            owner=self.owner1,
+            dataspace=self.dataspace,
         )
 
         self.client.login(username="super_user", password="secret")
@@ -184,13 +186,13 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("", response.data["homepage_url"])
         self.assertEqual("", response.data["notes"])
         self.assertEqual("nexB", response.data["dataspace"])
-        self.assertEqual(32, len(response.data["created_date"]))
-        self.assertEqual(32, len(response.data["last_modified_date"]))
+        self.assertTrue(response.data["created_date"])
+        self.assertTrue(response.data["last_modified_date"])
         self.assertIn(
-            reverse("api_v2:license-detail", args=[self.license.uuid]), response.data["licenses"][0]
+            reverse("api_v2:license-detail", args=[license.uuid]), response.data["licenses"][0]
         )
         self.assertIn(
-            reverse("api_v2:component-detail", args=[self.component.uuid]),
+            reverse("api_v2:component-detail", args=[component.uuid]),
             response.data["components"][0],
         )
         self.assertEqual(self.owner1.urn, response.data["urn"])

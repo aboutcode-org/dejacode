@@ -5,7 +5,7 @@
     {{ event.text|linebreaksbr }}
     <div class="text-muted-light">
       {{ action }} by {{ event.user }}
-      <span title="{{ event.created_date|date:'N j, Y, f A T' }}">{{ event.created_date|naturaltime }}</span>
+      <span title="{{ event.created_date }}">{{ event.created_date|naturaltime }}</span>
     </div>
   </div>
 </div>

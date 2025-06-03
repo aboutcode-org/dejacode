@@ -13,6 +13,7 @@ from django.urls import reverse
 
 from component_catalog.models import Component
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dje.filters import DataspaceFilter
 from dje.models import Dataspace
 from dje.tests import create_superuser
@@ -21,6 +22,7 @@ from organization.models import Owner
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
+from product_portfolio.tests import make_product_dependency
 
 
 class ProductPortfolioAdminsTestCase(TestCase):
@@ -482,3 +484,58 @@ class ProductPortfolioAdminsTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertEqual(expected, response.content)
+
+    def test_product_dependencies_changelist_search(self):
+        self.client.login(username=self.user.username, password="secret")
+        changelist_url = reverse("admin:product_portfolio_productdependency_changelist")
+
+        package1 = make_package(self.dataspace, "pkg:pypi/django@5.0")
+        package2 = make_package(self.dataspace, "pkg:pypi/dep@1.0")
+
+        dependency1 = make_product_dependency(self.product1, for_package=package1)
+        dependency2 = make_product_dependency(
+            self.product1, for_package=package1, resolved_to_package=package2
+        )
+
+        response = self.client.get(changelist_url)
+        self.assertEqual(2, response.context_data["cl"].result_count)
+
+        response = self.client.get(changelist_url + "?q=django")
+        self.assertEqual(2, response.context_data["cl"].result_count)
+
+        response = self.client.get(changelist_url + "?q=pkg:pypi/django@5.0")
+        self.assertEqual(2, response.context_data["cl"].result_count)
+        self.assertIn(dependency1, response.context_data["cl"].result_list)
+        self.assertIn(dependency2, response.context_data["cl"].result_list)
+
+        response = self.client.get(changelist_url + "?q=dep")
+        self.assertEqual(1, response.context_data["cl"].result_count)
+        self.assertIn(dependency2, response.context_data["cl"].result_list)
+
+        response = self.client.get(changelist_url + "?q=pkg:pypi/dep@1.0")
+        self.assertEqual(1, response.context_data["cl"].result_count)
+        self.assertIn(dependency2, response.context_data["cl"].result_list)
+
+        response = self.client.get(changelist_url + "?q=pypi/dep")
+        self.assertEqual(1, response.context_data["cl"].result_count)
+        self.assertIn(dependency2, response.context_data["cl"].result_list)
+
+    def test_product_dependencies_add_view(self):
+        self.client.login(username=self.user.username, password="secret")
+        url = reverse("admin:product_portfolio_productdependency_add")
+        package2 = make_package(self.dataspace, "pkg:pypi/dep@1.0")
+        data = {
+            "product": self.product1.pk,
+            "dependency_uid": "a7e28b42-2212-456e-9215-9b3760db32c3",
+            "for_package": self.package1.pk,
+            "resolved_to_package": package2.pk,
+            "is_runtime": "on",
+            "is_pinned": "on",
+            "is_direct": "on",
+        }
+
+        response = self.client.post(url, data, follow=True)
+        self.assertContains(response, "was added successfully")
+        dependency = self.product1.dependencies.get()
+        self.assertEqual(self.package1, dependency.for_package)
+        self.assertEqual(package2, dependency.resolved_to_package)

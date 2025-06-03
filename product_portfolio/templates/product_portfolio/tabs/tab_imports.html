@@ -25,7 +25,7 @@
     </thead>
     <tbody>
       {% for scancode_project in scancode_projects %}
-        <tr class="{% cycle 'odd' '' %}">
+        <tr class="{% cycle 'odd' '' %}" data-uuid="{{ scancode_project.uuid }}">
           <td>
             {{ scancode_project.get_type_display }}
             {% if scancode_project.update_existing_packages %}
@@ -34,7 +34,7 @@
               </div>
             {% endif %}
             <div class="smaller text-muted-darker">
-              <span title="{{ scancode_project.created_date|date:'N j, Y, f A' }}">
+              <span title="{{ scancode_project.created_date }}">
                 {{ scancode_project.created_date|naturaltime_short }}
               </span>
               by {{ scancode_project.created_by }}
@@ -44,7 +44,7 @@
             <strong>
               {{ scancode_project.get_status_display|title }}
               {% if scancode_project.has_errors %}
-                <div class="float-start"> with errors</div>
+                <span class="float-start"> with errors</span>
               {% endif %}
             </strong>
             {% if scancode_project.project_uuid %}
@@ -56,7 +56,7 @@
           </td>
           <td>
             {% if scancode_project.input_file %}
-              File: {{ scancode_project.input_file_filename }}
+              File: <a href="{% url 'product_portfolio:scancodeio_project_download_input' scancode_project.uuid %}" target="_blank">{{ scancode_project.input_file_filename }}</a>
             {% elif scancode_project.project_uuid %}
               Project: {{ scancode_project.project_uuid }}
             {% endif %}

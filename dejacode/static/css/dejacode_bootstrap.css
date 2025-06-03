@@ -92,6 +92,11 @@ table.text-break thead {
 .bg-warning-orange {
   background-color: var(--bs-orange);
 }
+.spinner-border-md {
+  --bs-spinner-width: 1.5rem;
+  --bs-spinner-height: 1.5rem;
+  --bs-spinner-border-width: 0.2em;
+}
 
 /* -- Dark there fixes -- */
 [data-bs-theme=dark] .btn-outline-dark {
@@ -253,10 +258,11 @@ dd.reduced pre {
 
 /* -- Object list table -- */
 #object-list-table thead {
-    position: sticky;
-    top: 52px;
-    z-index: 1;
-    font-size: 0.875rem;
+  position: sticky;
+  top: 52px;
+  z-index: 1;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 0 var(--bs-border-color);
 }
 th.column-grouping {
   width: 36px;
@@ -362,7 +368,7 @@ table.packages-table .column-primary_language {
   width: 130px;
 }
 .list-inline-margin-sm .list-inline-item:not(:last-child) {
-  margin-right: 0.3rem;
+  margin-right: 0.125rem;
 }
 
 /* -- Vulnerability List -- */
@@ -426,19 +432,22 @@ table.vulnerabilities-table .column-summary {
 
 /* -- Dependency tab -- */
 #tab_dependencies .column-for_package {
-  width: 250px;
+  min-width: 300px;
 }
 #tab_dependencies .column-resolved_to_package {
-  width: 250px;
+  min-width: 300px;
 }
 #tab_dependencies .column-is_runtime {
-  width: 100px;
+  width: 85px;
+  font-size: 0.75rem;
 }
-#tab_dependencies .column-column-is_optional {
-  width: 100px;
+#tab_dependencies .column-is_optional {
+  width: 85px;
+  font-size: 0.75rem;
 }
-#tab_dependencies .column-column-is_pinned {
-  width: 88px;
+#tab_dependencies .column-is_pinned {
+  width: 80px;
+  font-size: 0.75rem;
 }
 
 /* -- Package Details -- */
@@ -590,9 +599,11 @@ div.awesomplete {
 [data-bs-theme=dark] .awesomplete > ul {
   background: var(--bs-black);
 }
-
 #div_id_component .awesomplete {
   display: inline-block !important;
+}
+label.requiredField {
+  font-weight: bolder;
 }
 
 /* -- Products comparison -- */
@@ -659,7 +670,6 @@ td.sub-header {
 .table thead tr th a.sort:hover {
   color: #ccc;
   text-decoration: none;
-  margin-left: 0;
 }
 .table thead tr th a.sort.active {
   color: var(--bs-body-color);
@@ -690,6 +700,19 @@ a[data-category-pk]:focus,
 /* -- Sign Up/In Forms -- */
 body.signup-form {
   background-color: var(--bs-djc-blue-bg);
+}
+body.signup-form .nav-link {
+  color: white;
+}
+body.signup-form .nav-link.active {
+  color: white;
+  background-color: var(--bs-djc-blue-bg);
+}
+body.signup-form .nav-item.show .nav-link,
+body.signup-form .nav-link.active {
+  border-top-width: 1px;
+  border-top-color: initial;
+  border-bottom-color: var(--bs-djc-blue-bg);
 }
 body.signup-form label {
   display: none;
@@ -723,11 +746,6 @@ body.signup-form h1 {
 }
 body.signup-form .asteriskField {
   display: none;
-}
-body.signup-form .hcaptchawidget {
-  height:85px !important;
-  border:0;
-  text-align:center;
 }
 
 /* -- Cards -- */

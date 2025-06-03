@@ -110,6 +110,7 @@ class DejaCodePermissionTestCase(TestCase):
                 "others",
                 "components",
                 "product_usage",
+                "package_set",
                 "activity",
                 "external_references",
                 "usage_policy",

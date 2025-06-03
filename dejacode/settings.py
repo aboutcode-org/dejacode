@@ -89,13 +89,11 @@ TEMPLATE_DATASPACE = env.str("TEMPLATE_DATASPACE", default=None)
 # although not all choices may be available on all operating systems.
 # On Unix systems, a value of None will cause Django to use the same
 # timezone as the operating system.
-TIME_ZONE = env.str("TIME_ZONE", default="US/Pacific")
+TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 
 SITE_URL = env.str("SITE_URL", default="")
 
 ENABLE_SELF_REGISTRATION = env.bool("ENABLE_SELF_REGISTRATION", default=False)
-HCAPTCHA_SITEKEY = env.str("HCAPTCHA_SITEKEY", default="")
-HCAPTCHA_SECRET = env.str("HCAPTCHA_SECRET", default="")
 
 # This instructs the browser to only send these cookies over HTTPS connections.
 # Note that this will mean that sessions will not work over HTTP, and the CSRF
@@ -167,9 +165,6 @@ FILE_UPLOAD_PERMISSIONS = 0o644  # -rw-rw-r--
 # https://docs.djangoproject.com/en/dev/ref/settings/#data-upload-max-number-fields
 DATA_UPLOAD_MAX_NUMBER_FIELDS = env.int("DATA_UPLOAD_MAX_NUMBER_FIELDS", default=10000)
 
-# hCaptcha script location for registration form
-HCAPTCHA_JS_API_URL = env.str("HCAPTCHA_JS_API_URL", default="/static/js/hcaptcha.js")
-
 EXTRA_MIDDLEWARE = env.list("EXTRA_MIDDLEWARE", default=[])
 
 MIDDLEWARE = [
@@ -187,6 +182,7 @@ MIDDLEWARE = [
     # OTPMiddleware needs to come after AuthenticationMiddleware
     "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "dje.middleware.TimezoneMiddleware",
     "dje.middleware.LastAPIAccessMiddleware",
     *EXTRA_MIDDLEWARE,
     # AxesMiddleware should be the last middleware in the MIDDLEWARE list.
@@ -321,6 +317,7 @@ PREREQ_APPS = [
     "django.contrib.admin",
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_yasg",
     "django_rq",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -331,7 +328,7 @@ PREREQ_APPS = [
     "axes",
     "django_otp",
     "django_otp.plugins.otp_totp",
-    "hcaptcha_field",
+    "django_altcha",
 ]
 
 PROJECT_APPS = [
@@ -629,7 +626,6 @@ REST_FRAMEWORK = {
         "user": REST_API_RATE_THROTTLE,
     },
     "DEFAULT_PAGINATION_CLASS": "dje.api_custom.PageSizePagination",
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
     "VIEW_NAME_FUNCTION": "dje.api_custom.get_view_name",
     "URL_FIELD_NAME": "api_url",  # Default 'url' used as a field on the Package model
 }
@@ -662,9 +658,8 @@ AXES_ENABLED = env.bool("AXES_ENABLED", default=False)
 AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
 # If set, specifies a template to render when a user is locked out.
 AXES_LOCKOUT_TEMPLATE = env.str("AXES_LOCKOUT_TEMPLATE", default="axes_lockout.html")
-# If True, only lock based on username, and never lock based on IP
-# if attempts to exceed the limit.
-AXES_ONLY_USER_FAILURES = True
+# Lock based on username
+AXES_LOCKOUT_PARAMETERS = ["username"]
 # If True, a successful login will reset the number of failed logins.
 AXES_RESET_ON_SUCCESS = True
 # If True, disable writing login and logout access logs to database,

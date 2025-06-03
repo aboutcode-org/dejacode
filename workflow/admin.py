@@ -81,7 +81,7 @@ class RequestTemplateAdmin(DataspacedAdmin):
         "make_active",
         "make_inactive",
     ]
-    actions_to_remove = ["compare_with", "delete_selected"]
+    actions_to_remove = ["compare_with"]
     # Disable the default notifications to admins.
     email_notification_on = []
     view_on_site = DataspacedAdmin.changeform_view_on_site

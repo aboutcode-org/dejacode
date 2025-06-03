@@ -1,0 +1,77 @@
+{% load i18n %}
+{% load inject_preserved_filters from dje_tags %}
+<table id="object-list-table" class="table table-bordered table-striped table-md text-break products-table">
+  {% include 'includes/object_list_table_header.html' with include_checkbox=True %}
+  <tbody>
+    {% for name_version_group in name_version_groups %}
+      {% for product in name_version_group %}
+        {# Display the first name version and hide the others #}
+        <tr {% if not forloop.first %} style="display: none"{% endif %}>
+          {% if is_grouping_active %}
+            <td class="version_grouping">
+              {% if forloop.first and name_version_group|length > 1 %}
+                <button class="btn btn-xs btn-outline-secondary j_expand_multiple_versions" type="button" data-count="{{ name_version_group|length }}"><i class="fas fa-plus j_icon"></i></button>
+              {% endif %}
+            </td>
+          {% endif %}
+          <th scope="row">
+            <input name="checkbox-for-selection" value="{{ product.uuid }}" data-version="{{ product.version }}" type="checkbox" aria-label="Select row">
+          </th>
+          <th scope="row">
+            <ul class="list-inline float-end mb-0 list-inline-margin-sm">
+              {% if product.is_locked %}
+                <li class="list-inline-item text-secondary">
+                  <i class="fas fa-lock" data-bs-toggle="tooltip" title="Inventory is locked"></i>
+                </li>
+              {% endif %}
+              {% if request.user.is_authenticated and product.request_count %}
+                <li class="list-inline-item">
+                  <a href="{% inject_preserved_filters product.get_absolute_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
+                </li>
+              {% endif %}
+              {% if product.is_vulnerable %}
+                <li class="list-inline-item">
+                  {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=product.get_absolute_url only %}
+                </li>
+              {% endif %}
+            </ul>
+            <strong>
+              <a href="{% inject_preserved_filters product.get_absolute_url %}">{{ product.name }}</a>
+            </strong>
+          </th>
+          <td>{{ product.version }}</td>
+          <td>
+            {% if dataspace.show_usage_policy_in_user_views %}
+              {{ product.get_license_expression_linked_with_policy|default_if_none:"" }}
+            {% else %}
+              {{ product.license_expression_linked|default_if_none:"" }}
+            {% endif %}
+          </td>
+          <td>{{ product.primary_language }}</td>
+          <td>
+            {% if product.owner %}
+              <a href="{% inject_preserved_filters product.get_absolute_url %}#owner">{{ product.owner }}</a>
+            {% endif %}
+          </td>
+          <td>{{ product.configuration_status|default_if_none:'' }}</td>
+          <td>
+            {% if product.productinventoryitem_count %}
+              <a href="{% inject_preserved_filters product.get_absolute_url %}#inventory">{{ product.productinventoryitem_count }}</a>
+            {% else %}
+              0
+            {% endif %}
+          </td>
+          <td>
+            <ul class="fa-ul ms-4 mb-0">
+            {% for keyword in product.keywords %}
+                <li><span class="fa-li"><i class="fas fa-angle-right"></i></span>{{ keyword }}</li>
+            {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endfor %}
+    {% empty %}
+      <tr><td colspan="8">No results.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -11,14 +11,12 @@ from django.conf.urls import include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
 from django.urls import path
 from django.views.defaults import page_not_found
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 
 from notifications.views import mark_all_as_read
-from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
 
 from component_catalog.api import ComponentViewSet
@@ -39,6 +37,7 @@ from dje.views import DataspaceAwareRelatedLookup
 from dje.views import GlobalSearchListView
 from dje.views import IntegrationsStatusView
 from dje.views import UnreadNotificationsList
+from dje.views import api_docs_view
 from dje.views import home_view
 from dje.views import index_dispatch
 from dje.views import urn_resolve_view
@@ -161,28 +160,16 @@ notification_patterns = [
 
 urlpatterns += [
     path("notifications/", include((notification_patterns, "notifications"))),
-]
-
-urlpatterns += [
     path("purldb/", include(("purldb.urls", "purldb"))),
 ]
 
-api_docs_urls = include_docs_urls(
-    title="DejaCode REST API",
-    public=False,
-    description=render_to_string(
-        "rest_framework/docs/description.html",
-        context={"site_url": settings.SITE_URL.rstrip("/")},
-    ),
-)
-
-# Force login_required on all API documentation URLs.
-for doc_url in api_docs_urls[0]:
-    doc_url.callback = login_required(doc_url.callback)
+api_docs_patterns = [
+    path("", login_required(api_docs_view.with_ui("redoc")), name="docs-index"),
+]
 
 urlpatterns += [
     path("api/v2/", include((api_router.urls, "api_v2"))),
-    path("api/v2/docs/", api_docs_urls),
+    path("api/v2/docs/", include((api_docs_patterns, "api-docs"))),
 ]
 
 if settings.ENABLE_SELF_REGISTRATION:

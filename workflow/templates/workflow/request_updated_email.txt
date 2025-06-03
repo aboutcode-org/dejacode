@@ -1,4 +1,4 @@
-{% autoescape off %}The request {{ req }} has been updated in the {{ req.dataspace }} dataspace on {{ req.last_modified_date|date:'N d, Y, h:ia' }}
+{% autoescape off %}The request {{ req }} has been updated in the {{ req.dataspace }} dataspace on {{ req.last_modified_date }}
 
 ================================================================================
 Ref. {{ req }} {{ req.title }}

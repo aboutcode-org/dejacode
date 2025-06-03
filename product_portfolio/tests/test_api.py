@@ -371,7 +371,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
 
         data = {
-            "input_file": ContentFile("Content", name="sbom.json"),
+            "input_file": ContentFile("{}", name="sbom.json"),
             "update_existing_packages": False,
             "scan_all_packages": False,
         }
@@ -435,7 +435,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         }
         response = self.client.post(url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = ["The file content is not proper JSON."]
+        expected = ["Invalid JSON file: Expecting value: line 1 column 1 (char 0)"]
         self.assertEqual(expected, response.data)
 
         scan_input_location = self.testfiles_path / "import_from_scan.json"

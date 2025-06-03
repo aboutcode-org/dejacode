@@ -14,7 +14,11 @@
               <a href="#delete-comment-modal" class="delete_comment_link" role="button" data-bs-toggle="modal" data-uuid="{{ event.uuid }}" style="color: #999999;" aria-label="Delete comment"><i class="far fa-trash-alt"></i></a>
             {% endif %}
           </div>
-          <strong>{{ event.user.username }}</strong> <span class="text-muted">commented</span> <a href="#{{ event.uuid }}" data-scroll-to="#comment-{{ event.uuid }}" class="text-muted">{{ event.created_date|naturaltime }}</a>
+          <strong>{{ event.user.username }}</strong>
+          <span class="text-muted">commented</span>
+          <a href="#{{ event.uuid }}" data-scroll-to="#comment-{{ event.uuid }}" class="text-muted" title="{{ event.created_date }}">
+            {{ event.created_date|naturaltime }}
+          </a>
         </div>
         <div class="card-body">
           {{ event.as_html }}

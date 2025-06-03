@@ -25,6 +25,10 @@ from django.http.request import HttpRequest
 from django.urls import Resolver404
 from django.urls import resolve
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.formats import date_format
+from django.utils.formats import get_format
 from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
@@ -640,6 +644,23 @@ def is_purl_str(url, validate=False):
     return True
 
 
+def is_purl_fragment(string):
+    """
+    Check if the given string could be a valid Package URL (PURL) or a recognizable
+    fragment of it.
+
+    A valid PURL typically follows the format:
+    `pkg://type/namespace/name@version?qualifiers#subpath`
+    """
+    purl_connectors = ["pkg:", "/", "@", "?", "#"]
+    return any(connector in string for connector in purl_connectors)
+
+
+def get_plain_purl(purl_str):
+    """Remove the qualifiers and subpath from the `purl_str```."""
+    return purl_str.split("?")[0]
+
+
 def remove_empty_values(input_dict):
     """
     Return a new dict not including empty value entries from `input_dict`.
@@ -662,3 +683,49 @@ def humanize_time(seconds):
         message += f" ({seconds / 60:.1f} minutes)"
 
     return message
+
+
+def localized_datetime(datetime):
+    """
+    Format a given datetime string into the application's default display format,
+    ensuring it is timezone-aware and localized to match Django's template behavior.
+    """
+    if not datetime:
+        return
+
+    dt = parse_datetime(datetime)
+
+    # Ensure timezone awareness (use default if naive)
+    if dt and not timezone.is_aware(dt):
+        dt = dt.replace(tzinfo=timezone.get_default_timezone())
+
+    # Convert to local time to match template behavior
+    dt = timezone.localtime(dt)
+
+    default_format = get_format("DATETIME_FORMAT")
+    return date_format(dt, default_format)
+
+
+def is_hx_request(request):
+    """Return True if the request is made from HTMX."""
+    return request.headers.get("HX-Request") == "true"
+
+
+def merge_common_non_empty_values(dicts):
+    """
+    Merge a list of dictionaries by extracting only the key-value pairs
+    that are common and non-empty across all dictionaries.
+    Missing keys are treated as empty values.
+    """
+    merged_result = {}
+    # Collect all unique keys from all dictionaries
+    all_keys = set().union(*dicts)
+
+    for key in all_keys:
+        values = [value for entry in dicts if (value := entry.get(key)) not in EMPTY_VALUES]
+
+        # Include key only if all values are identical
+        if values and all(value == values[0] for value in values):
+            merged_result[key] = values[0]
+
+    return merged_result

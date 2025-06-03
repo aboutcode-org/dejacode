@@ -29,10 +29,10 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
-from django.utils.formats import date_format
 from django.utils.html import escape
 from django.utils.html import format_html
 from django.utils.text import normalize_newlines
@@ -40,6 +40,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 from django.views.generic import FormView
 from django.views.generic.edit import BaseFormView
@@ -66,6 +67,7 @@ from component_catalog.forms import SetPolicyForm
 from component_catalog.license_expression_dje import get_dataspace_licensing
 from component_catalog.license_expression_dje import get_formatted_expression
 from component_catalog.license_expression_dje import get_unique_license_keys
+from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
@@ -85,7 +87,9 @@ from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
 from dje.utils import is_available
+from dje.utils import is_hx_request
 from dje.utils import is_uuid4
+from dje.utils import localized_datetime
 from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -1144,6 +1148,7 @@ class PackageDetailsView(
             ],
         },
         "product_usage": {},
+        "package_set": {},
         "activity": {},
         "external_references": {
             "fields": [
@@ -1297,6 +1302,24 @@ class PackageDetailsView(
 
         return {"fields": fields}
 
+    def tab_package_set(self):
+        related_packages_qs = self.object.get_related_packages_qs()
+        if related_packages_qs is None:
+            return
+
+        related_packages = related_packages_qs.only(
+            "uuid",
+            *PACKAGE_URL_FIELDS,
+            "filename",
+            "download_url",
+            "license_expression",
+            "dataspace__name",
+        ).prefetch_related("licenses")
+
+        template = "component_catalog/tabs/tab_package_set.html"
+        if len(related_packages) > 1:
+            return {"fields": [(None, related_packages, None, template)]}
+
     def tab_product_usage(self):
         user = self.request.user
         # Product data in Package views are not available to AnonymousUser for security reason
@@ -1375,11 +1398,6 @@ class PackageDetailsView(
 
         return {"fields": [(None, context, None, template)]}
 
-    @staticmethod
-    def readable_date(date):
-        if date:
-            return date_format(parse_datetime(date), "N j, Y, f A T")
-
     def post_scan_to_package(self, form_class):
         request = self.request
 
@@ -1441,6 +1459,7 @@ def package_scan_view(request, dataspace, uuid):
     dataspace = user.dataspace
     package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     download_url = package.download_url
+    is_hxr = is_hx_request(request)
 
     scancodeio = ScanCodeIO(dataspace)
     if scancodeio.is_configured() and dataspace.enable_package_scanning:
@@ -1451,13 +1470,71 @@ def package_scan_view(request, dataspace, uuid):
                 user_uuid=user.uuid,
                 dataspace_uuid=dataspace.uuid,
             )
+
+            if is_hxr:
+                template = "product_portfolio/tables/scan_progress_cell.html"
+                scan = scancodeio.get_scan_results(
+                    download_url=download_url,
+                    dataspace=dataspace,
+                )
+                scan["download_result_url"] = get_scan_results_as_file_url(scan)
+
+                status = scancodeio.get_status_from_scan_results(scan)
+                needs_refresh = False
+                if status in ["running", "not_started", "queued"]:
+                    needs_refresh = True
+
+                context = {
+                    "package": package,
+                    "scan": scan,
+                    "view_url": package.get_absolute_url(),
+                    "needs_refresh": needs_refresh,
+                }
+                return render(request, template, context)
+
             scancode_msg = "The Package URL was submitted to ScanCode.io for scanning."
             messages.success(request, scancode_msg)
         else:
+            if is_hxr:
+                return HttpResponse("URL is not reachable.")
+
             scancode_msg = f"The URL {download_url} is not reachable."
             messages.error(request, scancode_msg)
 
+    if is_hxr:
+        return Http404
+
     return redirect(f"{package.details_url}#scan")
+
+
+@login_required
+@require_GET
+def get_scan_progress_htmx_view(request, dataspace, uuid):
+    template = "product_portfolio/tables/scan_progress_cell.html"
+    dataspace = request.user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
+    scancodeio = ScanCodeIO(dataspace)
+
+    scan = scancodeio.get_scan_results(
+        download_url=package.download_url,
+        dataspace=dataspace,
+    )
+    if not scan:
+        raise Http404("Scan not found.")
+
+    status = scancodeio.get_status_from_scan_results(scan)
+    needs_refresh = False
+    if status in ["running", "not_started", "queued"]:
+        needs_refresh = True
+
+    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+    context = {
+        "package": package,
+        "scan": scan,
+        "view_url": package.get_absolute_url(),
+        "needs_refresh": needs_refresh,
+    }
+    return render(request, template, context)
 
 
 @login_required
@@ -1682,7 +1759,6 @@ def send_scan_notification(request, key):
         raise Http404("Provided key is not a valid UUID.")
 
     user = get_object_or_404(DejacodeUser, uuid=user_uuid)
-    dataspace = user.dataspace
 
     project = json_data.get("project")
     input_sources = project.get("input_sources")
@@ -1693,27 +1769,16 @@ def send_scan_notification(request, key):
     package = get_object_or_404(Package, download_url=download_url, dataspace=user.dataspace)
     description = package.download_url
 
+    # Triggers the Package data automatic update from Scan results, if enabled.
     run = json_data.get("run")
     scan_status = run.get("status")
-    scancodeio = ScanCodeIO(dataspace)
+    if scan_status.lower() == "success":
+        updated_fields = package.update_from_scan(user)
 
-    update_package_from_scan = all(
-        [
-            dataspace.enable_package_scanning,
-            dataspace.update_packages_from_scan,
-            scan_status.lower() == "success",
-            scancodeio.is_configured(),
-        ]
-    )
-
-    # Triggers the Package data automatic update from Scan results, if enabled.
-    if update_package_from_scan:
-        updated_fields = scancodeio.update_from_scan(package, user)
-        if updated_fields:
-            description = (
-                f"Automatically updated {', '.join(updated_fields)} from scan results\n"
-                + description
-            )
+    if updated_fields:
+        description = (
+            f"Automatically updated {', '.join(updated_fields)} from scan results\n" + description
+        )
 
     user.send_internal_notification(
         verb=f"Scan {scan_status}",
@@ -2299,11 +2364,6 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         scan_summary_fields.append(FieldSeparator)
         return scan_summary_fields
 
-    @staticmethod
-    def readable_date(date):
-        if date:
-            return date_format(parse_datetime(date), "N j, Y, f A T")
-
     def scan_status_fields(self, scan):
         scan_status_fields = []
         scan_run = scan.get("runs", [{}])[-1]
@@ -2329,9 +2389,9 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         scan_status_fields.extend(
             [
                 ("Status", f"Scan {status}"),
-                ("Created date", self.readable_date(scan_run.get("created_date"))),
-                ("Start date", self.readable_date(scan_run.get("task_start_date"))),
-                ("End date", self.readable_date(scan_run.get("task_end_date"))),
+                ("Created date", localized_datetime(scan_run.get("created_date"))),
+                ("Start date", localized_datetime(scan_run.get("task_start_date"))),
+                ("End date", localized_datetime(scan_run.get("task_end_date"))),
                 ("ScanCode.io version", scan_run.get("scancodeio_version")),
             ]
         )
@@ -2457,9 +2517,12 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
         }
         tab_fields.append(("", alert_context, None, "includes/field_alert.html"))
 
-        if len(purldb_entries) > 1:
+        len_purldb_entries = len(purldb_entries)
+        if len_purldb_entries > 1:
             alert_context = {
-                "message": "There are multiple entries in the PurlDB for this Package.",
+                "message": (
+                    f"There are {len_purldb_entries} entries in the PurlDB for this Package."
+                ),
                 "full_width": True,
                 "alert_class": "alert-warning",
             }

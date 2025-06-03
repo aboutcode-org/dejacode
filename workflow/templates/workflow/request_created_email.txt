@@ -1,4 +1,4 @@
-{% autoescape off %}{{ req.requester }} has submitted a new {% if req.is_private %}private{% else %}public{% endif %} request in the {{ req.dataspace }} dataspace on {{ req.created_date|date:'N d, Y, h:ia' }}
+{% autoescape off %}{{ req.requester }} has submitted a new {% if req.is_private %}private{% else %}public{% endif %} request in the {{ req.dataspace }} dataspace on {{ req.created_date }}
 
 ================================================================================
 Ref. {{ req }}  {{ req.title }}

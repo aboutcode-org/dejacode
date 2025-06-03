@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -32,7 +34,6 @@ from component_catalog.license_expression_dje import LicenseExpressionFormMixin
 from component_catalog.models import Component
 from component_catalog.programming_languages import PROGRAMMING_LANGUAGES
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dje import tasks
 from dje.fields import SmartFileField
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
@@ -41,6 +42,7 @@ from dje.forms import DefaultOnAdditionLabelMixin
 from dje.forms import Group
 from dje.forms import JSONListField
 from dje.forms import OwnerChoiceField
+from dje.forms import StrictSubmit
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
 from dje.models import History
@@ -53,6 +55,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
+from product_portfolio.tasks import scancodeio_submit_project_task
 
 
 class NameVersionValidationFormMixin:
@@ -144,6 +148,10 @@ class ProductForm(
                 data_list=",".join(PROGRAMMING_LANGUAGES),
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["owner"].user = self.user
 
     def assign_object_perms(self, user):
         assign_perm("view_product", user, self.instance)
@@ -241,6 +249,7 @@ class ProductMassUpdateForm(SetKeywordsChoicesFormMixin, DejacodeMassUpdateForm)
             "homepage_url",
             "primary_language",
             "admin_notes",
+            "is_active",
             "configuration_status",
             "contact",
             "vcs_url",
@@ -531,9 +540,12 @@ class ProductCustomComponentForm(
 
 
 class ImportFromScanForm(forms.Form):
-    upload_file = SmartFileField(extensions=["json"])
+    upload_file = SmartFileField(
+        label=_("Scan results JSON file"),
+        extensions=["json"],
+    )
     create_codebase_resources = forms.BooleanField(
-        label=_('Create Codebase Resources (from <code>"files"</code>)'),
+        label=_('Create Codebase Resources (from "files" resources)'),
         required=False,
         initial=False,
         help_text=_(
@@ -562,7 +574,16 @@ class ImportFromScanForm(forms.Form):
     @property
     def helper(self):
         helper = FormHelper()
-        helper.add_input(Submit("import", "Import"))
+        helper.attrs = {"autocomplete": "off"}
+        helper.layout = Layout(
+            Fieldset(
+                None,
+                "upload_file",
+                "create_codebase_resources",
+                "stop_on_error",
+                StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
+            ),
+        )
         return helper
 
     def save(self, product):
@@ -593,7 +614,6 @@ class ImportFromScanForm(forms.Form):
 
 class BaseProductImportFormView(forms.Form):
     project_type = None
-    input_label = ""
 
     input_file = SmartFileField(
         label=_("file or zip archive"),
@@ -622,17 +642,21 @@ class BaseProductImportFormView(forms.Form):
         ),
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["input_file"].label = _(f"{self.input_label} file or zip archive")
-
     @property
     def helper(self):
         helper = FormHelper()
         helper.form_method = "post"
         helper.form_id = "import-manifest-form"
         helper.attrs = {"autocomplete": "off"}
-        helper.add_input(Submit("submit", "Load Packages", css_class="btn-success"))
+        helper.layout = Layout(
+            Fieldset(
+                None,
+                "input_file",
+                "update_existing_packages",
+                "scan_all_packages",
+                StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
+            ),
+        )
         return helper
 
     def submit(self, product, user):
@@ -647,7 +671,7 @@ class BaseProductImportFormView(forms.Form):
         )
 
         transaction.on_commit(
-            lambda: tasks.scancodeio_submit_project.delay(
+            lambda: scancodeio_submit_project_task.delay(
                 scancodeproject_uuid=scancode_project.uuid,
                 user_uuid=user.uuid,
                 pipeline_name=self.pipeline_name,
@@ -655,16 +679,49 @@ class BaseProductImportFormView(forms.Form):
         )
 
 
+def validate_sbom_file(value):
+    """Validate SBOM JSON file content."""
+    filename = value.name.lower()
+    if not filename.endswith(".json"):
+        return
+
+    try:
+        file_content = value.read().decode("utf-8")
+        json_data = json.loads(file_content)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise ValidationError(_("Invalid JSON file. Please provide a properly formatted JSON."))
+    finally:
+        value.seek(0)  # Reset file pointer after reading
+
+    if headers := json_data.get("headers", []):
+        tool_name = headers[0].get("tool_name", "")
+        if "scan" in tool_name.lower():
+            raise ValidationError(
+                "Your file appears to be a ScanCode scan results. "
+                'You want to use the "Import ScanCode scan results" action instead.'
+            )
+
+
 class LoadSBOMsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.LOAD_SBOMS
-    input_label = "SBOM"
     pipeline_name = "load_sbom"
+
+    input_file = SmartFileField(
+        label=_("SBOM file or zip archive"),
+        extensions=["json", "ABOUT", "zip"],
+        validators=[validate_sbom_file],
+        required=True,
+    )
 
 
 class ImportManifestsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
-    input_label = "Manifest"
     pipeline_name = "resolve_dependencies"
+
+    input_file = SmartFileField(
+        label=_("Manifest file or zip archive"),
+        required=True,
+    )
 
 
 class StrongTextWidget(forms.Widget):
@@ -944,7 +1001,7 @@ class PullProjectDataForm(forms.Form):
         )
 
         transaction.on_commit(
-            lambda: tasks.pull_project_data_from_scancodeio.delay(
+            lambda: pull_project_data_from_scancodeio_task.delay(
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )

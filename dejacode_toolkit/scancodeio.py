@@ -156,6 +156,13 @@ class ScanCodeIO(BaseService):
             logger.debug(f"{self.label} [Exception] {exception}")
         return False
 
+    @staticmethod
+    def get_status_from_scan_results(scan_results):
+        status = ""
+        if runs := scan_results.get("runs"):
+            status = runs[0].get("status", "")
+        return status
+
     def update_from_scan(self, package, user):
         """
         Update the provided `package` instance using values from Scan results.
@@ -477,3 +484,24 @@ def get_notice_text_from_key_files(scan_summary, separator="\n\n---\n\n"):
         [notice_file.get("content").strip() for notice_file in notice_files]
     )
     return notice_text
+
+
+def check_for_existing_scan_workaround(response_json, uri, user):
+    """
+    Workaroud the case where the Scan already exisit on the ScanCode.io side before
+    the package is created on the DejaCode side.
+    This can happen if the package is deleted then re-created from the same user
+    providing the same download URL.
+    """
+    if not response_json or not isinstance(response_json, dict):
+        return
+
+    already_exists_message = "project with this name already exists."
+    already_exists = already_exists_message in response_json.get("name", [])
+
+    if already_exists:
+        Package = apps.get_model("component_catalog", "package")
+        package = Package.objects.get_or_none(download_url=uri, dataspace=user.dataspace)
+        if package:
+            updated_fields = package.update_from_scan(user)
+            return updated_fields

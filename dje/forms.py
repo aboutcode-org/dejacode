@@ -36,6 +36,7 @@ from crispy_forms.layout import Layout
 from dje.copier import copy_object
 from dje.copier import get_copy_defaults
 from dje.copier import get_object_in
+from dje.fields import TimeZoneChoiceField
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
 from dje.models import History
@@ -43,6 +44,7 @@ from dje.models import is_content_type_related
 from dje.models import is_dataspace_related
 from dje.permissions import get_all_tabsets
 from dje.permissions import get_protected_fields
+from dje.utils import get_help_text
 from dje.utils import has_permission
 
 UserModel = get_user_model()
@@ -256,6 +258,11 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
 class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
     username = forms.CharField(disabled=True, required=False)
     email = forms.CharField(disabled=True, required=False)
+    timezone = TimeZoneChoiceField(
+        label=_("Time zone"),
+        required=False,
+        widget=forms.Select(attrs={"aria-label": "Select Time Zone"}),
+    )
 
     class Meta:
         model = UserModel
@@ -268,11 +275,13 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
             "workflow_email_notification",
             "updates_email_notification",
             "homepage_layout",
+            "timezone",
         ]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.get("instance")
         super().__init__(*args, **kwargs)
+        self.fields["timezone"].help_text = get_help_text(self._meta.model, "timezone")
 
     def save(self, commit=True):
         instance = super().save(commit)
@@ -295,7 +304,7 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
         # of the form, for security purposes.
         dataspace_field = HTML(
             f"""
-        <div id="div_id_dataspace" class="col-md-4">
+        <div id="div_id_dataspace">
             <label for="id_dataspace" class="form-label">Dataspace</label>
             <input type="text" value="{self.instance.dataspace}" class="form-control" disabled=""
                    id="id_dataspace">
@@ -312,17 +321,9 @@ class AccountProfileForm(ScopeAndProtectRelationships, forms.ModelForm):
             email_notification_fields.append("updates_email_notification")
 
         fields = [
-            Div(
-                Field("username", wrapper_class="col-md-4"),
-                Field("email", wrapper_class="col-md-4"),
-                dataspace_field,
-                css_class="row",
-            ),
-            Div(
-                Field("first_name", wrapper_class="col-md-6"),
-                Field("last_name", wrapper_class="col-md-6"),
-                css_class="row",
-            ),
+            Group("username", "email", dataspace_field),
+            Group("first_name", "last_name"),
+            Group("timezone", None),
             HTML("<hr>"),
             Group(*email_notification_fields),
             homepage_layout_field,
@@ -823,10 +824,21 @@ class DefaultOnAdditionLabelMixin:
 
 class OwnerChoiceField(forms.ModelChoiceField):
     def to_python(self, value):
-        try:
-            return self.queryset.get(name=value)
-        except ObjectDoesNotExist:
+        if not value:
             return super().to_python(value)
+
+        # 1. Get from the current Dataspace.
+        if obj := self.queryset.get_or_none(name=value):
+            return obj
+
+        # 2. Attempt to copy from reference if already existing there,
+        # or create in local Dataspace.
+        # This requires the `user` object to be set to this field instance.
+        if user := getattr(self, "user", None):
+            if obj := self.queryset.copy_or_create(user, name=value):
+                return obj
+
+        return super().to_python(value)
 
     def prepare_value(self, value):
         try:

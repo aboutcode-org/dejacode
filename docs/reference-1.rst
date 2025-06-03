@@ -5,7 +5,7 @@ Reference 1 - Declared License Expression and License Clarity Scoring
 =====================================================================
 
 When you scan a Package from DejaCode, you can view the Scan Results in a
-:guilabel:`Action` tab on the Package details user view. DejaCode presents a selection of
+:guilabel:`Actions` tab on the Package details user view. DejaCode presents a selection of
 scan details with an emphasis on license detection. You can also download the
 complete :guilabel:`Scan Results` in .json format.
 

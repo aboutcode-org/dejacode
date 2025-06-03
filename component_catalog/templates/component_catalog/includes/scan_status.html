@@ -1,11 +1,13 @@
 <div class="progress" style="width: 100%; margin-bottom: 0; height: .5rem;">
   {% if status == 'success' %}
-    <div class="progress-bar {% if has_errors %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-bar {% if has_errors %}bg-warning{% else %}bg-success{% endif %}" title="{{ status|title }}" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
   {% elif status == 'failure' or status == "stopped" or status == "stale" %}
-    <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-bar bg-danger" title="{{ status|title }}" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+  {% elif status == 'warning' %}
+    <div class="progress-bar bg-warning" title="{{ status|title }}" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
   {% elif status == 'running' %}
-    <div class="progress-bar" role="progressbar" style="width: 40%" aria-label="Scan progress" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-bar" title="{{ status|title }}" role="progressbar" style="width: 40%" aria-label="Scan progress" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
   {% elif status == 'not_started' or status == 'queued' %}
-    <div class="progress-bar" role="progressbar" style="width: 0" aria-label="Scan progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-bar" title="{{ status|title }}" role="progressbar" style="width: 0" aria-label="Scan progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
   {% endif %}
 </div>

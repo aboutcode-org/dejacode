@@ -1,0 +1,17 @@
+about_resource: attrs-25.3.0-py3-none-any.whl
+name: attrs
+version: 25.3.0
+download_url: https://files.pythonhosted.org/packages/77/06/bb80f5f86020c4551da315d78b3ab75e8228f89f0162f2c3a819e407941a/attrs-25.3.0-py3-none-any.whl
+package_url: pkg:pypi/attrs@25.3.0
+license_expression: mit AND unknown-license-reference
+copyright: Copyright attrs project contributors
+attribute: yes
+checksum_md5: a14ebc7e5f8ba18887b09460ada729e6
+checksum_sha1: b5f8661d64a8a4b81c262f668436641ecbbd56e2
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

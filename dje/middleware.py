@@ -8,6 +8,7 @@
 
 import json
 import logging
+import zoneinfo
 from datetime import datetime
 
 from django.http import Http404
@@ -88,3 +89,40 @@ class ProhibitInQueryStringMiddleware:
                 raise Http404
 
         return self.get_response(request)
+
+
+def validate_timezone(tz):
+    """Return a valid timezone or None if invalid."""
+    try:
+        return zoneinfo.ZoneInfo(tz).key
+    except (zoneinfo.ZoneInfoNotFoundError, TypeError, ValueError):
+        return
+
+
+class TimezoneMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        tz = self.get_timezone_from_request(request)
+
+        if tz:
+            timezone.activate(zoneinfo.ZoneInfo(tz))
+        else:
+            timezone.deactivate()
+
+        return self.get_response(request)
+
+    @staticmethod
+    def get_timezone_from_request(request):
+        """
+        Determine the appropriate timezone for the request, prioritizing user settings
+        but falling back to the browser's timezone if necessary.
+        """
+        # 1. Try user profile timezone (if authenticated)
+        if request.user.is_authenticated:
+            if tz := validate_timezone(request.user.timezone):
+                return tz
+
+        # 2. Fallback to browser timezone from cookie
+        return validate_timezone(request.COOKIES.get("client_timezone"))

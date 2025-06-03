@@ -107,7 +107,7 @@ registration, activation, and password reset.
 
 .. code-block:: python
 
-    DEJACODE_SUPPORT_EMAIL=support@dejacode.com
+    DEJACODE_SUPPORT_EMAIL=support@nexb.com
 
 ANONYMOUS_USERS_DATASPACE
 -------------------------

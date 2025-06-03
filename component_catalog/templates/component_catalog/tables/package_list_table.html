@@ -1,6 +1,5 @@
 {% load i18n %}
 {% load inject_preserved_filters from dje_tags %}
-{% load urlize_target_blank from dje_tags %}
 {% load naturaltime_short from dje_tags %}
 <table id="object-list-table" class="table table-bordered table-striped table-md table-fixed-layout text-break packages-table">
   {% if form or add_to_component_form %}
@@ -30,13 +29,15 @@
           {% endif %}
         </ul>
         <strong>
-          <a href="{% inject_preserved_filters object.details_url %}">{{ object }}</a>
+          <a href="{% inject_preserved_filters object.details_url %}"{% if object.identifier|length > 100 %} title="{{ object.identifier }}"{% endif %}>
+            {{ object.identifier|truncatechars:100 }}
+          </a>
         </strong>
         {% if filter.show_created_date %}
-          <div class="smaller text-muted-darker" title="{{ object.created_date|date:'N j, Y, f A' }}">Created {{ object.created_date|naturaltime_short }}</div>
+          <div class="smaller text-muted-darker" title="{{ object.created_date }}">Created {{ object.created_date|naturaltime_short }}</div>
         {% endif %}
         {% if filter.show_last_modified_date %}
-          <div class="smaller text-muted-darker" title="{{ object.last_modified_date|date:'N j, Y, f A' }}">Modified {{ object.last_modified_date|naturaltime_short }}</div>
+          <div class="smaller text-muted-darker" title="{{ object.last_modified_date }}">Modified {{ object.last_modified_date|naturaltime_short }}</div>
         {% endif %}
       </td>
       {% if dataspace.show_usage_policy_in_user_views %}
@@ -56,12 +57,8 @@
       <td>
         {{ object.primary_language }}
       </td>
-      <td title="{{ object.download_url }}"{% if not object.filename %} class="text-truncate"{% endif %}>
-        {% if object.download_url %}
-          <a href="{{ object.download_url }}">
-            {% if object.filename %}{{ object.filename }}{% else %}{{ object.download_url }}{% endif %}
-          </a>
-        {% endif %}
+      <td>
+        {% include 'component_catalog/includes/package_filename_as_link.html' with package=object %}
       </td>
       <td>
         {% with components=object.component_set.all %}

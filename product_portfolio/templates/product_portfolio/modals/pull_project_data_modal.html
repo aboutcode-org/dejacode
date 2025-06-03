@@ -1,0 +1,35 @@
+{% load crispy_forms_tags %}
+<div id="pull-project-data-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import ScanCode.io project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form autocomplete="off" method="{{ pull_project_data_form.helper.form_method }}" action="{{ product.get_pull_project_data_url }}" id="{{ pull_project_data_form.helper.form_id }}" class="{{ pull_project_data_form.helper.form_class }}">
+        <div class="modal-body bg-body-tertiary">
+          <div class="alert alert-primary" role="alert">
+            <p class="mb-2">
+              You are about to pull data from a ScanCode.io Project to import its discovered packages and dependencies.<br>
+              Imported data will be assigned to this Product.
+            </p>
+            <strong>Note that this may take some time to complete.</strong>
+          </div>
+          {% crispy pull_project_data_form %}
+        </div>
+        <div class="modal-footer">
+          <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
+          <input type="submit" name="submit-pull-project-data" value="Import project" class="btn btn-primary btn-success">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#pull-project-data-form').on('submit', function () {
+      NEXB.displayOverlay("Pulling Project data...");
+    })
+  });
+</script>

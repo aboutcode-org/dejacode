@@ -1,0 +1,14 @@
+about_resource: openpyxl-3.1.5-py2.py3-none-any.whl
+name: openpyxl
+version: 3.1.5
+download_url: https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl
+package_url: pkg:pypi/openpyxl@3.1.5
+license_expression: mit
+copyright: Copyright openpyxl project contributors
+attribute: yes
+checksum_md5: 05a1b34e9893bab14dd70c7645c4ddcb
+checksum_sha1: 36fc73575c36117615e27d7443458b1d02d593c7
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

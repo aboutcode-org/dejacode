@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import uuid
+
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.tests import make_component
@@ -13,8 +15,10 @@ from component_catalog.tests import make_package
 from dje.tests import make_string
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductStatus
 
 
 def make_product(dataspace, inventory=None, **data):
@@ -68,9 +72,35 @@ def make_product_component(product, component=None):
 
 
 def make_product_item_purpose(dataspace, **data):
+    if "label" not in data:
+        data["label"] = make_string(10)
+    if "text" not in data:
+        data["text"] = make_string(10)
+
     return ProductItemPurpose.objects.create(
-        label=make_string(10),
-        text=make_string(10),
         dataspace=dataspace,
+        **data,
+    )
+
+
+def make_product_status(dataspace, **data):
+    if "label" not in data:
+        data["label"] = make_string(10)
+    if "text" not in data:
+        data["text"] = make_string(10)
+
+    return ProductStatus.objects.create(
+        dataspace=dataspace,
+        **data,
+    )
+
+
+def make_product_dependency(product, **data):
+    if "dependency_uid" not in data:
+        data["dependency_uid"] = str(uuid.uuid4())
+
+    return ProductDependency.objects.create(
+        product=product,
+        dataspace=product.dataspace,
         **data,
     )

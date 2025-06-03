@@ -31,6 +31,7 @@ from django.db.models import Prefetch
 from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
+from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -44,6 +45,7 @@ from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
@@ -71,7 +73,6 @@ from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
-from dje import tasks
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
 from dje.filters import HasCountFilter
@@ -133,6 +134,8 @@ from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tasks import improve_packages_from_purldb_task
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -157,7 +160,7 @@ class ProductListView(
     model = Product
     filterset_class = ProductFilterSet
     template_name = "product_portfolio/product_list.html"
-    template_list_table = "product_portfolio/includes/product_list_table.html"
+    template_list_table = "product_portfolio/tables/product_list_table.html"
     paginate_by = 50
     put_results_in_session = False
     group_name_version = True
@@ -567,9 +570,13 @@ class ProductDetailsView(
                 "tooltip": "No vulnerabilities found in this Product",
             }
 
+        badge_class = "text-bg-secondary"
+        if vulnerability_count > 0:
+            badge_class = "badge-vulnerability"
+
         label = (
             f"Vulnerabilities"
-            f'<span class="badge badge-vulnerability ps-1 ms-1">'
+            f'<span class="badge {badge_class} ps-1 ms-1">'
             f'  <i class="fas fa-archive" style="height: auto"></i>{vulnerable_package_count}'
             f'  <i class="fas fa-bug" style="height: auto"></i>{vulnerability_count}'
             f"</span>"
@@ -641,56 +648,55 @@ class ProductDetailsView(
         }
 
     def get_context_data(self, **kwargs):
+        product = self.object
         user = self.request.user
         dataspace = user.dataspace
 
         # This behavior does not works well in the context of getting informed about
         # tasks completion on the Product.
         if user.is_authenticated:
-            self.object.mark_all_notifications_as_read(user)
+            product.mark_all_notifications_as_read(user)
 
         context = super().get_context_data(**kwargs)
-
-        context["has_change_codebaseresource_permission"] = user.has_perm(
-            "product_portfolio.change_codebaseresource"
-        )
-
         context["filter_productcomponent"] = self.filter_productcomponent
         context["filter_productpackage"] = self.filter_productpackage
         # The reference data label and help does not make sense in the Product context
         context["is_reference_data"] = None
 
-        perms = guardian_get_perms(user, self.object)
+        perms = guardian_get_perms(user, product)
         context["has_change_permission"] = "change_product" in perms
         context["has_delete_permission"] = "delete_product" in perms
 
-        context["has_edit_productpackage"] = all(
-            [
-                user.has_perm("product_portfolio.change_productpackage"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_delete_productpackage"] = user.has_perm(
-            "product_portfolio.delete_productpackage"
-        )
+        if not product.is_locked:
+            context["has_edit_productpackage"] = all(
+                [
+                    user.has_perm("product_portfolio.change_productpackage"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_delete_productpackage"] = user.has_perm(
+                "product_portfolio.delete_productpackage"
+            )
+            context["has_add_productcomponent"] = all(
+                [
+                    user.has_perm("product_portfolio.add_productcomponent"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_edit_productcomponent"] = all(
+                [
+                    user.has_perm("product_portfolio.change_productcomponent"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_delete_productcomponent"] = user.has_perm(
+                "product_portfolio.delete_productcomponent"
+            )
+            context["has_change_codebaseresource_permission"] = user.has_perm(
+                "product_portfolio.change_codebaseresource"
+            )
 
-        context["has_add_productcomponent"] = all(
-            [
-                user.has_perm("product_portfolio.add_productcomponent"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_edit_productcomponent"] = all(
-            [
-                user.has_perm("product_portfolio.change_productcomponent"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_delete_productcomponent"] = user.has_perm(
-            "product_portfolio.delete_productcomponent"
-        )
-
-        if context["has_edit_productpackage"] or context["has_edit_productcomponent"]:
+        if context.get("has_edit_productpackage") or context.get("has_edit_productcomponent"):
             all_licenses = License.objects.scope(dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
@@ -734,12 +740,13 @@ class ProductTabInventoryView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        product = self.object
         user = self.request.user
         dataspace = user.dataspace
-        context["inventory_count"] = self.object.productinventoryitem_set.count()
+        context["inventory_count"] = product.productinventoryitem_set.count()
 
         license_qs = License.objects.select_related("usage_policy")
-        declared_dependencies_qs = ProductDependency.objects.product(self.object)
+        declared_dependencies_qs = ProductDependency.objects.product(product)
         package_qs = (
             Package.objects.select_related(
                 "dataspace",
@@ -755,7 +762,7 @@ class ProductTabInventoryView(
         ).with_vulnerability_count()
 
         productpackage_qs = (
-            self.object.productpackages.select_related(
+            product.productpackages.select_related(
                 "review_status",
                 "purpose",
             )
@@ -776,13 +783,13 @@ class ProductTabInventoryView(
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
             queryset=productpackage_qs,
-            dataspace=self.object.dataspace,
+            dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor="#inventory",
         )
 
         productcomponent_qs = (
-            self.object.productcomponents.select_related(
+            product.productcomponents.select_related(
                 "review_status",
                 "purpose",
             )
@@ -804,7 +811,7 @@ class ProductTabInventoryView(
         filter_productcomponent = ProductComponentFilterSet(
             self.request.GET,
             queryset=productcomponent_qs,
-            dataspace=self.object.dataspace,
+            dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor="#inventory",
         )
@@ -871,26 +878,27 @@ class ProductTabInventoryView(
             }
         )
 
-        perms = guardian_get_perms(user, self.object)
-        has_product_change_permission = "change_product" in perms
-        context["has_edit_productcomponent"] = all(
-            [
-                has_product_change_permission,
-                user.has_perm("product_portfolio.change_productcomponent"),
-            ]
-        )
-        context["has_edit_productpackage"] = all(
-            [
-                has_product_change_permission,
-                user.has_perm("product_portfolio.change_productpackage"),
-            ]
-        )
-        context["has_delete_productpackage"] = user.has_perm(
-            "product_portfolio.delete_productpackage"
-        )
-        context["has_delete_productcomponent"] = user.has_perm(
-            "product_portfolio.delete_productcomponent"
-        )
+        if not product.is_locked:
+            perms = guardian_get_perms(user, product)
+            has_product_change_permission = "change_product" in perms
+            context["has_edit_productcomponent"] = all(
+                [
+                    has_product_change_permission,
+                    user.has_perm("product_portfolio.change_productcomponent"),
+                ]
+            )
+            context["has_edit_productpackage"] = all(
+                [
+                    has_product_change_permission,
+                    user.has_perm("product_portfolio.change_productpackage"),
+                ]
+            )
+            context["has_delete_productpackage"] = user.has_perm(
+                "product_portfolio.delete_productpackage"
+            )
+            context["has_delete_productcomponent"] = user.has_perm(
+                "product_portfolio.delete_productcomponent"
+            )
 
         if page_obj:
             previous_url, next_url = self.get_previous_next(page_obj)
@@ -947,9 +955,13 @@ class ProductTabInventoryView(
             for productpackage in productpackages:
                 if not isinstance(productpackage, ProductPackage):
                     continue
-                scan = scans_by_uri.get(productpackage.package.download_url)
+                package = productpackage.package
+                scan = scans_by_uri.get(package.download_url)
                 if scan:
                     scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                    scan["delete_url"] = reverse(
+                        "product_portfolio:scan_delete_htmx", args=[scan.get("uuid"), package.uuid]
+                    )
                     productpackage.scan = scan
                 injected_productpackages.append(productpackage)
 
@@ -1307,7 +1319,7 @@ class ProductTabImportsView(
         if run_status != project.status:
             if run_status == "success":
                 transaction.on_commit(
-                    lambda: tasks.pull_project_data_from_scancodeio.delay(
+                    lambda: pull_project_data_from_scancodeio_task.delay(
                         scancodeproject_uuid=project.uuid,
                     )
                 )
@@ -2016,7 +2028,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 messages.success(request, format_html(msg))
             if warnings:
                 messages.warning(request, format_html("<br>".join(warnings)))
-            return redirect(product)
+            return redirect(f"{product.get_absolute_url()}#imports")
     else:
         form = form_class(request.user)
 
@@ -2447,7 +2459,7 @@ def import_packages_from_scancodeio_view(request, key):
     get_object_or_404(product_qs, id=scancode_project.product_id)
 
     transaction.on_commit(
-        lambda: tasks.pull_project_data_from_scancodeio.delay(
+        lambda: pull_project_data_from_scancodeio_task.delay(
             scancodeproject_uuid=scancode_project.uuid,
         )
     )
@@ -2483,6 +2495,18 @@ def scancodeio_project_status_view(request, scancodeproject_uuid):
 
 
 @login_required
+def scancodeio_project_download_input_view(request, scancodeproject_uuid):
+    secured_qs = ScanCodeProject.objects.product_secured(user=request.user)
+    scancode_project = get_object_or_404(secured_qs, uuid=scancodeproject_uuid)
+    input_file = scancode_project.input_file
+
+    if not input_file or not input_file.storage.exists(input_file.name):
+        raise Http404
+
+    return FileResponse(input_file.open("rb"), as_attachment=True)
+
+
+@login_required
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
     guarded_qs = Product.objects.get_queryset(user)
@@ -2513,7 +2537,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: tasks.improve_packages_from_purldb(
+            lambda: improve_packages_from_purldb_task(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )
@@ -2584,3 +2608,34 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability
     rendered_form = render_crispy_form(form, context=csrf(request))
 
     return HttpResponse(rendered_form)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_scan_htmx_view(request, project_uuid, package_uuid):
+    dataspace = request.user.dataspace
+    package = get_object_or_404(Package, uuid=package_uuid, dataspace=dataspace)
+
+    if not dataspace.enable_package_scanning:
+        raise Http404
+
+    scancodeio = ScanCodeIO(dataspace)
+    scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
+
+    if not scan_list or scan_list.get("count") != 1:
+        raise Http404("Scan not found.")
+
+    scan_detail_url = scancodeio.get_scan_detail_url(project_uuid)
+    deleted = scancodeio.delete_scan(scan_detail_url)
+
+    if not deleted:
+        raise Http404("Scan could not be deleted.")
+
+    # Return the rendered scan action cell content.
+    template = "product_portfolio/tables/scan_action_cell.html"
+    context = {
+        "package": package,
+        "user": request.user,
+    }
+    return render(request, template, context)

@@ -1,0 +1,14 @@
+about_resource: django_auth_ldap-5.2.0-py3-none-any.whl
+name: django-auth-ldap
+version: 5.2.0
+download_url: https://files.pythonhosted.org/packages/a1/65/0d26a8b5c19039305d7ae0e8e702613a9a1fe1ef3ebbd6206b9e104b7c43/django_auth_ldap-5.2.0-py3-none-any.whl
+package_url: pkg:pypi/django-auth-ldap@5.2.0
+license_expression: bsd-new
+copyright: Copyright django-auth-ldap project contributors
+attribute: yes
+checksum_md5: 8dfadfda7511afbb543bc59ff8efeefe
+checksum_sha1: 29dd2f7b855f9a6a45994247d818becea73f1166
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

@@ -32,6 +32,7 @@ Welcome to the very start of your DejaCode journey!
     howto-2
     howto-3
     howto-4-product-vulnerability-analysis
+    howto-5-product-object-permissions
 
 .. toctree::
     :maxdepth: 1
@@ -41,6 +42,7 @@ Welcome to the very start of your DejaCode journey!
     reference-vulnerability-management
     reference-1
     reference-2
+    reference-3-cravex
 
 .. toctree::
    :maxdepth: 1

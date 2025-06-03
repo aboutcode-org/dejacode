@@ -115,6 +115,15 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
             "fields, since DejaCode will be creating the Request automatically."
         ),
     )
+    is_locked = models.BooleanField(
+        verbose_name=_("Locked inventory"),
+        default=False,
+        db_index=True,
+        help_text=_(
+            "Marks this product version as read-only, preventing any modifications to "
+            "its inventory."
+        ),
+    )
 
     class Meta(BaseStatusMixin.Meta):
         verbose_name_plural = _("product status")
@@ -141,7 +150,9 @@ class ProductSecuredManager(DataspacedManager):
         """
         return self.model.unsecured_objects.get(dataspace__name=dataspace_name, uuid=uuid)
 
-    def get_queryset(self, user=None, perms="view_product", include_inactive=False):
+    def get_queryset(
+        self, user=None, perms="view_product", include_inactive=False, exclude_locked=False
+    ):
         """
         Force the object level protection at the QuerySet level.
         Always Return an empty QuerySet unless a `user` is provided.
@@ -161,6 +172,9 @@ class ProductSecuredManager(DataspacedManager):
         queryset = guardian.shortcuts.get_objects_for_user(
             user, perms, klass=queryset_class, accept_global_perms=False
         ).scope(user.dataspace)
+
+        if exclude_locked:
+            queryset = queryset.exclude(configuration_status__is_locked=True)
 
         if include_inactive:
             return queryset
@@ -349,6 +363,12 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
                 requester=self.last_modified_by,
                 object_id=self.id,
             )
+
+    @cached_property
+    def is_locked(self):
+        if self.configuration_status_id:
+            return self.configuration_status.is_locked
+        return False
 
     @cached_property
     def all_packages(self):
@@ -1457,19 +1477,21 @@ class ScanCodeProjectQuerySet(ProductSecuredQuerySet):
 
 
 class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
-    """Wrap a ScanCode.io Project."""
+    """Wrap Product imports, such as a ScanCode.io Project."""
 
     class ProjectType(models.TextChoices):
-        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import from Manifest")
-        LOAD_SBOMS = "LOAD_SBOMS", _("Load SBOMs")
-        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Pull from ScanCode.io")
+        IMPORT_FROM_MANIFEST = "IMPORT_FROM_MANIFEST", _("Import Package manifests")
+        LOAD_SBOMS = "LOAD_SBOMS", _("Import SBOM")
+        PULL_FROM_SCANCODEIO = "PULL_FROM_SCANCODEIO", _("Import ScanCode.io project")
         IMPROVE_FROM_PURLDB = "IMPROVE_FROM_PURLDB", _("Improve from PurlDB")
+        IMPORT_SCAN_RESULTS = "IMPORT_SCAN_RESULTS", _("Import ScanCode scan results")
 
     class Status(models.TextChoices):
         SUBMITTED = "submitted"
         IMPORT_STARTED = "importing"
         SUCCESS = "success", _("Completed")
         FAILURE = "failure"
+        WARNING = "warning"
 
     uuid = models.UUIDField(
         _("UUID"),
@@ -1600,7 +1622,6 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
         related_name="declared_dependencies",
         help_text=_("The package that declares this dependency."),
         on_delete=models.CASCADE,
-        editable=False,
         blank=True,
         null=True,
     )
@@ -1612,7 +1633,6 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
             "If empty, it indicates the dependency is unresolved."
         ),
         on_delete=models.SET_NULL,
-        editable=False,
         blank=True,
         null=True,
     )

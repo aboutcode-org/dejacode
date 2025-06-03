@@ -1,7 +1,13 @@
 Release notes
 =============
 
-### Version 5.3.0-dev
+### Version 5.3.1-dev (unreleased)
+
+- Add new `is_locked` "Locked inventory" field to the ProductStatus model.
+  When a Product is locked through his status, its inventory cannot be modified.
+  https://github.com/aboutcode-org/dejacode/issues/189
+
+### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.
   https://github.com/aboutcode-org/dejacode/issues/189
@@ -80,6 +86,83 @@ Release notes
   Note that those count reflect the current risk threshold.
   https://github.com/aboutcode-org/dejacode/issues/102
 
+- Enable the delete_selected action on RequestTemplateAdmin.
+  https://github.com/aboutcode-org/dejacode/issues/243
+
+- The data rendering format was simplified for improved readability from
+  "Jan. 27, 2025, 07:55:54 a.m. UTC" to "Jan 27, 2025, 7:55 AM UTC".
+  The dates are now always rendered using this same format across the app.
+  The user timezone is automatically discovered and activated to the whole app using
+  the browser JavaScript `timeZone` API
+  The user's automatic timezone can be overridden using the new
+  ``DejacodeUser.timezone`` database field.
+  The timezone value can be defined from the User > "Profile Settings" form.
+  This value always takes precedence when defined.
+  In case the timezone is not defined by the user, or cannot be detected from the
+  browser, the date rendering always fallback to UTC.
+  Note: all the "humanized dates" such as "Modified 23 hours ago" have the whole
+  date syntax available in their `title` option, available on hovering the text with
+  the cursor for a couple seconds.
+  https://github.com/aboutcode-org/dejacode/issues/243
+
+- Set the "usage_policy" in update_fields list in SetPolicyFromLicenseMixin.
+  The associated package/license policy was properly set on the model in
+  SetPolicyFromLicenseMixin but the usage_policy entry was missing from the
+  update_fields. As a result the usage_policy value was not included in the UPDATE.
+  https://github.com/aboutcode-org/dejacode/issues/200
+
+- Improve the Owner assignment process on a Product/Component form.
+  Owner not found in the Dataspace are now automatically created.
+  https://github.com/aboutcode-org/dejacode/issues/239
+
+- Updated the label of the following Product actions.
+  The labels were updated everywhere in the UI (page title, documentation,
+  import log, etc...) for consistency:
+  - Import data from Scan -> Import ScanCode scan results
+  - Load Packages from SBOMs -> Import SBOM
+  - Import Packages from manifests -> Import Package manifests
+  - Pull ScanCode.io Project data -> Import ScanCode.io project
+  Improve the rendering and layout of the Import related forms for consistency,
+  simplicity, and readability.
+  https://github.com/aboutcode-org/dejacode/issues/241
+
+- Refine the way the PURL fragments are handled in searches.
+  https://github.com/aboutcode-org/dejacode/issues/286
+
+- Fix an issue with ``urlize_target_blank`` when the URL contains curly braces.
+
+- Add the ability to download Product "Imports" input file.
+  https://github.com/aboutcode-org/dejacode/issues/156
+
+- Fix a logic issue in the ``ImportPackageFromScanCodeIO.import_package`` that occurs when
+  multiple packages with the same PURL, but different download_url or filename,
+  are present in the Dataspace.
+  https://github.com/aboutcode-org/dejacode/issues/295
+
+- Fix a logic issue in the ``ImportPackageFromScanCodeIO.import_dependencies`` to
+  prevent the creation of duplicated "resolved" dependencies.
+  https://github.com/aboutcode-org/dejacode/issues/297
+
+- Display the filename/download_url in the Inventory tab.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Improve exception support in improve_packages_from_purldb task.
+  In case of an exception, the error is properly logged on the Import instance.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Refine the ``update_from_purldb`` function to avoid any IntegrityError.
+  Also, when multiple entries are returned from the PurlDB, only the common values are
+  merged and kept for the data update.
+  https://github.com/aboutcode-org/dejacode/issues/303
+
+- Add a new "Package Set" tab to the Package details view.
+  This tab displays related packages grouped by their normalized ("plain") Package URL.
+  https://github.com/aboutcode-org/dejacode/issues/276
+
+- Refine get_purldb_entries to compare on plain PackageURL.
+  Including the qualifiers and subpaths in the comparison was too restrictive.
+  https://github.com/aboutcode-org/dejacode/issues/307
+
 ### Version 5.2.1
 
 - Fix the models documentation navigation.
@@ -87,6 +170,9 @@ Release notes
 
 - Fix the validity of SPDX outputs.
   https://github.com/aboutcode-org/dejacode/issues/180
+
+- Add ability to start and delete package scans from the Product inventory tab.
+  https://github.com/aboutcode-org/dejacode/pull/281
 
 ### Version 5.2.0
 

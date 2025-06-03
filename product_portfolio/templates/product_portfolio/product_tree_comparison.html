@@ -65,10 +65,10 @@
         <tr class="{{ action }}">
           <td>{{ action|title }}</td>
           <td>
-            {% include 'product_portfolio/includes/productrelationship_cell.html' with relationship=left is_left=True %}
+            {% include 'product_portfolio/tables/productrelationship_cell.html' with relationship=left is_left=True %}
           </td>
           <td>
-            {% include 'product_portfolio/includes/productrelationship_cell.html' with relationship=right %}
+            {% include 'product_portfolio/tables/productrelationship_cell.html' with relationship=right %}
           </td>
         </tr>
       {% endfor %}

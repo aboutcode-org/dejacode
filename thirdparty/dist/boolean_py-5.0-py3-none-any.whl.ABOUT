@@ -1,0 +1,14 @@
+about_resource: boolean_py-5.0-py3-none-any.whl
+name: boolean-py
+version: '5.0'
+download_url: https://files.pythonhosted.org/packages/e5/ca/78d423b324b8d77900030fa59c4aa9054261ef0925631cd2501dd015b7b7/boolean_py-5.0-py3-none-any.whl
+package_url: pkg:pypi/boolean-py@5.0
+license_expression: bsd-simplified
+copyright: Copyright Sebastian Kraemer, and others
+attribute: yes
+checksum_md5: df9060a88bfb6ba3b9314783b16a0faa
+checksum_sha1: 626d017b8ba4acb25c2231a4a428bf364e582b2a
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
