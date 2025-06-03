@@ -9,7 +9,7 @@ $ pip install 'datamodel-code-generator[http]'
 Generate the models
 -------------------
 
-$ TARGET_PYTHON_VERSION=3.12
+$ TARGET_PYTHON_VERSION=3.13
 $ datamodel-codegen \
     --input dejacode_toolkit/csaf/schema_v2.0/csaf_json_schema.json \
     --output dejacode_toolkit/csaf/ \
