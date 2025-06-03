@@ -1,0 +1,15 @@
+about_resource: cython-3.1.1-py3-none-any.whl
+name: cython
+version: 3.1.1
+download_url: https://files.pythonhosted.org/packages/a7/97/8e8637e67afc09f1b51a617b15a0d1caf0b5159b0f79d47ab101e620e491/cython-3.1.1-py3-none-any.whl
+package_url: pkg:pypi/cython@3.1.1
+license_expression: apache-2.0
+copyright: Copyright cython project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 65be1da6130728ff41b647682a47f6dc
+checksum_sha1: c0e40fd9f49f941f7a3a74a1a1eb64ed0112d472
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

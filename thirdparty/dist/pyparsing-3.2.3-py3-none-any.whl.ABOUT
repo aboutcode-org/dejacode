@@ -1,0 +1,14 @@
+about_resource: pyparsing-3.2.3-py3-none-any.whl
+name: pyparsing
+version: 3.2.3
+download_url: https://files.pythonhosted.org/packages/05/e7/df2285f3d08fee213f2d041540fa4fc9ca6c2d44cf36d3a035bf2a8d2bcc/pyparsing-3.2.3-py3-none-any.whl
+package_url: pkg:pypi/pyparsing@3.2.3
+license_expression: mit
+copyright: Copyright pyparsing project contributors
+attribute: yes
+checksum_md5: 28dde74b1a8934cee78475e26b502720
+checksum_sha1: 20a4600eca79e9f109e921b737c3e3ee77de0f90
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

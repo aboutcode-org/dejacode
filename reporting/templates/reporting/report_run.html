@@ -15,7 +15,7 @@
           </div>
           <h1 class="header-title">
             {{ object.name }}
-            <small class="ms-1" style="font-size: 70%">
+            <small class="ms-1" style="font-size: 65%">
               {% if user.is_staff and has_change_permission %}
                 <a href="{{ object.get_admin_url }}" data-bs-toggle="tooltip" title="Edit" target="_blank"><i class="far fa-edit"></i></a>
               {% endif %}

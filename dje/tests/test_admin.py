@@ -65,6 +65,16 @@ class DataspacedModelAdminTestCase(TestCase):
         self.assertContains(response, "<td>Added.</td>")
         self.assertContains(response, "<td>Changed name.</td>")
 
+    def test_admin_docs_models_view(self):
+        url_docs_models = reverse("admin:docs_models")
+        response = self.client.get(url_docs_models)
+        self.assertEqual(302, response.status_code)
+        self.assertRedirects(response, f"/login/?next={url_docs_models}")
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(url_docs_models)
+        self.assertContains(response, "Models documentation")
+
     def test_dataspaced_admin_advanced_search_method(self):
         search_fields = ["f1", "f2"]
 

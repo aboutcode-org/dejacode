@@ -317,6 +317,7 @@ PREREQ_APPS = [
     "django.contrib.admin",
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_yasg",
     "django_rq",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -625,7 +626,6 @@ REST_FRAMEWORK = {
         "user": REST_API_RATE_THROTTLE,
     },
     "DEFAULT_PAGINATION_CLASS": "dje.api_custom.PageSizePagination",
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
     "VIEW_NAME_FUNCTION": "dje.api_custom.get_view_name",
     "URL_FIELD_NAME": "api_url",  # Default 'url' used as a field on the Package model
 }
@@ -658,9 +658,8 @@ AXES_ENABLED = env.bool("AXES_ENABLED", default=False)
 AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
 # If set, specifies a template to render when a user is locked out.
 AXES_LOCKOUT_TEMPLATE = env.str("AXES_LOCKOUT_TEMPLATE", default="axes_lockout.html")
-# If True, only lock based on username, and never lock based on IP
-# if attempts to exceed the limit.
-AXES_ONLY_USER_FAILURES = True
+# Lock based on username
+AXES_LOCKOUT_PARAMETERS = ["username"]
 # If True, a successful login will reset the number of failed logins.
 AXES_RESET_ON_SUCCESS = True
 # If True, disable writing login and logout access logs to database,

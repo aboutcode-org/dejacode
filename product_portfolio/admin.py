@@ -88,6 +88,7 @@ class ProductStatusAdmin(BaseStatusAdmin):
         "label",
         "text",
         "default_on_addition",
+        "is_locked",
         "request_to_generate",
         "get_dataspace",
     )
@@ -99,6 +100,7 @@ class ProductStatusAdmin(BaseStatusAdmin):
                     "label",
                     "text",
                     "default_on_addition",
+                    "is_locked",
                     "request_to_generate",
                     "dataspace",
                     "uuid",

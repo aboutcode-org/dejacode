@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-PYTHON_EXE=python3.12
+PYTHON_EXE=python3.13
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
 MANAGE=${VENV_LOCATION}/bin/python manage.py
@@ -136,7 +136,7 @@ postgresdb_clean:
 	@${SUDO_POSTGRES} dropuser '${DB_USERNAME}' || true
 
 run:
-	${MANAGE} runserver 8000 --insecure
+	DJANGO_RUNSERVER_HIDE_WARNING=true ${MANAGE} runserver 8000 --insecure
 
 worker:
 	${MANAGE} rqworker

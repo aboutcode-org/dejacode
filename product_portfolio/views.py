@@ -648,56 +648,55 @@ class ProductDetailsView(
         }
 
     def get_context_data(self, **kwargs):
+        product = self.object
         user = self.request.user
         dataspace = user.dataspace
 
         # This behavior does not works well in the context of getting informed about
         # tasks completion on the Product.
         if user.is_authenticated:
-            self.object.mark_all_notifications_as_read(user)
+            product.mark_all_notifications_as_read(user)
 
         context = super().get_context_data(**kwargs)
-
-        context["has_change_codebaseresource_permission"] = user.has_perm(
-            "product_portfolio.change_codebaseresource"
-        )
-
         context["filter_productcomponent"] = self.filter_productcomponent
         context["filter_productpackage"] = self.filter_productpackage
         # The reference data label and help does not make sense in the Product context
         context["is_reference_data"] = None
 
-        perms = guardian_get_perms(user, self.object)
+        perms = guardian_get_perms(user, product)
         context["has_change_permission"] = "change_product" in perms
         context["has_delete_permission"] = "delete_product" in perms
 
-        context["has_edit_productpackage"] = all(
-            [
-                user.has_perm("product_portfolio.change_productpackage"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_delete_productpackage"] = user.has_perm(
-            "product_portfolio.delete_productpackage"
-        )
+        if not product.is_locked:
+            context["has_edit_productpackage"] = all(
+                [
+                    user.has_perm("product_portfolio.change_productpackage"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_delete_productpackage"] = user.has_perm(
+                "product_portfolio.delete_productpackage"
+            )
+            context["has_add_productcomponent"] = all(
+                [
+                    user.has_perm("product_portfolio.add_productcomponent"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_edit_productcomponent"] = all(
+                [
+                    user.has_perm("product_portfolio.change_productcomponent"),
+                    context["has_change_permission"],
+                ]
+            )
+            context["has_delete_productcomponent"] = user.has_perm(
+                "product_portfolio.delete_productcomponent"
+            )
+            context["has_change_codebaseresource_permission"] = user.has_perm(
+                "product_portfolio.change_codebaseresource"
+            )
 
-        context["has_add_productcomponent"] = all(
-            [
-                user.has_perm("product_portfolio.add_productcomponent"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_edit_productcomponent"] = all(
-            [
-                user.has_perm("product_portfolio.change_productcomponent"),
-                context["has_change_permission"],
-            ]
-        )
-        context["has_delete_productcomponent"] = user.has_perm(
-            "product_portfolio.delete_productcomponent"
-        )
-
-        if context["has_edit_productpackage"] or context["has_edit_productcomponent"]:
+        if context.get("has_edit_productpackage") or context.get("has_edit_productcomponent"):
             all_licenses = License.objects.scope(dataspace).filter(is_active=True)
             add_client_data(self.request, license_data=all_licenses.data_for_expression_builder())
 
@@ -741,12 +740,13 @@ class ProductTabInventoryView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        product = self.object
         user = self.request.user
         dataspace = user.dataspace
-        context["inventory_count"] = self.object.productinventoryitem_set.count()
+        context["inventory_count"] = product.productinventoryitem_set.count()
 
         license_qs = License.objects.select_related("usage_policy")
-        declared_dependencies_qs = ProductDependency.objects.product(self.object)
+        declared_dependencies_qs = ProductDependency.objects.product(product)
         package_qs = (
             Package.objects.select_related(
                 "dataspace",
@@ -762,7 +762,7 @@ class ProductTabInventoryView(
         ).with_vulnerability_count()
 
         productpackage_qs = (
-            self.object.productpackages.select_related(
+            product.productpackages.select_related(
                 "review_status",
                 "purpose",
             )
@@ -783,13 +783,13 @@ class ProductTabInventoryView(
         filter_productpackage = ProductPackageFilterSet(
             self.request.GET,
             queryset=productpackage_qs,
-            dataspace=self.object.dataspace,
+            dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor="#inventory",
         )
 
         productcomponent_qs = (
-            self.object.productcomponents.select_related(
+            product.productcomponents.select_related(
                 "review_status",
                 "purpose",
             )
@@ -811,7 +811,7 @@ class ProductTabInventoryView(
         filter_productcomponent = ProductComponentFilterSet(
             self.request.GET,
             queryset=productcomponent_qs,
-            dataspace=self.object.dataspace,
+            dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor="#inventory",
         )
@@ -878,26 +878,27 @@ class ProductTabInventoryView(
             }
         )
 
-        perms = guardian_get_perms(user, self.object)
-        has_product_change_permission = "change_product" in perms
-        context["has_edit_productcomponent"] = all(
-            [
-                has_product_change_permission,
-                user.has_perm("product_portfolio.change_productcomponent"),
-            ]
-        )
-        context["has_edit_productpackage"] = all(
-            [
-                has_product_change_permission,
-                user.has_perm("product_portfolio.change_productpackage"),
-            ]
-        )
-        context["has_delete_productpackage"] = user.has_perm(
-            "product_portfolio.delete_productpackage"
-        )
-        context["has_delete_productcomponent"] = user.has_perm(
-            "product_portfolio.delete_productcomponent"
-        )
+        if not product.is_locked:
+            perms = guardian_get_perms(user, product)
+            has_product_change_permission = "change_product" in perms
+            context["has_edit_productcomponent"] = all(
+                [
+                    has_product_change_permission,
+                    user.has_perm("product_portfolio.change_productcomponent"),
+                ]
+            )
+            context["has_edit_productpackage"] = all(
+                [
+                    has_product_change_permission,
+                    user.has_perm("product_portfolio.change_productpackage"),
+                ]
+            )
+            context["has_delete_productpackage"] = user.has_perm(
+                "product_portfolio.delete_productpackage"
+            )
+            context["has_delete_productcomponent"] = user.has_perm(
+                "product_portfolio.delete_productcomponent"
+            )
 
         if page_obj:
             previous_url, next_url = self.get_previous_next(page_obj)

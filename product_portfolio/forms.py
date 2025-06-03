@@ -249,6 +249,7 @@ class ProductMassUpdateForm(SetKeywordsChoicesFormMixin, DejacodeMassUpdateForm)
             "homepage_url",
             "primary_language",
             "admin_notes",
+            "is_active",
             "configuration_status",
             "contact",
             "vcs_url",

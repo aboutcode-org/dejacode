@@ -49,6 +49,7 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.template.defaultfilters import pluralize
+from django.template.loader import render_to_string
 from django.test import RequestFactory
 from django.urls import NoReverseMatch
 from django.urls import reverse
@@ -70,6 +71,8 @@ from django.views.generic.edit import DeleteView
 
 import django_otp
 from django_filters.views import FilterView
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
@@ -2429,3 +2432,16 @@ class ExportCSAFDocumentView(
             filename=filename,
             content_type="application/json",
         )
+
+
+api_docs_view = get_schema_view(
+    openapi.Info(
+        title="DejaCode REST API",
+        default_version="v2",
+        description=render_to_string(
+            "rest_framework/docs/description.html",
+            context={"site_url": settings.SITE_URL.rstrip("/")},
+        ),
+    ),
+    public=False,
+)

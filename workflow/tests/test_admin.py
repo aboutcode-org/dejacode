@@ -139,7 +139,7 @@ class RequestTemplateAdminTestCase(TestCase):
         url = reverse("admin:workflow_requesttemplate_delete", args=[self.request_template1.id])
 
         response = self.client.get(url)
-        self.assertContains(response, "<h1>Are you sure?</h1>")
+        self.assertContains(response, "<h1>Delete</h1>")
 
         # Attaching a Request to our template.
         Request.objects.create(

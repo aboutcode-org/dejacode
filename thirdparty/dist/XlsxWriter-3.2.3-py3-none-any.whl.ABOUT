@@ -1,0 +1,17 @@
+about_resource: XlsxWriter-3.2.3-py3-none-any.whl
+name: xlsxwriter
+version: 3.2.3
+download_url: https://files.pythonhosted.org/packages/37/b1/a252d499f2760b314fcf264d2b36fcc4343a1ecdb25492b210cb0db70a68/XlsxWriter-3.2.3-py3-none-any.whl
+package_url: pkg:pypi/xlsxwriter@3.2.3
+license_expression: bsd-new AND bsd-simplified
+copyright: Copyright xlsxwriter project contributors
+attribute: yes
+checksum_md5: 2416f460806540f3ec1e1ecee99f693e
+checksum_sha1: 2e151e81854299dd9599601d64eee3c03efcd5fe
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

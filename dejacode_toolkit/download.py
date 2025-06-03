@@ -6,13 +6,13 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import cgi
 import socket
 from pathlib import Path
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
 from django.template.defaultfilters import filesizeformat
+from django.utils.http import parse_header_parameters
 
 import requests
 
@@ -55,7 +55,7 @@ def collect_package_data(url):
         )
 
     content_disposition = response.headers.get("content-disposition", "")
-    _, params = cgi.parse_header(content_disposition)
+    _, params = parse_header_parameters(content_disposition)
 
     filename = params.get("filename")
     if not filename:
