@@ -11,14 +11,11 @@ from django.conf.urls import include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
 from django.urls import path
 from django.views.defaults import page_not_found
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
 from notifications.views import mark_all_as_read
 from rest_framework.routers import DefaultRouter
 
@@ -40,6 +37,7 @@ from dje.views import DataspaceAwareRelatedLookup
 from dje.views import GlobalSearchListView
 from dje.views import IntegrationsStatusView
 from dje.views import UnreadNotificationsList
+from dje.views import api_docs_view
 from dje.views import home_view
 from dje.views import index_dispatch
 from dje.views import urn_resolve_view
@@ -162,26 +160,11 @@ notification_patterns = [
 
 urlpatterns += [
     path("notifications/", include((notification_patterns, "notifications"))),
-]
-
-urlpatterns += [
     path("purldb/", include(("purldb.urls", "purldb"))),
 ]
 
-api_docs_view = get_schema_view(
-    openapi.Info(
-        title="DejaCode REST API",
-        default_version="v2",
-        description=render_to_string(
-            "rest_framework/docs/description.html",
-            context={"site_url": settings.SITE_URL.rstrip("/")},
-        ),
-    ),
-    public=False,
-)
-
 api_docs_patterns = [
-    path("", login_required(api_docs_view.with_ui("redoc", cache_timeout=0)), name="docs-index"),
+    path("", login_required(api_docs_view.with_ui("redoc")), name="docs-index"),
 ]
 
 urlpatterns += [
