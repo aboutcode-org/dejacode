@@ -4,6 +4,7 @@ Release notes
 ### Version 5.3.1-dev (unreleased)
 
 - Upgrade Python version to 3.13 and Django to 5.2.x
+  https://github.com/aboutcode-org/dejacode/pull/315
   https://github.com/aboutcode-org/dejacode/pull/312
 
 - Add new `is_locked` "Locked inventory" field to the ProductStatus model.

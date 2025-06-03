@@ -1,0 +1,14 @@
+about_resource: django_filter-25.1-py3-none-any.whl
+name: django-filter
+version: '25.1'
+download_url: https://files.pythonhosted.org/packages/07/a6/70dcd68537c434ba7cb9277d403c5c829caf04f35baf5eb9458be251e382/django_filter-25.1-py3-none-any.whl
+package_url: pkg:pypi/django-filter@25.1
+license_expression: bsd-new
+copyright: Copyright django-filter project contributors
+attribute: yes
+checksum_md5: 09ef90908372eb2b1b7a182adbeb80b9
+checksum_sha1: 5787c4a3b36f24965b2b0ceec76b162f177f1175
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

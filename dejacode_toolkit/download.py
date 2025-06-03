@@ -6,13 +6,13 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from django.utils.http import parse_header_parameters
 import socket
 from pathlib import Path
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
 from django.template.defaultfilters import filesizeformat
+from django.utils.http import parse_header_parameters
 
 import requests
 
