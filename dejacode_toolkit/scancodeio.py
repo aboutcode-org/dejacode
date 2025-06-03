@@ -6,7 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import io
 import json
+import zipfile
 from hashlib import md5
 from urllib.parse import quote_plus
 
@@ -261,6 +263,21 @@ class ScanCodeIO(BaseService):
         """Return the list of dependencies for the provided `project_uuid`."""
         api_url = self.get_scan_action_url(project_uuid, "dependencies")
         return self.fetch_results(api_url)
+
+    def scan_data_as_zip(self, project_uuid, filename):
+        """Return a FileResponse of a package scan data as a zip file."""
+        scan_results_url = self.get_scan_action_url(project_uuid, "results")
+        scan_results = self.fetch_scan_data(scan_results_url)
+        scan_summary_url = self.get_scan_action_url(project_uuid, "summary")
+        scan_summary = self.fetch_scan_data(scan_summary_url)
+
+        in_memory_zip = io.BytesIO()
+        with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
+            zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
+            zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
+        in_memory_zip.seek(0)
+
+        return in_memory_zip
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [

@@ -10,6 +10,7 @@ from collections import defaultdict
 
 from django.db import transaction
 from django.forms.widgets import HiddenInput
+from django.http import FileResponse
 
 import django_filters
 from packageurl.contrib import url2purl
@@ -30,7 +31,6 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
-from component_catalog.views import scan_data_as_zip_response
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -942,8 +942,14 @@ class PackageViewSet(
 
         project_uuid = scan_infos.get("uuid")
         filename = package.filename or package.package_url_filename
-        filename = f"{filename}_scan.zip"
-        return scan_data_as_zip_response(scancodeio, project_uuid, filename)
+
+        scan_data_as_zip = scancodeio.scan_data_as_zip(project_uuid, filename)
+        return FileResponse(
+            scan_data_as_zip,
+            filename=f"{filename}_scan.zip",
+            as_attachment=True,
+            content_type="application/zip",
+        )
 
     @action(detail=False, methods=["post"], name="Package Add")
     def add(self, request):

@@ -6,9 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import io
 import json
-import zipfile
 from collections import Counter
 from operator import itemgetter
 from urllib.parse import quote_plus
@@ -1635,27 +1633,6 @@ def component_create_ajax_view(request):
         return HttpResponse(rendered_form)
 
 
-def scan_data_as_zip_response(scancodeio, project_uuid, filename):
-    """Return a FileResponse of a package scan data (results, summary) as a zip file."""
-    scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
-    scan_results = scancodeio.fetch_scan_data(scan_results_url)
-    scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
-    scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
-
-    in_memory_zip = io.BytesIO()
-    with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
-        zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
-        zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
-    in_memory_zip.seek(0)
-
-    return FileResponse(
-        in_memory_zip,
-        filename=filename,
-        as_attachment=True,
-        content_type="application/zip",
-    )
-
-
 @login_required
 def send_scan_data_as_file_view(request, project_uuid, filename):
     dataspace = request.user.dataspace
@@ -1666,8 +1643,13 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
     if not scancodeio.is_available():
         raise Http404("The ScanCode.io service is not available")
 
-    filename = f"{filename}_scan.zip"
-    return scan_data_as_zip_response(scancodeio, project_uuid, filename)
+    scan_data_as_zip = scancodeio.scan_data_as_zip(project_uuid, filename)
+    return FileResponse(
+        scan_data_as_zip,
+        filename=f"{filename}_scan.zip",
+        as_attachment=True,
+        content_type="application/zip",
+    )
 
 
 @login_required
