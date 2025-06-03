@@ -15,6 +15,7 @@ import django_filters
 from packageurl.contrib import url2purl
 from packageurl.contrib.django.filters import PackageURLFilter
 from rest_framework import serializers
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.fields import ListField
 from rest_framework.response import Response
@@ -29,6 +30,7 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
 from component_catalog.models import Subcomponent
+from component_catalog.views import scan_data_as_zip_response
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.scancodeio import ScanCodeIO
@@ -919,18 +921,9 @@ class PackageViewSet(
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
 
-    # TODO: Remove duplication with send_scan_data_as_file_view
     @action(detail=True)
     def download_scan_data(self, request, uuid):
-        import io
-        import json
-        import zipfile
-
-        from django.http import FileResponse
-
-        from rest_framework import status
-        from rest_framework.response import Response
-
+        """Download package scan data: results and sumary, as a zip file."""
         package = self.get_object()
         dataspace = request.user.dataspace
 
@@ -948,25 +941,9 @@ class PackageViewSet(
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
         project_uuid = scan_infos.get("uuid")
-
-        scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
-        scan_results = scancodeio.fetch_scan_data(scan_results_url)
-        scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
-        scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
-
         filename = package.filename or package.package_url_filename
-        in_memory_zip = io.BytesIO()
-        with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
-            zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
-            zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
-        in_memory_zip.seek(0)
-
-        return FileResponse(
-            in_memory_zip,
-            filename=filename,
-            as_attachment=True,
-            content_type="application/zip",
-        )
+        filename = f"{filename}_scan.zip"
+        return scan_data_as_zip_response(scancodeio, project_uuid, filename)
 
     @action(detail=False, methods=["post"], name="Package Add")
     def add(self, request):

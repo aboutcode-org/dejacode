@@ -1507,7 +1507,9 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.get(scan_data_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/zip", response["content-type"])
-        self.assertEqual('attachment; filename="package1.zip"', response["content-disposition"])
+        self.assertEqual(
+            'attachment; filename="package1.zip_scan.zip"', response["content-disposition"]
+        )
 
     def test_api_package_protected_fields_as_read_only(self):
         policy = UsagePolicy.objects.create(
