@@ -136,7 +136,7 @@ postgresdb_clean:
 	@${SUDO_POSTGRES} dropuser '${DB_USERNAME}' || true
 
 run:
-	${MANAGE} runserver 8000 --insecure
+	DJANGO_RUNSERVER_HIDE_WARNING=true ${MANAGE} runserver 8000 --insecure
 
 worker:
 	${MANAGE} rqworker
