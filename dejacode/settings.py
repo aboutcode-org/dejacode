@@ -317,6 +317,7 @@ PREREQ_APPS = [
     "django.contrib.admin",
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_yasg",
     "django_rq",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -625,7 +626,6 @@ REST_FRAMEWORK = {
         "user": REST_API_RATE_THROTTLE,
     },
     "DEFAULT_PAGINATION_CLASS": "dje.api_custom.PageSizePagination",
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
     "VIEW_NAME_FUNCTION": "dje.api_custom.get_view_name",
     "URL_FIELD_NAME": "api_url",  # Default 'url' used as a field on the Package model
 }

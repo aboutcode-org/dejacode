@@ -1,9 +1,0 @@
-Metadata-Version: 2.1
-Name: itypes
-Version: 1.2.0
-Summary: Simple immutable types for python.
-Home-page: http://github.com/PavanTatikonda/itypes
-Author: Tom Christie
-Author-email: tom@tomchristie.com
-License: BSD
-Description: # itypes
