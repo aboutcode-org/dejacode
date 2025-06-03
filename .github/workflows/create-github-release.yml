@@ -16,3 +16,4 @@ jobs:
         with:
           generate_release_notes: true
           draft: false
+          files: dist/*

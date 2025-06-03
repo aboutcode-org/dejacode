@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 LABEL org.opencontainers.image.source="https://github.com/aboutcode-org/dejacode"
 LABEL org.opencontainers.image.description="DejaCode"
