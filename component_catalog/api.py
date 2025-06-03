@@ -943,6 +943,10 @@ class PackageViewSet(
             download_url=package.download_url,
             dataspace=dataspace,
         )
+        if not scan_infos:
+            message = {"error": "Scan results are not available"}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
         project_uuid = scan_infos.get("uuid")
 
         scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")

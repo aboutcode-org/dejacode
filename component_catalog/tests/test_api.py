@@ -1475,6 +1475,40 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             'attachment; filename="package1.zip_about.zip"', response["content-disposition"]
         )
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_package_viewset_download_scan_data_action(
+        self, mock_is_available, mock_fetch_scan_data, mock_get_scan_results
+    ):
+        scan_data_url = reverse("api_v2:package-download-scan-data", args=[self.package1.uuid])
+        mock_fetch_scan_data.return_value = {}
+        mock_get_scan_results.return_value = None
+
+        response = self.client.get(scan_data_url)
+        self.assertEqual(403, response.status_code)
+        response = self.client.post(scan_data_url)
+        self.assertEqual(403, response.status_code)
+
+        self.client.login(username=self.base_user.username, password="secret")
+        mock_is_available.return_value = False
+        response = self.client.get(scan_data_url)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"error": "The ScanCode.io service is not available"}
+        self.assertEqual(expected, response.data)
+
+        mock_is_available.return_value = True
+        response = self.client.get(scan_data_url)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"error": "Scan results are not available"}
+        self.assertEqual(expected, response.data)
+
+        mock_get_scan_results.return_value = {"url": ""}
+        response = self.client.get(scan_data_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/zip", response["content-type"])
+        self.assertEqual('attachment; filename="package1.zip"', response["content-disposition"])
+
     def test_api_package_protected_fields_as_read_only(self):
         policy = UsagePolicy.objects.create(
             label="PackagePolicy",
