@@ -12,7 +12,7 @@ Release notes
   * `/packages/{uuid}/scan_results/` Scan results.
   * `/packages/{uuid}/scan_summary/` Scan summary.
   * `/packages/{uuid}/scan_data_download_zip/` Download all scan data: results and
-    summary, as a zip file.
+  summary, as a zip file.
   https://github.com/aboutcode-org/dejacode/issues/272
 
 - Add new `is_locked` "Locked inventory" field to the ProductStatus model.
