@@ -1471,10 +1471,7 @@ def package_scan_view(request, dataspace, uuid):
 
             if is_hxr:
                 template = "product_portfolio/tables/scan_progress_cell.html"
-                project_info = scancodeio.get_project_info(
-                    download_url=download_url,
-                    dataspace=dataspace,
-                )
+                project_info = scancodeio.get_project_info(download_url=download_url)
                 project_info["download_result_url"] = get_scan_results_as_file_url(project_info)
 
                 status = scancodeio.get_status_from_scan_results(project_info)
@@ -1484,7 +1481,7 @@ def package_scan_view(request, dataspace, uuid):
 
                 context = {
                     "package": package,
-                    "scan": scan,
+                    "scan": project_info,
                     "view_url": package.get_absolute_url(),
                     "needs_refresh": needs_refresh,
                 }
@@ -1513,22 +1510,19 @@ def get_scan_progress_htmx_view(request, dataspace, uuid):
     package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     scancodeio = ScanCodeIO(dataspace)
 
-    scan = scancodeio.get_project_info(
-        download_url=package.download_url,
-        dataspace=dataspace,
-    )
-    if not scan:
+    project_info = scancodeio.get_project_info(download_url=package.download_url)
+    if not project_info:
         raise Http404("Scan not found.")
 
-    status = scancodeio.get_status_from_scan_results(scan)
+    status = scancodeio.get_status_from_scan_results(project_info)
     needs_refresh = False
     if status in ["running", "not_started", "queued"]:
         needs_refresh = True
 
-    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+    project_info["download_result_url"] = get_scan_results_as_file_url(project_info)
     context = {
         "package": package,
-        "scan": scan,
+        "scan": project_info,
         "view_url": package.get_absolute_url(),
         "needs_refresh": needs_refresh,
     }
@@ -2421,11 +2415,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         dataspace = user.dataspace
         scancodeio = ScanCodeIO(dataspace)
 
-        project_info = scancodeio.get_project_info(
-            download_url=self.object.download_url,
-            dataspace=dataspace,
-        )
-
+        project_info = scancodeio.get_project_info(download_url=self.object.download_url)
         if not project_info:
             return
 

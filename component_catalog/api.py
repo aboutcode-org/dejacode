@@ -932,10 +932,7 @@ class PackageViewSet(
             message = {"error": "The ScanCode.io service is not available"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-        project_info = scancodeio.get_project_info(
-            download_url=package.download_url,
-            dataspace=dataspace,
-        )
+        project_info = scancodeio.get_project_info(download_url=package.download_url)
         if not project_info:
             message = {"error": "Scan results are not available"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)

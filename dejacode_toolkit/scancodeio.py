@@ -41,19 +41,19 @@ class ScanCodeIO(BaseService):
         detail_url = self.get_scan_detail_url(project_uuid)
         return f"{detail_url}{action_name}/"
 
-    def get_project_info(self, download_url, dataspace):
+    def get_project_info(self, download_url):
         """
         Return the Scan project general informations for the provided `download_url`.
         This includes data about the input sources, pipelines runs, and URLs to
         results and summary.
         """
-        scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
+        scan_info = self.fetch_scan_info(uri=download_url)
 
         if not scan_info or scan_info.get("count") < 1:
             return
 
         # In case multiple results entries are returned for the `download_url`
-        # within this `dataspace`, the first one (most recent scan,
+        # within this `self.dataspace`, the first one (most recent scan,
         # latest created date) is always used.
         # This could happen if a scan was trigger for the same URL by a
         # different user within a common Dataspace.
@@ -131,13 +131,11 @@ class ScanCodeIO(BaseService):
             if response.get("count") == 1:
                 return response.get("results")[0]
 
-    def fetch_scan_info(self, uri, user=None, dataspace=None):
+    def fetch_scan_info(self, uri, user=None):
         payload = {
             "name__startswith": get_hash_uid(uri),
+            "name__contains": get_hash_uid(self.dataspace.uuid),
         }
-
-        if dataspace:
-            payload["name__contains"] = get_hash_uid(dataspace.uuid)
 
         if user:
             payload["name__endswith"] = get_hash_uid(user.uuid)
@@ -181,11 +179,7 @@ class ScanCodeIO(BaseService):
         values_from_scan = {}  # {'model_field': 'value_from_scan'}
         updated_fields = []
 
-        project_info = self.get_project_info(
-            download_url=package.download_url,
-            dataspace=package.dataspace,
-        )
-
+        project_info = self.get_project_info(download_url=package.download_url)
         if not project_info:
             logger.debug(f'{self.label}: scan not available for package="{package}"')
             return []

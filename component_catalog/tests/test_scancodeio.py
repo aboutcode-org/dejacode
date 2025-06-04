@@ -113,21 +113,16 @@ class ScanCodeIOTestCase(TestCase):
 
         scancodeio.fetch_scan_info(uri=uri)
         params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__startswith": get_hash_uid(uri)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_info(
-            uri=uri,
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-        )
-        params = mock_session_get.call_args.kwargs["params"]
         expected = {
-            "format": "json",
             "name__startswith": get_hash_uid(uri),
             "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
+            "format": "json",
         }
+        self.assertEqual(expected, params)
+
+        scancodeio.fetch_scan_info(uri=uri, user=self.basic_user)
+        params = mock_session_get.call_args.kwargs["params"]
+        expected["name__endswith"] = get_hash_uid(self.basic_user.uuid)
         self.assertEqual(expected, params)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
