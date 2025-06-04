@@ -18,6 +18,7 @@ from packageurl.contrib.django.filters import PackageURLFilter
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.fields import ListField
 from rest_framework.response import Response
 
@@ -866,6 +867,16 @@ def collect_create_scan(download_url, user):
     return package
 
 
+class ScanCodeUnavailable(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The ScanCode.io service is not available"
+
+
+class ScanDataUnavailable(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Scan data is not available"
+
+
 class PackageViewSet(
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
@@ -921,21 +932,23 @@ class PackageViewSet(
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
 
-    @action(detail=True, name="Scan informations")
-    def scan_info(self, request, uuid):
-        """Return informations about the scan from ScanCode.io."""
-        package = self.get_object()
-        dataspace = request.user.dataspace
-
-        scancodeio = ScanCodeIO(dataspace)
+    def _get_scancodeio_project_info(self, scancodeio, package):
         if not scancodeio.is_available():
-            message = {"error": "The ScanCode.io service is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+            raise ScanCodeUnavailable()
 
         project_info = scancodeio.get_project_info(download_url=package.download_url)
         if not project_info:
-            message = {"error": "Scan data is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+            raise ScanDataUnavailable()
+
+        return project_info
+
+    @action(detail=True, name="Scan informations")
+    def scan_info(self, request, uuid):
+        """Return information about the scan from ScanCode.io."""
+        package = self.get_object()
+        dataspace = request.user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
 
         return Response(project_info)
 
@@ -944,16 +957,8 @@ class PackageViewSet(
         """Return the scan results from ScanCode.io."""
         package = self.get_object()
         dataspace = request.user.dataspace
-
         scancodeio = ScanCodeIO(dataspace)
-        if not scancodeio.is_available():
-            message = {"error": "The ScanCode.io service is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
-
-        project_info = scancodeio.get_project_info(download_url=package.download_url)
-        if not project_info:
-            message = {"error": "Scan data is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
 
         project_uuid = project_info.get("uuid")
         scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
@@ -966,16 +971,8 @@ class PackageViewSet(
         """Return the scan summary from ScanCode.io."""
         package = self.get_object()
         dataspace = request.user.dataspace
-
         scancodeio = ScanCodeIO(dataspace)
-        if not scancodeio.is_available():
-            message = {"error": "The ScanCode.io service is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
-
-        project_info = scancodeio.get_project_info(download_url=package.download_url)
-        if not project_info:
-            message = {"error": "Scan data is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
 
         project_uuid = project_info.get("uuid")
         scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
@@ -988,16 +985,8 @@ class PackageViewSet(
         """Download scan data: results and summary, as a zip file."""
         package = self.get_object()
         dataspace = request.user.dataspace
-
         scancodeio = ScanCodeIO(dataspace)
-        if not scancodeio.is_available():
-            message = {"error": "The ScanCode.io service is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
-
-        project_info = scancodeio.get_project_info(download_url=package.download_url)
-        if not project_info:
-            message = {"error": "Scan data is not available"}
-            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
 
         project_uuid = project_info.get("uuid")
         filename = package.filename or package.package_url_filename

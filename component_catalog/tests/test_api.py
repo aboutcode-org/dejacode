@@ -1476,35 +1476,94 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         )
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
-    def test_api_package_viewset_download_scan_data_action(
-        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
+    def test_api_package_viewset_scan_actions_errors(
+        self, mock_is_available, mock_get_project_info
     ):
-        scan_data_url = reverse("api_v2:package-download-scan-data", args=[self.package1.uuid])
-        mock_fetch_scan_data.return_value = {}
-        mock_get_project_info.return_value = None
+        scan_actions_urls = [
+            reverse("api_v2:package-scan-info", args=[self.package1.uuid]),
+            reverse("api_v2:package-scan-results", args=[self.package1.uuid]),
+            reverse("api_v2:package-scan-summary", args=[self.package1.uuid]),
+            reverse("api_v2:package-scan-data-download-zip", args=[self.package1.uuid]),
+        ]
 
-        response = self.client.get(scan_data_url)
-        self.assertEqual(403, response.status_code)
-        response = self.client.post(scan_data_url)
-        self.assertEqual(403, response.status_code)
+        mock_get_project_info.return_value = None
+        for action_url in scan_actions_urls:
+            response = self.client.get(action_url)
+            self.assertEqual(403, response.status_code, msg=action_url)
+            response = self.client.post(action_url)
+            self.assertEqual(403, response.status_code, msg=action_url)
 
         self.client.login(username=self.base_user.username, password="secret")
         mock_is_available.return_value = False
-        response = self.client.get(scan_data_url)
-        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"error": "The ScanCode.io service is not available"}
-        self.assertEqual(expected, response.data)
+        for action_url in scan_actions_urls:
+            response = self.client.get(action_url)
+            self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code, msg=action_url)
+            expected = "The ScanCode.io service is not available"
+            self.assertEqual(expected, str(response.data["detail"]), msg=action_url)
 
         mock_is_available.return_value = True
-        response = self.client.get(scan_data_url)
-        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"error": "Scan results are not available"}
-        self.assertEqual(expected, response.data)
+        for action_url in scan_actions_urls:
+            response = self.client.get(action_url)
+            self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code, msg=action_url)
+            expected = "Scan data is not available"
+            self.assertEqual(expected, str(response.data["detail"]), msg=action_url)
 
-        mock_get_project_info.return_value = {"url": ""}
-        response = self.client.get(scan_data_url)
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_package_viewset_scan_info_action(self, mock_is_available, mock_get_project_info):
+        self.client.login(username=self.base_user.username, password="secret")
+        action_url = reverse("api_v2:package-scan-info", args=[self.package1.uuid])
+        mock_is_available.return_value = True
+        project_info = {"uuid": "abcdef"}
+        mock_get_project_info.return_value = project_info
+
+        response = self.client.get(action_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(project_info, response.data)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_package_viewset_scan_results_action(
+        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
+    ):
+        self.client.login(username=self.base_user.username, password="secret")
+        action_url = reverse("api_v2:package-scan-results", args=[self.package1.uuid])
+        mock_is_available.return_value = True
+        mock_get_project_info.return_value = {"uuid": "abcdef"}
+        mock_fetch_scan_data.return_value = {"results": ""}
+        response = self.client.get(action_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"results": ""}, response.data)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_package_viewset_scan_summary_action(
+        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
+    ):
+        self.client.login(username=self.base_user.username, password="secret")
+        action_url = reverse("api_v2:package-scan-summary", args=[self.package1.uuid])
+        mock_is_available.return_value = True
+        mock_get_project_info.return_value = {"uuid": "abcdef"}
+        mock_fetch_scan_data.return_value = {"summary": ""}
+        response = self.client.get(action_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"summary": ""}, response.data)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_package_viewset_scan_data_download_zip_action(
+        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
+    ):
+        self.client.login(username=self.base_user.username, password="secret")
+        action_url = reverse("api_v2:package-scan-data-download-zip", args=[self.package1.uuid])
+        mock_is_available.return_value = True
+        mock_get_project_info.return_value = {"uuid": "abcdef"}
+        mock_fetch_scan_data.return_value = {}
+        response = self.client.get(action_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/zip", response["content-type"])
         self.assertEqual(

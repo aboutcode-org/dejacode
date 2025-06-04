@@ -70,7 +70,9 @@ __version__ = get_version(VERSION)
 
 # Turn off the warnings for the following modules.
 warnings.filterwarnings("ignore", module="cyclonedx")
+warnings.filterwarnings("ignore", module="clamd")
 warnings.filterwarnings("ignore", category=FutureWarning, module="rq_scheduler.utils")
+warnings.filterwarnings("ignore", category=FutureWarning, module="django.forms.formsets")
 
 
 def command_line():
