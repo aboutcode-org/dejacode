@@ -113,21 +113,16 @@ class ScanCodeIOTestCase(TestCase):
 
         scancodeio.fetch_scan_info(uri=uri)
         params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__startswith": get_hash_uid(uri)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_info(
-            uri=uri,
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-        )
-        params = mock_session_get.call_args.kwargs["params"]
         expected = {
-            "format": "json",
             "name__startswith": get_hash_uid(uri),
             "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
+            "format": "json",
         }
+        self.assertEqual(expected, params)
+
+        scancodeio.fetch_scan_info(uri=uri, user=self.basic_user)
+        params = mock_session_get.call_args.kwargs["params"]
+        expected["name__endswith"] = get_hash_uid(self.basic_user.uuid)
         self.assertEqual(expected, params)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
@@ -166,9 +161,9 @@ class ScanCodeIOTestCase(TestCase):
         }
         self.assertIsNone(scancodeio.find_project(name="project_name"))
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
-    def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_scan_results):
+    def test_scancodeio_update_from_scan(self, mock_fetch_scan_data, mock_get_project_info):
         license_policy = make_usage_policy(self.dataspace, model=License)
         package_policy = make_usage_policy(self.dataspace, model=Package)
         make_associated_policy(license_policy, package_policy)
@@ -180,13 +175,13 @@ class ScanCodeIOTestCase(TestCase):
         self.package1.save()
         scancodeio = ScanCodeIO(self.dataspace)
 
-        mock_get_scan_results.return_value = None
+        mock_get_project_info.return_value = None
         mock_fetch_scan_data.return_value = None
 
         updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 
-        mock_get_scan_results.return_value = {"url": "https://scancode.io/"}
+        mock_get_project_info.return_value = {"url": "https://scancode.io/"}
         updated_fields = scancodeio.update_from_scan(self.package1, self.super_user)
         self.assertEqual([], updated_fields)
 

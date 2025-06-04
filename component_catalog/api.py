@@ -10,12 +10,15 @@ from collections import defaultdict
 
 from django.db import transaction
 from django.forms.widgets import HiddenInput
+from django.http import FileResponse
 
 import django_filters
 from packageurl.contrib import url2purl
 from packageurl.contrib.django.filters import PackageURLFilter
 from rest_framework import serializers
+from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.fields import ListField
 from rest_framework.response import Response
 
@@ -864,6 +867,16 @@ def collect_create_scan(download_url, user):
     return package
 
 
+class ScanCodeUnavailable(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The ScanCode.io service is not available"
+
+
+class ScanDataUnavailable(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Scan data is not available"
+
+
 class PackageViewSet(
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
@@ -918,6 +931,73 @@ class PackageViewSet(
     def about(self, request, uuid):
         package = self.get_object()
         return Response({"about_data": package.as_about_yaml()})
+
+    def _get_scancodeio_project_info(self, scancodeio, package):
+        if not scancodeio.is_available():
+            raise ScanCodeUnavailable()
+
+        project_info = scancodeio.get_project_info(download_url=package.download_url)
+        if not project_info:
+            raise ScanDataUnavailable()
+
+        return project_info
+
+    @action(detail=True, name="Scan informations")
+    def scan_info(self, request, uuid):
+        """Return information about the scan from ScanCode.io."""
+        package = self.get_object()
+        dataspace = request.user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
+
+        return Response(project_info)
+
+    @action(detail=True, name="Scan results")
+    def scan_results(self, request, uuid):
+        """Return the scan results from ScanCode.io."""
+        package = self.get_object()
+        dataspace = request.user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
+
+        project_uuid = project_info.get("uuid")
+        scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
+        scan_results = scancodeio.fetch_scan_data(scan_results_url)
+
+        return Response(scan_results)
+
+    @action(detail=True, name="Scan summary")
+    def scan_summary(self, request, uuid):
+        """Return the scan summary from ScanCode.io."""
+        package = self.get_object()
+        dataspace = request.user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
+
+        project_uuid = project_info.get("uuid")
+        scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
+        scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
+
+        return Response(scan_summary)
+
+    @action(detail=True, name="Scan data (download as .zip)")
+    def scan_data_download_zip(self, request, uuid):
+        """Download scan data: results and summary, as a zip file."""
+        package = self.get_object()
+        dataspace = request.user.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+        project_info = self._get_scancodeio_project_info(scancodeio, package)
+
+        project_uuid = project_info.get("uuid")
+        filename = package.filename or package.package_url_filename
+
+        scan_data_as_zip = scancodeio.scan_data_as_zip(project_uuid, filename)
+        return FileResponse(
+            scan_data_as_zip,
+            filename=f"{filename}_scan.zip",
+            as_attachment=True,
+            content_type="application/zip",
+        )
 
     @action(detail=False, methods=["post"], name="Package Add")
     def add(self, request):

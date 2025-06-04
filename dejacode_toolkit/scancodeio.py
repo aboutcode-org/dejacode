@@ -6,7 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import io
 import json
+import zipfile
 from hashlib import md5
 from urllib.parse import quote_plus
 
@@ -39,21 +41,25 @@ class ScanCodeIO(BaseService):
         detail_url = self.get_scan_detail_url(project_uuid)
         return f"{detail_url}{action_name}/"
 
-    def get_scan_results(self, download_url, dataspace):
-        scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
+    def get_project_info(self, download_url):
+        """
+        Return the Scan project general informations for the provided `download_url`.
+        This includes data about the input sources, pipelines runs, and URLs to
+        results and summary.
+        """
+        scan_info = self.fetch_scan_info(uri=download_url)
 
         if not scan_info or scan_info.get("count") < 1:
             return
 
         # In case multiple results entries are returned for the `download_url`
-        # within this `dataspace`, the first one (most recent scan,
+        # within this `self.dataspace`, the first one (most recent scan,
         # latest created date) is always used.
         # This could happen if a scan was trigger for the same URL by a
         # different user within a common Dataspace.
         # Note that this possibility is not available from the DejaCode UI if
         # scan results are already available (Scan button is hidden in that case).
-        scan_results = scan_info.get("results")[0]
-        return scan_results
+        return scan_info.get("results")[0]
 
     def submit_scan(self, uri, user_uuid, dataspace_uuid):
         data = {
@@ -125,13 +131,11 @@ class ScanCodeIO(BaseService):
             if response.get("count") == 1:
                 return response.get("results")[0]
 
-    def fetch_scan_info(self, uri, user=None, dataspace=None):
+    def fetch_scan_info(self, uri, user=None):
         payload = {
             "name__startswith": get_hash_uid(uri),
+            "name__contains": get_hash_uid(self.dataspace.uuid),
         }
-
-        if dataspace:
-            payload["name__contains"] = get_hash_uid(dataspace.uuid)
 
         if user:
             payload["name__endswith"] = get_hash_uid(user.uuid)
@@ -175,16 +179,12 @@ class ScanCodeIO(BaseService):
         values_from_scan = {}  # {'model_field': 'value_from_scan'}
         updated_fields = []
 
-        scan_results = self.get_scan_results(
-            download_url=package.download_url,
-            dataspace=package.dataspace,
-        )
-
-        if not scan_results:
+        project_info = self.get_project_info(download_url=package.download_url)
+        if not project_info:
             logger.debug(f'{self.label}: scan not available for package="{package}"')
             return []
 
-        summary_url = scan_results.get("url").split("?")[0] + "summary/"
+        summary_url = project_info.get("url").split("?")[0] + "summary/"
         scan_summary = self.fetch_scan_data(summary_url)
 
         if not scan_summary:
@@ -260,6 +260,21 @@ class ScanCodeIO(BaseService):
         """Return the list of dependencies for the provided `project_uuid`."""
         api_url = self.get_scan_action_url(project_uuid, "dependencies")
         return self.fetch_results(api_url)
+
+    def scan_data_as_zip(self, project_uuid, filename):
+        """Return a FileResponse of a package scan data as a zip file."""
+        scan_results_url = self.get_scan_action_url(project_uuid, "results")
+        scan_results = self.fetch_scan_data(scan_results_url)
+        scan_summary_url = self.get_scan_action_url(project_uuid, "summary")
+        scan_summary = self.fetch_scan_data(scan_summary_url)
+
+        in_memory_zip = io.BytesIO()
+        with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
+            zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
+            zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
+        in_memory_zip.seek(0)
+
+        return in_memory_zip
 
     # (label, scan_field, model_field, input_type)
     SCAN_SUMMARY_FIELDS = [

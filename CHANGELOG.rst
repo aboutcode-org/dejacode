@@ -7,6 +7,14 @@ Release notes
   https://github.com/aboutcode-org/dejacode/pull/315
   https://github.com/aboutcode-org/dejacode/pull/312
 
+- Add REST API "actions" in package endpoint to track the scan status and fetch results:
+  * `/packages/{uuid}/scan_info/` Scan information including the current status.
+  * `/packages/{uuid}/scan_results/` Scan results.
+  * `/packages/{uuid}/scan_summary/` Scan summary.
+  * `/packages/{uuid}/scan_data_download_zip/` Download all scan data: results and
+  summary, as a zip file.
+  https://github.com/aboutcode-org/dejacode/issues/272
+
 - Add new `is_locked` "Locked inventory" field to the ProductStatus model.
   When a Product is locked through his status, its inventory cannot be modified.
   https://github.com/aboutcode-org/dejacode/issues/189

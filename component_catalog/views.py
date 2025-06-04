@@ -6,9 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import io
 import json
-import zipfile
 from collections import Counter
 from operator import itemgetter
 from urllib.parse import quote_plus
@@ -1473,20 +1471,17 @@ def package_scan_view(request, dataspace, uuid):
 
             if is_hxr:
                 template = "product_portfolio/tables/scan_progress_cell.html"
-                scan = scancodeio.get_scan_results(
-                    download_url=download_url,
-                    dataspace=dataspace,
-                )
-                scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                project_info = scancodeio.get_project_info(download_url=download_url)
+                project_info["download_result_url"] = get_scan_results_as_file_url(project_info)
 
-                status = scancodeio.get_status_from_scan_results(scan)
+                status = scancodeio.get_status_from_scan_results(project_info)
                 needs_refresh = False
                 if status in ["running", "not_started", "queued"]:
                     needs_refresh = True
 
                 context = {
                     "package": package,
-                    "scan": scan,
+                    "scan": project_info,
                     "view_url": package.get_absolute_url(),
                     "needs_refresh": needs_refresh,
                 }
@@ -1515,22 +1510,19 @@ def get_scan_progress_htmx_view(request, dataspace, uuid):
     package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     scancodeio = ScanCodeIO(dataspace)
 
-    scan = scancodeio.get_scan_results(
-        download_url=package.download_url,
-        dataspace=dataspace,
-    )
-    if not scan:
+    project_info = scancodeio.get_project_info(download_url=package.download_url)
+    if not project_info:
         raise Http404("Scan not found.")
 
-    status = scancodeio.get_status_from_scan_results(scan)
+    status = scancodeio.get_status_from_scan_results(project_info)
     needs_refresh = False
     if status in ["running", "not_started", "queued"]:
         needs_refresh = True
 
-    scan["download_result_url"] = get_scan_results_as_file_url(scan)
+    project_info["download_result_url"] = get_scan_results_as_file_url(project_info)
     context = {
         "package": package,
-        "scan": scan,
+        "scan": project_info,
         "view_url": package.get_absolute_url(),
         "needs_refresh": needs_refresh,
     }
@@ -1642,20 +1634,16 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
-    scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
-    scan_results = scancodeio.fetch_scan_data(scan_results_url)
-    scan_summary_url = scancodeio.get_scan_action_url(project_uuid, "summary")
-    scan_summary = scancodeio.fetch_scan_data(scan_summary_url)
+    if not scancodeio.is_available():
+        raise Http404("The ScanCode.io service is not available")
 
-    in_memory_zip = io.BytesIO()
-    with zipfile.ZipFile(in_memory_zip, "a", zipfile.ZIP_DEFLATED, False) as zipf:
-        zipf.writestr(f"{filename}_scan.json", json.dumps(scan_results, indent=2))
-        zipf.writestr(f"{filename}_summary.json", json.dumps(scan_summary, indent=2))
-
-    in_memory_zip.seek(0)
-    response = FileResponse(in_memory_zip, content_type="application/zip")
-    response["Content-Disposition"] = f'attachment; filename="{filename}_scan.zip"'
-    return response
+    scan_data_as_zip = scancodeio.scan_data_as_zip(project_uuid, filename)
+    return FileResponse(
+        scan_data_as_zip,
+        filename=f"{filename}_scan.zip",
+        as_attachment=True,
+        content_type="application/zip",
+    )
 
 
 @login_required
@@ -2427,15 +2415,11 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         dataspace = user.dataspace
         scancodeio = ScanCodeIO(dataspace)
 
-        scan = scancodeio.get_scan_results(
-            download_url=self.object.download_url,
-            dataspace=dataspace,
-        )
-
-        if not scan:
+        project_info = scancodeio.get_project_info(download_url=self.object.download_url)
+        if not project_info:
             return
 
-        summary_url = scan.get("url").split("?")[0] + "summary/"
+        summary_url = project_info.get("url").split("?")[0] + "summary/"
         scan_summary = scancodeio.fetch_scan_data(summary_url)
 
         tab_fields = []
@@ -2461,7 +2445,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             if scan_summary_fields:
                 tab_fields.extend(scan_summary_fields)
 
-        scan_status_fields = self.scan_status_fields(scan)
+        scan_status_fields = self.scan_status_fields(project_info)
         if scan_status_fields:
             tab_fields.extend(scan_status_fields)
 

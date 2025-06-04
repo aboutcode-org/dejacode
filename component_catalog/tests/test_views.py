@@ -2971,7 +2971,9 @@ class PackageUserViewsTestCase(TestCase):
         self.assertEqual(404, response.status_code)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
-    def test_send_scan_data_as_file_view(self, mock_fetch_scan_data):
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_send_scan_data_as_file_view(self, mock_is_available, mock_fetch_scan_data):
+        mock_is_available.return_value = True
         mock_fetch_scan_data.return_value = {}
 
         project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
