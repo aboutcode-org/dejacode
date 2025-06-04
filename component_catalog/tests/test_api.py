@@ -1475,15 +1475,15 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
             'attachment; filename="package1.zip_about.zip"', response["content-disposition"]
         )
 
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_scan_results")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
     def test_api_package_viewset_download_scan_data_action(
-        self, mock_is_available, mock_fetch_scan_data, mock_get_scan_results
+        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
     ):
         scan_data_url = reverse("api_v2:package-download-scan-data", args=[self.package1.uuid])
         mock_fetch_scan_data.return_value = {}
-        mock_get_scan_results.return_value = None
+        mock_get_project_info.return_value = None
 
         response = self.client.get(scan_data_url)
         self.assertEqual(403, response.status_code)
@@ -1503,7 +1503,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         expected = {"error": "Scan results are not available"}
         self.assertEqual(expected, response.data)
 
-        mock_get_scan_results.return_value = {"url": ""}
+        mock_get_project_info.return_value = {"url": ""}
         response = self.client.get(scan_data_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/zip", response["content-type"])

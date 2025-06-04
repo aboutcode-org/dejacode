@@ -41,8 +41,12 @@ class ScanCodeIO(BaseService):
         detail_url = self.get_scan_detail_url(project_uuid)
         return f"{detail_url}{action_name}/"
 
-    # TODO: Rename as get_project_infos
-    def get_scan_results(self, download_url, dataspace):
+    def get_project_info(self, download_url, dataspace):
+        """
+        Return the Scan project general informations for the provided `download_url`.
+        This includes data about the input sources, pipelines runs, and URLs to
+        results and summary.
+        """
         scan_info = self.fetch_scan_info(uri=download_url, dataspace=dataspace)
 
         if not scan_info or scan_info.get("count") < 1:
@@ -55,8 +59,7 @@ class ScanCodeIO(BaseService):
         # different user within a common Dataspace.
         # Note that this possibility is not available from the DejaCode UI if
         # scan results are already available (Scan button is hidden in that case).
-        scan_results = scan_info.get("results")[0]
-        return scan_results
+        return scan_info.get("results")[0]
 
     def submit_scan(self, uri, user_uuid, dataspace_uuid):
         data = {
@@ -178,16 +181,16 @@ class ScanCodeIO(BaseService):
         values_from_scan = {}  # {'model_field': 'value_from_scan'}
         updated_fields = []
 
-        scan_results = self.get_scan_results(
+        project_info = self.get_project_info(
             download_url=package.download_url,
             dataspace=package.dataspace,
         )
 
-        if not scan_results:
+        if not project_info:
             logger.debug(f'{self.label}: scan not available for package="{package}"')
             return []
 
-        summary_url = scan_results.get("url").split("?")[0] + "summary/"
+        summary_url = project_info.get("url").split("?")[0] + "summary/"
         scan_summary = self.fetch_scan_data(summary_url)
 
         if not scan_summary:

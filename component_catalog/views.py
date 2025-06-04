@@ -1471,13 +1471,13 @@ def package_scan_view(request, dataspace, uuid):
 
             if is_hxr:
                 template = "product_portfolio/tables/scan_progress_cell.html"
-                scan = scancodeio.get_scan_results(
+                project_info = scancodeio.get_project_info(
                     download_url=download_url,
                     dataspace=dataspace,
                 )
-                scan["download_result_url"] = get_scan_results_as_file_url(scan)
+                project_info["download_result_url"] = get_scan_results_as_file_url(project_info)
 
-                status = scancodeio.get_status_from_scan_results(scan)
+                status = scancodeio.get_status_from_scan_results(project_info)
                 needs_refresh = False
                 if status in ["running", "not_started", "queued"]:
                     needs_refresh = True
@@ -1513,7 +1513,7 @@ def get_scan_progress_htmx_view(request, dataspace, uuid):
     package = get_object_or_404(Package, uuid=uuid, dataspace=dataspace)
     scancodeio = ScanCodeIO(dataspace)
 
-    scan = scancodeio.get_scan_results(
+    scan = scancodeio.get_project_info(
         download_url=package.download_url,
         dataspace=dataspace,
     )
@@ -2421,15 +2421,15 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         dataspace = user.dataspace
         scancodeio = ScanCodeIO(dataspace)
 
-        scan = scancodeio.get_scan_results(
+        project_info = scancodeio.get_project_info(
             download_url=self.object.download_url,
             dataspace=dataspace,
         )
 
-        if not scan:
+        if not project_info:
             return
 
-        summary_url = scan.get("url").split("?")[0] + "summary/"
+        summary_url = project_info.get("url").split("?")[0] + "summary/"
         scan_summary = scancodeio.fetch_scan_data(summary_url)
 
         tab_fields = []
@@ -2455,7 +2455,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             if scan_summary_fields:
                 tab_fields.extend(scan_summary_fields)
 
-        scan_status_fields = self.scan_status_fields(scan)
+        scan_status_fields = self.scan_status_fields(project_info)
         if scan_status_fields:
             tab_fields.extend(scan_status_fields)
 
