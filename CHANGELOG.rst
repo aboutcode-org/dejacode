@@ -19,6 +19,11 @@ Release notes
   When a Product is locked through his status, its inventory cannot be modified.
   https://github.com/aboutcode-org/dejacode/issues/189
 
+- Add support for the following fields in ScanCode.io scan results to package:
+  download_url, repository_download_url, repository_homepage_url, bug_tracking_url,
+  code_view_url, vcs_url, api_data_url, size, md5, sha1, sha256, sha512.
+  https://github.com/aboutcode-org/dejacode/issues/255
+
 ### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.

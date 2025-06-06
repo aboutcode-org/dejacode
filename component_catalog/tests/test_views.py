@@ -2649,7 +2649,8 @@ class PackageUserViewsTestCase(TestCase):
         messages = list(response.context["messages"])
         expected = (
             "Values for package_url, license_expression, copyright, primary_language, "
-            "description, homepage_url, release_date, notice_text assigned to the package."
+            "description, download_url, homepage_url, release_date, notice_text "
+            "assigned to the package."
         )
         self.assertEqual(expected, str(messages[0]))
 
@@ -2665,7 +2666,7 @@ class PackageUserViewsTestCase(TestCase):
         history = History.objects.get_for_object(self.package1, action_flag=History.CHANGE).get()
         expected = (
             "Changed Package URL, Concluded license expression, Copyright, Primary language, "
-            "Description, Homepage URL, Release date and Notice text."
+            "Description, Download URL, Homepage URL, Release date and Notice text."
         )
         self.assertEqual(expected, history.get_change_message())
 

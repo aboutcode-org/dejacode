@@ -202,7 +202,12 @@ class ScanCodeIOTestCase(TestCase):
             "primary_language",
             "other_license_expression",
             "description",
+            "repository_download_url",
             "homepage_url",
+            "repository_homepage_url",
+            "bug_tracking_url",
+            "vcs_url",
+            "api_data_url",
             "keywords",
             "copyright",
         ]
@@ -227,9 +232,11 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual(self.super_user, self.package1.last_modified_by)
         history_entry = History.objects.get_for_object(self.package1).get()
         expected = (
-            "Automatically updated license_expression, declared_license_expression, holder, "
-            "primary_language, other_license_expression, description, homepage_url, "
-            "keywords, copyright from scan results"
+            "Automatically updated license_expression, declared_license_expression, "
+            "holder, primary_language, other_license_expression, description, "
+            "repository_download_url, homepage_url, repository_homepage_url, "
+            "bug_tracking_url, vcs_url, api_data_url, keywords, copyright from scan "
+            "results"
         )
         self.assertEqual(expected, history_entry.change_message)
 
@@ -262,25 +269,32 @@ class ScanCodeIOTestCase(TestCase):
                 "Development Status :: 5 - Production/Stable",
                 "Operating System :: OS Independent",
             ],
+            "homepage_url": "https://www.djangoproject.com/",
+            "repository_homepage_url": "https://www.djangoproject.com/",
+            "bug_tracking_url": "https://code.djangoproject.com/",
+            "code_view_url": "https://github.com/django/django",
+            "vcs_url": "https://github.com/django/django.git",
+            "download_url": "https://www.djangoproject.com/file.zip",
+            "repository_download_url": "https://www.djangoproject.com/file.zip",
+            "copyright": "Copyright",
+            "notice_text": "Notice",
+            "api_data_url": "https://www.djangoproject.com/api/data",
             # skipped, no values
             "description": "",
             # skipped, not a SCAN_PACKAGE_FIELD
             "is_key_file": 1,
         }
 
-        expected = {
-            "package_url": "pkg:maven/aopalliance/aopalliance@1.0",
-            "purl": "pkg:maven/aopalliance/aopalliance@1.0",
-            "license_expression": "mit",
-            "declared_license_expression": "mit",
-            "other_license_expression": "apache-2.0",
-            "primary_language": "Java",
-            "keywords": [
-                "json",
-                "Development Status :: 5 - Production/Stable",
-                "Operating System :: OS Independent",
-            ],
-        }
+        expected = detected_package.copy()
+        expected["package_url"] = "pkg:maven/aopalliance/aopalliance@1.0"
+        # Licenses are simplified
+        expected["license_expression"] = "mit"
+        expected["declared_license_expression"] = "mit"
+        expected["other_license_expression"] = "apache-2.0"
+        # Skipped
+        del expected["description"]
+        del expected["is_key_file"]
+
         mapped_data = ScanCodeIO.map_detected_package_data(detected_package)
         self.assertEqual(expected, mapped_data)
 
