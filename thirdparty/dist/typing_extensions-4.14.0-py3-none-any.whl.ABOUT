@@ -1,0 +1,18 @@
+about_resource: typing_extensions-4.14.0-py3-none-any.whl
+name: typing-extensions
+version: 4.14.0
+download_url: https://files.pythonhosted.org/packages/69/e0/552843e0d356fbb5256d21449fa957fa4eff3bbc135a74a691ee70c7c5da/typing_extensions-4.14.0-py3-none-any.whl
+package_url: pkg:pypi/typing-extensions@4.14.0
+license_expression: psf-2.0 AND unknown-license-reference
+copyright: Copyright typing-extensions project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: d27a9ceff49d98145c50076842fca792
+checksum_sha1: cf6c11529d6f6071e8ed3f0a9ab33b3195d399f4
+licenses:
+  - key: psf-2.0
+    name: PSF-2.0
+    file: psf-2.0.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

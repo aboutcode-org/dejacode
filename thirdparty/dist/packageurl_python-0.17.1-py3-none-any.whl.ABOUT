@@ -1,0 +1,14 @@
+about_resource: packageurl_python-0.17.1-py3-none-any.whl
+name: packageurl-python
+version: 0.17.1
+download_url: https://files.pythonhosted.org/packages/ae/ba/9c01f96eca2d1833fa787e695208d57a7a07f6531517040e523509ced368/packageurl_python-0.17.1-py3-none-any.whl
+package_url: pkg:pypi/packageurl-python@0.17.1
+license_expression: mit
+copyright: Copyright packageurl-python project contributors
+attribute: yes
+checksum_md5: 52e5d6ffcec0b9235b0f2b4fae0ae6d4
+checksum_sha1: 4553dd7d40b9ae7ac48abad1ddb3d54cad08b853
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
