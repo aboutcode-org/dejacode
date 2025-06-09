@@ -87,7 +87,7 @@ services:
     volumes:
       - ./etc/nginx/conf.d/:/etc/nginx/conf.d/
       - static:/var/dejacode/static/
-      - webroot:/var/www/letsencrypt/
+      - webroot:/var/www/html/
     depends_on:
       - web
     restart: always
