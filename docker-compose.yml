@@ -86,8 +86,8 @@ services:
       - "${NGINX_PUBLISHED_HTTPS_PORT:-443}:443"
     volumes:
       - ./etc/nginx/conf.d/:/etc/nginx/conf.d/
-      - /var/www/html:/var/www/html
       - static:/var/dejacode/static/
+      - webroot:/var/www/letsencrypt/
     depends_on:
       - web
     restart: always
@@ -107,3 +107,4 @@ volumes:
   clamav_data:
   static:
   media:
+  webroot:
