@@ -7,6 +7,17 @@ Release notes
   https://github.com/aboutcode-org/dejacode/pull/315
   https://github.com/aboutcode-org/dejacode/pull/312
 
+- Replace the hardcoded ``/var/www/html`` by a ``webroot`` named volume in
+  ``docker-compose.yml``.
+  In the Docker compose ``nginx`` service, the hardcoded ``/var/www/html`` was declared
+  as a volume which would cause issues when the ``/var/`` was not available on the
+  local machine.
+  The Docker volume directory ``/var/lib/docker/volumes/dejacode_webroot/_data`` can
+  now be used in place of ``/var/www/html`` as the ``certbot --webroot-path`` for
+  HTTP certificates management.
+  https://github.com/aboutcode-org/dejacode/issues/157
+  https://github.com/aboutcode-org/dejacode/pull/322
+
 - Add REST API "actions" in package endpoint to track the scan status and fetch results:
   * `/packages/{uuid}/scan_info/` Scan information including the current status.
   * `/packages/{uuid}/scan_results/` Scan results.
