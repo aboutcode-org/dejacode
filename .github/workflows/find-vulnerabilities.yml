@@ -13,7 +13,7 @@ jobs:
           sparse-checkout: setup.cfg
           sparse-checkout-cone-mode: false
 
-      - uses: nexB/scancode-action@alpha
+      - uses: nexB/scancode-action@main
         with:
           pipelines: "inspect_packages:StaticResolver,find_vulnerabilities"
         env:
