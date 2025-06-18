@@ -1,0 +1,21 @@
+about_resource: django_altcha-0.2.0-py3-none-any.whl
+name: django-altcha
+version: 0.2.0
+download_url: https://files.pythonhosted.org/packages/b4/c9/9b0e69197012ee9d448eded1e649b9e5ce07aacc9c0239b55739e739d79f/django_altcha-0.2.0-py3-none-any.whl
+package_url: pkg:pypi/django-altcha@0.2.0
+license_expression: apache-2.0 AND mit AND unknown-license-reference
+copyright: Copyright Daniel Regeci
+attribute: yes
+track_changes: yes
+checksum_md5: 8be5650b24d5e314c6917227d76c382f
+checksum_sha1: 9a25770991e3e8ce528b118db185265de3859ecb
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
