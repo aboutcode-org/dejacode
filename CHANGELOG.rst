@@ -35,6 +35,10 @@ Release notes
   code_view_url, vcs_url, api_data_url, size, md5, sha1, sha256, sha512.
   https://github.com/aboutcode-org/dejacode/issues/255
 
+- Add a Product REST API "action" endpoint to track product imports and their status:
+  * `/products/{uuid}/imports/`
+  https://github.com/aboutcode-org/dejacode/issues/273
+
 ### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.
