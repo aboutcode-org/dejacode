@@ -29,12 +29,24 @@ class Command(BaseCommand):
         "Cron jobs are tasks that run automatically at specified intervals."
     )
 
-    def handle(self, *args, **kwargs):
+    def add_arguments(self, parser):
+        super().add_arguments(parser)
+        parser.add_argument(
+            "--list",
+            action="store_true",
+            help="List the current scheduled cron jobs.",
+        )
+
+    def handle(self, *args, **options):
         if not settings.DEJACODE_ASYNC:
             self.stdout.write("SYNC mode detected, skipping cron job setup.")
             sys.exit(0)
 
         scheduler = django_rq.get_scheduler("default")
+
+        if options["list"]:
+            self.print_scheduled_jobs(scheduler)
+            sys.exit(0)
 
         # Cancel all existing cron jobs in the scheduler.
         # This ensures that the cron entries are always up-to-date in case their
@@ -42,7 +54,7 @@ class Command(BaseCommand):
         # from remaining in the scheduler, maintaining a clean and accurate schedule.
         cancel_all_scheduled_jobs(scheduler)
 
-        self.stdout.write("Schedule vulnerabilities update")
+        self.stdout.write("Schedule vulnerabilities update:")
         forever = None
         scheduler.cron(
             cron_string=settings.DEJACODE_VULNERABILITIES_CRON,  # 3am daily by default
@@ -54,6 +66,9 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS("Successfully set up cron jobs."))
+        self.print_scheduled_jobs(scheduler)
+
+    def print_scheduled_jobs(self, scheduler):
         self.stdout.write("Scheduled jobs next execution:")
         for job, scheduled_time in scheduler.get_jobs(with_times=True):
             msg = f" > {job.description} in {naturaltime(scheduled_time)} ({scheduled_time})"
