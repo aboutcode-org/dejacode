@@ -352,6 +352,41 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         product1 = Product.unsecured_objects.get(pk=self.product1.pk)
         self.assertEqual("Updated Name", product1.name)
 
+    def test_api_product_endpoint_imports_action(self):
+        url = reverse("api_v2:product-imports", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(0, self.product1.scancodeprojects.count())
+        self.assertEqual([], response.data)
+
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUCCESS,
+            input_file=ContentFile("Data", name="data.json"),
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, self.product1.scancodeprojects.count())
+        self.assertEqual(1, len(response.data))
+        entry = response.data[0]
+        self.assertEqual(ScanCodeProject.ProjectType.LOAD_SBOMS, entry["type"])
+        self.assertEqual("data.json", entry["input_filename"])
+        self.assertEqual(ScanCodeProject.Status.SUCCESS, entry["status"])
+        self.assertEqual([], entry["import_log"])
+        self.assertEqual({}, entry["results"])
+
     def test_api_product_endpoint_load_sboms_action(self):
         url = reverse("api_v2:product-load-sboms", args=[self.product1.uuid])
 

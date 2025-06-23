@@ -47,6 +47,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
 base_extra_kwargs = {
@@ -289,6 +290,26 @@ class PullProjectDataSerializer(serializers.Serializer):
     )
 
 
+class ScanCodeProjectSerializer(DataspacedSerializer):
+    input_filename = serializers.ReadOnlyField(source="input_file_filename")
+
+    class Meta:
+        model = ScanCodeProject
+        fields = (
+            "uuid",
+            "type",
+            "project_uuid",
+            "input_filename",
+            "update_existing_packages",
+            "scan_all_packages",
+            "status",
+            "import_log",
+            "results",
+            "created_date",
+            "last_modified_date",
+        )
+
+
 class ProductViewSet(
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
@@ -345,6 +366,18 @@ class ProductViewSet(
         """Add view/change/delete Object permissions to the Product creator."""
         super().perform_create(serializer)
         assign_all_object_permissions(self.request.user, serializer.instance)
+
+    @action(detail=True)
+    def imports(self, request, uuid):
+        """
+        List of Product Imports, including their current status, log, and results.
+
+        Statuses: "submitted", "importing", "success", "failure", "warning".
+        """
+        product = self.get_object()
+        scancode_projects = product.scancodeprojects.all()
+        projects_data = ScanCodeProjectSerializer(scancode_projects, many=True).data
+        return Response(projects_data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
     def load_sboms(self, request, *args, **kwargs):
