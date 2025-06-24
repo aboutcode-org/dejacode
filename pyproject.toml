@@ -1,3 +1,200 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dejacode"
+version = "5.3.1-dev"
+description = "Automate open source license compliance and ensure supply chain integrity"
+readme = "README.rst"
+requires-python = ">=3.13,<3.14"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+    { name = "nexB Inc.", email = "info@aboutcode.org" }
+]
+keywords = [
+    "open source", "scan", "license", "package", "dependency",
+    "copyright", "filetype", "author", "extract", "licensing",
+    "scancode", "scanpipe", "docker", "rootfs", "vm",
+    "virtual machine", "pipeline", "code analysis", "container"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Legal Industry",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities"
+]
+dependencies = [
+    # Base configuration tools
+    "setuptools==80.9.0",
+    "wheel==0.45.1",
+    "pip==25.1.1",
+    # Django
+    "Django==5.2.3",
+    "asgiref==3.8.1",
+    "typing_extensions==4.14.0",
+    "sqlparse==0.5.3",
+    # Django apps
+    "django-crispy-forms==2.4",
+    "crispy_bootstrap5==2025.6",
+    "django-grappelli==4.0.2",
+    "django-filter==25.1",
+    "django-registration==3.4",
+    "confusable_homoglyphs==3.3.1",
+    "django-guardian==3.0.0",
+    "django-environ==0.12.0",
+    "django-debug-toolbar==5.2.0",
+    # CAPTCHA
+    "altcha==0.2.0",
+    "django_altcha==0.2.0",
+    # REST API
+    "djangorestframework==3.16.0",
+    # API documentation
+    "drf-yasg==1.21.10",
+    "uritemplate==4.1.1",
+    "inflection==0.5.1",
+    "pytz==2025.2",
+    # Track failed login attempts
+    "django-axes==8.0.0",
+    # Multi-factor authentication
+    "django-otp==1.6.0",
+    "qrcode==8.2",
+    "pypng==0.20220715.0",
+    # Database
+    "psycopg==3.2.9",
+    # Cache
+    "redis==6.2.0",
+    # redis dependencies:
+    "packaging==25.0",
+    "pyparsing==3.2.3",
+    "async-timeout==5.0.1",
+    "Deprecated==1.2.18",
+    "wrapt==1.17.2",
+    # Antivirus
+    "clamd==1.0.2",
+    # Testing
+    "model_bakery==1.10.1",
+    # Task queue
+    "rq==2.3.3",
+    "django-rq==3.0.1",
+    "fakeredis==2.29.0",
+    # Scheduler
+    "rq-scheduler==0.14.0",
+    "crontab==1.0.4",
+    "freezegun==1.5.2",
+    # Libs
+    "certifi==2025.4.26",
+    "urllib3==2.4.0",
+    "python-dateutil==2.9.0.post0",
+    "python-mimeparse==2.0.0",
+    "PyJWT==2.10.1",
+    "natsort==8.4.0",
+    "six==1.17.0",
+    "requests==2.32.4",
+    "idna==3.10",
+    "charset-normalizer==3.4.2",
+    "PyYAML==6.0.2",
+    "cython==3.1.1",
+    "zipp==3.22.0",
+    "XlsxWriter==3.2.3",
+    # Markdown
+    "markdown==3.8",
+    "bleach==6.2.0",
+    "bleach_allowlist==1.0.3",
+    "webencodings==0.5.1",
+    # Authentication
+    "oauthlib==3.2.2",
+    "python3-openid==3.2.0",
+    "requests-oauthlib==2.0.0",
+    "defusedxml==0.7.1",
+    # LDAP Auth
+    "python-ldap==3.4.4",
+    "pyasn1==0.6.1",
+    "pyasn1-modules==0.4.2",
+    "django-auth-ldap==5.2.0",
+    # LDAP Testing
+    "mockldap==0.3.0.post1",
+    "funcparserlib==0.3.6",
+    # license expressions
+    "boolean.py==5.0",
+    "license-expression==30.4.1",
+    # Webhooks
+    "django-rest-hooks==1.6.1",
+    # django-notifications
+    "django_notifications_patched==2.0.0",
+    "jsonfield==3.1.0",
+    "swapper==1.4.0",
+    # AboutCode Toolkit
+    "aboutcode_toolkit==11.1.1",
+    "click==8.2.1",
+    "Jinja2==3.1.6",
+    "MarkupSafe==3.0.2",
+    "saneyaml==0.6.1",
+    "openpyxl==3.1.5",
+    "et-xmlfile==2.0.0",
+    # PackageURL
+    "packageurl-python==0.17.1",
+    # Gunicorn
+    "gunicorn==23.0.0",
+    # SPDX validation
+    "jsonschema==4.24.0",
+    "jsonschema-specifications==2025.4.1",
+    "referencing==0.36.2",
+    "rpds-py==0.25.1",
+    "attrs==25.3.0",
+    "pyrsistent==0.20.0",
+    # CycloneDX
+    "cyclonedx-python-lib==10.2.0",
+    "sortedcontainers==2.4.0",
+    "toml==0.10.2",
+    "py-serializable==2.0.0",
+    # Git
+    "GitPython==3.1.44",
+    "gitdb==4.0.12",
+    "smmap==5.0.2",
+    # CSAF
+    "pydantic==2.11.5",
+    "pydantic-core==2.33.2",
+    "typing-inspection==0.4.1",
+    "maturin==1.8.6",
+    "setuptools-rust==1.11.1",
+    "annotated-types==0.7.0",
+    "semantic-version==2.10.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    # Linter and Validation
+    "ruff==0.11.12",
+    # Documentation
+    "doc8==1.1.2",
+    "stevedore==5.4.1",
+    "Pygments==2.19.1",
+    "docutils==0.21.2",
+    "restructuredtext-lint==1.4.0",
+    "pbr==6.1.1",
+    # Parallel testing
+    "tblib==3.1.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/aboutcode-org/dejacode"
+Documentation = "https://dejacode.readthedocs.io/"
+Repository = "https://github.com/aboutcode-org/dejacode.git"
+Issues = "https://github.com/aboutcode-org/dejacode/issues"
+Changelog = "https://github.com/aboutcode-org/dejacode/blob/main/CHANGELOG.rst"
+
+[project.scripts]
+dejacode = "dejacode:command_line"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
 [tool.ruff]
 line-length = 100
 exclude = [
@@ -25,7 +222,7 @@ select = [
     "I",  # isort
     "C9", # McCabe complexity
 ]
-ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
+ignore = ["UP032", "UP038", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -40,10 +237,11 @@ section-order = [
 ]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 17
+max-complexity = 16
 
 [tool.ruff.lint.per-file-ignores]
 # Do not run bandit on test files.
 "**/tests/*" = ["S"]
 "dejacode_toolkit/csaf/*" = ["D", "UP", "E501", "F401"]
 "dejacode_toolkit/spdx.py" = ["UP"]
+"component_catalog/models.py" = ["C901"]

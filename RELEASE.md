@@ -4,7 +4,7 @@
 
 - Create a new `release-x.x.x` branch
 - Update the version in:
-  - `setup.cfg`
+  - `pyproject.toml`
   - `dejacode/__init__.py`
   - `CHANGELOG.rst` (set date)
 - Commit and push this branch

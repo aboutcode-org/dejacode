@@ -62,7 +62,7 @@ RUN python -m venv $VENV_LOCATION
 ENV PATH=$VENV_LOCATION/bin:$PATH
 
 # Install the dependencies before the codebase COPY for proper Docker layer caching
-COPY --chown=$APP_USER:$APP_USER setup.cfg setup.py $APP_DIR/
+COPY --chown=$APP_USER:$APP_USER pyproject.toml $APP_DIR/
 COPY --chown=$APP_USER:$APP_USER ./thirdparty/dist/ $APP_DIR/thirdparty/dist/
 RUN pip install --find-links=$APP_DIR/thirdparty/dist/ --no-index --no-cache-dir .
 

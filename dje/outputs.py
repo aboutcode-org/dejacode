@@ -8,8 +8,8 @@
 
 import json
 import re
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 
 from django.http import FileResponse
 from django.http import Http404
@@ -223,7 +223,7 @@ ALIAS_PREFIX_TO_CSAF_SYSTEM_NAME = {
 
 def get_csaf_document(product):
     """Return a csaf.Document object using the provided `product` context."""
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    now = datetime.now(UTC).isoformat(timespec="seconds")
     publisher = csaf.Publisher(
         category="vendor",
         name=product.dataspace.name,

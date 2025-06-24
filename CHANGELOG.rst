@@ -7,6 +7,9 @@ Release notes
   https://github.com/aboutcode-org/dejacode/pull/315
   https://github.com/aboutcode-org/dejacode/pull/312
 
+- Replace the setup.py/setup.cfg by pyproject.toml file.
+  https://github.com/aboutcode-org/dejacode/pull/329
+
 - Replace the hardcoded ``/var/www/html`` by a ``webroot`` named volume in
   ``docker-compose.yml``.
   In the Docker compose ``nginx`` service, the hardcoded ``/var/www/html`` was declared

@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: scancode-inputs
-          sparse-checkout: setup.cfg
+          sparse-checkout: pyproject.toml
           sparse-checkout-cone-mode: false
 
       - uses: aboutcode-org/scancode-action@main

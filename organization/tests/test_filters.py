@@ -64,7 +64,7 @@ class HistoryActionTimeListFilterTestCaseMixin:
         # time *anytime* the model is saved, so to set a custom value for
         # action_time we use QuerySet.update()
         fake_now = datetime.datetime(year=2012, month=8, day=1)
-        self.fake_now = fake_now.astimezone(datetime.timezone.utc)
+        self.fake_now = fake_now.astimezone(datetime.UTC)
 
         # create LogEntry objects for the owners
 

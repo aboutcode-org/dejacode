@@ -7,8 +7,8 @@
 #
 
 import json
+from datetime import UTC
 from datetime import datetime
-from datetime import timezone
 from pathlib import Path
 from unittest import mock
 
@@ -187,7 +187,7 @@ class OutputsTestCase(TestCase):
             detail="Need an update",
         )
 
-        mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=UTC)
         with mock.patch("dje.outputs.datetime") as mock_datetime:
             mock_datetime.now.return_value = mock_now
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)

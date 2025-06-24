@@ -1350,7 +1350,7 @@ class LicenseAdminViewsTestCase(TestCase):
     def test_history_list_filter(self):
         with patch("dje.filters.timezone.now") as mock_timezone:
             fake_now = datetime.datetime(year=2012, month=8, day=1)
-            fake_now = fake_now.astimezone(datetime.timezone.utc)
+            fake_now = fake_now.astimezone(datetime.UTC)
             # patch timezone.now() so that it Return a consistent date
             mock_timezone.return_value = fake_now
 
