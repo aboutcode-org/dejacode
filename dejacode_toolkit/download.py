@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import socket
 from pathlib import Path
 from urllib.parse import unquote
 from urllib.parse import urlparse
@@ -31,7 +30,7 @@ class DataCollectionException(Exception):
 def collect_package_data(url):
     try:
         response = requests.get(url, timeout=5, stream=True)
-    except (requests.RequestException, socket.timeout) as e:
+    except (TimeoutError, requests.RequestException) as e:
         raise DataCollectionException(e)
 
     if response.status_code != 200:
