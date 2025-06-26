@@ -164,9 +164,7 @@ dependencies = [
     "maturin==1.8.6",
     "setuptools-rust==1.11.1",
     "annotated-types==0.7.0",
-    "semantic-version==2.10.0",
-    # Introduce vulnerability on purpose
-    "abupy==0.0.1"
+    "semantic-version==2.10.0"
 ]
 
 [project.optional-dependencies]
