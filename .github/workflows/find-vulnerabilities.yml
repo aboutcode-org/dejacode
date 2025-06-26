@@ -19,5 +19,6 @@ jobs:
           pipelines: "inspect_packages:StaticResolver,find_vulnerabilities"
           check-compliance: true
           compliance-fail-on-vulnerabilities: true
+          scancodeio-repo-branch: "main"
         env:
           VULNERABLECODE_URL: https://public.vulnerablecode.io/
