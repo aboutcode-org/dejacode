@@ -13,27 +13,11 @@ jobs:
           sparse-checkout: pyproject.toml
           sparse-checkout-cone-mode: false
 
-      - uses: aboutcode-org/scancode-action@main
+      - name: Fail on known vulnerabilities
+        uses: aboutcode-org/scancode-action@main
         with:
           pipelines: "inspect_packages:StaticResolver,find_vulnerabilities"
+          check-compliance: true
+          compliance-fail-on-vulnerabilities: true
         env:
           VULNERABLECODE_URL: https://public.vulnerablecode.io/
-
-      - name: Fail in case of vulnerabilities
-        shell: bash
-        run: |
-          scanpipe shell --command '
-          from scanpipe.models import Project
-          project = Project.objects.get()
-          packages_qs = project.discoveredpackages.vulnerable()
-          dependencies_qs = project.discovereddependencies.vulnerable()
-          vulnerability_count = packages_qs.count() + dependencies_qs.count()
-          if vulnerability_count:
-              print(vulnerability_count, "vulnerabilities found:")
-              for entry in [*packages_qs, *dependencies_qs]:
-                  print(entry)
-              exit(1)
-          else:
-              print("No vulnerabilities found")
-              exit(0)
-          '
