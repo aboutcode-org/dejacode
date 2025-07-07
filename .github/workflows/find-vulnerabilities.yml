@@ -1,6 +1,11 @@
 name: Find dependencies vulnerabilities
 
-on: [push]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   scan-codebase:
