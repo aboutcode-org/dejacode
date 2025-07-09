@@ -1,0 +1,14 @@
+about_resource: rq-2.4.0-py3-none-any.whl
+name: rq
+version: 2.4.0
+download_url: https://files.pythonhosted.org/packages/34/ef/4239a17f056ad7a864d53fec920886e017cf50c1494ee8ab05d44cc46799/rq-2.4.0-py3-none-any.whl
+package_url: pkg:pypi/rq@2.4.0
+license_expression: bsd-new
+copyright: Copyright rq project contributors
+attribute: yes
+checksum_md5: d8736f68a0627a7397023c3f648637e4
+checksum_sha1: e204fac2625bbb78b273e114396c12b5c7021b78
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
