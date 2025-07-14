@@ -38,7 +38,7 @@
         <div class="row">
           <div class="col-12">
             <form>
-              <input id="#id_{{ filter.form.q.name }}" name="{{ filter.form.q.name }}" type="search" class="form-control form-control-prepended search" value="{{ filter.form.q.value|default_if_none:"" }}" placeholder="Search">
+              <input id="{{ filter.form.q.id_for_label }}" name="{{ filter.form.q.html_name }}" type="search" class="form-control form-control-prepended search" value="{{ filter.form.q.value|default_if_none:"" }}" placeholder="Search">
             </form>
           </div>
         </div>
