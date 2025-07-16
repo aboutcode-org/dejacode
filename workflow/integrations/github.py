@@ -52,15 +52,24 @@ def make_issue_title(request):
 
 
 def make_issue_body(request):
-    body = f"""
-    - Request template: {request.request_template}
-    - Product context: {request.product_context}
-    - Applies to: {request.content_object}
-    - Submitted by: {request.requester}
-    - Assigned to: {request.assignee}
-    - Priority: {request.priority}
-    """
-    return body
+    lines = [
+        f"### 📝 Request Template\n{request.request_template}",
+        f"### 📦 Product Context\n{request.product_context}",
+        f"### 📌 Applies To\n{request.content_object}",
+        f"### 🙋 Submitted By\n{request.requester}",
+        f"### 👤 Assigned To\n{request.assignee}",
+        f"### 🚨 Priority\n{request.priority}",
+        f"### 🗒️ Notes\n{request.notes}",
+        "----",
+    ]
+
+    for question in request.get_serialized_data_as_list():
+        value = question.get("value")
+        if question.get("input_type") == 'BooleanField':
+            value = "Yes" if value in [1, '1'] else "No"
+        lines.append(f"### {question.get('label')}\n{value}")
+
+    return "\n\n".join(lines)
 
 
 def extract_github_repo_path(url):
