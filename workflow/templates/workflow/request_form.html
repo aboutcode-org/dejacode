@@ -21,6 +21,15 @@
           <h1 class="header-title">
             {% if request_instance %}{# Edition #}
               Edit: <a href="{{ request_instance.get_absolute_url }}">{{ request_instance }} {{ request_instance.title }}</a>
+              {% if request_instance.external_issue %}
+                <span>&bull;
+                  <a href="{{ request_instance.external_issue.issue_url }}" target="_blank">
+                    <i class="fa-brands fa-github"></i>
+                    {{ request_instance.external_issue }}
+                    <i class="fa-solid fa-up-right-from-square mini"></i>
+                  </a>
+                </span>
+              {% endif %}
             {% else %}{# Addition #}
               New Request
             {% endif %}

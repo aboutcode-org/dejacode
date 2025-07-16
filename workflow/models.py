@@ -39,6 +39,7 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
+from workflow.integrations import github
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -88,6 +89,43 @@ class Priority(DataspacedModel):
         return self.label
 
 
+class ExternalIssueLink(DataspacedModel):
+    class Platform(models.TextChoices):
+        GITHUB = "github", _("GitHub")
+        GITLAB = "gitlab", _("GitLab")
+        JIRA = "jira", _("Jira")
+
+    platform = models.CharField(
+        max_length=20, choices=Platform.choices, help_text="External issue tracking platform."
+    )
+
+    repo = models.CharField(
+        max_length=100, help_text="Repository or project identifier (e.g., 'user/repo-name')."
+    )
+
+    issue_id = models.CharField(
+        max_length=100, help_text="ID or key of the issue on the external platform."
+    )
+
+    class Meta:
+        unique_together = (
+            ("dataspace", "platform", "repo", "issue_id"),
+            ("dataspace", "uuid"),
+        )
+
+    def __str__(self):
+        return f"{self.get_platform_display()}:{self.repo}#{self.issue_id}"
+
+    @property
+    def issue_url(self):
+        if self.platform == self.Platform.GITHUB:
+            return f"https://github.com/{self.repo}/issues/{self.issue_id}"
+        elif self.platform == self.Platform.GITLAB:
+            return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
+        elif self.platform == self.Platform.JIRA:
+            return f"https://{self.repo}/browse/{self.issue_id}"
+
+
 class RequestQuerySet(DataspacedQuerySet):
     BASE_SELECT_RELATED = [
         "request_template",
@@ -95,6 +133,7 @@ class RequestQuerySet(DataspacedQuerySet):
         "assignee",
         "priority",
         "product_context",
+        "external_issue",
         "last_modified_by",
     ]
 
@@ -348,6 +387,14 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         ),
     )
 
+    external_issue = models.ForeignKey(
+        to="workflow.ExternalIssueLink",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=_("Link to external issue (GitHub, GitLab, Jira, etc.)"),
+    )
+
     last_modified_by = LastModifiedByField()
 
     objects = DataspacedManager.from_queryset(RequestQuerySet)()
@@ -396,6 +443,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             except ObjectDoesNotExist:
                 return
             previous_object.update_request_count()
+
+        self.handle_integrations()
 
     def get_absolute_url(self):
         return reverse("workflow:request_details", args=[self.uuid])
@@ -519,6 +568,29 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             "hook": hook.dict(),
             "data": serializer.data,
         }
+
+    def link_external_issue(self, platform, repo, issue_id):
+        """Create or return an ExternalIssueLink associated with this Request."""
+        if self.external_issue:
+            return self.external_issue
+
+        external_issue = ExternalIssueLink.objects.create(
+            dataspace=self.dataspace,
+            platform=platform,
+            repo=repo,
+            issue_id=str(issue_id),
+        )
+        self.update(external_issue=external_issue)
+
+        return external_issue
+
+    def handle_integrations(self):
+        issue_tracker_id = self.request_template.issue_tracker_id
+        if not issue_tracker_id:
+            return
+
+        if "github.com" in issue_tracker_id:
+            github.handle_integration(request=self)
 
 
 @receiver(models.signals.post_delete, sender=Request)
@@ -720,6 +792,16 @@ class RequestTemplate(HistoryFieldsMixin, DataspacedModel):
             "Optionally specify the application user that should be the first to review "
             "a request using this template, and should receive an email when the request "
             "is submitted."
+        ),
+    )
+
+    issue_tracker_id = models.CharField(
+        verbose_name=_("Issue Tracker ID"),
+        max_length=1000,
+        blank=True,
+        help_text=_(
+            "Link to associated issue in a tracking application, "
+            "provided by the integration when the issue is created."
         ),
     )
 
