@@ -22,6 +22,15 @@
           <h1 class="header-title">
             {{ request_instance }} {{ request_instance.title }}
           </h1>
+          {% if request_instance.external_issue %}
+            <div class="h4 mb-0">
+              <a href="{{ request_instance.external_issue.issue_url }}" target="_blank">
+                <i class="fa-brands fa-github"></i>
+                {{ request_instance.external_issue }}
+                <i class="fa-solid fa-up-right-from-square mini"></i>
+              </a>
+            </div>
+          {% endif %}
         </div>
         <div class="col-auto">
           <a href="{{ request_instance.request_template.get_absolute_url }}" class="btn btn-success" data-bs-toggle="tooltip" title="Add a new Request of the same type">

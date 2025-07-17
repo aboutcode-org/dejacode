@@ -458,6 +458,9 @@ RQ_QUEUES = {
 daily_at_3am = "0 3 * * *"
 DEJACODE_VULNERABILITIES_CRON = env.str("DEJACODE_VULNERABILITIES_CRON", default=daily_at_3am)
 
+# Workflow integrations
+DEJACODE_GITHUB_INTEGRATION_TOKEN = env.str("DEJACODE_GITHUB_INTEGRATION_TOKEN", default="")
+
 
 def enable_rq_eager_mode():
     """
