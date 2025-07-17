@@ -88,16 +88,22 @@ def make_issue_title(request):
 
 
 def make_issue_body(request):
-    lines = [
-        f"### 📝 Request Template\n{request.request_template}",
-        f"### 📦 Product Context\n{request.product_context}",
-        f"### 📌 Applies To\n{request.content_object}",
-        f"### 🙋 Submitted By\n{request.requester}",
-        f"### 👤 Assigned To\n{request.assignee}",
-        f"### 🚨 Priority\n{request.priority}",
-        f"### 🗒️ Notes\n{request.notes}",
-        "----",
+    label_fields = [
+        ("📝 Request Template", request.request_template),
+        ("📦 Product Context", request.product_context),
+        ("📌 Applies To", request.content_object),
+        ("🙋 Submitted By", request.requester),
+        ("👤 Assigned To", request.assignee),
+        ("🚨 Priority", request.priority),
+        ("🗒️ Notes", request.notes),
     ]
+
+    lines = []
+    for label, value in label_fields:
+        if value:
+            lines.append(f"### {label}\n{value}",)
+
+    lines.append("----")
 
     for question in request.get_serialized_data_as_list():
         value = question.get("value")
