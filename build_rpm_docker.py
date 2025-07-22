@@ -31,7 +31,6 @@ def build_rpm_with_docker():
 
     pkg_name = project['name']
     # Insert "python3-"" prefix that follows a common convention for Python RPMs
-    # rpm_name = f"python3-{pkg_name.lower().replace('-', '_')}"
     rpm_name = f"python3-{pkg_name.lower()}"
 
     docker_cmd = [
