@@ -8,12 +8,13 @@
 
 from urllib.parse import urlparse
 
-import requests
 from django.conf import settings
 
+import requests
 
 GITHUB_API_URL = "https://api.github.com"
 DEJACODE_SITE_URL = settings.SITE_URL.rstrip("/")
+
 
 class GitHubIntegration:
     dataspace = None
