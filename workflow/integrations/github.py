@@ -41,7 +41,7 @@ class GitHubIntegration:
         if external_issue:  # Update existing issue on GitHib
             self.update_issue(
                 repo_id=repo_id,
-                issue_number=external_issue.issue_id,
+                issue_id=external_issue.issue_id,
                 title=make_issue_title(request),
                 body=make_issue_body(request),
                 state="closed" if request.is_closed else "open",
@@ -61,6 +61,7 @@ class GitHubIntegration:
             )
 
     def create_issue(self, repo_id, title, body=None, labels=None):
+        """Create a new GitHub issue."""
         url = f"{self.api_url}/repos/{repo_id}/issues"
         data = {"title": title}
         if body:
@@ -76,8 +77,9 @@ class GitHubIntegration:
         )
         return response.json()
 
-    def update_issue(self, repo_id, issue_number, title=None, body=None, state=None):
-        url = f"{self.api_url}/repos/{repo_id}/issues/{issue_number}"
+    def update_issue(self, repo_id, issue_id, title=None, body=None, state=None):
+        """Update an existing GitHub issue."""
+        url = f"{self.api_url}/repos/{repo_id}/issues/{issue_id}"
         data = {}
         if title:
             data["title"] = title
@@ -87,6 +89,19 @@ class GitHubIntegration:
             data["state"] = state
 
         response = requests.patch(
+            url,
+            json=data,
+            headers=self.get_headers(),
+            timeout=self.default_timeout,
+        )
+        return response.json()
+
+    def post_comment(self, repo_id, issue_id, comment_body):
+        """Post a comment on an existing GitHub issue."""
+        url = f"{self.api_url}/repos/{repo_id}/issues/{issue_id}/comments"
+        data = {"body": comment_body}
+
+        response = requests.post(
             url,
             json=data,
             headers=self.get_headers(),

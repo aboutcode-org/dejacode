@@ -425,8 +425,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
 
         # `previous_object_id` logic is only required on edition.
         previous_object_id = None
-        is_addition = self.pk
-        if is_addition:
+        is_change = self.pk
+        if is_change:
             previous_object_id = self.__class__.objects.get(pk=self.pk).object_id
 
         super().save(*args, **kwargs)
@@ -661,6 +661,13 @@ class RequestComment(AbstractRequestEvent):
     def __str__(self):
         return f"{self.user.username}: {self.text[:50]}..."
 
+    def save(self, *args, **kwargs):
+        """Call the handle_integrations method on save, only for addition."""
+        is_addition = not self.pk
+        super().save(*args, **kwargs)
+        if is_addition:
+            self.handle_integrations()
+
     def has_delete_permission(self, user):
         """
         Only the Commenter or an administrator with the proper permissions
@@ -715,6 +722,18 @@ class RequestComment(AbstractRequestEvent):
             "hook": hook.dict(),
             "data": data,
         }
+
+    def handle_integrations(self):
+        external_issue = self.request.external_issue
+        if not external_issue:
+            return
+
+        if external_issue.platform == ExternalIssueLink.Platform.GITHUB:
+            GitHubIntegration(dataspace=self.dataspace).post_comment(
+                repo_id=external_issue.repo,
+                issue_id=external_issue.issue_id,
+                comment_body=self.text,
+            )
 
 
 class RequestTemplateQuerySet(DataspacedQuerySet):
