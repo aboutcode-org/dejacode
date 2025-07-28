@@ -39,7 +39,7 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
-from workflow.integrations import github
+from workflow.integrations.github import GitHubIntegration
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -590,7 +590,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             return
 
         if "github.com" in issue_tracker_id:
-            github.handle_integration(request=self)
+            GitHubIntegration(dataspace=self.dataspace).sync(request=self)
 
 
 @receiver(models.signals.post_delete, sender=Request)
