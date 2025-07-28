@@ -45,6 +45,12 @@ Welcome to the very start of your DejaCode journey!
     reference-3-cravex
 
 .. toctree::
+    :maxdepth: 1
+    :caption: Integrations
+
+    integrations-github
+
+.. toctree::
    :maxdepth: 1
    :caption: Miscellaneous
 
