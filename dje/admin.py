@@ -1056,6 +1056,7 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "scancodeio_api_key",
         "vulnerablecode_api_key",
         "purldb_api_key",
+        "github_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1077,15 +1078,33 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
     form = DataspaceConfigurationForm
     verbose_name_plural = _("Configuration")
     verbose_name = _("Dataspace configuration")
-    fields = [
-        "homepage_layout",
-        "scancodeio_url",
-        "scancodeio_api_key",
-        "vulnerablecode_url",
-        "vulnerablecode_api_key",
-        "vulnerabilities_risk_threshold",
-        "purldb_url",
-        "purldb_api_key",
+    fieldsets = [
+        (
+            "",
+            {"fields": ("homepage_layout",)},
+        ),
+        (
+            "AboutCode Integrations",
+            {
+                "fields": (
+                    "scancodeio_url",
+                    "scancodeio_api_key",
+                    "vulnerablecode_url",
+                    "vulnerablecode_api_key",
+                    "vulnerabilities_risk_threshold",
+                    "purldb_url",
+                    "purldb_api_key",
+                )
+            },
+        ),
+        (
+            "GitHub Integration",
+            {
+                "fields": [
+                    "github_token",
+                ]
+            },
+        ),
     ]
     can_delete = False
 
