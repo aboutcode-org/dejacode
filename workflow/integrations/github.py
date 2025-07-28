@@ -9,9 +9,11 @@
 from urllib.parse import urlparse
 
 import requests
+from django.conf import settings
+
 
 GITHUB_API_URL = "https://api.github.com"
-
+DEJACODE_SITE_URL = settings.SITE_URL.rstrip("/")
 
 class GitHubIntegration:
     dataspace = None
@@ -115,6 +117,7 @@ def make_issue_title(request):
 
 
 def make_issue_body(request):
+    request_url = f"{DEJACODE_SITE_URL}{request.get_absolute_url()}"
     label_fields = [
         ("📝 Request Template", request.request_template),
         ("📦 Product Context", request.product_context),
@@ -123,6 +126,7 @@ def make_issue_body(request):
         ("👤 Assigned To", request.assignee),
         ("🚨 Priority", request.priority),
         ("🗒️ Notes", request.notes),
+        ("🔗️ DejaCode URL", request_url),
     ]
 
     lines = []
