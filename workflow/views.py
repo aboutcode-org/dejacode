@@ -244,15 +244,7 @@ def request_details_view(request, request_uuid):
 
     closed_reason = request.POST.get("closed_reason")
     if closed_reason and request_instance.has_close_permission(request.user):
-        request_instance.status = Request.Status.CLOSED
-        request_instance.last_modified_by = request.user
-        request_instance.save()
-        event_instance = request_instance.events.create(
-            user=request.user,
-            text=closed_reason,
-            event_type=RequestEvent.CLOSED,
-            dataspace=request_instance.dataspace,
-        )
+        event_instance = request_instance.close(user=request.user, reason=closed_reason)
         send_request_comment_notification(request, event_instance, closed=True)
         messages.success(request, f"Request {request_instance} closed")
         return redirect("workflow:request_list")

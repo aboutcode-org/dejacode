@@ -569,6 +569,22 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             "data": serializer.data,
         }
 
+    def close(self, user, reason):
+        """
+        Set the Request status to CLOSED.
+        A RequestEvent is created and returned.
+        """
+        self.status = self.Status.CLOSED
+        self.last_modified_by = user
+        self.save()
+        event_instance = self.events.create(
+            user=user,
+            text=reason,
+            event_type=RequestEvent.CLOSED,
+            dataspace=self.dataspace,
+        )
+        return event_instance
+
     def link_external_issue(self, platform, repo, issue_id):
         """Create or return an ExternalIssueLink associated with this Request."""
         if self.external_issue:
