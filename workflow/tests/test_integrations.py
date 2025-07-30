@@ -103,3 +103,21 @@ class GitHubIntegrationTestCase(TestCase):
 
         self.assertEqual(response["state"], "closed")
         mock_session_patch.assert_called_once()
+
+    @mock.patch("requests.Session.post")
+    def test_post_comment_calls_post(self, mock_session_post):
+        mock_session_post.return_value.json.return_value = {"id": 77, "body": "Test comment"}
+        mock_session_post.return_value.raise_for_status.return_value = None
+
+        response = self.github.post_comment(
+            repo_id="user/repo",
+            issue_id=42,
+            comment_body="Test comment",
+        )
+
+        self.assertEqual(response["body"], "Test comment")
+        mock_session_post.assert_called_once_with(
+            "https://api.github.com/repos/user/repo/issues/42/comments",
+            json={"body": "Test comment"},
+            timeout=self.github.default_timeout,
+        )

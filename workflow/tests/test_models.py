@@ -7,6 +7,7 @@
 #
 
 import json
+from unittest import mock
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -350,6 +351,30 @@ class WorkflowModelsTestCase(TestCase):
         self.assertIn(self.request2, qs)
         self.assertNotIn(request3, qs)
 
+    def test_request_model_close_method(self):
+        self.request1.close(user=self.super_user, reason="Reason")
+        self.request1.refresh_from_db()
+        self.assertEqual(Request.Status.CLOSED, self.request1.status)
+        self.assertEqual(self.super_user, self.request1.last_modified_by)
+        close_event = self.request1.events.get(event_type=RequestEvent.CLOSED)
+        self.assertEqual(self.super_user, close_event.user)
+        self.assertEqual("Reason", close_event.text)
+
+    def test_request_model_link_external_issue(self):
+        external_issue = self.request1.link_external_issue(
+            platform="github",
+            repo="org/repo",
+            issue_id="1",
+        )
+        self.assertEqual(self.nexb_dataspace, external_issue.dataspace)
+        self.assertEqual("github", external_issue.platform)
+        self.assertEqual("org/repo", external_issue.repo)
+        self.assertEqual("1", external_issue.issue_id)
+        self.assertEqual("https://github.com/org/repo/issues/1", external_issue.issue_url)
+
+        self.request1.refresh_from_db()
+        self.assertEqual(external_issue, self.request1.external_issue)
+
     def test_request_model_is_draft_property(self):
         self.request1.status = Request.Status.OPEN
         self.assertFalse(self.request1.is_draft)
@@ -564,3 +589,21 @@ class WorkflowModelsTestCase(TestCase):
 
         component1.delete()
         request1.delete()
+
+    @mock.patch("workflow.integrations.github.GitHubIntegration.sync")
+    def test_sync_called_on_save_when_issue_tracker_is_github(self, mock_sync):
+        mock_sync.return_value = None
+        self.nexb_dataspace.set_configuration("github_token", "fake-token")
+
+        self.request_template1.create_request(
+            title="Example Request",
+            requester=self.super_user,
+        )
+        mock_sync.assert_not_called()
+
+        self.request_template1.update(issue_tracker_id="https://github.com/org/repo")
+        request = self.request_template1.create_request(
+            title="Example Request",
+            requester=self.super_user,
+        )
+        mock_sync.assert_called_once_with(request=request)
