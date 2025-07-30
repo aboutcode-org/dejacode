@@ -633,6 +633,16 @@ class AbstractRequestEvent(HistoryDateFieldsMixin, DataspacedModel):
     class Meta:
         abstract = True
 
+    def save(self, *args, **kwargs):
+        """Call the handle_integrations method on save, only for addition."""
+        is_addition = not self.pk
+        super().save(*args, **kwargs)
+        if is_addition:
+            self.handle_integrations()
+
+    def handle_integrations(self):
+        pass
+
 
 class RequestEvent(AbstractRequestEvent):
     request = models.ForeignKey(
@@ -662,6 +672,21 @@ class RequestEvent(AbstractRequestEvent):
     def __str__(self):
         return f"{self.get_event_type_display()} by {self.user.username}"
 
+    def handle_integrations(self):
+        external_issue = self.request.external_issue
+        if not external_issue:
+            return
+
+        if not self.event_type == self.CLOSED:
+            return
+
+        if external_issue.platform == ExternalIssueLink.Platform.GITHUB:
+            GitHubIntegration(dataspace=self.dataspace).post_comment(
+                repo_id=external_issue.repo,
+                issue_id=external_issue.issue_id,
+                comment_body=self.text,
+            )
+
 
 class RequestComment(AbstractRequestEvent):
     request = models.ForeignKey(
@@ -676,13 +701,6 @@ class RequestComment(AbstractRequestEvent):
 
     def __str__(self):
         return f"{self.user.username}: {self.text[:50]}..."
-
-    def save(self, *args, **kwargs):
-        """Call the handle_integrations method on save, only for addition."""
-        is_addition = not self.pk
-        super().save(*args, **kwargs)
-        if is_addition:
-            self.handle_integrations()
 
     def has_delete_permission(self, user):
         """
