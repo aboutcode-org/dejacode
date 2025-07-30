@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dataspaceconfiguration',
             name='github_token',
-            field=models.CharField(blank=True, help_text='Personal access token (PAT) or GitHub App token used to authenticateAPI requests for this integration. Keep this token secure.', max_length=255, verbose_name='GitHub token'),
+            field=models.CharField(blank=True, help_text='Personal access token (PAT) or GitHub App token used to authenticate API requests for this integration. Keep this token secure.', max_length=255, verbose_name='GitHub token'),
         ),
     ]

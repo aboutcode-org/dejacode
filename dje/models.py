@@ -523,7 +523,7 @@ class DataspaceConfiguration(models.Model):
         max_length=255,
         blank=True,
         help_text=_(
-            "Personal access token (PAT) or GitHub App token used to authenticate"
+            "Personal access token (PAT) or GitHub App token used to authenticate "
             "API requests for this integration. Keep this token secure."
         ),
     )
