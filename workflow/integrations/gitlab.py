@@ -41,7 +41,7 @@ class GitLabIntegration(BaseIntegration):
         external_issue = request.external_issue
         if external_issue:
             self.update_issue(
-                project_path=project_path,
+                repo_id=project_path,
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 description=self.make_issue_body(request),
@@ -49,7 +49,7 @@ class GitLabIntegration(BaseIntegration):
             )
         else:
             issue = self.create_issue(
-                project_path=project_path,
+                repo_id=project_path,
                 title=self.make_issue_title(request),
                 description=self.make_issue_body(request),
             )
@@ -59,9 +59,9 @@ class GitLabIntegration(BaseIntegration):
                 issue_id=issue["iid"],
             )
 
-    def create_issue(self, project_path, title, description=""):
+    def create_issue(self, repo_id, title, description=""):
         """Create a new GitLab issue."""
-        project_path = requests.utils.quote(project_path, safe="")
+        project_path = requests.utils.quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues"
         data = {"title": title, "description": description}
 
@@ -73,9 +73,9 @@ class GitLabIntegration(BaseIntegration):
         response.raise_for_status()
         return response.json()
 
-    def update_issue(self, project_path, issue_id, title=None, description=None, state_event=None):
+    def update_issue(self, repo_id, issue_id, title=None, description=None, state_event=None):
         """Update an existing GitLab issue."""
-        project_path = requests.utils.quote(project_path, safe="")
+        project_path = requests.utils.quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}"
         data = {}
         if title:
@@ -93,9 +93,9 @@ class GitLabIntegration(BaseIntegration):
         response.raise_for_status()
         return response.json()
 
-    def post_comment(self, project_path, issue_id, comment_body):
+    def post_comment(self, repo_id, issue_id, comment_body):
         """Post a comment on an existing GitLab issue."""
-        project_path = requests.utils.quote(project_path, safe="")
+        project_path = requests.utils.quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}/notes"
         data = {"body": comment_body}
 

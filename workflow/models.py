@@ -39,8 +39,8 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
-from workflow.integrations.gitlab import GitLabIntegration
 from workflow.integrations.github import GitHubIntegration
+from workflow.integrations.gitlab import GitLabIntegration
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -135,6 +135,13 @@ class ExternalIssueLink(DataspacedModel):
             self.Platform.JIRA: "fa-brands fa-jira",
         }
         return platform_icons.get(self.platform, "fa-solid fa-square-up-right")
+
+    @property
+    def integration_class(self):
+        if self.platform == self.Platform.GITHUB:
+            return GitHubIntegration
+        elif self.platform == self.Platform.GITLAB:
+            return GitLabIntegration
 
 
 class RequestQuerySet(DataspacedQuerySet):
@@ -618,7 +625,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
 
         if "github.com" in issue_tracker_id:
             GitHubIntegration(dataspace=self.dataspace).sync(request=self)
-        if "gitlab.com" in issue_tracker_id:
+        elif "gitlab.com" in issue_tracker_id:
             GitLabIntegration(dataspace=self.dataspace).sync(request=self)
 
 
@@ -693,15 +700,9 @@ class RequestEvent(AbstractRequestEvent):
         if not self.event_type == self.CLOSED:
             return
 
-        if external_issue.platform == ExternalIssueLink.Platform.GITHUB:
-            GitHubIntegration(dataspace=self.dataspace).post_comment(
+        if integration_class := external_issue.integration_class:
+            integration_class(dataspace=self.dataspace).post_comment(
                 repo_id=external_issue.repo,
-                issue_id=external_issue.issue_id,
-                comment_body=self.text,
-            )
-        elif external_issue.platform == ExternalIssueLink.Platform.GITLAB:
-            GitLabIntegration(dataspace=self.dataspace).post_comment(
-                project_path=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
             )
@@ -781,15 +782,9 @@ class RequestComment(AbstractRequestEvent):
         if not external_issue:
             return
 
-        if external_issue.platform == ExternalIssueLink.Platform.GITHUB:
-            GitHubIntegration(dataspace=self.dataspace).post_comment(
+        if integration_class := external_issue.integration_class:
+            integration_class(dataspace=self.dataspace).post_comment(
                 repo_id=external_issue.repo,
-                issue_id=external_issue.issue_id,
-                comment_body=self.text,
-            )
-        elif external_issue.platform == ExternalIssueLink.Platform.GITLAB:
-            GitLabIntegration(dataspace=self.dataspace).post_comment(
-                project_path=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
             )
