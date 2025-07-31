@@ -49,6 +49,7 @@ Welcome to the very start of your DejaCode journey!
     :caption: Integrations
 
     integrations-github
+    integrations-gitlab
 
 .. toctree::
    :maxdepth: 1

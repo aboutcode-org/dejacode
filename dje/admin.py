@@ -24,6 +24,7 @@ from django.contrib.admin.utils import lookup_spawns_duplicates
 from django.contrib.admin.utils import unquote
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.widgets import AdminDateWidget
+from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
@@ -1034,7 +1035,7 @@ class DataspacedAdmin(
             return True
 
 
-class HiddenValueWidget(forms.TextInput):
+class HiddenValueWidget(AdminTextInputWidget):
     """Render a hidden value in the UI."""
 
     HIDDEN_VALUE = "*******"
@@ -1057,6 +1058,7 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "vulnerablecode_api_key",
         "purldb_api_key",
         "github_token",
+        "gitlab_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1102,6 +1104,14 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             {
                 "fields": [
                     "github_token",
+                ]
+            },
+        ),
+        (
+            "GitLab Integration",
+            {
+                "fields": [
+                    "gitlab_token",
                 ]
             },
         ),
