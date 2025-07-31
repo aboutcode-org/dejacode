@@ -81,7 +81,12 @@
         return false;
       });
 
-      $('form#workflow-request-form').dirtyForms();
+      const requestForm = $('form#workflow-request-form');
+      requestForm.dirtyForms();
+      requestForm.on('submit', function () {
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Saving...");
+      })
     });
   </script>
 {% endblock %}
