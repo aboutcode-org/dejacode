@@ -7,8 +7,15 @@ DejaCode's integration with GitLab allows you to automatically forward
 **Workflow Requests** to GitLab project **Issues**.
 This behavior can be selectively applied to any **Request Template** of your choice.
 
-GitLab Account and Personal Access Token
-----------------------------------------
+Prerequisites
+-------------
+
+- A **GitLab project** that you want to integrate with DejaCode.
+- A **GitLab user account** with sufficient permissions to create and manage issues in
+  the target project.
+
+GitLab Personal Access Token
+----------------------------
 
 To enable integration, you need a GitLab **personal access token (PAT)** with
 appropriate permissions.
@@ -16,7 +23,7 @@ appropriate permissions.
 1. **Access GitLab Personal Access Tokens**:
 
    - Go to: https://gitlab.com/-/user_settings/personal_access_tokens
-   - Click the **"Add new token"** blue button on the right side
+   - Click the **"Add new token"** button
    - Provide a **name** (e.g., ``DejaCode Integration``) and **expiration date**
      (recommended)
 
