@@ -6,9 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from urllib.parse import quote
 from urllib.parse import urlparse
-
-import requests
 
 from workflow.integrations import BaseIntegration
 
@@ -38,20 +37,25 @@ class GitLabIntegration(BaseIntegration):
         except ValueError as error:
             raise ValueError(f"Invalid GitLab project URL: {error}")
 
+        labels = []
+        if request.priority:
+            labels.append(str(request.priority))
+
         external_issue = request.external_issue
         if external_issue:
             self.update_issue(
                 repo_id=project_path,
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
-                description=self.make_issue_body(request),
+                body=self.make_issue_body(request),
                 state_event="close" if request.is_closed else "reopen",
             )
         else:
             issue = self.create_issue(
                 repo_id=project_path,
                 title=self.make_issue_title(request),
-                description=self.make_issue_body(request),
+                body=self.make_issue_body(request),
+                labels=labels,
             )
             request.link_external_issue(
                 platform="gitlab",
@@ -59,11 +63,17 @@ class GitLabIntegration(BaseIntegration):
                 issue_id=issue["iid"],
             )
 
-    def create_issue(self, repo_id, title, description=""):
+    def create_issue(self, repo_id, title, body="", labels=None):
         """Create a new GitLab issue."""
-        project_path = requests.utils.quote(repo_id, safe="")
+        project_path = quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues"
-        data = {"title": title, "description": description}
+        data = {
+            "title": title,
+            "description": body,
+        }
+        if labels:
+            # GitLab expects a comma-separated string for labels
+            data["labels"] = ",".join(labels)
 
         response = self.session.post(
             url,
@@ -73,15 +83,15 @@ class GitLabIntegration(BaseIntegration):
         response.raise_for_status()
         return response.json()
 
-    def update_issue(self, repo_id, issue_id, title=None, description=None, state_event=None):
+    def update_issue(self, repo_id, issue_id, title=None, body=None, state_event=None):
         """Update an existing GitLab issue."""
-        project_path = requests.utils.quote(repo_id, safe="")
+        project_path = quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}"
         data = {}
         if title:
             data["title"] = title
-        if description:
-            data["description"] = description
+        if body:
+            data["description"] = body
         if state_event:
             data["state_event"] = state_event
 
@@ -95,7 +105,7 @@ class GitLabIntegration(BaseIntegration):
 
     def post_comment(self, repo_id, issue_id, comment_body):
         """Post a comment on an existing GitLab issue."""
-        project_path = requests.utils.quote(repo_id, safe="")
+        project_path = quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}/notes"
         data = {"body": comment_body}
 
