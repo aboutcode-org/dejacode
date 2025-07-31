@@ -49,6 +49,7 @@ class GitLabIntegration(BaseIntegration):
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
                 state_event="close" if request.is_closed else "reopen",
+                labels=labels,
             )
         else:
             issue = self.create_issue(
@@ -83,7 +84,7 @@ class GitLabIntegration(BaseIntegration):
         response.raise_for_status()
         return response.json()
 
-    def update_issue(self, repo_id, issue_id, title=None, body=None, state_event=None):
+    def update_issue(self, repo_id, issue_id, title=None, body=None, state_event=None, labels=None):
         """Update an existing GitLab issue."""
         project_path = quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}"
@@ -94,6 +95,9 @@ class GitLabIntegration(BaseIntegration):
             data["description"] = body
         if state_event:
             data["state_event"] = state_event
+        if labels:
+            # GitLab expects a comma-separated string for labels
+            data["labels"] = ",".join(labels)
 
         response = self.session.put(
             url,

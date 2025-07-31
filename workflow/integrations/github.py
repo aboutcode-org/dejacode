@@ -46,6 +46,7 @@ class GitHubIntegration(BaseIntegration):
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
                 state="closed" if request.is_closed else "open",
+                labels=labels,
             )
         else:
             issue = self.create_issue(
@@ -78,7 +79,7 @@ class GitHubIntegration(BaseIntegration):
         response.raise_for_status()
         return response.json()
 
-    def update_issue(self, repo_id, issue_id, title=None, body=None, state=None):
+    def update_issue(self, repo_id, issue_id, title=None, body=None, state=None, labels=None):
         """Update an existing GitHub issue."""
         url = f"{self.api_url}/repos/{repo_id}/issues/{issue_id}"
         data = {}
@@ -88,6 +89,8 @@ class GitHubIntegration(BaseIntegration):
             data["body"] = body
         if state:
             data["state"] = state
+        if labels:
+            data["labels"] = labels
 
         response = self.session.patch(
             url,
