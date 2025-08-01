@@ -528,6 +528,17 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
+    gitlab_token = models.CharField(
+        _("GitLab token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Personal access token (PAT) used to authenticate API requests for the "
+            "GitLab integration. This token must have 'api' scope. "
+            "Keep this token secure."
+        ),
+    )
+
     def __str__(self):
         return f"Configuration for {self.dataspace}"
 

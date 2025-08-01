@@ -42,6 +42,14 @@ Release notes
   * `/products/{uuid}/imports/`
   https://github.com/aboutcode-org/dejacode/issues/273
 
+- Add GitHub workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-github.html
+  https://github.com/aboutcode-org/dejacode/issues/349
+
+- Add GitLab workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-github.html
+  https://github.com/aboutcode-org/dejacode/issues/346
+
 ### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.

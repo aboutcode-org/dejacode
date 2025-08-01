@@ -7,8 +7,15 @@ DejaCode's integration with GitHub allows you to automatically forward
 **Workflow Requests** to GitHub repository **Issues**.
 This behavior can be selectively applied to any **Request Template** of your choice.
 
-GitHub Account and Personal Access Token
-----------------------------------------
+Prerequisites
+-------------
+
+- A **GitHub repository** that you want to integrate with DejaCode.
+- A **GitHub user account** with sufficient permissions (at least write access) to
+  create and manage issues in that repository.
+
+GitHub Personal Access Token
+----------------------------
 
 To enable integration, you need a GitHub **fine-grained personal access token (PAT)**.
 

@@ -49,7 +49,7 @@
                     {% if req.external_issue %}
                       <div>
                         <a href="{{ req.external_issue.issue_url }}" target="_blank">
-                          <i class="fa-brands fa-github"></i>
+                          <i class="{{ req.external_issue.icon_css_class }}"></i>
                           {{ req.external_issue }}
                           <i class="fa-solid fa-up-right-from-square mini"></i>
                         </a>

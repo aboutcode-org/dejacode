@@ -24,7 +24,7 @@
               {% if request_instance.external_issue %}
                 <span>&bull;
                   <a href="{{ request_instance.external_issue.issue_url }}" target="_blank">
-                    <i class="fa-brands fa-github"></i>
+                    <i class="{{ request_instance.external_issue.icon_css_class }}"></i>
                     {{ request_instance.external_issue }}
                     <i class="fa-solid fa-up-right-from-square mini"></i>
                   </a>
@@ -81,7 +81,12 @@
         return false;
       });
 
-      $('form#workflow-request-form').dirtyForms();
+      const requestForm = $('form#workflow-request-form');
+      requestForm.dirtyForms();
+      requestForm.on('submit', function () {
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Saving...");
+      })
     });
   </script>
 {% endblock %}
