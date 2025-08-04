@@ -50,6 +50,9 @@ Release notes
   Documentation: https://dejacode.readthedocs.io/en/latest/integrations-github.html
   https://github.com/aboutcode-org/dejacode/issues/346
 
+- Add Jira workflow Request integration.
+  https://github.com/aboutcode-org/dejacode/issues/350
+
 ### Version 5.3.0
 
 - Rename ProductDependency is_resolved to is_pinned.

@@ -539,6 +539,26 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
+    jira_user = models.CharField(
+        _("Jira user email"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "The email address associated with your Jira account. "
+            "Used together with the API token to authenticate API requests."
+        ),
+    )
+
+    jira_token = models.CharField(
+        _("Jira API token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "API token generated from your Atlassian account, used to authenticate "
+            "API requests to Jira Cloud. Keep this token secure."
+        ),
+    )
+
     def __str__(self):
         return f"Configuration for {self.dataspace}"
 
