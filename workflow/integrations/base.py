@@ -6,9 +6,13 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import logging
+
 from django.conf import settings
 
 import requests
+
+logger = logging.getLogger("dje")
 
 DEJACODE_SITE_URL = settings.SITE_URL.rstrip("/")
 
@@ -37,12 +41,13 @@ class BaseIntegration:
         raise NotImplementedError
 
     def post(self, url, data):
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
+        response = self.session.post(url, json=data, timeout=self.default_timeout)
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as err:
+            logger.error(f"HTTP error during POST to {url}: {err}\nResponse body: {response.text}")
+            raise
+
         return response.json()
 
     @staticmethod
