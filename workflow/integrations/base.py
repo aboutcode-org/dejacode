@@ -36,6 +36,15 @@ class BaseIntegration:
         """
         raise NotImplementedError
 
+    def post(self, url, data):
+        response = self.session.post(
+            url,
+            json=data,
+            timeout=self.default_timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
     @staticmethod
     def make_issue_title(request):
         return f"[DEJACODE] {request.title}"

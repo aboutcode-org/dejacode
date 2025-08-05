@@ -29,7 +29,8 @@ GITHUB_PATTERN = re.compile(r"^https://github\.com/[^/]+/[^/]+/?$")
 GITLAB_PATTERN = re.compile(r"^https://gitlab\.com/[^/]+/[^/]+/?$")
 
 JIRA_PATTERN = re.compile(
-    r"^https://[a-zA-Z0-9.-]+\.atlassian\.net/(?:projects|jira/software/projects)/[A-Z][A-Z0-9]+"
+    r"^https://[a-zA-Z0-9.-]+\.atlassian\.net(?:/[^/]+)*"
+    r"/(?:projects|browse)/[A-Z][A-Z0-9]+(?:/[^/]*)*/*$"
 )
 
 ISSUE_TRACKER_PATTERNS = [

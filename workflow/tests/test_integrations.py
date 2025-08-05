@@ -25,16 +25,24 @@ from workflow.models import RequestTemplate
 
 
 class WorkflowIntegrationsTestCase(TestCase):
-    def test_is_valid_issue_tracker_id(self):
+    def test_integrations_is_valid_issue_tracker_id(self):
         valid_urls = [
+            # GitHub
             "https://github.com/org/repo",
+            # GitLab
             "https://gitlab.com/group/project",
+            # Jira
+            "https://aboutcode.atlassian.net/browse/PROJ",
             "https://aboutcode.atlassian.net/projects/PROJ",
+            "https://aboutcode.atlassian.net/projects/PROJ/",
+            "https://aboutcode.atlassian.net/projects/PROJ/summary",
             "https://aboutcode.atlassian.net/jira/software/projects/PROJ",
+            "https://aboutcode.atlassian.net/jira/software/projects/PROJ/",
+            "https://aboutcode.atlassian.net/jira/software/projects/PROJ/summary",
+            "https://aboutcode.atlassian.net/jira/servicedesk/projects/PROJ",
         ]
         for url in valid_urls:
-            with self.subTest(url=url):
-                self.assertTrue(is_valid_issue_tracker_id(url))
+            self.assertTrue(is_valid_issue_tracker_id(url), msg=url)
 
         invalid_urls = [
             "https://bitbucket.org/team/repo",
@@ -44,10 +52,9 @@ class WorkflowIntegrationsTestCase(TestCase):
             "https://example.com",
         ]
         for url in invalid_urls:
-            with self.subTest(url=url):
-                self.assertFalse(is_valid_issue_tracker_id(url))
+            self.assertFalse(is_valid_issue_tracker_id(url), msg=url)
 
-    def test_get_class_for_tracker(self):
+    def test_integrations_get_class_for_tracker(self):
         self.assertIs(get_class_for_tracker("https://github.com/org/repo"), GitHubIntegration)
         self.assertIs(get_class_for_tracker("https://gitlab.com/group/project"), GitLabIntegration)
         self.assertIs(
@@ -55,7 +62,7 @@ class WorkflowIntegrationsTestCase(TestCase):
         )
         self.assertIsNone(get_class_for_tracker("https://example.com"))
 
-    def test_get_class_for_platform(self):
+    def test_integrations_get_class_for_platform(self):
         self.assertIs(get_class_for_platform("github"), GitHubIntegration)
         self.assertIs(get_class_for_platform("gitlab"), GitLabIntegration)
         self.assertIs(get_class_for_platform("jira"), JiraIntegration)

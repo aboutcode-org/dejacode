@@ -77,14 +77,7 @@ class JiraIntegration(BaseIntegration):
                 "issuetype": {"name": "Request"},
             }
         }
-
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, data)
 
     def update_issue(self, issue_id, title=None, body=None, status=None):
         """Update an existing Jira issue."""
@@ -112,17 +105,9 @@ class JiraIntegration(BaseIntegration):
     def post_comment(self, repo_id, issue_id, comment_body):
         """Post a comment on an existing Jira issue."""
         api_url = repo_id.rstrip("/") + JIRA_API_PATH
-
         url = f"{api_url}/issue/{issue_id}/comment"
         data = {"body": markdown_to_adf(comment_body)}
-
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, data)
 
     def transition_issue(self, issue_id, target_status_name):
         """Transition a Jira issue to a new status by name."""
@@ -138,12 +123,8 @@ class JiraIntegration(BaseIntegration):
         else:
             raise ValueError(f"No transition found for status '{target_status_name}'")
 
-        response = self.session.post(
-            transitions_url,
-            json={"transition": {"id": transition_id}},
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
+        data = {"transition": {"id": transition_id}}
+        return self.post(transitions_url, data)
 
     @staticmethod
     def extract_jira_info(url):
@@ -153,6 +134,7 @@ class JiraIntegration(BaseIntegration):
         - https://<domain>.atlassian.net/projects/PROJECTKEY
         - https://<domain>.atlassian.net/browse/PROJECTKEY
         - https://<domain>.atlassian.net/jira/software/projects/PROJECTKEY/...
+        - https://<domain>.atlassian.net/jira/servicedesk/projects/PROJECTKEY/...
         """
         parsed = urlparse(url)
         if not parsed.netloc.endswith("atlassian.net"):
@@ -161,7 +143,7 @@ class JiraIntegration(BaseIntegration):
         base_url = f"{parsed.scheme}://{parsed.netloc}"
         path = parsed.path
 
-        project_key_pattern = r"/(?:projects|browse|jira/software/projects)/([A-Z][A-Z0-9]+)"
+        project_key_pattern = r"/(?:[^/]+/)*(?:projects|browse)/([A-Z][A-Z0-9]+)"
         match = re.search(project_key_pattern, path)
         if match:
             return base_url, match.group(1)
