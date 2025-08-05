@@ -124,7 +124,7 @@ class ExternalIssueLink(DataspacedModel):
         elif self.platform == self.Platform.GITLAB:
             return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
         elif self.platform == self.Platform.JIRA:
-            return f"https://{self.repo}/browse/{self.issue_id}"
+            return f"{self.repo}/browse/{self.issue_id}"
 
     @property
     def icon_css_class(self):
