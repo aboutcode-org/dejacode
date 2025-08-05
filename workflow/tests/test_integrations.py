@@ -14,10 +14,52 @@ from django.test import TestCase
 
 from dje.models import Dataspace
 from dje.tests import create_superuser
+from workflow.integrations import JiraIntegration
+from workflow.integrations import get_class_for_platform
+from workflow.integrations import get_class_for_tracker
+from workflow.integrations import is_valid_issue_tracker_id
 from workflow.integrations.github import GitHubIntegration
 from workflow.integrations.gitlab import GitLabIntegration
 from workflow.models import Question
 from workflow.models import RequestTemplate
+
+
+class WorkflowIntegrationsTestCase(TestCase):
+    def test_is_valid_issue_tracker_id(self):
+        valid_urls = [
+            "https://github.com/org/repo",
+            "https://gitlab.com/group/project",
+            "https://aboutcode.atlassian.net/projects/PROJ",
+            "https://aboutcode.atlassian.net/jira/software/projects/PROJ",
+        ]
+        for url in valid_urls:
+            with self.subTest(url=url):
+                self.assertTrue(is_valid_issue_tracker_id(url))
+
+        invalid_urls = [
+            "https://bitbucket.org/team/repo",
+            "https://github.com/",
+            "https://gitlab.com/",
+            "https://atlassian.net/projects/",
+            "https://example.com",
+        ]
+        for url in invalid_urls:
+            with self.subTest(url=url):
+                self.assertFalse(is_valid_issue_tracker_id(url))
+
+    def test_get_class_for_tracker(self):
+        self.assertIs(get_class_for_tracker("https://github.com/org/repo"), GitHubIntegration)
+        self.assertIs(get_class_for_tracker("https://gitlab.com/group/project"), GitLabIntegration)
+        self.assertIs(
+            get_class_for_tracker("https://aboutcode.atlassian.net/projects/PROJ"), JiraIntegration
+        )
+        self.assertIsNone(get_class_for_tracker("https://example.com"))
+
+    def test_get_class_for_platform(self):
+        self.assertIs(get_class_for_platform("github"), GitHubIntegration)
+        self.assertIs(get_class_for_platform("gitlab"), GitLabIntegration)
+        self.assertIs(get_class_for_platform("jira"), JiraIntegration)
+        self.assertIsNone(get_class_for_platform("example"))
 
 
 class GitHubIntegrationTestCase(TestCase):
