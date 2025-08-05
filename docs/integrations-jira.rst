@@ -14,6 +14,20 @@ Prerequisites
 - A **Jira user account** with sufficient permissions
   (at least *Create Issues* and *Edit Issues*) in that project.
 
+Create Custom *DejaCode Request* Work Type
+------------------------------------------
+
+.. warning::
+
+   This is required for the integration to function properly.
+
+To create the custom work type in Jira:
+
+1. Navigate to your **Project settings** → **Work types**
+2. Click **+ Add work type**
+3. Set the name to: ``DejaCode Request``
+4. Click **Create**
+
 Jira API Token
 --------------
 

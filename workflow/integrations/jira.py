@@ -21,6 +21,8 @@ class JiraIntegration(BaseIntegration):
     from DejaCode requests.
     """
 
+    default_issuetype = "DejaCode Request"
+
     def get_headers(self):
         jira_user = self.dataspace.get_configuration("jira_user")
         jira_token = self.dataspace.get_configuration("jira_token")
@@ -74,7 +76,7 @@ class JiraIntegration(BaseIntegration):
                 "project": {"key": project_key},
                 "summary": title,
                 "description": markdown_to_adf(body),
-                "issuetype": {"name": "Request"},
+                "issuetype": {"name": self.default_issuetype},
             }
         }
         return self.post(url, data)
