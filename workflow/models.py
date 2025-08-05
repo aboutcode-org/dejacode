@@ -39,9 +39,7 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
-from workflow.integrations.github import GitHubIntegration
-from workflow.integrations.gitlab import GitLabIntegration
-from workflow.integrations.jira import JiraIntegration
+from workflow import integrations
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -139,12 +137,7 @@ class ExternalIssueLink(DataspacedModel):
 
     @property
     def integration_class(self):
-        if self.platform == self.Platform.GITHUB:
-            return GitHubIntegration
-        elif self.platform == self.Platform.GITLAB:
-            return GitLabIntegration
-        elif self.platform == self.Platform.JIRA:
-            return JiraIntegration
+        return integrations.get_class_for_platform(self.platform)
 
 
 class RequestQuerySet(DataspacedQuerySet):
@@ -626,12 +619,9 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         if not issue_tracker_id:
             return
 
-        if "github.com" in issue_tracker_id:
-            GitHubIntegration(dataspace=self.dataspace).sync(request=self)
-        elif "gitlab.com" in issue_tracker_id:
-            GitLabIntegration(dataspace=self.dataspace).sync(request=self)
-        elif "atlassian.net" in issue_tracker_id:
-            JiraIntegration(dataspace=self.dataspace).sync(request=self)
+        integration_class = integrations.get_class_for_tracker(issue_tracker_id)
+        if integration_class:
+            integration_class(dataspace=self.dataspace).sync(request=self)
 
 
 @receiver(models.signals.post_delete, sender=Request)

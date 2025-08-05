@@ -8,7 +8,7 @@
 
 from urllib.parse import urlparse
 
-from workflow.integrations import BaseIntegration
+from workflow.integrations.base import BaseIntegration
 
 GITHUB_API_URL = "https://api.github.com"
 

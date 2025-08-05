@@ -9,7 +9,7 @@
 from urllib.parse import quote
 from urllib.parse import urlparse
 
-from workflow.integrations import BaseIntegration
+from workflow.integrations.base import BaseIntegration
 
 GITLAB_API_URL = "https://gitlab.com/api/v4"
 

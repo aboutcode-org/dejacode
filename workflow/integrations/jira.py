@@ -10,7 +10,7 @@ import base64
 import re
 from urllib.parse import urlparse
 
-from workflow.integrations import BaseIntegration
+from workflow.integrations.base import BaseIntegration
 
 JIRA_API_PATH = "/rest/api/3"
 
