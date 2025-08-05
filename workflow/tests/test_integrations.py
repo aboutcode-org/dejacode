@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import base64
 from unittest import mock
 from urllib.parse import quote
 
@@ -32,14 +33,14 @@ class WorkflowIntegrationsTestCase(TestCase):
             # GitLab
             "https://gitlab.com/group/project",
             # Jira
-            "https://aboutcode.atlassian.net/browse/PROJ",
-            "https://aboutcode.atlassian.net/projects/PROJ",
-            "https://aboutcode.atlassian.net/projects/PROJ/",
-            "https://aboutcode.atlassian.net/projects/PROJ/summary",
-            "https://aboutcode.atlassian.net/jira/software/projects/PROJ",
-            "https://aboutcode.atlassian.net/jira/software/projects/PROJ/",
-            "https://aboutcode.atlassian.net/jira/software/projects/PROJ/summary",
-            "https://aboutcode.atlassian.net/jira/servicedesk/projects/PROJ",
+            "https://example.atlassian.net/browse/PROJ",
+            "https://example.atlassian.net/projects/PROJ",
+            "https://example.atlassian.net/projects/PROJ/",
+            "https://example.atlassian.net/projects/PROJ/summary",
+            "https://example.atlassian.net/jira/software/projects/PROJ",
+            "https://example.atlassian.net/jira/software/projects/PROJ/",
+            "https://example.atlassian.net/jira/software/projects/PROJ/summary",
+            "https://example.atlassian.net/jira/servicedesk/projects/PROJ",
         ]
         for url in valid_urls:
             self.assertTrue(is_valid_issue_tracker_id(url), msg=url)
@@ -58,7 +59,7 @@ class WorkflowIntegrationsTestCase(TestCase):
         self.assertIs(get_class_for_tracker("https://github.com/org/repo"), GitHubIntegration)
         self.assertIs(get_class_for_tracker("https://gitlab.com/group/project"), GitLabIntegration)
         self.assertIs(
-            get_class_for_tracker("https://aboutcode.atlassian.net/projects/PROJ"), JiraIntegration
+            get_class_for_tracker("https://example.atlassian.net/projects/PROJ"), JiraIntegration
         )
         self.assertIsNone(get_class_for_tracker("https://example.com"))
 
@@ -295,3 +296,122 @@ class GitLabIntegrationTestCase(TestCase):
             json={"body": "Test comment"},
             timeout=self.gitlab.default_timeout,
         )
+
+
+class JiraIntegrationTestCase(TestCase):
+    def setUp(self):
+        patcher = mock.patch("workflow.models.Request.handle_integrations", return_value=None)
+        self.mock_handle_integrations = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace.set_configuration("jira_user", "fake-user")
+        self.dataspace.set_configuration("jira_token", "fake-token")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.component_ct = ContentType.objects.get(
+            app_label="component_catalog", model="component"
+        )
+        self.request_template = RequestTemplate.objects.create(
+            name="Jira Template",
+            description="Integration test template",
+            content_type=self.component_ct,
+            dataspace=self.dataspace,
+            issue_tracker_id="https://example.atlassian.net/browse/PROJ",
+        )
+        self.question = Question.objects.create(
+            template=self.request_template,
+            label="Example Question",
+            input_type="TextField",
+            position=0,
+            dataspace=self.dataspace,
+        )
+        self.request = self.request_template.create_request(
+            title="Example Request",
+            requester=self.super_user,
+            serialized_data='{"Example Question": "Some value"}',
+        )
+        self.jira = JiraIntegration(dataspace=self.dataspace)
+
+    def test_jira_extract_jira_info_valid_urls(self):
+        urls = [
+            "https://example.atlassian.net/browse/PROJ",
+            "https://example.atlassian.net/projects/PROJ",
+            "https://example.atlassian.net/projects/PROJ/",
+            "https://example.atlassian.net/projects/PROJ/summary",
+            "https://example.atlassian.net/jira/software/projects/PROJ",
+            "https://example.atlassian.net/jira/software/projects/PROJ/",
+            "https://example.atlassian.net/jira/software/projects/PROJ/summary",
+            "https://example.atlassian.net/jira/servicedesk/projects/PROJ",
+        ]
+        for url in urls:
+            base_url, project_key = JiraIntegration.extract_jira_info(url)
+            self.assertEqual(base_url, "https://example.atlassian.net")
+            self.assertEqual(project_key, "PROJ")
+
+    def test_jira_extract_jira_info_invalid_url(self):
+        with self.assertRaises(ValueError):
+            JiraIntegration.extract_jira_info("https://example.com/browse/PROJ")
+
+    def test_jira_get_headers_returns_auth_header(self):
+        headers = self.jira.get_headers()
+        expected_auth = base64.b64encode(b"fake-user:fake-token").decode()
+        self.assertEqual(
+            headers,
+            {
+                "Authorization": f"Basic {expected_auth}",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+        )
+
+    def test_jira_make_issue_title(self):
+        title = self.jira.make_issue_title(self.request)
+        self.assertEqual(title, "[DEJACODE] Example Request")
+
+    def test_jira_make_issue_body_contains_question(self):
+        body = self.jira.make_issue_body(self.request)
+        self.assertIn("### Example Question", body)
+        self.assertIn("Some value", body)
+
+    @mock.patch("requests.Session.post")
+    def test_jira_create_issue_calls_post(self, mock_session_post):
+        mock_session_post.return_value.json.return_value = {"key": "PROJ-123"}
+        mock_session_post.return_value.raise_for_status.return_value = None
+
+        self.jira.api_url = "https://example.atlassian.net/rest/api/3"
+        issue = self.jira.create_issue(
+            project_key="PROJ",
+            title="Issue Title",
+            body="Issue Body",
+        )
+
+        self.assertEqual(issue["key"], "PROJ-123")
+        mock_session_post.assert_called_once()
+
+    @mock.patch("requests.Session.put")
+    def test_jira_update_issue_calls_put(self, mock_session_put):
+        mock_session_put.return_value.raise_for_status.return_value = None
+        self.jira.api_url = "https://example.atlassian.net/rest/api/3"
+
+        response = self.jira.update_issue(
+            issue_id="PROJ-123",
+            title="Updated title",
+            body="Updated body",
+        )
+
+        self.assertEqual(response["id"], "PROJ-123")
+        mock_session_put.assert_called_once()
+
+    @mock.patch("requests.Session.post")
+    def test_jira_post_comment_calls_post(self, mock_session_post):
+        mock_session_post.return_value.json.return_value = {"id": "1001"}
+        mock_session_post.return_value.raise_for_status.return_value = None
+
+        response = self.jira.post_comment(
+            repo_id="https://example.atlassian.net",
+            issue_id="PROJ-123",
+            comment_body="Test comment",
+        )
+
+        self.assertEqual(response["id"], "1001")
+        mock_session_post.assert_called_once()
