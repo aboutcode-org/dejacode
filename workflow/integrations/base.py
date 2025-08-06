@@ -62,6 +62,10 @@ class BaseIntegration:
             self._log_http_error(method, url, response, error)
             raise
 
+        # If there's no content (e.g. 204 No Content), return None
+        if response.status_code == 204:
+            return
+
         return response.json()
 
     def _log_http_error(self, method, url, response, error):
