@@ -28,8 +28,8 @@ To create the custom work type in Jira:
 3. Set the name to: ``DejaCode Request``
 4. Click **Create**
 
-Create "Done" Status
---------------------
+Create "Closed" Status
+----------------------
 
 .. warning::
 
@@ -37,14 +37,14 @@ Create "Done" Status
 
 This status will be set on the Jira issue when the DejaCode Request is closed.
 
-To create the **Done** status in Jira:
+To create the **Closed** status in Jira:
 
 1. Navigate to **Project settings** → **Work types**
 2. Select the ``DejaCode Request`` work type
 3. Click **Edit workflow**
 4. Click **Add status**
 5. Click **Create new status** tab
-6. Enter the name: ``Done``
+6. Enter the name: ``Closed``
 7. Choose a category: ``Done``
 8. Click **Add**
 9. Click **Update workflow**
