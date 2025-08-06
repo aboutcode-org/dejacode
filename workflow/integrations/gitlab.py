@@ -76,13 +76,7 @@ class GitLabIntegration(BaseIntegration):
             # GitLab expects a comma-separated string for labels
             data["labels"] = ",".join(labels)
 
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, json=data)
 
     def update_issue(self, repo_id, issue_id, title=None, body=None, state_event=None, labels=None):
         """Update an existing GitLab issue."""
@@ -99,13 +93,7 @@ class GitLabIntegration(BaseIntegration):
             # GitLab expects a comma-separated string for labels
             data["labels"] = ",".join(labels)
 
-        response = self.session.put(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.put(url, json=data)
 
     def post_comment(self, repo_id, issue_id, comment_body):
         """Post a comment on an existing GitLab issue."""
@@ -113,13 +101,7 @@ class GitLabIntegration(BaseIntegration):
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}/notes"
         data = {"body": comment_body}
 
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, json=data)
 
     @staticmethod
     def extract_gitlab_project_path(url):
