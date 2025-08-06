@@ -125,10 +125,10 @@ class GitHubIntegrationTestCase(TestCase):
         self.assertIn("### Example Question", body)
         self.assertIn("Some value", body)
 
-    @mock.patch("requests.Session.post")
-    def test_github_create_issue_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"number": 10}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_github_create_issue_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"number": 10}
+        mock_request.return_value.raise_for_status.return_value = None
 
         issue = self.github.create_issue(
             repo_id="user/repo",
@@ -138,12 +138,12 @@ class GitHubIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(issue["number"], 10)
-        mock_session_post.assert_called_once()
+        mock_request.assert_called_once()
 
-    @mock.patch("requests.Session.patch")
-    def test_github_update_issue_calls_patch(self, mock_session_patch):
-        mock_session_patch.return_value.json.return_value = {"state": "closed"}
-        mock_session_patch.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_github_update_issue_calls_patch(self, mock_request):
+        mock_request.return_value.json.return_value = {"state": "closed"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         response = self.github.update_issue(
             repo_id="user/repo",
@@ -154,12 +154,12 @@ class GitHubIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["state"], "closed")
-        mock_session_patch.assert_called_once()
+        mock_request.assert_called_once()
 
-    @mock.patch("requests.Session.post")
-    def test_github_post_comment_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"id": 77, "body": "Test comment"}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_github_post_comment_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"id": 77, "body": "Test comment"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         response = self.github.post_comment(
             repo_id="user/repo",
@@ -168,9 +168,12 @@ class GitHubIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["body"], "Test comment")
-        mock_session_post.assert_called_once_with(
-            "https://api.github.com/repos/user/repo/issues/10/comments",
+        mock_request.assert_called_once_with(
+            method="POST",
+            url="https://api.github.com/repos/user/repo/issues/10/comments",
             json={"body": "Test comment"},
+            params=None,
+            data=None,
             timeout=self.github.default_timeout,
         )
 
@@ -230,10 +233,10 @@ class GitLabIntegrationTestCase(TestCase):
         self.assertIn("### Example Question", body)
         self.assertIn("Some value", body)
 
-    @mock.patch("requests.Session.post")
-    def test_gitlab_create_issue_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"iid": 10}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_gitlab_create_issue_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"iid": 10}
+        mock_request.return_value.raise_for_status.return_value = None
 
         issue = self.gitlab.create_issue(
             repo_id="user/project",
@@ -243,8 +246,11 @@ class GitLabIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(issue["iid"], 10)
-        mock_session_post.assert_called_once_with(
-            f"https://gitlab.com/api/v4/projects/{quote('user/project', safe='')}/issues",
+        mock_request.assert_called_once_with(
+            method="POST",
+            url=f"https://gitlab.com/api/v4/projects/{quote('user/project', safe='')}/issues",
+            params=None,
+            data=None,
             json={
                 "title": "Issue Title",
                 "description": "Issue Body",
@@ -253,10 +259,10 @@ class GitLabIntegrationTestCase(TestCase):
             timeout=self.gitlab.default_timeout,
         )
 
-    @mock.patch("requests.Session.put")
-    def test_gitlab_update_issue_calls_put(self, mock_session_put):
-        mock_session_put.return_value.json.return_value = {"state": "closed"}
-        mock_session_put.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_gitlab_update_issue_calls_put(self, mock_request):
+        mock_request.return_value.json.return_value = {"state": "closed"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         response = self.gitlab.update_issue(
             repo_id="user/project",
@@ -268,8 +274,13 @@ class GitLabIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["state"], "closed")
-        mock_session_put.assert_called_once_with(
-            f"https://gitlab.com/api/v4/projects/{quote('user/project', safe='')}/issues/123",
+
+        project_path = quote("user/project", safe="")
+        mock_request.assert_called_once_with(
+            method="PUT",
+            url=f"https://gitlab.com/api/v4/projects/{project_path}/issues/123",
+            params=None,
+            data=None,
             json={
                 "title": "Updated title",
                 "description": "Updated body",
@@ -279,10 +290,10 @@ class GitLabIntegrationTestCase(TestCase):
             timeout=self.gitlab.default_timeout,
         )
 
-    @mock.patch("requests.Session.post")
-    def test_gitlab_post_comment_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"id": 77, "body": "Test comment"}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_gitlab_post_comment_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"id": 77, "body": "Test comment"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         response = self.gitlab.post_comment(
             repo_id="user/project",
@@ -291,8 +302,13 @@ class GitLabIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["body"], "Test comment")
-        mock_session_post.assert_called_once_with(
-            f"https://gitlab.com/api/v4/projects/{quote('user/project', safe='')}/issues/10/notes",
+
+        project_path = quote("user/project", safe="")
+        mock_request.assert_called_once_with(
+            method="POST",
+            url=f"https://gitlab.com/api/v4/projects/{project_path}/issues/10/notes",
+            params=None,
+            data=None,
             json={"body": "Test comment"},
             timeout=self.gitlab.default_timeout,
         )
