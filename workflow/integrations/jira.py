@@ -21,7 +21,8 @@ class JiraIntegration(BaseIntegration):
     from DejaCode requests.
     """
 
-    default_issuetype = "DejaCode Request"
+    issuetype = "DejaCode Request"
+    closed_status = "Done"
 
     def get_headers(self):
         jira_user = self.dataspace.get_configuration("jira_user")
@@ -54,7 +55,7 @@ class JiraIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                status="Done" if request.is_closed else None,
+                status=self.closed_status if request.is_closed else None,
             )
         else:
             issue = self.create_issue(
@@ -76,7 +77,7 @@ class JiraIntegration(BaseIntegration):
                 "project": {"key": project_key},
                 "summary": title,
                 "description": markdown_to_adf(body),
-                "issuetype": {"name": self.default_issuetype},
+                "issuetype": {"name": self.issuetype},
             }
         }
         return self.post(url, json=data)
@@ -112,6 +113,7 @@ class JiraIntegration(BaseIntegration):
         response_json = self.get(url=transitions_url)
         transitions = response_json.get("transitions", [])
 
+        # Search for a transition name that match the `target_status_name`
         for transition in transitions:
             if transition["to"]["name"].lower() == target_status_name.lower():
                 transition_id = transition["id"]

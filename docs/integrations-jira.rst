@@ -14,7 +14,7 @@ Prerequisites
 - A **Jira user account** with sufficient permissions
   (at least *Create Issues* and *Edit Issues*) in that project.
 
-Create Custom *DejaCode Request* Work Type
+Create Custom "DejaCode Request" Work Type
 ------------------------------------------
 
 .. warning::
@@ -27,6 +27,27 @@ To create the custom work type in Jira:
 2. Click **+ Add work type**
 3. Set the name to: ``DejaCode Request``
 4. Click **Create**
+
+Create "Done" Status
+--------------------
+
+.. warning::
+
+   This is required for the integration to function properly.
+
+This status will be set on the Jira issue when the DejaCode Request is closed.
+
+To create the **Done** status in Jira:
+
+1. Navigate to **Project settings** → **Work types**
+2. Select the ``DejaCode Request`` work type
+3. Click **Edit workflow**
+4. Click **Add status**
+5. Click **Create new status** tab
+6. Enter the name: ``Done``
+7. Choose a category: ``Done``
+8. Click **Add**
+9. Click **Update workflow**
 
 Jira API Token
 --------------
