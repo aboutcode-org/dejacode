@@ -610,7 +610,10 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             repo=repo,
             issue_id=str(issue_id),
         )
-        self.update(external_issue=external_issue)
+
+        # Set the external_issue on this instance without triggering the whole
+        # save() + handle_integrations() logic.
+        self.raw_update(external_issue=external_issue)
 
         return external_issue
 

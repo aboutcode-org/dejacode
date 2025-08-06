@@ -946,7 +946,7 @@ class DataspacedModel(models.Model):
 
     def raw_update(self, **kwargs):
         """
-         Perform a direct SQL UPDATE on this instance.
+        Perform a direct SQL UPDATE on this instance.
 
         This method updates the specified fields in the database without triggering
         the ``save()`` lifecycle or related signals. It bypasses field validation and
