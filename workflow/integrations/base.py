@@ -22,10 +22,11 @@ class BaseIntegration:
 
     default_timeout = 10
 
-    def __init__(self, dataspace):
+    def __init__(self, dataspace, timeout=None):
         if not dataspace:
             raise ValueError("Dataspace must be provided.")
         self.dataspace = dataspace
+        self.timeout = timeout or self.default_timeout
         self.session = self.get_session()
 
     def get_session(self):
@@ -40,15 +41,52 @@ class BaseIntegration:
         """
         raise NotImplementedError
 
-    def post(self, url, data):
-        response = self.session.post(url, json=data, timeout=self.default_timeout)
+    def request(self, method, url, params=None, data=None, json=None):
+        """Send a HTTP request."""
+        try:
+            response = self.session.request(
+                method=method,
+                url=url,
+                params=params,
+                data=data,
+                json=json,
+                timeout=self.timeout,
+            )
+        except requests.Timeout:
+            logger.warning(f"Timeout occurred during {method} request to {url}")
+            raise
+
         try:
             response.raise_for_status()
-        except requests.HTTPError as err:
-            logger.error(f"HTTP error during POST to {url}: {err}\nResponse body: {response.text}")
+        except requests.HTTPError as error:
+            self._log_http_error(method, url, response, error)
             raise
 
         return response.json()
+
+    def _log_http_error(self, method, url, response, error):
+        """Log HTTP errors with detailed information."""
+        logger.error(
+            f"[{self.dataspace}] HTTP error during {method} request to {url}: {error}\n"
+            f"Response status code: {response.status_code}\n"
+            f"Response body: {response.text}"
+        )
+
+    def get(self, url, params=None):
+        """Send a GET request."""
+        return self.request("GET", url, params=params)
+
+    def post(self, url, json=None):
+        """Send a POST request."""
+        return self.request("POST", url, json=json)
+
+    def put(self, url, json=None):
+        """Send a PUT request."""
+        return self.request("PUT", url, json=json)
+
+    def patch(self, url, json=None):
+        """Send a PATCH request."""
+        return self.request("PATCH", url, json=json)
 
     @staticmethod
     def make_issue_title(request):

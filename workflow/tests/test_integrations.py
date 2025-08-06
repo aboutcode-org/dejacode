@@ -373,10 +373,10 @@ class JiraIntegrationTestCase(TestCase):
         self.assertIn("### Example Question", body)
         self.assertIn("Some value", body)
 
-    @mock.patch("requests.Session.post")
-    def test_jira_create_issue_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"key": "PROJ-123"}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_jira_create_issue_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"key": "PROJ-123"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         self.jira.api_url = "https://example.atlassian.net/rest/api/3"
         issue = self.jira.create_issue(
@@ -386,11 +386,11 @@ class JiraIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(issue["key"], "PROJ-123")
-        mock_session_post.assert_called_once()
+        mock_request.assert_called_once()
 
-    @mock.patch("requests.Session.put")
-    def test_jira_update_issue_calls_put(self, mock_session_put):
-        mock_session_put.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_jira_update_issue_calls_put(self, mock_request):
+        mock_request.return_value.raise_for_status.return_value = None
         self.jira.api_url = "https://example.atlassian.net/rest/api/3"
 
         response = self.jira.update_issue(
@@ -400,12 +400,12 @@ class JiraIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["id"], "PROJ-123")
-        mock_session_put.assert_called_once()
+        mock_request.assert_called_once()
 
-    @mock.patch("requests.Session.post")
-    def test_jira_post_comment_calls_post(self, mock_session_post):
-        mock_session_post.return_value.json.return_value = {"id": "1001"}
-        mock_session_post.return_value.raise_for_status.return_value = None
+    @mock.patch("requests.Session.request")
+    def test_jira_post_comment_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"id": "1001"}
+        mock_request.return_value.raise_for_status.return_value = None
 
         response = self.jira.post_comment(
             repo_id="https://example.atlassian.net",
@@ -414,4 +414,4 @@ class JiraIntegrationTestCase(TestCase):
         )
 
         self.assertEqual(response["id"], "1001")
-        mock_session_post.assert_called_once()
+        mock_request.assert_called_once()

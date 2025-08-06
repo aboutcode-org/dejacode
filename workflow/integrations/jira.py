@@ -79,7 +79,7 @@ class JiraIntegration(BaseIntegration):
                 "issuetype": {"name": self.default_issuetype},
             }
         }
-        return self.post(url, data)
+        return self.post(url, json=data)
 
     def update_issue(self, issue_id, title=None, body=None, status=None):
         """Update an existing Jira issue."""
@@ -91,12 +91,7 @@ class JiraIntegration(BaseIntegration):
             fields["description"] = markdown_to_adf(body)
 
         if fields:
-            response = self.session.put(
-                url,
-                json={"fields": fields},
-                timeout=self.default_timeout,
-            )
-            response.raise_for_status()
+            self.put(url, json={"fields": fields})
 
         # Transition (e.g., close) if status is specified
         if status:
@@ -109,14 +104,13 @@ class JiraIntegration(BaseIntegration):
         api_url = repo_id.rstrip("/") + JIRA_API_PATH
         url = f"{api_url}/issue/{issue_id}/comment"
         data = {"body": markdown_to_adf(comment_body)}
-        return self.post(url, data)
+        return self.post(url, json=data)
 
     def transition_issue(self, issue_id, target_status_name):
         """Transition a Jira issue to a new status by name."""
         transitions_url = f"{self.api_url}/issue/{issue_id}/transitions"
-        response = self.session.get(transitions_url, timeout=self.default_timeout)
-        response.raise_for_status()
-        transitions = response.json().get("transitions", [])
+        response_json = self.get(url=transitions_url)
+        transitions = response_json.get("transitions", [])
 
         for transition in transitions:
             if transition["to"]["name"].lower() == target_status_name.lower():
@@ -126,7 +120,7 @@ class JiraIntegration(BaseIntegration):
             raise ValueError(f"No transition found for status '{target_status_name}'")
 
         data = {"transition": {"id": transition_id}}
-        return self.post(transitions_url, data)
+        return self.post(transitions_url, json=data)
 
     @staticmethod
     def extract_jira_info(url):
