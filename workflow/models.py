@@ -113,6 +113,16 @@ class ExternalIssueLink(DataspacedModel):
         help_text=_("ID or key of the issue on the external platform."),
     )
 
+    base_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Base URL of the external issue tracker platform (e.g., https://forgejo.example.org). "
+            "Used to construct API endpoints for integrations like Forgejo or Jira."
+        ),
+    )
+
     class Meta:
         unique_together = (
             ("dataspace", "platform", "repo", "issue_id"),
@@ -131,7 +141,7 @@ class ExternalIssueLink(DataspacedModel):
         elif self.platform == self.Platform.JIRA:
             return f"{self.repo}/browse/{self.issue_id}"
         elif self.platform == self.Platform.FORGEJO:
-            return f"{self.repo}/issues/{self.issue_id}"
+            return f"{self.base_url}/{self.repo}/issues/{self.issue_id}"
 
     @property
     def icon_css_class(self):
@@ -606,16 +616,20 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         )
         return event_instance
 
-    def link_external_issue(self, platform, repo, issue_id):
+    def link_external_issue(self, platform, repo, issue_id, base_url=None):
         """Create or return an ExternalIssueLink associated with this Request."""
         if self.external_issue:
             return self.external_issue
+
+        if base_url:
+            base_url = base_url.rstrip("/")
 
         external_issue = ExternalIssueLink.objects.create(
             dataspace=self.dataspace,
             platform=platform,
             repo=repo,
             issue_id=str(issue_id),
+            base_url=base_url,
         )
 
         # Set the external_issue on this instance without triggering the whole
@@ -710,6 +724,7 @@ class RequestEvent(AbstractRequestEvent):
                 repo_id=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
+                base_url=external_issue.base_url,
             )
 
 
@@ -792,6 +807,7 @@ class RequestComment(AbstractRequestEvent):
                 repo_id=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
+                base_url=external_issue.base_url,
             )
 
 

@@ -20,6 +20,8 @@ class GitHubIntegration(BaseIntegration):
     """
 
     api_url = GITHUB_API_URL
+    open_status = "open"
+    closed_status = "closed"
 
     def get_headers(self):
         github_token = self.dataspace.get_configuration(field_name="github_token")
@@ -45,7 +47,7 @@ class GitHubIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                state="closed" if request.is_closed else "open",
+                state=self.closed_status if request.is_closed else self.open_status,
                 labels=labels,
             )
         else:
@@ -88,7 +90,7 @@ class GitHubIntegration(BaseIntegration):
 
         return self.patch(url, json=data)
 
-    def post_comment(self, repo_id, issue_id, comment_body):
+    def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         """Post a comment on an existing GitHub issue."""
         url = f"{self.api_url}/repos/{repo_id}/issues/{issue_id}/comments"
         data = {"body": comment_body}

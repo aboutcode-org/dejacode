@@ -92,6 +92,9 @@ class BaseIntegration:
         """Send a PATCH request."""
         return self.request("PATCH", url, json=json)
 
+    def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
+        raise NotImplementedError
+
     @staticmethod
     def make_issue_title(request):
         return f"[DEJACODE] {request.title}"

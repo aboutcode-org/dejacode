@@ -65,6 +65,7 @@ class RequestTemplateAdminForm(DataspacedAdminForm):
             raise ValidationError(
                 [
                     "Invalid issue tracker URL format. Supported formats include:",
+                    "• Forgejo: https://forgejo.DOMAIN.org/OR/REPO_NAME",
                     "• GitHub: https://github.com/ORG/REPO_NAME",
                     "• GitLab: https://gitlab.com/GROUP/PROJECT_NAME",
                     "• Jira: https://YOUR_DOMAIN.atlassian.net/projects/PROJECTKEY",

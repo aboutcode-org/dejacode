@@ -95,7 +95,7 @@ class GitLabIntegration(BaseIntegration):
 
         return self.put(url, json=data)
 
-    def post_comment(self, repo_id, issue_id, comment_body):
+    def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         """Post a comment on an existing GitLab issue."""
         project_path = quote(repo_id, safe="")
         url = f"{self.api_url}/projects/{project_path}/issues/{issue_id}/notes"
