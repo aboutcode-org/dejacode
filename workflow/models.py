@@ -95,17 +95,22 @@ class ExternalIssueLink(DataspacedModel):
         GITLAB = "gitlab", _("GitLab")
         JIRA = "jira", _("Jira")
         SOURCEHUT = "sourcehut", _("SourceHut")
+        FORGEJO = "forgejo", _("Forgejo")
 
     platform = models.CharField(
-        max_length=20, choices=Platform.choices, help_text="External issue tracking platform."
+        max_length=20,
+        choices=Platform.choices,
+        help_text=_("External issue tracking platform."),
     )
 
     repo = models.CharField(
-        max_length=100, help_text="Repository or project identifier (e.g., 'user/repo-name')."
+        max_length=100,
+        help_text=_("Repository or project identifier (e.g., 'user/repo-name')."),
     )
 
     issue_id = models.CharField(
-        max_length=100, help_text="ID or key of the issue on the external platform."
+        max_length=100,
+        help_text=_("ID or key of the issue on the external platform."),
     )
 
     class Meta:
@@ -125,6 +130,8 @@ class ExternalIssueLink(DataspacedModel):
             return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
         elif self.platform == self.Platform.JIRA:
             return f"{self.repo}/browse/{self.issue_id}"
+        elif self.platform == self.Platform.FORGEJO:
+            return f"{self.repo}/issues/{self.issue_id}"
 
     @property
     def icon_css_class(self):

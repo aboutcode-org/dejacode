@@ -15,12 +15,13 @@ from django.test import TestCase
 
 from dje.models import Dataspace
 from dje.tests import create_superuser
+from workflow.integrations import ForgejoIntegration
+from workflow.integrations import GitHubIntegration
+from workflow.integrations import GitLabIntegration
 from workflow.integrations import JiraIntegration
 from workflow.integrations import get_class_for_platform
 from workflow.integrations import get_class_for_tracker
 from workflow.integrations import is_valid_issue_tracker_id
-from workflow.integrations.github import GitHubIntegration
-from workflow.integrations.gitlab import GitLabIntegration
 from workflow.models import Question
 from workflow.models import RequestTemplate
 
@@ -41,6 +42,10 @@ class WorkflowIntegrationsTestCase(TestCase):
             "https://example.atlassian.net/jira/software/projects/PROJ/",
             "https://example.atlassian.net/jira/software/projects/PROJ/summary",
             "https://example.atlassian.net/jira/servicedesk/projects/PROJ",
+            # Forgejo
+            "https://code.forgejo.org/user/repo",
+            "https://git.forgejo.dev/org/project/",
+            "https://forgejo.example.org/team/repo",
         ]
         for url in valid_urls:
             self.assertTrue(is_valid_issue_tracker_id(url), msg=url)
@@ -51,6 +56,7 @@ class WorkflowIntegrationsTestCase(TestCase):
             "https://gitlab.com/",
             "https://atlassian.net/projects/",
             "https://example.com",
+            "https://example.org/user/repo",
         ]
         for url in invalid_urls:
             self.assertFalse(is_valid_issue_tracker_id(url), msg=url)
@@ -61,12 +67,16 @@ class WorkflowIntegrationsTestCase(TestCase):
         self.assertIs(
             get_class_for_tracker("https://example.atlassian.net/projects/PROJ"), JiraIntegration
         )
+        self.assertIs(
+            get_class_for_tracker("https://code.forgejo.org/user/repo"), ForgejoIntegration
+        )
         self.assertIsNone(get_class_for_tracker("https://example.com"))
 
     def test_integrations_get_class_for_platform(self):
         self.assertIs(get_class_for_platform("github"), GitHubIntegration)
         self.assertIs(get_class_for_platform("gitlab"), GitLabIntegration)
         self.assertIs(get_class_for_platform("jira"), JiraIntegration)
+        self.assertIs(get_class_for_platform("forgejo"), ForgejoIntegration)
         self.assertIsNone(get_class_for_platform("example"))
 
 

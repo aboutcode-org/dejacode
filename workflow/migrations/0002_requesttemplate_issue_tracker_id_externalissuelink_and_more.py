@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, verbose_name='UUID')),
-                ('platform', models.CharField(choices=[('github', 'GitHub'), ('gitlab', 'GitLab'), ('jira', 'Jira'), ('sourcehut', 'SourceHut')], help_text='External issue tracking platform.', max_length=20)),
+                ('platform', models.CharField(choices=[('github', 'GitHub'), ('gitlab', 'GitLab'), ('jira', 'Jira'), ('sourcehut', 'SourceHut'), ('forgejo', 'Forgejo')], help_text='External issue tracking platform.', max_length=20)),
                 ('repo', models.CharField(help_text="Repository or project identifier (e.g., 'user/repo-name').", max_length=100)),
                 ('issue_id', models.CharField(help_text='ID or key of the issue on the external platform.', max_length=100)),
                 ('dataspace', models.ForeignKey(editable=False, help_text='A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.', on_delete=django.db.models.deletion.PROTECT, to='dje.dataspace')),

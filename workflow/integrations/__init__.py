@@ -9,12 +9,14 @@
 import re
 
 from workflow.integrations.base import BaseIntegration
+from workflow.integrations.forgejo import ForgejoIntegration
 from workflow.integrations.github import GitHubIntegration
 from workflow.integrations.gitlab import GitLabIntegration
 from workflow.integrations.jira import JiraIntegration
 
 __all__ = [
     "BaseIntegration",
+    "ForgejoIntegration",
     "GitHubIntegration",
     "GitLabIntegration",
     "JiraIntegration",
@@ -23,6 +25,7 @@ __all__ = [
     "get_class_for_platform",
 ]
 
+FORGEJO_PATTERN = re.compile(r"^https://(?:[a-zA-Z0-9.-]*forgejo[a-zA-Z0-9.-]*)/[^/]+/[^/]+/?$")
 
 GITHUB_PATTERN = re.compile(r"^https://github\.com/[^/]+/[^/]+/?$")
 
@@ -34,6 +37,7 @@ JIRA_PATTERN = re.compile(
 )
 
 ISSUE_TRACKER_PATTERNS = [
+    FORGEJO_PATTERN,
     GITHUB_PATTERN,
     GITLAB_PATTERN,
     JIRA_PATTERN,
@@ -51,10 +55,13 @@ def get_class_for_tracker(issue_tracker_id):
         return GitLabIntegration
     elif "atlassian.net" in issue_tracker_id:
         return JiraIntegration
+    elif "forgejo" in issue_tracker_id:
+        return ForgejoIntegration
 
 
 def get_class_for_platform(platform):
     return {
+        "forgejo": ForgejoIntegration,
         "github": GitHubIntegration,
         "gitlab": GitLabIntegration,
         "jira": JiraIntegration,

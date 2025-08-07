@@ -559,8 +559,31 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
-    def __str__(self):
-        return f"Configuration for {self.dataspace}"
+    forgejo_token = models.CharField(
+        _("Forgejo token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Personal access token (PAT) used to authenticate API requests for the "
+            "Forgejo integration. This token must have sufficient permissions to create "
+            "and update issues. Keep this token secure."
+        ),
+    )
+
+    sourcehut_token = models.CharField(
+        _("SourceHut token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Access token used to authenticate API requests for the SourceHut integration. "
+            "This token must have permissions to create and update tickets. "
+            "Keep this token secure."
+        ),
+    )
+
+
+def __str__(self):
+    return f"Configuration for {self.dataspace}"
 
 
 class DataspacedQuerySet(models.QuerySet):
