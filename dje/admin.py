@@ -1059,6 +1059,7 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "purldb_api_key",
         "github_token",
         "gitlab_token",
+        "jira_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1112,6 +1113,15 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             {
                 "fields": [
                     "gitlab_token",
+                ]
+            },
+        ),
+        (
+            "Jira Integration",
+            {
+                "fields": [
+                    "jira_user",
+                    "jira_token",
                 ]
             },
         ),

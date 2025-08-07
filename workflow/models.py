@@ -39,8 +39,7 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
-from workflow.integrations.github import GitHubIntegration
-from workflow.integrations.gitlab import GitLabIntegration
+from workflow import integrations
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -125,7 +124,7 @@ class ExternalIssueLink(DataspacedModel):
         elif self.platform == self.Platform.GITLAB:
             return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
         elif self.platform == self.Platform.JIRA:
-            return f"https://{self.repo}/browse/{self.issue_id}"
+            return f"{self.repo}/browse/{self.issue_id}"
 
     @property
     def icon_css_class(self):
@@ -138,10 +137,7 @@ class ExternalIssueLink(DataspacedModel):
 
     @property
     def integration_class(self):
-        if self.platform == self.Platform.GITHUB:
-            return GitHubIntegration
-        elif self.platform == self.Platform.GITLAB:
-            return GitLabIntegration
+        return integrations.get_class_for_platform(self.platform)
 
 
 class RequestQuerySet(DataspacedQuerySet):
@@ -614,7 +610,10 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             repo=repo,
             issue_id=str(issue_id),
         )
-        self.update(external_issue=external_issue)
+
+        # Set the external_issue on this instance without triggering the whole
+        # save() + handle_integrations() logic.
+        self.raw_update(external_issue=external_issue)
 
         return external_issue
 
@@ -623,10 +622,9 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         if not issue_tracker_id:
             return
 
-        if "github.com" in issue_tracker_id:
-            GitHubIntegration(dataspace=self.dataspace).sync(request=self)
-        elif "gitlab.com" in issue_tracker_id:
-            GitLabIntegration(dataspace=self.dataspace).sync(request=self)
+        integration_class = integrations.get_class_for_tracker(issue_tracker_id)
+        if integration_class:
+            integration_class(dataspace=self.dataspace).sync(request=self)
 
 
 @receiver(models.signals.post_delete, sender=Request)

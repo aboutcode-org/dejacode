@@ -539,6 +539,26 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
+    jira_user = models.CharField(
+        _("Jira user email"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "The email address associated with your Jira account. "
+            "Used together with the API token to authenticate API requests."
+        ),
+    )
+
+    jira_token = models.CharField(
+        _("Jira API token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "API token generated from your Atlassian account, used to authenticate "
+            "API requests to Jira Cloud. Keep this token secure."
+        ),
+    )
+
     def __str__(self):
         return f"Configuration for {self.dataspace}"
 
@@ -926,7 +946,7 @@ class DataspacedModel(models.Model):
 
     def raw_update(self, **kwargs):
         """
-         Perform a direct SQL UPDATE on this instance.
+        Perform a direct SQL UPDATE on this instance.
 
         This method updates the specified fields in the database without triggering
         the ``save()`` lifecycle or related signals. It bypasses field validation and

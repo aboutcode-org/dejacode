@@ -8,7 +8,7 @@
 
 from urllib.parse import urlparse
 
-from workflow.integrations import BaseIntegration
+from workflow.integrations.base import BaseIntegration
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -71,13 +71,7 @@ class GitHubIntegration(BaseIntegration):
         if labels:
             data["labels"] = labels
 
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, json=data)
 
     def update_issue(self, repo_id, issue_id, title=None, body=None, state=None, labels=None):
         """Update an existing GitHub issue."""
@@ -92,26 +86,14 @@ class GitHubIntegration(BaseIntegration):
         if labels:
             data["labels"] = labels
 
-        response = self.session.patch(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.patch(url, json=data)
 
     def post_comment(self, repo_id, issue_id, comment_body):
         """Post a comment on an existing GitHub issue."""
         url = f"{self.api_url}/repos/{repo_id}/issues/{issue_id}/comments"
         data = {"body": comment_body}
 
-        response = self.session.post(
-            url,
-            json=data,
-            timeout=self.default_timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self.post(url, json=data)
 
     @staticmethod
     def extract_github_repo_path(url):
