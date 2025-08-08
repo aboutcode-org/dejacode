@@ -95,17 +95,32 @@ class ExternalIssueLink(DataspacedModel):
         GITLAB = "gitlab", _("GitLab")
         JIRA = "jira", _("Jira")
         SOURCEHUT = "sourcehut", _("SourceHut")
+        FORGEJO = "forgejo", _("Forgejo")
 
     platform = models.CharField(
-        max_length=20, choices=Platform.choices, help_text="External issue tracking platform."
+        max_length=20,
+        choices=Platform.choices,
+        help_text=_("External issue tracking platform."),
     )
 
     repo = models.CharField(
-        max_length=100, help_text="Repository or project identifier (e.g., 'user/repo-name')."
+        max_length=100,
+        help_text=_("Repository or project identifier (e.g., 'user/repo-name')."),
     )
 
     issue_id = models.CharField(
-        max_length=100, help_text="ID or key of the issue on the external platform."
+        max_length=100,
+        help_text=_("ID or key of the issue on the external platform."),
+    )
+
+    base_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Base URL of the external issue tracker platform (e.g., https://forgejo.example.org). "
+            "Used to construct API endpoints for integrations like Forgejo or Jira."
+        ),
     )
 
     class Meta:
@@ -125,6 +140,8 @@ class ExternalIssueLink(DataspacedModel):
             return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
         elif self.platform == self.Platform.JIRA:
             return f"{self.repo}/browse/{self.issue_id}"
+        elif self.platform == self.Platform.FORGEJO:
+            return f"{self.base_url}/{self.repo}/issues/{self.issue_id}"
 
     @property
     def icon_css_class(self):
@@ -599,16 +616,20 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         )
         return event_instance
 
-    def link_external_issue(self, platform, repo, issue_id):
+    def link_external_issue(self, platform, repo, issue_id, base_url=None):
         """Create or return an ExternalIssueLink associated with this Request."""
         if self.external_issue:
             return self.external_issue
+
+        if base_url:
+            base_url = base_url.rstrip("/")
 
         external_issue = ExternalIssueLink.objects.create(
             dataspace=self.dataspace,
             platform=platform,
             repo=repo,
             issue_id=str(issue_id),
+            base_url=base_url,
         )
 
         # Set the external_issue on this instance without triggering the whole
@@ -703,6 +724,7 @@ class RequestEvent(AbstractRequestEvent):
                 repo_id=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
+                base_url=external_issue.base_url,
             )
 
 
@@ -785,6 +807,7 @@ class RequestComment(AbstractRequestEvent):
                 repo_id=external_issue.repo,
                 issue_id=external_issue.issue_id,
                 comment_body=self.text,
+                base_url=external_issue.base_url,
             )
 
 

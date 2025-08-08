@@ -100,7 +100,7 @@ class JiraIntegration(BaseIntegration):
 
         return {"id": issue_id}
 
-    def post_comment(self, repo_id, issue_id, comment_body):
+    def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         """Post a comment on an existing Jira issue."""
         api_url = repo_id.rstrip("/") + JIRA_API_PATH
         url = f"{api_url}/issue/{issue_id}/comment"

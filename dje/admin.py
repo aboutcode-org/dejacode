@@ -1060,6 +1060,7 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "github_token",
         "gitlab_token",
         "jira_token",
+        "forgejo_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1122,6 +1123,14 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
                 "fields": [
                     "jira_user",
                     "jira_token",
+                ]
+            },
+        ),
+        (
+            "Forgejo Integration",
+            {
+                "fields": [
+                    "forgejo_token",
                 ]
             },
         ),
