@@ -441,3 +441,113 @@ class JiraIntegrationTestCase(TestCase):
 
         self.assertEqual(response["id"], "1001")
         mock_request.assert_called_once()
+
+
+class ForgejoIntegrationTestCase(TestCase):
+    def setUp(self):
+        patcher = mock.patch("workflow.models.Request.handle_integrations", return_value=None)
+        self.mock_handle_integrations = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace.set_configuration("forgejo_token", "fake-token")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.component_ct = ContentType.objects.get(app_label="component_catalog", model="component")
+        self.request_template = RequestTemplate.objects.create(
+            name="Forgejo Template",
+            description="Integration test template",
+            content_type=self.component_ct,
+            dataspace=self.dataspace,
+            issue_tracker_id="https://code.forgejo.org/nexB/repo",
+        )
+        self.question = Question.objects.create(
+            template=self.request_template,
+            label="Example Question",
+            input_type="TextField",
+            position=0,
+            dataspace=self.dataspace,
+        )
+        self.request = self.request_template.create_request(
+            title="Example Request",
+            requester=self.super_user,
+            serialized_data='{"Example Question": "Some value"}',
+        )
+        self.forgejo = ForgejoIntegration(dataspace=self.dataspace)
+
+    def test_forgejo_extract_forgejo_info_valid_url(self):
+        url = "https://code.forgejo.org/user/repo"
+        base_url, repo_path = ForgejoIntegration.extract_forgejo_info(url)
+        self.assertEqual(base_url, "https://code.forgejo.org")
+        self.assertEqual(repo_path, "user/repo")
+
+    def test_forgejo_extract_forgejo_info_invalid_url_missing_host(self):
+        with self.assertRaises(ValueError):
+            ForgejoIntegration.extract_forgejo_info("invalid-url")
+
+    def test_forgejo_extract_forgejo_info_invalid_url_missing_repo_path(self):
+        with self.assertRaises(ValueError):
+            ForgejoIntegration.extract_forgejo_info("https://code.forgejo.org/user")
+
+    def test_forgejo_get_headers_returns_auth_header(self):
+        headers = self.forgejo.get_headers()
+        self.assertEqual(headers, {"Authorization": "token fake-token"})
+
+    def test_forgejo_make_issue_title(self):
+        title = self.forgejo.make_issue_title(self.request)
+        self.assertEqual(title, "[DEJACODE] Example Request")
+
+    def test_forgejo_make_issue_body_contains_question(self):
+        body = self.forgejo.make_issue_body(self.request)
+        self.assertIn("### Example Question", body)
+        self.assertIn("Some value", body)
+
+    @mock.patch("requests.Session.request")
+    def test_forgejo_create_issue_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"number": 42}
+        mock_request.return_value.raise_for_status.return_value = None
+
+        self.forgejo.api_url = "https://code.forgejo.org/api/v1"
+        issue = self.forgejo.create_issue(
+            repo_id="user/repo",
+            title="Issue Title",
+            body="Issue Body",
+        )
+        self.assertEqual(issue["number"], 42)
+        mock_request.assert_called_once()
+
+    @mock.patch("requests.Session.request")
+    def test_forgejo_update_issue_calls_patch(self, mock_request):
+        mock_request.return_value.json.return_value = {"state": "closed"}
+        mock_request.return_value.raise_for_status.return_value = None
+
+        self.forgejo.api_url = "https://code.forgejo.org/api/v1"
+        response = self.forgejo.update_issue(
+            repo_id="user/repo",
+            issue_id=123,
+            title="Updated title",
+            body="Updated body",
+            state="closed",
+        )
+        self.assertEqual(response["state"], "closed")
+        mock_request.assert_called_once()
+
+    @mock.patch("requests.Session.request")
+    def test_forgejo_post_comment_calls_post(self, mock_request):
+        mock_request.return_value.json.return_value = {"id": 99, "body": "Test comment"}
+        mock_request.return_value.raise_for_status.return_value = None
+
+        response = self.forgejo.post_comment(
+            repo_id="user/repo",
+            issue_id=123,
+            comment_body="Test comment",
+            base_url="https://code.forgejo.org",
+        )
+        self.assertEqual(response["body"], "Test comment")
+        mock_request.assert_called_once_with(
+            method="POST",
+            url="https://code.forgejo.org/api/v1/repos/user/repo/issues/123/comments",
+            params=None,
+            data=None,
+            json={"body": "Test comment"},
+            timeout=self.forgejo.default_timeout,
+        )

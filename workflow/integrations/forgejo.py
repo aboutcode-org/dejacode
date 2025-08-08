@@ -86,7 +86,7 @@ class ForgejoIntegration(BaseIntegration):
 
     def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         """Post a comment on an existing Forgejo issue."""
-        url = f"{base_url}/{FORGEJO_API_PATH}/repos/{repo_id}/issues/{issue_id}/comments"
+        url = f"{base_url}{FORGEJO_API_PATH}/repos/{repo_id}/issues/{issue_id}/comments"
         return self.post(url, json={"body": comment_body})
 
     @staticmethod
