@@ -452,7 +452,9 @@ class ForgejoIntegrationTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.dataspace.set_configuration("forgejo_token", "fake-token")
         self.super_user = create_superuser("nexb_user", self.dataspace)
-        self.component_ct = ContentType.objects.get(app_label="component_catalog", model="component")
+        self.component_ct = ContentType.objects.get(
+            app_label="component_catalog", model="component"
+        )
         self.request_template = RequestTemplate.objects.create(
             name="Forgejo Template",
             description="Integration test template",
