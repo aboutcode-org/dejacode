@@ -581,9 +581,8 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
-
-def __str__(self):
-    return f"Configuration for {self.dataspace}"
+    def __str__(self):
+        return f"{self.dataspace}"
 
 
 class DataspacedQuerySet(models.QuerySet):
