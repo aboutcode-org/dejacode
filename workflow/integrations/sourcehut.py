@@ -128,6 +128,32 @@ class SourceHutIntegration(BaseIntegration):
         )
         return response.get("data", {}).get("updateTicket")
 
+    def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
+        """Post a comment on an existing SourceHut ticket."""
+        mutation = """
+        mutation SubmitComment($trackerId: Int!, $ticketId: Int!, $input: SubmitCommentInput!) {
+            submitComment(trackerId: $trackerId, ticketId: $ticketId, input: $input) {
+                id
+                created
+                ticket {
+                    id
+                    subject
+                }
+            }
+        }
+        """
+        variables = {
+            "trackerId": self.get_tracker_id(repo_id),
+            "ticketId": int(issue_id),
+            "input": {"text": comment_body},
+        }
+
+        response = self.post(
+            self.api_url,
+            json={"query": mutation, "variables": variables},
+        )
+        return response.get("data", {}).get("submitComment")
+
     @staticmethod
     def extract_sourcehut_project(url):
         """Extract the project slug (e.g., ~user/project-name) from a SourceHut URL."""
