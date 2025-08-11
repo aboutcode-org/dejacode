@@ -22,6 +22,7 @@ class JiraIntegration(BaseIntegration):
     """
 
     issuetype = "DejaCode Request"
+    open_status = None
     closed_status = "Closed"
 
     def get_headers(self):
@@ -55,7 +56,7 @@ class JiraIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                status=self.closed_status if request.is_closed else None,
+                status=self.get_status(request),
             )
         else:
             issue = self.create_issue(

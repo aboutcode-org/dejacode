@@ -19,6 +19,7 @@ from workflow.integrations import ForgejoIntegration
 from workflow.integrations import GitHubIntegration
 from workflow.integrations import GitLabIntegration
 from workflow.integrations import JiraIntegration
+from workflow.integrations import SourceHutIntegration
 from workflow.integrations import get_class_for_platform
 from workflow.integrations import get_class_for_tracker
 from workflow.integrations import is_valid_issue_tracker_id
@@ -46,6 +47,8 @@ class WorkflowIntegrationsTestCase(TestCase):
             "https://code.forgejo.org/user/repo",
             "https://git.forgejo.dev/org/project/",
             "https://forgejo.example.org/team/repo",
+            # SourceHut
+            "https://todo.sr.ht/~username/project-name",
         ]
         for url in valid_urls:
             self.assertTrue(is_valid_issue_tracker_id(url), msg=url)
@@ -55,6 +58,7 @@ class WorkflowIntegrationsTestCase(TestCase):
             "https://github.com/",
             "https://gitlab.com/",
             "https://atlassian.net/projects/",
+            "https://todo.sr.ht/",
             "https://example.com",
             "https://example.org/user/repo",
         ]
@@ -70,6 +74,9 @@ class WorkflowIntegrationsTestCase(TestCase):
         self.assertIs(
             get_class_for_tracker("https://code.forgejo.org/user/repo"), ForgejoIntegration
         )
+        self.assertIs(
+            get_class_for_tracker("https://todo.sr.ht/~username/project-name"), SourceHutIntegration
+        )
         self.assertIsNone(get_class_for_tracker("https://example.com"))
 
     def test_integrations_get_class_for_platform(self):
@@ -77,6 +84,7 @@ class WorkflowIntegrationsTestCase(TestCase):
         self.assertIs(get_class_for_platform("gitlab"), GitLabIntegration)
         self.assertIs(get_class_for_platform("jira"), JiraIntegration)
         self.assertIs(get_class_for_platform("forgejo"), ForgejoIntegration)
+        self.assertIs(get_class_for_platform("sourcehut"), SourceHutIntegration)
         self.assertIsNone(get_class_for_platform("example"))
 
 

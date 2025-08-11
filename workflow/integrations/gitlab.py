@@ -21,6 +21,8 @@ class GitLabIntegration(BaseIntegration):
     """
 
     api_url = GITLAB_API_URL
+    open_status = "reopen"
+    closed_status = "close"
 
     def get_headers(self):
         gitlab_token = self.dataspace.get_configuration(field_name="gitlab_token")
@@ -48,7 +50,7 @@ class GitLabIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                state_event="close" if request.is_closed else "reopen",
+                state_event=self.get_status(request),
                 labels=labels,
             )
         else:

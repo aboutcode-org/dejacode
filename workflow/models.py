@@ -142,6 +142,8 @@ class ExternalIssueLink(DataspacedModel):
             return f"{self.repo}/browse/{self.issue_id}"
         elif self.platform == self.Platform.FORGEJO:
             return f"{self.base_url}/{self.repo}/issues/{self.issue_id}"
+        elif self.platform == self.Platform.SOURCEHUT:
+            return f"https://todo.sr.ht/{self.repo}/{self.issue_id}"
 
     @property
     def icon_css_class(self):

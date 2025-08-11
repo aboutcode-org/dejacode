@@ -19,9 +19,6 @@ class ForgejoIntegration(BaseIntegration):
     from DejaCode requests.
     """
 
-    open_status = "open"
-    closed_status = "closed"
-
     def get_headers(self):
         forgejo_token = self.dataspace.get_configuration("forgejo_token")
         if not forgejo_token:
@@ -46,7 +43,7 @@ class ForgejoIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                state=self.closed_status if request.is_closed else self.open_status,
+                state=self.get_status(request),
             )
         else:
             issue = self.create_issue(

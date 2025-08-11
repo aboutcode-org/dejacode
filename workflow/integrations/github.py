@@ -20,8 +20,6 @@ class GitHubIntegration(BaseIntegration):
     """
 
     api_url = GITHUB_API_URL
-    open_status = "open"
-    closed_status = "closed"
 
     def get_headers(self):
         github_token = self.dataspace.get_configuration(field_name="github_token")
@@ -47,7 +45,7 @@ class GitHubIntegration(BaseIntegration):
                 issue_id=external_issue.issue_id,
                 title=self.make_issue_title(request),
                 body=self.make_issue_body(request),
-                state=self.closed_status if request.is_closed else self.open_status,
+                state=self.get_status(request),
                 labels=labels,
             )
         else:

@@ -21,6 +21,8 @@ class BaseIntegration:
     """Base class for managing issue tracker integrations from DejaCode requests."""
 
     default_timeout = 10
+    open_status = "open"
+    closed_status = "closed"
 
     def __init__(self, dataspace, timeout=None):
         if not dataspace:
@@ -94,6 +96,11 @@ class BaseIntegration:
 
     def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         raise NotImplementedError
+
+    def get_status(self, request):
+        if request.is_closed:
+            return self.closed_status
+        return self.open_status
 
     @staticmethod
     def make_issue_title(request):
