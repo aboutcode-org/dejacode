@@ -47,11 +47,20 @@ Release notes
   https://github.com/aboutcode-org/dejacode/issues/349
 
 - Add GitLab workflow Request integration.
-  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-github.html
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-gitlab.html
   https://github.com/aboutcode-org/dejacode/issues/346
 
 - Add Jira workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-jira.html
   https://github.com/aboutcode-org/dejacode/issues/350
+
+- Add Forgejo workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-forgejo.html
+  https://github.com/aboutcode-org/dejacode/issues/347
+
+- Add SourceHut workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-sourcehut.html
+  https://github.com/aboutcode-org/dejacode/issues/348
 
 ### Version 5.3.0
 
