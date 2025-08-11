@@ -572,7 +572,7 @@ class DataspaceConfiguration(models.Model):
 
     sourcehut_token = models.CharField(
         _("SourceHut token"),
-        max_length=255,
+        max_length=2048,  # The length of this token depends on the selected permissions
         blank=True,
         help_text=_(
             "Access token used to authenticate API requests for the SourceHut integration. "

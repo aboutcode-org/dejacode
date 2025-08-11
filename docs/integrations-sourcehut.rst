@@ -24,8 +24,8 @@ To enable integration, you need a SourceHut **API token**.
    - Go to https://meta.sr.ht/oauth2
    - Under **Personal Access Tokens**, click **"Generate new token"**
    - Set a clear description like ``DejaCode Integration`` in the "Comment" field
-   - Select only the ``todo.sr.ht`` > ``TICKETS`` scope
-   - **Generate token** and copy the token
+   - Select **both** the ``todo.sr.ht`` > ``TRACKERS`` AND ``TICKETS`` scopes
+   - **Generate token** and copy the **entire token string**
 
 .. note::
 
