@@ -17,6 +17,8 @@ class SourceHutIntegration(BaseIntegration):
     """A SourceHut integration using GraphQL for issue creation and updates."""
 
     api_url = SOURCEHUT_GRAPHQL_API_URL
+    open_status = "REPORTED"
+    closed_status = "RESOLVED"
 
     def get_headers(self):
         token = self.dataspace.get_configuration(field_name="sourcehut_token")
@@ -104,6 +106,8 @@ class SourceHutIntegration(BaseIntegration):
                 id
                 subject
                 body
+                status
+                resolution
             }
         }
         """
@@ -116,9 +120,12 @@ class SourceHutIntegration(BaseIntegration):
         if not input_data:
             raise ValueError("At least one of 'title' or 'body' must be provided.")
 
+        tracker_id = self.get_tracker_id(repo_id)
+        ticket_id = int(issue_id)
+
         variables = {
-            "trackerId": self.get_tracker_id(repo_id),
-            "ticketId": int(issue_id),
+            "trackerId": tracker_id,
+            "ticketId": ticket_id,
             "input": input_data,
         }
 
@@ -126,7 +133,45 @@ class SourceHutIntegration(BaseIntegration):
             self.api_url,
             json={"query": mutation, "variables": variables},
         )
-        return response.get("data", {}).get("updateTicket")
+
+        updated_ticket = response.get("data", {}).get("updateTicket")
+
+        if state != updated_ticket.get("status"):
+            self.update_ticket_status(tracker_id, ticket_id, state)
+
+        return updated_ticket
+
+    def update_ticket_status(self, tracker_id, ticket_id, status):
+        """Update the status or resolution of a SourceHut ticket via GraphQL."""
+        mutation = """
+        mutation UpdateTicketStatus($trackerId: Int!, $ticketId: Int!, $input: UpdateStatusInput!) {
+            updateTicketStatus(trackerId: $trackerId, ticketId: $ticketId, input: $input) {
+                id
+                ticket {
+                    id
+                    subject
+                    status
+                    resolution
+                }
+            }
+        }
+        """
+        input_data = {"status": status}
+
+        if status == self.closed_status:
+            input_data["resolution"] = "CLOSED"
+
+        variables = {
+            "trackerId": tracker_id,
+            "ticketId": int(ticket_id),
+            "input": input_data,
+        }
+
+        response = self.post(
+            self.api_url,
+            json={"query": mutation, "variables": variables},
+        )
+        return response.get("data", {}).get("updateTicketStatus")
 
     def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
         """Post a comment on an existing SourceHut ticket."""
