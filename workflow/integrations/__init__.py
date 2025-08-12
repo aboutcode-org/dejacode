@@ -13,6 +13,7 @@ from workflow.integrations.forgejo import ForgejoIntegration
 from workflow.integrations.github import GitHubIntegration
 from workflow.integrations.gitlab import GitLabIntegration
 from workflow.integrations.jira import JiraIntegration
+from workflow.integrations.sourcehut import SourceHutIntegration
 
 __all__ = [
     "BaseIntegration",
@@ -20,6 +21,7 @@ __all__ = [
     "GitHubIntegration",
     "GitLabIntegration",
     "JiraIntegration",
+    "SourceHutIntegration",
     "is_valid_issue_tracker_id",
     "get_class_for_tracker",
     "get_class_for_platform",
@@ -36,11 +38,14 @@ JIRA_PATTERN = re.compile(
     r"/(?:projects|browse)/[A-Z][A-Z0-9]+(?:/[^/]*)*/*$"
 )
 
+SOURCEHUT_PATTERN = re.compile(r"^https://todo\.sr\.ht/~[^/]+/[^/]+/?$")
+
 ISSUE_TRACKER_PATTERNS = [
     FORGEJO_PATTERN,
     GITHUB_PATTERN,
     GITLAB_PATTERN,
     JIRA_PATTERN,
+    SOURCEHUT_PATTERN,
 ]
 
 
@@ -57,6 +62,8 @@ def get_class_for_tracker(issue_tracker_id):
         return JiraIntegration
     elif "forgejo" in issue_tracker_id:
         return ForgejoIntegration
+    elif "todo.sr.ht" in issue_tracker_id:
+        return SourceHutIntegration
 
 
 def get_class_for_platform(platform):
@@ -65,4 +72,5 @@ def get_class_for_platform(platform):
         "github": GitHubIntegration,
         "gitlab": GitLabIntegration,
         "jira": JiraIntegration,
+        "sourcehut": SourceHutIntegration,
     }.get(platform)

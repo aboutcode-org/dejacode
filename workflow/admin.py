@@ -69,6 +69,7 @@ class RequestTemplateAdminForm(DataspacedAdminForm):
                     "• GitHub: https://github.com/ORG/REPO_NAME",
                     "• GitLab: https://gitlab.com/GROUP/PROJECT_NAME",
                     "• Jira: https://YOUR_DOMAIN.atlassian.net/projects/PROJECTKEY",
+                    "• SourceHut: https://todo.sr.ht/~USERNAME/PROJECT_NAME",
                 ]
             )
         return issue_tracker_id

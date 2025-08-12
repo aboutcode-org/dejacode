@@ -1057,10 +1057,11 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "scancodeio_api_key",
         "vulnerablecode_api_key",
         "purldb_api_key",
+        "forgejo_token",
         "github_token",
         "gitlab_token",
         "jira_token",
-        "forgejo_token",
+        "sourcehut_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1102,6 +1103,14 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             },
         ),
         (
+            "Forgejo Integration",
+            {
+                "fields": [
+                    "forgejo_token",
+                ]
+            },
+        ),
+        (
             "GitHub Integration",
             {
                 "fields": [
@@ -1127,10 +1136,10 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             },
         ),
         (
-            "Forgejo Integration",
+            "SourceHut Integration",
             {
                 "fields": [
-                    "forgejo_token",
+                    "sourcehut_token",
                 ]
             },
         ),
