@@ -431,9 +431,7 @@ class DataspacedChangeList(ChangeList):
                 self.reference_params = params
 
     def get_search_fields_for_hint_display(self):
-        if not self.search_fields:
-            return []
-        return tuple(set(field.split("__")[0] for field in self.search_fields))
+        return self.search_fields or []
 
 
 class DataspacedAdmin(
