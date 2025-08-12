@@ -136,7 +136,7 @@ class SourceHutIntegration(BaseIntegration):
 
         updated_ticket = response.get("data", {}).get("updateTicket")
 
-        if state != updated_ticket.get("status"):
+        if state and state != updated_ticket.get("status"):
             self.update_ticket_status(tracker_id, ticket_id, state)
 
         return updated_ticket

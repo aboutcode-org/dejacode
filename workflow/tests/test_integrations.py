@@ -561,3 +561,131 @@ class ForgejoIntegrationTestCase(TestCase):
             json={"body": "Test comment"},
             timeout=self.forgejo.default_timeout,
         )
+
+
+class SourceHutIntegrationTestCase(TestCase):
+    def setUp(self):
+        patcher = mock.patch("workflow.models.Request.handle_integrations", return_value=None)
+        self.mock_handle_integrations = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace.set_configuration("sourcehut_token", "fake-token")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.component_ct = ContentType.objects.get(
+            app_label="component_catalog", model="component"
+        )
+        self.request_template = RequestTemplate.objects.create(
+            name="SourceHut Template",
+            description="Integration test template",
+            content_type=self.component_ct,
+            dataspace=self.dataspace,
+            issue_tracker_id="https://todo.sr.ht/~username/project-name",
+        )
+        self.question = Question.objects.create(
+            template=self.request_template,
+            label="Example Question",
+            input_type="TextField",
+            position=0,
+            dataspace=self.dataspace,
+        )
+        self.request = self.request_template.create_request(
+            title="Example Request",
+            requester=self.super_user,
+            serialized_data='{"Example Question": "Some value"}',
+        )
+        self.sourcehut = SourceHutIntegration(dataspace=self.dataspace)
+
+    def test_sourcehut_extract_sourcehut_project_valid_url(self):
+        url = "https://todo.sr.ht/~user/project"
+        result = SourceHutIntegration.extract_sourcehut_project(url)
+        self.assertEqual(result, "~user/project")
+
+    def test_sourcehut_extract_sourcehut_project_invalid_host(self):
+        with self.assertRaises(ValueError):
+            SourceHutIntegration.extract_sourcehut_project("https://example.com/~user/project")
+
+    def test_sourcehut_extract_sourcehut_project_invalid_path_format(self):
+        with self.assertRaises(ValueError):
+            SourceHutIntegration.extract_sourcehut_project("https://todo.sr.ht/user/project")
+
+    def test_sourcehut_get_headers_returns_auth_header(self):
+        headers = self.sourcehut.get_headers()
+        self.assertEqual(
+            headers,
+            {
+                "Authorization": "Bearer fake-token",
+                "Content-Type": "application/json",
+            },
+        )
+
+    def test_sourcehut_make_issue_title(self):
+        title = self.sourcehut.make_issue_title(self.request)
+        self.assertEqual(title, "[DEJACODE] Example Request")
+
+    def test_sourcehut_make_issue_body_contains_question(self):
+        body = self.sourcehut.make_issue_body(self.request)
+        self.assertIn("### Example Question", body)
+        self.assertIn("Some value", body)
+
+    @mock.patch.object(SourceHutIntegration, "post")
+    @mock.patch.object(SourceHutIntegration, "get_tracker_id", return_value=1)
+    def test_sourcehut_create_issue_calls_post(self, mock_get_tracker_id, mock_post):
+        mock_post.return_value = {"data": {"submitTicket": {"id": 123, "subject": "Issue Title"}}}
+
+        issue = self.sourcehut.create_issue(
+            repo_id="~user/project",
+            title="Issue Title",
+            body="Issue Body",
+        )
+
+        self.assertEqual(issue["id"], 123)
+        mock_post.assert_called_once()
+        mock_get_tracker_id.assert_called_once_with("~user/project")
+
+    @mock.patch.object(SourceHutIntegration, "post")
+    @mock.patch.object(SourceHutIntegration, "get_tracker_id", return_value=1)
+    def test_sourcehut_update_issue_calls_post(self, mock_get_tracker_id, mock_post):
+        mock_post.return_value = {
+            "data": {
+                "updateTicket": {
+                    "id": 123,
+                    "subject": "Updated title",
+                    "status": "REPORTED",
+                }
+            }
+        }
+
+        response = self.sourcehut.update_issue(
+            repo_id="~user/project",
+            issue_id=123,
+            title="Updated title",
+            body="Updated body",
+        )
+
+        self.assertEqual(response["id"], 123)
+        mock_post.assert_called_once()
+        mock_get_tracker_id.assert_called_once_with("~user/project")
+
+    @mock.patch.object(SourceHutIntegration, "post")
+    @mock.patch.object(SourceHutIntegration, "get_tracker_id", return_value=1)
+    def test_sourcehut_post_comment_calls_post(self, mock_get_tracker_id, mock_post):
+        mock_post.return_value = {
+            "data": {
+                "submitComment": {
+                    "id": 77,
+                    "created": "2025-08-12T12:00:00Z",
+                    "ticket": {"id": 123, "subject": "Example Request"},
+                }
+            }
+        }
+
+        response = self.sourcehut.post_comment(
+            repo_id="~user/project",
+            issue_id=123,
+            comment_body="Test comment",
+        )
+
+        self.assertEqual(response["id"], 77)
+        mock_post.assert_called_once()
+        mock_get_tracker_id.assert_called_once_with("~user/project")
