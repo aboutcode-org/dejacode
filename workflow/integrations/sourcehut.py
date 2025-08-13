@@ -98,7 +98,7 @@ class SourceHutIntegration(BaseIntegration):
         )
         return response.get("data", {}).get("submitTicket")
 
-    def update_issue(self, repo_id, issue_id, title=None, body=None, state=None, labels=None):
+    def update_issue(self, repo_id, issue_id, title=None, body=None, state=None):
         """Update an existing SourceHut ticket via GraphQL."""
         mutation = """
         mutation UpdateTicket($trackerId: Int!, $ticketId: Int!, $input: UpdateTicketInput!) {

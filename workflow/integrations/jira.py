@@ -22,8 +22,6 @@ class JiraIntegration(BaseIntegration):
     """
 
     issuetype = "DejaCode Request"
-    open_status = None
-    closed_status = "Closed"
 
     def get_headers(self):
         jira_user = self.dataspace.get_configuration("jira_user")

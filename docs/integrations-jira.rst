@@ -11,11 +11,17 @@ Prerequisites
 -------------
 
 - A **Jira Cloud project** that you want to integrate with DejaCode.
-- A **Jira user account** with sufficient permissions
-  (at least *Create Issues* and *Edit Issues*) in that project.
 
-Create Custom "DejaCode Request" Work Type
-------------------------------------------
+  .. note::
+
+      **The Jira project must have an editable workflow**, it is recommended to choose
+      **Jira** > **Blank project** template during project creation.
+
+- A **Jira user account** with sufficient permissions
+  (at least **Create Issues** and **Edit Issues**) in that project.
+
+Create "DejaCode Request" Work Type
+-----------------------------------
 
 .. warning::
 
@@ -28,26 +34,21 @@ To create the custom work type in Jira:
 3. Set the name to: ``DejaCode Request``
 4. Click **Create**
 
-Create "Closed" Status
-----------------------
+Define Open/Closed Statuses
+---------------------------
 
 .. warning::
 
    This is required for the integration to function properly.
 
-This status will be set on the Jira issue when the DejaCode Request is closed.
-
-To create the **Closed** status in Jira:
+To edit the workflow statuses in Jira:
 
 1. Navigate to **Project settings** → **Work types**
 2. Select the ``DejaCode Request`` work type
 3. Click **Edit workflow**
-4. Click **Add status**
-5. Click **Create new status** tab
-6. Enter the name: ``Closed``
-7. Choose a category: ``Done``
-8. Click **Add**
-9. Click **Update workflow**
+4. Rename the ``TO DO`` status to ``OPEN``, keep the ``To do`` status category
+5. Rename the ``DONE`` status to ``CLOSED``, keep the ``Done`` status category
+6. Click **Update workflow** > **Save**
 
 Jira API Token
 --------------
