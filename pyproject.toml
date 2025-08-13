@@ -35,7 +35,7 @@ dependencies = [
     "wheel==0.45.1",
     "pip==25.1.1",
     # Django
-    "Django==5.2.4",
+    "Django==5.2.5",
     "asgiref==3.9.1",
     "typing_extensions==4.14.0",
     "sqlparse==0.5.3",
@@ -48,12 +48,12 @@ dependencies = [
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.0.3",
     "django-environ==0.12.0",
-    "django-debug-toolbar==5.2.0",
+    "django-debug-toolbar==6.0.0",
     # CAPTCHA
     "altcha==0.2.0",
-    "django_altcha==0.2.0",
+    "django_altcha==0.3.0",
     # REST API
-    "djangorestframework==3.16.0",
+    "djangorestframework==3.16.1",
     # API documentation
     "drf-yasg==1.21.10",
     "uritemplate==4.1.1",
@@ -68,7 +68,7 @@ dependencies = [
     # Database
     "psycopg==3.2.9",
     # Cache
-    "redis==6.2.0",
+    "redis==6.4.0",
     # redis dependencies:
     "packaging==25.0",
     "pyparsing==3.2.3",
@@ -81,14 +81,14 @@ dependencies = [
     "model_bakery==1.10.1",
     # Task queue
     "rq==2.4.1",
-    "django-rq==3.0.1",
-    "fakeredis==2.30.1",
+    "django-rq==3.1.0",
+    "fakeredis==2.31.0",
     # Scheduler
     "rq-scheduler==0.14.0",
     "crontab==1.0.5",
     "freezegun==1.5.2",
     # Libs
-    "certifi==2025.7.14",
+    "certifi==2025.8.3",
     "urllib3==2.5.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
@@ -97,7 +97,7 @@ dependencies = [
     "six==1.17.0",
     "requests==2.32.4",
     "idna==3.10",
-    "charset-normalizer==3.4.2",
+    "charset-normalizer==3.4.3",
     "PyYAML==6.0.2",
     "cython==3.1.1",
     "zipp==3.22.0",
@@ -138,7 +138,7 @@ dependencies = [
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
     # PackageURL
-    "packageurl-python==0.17.1",
+    "packageurl-python==0.17.5",
     # Gunicorn
     "gunicorn==23.0.0",
     # SPDX validation
@@ -154,7 +154,7 @@ dependencies = [
     "toml==0.10.2",
     "py-serializable==2.0.0",
     # Git
-    "GitPython==3.1.44",
+    "GitPython==3.1.45",
     "gitdb==4.0.12",
     "smmap==5.0.2",
     # CSAF

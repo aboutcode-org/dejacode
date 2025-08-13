@@ -1,0 +1,14 @@
+about_resource: charset_normalizer-3.4.3-py3-none-any.whl
+name: charset-normalizer
+version: 3.4.3
+download_url: https://files.pythonhosted.org/packages/8a/1f/f041989e93b001bc4e44bb1669ccdcf54d3f00e628229a85b08d330615c5/charset_normalizer-3.4.3-py3-none-any.whl
+package_url: pkg:pypi/charset-normalizer@3.4.3
+license_expression: mit
+copyright: Copyright Ahmed TAHRI @Ousret, Denny Vrandecic, TAHRI Ahmed R.
+attribute: yes
+checksum_md5: 4a43811bb5747201dc3694e76763e446
+checksum_sha1: 562c6324f09dae2623f6745989e7d077f53c3bd3
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
