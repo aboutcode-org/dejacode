@@ -1,0 +1,16 @@
+about_resource: certifi-2025.8.3-py3-none-any.whl
+name: certifi
+version: 2025.8.3
+download_url: https://files.pythonhosted.org/packages/e5/48/1549795ba7742c948d2ad169c1c8cdbae65bc450d6cd753d124b17c8cd32/certifi-2025.8.3-py3-none-any.whl
+package_url: pkg:pypi/certifi@2025.8.3
+license_expression: mpl-2.0
+copyright: Copyright certifi project contributors
+redistribute: yes
+attribute: yes
+track_changes: yes
+checksum_md5: f9b6740cffcf397b47bc7fb7782b1354
+checksum_sha1: 8b70ef15e51b5e3461b088538ae146c6e079bd84
+licenses:
+  - key: mpl-2.0
+    name: Mozilla Public License 2.0
+    file: mpl-2.0.LICENSE

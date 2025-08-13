@@ -1,0 +1,14 @@
+about_resource: django-5.2.5-py3-none-any.whl
+name: django
+version: 5.2.5
+download_url: https://files.pythonhosted.org/packages/9d/6e/98a1d23648e0085bb5825326af17612ecd8fc76be0ce96ea4dc35e17b926/django-5.2.5-py3-none-any.whl
+package_url: pkg:pypi/django@5.2.5
+license_expression: bsd-new
+copyright: Copyright django project contributors
+attribute: yes
+checksum_md5: 80e0f2710a21ed60e3399a88cd594b36
+checksum_sha1: 83e329776db523675c24f16977fc6ada9e271c1c
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
