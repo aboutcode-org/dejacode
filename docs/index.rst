@@ -54,6 +54,7 @@ Welcome to the very start of your DejaCode journey!
     integrations-jira
     integrations-sourcehut
     integrations-rest-api
+    integrations-webhook
 
 .. toctree::
    :maxdepth: 1
