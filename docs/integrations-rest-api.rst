@@ -204,3 +204,25 @@ Allows updating only specific fields. For example, to close a request::
     response = requests.patch(api_url, headers=headers, json=data)
     print(response.json())
 
+Add comment
+-----------
+
+``POST /api/v2/requests/{uuid}/add_comment/``
+
+This endpoint allows you to attach a new comment to an existing request.
+A successful call will store the comment and return a confirmation message.
+
+**Payload example**:
+
+.. code-block:: json
+
+    {
+        "text": "Comment content"
+    }
+
+**Notes**:
+ - The ``uuid`` in the URL must correspond to the target request.
+ - The ``text`` field is required and should contain the full comment content.
+ - Comments are attributed to the authenticated user making the request.
+ - A successful request returns HTTP 201 with a status message.
+ - Invalid or missing fields will return HTTP 400 along with error details.
