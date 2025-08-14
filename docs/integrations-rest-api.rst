@@ -139,6 +139,13 @@ Optional fields:
 - **content_object** (string|null): URI of associated content object.
 - **cc_emails** (array of strings): List of emails to notify.
 
+.. note::
+
+    The structure of **serialized_data** depends on the "Request Template" used
+    for the request. To help construct valid **serialized_data**, consult the
+    ``form_data_layout`` field available in the Request Template list at
+    ``https://localhost/api/v2/request_templates/``.
+
 Example of minimal JSON payload::
 
     {
