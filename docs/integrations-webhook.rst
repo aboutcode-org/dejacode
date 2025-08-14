@@ -65,7 +65,7 @@ The default webhook payload is JSON-formatted and contains at least:
 - ``hook`` — The data related to the webhook, like event name, e.g. ``request.created``
 - ``data`` — Object containing event-specific data
 
-If **extra payload** is defined, it is merged into the JSON body.  
+If **extra payload** is defined, it is merged into the JSON body.
 If **extra headers** are defined, they are added to the HTTP request.
 
 Example payload::
