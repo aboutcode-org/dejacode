@@ -48,11 +48,14 @@ Welcome to the very start of your DejaCode journey!
     :maxdepth: 1
     :caption: Integrations
 
+    integrations-introduction
     integrations-forgejo
     integrations-github
     integrations-gitlab
     integrations-jira
     integrations-sourcehut
+    integrations-rest-api
+    integrations-webhook
 
 .. toctree::
    :maxdepth: 1

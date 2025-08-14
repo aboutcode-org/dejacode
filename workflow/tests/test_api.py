@@ -361,9 +361,15 @@ class RequestAPITestCase(TestCase):
         expected = {
             "title": ["This field is required."],
             "request_template": ["This field may not be null."],
-            "assignee": ["This field may not be null."],
         }
         self.assertEqual(expected, response.json())
+
+        data = {
+            "title": "Title",
+            "request_template": self.request_template1_detail_url,
+        }
+        response = self.client.post(self.request_list_url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
         data = {
             "title": "Title",
@@ -778,6 +784,24 @@ class RequestAPITestCase(TestCase):
         response = client.patch(self.request1_detail_url, data=data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"serialized_data": ['"Organization" is required.']}
+        self.assertEqual(expected, response.data)
+
+    def test_api_request_endpoint_add_comment_action(self):
+        self.client.login(username="super_user", password="secret")
+        add_comment_url = reverse("api_v2:request-add-comment", args=[self.request1.uuid])
+
+        data = {}
+        response = self.client.post(add_comment_url, data=data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {
+            "text": ["This field is required."],
+        }
+        self.assertEqual(expected, response.json())
+
+        data = {"text": "Comment content."}
+        response = self.client.post(add_comment_url, data=data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        expected = {"status": "Comment added."}
         self.assertEqual(expected, response.data)
 
     def test_api_request_and_request_template_endpoints_tab_permission(self):

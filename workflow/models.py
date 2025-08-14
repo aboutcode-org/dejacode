@@ -602,6 +602,14 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             "data": serializer.data,
         }
 
+    def add_comment(self, user, text):
+        """Create and return a RequestComment for this Request."""
+        return self.comments.create(
+            user=user,
+            text=text,
+            dataspace=self.dataspace,
+        )
+
     def close(self, user, reason):
         """
         Set the Request status to CLOSED.

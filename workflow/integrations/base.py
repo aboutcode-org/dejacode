@@ -94,7 +94,12 @@ class BaseIntegration:
         """Send a PATCH request."""
         return self.request("PATCH", url, json=json)
 
+    def sync(self, request):
+        """Sync the given request by creating or updating an external issue."""
+        raise NotImplementedError
+
     def post_comment(self, repo_id, issue_id, comment_body, base_url=None):
+        """Post a comment on an external issue."""
         raise NotImplementedError
 
     def get_status(self, request):

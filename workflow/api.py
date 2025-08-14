@@ -14,6 +14,9 @@ from django.utils.translation import gettext_lazy as _
 
 import django_filters
 from rest_framework import serializers
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from dje.api import CreateRetrieveUpdateListViewSet
@@ -165,7 +168,12 @@ class RequestSerializer(DataspacedSerializer):
     )
     request_template_name = serializers.StringRelatedField(source="request_template.name")
     requester = serializers.StringRelatedField()
-    assignee = DataspacedSlugRelatedField(slug_field="username")
+    assignee = DataspacedSlugRelatedField(
+        slug_field="username",
+        # Not required in the REST API context to simplify external integrations.
+        allow_null=True,
+        required=False,
+    )
     priority = DataspacedSlugRelatedField(
         slug_field="label",
         allow_null=True,
@@ -402,3 +410,19 @@ class RequestViewSet(ExtraPermissionsViewSetMixin, CreateRetrieveUpdateListViewS
             event_type=RequestEvent.EDIT,
             dataspace=self.request.user.dataspace,
         )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        serializer_class=RequestCommentSerializer,
+    )
+    def add_comment(self, request, *args, **kwargs):
+        """Add a comment to this request."""
+        request_instance = self.get_object()
+
+        serializer = RequestCommentSerializer(data=request.data)
+        if serializer.is_valid():
+            request_instance.add_comment(self.request.user, **serializer.validated_data)
+            return Response({"status": "Comment added."}, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
