@@ -361,9 +361,15 @@ class RequestAPITestCase(TestCase):
         expected = {
             "title": ["This field is required."],
             "request_template": ["This field may not be null."],
-            "assignee": ["This field may not be null."],
         }
         self.assertEqual(expected, response.json())
+
+        data = {
+            "title": "Title",
+            "request_template": self.request_template1_detail_url,
+        }
+        response = self.client.post(self.request_list_url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
         data = {
             "title": "Title",

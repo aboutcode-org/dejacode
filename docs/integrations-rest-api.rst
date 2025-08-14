@@ -126,11 +126,11 @@ Required fields:
 
 - **title** (string): A short, descriptive title of the request.
 - **request_template** (string): URI of the template to use.
-- **assignee** (string): Username of the person assigned.
 
 Optional fields:
 
 - **status** (string): ``open``, ``closed``, or ``draft``. Default is ``open``.
+- **assignee** (string): Username of the person assigned.
 - **priority** (string|null): Priority level.
 - **product_context** (string|null): URI of a product context.
 - **notes** (string): Notes related to the request.
@@ -150,8 +150,7 @@ Example of minimal JSON payload::
 
     {
         "title": "New vulnerability found",
-        "request_template": "Address Vulnerabilities in Product Packages",
-        "assignee": "username"
+        "request_template": "Address Vulnerabilities in Product Packages"
     }
 
 Example using cURL::
@@ -160,8 +159,7 @@ Example using cURL::
     headers="Authorization: Token abcdef123456"
     data='{
         "title": "New vulnerability found",
-        "request_template": "Address Vulnerabilities in Product Packages",
-        "assignee": "username"
+        "request_template": "Address Vulnerabilities in Product Packages"
     }'
 
     curl -X POST "$api_url" -H "$headers" -d "$data"

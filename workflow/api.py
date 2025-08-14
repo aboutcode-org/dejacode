@@ -165,7 +165,12 @@ class RequestSerializer(DataspacedSerializer):
     )
     request_template_name = serializers.StringRelatedField(source="request_template.name")
     requester = serializers.StringRelatedField()
-    assignee = DataspacedSlugRelatedField(slug_field="username")
+    assignee = DataspacedSlugRelatedField(
+        slug_field="username",
+        # Not required in the REST API context to simplify external integrations.
+        allow_null=True,
+        required=False,
+    )
     priority = DataspacedSlugRelatedField(
         slug_field="label",
         allow_null=True,
