@@ -1,0 +1,14 @@
+about_resource: pytz-2025.2-py2.py3-none-any.whl
+name: pytz
+version: '2025.2'
+download_url: https://files.pythonhosted.org/packages/81/c4/34e93fe5f5429d7570ec1fa436f1986fb1f00c3e0f43a589fe2bbcd22c3f/pytz-2025.2-py2.py3-none-any.whl
+package_url: pkg:pypi/pytz@2025.2
+license_expression: mit
+copyright: Copyright pytz project contributors
+attribute: yes
+checksum_md5: 51ad498990b93bab1efdb6ecce983474
+checksum_sha1: fe7938b9d92a0da600ee2af52538405e769fbca4
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

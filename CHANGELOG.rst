@@ -1,7 +1,7 @@
 Release notes
 =============
 
-### Version 5.3.1-dev (unreleased)
+### Version 5.4.0
 
 - Upgrade Python version to 3.13 and Django to 5.2.x
   https://github.com/aboutcode-org/dejacode/pull/315
