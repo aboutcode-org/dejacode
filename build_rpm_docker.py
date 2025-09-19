@@ -12,7 +12,7 @@ To run the script:
     python build_rpm_docker.py
 
 This script will generate the RPM package files and place them in the
-rpmbuild/ directory.
+dist/rpmbuild/ directory.
 """
 
 import os
@@ -58,14 +58,14 @@ def build_rpm_with_docker():
             RPM_VERSION="{project['version'].replace("-dev", "~dev")}"
 
             # Creates the standard directory structure required by rpmbuild
-            mkdir -p rpmbuild/{{BUILD,RPMS,SOURCES,SPECS,SRPMS}}
-            cp "$WHEEL_FILE" rpmbuild/SOURCES/
+            mkdir -p dist/rpmbuild/{{BUILD,RPMS,SOURCES,SPECS,SRPMS}}
+            mv "$WHEEL_FILE" dist/rpmbuild/SOURCES/
 
             # Get the changelog date
             CHANGELOG_DATE=$(date '+%a %b %d %Y')
 
             # Generate spec file with correct deps
-            cat > rpmbuild/SPECS/{rpm_name}.spec << EOF
+            cat > dist/rpmbuild/SPECS/{rpm_name}.spec << EOF
 Name:           {rpm_name}
 Version:        $RPM_VERSION
 Release:        1%{{?dist}}
@@ -98,21 +98,21 @@ pip install --no-deps --ignore-installed --root %{{buildroot}} --prefix %{{_pref
 EOF
 
             # Build the RPM
-            rpmbuild --define "_topdir /workspace/rpmbuild" -bb rpmbuild/SPECS/{rpm_name}.spec
+            rpmbuild --define "_topdir /workspace/dist/rpmbuild" -bb dist/rpmbuild/SPECS/{rpm_name}.spec
 
             # Fix permissions for Windows host
-            chmod -R u+rwX rpmbuild
+            chmod -R u+rwX dist/rpmbuild
         """
     ]
 
     try:
         subprocess.run(docker_cmd, check=True)
         # Verify the existance of the .rpm
-        rpm_file = next(Path('rpmbuild/RPMS/noarch').glob('*.rpm'), None)
+        rpm_file = next(Path('dist/rpmbuild/RPMS/noarch').glob('*.rpm'), None)
         if rpm_file:
             print(f"\nSuccess! RPM built: {rpm_file}")
         else:
-            print("Error: RPM not found in rpmbuild/RPMS/noarch/", file=sys.stderr)
+            print("Error: RPM not found in dist/rpmbuild/RPMS/noarch/", file=sys.stderr)
             sys.exit(1)
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}", file=sys.stderr)
