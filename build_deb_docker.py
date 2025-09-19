@@ -12,7 +12,7 @@ To run the script:
     python build_deb_docker.py
 
 This script will generate the Debian package files and place them in the
-dist/ directory.
+dist/debian/ directory.
 """
 
 import os
@@ -53,10 +53,14 @@ def build_deb_with_docker():
             # Build the wheel
             python3 -m build --wheel
 
+            # Move wheel to dist/debian/
+            mkdir -p dist/debian
+            mv dist/*.whl dist/debian/
+
             # Get the wheel file name
-            WHEEL_FILE=$(ls dist/*.whl)
+            WHEEL_FILE=$(ls dist/debian/*.whl)
             if [ -z "$WHEEL_FILE" ]; then
-                echo "Error: No wheel file found in dist/." >&2
+                echo "Error: No wheel file found in dist/debian/." >&2
                 exit 1
             fi
 
@@ -83,24 +87,24 @@ Homepage: {project.get('urls', '').get('Homepage', 'https://github.com/aboutcode
 EOF
 
             # Build the .deb package
-            dpkg-deb --build "$PKG_DIR" dist/
+            dpkg-deb --build "$PKG_DIR" dist/debian/
 
             # Clean up
             rm -rf "$TEMP_DIR"
 
             # Fix permissions for Windows host
-            chmod -R u+rwX dist
+            chmod -R u+rwX dist/debian/
         """
     ]
 
     try:
         subprocess.run(docker_cmd, check=True)
         # Verify the existence of the .deb
-        deb_file = next(Path('dist').glob('*.deb'), None)
+        deb_file = next(Path('dist/debian').glob('*.deb'), None)
         if deb_file:
             print(f"\nSuccess! Debian package built: {deb_file}")
         else:
-            print("Error: Debian package not found in dist/", file=sys.stderr)
+            print("Error: Debian package not found in dist/debian/", file=sys.stderr)
             sys.exit(1)
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}", file=sys.stderr)
