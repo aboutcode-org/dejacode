@@ -1,3 +1,12 @@
+# This file is used by `nix-build`.
+# Update it manually whenever the version or dependencies change in `pyproject.toml`.
+
+# For packages with pinned versions to match those in pyproject.toml.
+# It's recommended to use pre-built wheels instead of building from source,
+# as source builds may require additional dependencies.
+
+# Run the following command to compute the sha256:
+# nix-prefetch-url <url>
 {
   pkgs ? import <nixpkgs> { },
 }:
@@ -23,28 +32,22 @@ let
       // extraAttrs
     );
 
-  maturin = pkgs.stdenv.mkDerivation rec {
-    pname = "maturin";
-    version = "1.8.6";
+  pythonOverlay = self: super: {
+    maturin = python.pkgs.buildPythonPackage rec {
+      pname = "maturin";
+      version = "1.8.6";
+      format = "wheel";
 
-    src = pkgs.fetchurl {
-      url = "https://github.com/PyO3/maturin/releases/download/v1.8.6/maturin-x86_64-unknown-linux-musl.tar.gz";
-      sha256 = "0vxhniz9shj6gy3sxc8d2bdp24z3vjj435sn31mcvr06r1wwgjjm";
+      src = pkgs.fetchurl {
+        url = "https://files.pythonhosted.org/packages/f9/aa/8090f8b3f5f7ec46bc95deb0f5b29bf52c98156ef594f2e65d20bf94cea1/maturin-1.8.6-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl";
+        sha256 = "15870w46liwy15a5x81cpdb8f9b6k4sawzxii604r5bmcj699idy";
+      };
+
+      # Disable checks
+      doCheck = false;
+      doInstallCheck = false;
     };
 
-    # Don't use phases, just unpack directly
-    unpackPhase = "true";
-
-    installPhase = ''
-      mkdir -p $out/bin
-      # Extract the tarball directly to the bin directory
-      tar -xzf $src -C $out/bin
-      # Ensure the binary is executable
-      chmod +x $out/bin/maturin
-    '';
-  };
-
-  pythonOverlay = self: super: {
     rq-scheduler = python.pkgs.buildPythonPackage rec {
       pname = "rq-scheduler";
       version = "0.14.0";
@@ -58,13 +61,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "RQ Scheduler is a small package that adds job scheduling capabilities to RQ, a Redis based Python queuing library.";
-        license = licenses.mit;
-        homepage = "https://github.com/rq/rq-scheduler";
-      };
     };
 
     clamd = python.pkgs.buildPythonPackage rec {
@@ -80,13 +76,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "clamd is a portable Python module to use the ClamAV anti-virus engine on Windows, Linux, MacOSX and other platforms.";
-        license = licenses.lgpl21;
-        homepage = "https://github.com/graingert/python-clamd";
-      };
     };
 
     mockldap = python.pkgs.buildPythonPackage rec {
@@ -102,13 +91,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "The goal of mockldap is to provide a mock instance of LDAPObject in response to any call to ldap.initialize.";
-        license = licenses.cc0;
-        homepage = "https://github.com/psagers/mockldap";
-      };
     };
 
     swapper = python.pkgs.buildPythonPackage rec {
@@ -124,13 +106,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "Swapper is an unofficial API for the undocumented but very powerful Django feature: swappable models.";
-        license = licenses.mit;
-        homepage = "https://github.com/openwisp/django-swappable-models";
-      };
     };
 
     django-rest-hooks = python.pkgs.buildPythonPackage rec {
@@ -146,13 +121,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "Forked from zapier/django-rest-hooks.";
-        license = licenses.isc;
-        homepage = "https://github.com/aboutcode-org/django-rest-hooks";
-      };
     };
 
     aboutcode-toolkit = python.pkgs.buildPythonPackage rec {
@@ -168,13 +136,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "The AboutCode Toolkit and ABOUT files provide a simple way to document the origin, license, usage and other important or interesting information about third-party software components that you use in your project.";
-        license = licenses.asl20;
-        homepage = "https://github.com/aboutcode-org/aboutcode-toolkit";
-      };
     };
 
     django-grappelli = python.pkgs.buildPythonPackage rec {
@@ -190,13 +151,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "A jazzy skin for the Django admin interface.";
-        license = licenses.bsd3;
-        homepage = "http://www.grappelliproject.com/";
-      };
     };
 
     django-altcha = python.pkgs.buildPythonPackage rec {
@@ -212,13 +166,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "Django Altcha is a Django library that provides easy integration of Altcha CAPTCHA into your Django forms, enhancing user verification with configurable options.";
-        license = licenses.mit;
-        homepage = "https://github.com/aboutcode-org/django-altcha";
-      };
     };
 
     jsonfield = python.pkgs.buildPythonPackage rec {
@@ -234,13 +181,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "jsonfield is a reusable model field that allows you to store validated JSON, automatically handling serialization to and from the database.";
-        license = licenses.mit;
-        homepage = "https://github.com/rpkilby/jsonfield/";
-      };
     };
 
     pip = python.pkgs.buildPythonPackage rec {
@@ -256,13 +196,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "The PyPA recommended tool for installing Python packages";
-        license = licenses.mit;
-        homepage = "https://pip.pypa.io/";
-      };
     };
 
     psycopg = python.pkgs.buildPythonPackage rec {
@@ -278,13 +211,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "A modern implementation of a PostgreSQL adapter for Python.";
-        license = licenses.lgpl3;
-        homepage = "https://www.psycopg.org/";
-      };
     };
 
     django-registration = python.pkgs.buildPythonPackage rec {
@@ -300,13 +226,21 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
+    };
 
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "This is a user-registration application for Django.";
-        license = licenses.bsd3;
-        homepage = "https://github.com/ubernostrum/django-registration";
+    requests = python.pkgs.buildPythonPackage rec {
+      pname = "requests";
+      version = "2.32.4";
+      format = "wheel";
+
+      src = pkgs.fetchurl {
+        url = "https://files.pythonhosted.org/packages/7c/e4/56027c4a6b4ae70ca9de302488c5ca95ad4a39e190093d6c1a8ace08341b/requests-2.32.4-py3-none-any.whl";
+        sha256 = "0b1bmhqv0xarifclr53icqwpsw1hk3l4w8230jrm0v9av8ybvfi7";
       };
+
+      # Disable checks
+      doCheck = false;
+      doInstallCheck = false;
     };
 
     rpds-py = python.pkgs.buildPythonPackage rec {
@@ -322,13 +256,6 @@ let
       # Disable checks
       doCheck = false;
       doInstallCheck = false;
-
-      # Meta information
-      meta = with pkgs.lib; {
-        description = "Python bindings to the Rust rpds crate for persistent data structures.";
-        license = licenses.mit;
-        homepage = "https://github.com/crate-py/rpds";
-      };
     };
 
     django = self.buildPythonPackage rec {
@@ -726,7 +653,6 @@ let
     pyyaml = disableAllTests super.pyyaml {};
     qrcode = disableAllTests super.qrcode {};
     referencing = disableAllTests super.referencing {};
-    requests = disableAllTests super.requests {};
     requests-oauthlib = disableAllTests super.requests-oauthlib {};
     restructuredtext-lint = disableAllTests super.restructuredtext-lint {};
     rq = disableAllTests super.rq {};
@@ -774,6 +700,7 @@ let
       base // custom;
   };
 
+
   pythonApp = pythonWithOverlay.pkgs.buildPythonApplication {
     pname = "dejacode";
     version = "5.4.0";
@@ -792,13 +719,10 @@ let
       pip
     ];
 
-    # maturin is a build tool, not a runtime dependency
-    # It's only needed during the build phase to compile Rust extensions
-    # It shouldn't be included in the final Python package's dependencies
-    # and therefore can be excluded from the final dependencies check
-    pythonRemoveDeps = ["maturin"];
 
+    # Specifies all Python dependencies required at runtime to ensure consistent overrides.
     propagatedBuildInputs = with pythonWithOverlay.pkgs; [
+      maturin
       crontab
       django-filter
       natsort
