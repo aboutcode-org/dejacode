@@ -151,10 +151,9 @@ dependencies = [
     "attrs==25.3.0",
     "pyrsistent==0.20.0",
     # CycloneDX
-    "cyclonedx-python-lib==10.2.0",
+    "cyclonedx-python-lib==11.1.0",
     "sortedcontainers==2.4.0",
-    "toml==0.10.2",
-    "py-serializable==2.0.0",
+    "py-serializable==2.1.0",
     # Git
     "GitPython==3.1.45",
     "gitdb==4.0.12",
