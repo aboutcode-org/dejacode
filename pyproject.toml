@@ -35,15 +35,15 @@ dependencies = [
     "wheel==0.45.1",
     "pip==25.1.1",
     # Django
-    "Django==5.2.6",
-    "asgiref==3.9.1",
+    "Django==5.2.7",
+    "asgiref==3.10.0",
     "typing_extensions==4.14.0",
     "sqlparse==0.5.3",
     # Django apps
     "django-crispy-forms==2.4",
     "crispy_bootstrap5==2025.6",
     "django-grappelli==4.0.2",
-    "django-filter==25.1",
+    "django-filter==25.2",
     "django-registration==3.4",
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.0.3",
@@ -80,15 +80,16 @@ dependencies = [
     # Testing
     "model_bakery==1.10.1",
     # Task queue
-    "rq==2.4.1",
+    "rq==2.6.0",
+    "croniter==6.0.0",
     "django-rq==3.1.0",
-    "fakeredis==2.31.0",
+    "fakeredis==2.32.0",
     # Scheduler
     "rq-scheduler==0.14.0",
     "crontab==1.0.5",
     "freezegun==1.5.2",
     # Libs
-    "certifi==2025.8.3",
+    "certifi==2025.10.5",
     "urllib3==2.5.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
@@ -101,7 +102,7 @@ dependencies = [
     "PyYAML==6.0.2",
     "cython==3.1.1",
     "zipp==3.22.0",
-    "XlsxWriter==3.2.5",
+    "XlsxWriter==3.2.9",
     # Markdown
     "markdown==3.8",
     "bleach==6.2.0",
