@@ -1,0 +1,15 @@
+about_resource: requests-2.32.5-py3-none-any.whl
+name: requests
+version: 2.32.5
+download_url: https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl
+package_url: pkg:pypi/requests@2.32.5
+license_expression: apache-2.0
+copyright: Copyright requests project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: bd126794a95616a0da6192b288f9bb88
+checksum_sha1: be958cecfe7f99474d8ec5fda66e73904da4cb3e
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
