@@ -1,6 +1,12 @@
 Release notes
 =============
 
+### Version 5.4.1
+
+- Upgrade Django to latest security release 5.2.7
+  Also upgrade dependencies to latest releases.
+  https://github.com/aboutcode-org/dejacode/pull/389
+
 ### Version 5.4.0
 
 - Upgrade Python version to 3.13 and Django to 5.2.x
