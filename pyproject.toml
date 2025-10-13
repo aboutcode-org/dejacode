@@ -37,7 +37,7 @@ dependencies = [
     # Django
     "Django==5.2.7",
     "asgiref==3.10.0",
-    "typing_extensions==4.14.0",
+    "typing_extensions==4.15.0",
     "sqlparse==0.5.3",
     # Django apps
     "django-crispy-forms==2.4",
@@ -56,7 +56,7 @@ dependencies = [
     "djangorestframework==3.16.1",
     # API documentation
     "drf-yasg==1.21.11",
-    "uritemplate==4.1.1",
+    "uritemplate==4.2.0",
     "inflection==0.5.1",
     "pytz==2025.2",
     # Track failed login attempts
@@ -74,7 +74,7 @@ dependencies = [
     "pyparsing==3.2.5",
     "async-timeout==5.0.1",
     "Deprecated==1.2.18",
-    "wrapt==1.17.2",
+    "wrapt==1.17.3",
     # Antivirus
     "clamd==1.0.2",
     # Testing
@@ -101,7 +101,7 @@ dependencies = [
     "charset-normalizer==3.4.3",
     "PyYAML==6.0.2",
     "cython==3.1.1",
-    "zipp==3.22.0",
+    "zipp==3.23.0",
     "XlsxWriter==3.2.9",
     # Markdown
     "markdown==3.9",
@@ -114,7 +114,8 @@ dependencies = [
     "requests-oauthlib==2.0.0",
     "defusedxml==0.7.1",
     # LDAP Auth
-    "python-ldap==3.4.4",
+    "python_ldap==3.4.5",
+    "setuptools-scm==9.2.1",
     "pyasn1==0.6.1",
     "pyasn1-modules==0.4.2",
     "django-auth-ldap==5.2.0",
