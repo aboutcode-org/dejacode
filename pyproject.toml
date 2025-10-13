@@ -171,7 +171,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Linter and Validation
-    "ruff==0.11.12",
+    "ruff==0.14.0",
     # Documentation
     "doc8==1.1.2",
     "stevedore==5.4.1",
@@ -223,7 +223,7 @@ select = [
     "I",  # isort
     "C9", # McCabe complexity
 ]
-ignore = ["UP032", "UP038", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
+ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
