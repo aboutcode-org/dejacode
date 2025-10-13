@@ -1,0 +1,18 @@
+about_resource: uritemplate-4.2.0-py3-none-any.whl
+name: uritemplate
+version: 4.2.0
+download_url: https://files.pythonhosted.org/packages/a9/99/3ae339466c9183ea5b8ae87b34c0b897eda475d2aec2307cae60e5cd4f29/uritemplate-4.2.0-py3-none-any.whl
+package_url: pkg:pypi/uritemplate@4.2.0
+license_expression: apache-2.0 AND bsd-new
+copyright: Copyright uritemplate project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 9de1bba5e7bffd8c77388ae3b62fee87
+checksum_sha1: bba19e0b8ca9998411c73a8b949fb55324b3d19b
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
