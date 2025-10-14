@@ -13,6 +13,14 @@ To run the script:
 
 This script will generate the Debian package files and place them in the
 dist/debian/ directory.
+
+Once the debian package is generated, you can install it using:
+
+    sudo apt install ./<package>.deb
+
+Note: The ./ is important - it tells apt to install from a local file
+rather than searching repositories.
+Replace the above path with the actual path to the generated debian file.
 """
 
 import os
@@ -127,4 +135,9 @@ if __name__ == "__main__":
         print("Error: Docker not found. Please install Docker first.", file=sys.stderr)
         sys.exit(1)
 
+    # Get the directory where the current script is located (which is located in etc/scripts)
+    script_dir = Path(__file__).parent.resolve()
+    # Go up two levels from etc/scripts/
+    project_root = script_dir.parent.parent
+    os.chdir(project_root)
     build_deb_with_docker()
