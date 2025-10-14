@@ -13,6 +13,12 @@ To run the script:
 
 This script will generate the RPM package files and place them in the
 dist/rpmbuild/ directory.
+
+Once the RPM package is generated, you can install it using:
+
+    sudo dnf install /path/to/<dejacode>.rpm
+
+(Replace the above path with the actual path to the generated RPM file.)
 """
 
 import os
