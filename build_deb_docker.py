@@ -26,22 +26,27 @@ import toml
 
 def build_deb_with_docker():
     # Load the pyproject.toml file
-    with open('pyproject.toml') as f:
-        project = toml.load(f)['project']
+    with open("pyproject.toml") as f:
+        project = toml.load(f)["project"]
 
-    pkg_name = project['name']
+    pkg_name = project["name"]
     # Insert "python3-"" prefix that follows a common convention
     deb_name = f"python3-{pkg_name.lower()}"
 
     # Debian version conventions replace hyphens with tildes
-    deb_version = project['version'].replace("-dev", "~dev")
+    deb_version = project["version"].replace("-dev", "~dev")
 
     docker_cmd = [
-        'docker', 'run', '--rm',
-        '-v', f"{os.getcwd()}:/workspace",
-        '-w', '/workspace',
-        'ubuntu:22.04',
-        '/bin/bash', '-c',
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{os.getcwd()}:/workspace",
+        "-w",
+        "/workspace",
+        "ubuntu:22.04",
+        "/bin/bash",
+        "-c",
         f"""set -ex
             # Install build dependencies
             apt-get update
@@ -78,12 +83,17 @@ def build_deb_with_docker():
 Package: {deb_name}
 Version: {deb_version}
 Architecture: all
-Maintainer: {project.get('authors', [{}])[0].get('name', 'nexB Inc.')}
-Description: {project.get('description', 'Automate open source license compliance and ensure supply chain integrity')}
+Maintainer: {project.get("authors", [{}])[0].get("name", "nexB Inc.")}
+Description: {
+            project.get(
+                "description",
+                "Automate open source license compliance andensure supply chain integrity",
+            )
+        }
 Depends: python3
 Section: python
 Priority: optional
-Homepage: {project.get('urls', '').get('Homepage', 'https://github.com/aboutcode-org/dejacode')}
+Homepage: {project.get("urls", "").get("Homepage", "https://github.com/aboutcode-org/dejacode")}
 EOF
 
             # Build the .deb package
@@ -94,13 +104,13 @@ EOF
 
             # Fix permissions for Windows host
             chmod -R u+rwX dist/debian/
-        """
+        """,
     ]
 
     try:
-        subprocess.run(docker_cmd, check=True)
+        subprocess.run(docker_cmd, check=True, shell=False)  # noqa: S603
         # Verify the existence of the .deb
-        deb_file = next(Path('dist/debian').glob('*.deb'), None)
+        deb_file = next(Path("dist/debian").glob("*.deb"), None)
         if deb_file:
             print(f"\nSuccess! Debian package built: {deb_file}")
         else:
@@ -111,9 +121,9 @@ EOF
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Check if "docker" is available
-    if not shutil.which('docker'):
+    if not shutil.which("docker"):
         print("Error: Docker not found. Please install Docker first.", file=sys.stderr)
         sys.exit(1)
 
