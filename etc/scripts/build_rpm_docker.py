@@ -146,4 +146,9 @@ if __name__ == "__main__":
         print("Error: Docker not found. Please install Docker first.", file=sys.stderr)
         sys.exit(1)
 
+    # Get the directory where the current script is located (which is located in etc/scripts)
+    script_dir = Path(__file__).parent.resolve()
+    # Go up two levels from etc/scripts/
+    project_root = script_dir.parent.parent
+    os.chdir(project_root)
     build_rpm_with_docker()
