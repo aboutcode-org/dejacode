@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Use Docker container to run nix-build.
-Using Docker approach to ensure a consistent and isolated build environment.
+Generates a Nix expression (default.nix) from the
+pyproject.toml file that is used to build the Python package for NixOS and
+put it under the project root.
 
 Requirement: `toml` and `requests` Python packages and Docker installed.
 
@@ -11,15 +12,38 @@ To run the script:
 
     python build_nix_docker.py
 
-or
+It will create a `default.nix` file in the project root if it does not
+already exist.
+
+Options:
+--------
+`--generate` - Creates or overwrites default.nix in the project root.
 
     python build_nix_docker.py --generate
 
-    The --generate flag is optional and can be used to generate the
-    default.nix file if needed.
+`--test` - Tests the build using Docker.
 
-This script will run nix-build and place the built results in the
-dist/nix/ directory, it will then run nix-collect-garbage for cleanup.
+    python build_nix_docker.py --test
+
+
+The `--test` flag will use Docker to run the Nix build in a clean
+environment. It will run `nix-build` inside a Docker container to ensure
+that the default.nix file is valid and can successfully build the package.
+It will then do cleanup by removing the `nix-store` Docker volume.
+
+
+Once the default.nix is generated, one can build/install the package by
+using:
+
+    Build the package
+
+        nix-build default.nix
+
+    The above command will create a symlink named `result` in the current
+    directory pointing to the build output in the Nix store.
+    Run the binary directly
+
+        ./result/bin/dejacode
 """
 
 import argparse
@@ -123,10 +147,79 @@ let
         version = dep["version"]
         # Handle 'django_notifications_patched','django-rest-hooks' and 'funcparserlib' separately
         if (
-            not name == "django-rest-hooks"
-            and not name == "django_notifications_patched"
-            and not name == "funcparserlib"
+            name == "django-rest-hooks"
+            or name == "django_notifications_patched"
+            or (name == "funcparserlib" and version == "0.3.6")
         ):
+            if name == "django-rest-hooks" and version == "1.6.1":
+                nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
+                nix_content += '        pname = "django-rest-hooks";\n'
+                nix_content += '        version = "1.6.1";\n'
+                nix_content += '        format = "wheel";\n'
+                nix_content += "        src = pkgs.fetchurl {\n"
+                nix_content += '          url = "https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl";\n'
+                nix_content += (
+                    '          sha256 = "1byakq3ghpqhm0mjjkh8v5y6g3wlnri2vvfifyi9ky36l12vqx74";\n'
+                )
+                nix_content += "        };\n"
+                nix_content += "    };\n"
+            elif name == "django_notifications_patched" and version == "2.0.0":
+                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
+                nix_content += '        pname = "django_notifications_patched";\n'
+                nix_content += '        version = "2.0.0";\n'
+                nix_content += '        format = "setuptools";\n'
+                nix_content += "        doCheck = false;\n"
+                nix_content += "        src = pkgs.fetchFromGitHub {\n"
+                nix_content += '           owner = "dejacode";\n'
+                nix_content += '           repo = "django-notifications-patched";\n'
+                nix_content += '           rev = "2.0.0";\n'
+                nix_content += '           url = "https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz";\n'
+                nix_content += (
+                    '           sha256 = "sha256-RDAp2PKWa2xA5ge25VqkmRm8HCYVS4/fq2xKc80LDX8=";\n'
+                )
+                nix_content += "        };\n"
+                nix_content += "    };\n"
+            # This section can be removed once funcparserlib is updated to >=1.0.0
+            # https://github.com/aboutcode-org/dejacode/issues/394
+            elif name == "funcparserlib" and version == "0.3.6":
+                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
+                nix_content += '        pname = "funcparserlib";\n'
+                nix_content += '        version = "0.3.6";\n'
+                nix_content += '        format = "setuptools";\n'
+                nix_content += "        doCheck = false;\n"
+                nix_content += "        src = pkgs.fetchurl {\n"
+                nix_content += '          url = "https://files.pythonhosted.org/packages/cb/f7/b4a59c3ccf67c0082546eaeb454da1a6610e924d2e7a2a21f337ecae7b40/funcparserlib-0.3.6.tar.gz";\n'
+                nix_content += (
+                    '           sha256 = "07f9cgjr3h4j2m67fhwapn8fja87vazl58zsj4yppf9y3an2x6dp";\n'
+                )
+                nix_content += "        };\n\n"
+                # Original setpy.py:
+                # https://github.com/vlasovskikh/funcparserlib/blob/0.3.6/setup.py
+                # funcparserlib version 0.3.6 uses use_2to3 which is no
+                # longer supported in modern setuptools. Remove the
+                # "use_2to3" from the setup.py
+                nix_content += "    postPatch = ''\n"
+                nix_content += "        cat > setup.py << EOF\n"
+                nix_content += "        # -*- coding: utf-8 -*-\n"
+                nix_content += "        from setuptools import setup\n"
+                nix_content += "        setup(\n"
+                nix_content += '            name="funcparserlib",\n'
+                nix_content += '            version="0.3.6",\n'
+                nix_content += '            packages=["funcparserlib", "funcparserlib.tests"],\n'
+                nix_content += '            author="Andrey Vlasovskikh",\n'
+                nix_content += '            description="Recursive descent parsing library based" \
+                                            "on functional combinators",\n'
+                nix_content += '            license="MIT",\n'
+                nix_content += '            url="http://code.google.com/p/funcparserlib/",\n'
+                nix_content += "        )\n"
+                nix_content += "        EOF\n"
+                nix_content += "    '';\n"
+                nix_content += "    propagatedBuildInputs = with self; [];\n"
+                nix_content += "    checkPhase = \"echo 'Tests disabled for funcparserlib'\";\n"
+                nix_content += "    };\n"
+            else:
+                need_review_packages_list.append(dep)
+        else:
             url = "https://pypi.org/pypi/{name}/{version}/json".format(name=name, version=version)
             try:
                 response = requests.get(url, timeout=30)
@@ -175,73 +268,7 @@ let
                     need_review_packages_list.append(dep)
             except requests.exceptions.RequestException:
                 need_review_packages_list.append(dep)
-        else:
-            if name == "django-rest-hooks" and version == "1.6.1":
-                nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
-                nix_content += '        pname = "django-rest-hooks";\n'
-                nix_content += '        version = "1.6.1";\n'
-                nix_content += '        format = "wheel";\n'
-                nix_content += "        src = pkgs.fetchurl {\n"
-                nix_content += '          url = "https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl";\n'
-                nix_content += (
-                    '          sha256 = "1byakq3ghpqhm0mjjkh8v5y6g3wlnri2vvfifyi9ky36l12vqx74";\n'
-                )
-                nix_content += "        };\n"
-                nix_content += "    };\n"
-            elif name == "django_notifications_patched" and version == "2.0.0":
-                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
-                nix_content += '        pname = "django_notifications_patched";\n'
-                nix_content += '        version = "2.0.0";\n'
-                nix_content += '        format = "setuptools";\n'
-                nix_content += "        doCheck = false;\n"
-                nix_content += "        src = pkgs.fetchFromGitHub {\n"
-                nix_content += '           owner = "dejacode";\n'
-                nix_content += '           repo = "django-notifications-patched";\n'
-                nix_content += '           rev = "2.0.0";\n'
-                nix_content += '           url = "https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz";\n'
-                nix_content += (
-                    '           sha256 = "sha256-RDAp2PKWa2xA5ge25VqkmRm8HCYVS4/fq2xKc80LDX8=";\n'
-                )
-                nix_content += "        };\n"
-                nix_content += "    };\n"
-            elif name == "funcparserlib" and version == "0.3.6":
-                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
-                nix_content += '        pname = "funcparserlib";\n'
-                nix_content += '        version = "0.3.6";\n'
-                nix_content += '        format = "setuptools";\n'
-                nix_content += "        doCheck = false;\n"
-                nix_content += "        src = pkgs.fetchurl {\n"
-                nix_content += '          url = "https://files.pythonhosted.org/packages/cb/f7/b4a59c3ccf67c0082546eaeb454da1a6610e924d2e7a2a21f337ecae7b40/funcparserlib-0.3.6.tar.gz";\n'
-                nix_content += (
-                    '           sha256 = "07f9cgjr3h4j2m67fhwapn8fja87vazl58zsj4yppf9y3an2x6dp";\n'
-                )
-                nix_content += "        };\n\n"
-                # Original setpy.py:
-                # https://github.com/vlasovskikh/funcparserlib/blob/0.3.6/setup.py
-                # funcparserlib version 0.3.6 uses use_2to3 which is no
-                # longer supported in modern setuptools. Remove the
-                # "use_2to3" from the setup.py
-                nix_content += "    postPatch = ''\n"
-                nix_content += "        cat > setup.py << EOF\n"
-                nix_content += "        # -*- coding: utf-8 -*-\n"
-                nix_content += "        from setuptools import setup\n"
-                nix_content += "        setup(\n"
-                nix_content += '            name="funcparserlib",\n'
-                nix_content += '            version="0.3.6",\n'
-                nix_content += '            packages=["funcparserlib", "funcparserlib.tests"],\n'
-                nix_content += '            author="Andrey Vlasovskikh",\n'
-                nix_content += '            description="Recursive descent parsing library based" \
-                                            "on functional combinators",\n'
-                nix_content += '            license="MIT",\n'
-                nix_content += '            url="http://code.google.com/p/funcparserlib/",\n'
-                nix_content += "        )\n"
-                nix_content += "        EOF\n"
-                nix_content += "    '';\n"
-                nix_content += "    propagatedBuildInputs = with self; [];\n"
-                nix_content += "    checkPhase = \"echo 'Tests disabled for funcparserlib'\";\n"
-                nix_content += "    };\n"
-            else:
-                need_review_packages_list.append(dep)
+
     nix_content += """
   };
   pythonWithOverlay = python.override {
@@ -360,10 +387,6 @@ def cleanup_nix_store():
 
 
 def build_nix_with_docker():
-    # Create output directory
-    output_dir = Path("dist/nix")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     docker_cmd = [
         "docker",
         "run",
@@ -377,35 +400,27 @@ def build_nix_with_docker():
         "nixos/nix",
         "/bin/sh",
         "-c",
-        """set -ex
+        """set -e
             # Update nix-channel to get latest packages
-            nix-channel --update
+            nix-channel --update > /dev/null 2>&1
 
-            # Run nix-build
-            nix-build default.nix -o result
+            # Run nix-build, only show errors
+            nix-build default.nix -o result 2>&1 | grep -E "(error|fail|Error|Fail)" || true
 
             # Check if build was successful
             if [ -d result ]; then
-                # Copy the build result to dist/nix/
-                mkdir -p /workspace/dist/nix
-                # Use nix-store to get the actual store path
-                STORE_PATH=$(readlink result)
-                cp -r "$STORE_PATH"/* /workspace/dist/nix/ || true
-
-                # Also copy the symlink target directly if directory copy fails
-                if [ ! "$(ls -A /workspace/dist/nix/)" ]; then
-                    # If directory is empty, try to copy the store path itself
-                    cp -r "$STORE_PATH" /workspace/dist/nix/store_result || true
-                fi
-
+                echo "Build successfully using default.nix."
+                echo "Performing cleanup..."
+                # Perform cleanup
                 # Remove the result symlink
                 rm -f result
 
                 # Run garbage collection to clean up
-                nix-collect-garbage -d
-
+                # supress logs
+                nix-collect-garbage -d > /dev/null 2>&1
+                echo "Cleanup completed."
             else
-                echo "Error: nix-build failed - result directory not found" >&2
+                echo "Error: nix-build failed" >&2
                 exit 1
             fi
         """,
@@ -413,13 +428,6 @@ def build_nix_with_docker():
 
     try:
         subprocess.run(docker_cmd, check=True, shell=False)  # noqa: S603
-        # Verify if the output directory contains any files or
-        # subdirectories.
-        if any(output_dir.iterdir()):
-            print(f"\nNix build completed. Results in: {output_dir}")
-        else:
-            print("Nix build failed.", file=sys.stderr)
-
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}", file=sys.stderr)
         sys.exit(1)
@@ -431,9 +439,20 @@ def main():
         print("Error: Docker not found. Please install Docker first.", file=sys.stderr)
         sys.exit(1)
 
-    parser = argparse.ArgumentParser(description="Package to Nix using Docker.")
-    parser.add_argument("--generate", action="store_true", help="Generate the default.nix file.")
+    # Get the directory where the current script is located (which is located in etc/scripts)
+    script_dir = Path(__file__).parent.resolve()
+    # Go up two levels from etc/scripts/
+    project_root = script_dir.parent.parent
+    os.chdir(project_root)
 
+    parser = argparse.ArgumentParser(description="Package to Nix")
+    # Add optional arguments
+    parser.add_argument("--generate", action="store_true", help="Generate the default.nix file.")
+    parser.add_argument(
+        "--test", action="store_true", help="Test to build from the default.nix file."
+    )
+
+    # Parse arguments
     args = parser.parse_args()
 
     if args.generate or not Path("default.nix").exists():
@@ -464,9 +483,10 @@ def main():
             )
             sys.exit(1)
 
-    # Clean up the volume to ensure consistent state
-    cleanup_nix_store()
-    build_nix_with_docker()
+    if args.test:
+        print("Testing the default.nix build...")
+        cleanup_nix_store()
+        build_nix_with_docker()
 
 
 if __name__ == "__main__":
