@@ -88,8 +88,9 @@ class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):
 
     use_required_attribute = True
     captcha = AltchaField(
-        floating=True,
+        floating="auto",
         hidefooter=True,
+        hidelogo=True,
     )
 
     class Meta(RegistrationFormUniqueEmail.Meta):

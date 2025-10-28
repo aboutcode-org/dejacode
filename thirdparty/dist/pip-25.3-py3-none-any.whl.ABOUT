@@ -1,0 +1,21 @@
+about_resource: pip-25.3-py3-none-any.whl
+name: pip
+version: '25.3'
+download_url: https://files.pythonhosted.org/packages/44/3c/d717024885424591d5376220b5e836c2d5293ce2011523c9de23ff7bf068/pip-25.3-py3-none-any.whl
+package_url: pkg:pypi/pip@25.3
+license_expression: apache-2.0 AND bsd-new AND unknown-license-reference
+copyright: Copyright pip project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 4bbbf9f0745c4117c8ecc77c561ef74b
+checksum_sha1: 8de392fcd36b5622be9a2b16e07117158c377533
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
