@@ -7,7 +7,6 @@
 #
 
 import logging
-from unittest import mock
 
 from django.apps import apps
 from django.conf import settings
@@ -23,7 +22,6 @@ from django.urls import reverse
 
 import ldap
 import slapdtest
-from django_auth_ldap.backend import _LDAPUserGroups
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
 from guardian.shortcuts import assign_perm
@@ -38,7 +36,6 @@ from dje.tests import create_user
 DejacodeUser = get_user_model()
 Component = apps.get_model("component_catalog", "Component")
 Product = apps.get_model("product_portfolio", "Product")
-
 
 LDIF = """
 dn: o=test
@@ -72,6 +69,16 @@ dn: cn=active,ou=groups,o=test
 cn: active
 objectClass: groupOfNames
 member: uid=bob,ou=people,o=test
+
+dn: cn=not_in_database,ou=groups,o=test
+cn: not_in_database
+objectClass: groupOfNames
+member: uid=bob,ou=people,o=test
+
+dn: cn=superuser,ou=groups,o=test
+cn: superuser
+objectClass: groupOfNames
+member: uid=bob,ou=people,o=test
 """
 
 
@@ -93,6 +100,7 @@ member: uid=bob,ou=people,o=test
     AUTH_LDAP_GROUP_TYPE=GroupOfNamesType(),
 )
 class DejaCodeLDAPBackendTestCase(TestCase):
+    # https://www.python-ldap.org/en/latest/reference/slapdtest.html
     server_class = slapdtest.SlapdObject
     ldap_object_class = SimpleLDAPObject
 
@@ -147,17 +155,6 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         self.assertEqual(user.last_name, "Smith")
         self.assertEqual(user.email, "bob@test.com")
 
-    def test_bind_and_search(self):
-        # Connect to the temporary slapd server
-        conn = self.ldap_object_class(self.server.ldap_uri)
-        conn.simple_bind_s(self.server.root_dn, self.server.root_pw)
-
-        # Search for the top entry
-        result = conn.search_s(self.server.suffix, ldap.SCOPE_BASE)
-        self.assertEqual(len(result), 1)
-        dn, entry = result[0]
-        self.assertEqual(dn, self.server.suffix)
-
     def test_ldap_group_active_properly_setup_and_searchable(self):
         conn = self.ldap_object_class(self.server.ldap_uri)
         results = conn.search_s("ou=groups,o=test", ldap.SCOPE_ONELEVEL, "(cn=active)")
@@ -201,9 +198,9 @@ class DejaCodeLDAPBackendTestCase(TestCase):
 
         # User was created on first login
         created_user = DejacodeUser.objects.get(username="bob")
-        self.assertEqual("", created_user.first_name)
-        self.assertEqual("", created_user.last_name)
-        self.assertEqual("", created_user.email)
+        self.assertEqual("Robert", created_user.first_name)
+        self.assertEqual("Smith", created_user.last_name)
+        self.assertEqual("bob@test.com", created_user.email)
         self.assertEqual(self.nexb_dataspace, created_user.dataspace)
 
         self.assertTrue(created_user.is_active)
@@ -217,7 +214,6 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         # Next login, the DB user is re-used
         self.assertTrue(self.client.login(username="bob", password="secret"))
 
-    # @override_settings(AUTH_LDAP_USER_ATTR_MAP=AUTH_LDAP_USER_ATTR_MAP)
     def test_ldap_authentication_autocreate_user_with_attr_map(self):
         self.assertFalse(DejacodeUser.objects.filter(username="bob").exists())
 
@@ -229,10 +225,7 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         self.assertEqual("bob@test.com", created_user.email)
         self.assertEqual(self.nexb_dataspace, created_user.dataspace)
 
-    @override_settings(
-        # AUTH_LDAP_USER_ATTR_MAP=AUTH_LDAP_USER_ATTR_MAP,
-        AUTH_LDAP_ALWAYS_UPDATE_USER=True,
-    )
+    @override_settings(AUTH_LDAP_ALWAYS_UPDATE_USER=True)
     def test_ldap_authentication_update_user_with_attr_map(self):
         # Manually create the user first, then see if the values are updated
         create_user("bob", self.nexb_dataspace, email="other@mail.com")
@@ -268,9 +261,9 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         self.assertFalse(Group.objects.filter(name="not_in_database").exists())
         self.assertEqual({"active", "not_in_database", "superuser"}, bob.ldap_user.group_names)
         expected_group_dns = {
-            "cn=active,ou=groups,dc=nexb,dc=com",
-            "cn=not_in_database,ou=groups,dc=nexb,dc=com",
-            "cn=superuser,ou=groups,dc=nexb,dc=com",
+            "cn=active,ou=groups,o=test",
+            "cn=not_in_database,ou=groups,o=test",
+            "cn=superuser,ou=groups,o=test",
         }
         self.assertEqual(expected_group_dns, bob.ldap_user.group_dns)
 
@@ -307,25 +300,14 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         self.assertEqual({"active", "not_in_database", "superuser"}, bob.ldap_user.group_names)
 
         user_flags_by_group = {
-            "is_superuser": "cn=superuser,ou=groups,dc=nexb,dc=com",
+            "is_superuser": "cn=superuser,ou=groups,o=test",
         }
 
-        # WARNING: This is a workaround for a bug in mockldap.
-        # There's a comparison issue in `mockldap.ldapobject.LDAPObject._compare_s`
-        # where the `value` is bytes b'' and `values` is a list of strings.
-        # For example:
-        # value = b'cn=bob,ou=people,dc=nexb,dc=com'
-        # values = ['cn=bob,ou=people,dc=nexb,dc=com']
-        # Note that mockldap has been replaced by `slapdtest` in recent `python-ldap` versions.
-        # The migration to `slapdtest` requires a slaptd daemon runnning plus the rewrite of this
-        # whole TestCase.
-        # https://www.python-ldap.org/en/latest/reference/slapdtest.html
-        with mock.patch.object(_LDAPUserGroups, "is_member_of", return_value=True):
-            with override_settings(AUTH_LDAP_USER_FLAGS_BY_GROUP=user_flags_by_group):
-                bob = DejaCodeLDAPBackend().authenticate(
-                    request=None, username="bob", password="secret"
-                )
-                self.assertTrue(bob.is_superuser)
+        with override_settings(AUTH_LDAP_USER_FLAGS_BY_GROUP=user_flags_by_group):
+            bob = DejaCodeLDAPBackend().authenticate(
+                request=None, username="bob", password="secret"
+            )
+            self.assertTrue(bob.is_superuser)
 
     def test_ldap_tab_set_mixin_get_tabsets(self):
         from component_catalog.views import ComponentDetailsView
@@ -383,65 +365,3 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         # The `ObjectPermissionBackend` is not needed since `ProductSecuredManager.get_queryset()`
         # calls directly `guardian.shortcuts.get_objects_for_user`
         self.assertEqual(200, self.client.get(url).status_code)
-
-
-# class DejaCodeLDAPBackendTestCase(TestCase):
-#     top = ("dc=com", {"dc": "com"})
-#     nexb = ("dc=nexb,dc=com", {"dc": "nexb"})
-#     people = ("ou=people,dc=nexb,dc=com", {"ou": "people"})
-#     groups = ("ou=groups,dc=nexb,dc=com", {"ou": "groups"})
-#
-#     bob = (
-#         "cn=bob,ou=people,dc=nexb,dc=com",
-#         {
-#             "cn": "bob",
-#             "samaccountname": "bob",
-#             "uid": ["bob"],
-#             "userPassword": ["secret"],
-#             "mail": ["bob@test.com"],
-#             "givenName": ["Robert"],
-#             "sn": ["Smith"],
-#         },
-#     )
-#
-#     group_active = (
-#         "cn=active,ou=groups,dc=nexb,dc=com",
-#         {
-#             "cn": ["active"],
-#             "objectClass": ["groupOfNames"],
-#             "member": ["cn=bob,ou=people,dc=nexb,dc=com"],
-#         },
-#     )
-#
-#     group_not_in_database = (
-#         "cn=not_in_database,ou=groups,dc=nexb,dc=com",
-#         {
-#             "cn": ["not_in_database"],
-#             "objectClass": ["groupOfNames"],
-#             "member": ["cn=bob,ou=people,dc=nexb,dc=com"],
-#         },
-#     )
-#
-#     group_superuser = (
-#         "cn=superuser,ou=groups,dc=nexb,dc=com",
-#         {
-#             "cn": ["superuser"],
-#             "objectClass": ["groupOfNames"],
-#             "member": ["cn=bob,ou=people,dc=nexb,dc=com"],
-#         },
-#     )
-#
-#     # This is the content of our mock LDAP directory. It takes the form
-#     # {dn: {attr: [value, ...], ...}, ...}.
-#     directory = dict(
-#         [
-#             top,
-#             nexb,
-#             people,
-#             groups,
-#             bob,
-#             group_active,
-#             group_not_in_database,
-#             group_superuser,
-#         ]
-#     )
