@@ -45,7 +45,7 @@ jobs:
       - name: Install python-ldap OS dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libldap2-dev libsasl2-dev
+          sudo apt-get install -y libldap2-dev libsasl2-dev slapd
 
       - name: Install dependencies
         run: make dev envfile

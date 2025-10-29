@@ -6,6 +6,20 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+"""
+This module is based on slapdtest, it requires OpenLDAP to be installed on the host.
+https://www.python-ldap.org/en/latest/reference/slapdtest.html
+
+On Debian:
+$ apt-get install slapd
+
+On macOS:
+$ brew install openldap
+$ export PATH="/opt/homebrew/opt/openldap/bin:$PATH"
+$ export PATH="/opt/homebrew/opt/openldap/sbin:$PATH"
+$ export PATH="/opt/homebrew/opt/openldap/libexec:$PATH"
+"""
+
 import logging
 
 from django.apps import apps
@@ -100,7 +114,6 @@ member: uid=bob,ou=people,o=test
     AUTH_LDAP_GROUP_TYPE=GroupOfNamesType(),
 )
 class DejaCodeLDAPBackendTestCase(TestCase):
-    # https://www.python-ldap.org/en/latest/reference/slapdtest.html
     server_class = slapdtest.SlapdObject
     ldap_object_class = SimpleLDAPObject
 
