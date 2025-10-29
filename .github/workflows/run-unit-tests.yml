@@ -50,13 +50,13 @@ jobs:
 #          # Disable AppArmor for slapd to allow slapdtest to create temp instances
 #          sudo aa-disable /usr/sbin/slapd
 
-      - name: Install apt dependencies
+      - name: Install python-ldap OS dependencies
         run: |
-          set -ex
-          sudo apt update
-          sudo apt install -y ldap-utils slapd enchant-2 libldap2-dev libsasl2-dev apparmor-utils
-      - name: Disable AppArmor
-        run: sudo aa-disable /usr/sbin/slapd
+          sudo apt-get update
+          sudo apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils
+          # Stop system slapd - slapdtest will create its own test instances
+          sudo systemctl stop slapd
+          sudo systemctl disable slapd
 
       - name: Install dependencies
         run: make dev envfile
