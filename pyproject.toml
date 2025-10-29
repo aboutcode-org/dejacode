@@ -119,9 +119,6 @@ dependencies = [
     "pyasn1==0.6.1",
     "pyasn1-modules==0.4.2",
     "django-auth-ldap==5.2.0",
-    # LDAP Testing
-    "mockldap==0.3.0.post1",
-    "funcparserlib==0.3.6",
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",

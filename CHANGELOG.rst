@@ -1,6 +1,12 @@
 Release notes
 =============
 
+### Version 5.4.2
+
+- Migrate the LDAP testing from using mockldap to slapdtest.
+  The mockldap and funcparserlib dependencies has been removed.
+  https://github.com/aboutcode-org/dejacode/issues/394
+
 ### Version 5.4.1
 
 - Upgrade Django to latest security release 5.2.7
