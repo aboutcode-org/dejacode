@@ -186,7 +186,7 @@ Before you install DejaCode, make sure you have the following prerequisites:
 #. **ldap** development libraries to build python-ldap on Linux.
    For instance on Debian::
 
-    apt-get install -y libldap2-dev libsasl2-dev
+    apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils
 
 .. _system_dependencies:
 
