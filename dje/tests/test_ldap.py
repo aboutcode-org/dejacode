@@ -11,7 +11,7 @@ Test module is based on slapdtest, it requires OpenLDAP to be installed on the h
 https://www.python-ldap.org/en/latest/reference/slapdtest.html
 
 On Debian:
-$ apt-get install slapd
+$ apt-get install slapd ldap-utils
 
 On macOS:
 $ brew install openldap
