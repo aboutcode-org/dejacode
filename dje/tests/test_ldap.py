@@ -7,7 +7,7 @@
 #
 
 """
-This module is based on slapdtest, it requires OpenLDAP to be installed on the host.
+Test module is based on slapdtest, it requires OpenLDAP to be installed on the host.
 https://www.python-ldap.org/en/latest/reference/slapdtest.html
 
 On Debian:
