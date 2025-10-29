@@ -46,7 +46,7 @@ jobs:
         run: |
           sudo apt-get update
           # https://github.com/python-ldap/python-ldap/blob/main/.github/workflows/ci.yml
-          sudo apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils apparmor-utils
+          sudo apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils enchant-2 apparmor-utils 
           # Disable AppArmor for slapd to allow slapdtest to create temp instances
           sudo aa-disable /usr/sbin/slapd
 
