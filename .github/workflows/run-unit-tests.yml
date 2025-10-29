@@ -54,9 +54,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils
-          # Stop system slapd - slapdtest will create its own test instances
-          sudo systemctl stop slapd
-          sudo systemctl disable slapd
+
+      - name: Disable AppArmor for slapd
+        run: |
+          sudo ln -s /etc/apparmor.d/usr.sbin.slapd /etc/apparmor.d/disable/
+          sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.slapd
 
       - name: Install dependencies
         run: make dev envfile
