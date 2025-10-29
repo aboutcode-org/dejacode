@@ -21,6 +21,8 @@ $ export PATH="/opt/homebrew/opt/openldap/libexec:$PATH"
 """
 
 import logging
+import shutil
+import unittest
 
 from django.apps import apps
 from django.conf import settings
@@ -96,6 +98,12 @@ member: uid=bob,ou=people,o=test
 """
 
 
+def slapd_available():
+    """Check if slapd is available in the system"""
+    return shutil.which("slapd") is not None
+
+
+@unittest.skipUnless(slapd_available(), "slapd not installed")
 @override_settings(
     AUTHENTICATION_BACKENDS=("dje.ldap_backend.DejaCodeLDAPBackend",),
     AUTH_LDAP_DATASPACE="nexB",
