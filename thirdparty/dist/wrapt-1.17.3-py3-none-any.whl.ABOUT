@@ -1,0 +1,14 @@
+about_resource: wrapt-1.17.3-py3-none-any.whl
+name: wrapt
+version: 1.17.3
+download_url: https://files.pythonhosted.org/packages/1f/f6/a933bd70f98e9cf3e08167fc5cd7aaaca49147e48411c0bd5ae701bb2194/wrapt-1.17.3-py3-none-any.whl
+package_url: pkg:pypi/wrapt@1.17.3
+license_expression: bsd-new
+copyright: Copyright wrapt project contributors
+attribute: yes
+checksum_md5: c4ec53905ac1d3aaebf8a5486adf7180
+checksum_sha1: 288b9f25b7ca9c470070ba607f619d172325e7db
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

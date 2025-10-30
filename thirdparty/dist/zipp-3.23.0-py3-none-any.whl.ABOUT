@@ -1,0 +1,13 @@
+about_resource: zipp-3.23.0-py3-none-any.whl
+name: zipp
+version: 3.23.0
+download_url: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
+package_url: pkg:pypi/zipp@3.23.0
+license_expression: unknown-license-reference
+copyright: Copyright zipp project contributors
+checksum_md5: 517d3915cf2576739abd556828f45cc4
+checksum_sha1: 102ae26651fbb4c6407b4d8cc4174d1436156c25
+licenses:
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

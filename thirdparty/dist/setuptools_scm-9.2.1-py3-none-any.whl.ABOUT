@@ -1,0 +1,14 @@
+about_resource: setuptools_scm-9.2.1-py3-none-any.whl
+name: setuptools-scm
+version: 9.2.1
+download_url: https://files.pythonhosted.org/packages/11/cc/5fda7ed3aab0814a86e428846b6b386f55093f4621d86e3cd081ae126c27/setuptools_scm-9.2.1-py3-none-any.whl
+package_url: pkg:pypi/setuptools-scm@9.2.1
+license_expression: mit
+copyright: Copyright setuptools-scm project contributors
+attribute: yes
+checksum_md5: e4c0d7fca880d0a7e780bbb160de767b
+checksum_sha1: c955676a734eac2a836b5870c23c594511ada06f
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

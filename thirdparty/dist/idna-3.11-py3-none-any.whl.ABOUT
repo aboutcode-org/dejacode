@@ -1,0 +1,17 @@
+about_resource: idna-3.11-py3-none-any.whl
+name: idna
+version: '3.11'
+download_url: https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl
+package_url: pkg:pypi/idna@3.11
+license_expression: bsd-new AND unknown-license-reference
+copyright: Copyright idna project contributors
+attribute: yes
+checksum_md5: 9a707ac0a65f018883cff8e82f48314e
+checksum_sha1: b656add136d8a54445605020055e18a942352fa2
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

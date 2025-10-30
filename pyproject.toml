@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "5.4.0"
+version = "5.4.1"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.13,<3.14"
@@ -33,30 +33,30 @@ dependencies = [
     # Base configuration tools
     "setuptools==80.9.0",
     "wheel==0.45.1",
-    "pip==25.1.1",
+    "pip==25.3",
     # Django
-    "Django==5.2.6",
-    "asgiref==3.9.1",
-    "typing_extensions==4.14.0",
+    "Django==5.2.7",
+    "asgiref==3.10.0",
+    "typing_extensions==4.15.0",
     "sqlparse==0.5.3",
     # Django apps
     "django-crispy-forms==2.4",
     "crispy_bootstrap5==2025.6",
     "django-grappelli==4.0.2",
-    "django-filter==25.1",
+    "django-filter==25.2",
     "django-registration==3.4",
     "confusable_homoglyphs==3.3.1",
-    "django-guardian==3.0.3",
+    "django-guardian==3.2.0",
     "django-environ==0.12.0",
     "django-debug-toolbar==6.0.0",
     # CAPTCHA
     "altcha==0.2.0",
-    "django_altcha==0.3.0",
+    "django_altcha==0.4.0",
     # REST API
     "djangorestframework==3.16.1",
     # API documentation
-    "drf-yasg==1.21.10",
-    "uritemplate==4.1.1",
+    "drf-yasg==1.21.11",
+    "uritemplate==4.2.0",
     "inflection==0.5.1",
     "pytz==2025.2",
     # Track failed login attempts
@@ -66,60 +66,59 @@ dependencies = [
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.2.9",
+    "psycopg==3.2.10",
     # Cache
     "redis==6.4.0",
     # redis dependencies:
     "packaging==25.0",
-    "pyparsing==3.2.3",
+    "pyparsing==3.2.5",
     "async-timeout==5.0.1",
     "Deprecated==1.2.18",
-    "wrapt==1.17.2",
+    "wrapt==1.17.3",
     # Antivirus
     "clamd==1.0.2",
     # Testing
     "model_bakery==1.10.1",
     # Task queue
-    "rq==2.4.1",
+    "rq==2.6.0",
+    "croniter==6.0.0",
     "django-rq==3.1.0",
-    "fakeredis==2.31.0",
+    "fakeredis==2.32.0",
     # Scheduler
     "rq-scheduler==0.14.0",
     "crontab==1.0.5",
     "freezegun==1.5.2",
     # Libs
-    "certifi==2025.8.3",
+    "certifi==2025.10.5",
     "urllib3==2.5.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
     "PyJWT==2.10.1",
     "natsort==8.4.0",
     "six==1.17.0",
-    "requests==2.32.4",
-    "idna==3.10",
-    "charset-normalizer==3.4.3",
+    "requests==2.32.5",
+    "idna==3.11",
+    "charset-normalizer==3.4.4",
     "PyYAML==6.0.2",
     "cython==3.1.1",
-    "zipp==3.22.0",
-    "XlsxWriter==3.2.5",
+    "zipp==3.23.0",
+    "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.8",
-    "bleach==6.2.0",
+    "markdown==3.9",
+    "bleach==6.3.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.5.1",
     # Authentication
-    "oauthlib==3.2.2",
+    "oauthlib==3.3.1",
     "python3-openid==3.2.0",
     "requests-oauthlib==2.0.0",
     "defusedxml==0.7.1",
     # LDAP Auth
-    "python-ldap==3.4.4",
+    "python_ldap==3.4.5",
+    "setuptools-scm==9.2.1",
     "pyasn1==0.6.1",
     "pyasn1-modules==0.4.2",
     "django-auth-ldap==5.2.0",
-    # LDAP Testing
-    "mockldap==0.3.0.post1",
-    "funcparserlib==0.3.6",
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",
@@ -149,10 +148,9 @@ dependencies = [
     "attrs==25.3.0",
     "pyrsistent==0.20.0",
     # CycloneDX
-    "cyclonedx-python-lib==10.2.0",
+    "cyclonedx-python-lib==11.1.0",
     "sortedcontainers==2.4.0",
-    "toml==0.10.2",
-    "py-serializable==2.0.0",
+    "py-serializable==2.1.0",
     # Git
     "GitPython==3.1.45",
     "gitdb==4.0.12",
@@ -170,11 +168,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Linter and Validation
-    "ruff==0.11.12",
+    "ruff==0.14.0",
     # Documentation
     "doc8==1.1.2",
     "stevedore==5.4.1",
-    "Pygments==2.19.1",
+    "Pygments==2.19.2",
     "docutils==0.21.2",
     "restructuredtext-lint==1.4.0",
     "pbr==6.1.1",
@@ -222,7 +220,7 @@ select = [
     "I",  # isort
     "C9", # McCabe complexity
 ]
-ignore = ["UP032", "UP038", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
+ignore = ["UP032", "D1", "D203", "D205", "D212", "D400", "D415", "S308"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
