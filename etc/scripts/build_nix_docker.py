@@ -4,9 +4,31 @@ Generates a Nix expression (default.nix) from the
 pyproject.toml file that is used to build the Python package for NixOS and
 put it under the project root.
 
-Requirement: `toml` and `requests` Python packages and Docker installed.
+Requirement:
+ - toml
+ - requests
+ - Docker
+ - nix-prefetch-url
+
+ To install the required Python packages, run:
 
     pip install toml requests
+
+To install Docker, follow the instructions at:
+    https://docs.docker.com/get-docker/
+
+To install "nix-prefetch-url", follow the following instructions:
+    # Install Nix in single-user mode
+    curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+
+    # Source nix in your current shell
+    . ~/.nix-profile/etc/profile.d/nix.sh
+
+    # Reload your shell or open new terminal
+    source ~/.bashrc
+
+    # Verify nix-prefetch-url works
+    which nix-prefetch-url
 
 To run the script:
 
@@ -119,23 +141,15 @@ def create_defualt_nix(dependencies_list, meta_dict):
 let
   python = pkgs.python313;
 
-  # Helper function to override a package to disable tests
-  disableAllTests =
-    package: extraAttrs:
-    package.overrideAttrs (
-      old:
-      {
+  # Helper function to create packages with specific versions and disabled tests
+  buildCustomPackage = { pname, version, format ? "wheel", src, ... }@attrs:
+    python.pkgs.buildPythonPackage ({
+        inherit pname version format src;
         doCheck = false;
         doInstallCheck = false;
         doPytestCheck = false;
         pythonImportsCheck = [];
-        checkPhase = "echo 'Tests disabled'";
-        installCheckPhase = "echo 'Install checks disabled'";
-        pytestCheckPhase = "echo 'Pytest checks disabled'";
-        __intentionallyOverridingVersion = old.__intentionallyOverridingVersion or false;
-      }
-      // extraAttrs
-    );
+    } // attrs);
 
   pythonOverlay = self: super: {
 """
@@ -145,11 +159,12 @@ let
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
         version = dep["version"]
-        # Handle 'django_notifications_patched','django-rest-hooks' and 'funcparserlib' separately
+        # Handle 'django_notifications_patched', 'django-rest-hooks' and
+        # 'python_ldap' separately
         if (
             name == "django-rest-hooks"
             or name == "django_notifications_patched"
-            or (name == "funcparserlib" and version == "0.3.6")
+            or name == "python_ldap"
         ):
             if name == "django-rest-hooks" and version == "1.6.1":
                 nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
@@ -179,43 +194,23 @@ let
                 )
                 nix_content += "        };\n"
                 nix_content += "    };\n"
-            # This section can be removed once funcparserlib is updated to >=1.0.0
-            # https://github.com/aboutcode-org/dejacode/issues/394
-            elif name == "funcparserlib" and version == "0.3.6":
-                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
-                nix_content += '        pname = "funcparserlib";\n'
-                nix_content += '        version = "0.3.6";\n'
+            elif name == "python_ldap" and version == "3.4.5":
+                nix_content += "    " + name + " = buildCustomPackage {\n"
+                nix_content += '        pname = "python_ldap";\n'
+                nix_content += '        version = "3.4.5";\n'
                 nix_content += '        format = "setuptools";\n'
-                nix_content += "        doCheck = false;\n"
                 nix_content += "        src = pkgs.fetchurl {\n"
-                nix_content += '          url = "https://files.pythonhosted.org/packages/cb/f7/b4a59c3ccf67c0082546eaeb454da1a6610e924d2e7a2a21f337ecae7b40/funcparserlib-0.3.6.tar.gz";\n'
+                nix_content += '          url = "https://files.pythonhosted.org/packages/0c/88/8d2797decc42e1c1cdd926df4f005e938b0643d0d1219c08c2b5ee8ae0c0/python_ldap-3.4.5.tar.gz";\n'
                 nix_content += (
-                    '           sha256 = "07f9cgjr3h4j2m67fhwapn8fja87vazl58zsj4yppf9y3an2x6dp";\n'
+                    '          sha256 = "16pplmqb5wqinzy4azbafr3iiqhy65qzwbi1hmd6lb7y6wffzxmj";\n'
                 )
-                nix_content += "        };\n\n"
-                # Original setpy.py:
-                # https://github.com/vlasovskikh/funcparserlib/blob/0.3.6/setup.py
-                # funcparserlib version 0.3.6 uses use_2to3 which is no
-                # longer supported in modern setuptools. Remove the
-                # "use_2to3" from the setup.py
-                nix_content += "    postPatch = ''\n"
-                nix_content += "        cat > setup.py << EOF\n"
-                nix_content += "        # -*- coding: utf-8 -*-\n"
-                nix_content += "        from setuptools import setup\n"
-                nix_content += "        setup(\n"
-                nix_content += '            name="funcparserlib",\n'
-                nix_content += '            version="0.3.6",\n'
-                nix_content += '            packages=["funcparserlib", "funcparserlib.tests"],\n'
-                nix_content += '            author="Andrey Vlasovskikh",\n'
-                nix_content += '            description="Recursive descent parsing library based" \
-                                            "on functional combinators",\n'
-                nix_content += '            license="MIT",\n'
-                nix_content += '            url="http://code.google.com/p/funcparserlib/",\n'
-                nix_content += "        )\n"
-                nix_content += "        EOF\n"
-                nix_content += "    '';\n"
-                nix_content += "    propagatedBuildInputs = with self; [];\n"
-                nix_content += "    checkPhase = \"echo 'Tests disabled for funcparserlib'\";\n"
+                nix_content += "        };\n"
+                nix_content += "        nativeBuildInputs = with pkgs; [\n"
+                nix_content += "        pkg-config\n"
+                nix_content += "        python.pkgs.setuptools\n"
+                nix_content += "        python.pkgs.distutils\n"
+                nix_content += "        ];\n"
+                nix_content += "        buildInputs = with pkgs; [ openldap cyrus_sasl ];\n"
                 nix_content += "    };\n"
             else:
                 need_review_packages_list.append(dep)
@@ -233,7 +228,7 @@ let
                     if component.get("packagetype") == "bdist_wheel":
                         whl_url = component.get("url")
                         whl_sha256 = get_sha256_hash(whl_url)
-                        nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
+                        nix_content += "    " + name + " = buildCustomPackage {\n"
                         nix_content += '        pname = "' + name + '";\n'
                         nix_content += '        version = "' + version + '";\n'
                         nix_content += '        format = "wheel";\n'
@@ -251,12 +246,10 @@ let
                         if component.get("packagetype") == "sdist":
                             sdist_url = component.get("url")
                             sdist_sha256 = get_sha256_hash(sdist_url)
-                            nix_content += (
-                                "    " + name + " = disableAllTests super." + name + " {\n"
-                            )
+                            nix_content += "    " + name + " = buildCustomPackage {\n"
                             nix_content += '        pname = "' + name + '";\n'
                             nix_content += '        version = "' + version + '";\n'
-                            nix_content += "        __intentionallyOverridingVersion = true;\n"
+                            nix_content += '        format = "setuptools";\n'
                             nix_content += "        src = pkgs.fetchurl {\n"
                             nix_content += '          url = "' + sdist_url + '";\n'
                             nix_content += '          sha256 = "' + sdist_sha256 + '";\n'
