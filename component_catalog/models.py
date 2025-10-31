@@ -2630,7 +2630,7 @@ class Package(
         )
         return updated_fields
 
-    def update_from_scan(self, user):
+    def update_from_scan(self, user, update_product_relations=False):
         scancodeio = ScanCodeIO(self.dataspace)
         can_update_from_scan = all(
             [
@@ -2640,9 +2640,16 @@ class Package(
             ]
         )
 
-        if can_update_from_scan:
-            updated_fields = scancodeio.update_from_scan(package=self, user=user)
-            return updated_fields
+        if not can_update_from_scan:
+            return
+
+        updated_fields = scancodeio.update_from_scan(package=self, user=user)
+
+        if update_product_relations and "declared_license_expression" in updated_fields:
+            for product_package in self.productpackages.license_unknown():
+                product_package.update_license_unknown()
+
+        return updated_fields
 
     def get_related_packages_qs(self):
         """
