@@ -579,13 +579,11 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         # Update the Product Package relationship `license_expression` if the
         # Package.declared_license_expression was updated from "unknwon" value using
         # PurlDB data.
-        productpackages_unknown_licenses = self.productpackages.filter(
-            package__in=updated_packages, license_expression="unknown"
-        )
-        for product_package in productpackages_unknown_licenses:
-            package_license_expression = product_package.package.declared_license_expression
-            if package_license_expression and package_license_expression != "unknown":
-                product_package.update(license_expression=package_license_expression)
+        productpackages_qs = self.productpackages.filter(
+            package__in=updated_packages
+        ).license_unknown()
+        for product_package in productpackages_qs:
+            product_package.update_license_unknown()
 
         return updated_packages
 
@@ -706,6 +704,9 @@ class ProductComponentQuerySet(ProductSecuredQuerySet):
 class ProductPackageQuerySet(ProductSecuredQuerySet):
     def vulnerable(self):
         return self.filter(weighted_risk_score__isnull=False)
+
+    def license_unknown(self):
+        return self.filter(license_expression="unknown")
 
     def annotate_weighted_risk_score(self):
         """Annotate the Queeryset with the weighted_risk_score computed value."""
@@ -1099,6 +1100,20 @@ class ProductPackage(ProductRelationshipMixin):
     @property
     def permission_protected_fields(self):
         return {"review_status": "change_review_status_on_productpackage"}
+
+    def update_license_unknown(self):
+        """
+        Update this Product Package relationship `license_expression` from "unknown"
+        if the related Package `declared_license_expression` has known value.
+        """
+        package_license_expression = self.package.declared_license_expression
+        conditions = [
+            self.license_expression == "unknown",
+            package_license_expression,
+            package_license_expression != "unknown",
+        ]
+        if all(conditions):
+            self.update(license_expression=package_license_expression)
 
 
 class ProductAssignedLicense(DataspacedModel):
