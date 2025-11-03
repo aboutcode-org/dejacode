@@ -749,6 +749,12 @@ class ProductSecuredQuerySet(DataspacedQuerySet):
         """Filter based on the provided ``product`` object."""
         return self.filter(product=product)
 
+    def exclude_locked_products(self):
+        """Filter out the non-active and locked Products."""
+        return self.exclude(product__configuration_status__is_locked=True).filter(
+            product__is_active=True
+        )
+
 
 class DataspacedModel(models.Model):
     """Abstract base model for all models that are keyed by Dataspace."""

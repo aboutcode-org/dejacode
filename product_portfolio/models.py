@@ -706,7 +706,7 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
         return self.filter(license_expression="unknown")
 
     def update_license_unknown(self):
-        for product_package in self.license_unknown():
+        for product_package in self.exclude_locked_products().license_unknown():
             product_package.update_license_unknown()
 
     def annotate_weighted_risk_score(self):
