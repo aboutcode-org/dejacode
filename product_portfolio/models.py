@@ -579,11 +579,8 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         # Update the Product Package relationship `license_expression` if the
         # Package.declared_license_expression was updated from "unknwon" value using
         # PurlDB data.
-        productpackages_qs = self.productpackages.filter(
-            package__in=updated_packages
-        ).license_unknown()
-        for product_package in productpackages_qs:
-            product_package.update_license_unknown()
+        productpackages_qs = self.productpackages.filter(package__in=updated_packages)
+        productpackages_qs.update_license_unknown()
 
         return updated_packages
 
@@ -707,6 +704,10 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
 
     def license_unknown(self):
         return self.filter(license_expression="unknown")
+
+    def update_license_unknown(self):
+        for product_package in self.license_unknown():
+            product_package.update_license_unknown()
 
     def annotate_weighted_risk_score(self):
         """Annotate the Queeryset with the weighted_risk_score computed value."""

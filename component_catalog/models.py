@@ -2630,24 +2630,26 @@ class Package(
         )
         return updated_fields
 
-    def update_from_scan(self, user, update_product_relations=False):
-        scancodeio = ScanCodeIO(self.dataspace)
+    def update_from_scan(self, user, update_products=False):
+        package = self
+        dataspace = self.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+
         can_update_from_scan = all(
             [
-                self.dataspace.enable_package_scanning,
-                self.dataspace.update_packages_from_scan,
+                dataspace.enable_package_scanning,
+                dataspace.update_packages_from_scan,
                 scancodeio.is_configured(),
             ]
         )
-
         if not can_update_from_scan:
             return
 
-        updated_fields = scancodeio.update_from_scan(package=self, user=user)
+        updated_fields = scancodeio.update_from_scan(package=package, user=user)
 
-        if update_product_relations and "declared_license_expression" in updated_fields:
-            for product_package in self.productpackages.license_unknown():
-                product_package.update_license_unknown()
+        if update_products:
+            if "declared_license_expression" in updated_fields:
+                package.productpackages.update_license_unknown()
 
         return updated_fields
 
