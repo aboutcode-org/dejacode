@@ -18,7 +18,7 @@
     <thead>
       <tr>
         <th>{% trans 'Import type' %}</th>
-        <th style="width:115px;">{% trans 'Status' %}</th>
+        <th style="width:140px;">{% trans 'Status' %}</th>
         <th>{% trans 'Input' %}</th>
         <th colspan="2">{% trans 'Log' %}</th>
       </tr>
@@ -41,17 +41,17 @@
             </div>
           </td>
           <td>
+            {% if scancode_project.project_uuid %}
+              <a href="#" role="button" class="ms-1 float-end" data-bs-toggle="modal" data-bs-target="#scancode-project-status-modal" data-fetch-status-url="{% url 'product_portfolio:scancodeio_project_status' scancode_project.uuid %}">
+                <i class="fas fa-info-circle"></i>
+              </a>
+            {% endif %}
             <strong>
               {{ scancode_project.get_status_display|title }}
               {% if scancode_project.has_errors %}
                 <span class="float-start"> with errors</span>
               {% endif %}
             </strong>
-            {% if scancode_project.project_uuid %}
-              <a href="#" role="button" class="ms-1 float-end" data-bs-toggle="modal" data-bs-target="#scancode-project-status-modal" data-fetch-status-url="{% url 'product_portfolio:scancodeio_project_status' scancode_project.uuid %}">
-                <i class="fas fa-info-circle"></i>
-              </a>
-            {% endif %}
             {% include 'component_catalog/includes/scan_status.html' with status=scancode_project.status has_errors=scancode_project.has_errors only %}
           </td>
           <td>

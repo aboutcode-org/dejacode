@@ -780,6 +780,19 @@ class ProductPortfolioModelsTestCase(TestCase):
         pc1.save()
         self.assertFalse(pc1.is_custom_component)
 
+    def test_productpackage_model_update_license_unknown(self):
+        package1 = make_package(self.dataspace, declared_license_expression="mit")
+        pp1 = make_product_package(self.product1, package=package1)
+
+        pp1.update_license_unknown()
+        pp1.refresh_from_db()
+        self.assertEqual("", pp1.license_expression)
+
+        pp1.update(license_expression="unknown")
+        pp1.update_license_unknown()
+        pp1.refresh_from_db()
+        self.assertEqual("mit", pp1.license_expression)
+
     def test_product_relationship_queryset_vulnerable(self):
         pp1 = make_product_package(self.product1)
         product_package_qs = ProductPackage.objects.vulnerable()
@@ -832,6 +845,70 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertEqual(1, updated_count)
         pp1.refresh_from_db()
         self.assertIsNone(pp1.weighted_risk_score)
+
+    def test_productpackage_queryset_exclude_locked_products(self):
+        active_product = make_product(self.dataspace)
+        pp1 = make_product_package(active_product)
+        inactive_product = make_product(self.dataspace, is_active=False)
+        make_product_package(inactive_product)
+
+        qs = ProductPackage.objects.exclude_locked_products()
+        self.assertQuerySetEqual(qs, [pp1])
+
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        active_product.update(configuration_status=locked_status)
+        qs = ProductPackage.objects.exclude_locked_products()
+        self.assertQuerySetEqual(qs, [])
+
+    def test_productpackage_queryset_license_unknown(self):
+        package1 = make_package(self.dataspace, declared_license_expression="unknown")
+        package2 = make_package(self.dataspace, declared_license_expression="mit")
+        pp1 = make_product_package(self.product1, package=package1)
+        pp2 = make_product_package(self.product1, package=package2)
+
+        qs = ProductPackage.objects.license_unknown()
+        self.assertQuerySetEqual([], qs)
+
+        pp1.update(license_expression="unknown")
+        pp2.update(license_expression="mit")
+        qs = ProductPackage.objects.license_unknown()
+        self.assertQuerySetEqual(qs, [pp1])
+
+    def test_productpackage_queryset_update_license_unknown(self):
+        package1 = make_package(self.dataspace, declared_license_expression="mit")
+        package2 = make_package(self.dataspace, declared_license_expression="mit")
+        pp1 = make_product_package(self.product1, package=package1)
+        pp2 = make_product_package(self.product1, package=package2)
+
+        ProductPackage.objects.update_license_unknown()
+        pp1.refresh_from_db()
+        pp2.refresh_from_db()
+        self.assertEqual("", pp1.license_expression)
+        self.assertEqual("", pp2.license_expression)
+
+        pp1.update(license_expression="unknown")
+        ProductPackage.objects.update_license_unknown()
+        pp1.refresh_from_db()
+        pp2.refresh_from_db()
+        self.assertEqual("mit", pp1.license_expression)
+        self.assertEqual("", pp2.license_expression)
+
+    def test_productpackage_queryset_update_license_unknown_exclude_locked_products(self):
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        self.product1.update(configuration_status=locked_status)
+
+        package1 = make_package(self.dataspace, declared_license_expression="mit")
+        pp1 = make_product_package(self.product1, package=package1, license_expression="unknown")
+
+        ProductPackage.objects.update_license_unknown()
+        pp1.refresh_from_db()
+        # Product is locked
+        self.assertEqual("unknown", pp1.license_expression)
+
+        self.product1.update(configuration_status=None)
+        ProductPackage.objects.update_license_unknown()
+        pp1.refresh_from_db()
+        self.assertEqual("mit", pp1.license_expression)
 
     def test_productrelation_model_compute_weighted_risk_score(self):
         purpose1 = make_product_item_purpose(self.dataspace)

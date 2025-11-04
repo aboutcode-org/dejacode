@@ -1761,7 +1761,7 @@ def send_scan_notification(request, key):
     run = json_data.get("run")
     scan_status = run.get("status")
     if scan_status.lower() == "success":
-        updated_fields = package.update_from_scan(user)
+        updated_fields = package.update_from_scan(user, update_products=True)
 
     if updated_fields:
         description = (
