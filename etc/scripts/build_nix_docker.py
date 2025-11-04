@@ -227,6 +227,12 @@ let
                 for component in url_section:
                     if component.get("packagetype") == "bdist_wheel":
                         whl_url = component.get("url")
+                        if (
+                            ("cp313" not in whl_url and "py3" not in whl_url)
+                            or ("manylinux" not in whl_url and "-none-" not in whl_url)
+                            or ("any.whl" not in whl_url and "x86_64" not in whl_url)
+                        ):
+                            continue
                         whl_sha256 = get_sha256_hash(whl_url)
                         nix_content += "    " + name + " = buildCustomPackage {\n"
                         nix_content += '        pname = "' + name + '";\n'
@@ -308,6 +314,16 @@ let
       setuptools
       wheel
       pip
+    ];
+
+    # Add PostgreSQL to buildInputs to ensure libpq is available at runtime
+    buildInputs = with pkgs; [
+      postgresql
+    ];
+
+    # This wrapper ensures the PostgreSQL libraries are available at runtime
+    makeWrapperArgs = [
+      "--set LD_LIBRARY_PATH ${pkgs.postgresql.lib}/lib"
     ];
 
     propagatedBuildInputs = with pythonWithOverlay.pkgs; [
