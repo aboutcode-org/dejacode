@@ -1787,10 +1787,13 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.dataspace.save()
 
         mock_scio_update_from_scan.return_value = ["declared_license_expression"]
-        results = package1.update_from_scan(user=self.user, update_products=True)
+        results = package1.update_from_scan(user=self.user, update_products=False)
         mock_scio_update_from_scan.assert_called()
         self.assertEqual(["declared_license_expression"], results)
+        pp1.refresh_from_db()
+        self.assertEqual("unknown", pp1.license_expression)
 
+        results = package1.update_from_scan(user=self.user, update_products=True)
         pp1.refresh_from_db()
         self.assertEqual("mit", pp1.license_expression)
 

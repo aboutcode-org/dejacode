@@ -1,6 +1,14 @@
 Release notes
 =============
 
+### Version 5.5.0-dev
+
+- Update ProductPackage "unknown" license during "Scan all Packages".
+  Only "unknown" licenses are updated.
+  Products with a is_locked configuration status are excluded.
+  Inactive is_active=False products are excluded.
+  https://github.com/aboutcode-org/dejacode/issues/388
+
 ### Version 5.4.2
 
 - Migrate the LDAP testing from using mockldap to slapdtest.
