@@ -230,7 +230,7 @@ let
                         if (
                             ("cp313" not in whl_url and "py3" not in whl_url)
                             or ("manylinux" not in whl_url and "-none-" not in whl_url)
-                            or ("any.whl" not in whl_url and "x86_64" not in whl_url)
+                            or ("any.whl" not in whl_url and "x86_64.whl" not in whl_url)
                         ):
                             continue
                         whl_sha256 = get_sha256_hash(whl_url)
