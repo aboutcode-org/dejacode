@@ -704,9 +704,9 @@ class ProductDetailsView(
         include_scancodeio_features = all(
             [
                 scancodeio.is_configured(),
-                user.is_superuser,
                 dataspace.enable_package_scanning,
                 context["is_user_dataspace"],
+                context["has_change_permission"],
             ]
         )
         context["has_scan_all_packages"] = include_scancodeio_features
@@ -1964,7 +1964,6 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     scancodeio = ScanCodeIO(user_dataspace)
     conditions = [
         scancodeio.is_configured(),
-        user.is_superuser,
         user_dataspace.enable_package_scanning,
         user_dataspace.name == dataspace,
     ]
@@ -1972,9 +1971,8 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     if not all(conditions):
         raise Http404
 
-    guarded_qs = Product.objects.get_queryset(user)
+    guarded_qs = Product.objects.get_queryset(user, perms="change_product")
     product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
-
     if not product.all_packages:
         raise Http404("No packages available for this product.")
 
