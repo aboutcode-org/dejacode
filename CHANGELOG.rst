@@ -9,6 +9,11 @@ Release notes
   Inactive is_active=False products are excluded.
   https://github.com/aboutcode-org/dejacode/issues/388
 
+- Allow Product "Scan all packages" for users with the "change_product" permission
+  on the Product instance.
+  Prior to this change only "superusers" could see and use this feature.
+  https://github.com/aboutcode-org/dejacode/issues/385
+
 ### Version 5.4.2
 
 - Migrate the LDAP testing from using mockldap to slapdtest.
