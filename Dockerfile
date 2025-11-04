@@ -36,6 +36,8 @@ RUN apt-get update \
       build-essential \
       libldap2-dev \
       libsasl2-dev \
+      slapd \
+      ldap-utils \
       libpq5 \
       git \
       wait-for-it \

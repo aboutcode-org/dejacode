@@ -1769,22 +1769,33 @@ class ComponentCatalogModelsTestCase(TestCase):
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.update_from_scan")
-    def test_package_model_update_from_scan(self, mock_update_from_scan, mock_is_configured):
+    def test_package_model_update_from_scan(self, mock_scio_update_from_scan, mock_is_configured):
         mock_is_configured.return_value = True
-        package1 = make_package(self.dataspace)
+        package1 = make_package(self.dataspace, declared_license_expression="mit")
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        pp1 = product1.productpackages.get()
+        self.assertEqual("", pp1.license_expression)
+        pp1.update(license_expression="unknown")
 
         results = package1.update_from_scan(user=self.user)
-        mock_update_from_scan.assert_not_called()
+        mock_scio_update_from_scan.assert_not_called()
         self.assertIsNone(results)
 
         self.dataspace.enable_package_scanning = True
         self.dataspace.update_packages_from_scan = True
         self.dataspace.save()
 
-        mock_update_from_scan.return_value = ["updated_field"]
-        results = package1.update_from_scan(user=self.user)
-        mock_update_from_scan.assert_called()
-        self.assertEqual(["updated_field"], results)
+        mock_scio_update_from_scan.return_value = ["declared_license_expression"]
+        results = package1.update_from_scan(user=self.user, update_products=False)
+        mock_scio_update_from_scan.assert_called()
+        self.assertEqual(["declared_license_expression"], results)
+        pp1.refresh_from_db()
+        self.assertEqual("unknown", pp1.license_expression)
+
+        results = package1.update_from_scan(user=self.user, update_products=True)
+        pp1.refresh_from_db()
+        self.assertEqual("mit", pp1.license_expression)
 
     def test_package_model_get_url_methods(self):
         package = Package(

@@ -717,6 +717,9 @@ body.signup-form .nav-link.active {
 body.signup-form label {
   display: none;
 }
+body.signup-form label.altcha-label {
+  display: initial !important;
+}
 body.signup-form #div_id_updates_email_notification label {
   display: block;
   margin-bottom: 0!important;

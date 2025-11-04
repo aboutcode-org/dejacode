@@ -24,6 +24,7 @@ from django.contrib.admin.utils import lookup_spawns_duplicates
 from django.contrib.admin.utils import unquote
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.widgets import AdminDateWidget
+from django.contrib.admin.widgets import AdminTextInputWidget
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
@@ -430,9 +431,7 @@ class DataspacedChangeList(ChangeList):
                 self.reference_params = params
 
     def get_search_fields_for_hint_display(self):
-        if not self.search_fields:
-            return []
-        return tuple(set(field.split("__")[0] for field in self.search_fields))
+        return self.search_fields or []
 
 
 class DataspacedAdmin(
@@ -1034,7 +1033,7 @@ class DataspacedAdmin(
             return True
 
 
-class HiddenValueWidget(forms.TextInput):
+class HiddenValueWidget(AdminTextInputWidget):
     """Render a hidden value in the UI."""
 
     HIDDEN_VALUE = "*******"
@@ -1056,6 +1055,11 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "scancodeio_api_key",
         "vulnerablecode_api_key",
         "purldb_api_key",
+        "forgejo_token",
+        "github_token",
+        "gitlab_token",
+        "jira_token",
+        "sourcehut_token",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -1077,15 +1081,66 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
     form = DataspaceConfigurationForm
     verbose_name_plural = _("Configuration")
     verbose_name = _("Dataspace configuration")
-    fields = [
-        "homepage_layout",
-        "scancodeio_url",
-        "scancodeio_api_key",
-        "vulnerablecode_url",
-        "vulnerablecode_api_key",
-        "vulnerabilities_risk_threshold",
-        "purldb_url",
-        "purldb_api_key",
+    fieldsets = [
+        (
+            "",
+            {"fields": ("homepage_layout",)},
+        ),
+        (
+            "AboutCode Integrations",
+            {
+                "fields": (
+                    "scancodeio_url",
+                    "scancodeio_api_key",
+                    "vulnerablecode_url",
+                    "vulnerablecode_api_key",
+                    "vulnerabilities_risk_threshold",
+                    "purldb_url",
+                    "purldb_api_key",
+                )
+            },
+        ),
+        (
+            "Forgejo Integration",
+            {
+                "fields": [
+                    "forgejo_token",
+                ]
+            },
+        ),
+        (
+            "GitHub Integration",
+            {
+                "fields": [
+                    "github_token",
+                ]
+            },
+        ),
+        (
+            "GitLab Integration",
+            {
+                "fields": [
+                    "gitlab_token",
+                ]
+            },
+        ),
+        (
+            "Jira Integration",
+            {
+                "fields": [
+                    "jira_user",
+                    "jira_token",
+                ]
+            },
+        ),
+        (
+            "SourceHut Integration",
+            {
+                "fields": [
+                    "sourcehut_token",
+                ]
+            },
+        ),
     ]
     can_delete = False
 

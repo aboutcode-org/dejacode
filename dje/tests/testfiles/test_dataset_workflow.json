@@ -16,7 +16,8 @@
     ],
     "is_active": true,
     "include_applies_to": true,
-    "include_product": true
+    "include_product": true,
+    "issue_tracker_id": ""
   }
 },
 {

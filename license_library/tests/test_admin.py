@@ -1784,6 +1784,13 @@ class LicenseAdminViewsTestCase(TestCase):
         expected = [["License with this Dataspace and SPDX short identifier already exists."]]
         self.assertEqual(expected, response.context["errors"])
 
+    def test_license_admin_get_search_fields_for_hint_display(self):
+        self.client.login(username="nexb_user", password="t3st")
+        changelist_url = reverse("admin:license_library_license_changelist")
+        response = self.client.get(changelist_url)
+        expected = "Search fields: key, name, short_name, keywords, owner__name"
+        self.assertContains(response, expected)
+
 
 class LicenseChoiceAdminTestCase(TestCase):
     def setUp(self):

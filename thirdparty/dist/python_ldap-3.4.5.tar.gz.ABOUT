@@ -1,0 +1,76 @@
+about_resource: python_ldap-3.4.5.tar.gz
+name: python-ldap
+version: 3.4.5
+download_url: https://files.pythonhosted.org/packages/0c/88/8d2797decc42e1c1cdd926df4f005e938b0643d0d1219c08c2b5ee8ae0c0/python_ldap-3.4.5.tar.gz
+description: "Python modules for implementing LDAP clients\n---------------------------------------\n\
+  python-ldap: LDAP client API for Python\n---------------------------------------\n\nWhat is\
+  \ python-ldap?\n====================\n\npython-ldap provides an object-oriented API to access\
+  \ LDAP\ndirectory servers from Python programs. Mainly it wraps the\nOpenLDAP client libs\
+  \ for that purpose.\n\nAdditionally the package contains modules for other LDAP-related\n\
+  stuff (e.g. processing LDIF, LDAPURLs, LDAPv3 sub-schema, etc.).\n\nNot included: Direct BER\
+  \ support\n\nSee INSTALL for version compatibility\n\nSee TODO for planned features. Contributors\
+  \ welcome.\n\nFor module documentation, see:\n\n\thttps://www.python-ldap.org/\n\nQuick usage\
+  \ example:\n====================\n\n.. code-block:: python\n\n    import ldap\n    l = ldap.initialize(\"\
+  ldap://my_ldap_server.my_domain\")\n    l.simple_bind_s(\"\",\"\")\n    l.search_s(\"o=My\
+  \ Organisation, c=AU\", ldap.SCOPE_SUBTREE, \"objectclass=*\")\n\nSee directory ``Demo/``\
+  \ of source distribution package for more\nexample code.\n\nAuthor(s) contact and documentation:\n\
+  ====================================\n\n   https://www.python-ldap.org/\n\nIf you are looking\
+  \ for help, please try the mailing list archives\nfirst, then send a question to the mailing\
+  \ list.\nBe warned that questions will be ignored if they can be\ntrivially answered by referring\
+  \ to the documentation.\n\nIf you are interested in helping, please contact the mailing list.\n\
+  If you want new features or upgrades, please check the mailing list\narchives and then enquire\
+  \ about any progress.\n\nAcknowledgements:\n=================\n\nThanks to Konstantin Chuguev\
+  \ <Konstantin.Chuguev at dante.org.uk>\nand Steffen Ries <steffen.ries at sympatico.ca> for\
+  \ working\non support for OpenLDAP 2.0.x features.\n\nThanks to Michael Stroeder <michael\
+  \ at stroeder.com> for the\nmodules ``ldif``, ``ldapurl``, ``ldap/schema/*.py``, ``ldap/*.py``\
+  \ and ``ldap/controls/*.py``.\n\nThanks to Hans Aschauer <Hans.Aschauer at Physik.uni-muenchen.de>\n\
+  for the C wrapper schema and SASL support.\n\nThanks to Mauro Cicognini <mcicogni at siosistemi.it>\
+  \ for the\nWIN32/MSVC6 bits, and the pre-built WIN32 ``ldap.pyd``.\n\nThanks to Waldemar Osuch\
+  \ <waldemar.osuch at gmail.com> for contributing\nthe new-style docs based on reStructuredText.\n\
+  \nThanks to Torsten Kurbad <torsten at tk-webart.de> for the\neasy_install support.\n\nThanks\
+  \ to James Andrewartha <jamesa at daa.com.au> for\nsignificant contribution to ``Doc/*.tex``.\n\
+  \nThanks to Rich Megginson <rmeggins at redhat.com> for extending\nsupport for LDAPv3 controls\
+  \ and adding support for LDAPv3 extended\noperations.\n\nThanks to Peter Gietz, DAASI for\
+  \ funding some control modules.\n\nThanks to Chris Mikkelson for various fixes and ldap.syncrepl.\n\
+  \nThese very kind people have supplied patches or suggested changes:\n\n* Federico Di Gregorio\
+  \ <fog at mixadlive.com>\n* John Benninghoff <johnb at netscape.com>\n* Donn Cave <donn at\
+  \ u.washington.edu>\n* Jason Gunthorpe <jgg at debian.org>\n* gurney_j <gurney_j at 4j.lane.edu>\n\
+  * Eric S. Johansson <esj at harvee.billerica.ma.us>\n* David Margrave <davidma at premier1.net>\n\
+  * Uche Ogbuji <uche.ogbuji at fourthought.com>\n* Neale Pickett <neale at lanl.gov>\n* Blake\
+  \ Weston <weston at platinum1.cambridge.scr.slb.com>\n* Wido Depping <wido.depping at gmail.com>\n\
+  * Deepak Giridharagopal <deepak at arlut.utexas.edu>\n* Ingo Steuwer <steuwer at univention.de>\n\
+  * Andreas Hasenack <ahasenack at terra.com.br>\n* Matej Vela <vela at debian.org>\n\nThese\
+  \ people contributed to Python 3 porting (at https://github.com/pyldap/):\n\n* ​A. Karl Kornel\n\
+  * Alex Willmer\n* Aymeric Augustin\n* Bradley Baetz\n* Christian Heimes\n* Dirk Mueller\n\
+  * Jon Dufresne\n* Martin Basti\n* Miro Hrončok\n* Paul Aurich\n* Petr Viktorin\n* Pieterjan\
+  \ De Potter\n* Raphaël Barrois\n* Robert Kuska\n* Stanislav Láznička\n* Tobias Bräutigam\n\
+  * Tom van Dijk\n* Wentao Han\n* William Brown\n\nThanks to all the guys on the python-ldap\
+  \ mailing list for\ntheir contributions and input into this package.\n\n   Thanks! We may\
+  \ have missed someone: please mail us if we have omitted\n   your name.\n\nLicence\n=======\n\
+  \nThe python-ldap project comes with a LICENCE file.\n\nWe are aware that its text is unclear,\
+  \ but it cannot be changed:\nall authors of python-ldap would need to approve the licence\
+  \ change,\nbut a complete list of all the authors is not available.\n(Note that the Git repository\
+  \ of the project is incomplete.\nFurthermore, commits imported from CVS lack authorship information;\
+  \ users\n\"stroeder\" or \"leonard\" are commiters (reviewers), but sometimes not\nauthors\
+  \ of the committed code.)\n\nThe current maintainers assume that the license is the sentence\
+  \ that refers\nto \"Python-style license\" and assume this means a highly permissive open\
+  \ source\nlicense that only requires preservation of the text of the LICENCE file\n(including\
+  \ the disclaimer paragraph).\n\n-------------------------------------------------------------------------------\n\
+  \nAll contributions committed since July 1st, 2021, as well as some past\ncontributions, are\
+  \ licensed under the MIT license.\nThe MIT licence and more details are listed in the file\
+  \ LICENCE.MIT."
+homepage_url: https://www.python-ldap.org/
+package_url: pkg:pypi/python-ldap@3.4.5
+license_expression: python-ldap AND python
+copyright: Copyright python-ldap contributors
+attribute: yes
+track_changes: yes
+checksum_md5: ed363c1fa9767f865dcb18c7bcc9f931
+checksum_sha1: 7a2dcfcf68019f15d7aa71f2a527494b8bf0fb29
+licenses:
+  - key: python
+    name: Python Software Foundation License v2
+    file: python.LICENSE
+  - key: python-ldap
+    name: Python ldap License
+    file: python-ldap.LICENSE

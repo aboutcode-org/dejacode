@@ -1,0 +1,14 @@
+about_resource: redis-6.4.0-py3-none-any.whl
+name: redis
+version: 6.4.0
+download_url: https://files.pythonhosted.org/packages/e8/02/89e2ed7e85db6c93dfa9e8f691c5087df4e3551ab39081a4d7c6d1f90e05/redis-6.4.0-py3-none-any.whl
+package_url: pkg:pypi/redis@6.4.0
+license_expression: mit
+copyright: Copyright redis project contributors
+attribute: yes
+checksum_md5: 8a22c7fad94b687c1a996303d9c58bb4
+checksum_sha1: ab0ab2831a04efcb9df361c215efaab5ac238683
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
