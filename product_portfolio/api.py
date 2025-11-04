@@ -31,6 +31,7 @@ from dje.api import DataspacedSlugRelatedField
 from dje.api import NameVersionHyperlinkedRelatedField
 from dje.api import ProductRelatedViewSet
 from dje.api import SPDXDocumentActionMixin
+from dje.api_permissions import ObjectPermissionsMixin
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
@@ -311,6 +312,7 @@ class ScanCodeProjectSerializer(DataspacedSerializer):
 
 
 class ProductViewSet(
+    ObjectPermissionsMixin,
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
     SPDXDocumentActionMixin,
