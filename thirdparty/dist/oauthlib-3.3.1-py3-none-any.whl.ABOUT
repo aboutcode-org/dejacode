@@ -1,0 +1,14 @@
+about_resource: oauthlib-3.3.1-py3-none-any.whl
+name: oauthlib
+version: 3.3.1
+download_url: https://files.pythonhosted.org/packages/be/9c/92789c596b8df838baa98fa71844d84283302f7604ed565dafe5a6b5041a/oauthlib-3.3.1-py3-none-any.whl
+package_url: pkg:pypi/oauthlib@3.3.1
+license_expression: bsd-new
+copyright: Copyright oauthlib project contributors
+attribute: yes
+checksum_md5: 400a8defd59fe85effc0b94faeedacc7
+checksum_sha1: 1a8a280f2d0ccc0d4a6d5a70cc2f32f531ca3ed9
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

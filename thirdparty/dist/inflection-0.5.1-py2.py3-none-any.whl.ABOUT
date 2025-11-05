@@ -1,0 +1,14 @@
+about_resource: inflection-0.5.1-py2.py3-none-any.whl
+name: inflection
+version: 0.5.1
+download_url: https://files.pythonhosted.org/packages/59/91/aa6bde563e0085a02a435aa99b49ef75b0a4b062635e606dab23ce18d720/inflection-0.5.1-py2.py3-none-any.whl
+package_url: pkg:pypi/inflection@0.5.1
+license_expression: mit
+copyright: Copyright inflection project contributors
+attribute: yes
+checksum_md5: 8c12f5ff8ebd8c4e5e0767cab635100f
+checksum_sha1: 34b129b8a4df2b62019a83633b77525022616acd
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

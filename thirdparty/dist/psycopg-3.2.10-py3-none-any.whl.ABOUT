@@ -1,0 +1,16 @@
+about_resource: psycopg-3.2.10-py3-none-any.whl
+name: psycopg
+version: 3.2.10
+download_url: https://files.pythonhosted.org/packages/4a/90/422ffbbeeb9418c795dae2a768db860401446af0c6768bc061ce22325f58/psycopg-3.2.10-py3-none-any.whl
+package_url: pkg:pypi/psycopg@3.2.10
+license_expression: lgpl-3.0
+copyright: Copyright The Psycopg Team
+redistribute: yes
+attribute: yes
+track_changes: yes
+checksum_md5: 55f4e777bf9a04cf04e024c9f388c53a
+checksum_sha1: 9ec1cf2045bb3e899ad1c197525443ac2ab37166
+licenses:
+  - key: lgpl-3.0
+    name: GNU Lesser General Public License 3.0
+    file: lgpl-3.0.LICENSE

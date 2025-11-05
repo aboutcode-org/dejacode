@@ -1,0 +1,14 @@
+about_resource: djangorestframework-3.16.1-py3-none-any.whl
+name: djangorestframework
+version: 3.16.1
+download_url: https://files.pythonhosted.org/packages/b0/ce/bf8b9d3f415be4ac5588545b5fcdbbb841977db1c1d923f7568eeabe1689/djangorestframework-3.16.1-py3-none-any.whl
+package_url: pkg:pypi/djangorestframework@3.16.1
+license_expression: bsd-new
+copyright: Copyright djangorestframework project contributors
+attribute: yes
+checksum_md5: 1f22035a3817c0b02714719bb5e713aa
+checksum_sha1: 63cdcf0a7eddf6c14a8b8d7387183294de3debdd
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

@@ -1,0 +1,15 @@
+about_resource: cyclonedx_python_lib-11.1.0-py3-none-any.whl
+name: cyclonedx-python-lib
+version: 11.1.0
+download_url: https://files.pythonhosted.org/packages/91/e7/9c8009f28d8603baa651ce3131bf516ec6114f49ec44f24e00f48eaaf589/cyclonedx_python_lib-11.1.0-py3-none-any.whl
+package_url: pkg:pypi/cyclonedx-python-lib@11.1.0
+license_expression: apache-2.0
+copyright: Copyright OWASP Foundation
+attribute: yes
+track_changes: yes
+checksum_md5: 8cb67d84ff231155807f032fa496e3b9
+checksum_sha1: b7f52fb90cda8e3b0f719c045ec94bfbd95f9b53
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

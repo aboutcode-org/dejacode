@@ -1,0 +1,15 @@
+about_resource: py_serializable-2.1.0-py3-none-any.whl
+name: py-serializable
+version: 2.1.0
+download_url: https://files.pythonhosted.org/packages/9b/bf/7595e817906a29453ba4d99394e781b6fabe55d21f3c15d240f85dd06bb1/py_serializable-2.1.0-py3-none-any.whl
+package_url: pkg:pypi/py-serializable@2.1.0
+license_expression: apache-2.0
+copyright: Copyright Paul Horton
+attribute: yes
+track_changes: yes
+checksum_md5: 1ac75f0a28e8576d33017d4e03b6d802
+checksum_sha1: 243d4658bab38acdf6596d0b88eb59fbb4da8cd6
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

@@ -39,6 +39,7 @@ from dje.models import DataspacedQuerySet
 from dje.models import HistoryDateFieldsMixin
 from dje.models import HistoryFieldsMixin
 from dje.models import get_unsecured_manager
+from workflow import integrations
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
 
@@ -88,6 +89,76 @@ class Priority(DataspacedModel):
         return self.label
 
 
+class ExternalIssueLink(DataspacedModel):
+    class Platform(models.TextChoices):
+        GITHUB = "github", _("GitHub")
+        GITLAB = "gitlab", _("GitLab")
+        JIRA = "jira", _("Jira")
+        SOURCEHUT = "sourcehut", _("SourceHut")
+        FORGEJO = "forgejo", _("Forgejo")
+
+    platform = models.CharField(
+        max_length=20,
+        choices=Platform.choices,
+        help_text=_("External issue tracking platform."),
+    )
+
+    repo = models.CharField(
+        max_length=100,
+        help_text=_("Repository or project identifier (e.g., 'user/repo-name')."),
+    )
+
+    issue_id = models.CharField(
+        max_length=100,
+        help_text=_("ID or key of the issue on the external platform."),
+    )
+
+    base_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Base URL of the external issue tracker platform (e.g., https://forgejo.example.org). "
+            "Used to construct API endpoints for integrations like Forgejo or Jira."
+        ),
+    )
+
+    class Meta:
+        unique_together = (
+            ("dataspace", "platform", "repo", "issue_id"),
+            ("dataspace", "uuid"),
+        )
+
+    def __str__(self):
+        return f"{self.get_platform_display()}:{self.repo}#{self.issue_id}"
+
+    @property
+    def issue_url(self):
+        if self.platform == self.Platform.GITHUB:
+            return f"https://github.com/{self.repo}/issues/{self.issue_id}"
+        elif self.platform == self.Platform.GITLAB:
+            return f"https://gitlab.com/{self.repo}/-/issues/{self.issue_id}"
+        elif self.platform == self.Platform.JIRA:
+            return f"{self.repo}/browse/{self.issue_id}"
+        elif self.platform == self.Platform.FORGEJO:
+            return f"{self.base_url}/{self.repo}/issues/{self.issue_id}"
+        elif self.platform == self.Platform.SOURCEHUT:
+            return f"https://todo.sr.ht/{self.repo}/{self.issue_id}"
+
+    @property
+    def icon_css_class(self):
+        platform_icons = {
+            self.Platform.GITHUB: "fa-brands fa-github",
+            self.Platform.GITLAB: "fa-brands fa-gitlab",
+            self.Platform.JIRA: "fa-brands fa-jira",
+        }
+        return platform_icons.get(self.platform, "fa-solid fa-square-up-right")
+
+    @property
+    def integration_class(self):
+        return integrations.get_class_for_platform(self.platform)
+
+
 class RequestQuerySet(DataspacedQuerySet):
     BASE_SELECT_RELATED = [
         "request_template",
@@ -95,6 +166,7 @@ class RequestQuerySet(DataspacedQuerySet):
         "assignee",
         "priority",
         "product_context",
+        "external_issue",
         "last_modified_by",
     ]
 
@@ -348,6 +420,14 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         ),
     )
 
+    external_issue = models.ForeignKey(
+        to="workflow.ExternalIssueLink",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text=_("Link to external issue (GitHub, GitLab, Jira, etc.)"),
+    )
+
     last_modified_by = LastModifiedByField()
 
     objects = DataspacedManager.from_queryset(RequestQuerySet)()
@@ -378,8 +458,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
 
         # `previous_object_id` logic is only required on edition.
         previous_object_id = None
-        is_addition = self.pk
-        if is_addition:
+        is_change = self.pk
+        if is_change:
             previous_object_id = self.__class__.objects.get(pk=self.pk).object_id
 
         super().save(*args, **kwargs)
@@ -396,6 +476,8 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             except ObjectDoesNotExist:
                 return
             previous_object.update_request_count()
+
+        self.handle_integrations()
 
     def get_absolute_url(self):
         return reverse("workflow:request_details", args=[self.uuid])
@@ -520,6 +602,61 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             "data": serializer.data,
         }
 
+    def add_comment(self, user, text):
+        """Create and return a RequestComment for this Request."""
+        return self.comments.create(
+            user=user,
+            text=text,
+            dataspace=self.dataspace,
+        )
+
+    def close(self, user, reason):
+        """
+        Set the Request status to CLOSED.
+        A RequestEvent is created and returned.
+        """
+        self.status = self.Status.CLOSED
+        self.last_modified_by = user
+        self.save()
+        event_instance = self.events.create(
+            user=user,
+            text=reason,
+            event_type=RequestEvent.CLOSED,
+            dataspace=self.dataspace,
+        )
+        return event_instance
+
+    def link_external_issue(self, platform, repo, issue_id, base_url=None):
+        """Create or return an ExternalIssueLink associated with this Request."""
+        if self.external_issue:
+            return self.external_issue
+
+        if base_url:
+            base_url = base_url.rstrip("/")
+
+        external_issue = ExternalIssueLink.objects.create(
+            dataspace=self.dataspace,
+            platform=platform,
+            repo=repo,
+            issue_id=str(issue_id),
+            base_url=base_url,
+        )
+
+        # Set the external_issue on this instance without triggering the whole
+        # save() + handle_integrations() logic.
+        self.raw_update(external_issue=external_issue)
+
+        return external_issue
+
+    def handle_integrations(self):
+        issue_tracker_id = self.request_template.issue_tracker_id
+        if not issue_tracker_id:
+            return
+
+        integration_class = integrations.get_class_for_tracker(issue_tracker_id)
+        if integration_class:
+            integration_class(dataspace=self.dataspace).sync(request=self)
+
 
 @receiver(models.signals.post_delete, sender=Request)
 def update_request_count_on_delete(sender, instance=None, **kwargs):
@@ -544,6 +681,16 @@ class AbstractRequestEvent(HistoryDateFieldsMixin, DataspacedModel):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        """Call the handle_integrations method on save, only for addition."""
+        is_addition = not self.pk
+        super().save(*args, **kwargs)
+        if is_addition:
+            self.handle_integrations()
+
+    def handle_integrations(self):
+        pass
 
 
 class RequestEvent(AbstractRequestEvent):
@@ -573,6 +720,22 @@ class RequestEvent(AbstractRequestEvent):
 
     def __str__(self):
         return f"{self.get_event_type_display()} by {self.user.username}"
+
+    def handle_integrations(self):
+        external_issue = self.request.external_issue
+        if not external_issue:
+            return
+
+        if not self.event_type == self.CLOSED:
+            return
+
+        if integration_class := external_issue.integration_class:
+            integration_class(dataspace=self.dataspace).post_comment(
+                repo_id=external_issue.repo,
+                issue_id=external_issue.issue_id,
+                comment_body=self.text,
+                base_url=external_issue.base_url,
+            )
 
 
 class RequestComment(AbstractRequestEvent):
@@ -643,6 +806,19 @@ class RequestComment(AbstractRequestEvent):
             "hook": hook.dict(),
             "data": data,
         }
+
+    def handle_integrations(self):
+        external_issue = self.request.external_issue
+        if not external_issue:
+            return
+
+        if integration_class := external_issue.integration_class:
+            integration_class(dataspace=self.dataspace).post_comment(
+                repo_id=external_issue.repo,
+                issue_id=external_issue.issue_id,
+                comment_body=self.text,
+                base_url=external_issue.base_url,
+            )
 
 
 class RequestTemplateQuerySet(DataspacedQuerySet):
@@ -720,6 +896,16 @@ class RequestTemplate(HistoryFieldsMixin, DataspacedModel):
             "Optionally specify the application user that should be the first to review "
             "a request using this template, and should receive an email when the request "
             "is submitted."
+        ),
+    )
+
+    issue_tracker_id = models.CharField(
+        verbose_name=_("Issue Tracker ID"),
+        max_length=1000,
+        blank=True,
+        help_text=_(
+            "Link to associated issue in a tracking application, "
+            "provided by the integration when the issue is created."
         ),
     )
 

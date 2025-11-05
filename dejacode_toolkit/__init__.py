@@ -10,7 +10,6 @@ import logging
 from os import getenv
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 import requests
 
@@ -53,11 +52,7 @@ class BaseService:
         self.basic_auth_user = None
         self.basic_auth_password = None
 
-        try:
-            dataspace_configuration = dataspace.configuration
-        except ObjectDoesNotExist:
-            dataspace_configuration = None
-
+        dataspace_configuration = dataspace.get_configuration()
         # Take the integration settings from the Dataspace when defined
         if dataspace_configuration:
             self.service_url = getattr(dataspace_configuration, self.url_field_name)

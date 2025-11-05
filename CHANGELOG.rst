@@ -1,7 +1,32 @@
 Release notes
 =============
 
-### Version 5.3.1-dev (unreleased)
+### Version 5.5.0-dev
+
+- Update ProductPackage "unknown" license during "Scan all Packages".
+  Only "unknown" licenses are updated.
+  Products with a is_locked configuration status are excluded.
+  Inactive is_active=False products are excluded.
+  https://github.com/aboutcode-org/dejacode/issues/388
+
+- Allow Product "Scan all packages" for users with the "change_product" permission
+  on the Product instance.
+  Prior to this change only "superusers" could see and use this feature.
+  https://github.com/aboutcode-org/dejacode/issues/385
+
+### Version 5.4.2
+
+- Migrate the LDAP testing from using mockldap to slapdtest.
+  The mockldap and funcparserlib dependencies has been removed.
+  https://github.com/aboutcode-org/dejacode/issues/394
+
+### Version 5.4.1
+
+- Upgrade Django to latest security release 5.2.7
+  Also upgrade dependencies to latest releases.
+  https://github.com/aboutcode-org/dejacode/pull/389
+
+### Version 5.4.0
 
 - Upgrade Python version to 3.13 and Django to 5.2.x
   https://github.com/aboutcode-org/dejacode/pull/315
@@ -41,6 +66,26 @@ Release notes
 - Add a Product REST API "action" endpoint to track product imports and their status:
   * `/products/{uuid}/imports/`
   https://github.com/aboutcode-org/dejacode/issues/273
+
+- Add GitHub workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-github.html
+  https://github.com/aboutcode-org/dejacode/issues/349
+
+- Add GitLab workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-gitlab.html
+  https://github.com/aboutcode-org/dejacode/issues/346
+
+- Add Jira workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-jira.html
+  https://github.com/aboutcode-org/dejacode/issues/350
+
+- Add Forgejo workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-forgejo.html
+  https://github.com/aboutcode-org/dejacode/issues/347
+
+- Add SourceHut workflow Request integration.
+  Documentation: https://dejacode.readthedocs.io/en/latest/integrations-sourcehut.html
+  https://github.com/aboutcode-org/dejacode/issues/348
 
 ### Version 5.3.0
 

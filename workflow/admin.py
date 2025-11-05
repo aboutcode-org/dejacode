@@ -11,6 +11,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ValidationError
 from django.template.defaultfilters import pluralize
 from django.utils.translation import gettext as _
 
@@ -18,6 +19,7 @@ from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from dje.forms import DataspacedAdminForm
 from workflow.inlines import QuestionInline
+from workflow.integrations import is_valid_issue_tracker_id
 from workflow.models import Priority
 from workflow.models import RequestTemplate
 
@@ -56,6 +58,23 @@ class PriorityAdmin(DataspacedAdmin):
     save_as = False
 
 
+class RequestTemplateAdminForm(DataspacedAdminForm):
+    def clean_issue_tracker_id(self):
+        issue_tracker_id = self.cleaned_data.get("issue_tracker_id")
+        if issue_tracker_id and not is_valid_issue_tracker_id(issue_tracker_id):
+            raise ValidationError(
+                [
+                    "Invalid issue tracker URL format. Supported formats include:",
+                    "• Forgejo: https://forgejo.DOMAIN.org/OR/REPO_NAME",
+                    "• GitHub: https://github.com/ORG/REPO_NAME",
+                    "• GitLab: https://gitlab.com/GROUP/PROJECT_NAME",
+                    "• Jira: https://YOUR_DOMAIN.atlassian.net/projects/PROJECTKEY",
+                    "• SourceHut: https://todo.sr.ht/~USERNAME/PROJECT_NAME",
+                ]
+            )
+        return issue_tracker_id
+
+
 @admin.register(RequestTemplate, site=dejacode_site)
 class RequestTemplateAdmin(DataspacedAdmin):
     list_display = (
@@ -75,6 +94,7 @@ class RequestTemplateAdmin(DataspacedAdmin):
         "include_applies_to",
         "include_product",
     )
+    form = RequestTemplateAdminForm
     inlines = (QuestionInline,)
     actions = [
         "copy_to",

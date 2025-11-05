@@ -518,8 +518,71 @@ class DataspaceConfiguration(models.Model):
         ),
     )
 
+    github_token = models.CharField(
+        _("GitHub token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Personal access token (PAT) or GitHub App token used to authenticate "
+            "API requests for this integration. Keep this token secure."
+        ),
+    )
+
+    gitlab_token = models.CharField(
+        _("GitLab token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Personal access token (PAT) used to authenticate API requests for the "
+            "GitLab integration. This token must have 'api' scope. "
+            "Keep this token secure."
+        ),
+    )
+
+    jira_user = models.CharField(
+        _("Jira user email"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "The email address associated with your Jira account. "
+            "Used together with the API token to authenticate API requests."
+        ),
+    )
+
+    jira_token = models.CharField(
+        _("Jira API token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "API token generated from your Atlassian account, used to authenticate "
+            "API requests to Jira Cloud. Keep this token secure."
+        ),
+    )
+
+    forgejo_token = models.CharField(
+        _("Forgejo token"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Personal access token (PAT) used to authenticate API requests for the "
+            "Forgejo integration. This token must have sufficient permissions to create "
+            "and update issues. Keep this token secure."
+        ),
+    )
+
+    sourcehut_token = models.CharField(
+        _("SourceHut token"),
+        max_length=2048,  # The length of this token depends on the selected permissions
+        blank=True,
+        help_text=_(
+            "Access token used to authenticate API requests for the SourceHut integration. "
+            "This token must have permissions to create and update tickets. "
+            "Keep this token secure."
+        ),
+    )
+
     def __str__(self):
-        return f"Configuration for {self.dataspace}"
+        return f"{self.dataspace}"
 
 
 class DataspacedQuerySet(models.QuerySet):
@@ -685,6 +748,12 @@ class ProductSecuredQuerySet(DataspacedQuerySet):
     def product(self, product):
         """Filter based on the provided ``product`` object."""
         return self.filter(product=product)
+
+    def exclude_locked_products(self):
+        """Filter out the non-active and locked Products."""
+        return self.exclude(product__configuration_status__is_locked=True).filter(
+            product__is_active=True
+        )
 
 
 class DataspacedModel(models.Model):
@@ -905,7 +974,7 @@ class DataspacedModel(models.Model):
 
     def raw_update(self, **kwargs):
         """
-         Perform a direct SQL UPDATE on this instance.
+        Perform a direct SQL UPDATE on this instance.
 
         This method updates the specified fields in the database without triggering
         the ``save()`` lifecycle or related signals. It bypasses field validation and
