@@ -153,6 +153,7 @@ def extract_tags_from_url(url):
 
     return tags
 
+
 def is_compatible_wheel(url):
     """Check if wheel is compatible using tag matching"""
     wheel_tags = extract_tags_from_url(url)
