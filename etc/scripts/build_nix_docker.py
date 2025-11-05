@@ -131,6 +131,44 @@ def extract_project_dependencies(pyproject_data):
     return dependencies_list
 
 
+def extract_tags_from_url(url):
+    """Extract tags from wheel URL"""
+    tags = set()
+
+    # Python version tags
+    if "cp313" in url:
+        tags.add("cp313")
+    if "py3" in url:
+        tags.add("py3")
+
+    # Platform tags
+    if "manylinux" in url:
+        tags.add("manylinux")
+    if "-none-" in url:
+        tags.add("none")
+    if "any.whl" in url:
+        tags.add("any")
+    if "x86_64.whl" in url:
+        tags.add("x86_64")
+
+    return tags
+
+def is_compatible_wheel(url):
+    """Check if wheel is compatible using tag matching"""
+    wheel_tags = extract_tags_from_url(url)
+
+    # Define compatible tag combinations
+    compatible_python = {"cp313", "py3"}
+    # Architecture-free or linux
+    compatible_platforms = {"manylinux", "none", "any", "x86_64"}
+
+    # Check if wheel has required python version AND compatible platform
+    has_required_python = not wheel_tags.isdisjoint(compatible_python)
+    has_compatible_platform = not wheel_tags.isdisjoint(compatible_platforms)
+
+    return has_required_python and has_compatible_platform
+
+
 def create_defualt_nix(dependencies_list, meta_dict):
     # Create a default.nix
     nix_content = """
@@ -227,11 +265,7 @@ let
                 for component in url_section:
                     if component.get("packagetype") == "bdist_wheel":
                         whl_url = component.get("url")
-                        if (
-                            ("cp313" not in whl_url and "py3" not in whl_url)
-                            or ("manylinux" not in whl_url and "-none-" not in whl_url)
-                            or ("any.whl" not in whl_url and "x86_64.whl" not in whl_url)
-                        ):
+                        if not is_compatible_wheel(whl_url):
                             continue
                         whl_sha256 = get_sha256_hash(whl_url)
                         nix_content += "    " + name + " = buildCustomPackage {\n"
