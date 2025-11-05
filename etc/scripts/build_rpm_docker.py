@@ -3,9 +3,16 @@
 Use Docker container to build an RPM.
 Using Docker approach to ensure a consistent and isolated build environment.
 
-Requirement: The `toml` Python package
+Requirement:
+ - toml
+ - Docker
+
+To install the required Python packages, run:
 
     pip install toml
+
+To install Docker, follow the instructions at:
+    https://docs.docker.com/get-docker/
 
 To run the script:
 
@@ -14,7 +21,7 @@ To run the script:
 This script will generate the RPM package files and place them in the
 dist/rpmbuild/ directory.
 
-Once the RPM package is generated, you can install it using:
+Once the RPM package is generated, one can install it using:
 
     sudo rpm -i /path/to/<dejacode>.rpm
     OR
@@ -23,6 +30,10 @@ Once the RPM package is generated, you can install it using:
     sudo yum install /path/to/<dejacode>.rpm
 
 Replace the above path with the actual path to the generated RPM file.
+
+Run the binary directly
+
+    dejacode
 """
 
 import os
@@ -47,11 +58,10 @@ def build_rpm_with_docker():
     # Generate requirements for RPM - exclude packages installed from GitHub
     dependencies = project["dependencies"]
 
-    # Exclude packages that will be installed from GitHub URLs
-    excluded_packages = {"django-rest-hooks", "django_notifications_patched"}
-
     filtered_dependencies = [
-        dep for dep in dependencies if not any(excluded in dep for excluded in excluded_packages)
+        dep
+        for dep in dependencies
+        if "django-rest-hooks" not in dep and "django-notifications-patched" not in dep
     ]
 
     # Create a requirements.txt content for installation
@@ -69,14 +79,12 @@ def build_rpm_with_docker():
         "/bin/bash",
         "-c",
         f"""set -ex
-# Install All build dependencies including development tools
-dnf install -y rpm-build python3-devel python3-setuptools python3-wheel \
-    python3-build python3-pip python3-virtualenv curl gcc openldap-devel
+# Install build dependencies
+dnf install -y rpm-build python3-devel python3-setuptools python3-wheel \\
+    python3-build python3-pip python3-virtualenv curl gcc openldap-devel git
 
-# Clean up build directories to prevent recursive copying
-rm -rf build
-
-# Build the wheel
+# Clean up and build wheel
+rm -rf build dist
 python3 -m build --wheel
 
 # Get the wheel file name
@@ -99,13 +107,13 @@ REQ_EOF
 # Get the changelog date
 CHANGELOG_DATE=$(date '+%a %b %d %Y')
 
-# Create source tarball with actual name
+# Create source tarball
 tar czf dist/rpmbuild/SOURCES/{rpm_name}-{rpm_version}.tar.gz \\
     --transform "s,^,/{rpm_name}-{rpm_version}/," \\
     -C /workspace \\
     --exclude build --exclude=.git --exclude=dist --exclude=*.pyc --exclude=__pycache__ .
 
-# Generate spec file with virtualenv approach - using actual values instead of variables
+# Generate spec file
 cat > dist/rpmbuild/SPECS/{rpm_name}.spec << EOF
 Name:           {rpm_name}
 Version:        {rpm_version}
@@ -123,16 +131,38 @@ URL:            {
         }
 Source0:        {rpm_name}-{rpm_version}.tar.gz
 Source1:        requirements.txt
+Source2:        $WHEEL_FILENAME
 
-BuildArch:      noarch
-BuildRequires:  python3-devel python3-virtualenv gcc openldap-devel
+BuildArch:      x86_64
+BuildRequires:  python3-devel python3-virtualenv gcc openldap-devel git
+
+# Runtime dependencies
+Requires:       git
+Requires:       python3
+Requires:       postgresql
+Requires:       postgresql-devel
+Requires:       openldap
+
+# Disable automatic debug package generation and file checking
+%global debug_package %{{nil}}
+%global __check_files %{{nil}}
+%global _enable_debug_package 0
+
+# Only disable python bytecompilation which breaks virtualenvs
+%global __brp_python_bytecompile %{{nil}}
+
+# Keep shebang mangling disabled for virtualenv
+%global __os_install_post %(echo '%{{__os_install_post}}' | \
+    sed -e 's!/usr/lib/rpm/redhat/brp-mangle-shebangs!!g')
+%global __brp_mangle_shebangs %{{nil}}
+
 AutoReqProv:    no
 
 %description
 {
             project.get(
                 "description",
-                "Automate open source license compliance and ensure supply chain integrity",
+                "Automate open source license complianceand ensure supply chain integrity",
             )
         }
 
@@ -142,60 +172,45 @@ AutoReqProv:    no
 %build
 
 %install
+rm -rf %{{buildroot}}
 # Create directories
 mkdir -p %{{buildroot}}/opt/%{{name}}/venv
 mkdir -p %{{buildroot}}/usr/bin
+mkdir -p %{{buildroot}}/opt/%{{name}}/src
 
 # Create virtual environment in a temporary location first
 mkdir -p /tmp/venv_build
-python3 -m venv /tmp/venv_build
+python3 -m venv /tmp/venv_build --copies
 
-# Upgrade pip in the temporary virtual environment
-/tmp/venv_build/bin/pip install --upgrade pip
-
-# funcparserlib Patch/Install
-cd /tmp
-curl -L -o funcparserlib-0.3.6.tar.gz https://files.pythonhosted.org/packages/source/f/funcparserlib/funcparserlib-0.3.6.tar.gz
-tar -xzf funcparserlib-0.3.6.tar.gz
-cd funcparserlib-0.3.6
-
-# rewrite setup.py to remove the "use_2to3" as this is not suported in Python3
-cat > setup.py << 'SETUP_EOF'
-from setuptools import setup
-
-setup(
-    name='funcparserlib',
-    version='0.3.6',
-    packages=['funcparserlib', 'funcparserlib.tests'],
-    author='Andrey Vlasovskikh',
-    author_email='andrey.vlasovskikh@gmail.com',
-    description='Recursive descent parsing library based on functional '
-        'combinators',
-    license='MIT',
-    url='http://code.google.com/p/funcparserlib/',
-)
-SETUP_EOF
-
-# Install the patched funcparserlib
-/tmp/venv_build/bin/pip install .
-
-# Clean up
-cd /tmp
-rm -rf funcparserlib-0.3.6 funcparserlib-0.3.6.tar.gz
-
-# Install all other dependencies including the main package
 cd %{{_sourcedir}}
-/tmp/venv_build/bin/pip install -r requirements.txt
+/tmp/venv_build/bin/python -m pip install --upgrade pip
+
+# Install system dependencies for psycopg
+dnf install -y postgresql-devel
 
 # Install non-PyPI dependencies
-/tmp/venv_build/bin/pip install \\
+/tmp/venv_build/bin/python -m pip install \\
     https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl
-
-/tmp/venv_build/bin/pip install \\
+/tmp/venv_build/bin/python -m pip install \\
     https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz
 
-# Install the main package from the wheel
-/tmp/venv_build/bin/pip install --no-deps $WHEEL_FILENAME
+# Install the main package
+/tmp/venv_build/bin/python -m pip install -r requirements.txt
+
+# Install psycopg2-binary for compatibility
+/tmp/venv_build/bin/python -m pip install psycopg2-binary
+
+# Install dejacode wheel
+/tmp/venv_build/bin/python -m pip install %{{_sourcedir}}/$WHEEL_FILENAME
+
+# Extract source code for tests
+cd %{{_sourcedir}}
+tar xzf {rpm_name}-{rpm_version}.tar.gz
+cp -r {rpm_name}-{rpm_version}/* %{{buildroot}}/opt/%{{name}}/src/
+
+# Clean up temporary virtualenv
+find /tmp/venv_build -name "*.pyc" -delete
+find /tmp/venv_build -name "__pycache__" -type d -exec rm -rf {{}} + 2>/dev/null || true
 
 # Copy the completed virtual environment to the final location
 cp -r /tmp/venv_build/* %{{buildroot}}/opt/%{{name}}/venv/
@@ -203,32 +218,35 @@ cp -r /tmp/venv_build/* %{{buildroot}}/opt/%{{name}}/venv/
 # Clean up temporary virtual environment
 rm -rf /tmp/venv_build
 
-# Doing clean up to prevent the "Arch dependent binaries in noarch package" error.
-# Remove arch-dependent shared object files (*.so)
-find %{{buildroot}}/opt/%{{name}}/venv -name "*.so*" -type f -delete
+# Fix shebang
+for script in %{{buildroot}}/opt/%{{name}}/venv/bin/*; do
+    if [ -f "\\$script" ] && head -1 "\\$script" | grep -q "^#!"; then
+        # Use sed to safely replace only the first line
+        sed -i '1s|.*|#!/opt/%{{name}}/venv/bin/python3|' "\\$script"
+    fi
+done
 
-# Remove any other potential binary files
-find %{{buildroot}}/opt/%{{name}}/venv -type f -exec file {{}} \\; | grep -i \
-    "executable" | cut -d: -f1 | xargs -r rm -f
+# Remove ONLY pip and wheel binaries
+rm -f %{{buildroot}}/opt/%{{name}}/venv/bin/pip*
+rm -f %{{buildroot}}/opt/%{{name}}/venv/bin/wheel
 
-# Create wrapper script for dejacode command
+# Ensure executables have proper permissions
+find %{{buildroot}}/opt/%{{name}}/venv/bin -type f -exec chmod 755 {{}} \\;
+
+# Create wrapper script with PYTHONPATH for tests
 cat > %{{buildroot}}/usr/bin/dejacode << 'WRAPPER_EOF'
 #!/bin/sh
-export PYTHONPATH="/opt/{rpm_name}/venv/lib/python3.13/site-packages"
-exec /usr/bin/python3 -m dejacode "\\$@"
+export PYTHONPATH="/opt/%{{name}}/src:/opt/%{{name}}/venv/lib/python3.13/site-packages"
+cd "/opt/%{{name}}/src"
+/opt/%{{name}}/venv/bin/dejacode "\\$@"
 WRAPPER_EOF
 chmod 755 %{{buildroot}}/usr/bin/dejacode
 
-# Clean up any remaining build artifacts
-find %{{buildroot}}/opt/%{{name}}/venv -name "*.pyc" -delete
-find %{{buildroot}}/opt/%{{name}}/venv -name "__pycache__" -type d \
-    -exec rm -rf {{}} + 2>/dev/null || true
-find %{{buildroot}}/opt/%{{name}}/venv -path "*/pip/_vendor/distlib/*.tmp" \
-    -delete 2>/dev/null || true
-
 %files
+%defattr(-,root,root,-)
 %dir /opt/%{{name}}
-/opt/%{{name}}/venv
+/opt/%{{name}}/venv/
+/opt/%{{name}}/src/
 /usr/bin/dejacode
 
 %changelog
@@ -240,8 +258,13 @@ find %{{buildroot}}/opt/%{{name}}/venv -path "*/pip/_vendor/distlib/*.tmp" \
         }
 EOF
 
-# Build the RPM
-cd dist/rpmbuild && rpmbuild --define "_topdir $(pwd)" -bb SPECS/{rpm_name}.spec
+# Build RPM with only specific BRP processing disabled
+cd dist/rpmbuild && rpmbuild \\
+    --define "_topdir $(pwd)" \\
+    --define "__check_files /bin/true" \\
+    --define "__brp_python_bytecompile /bin/true" \\
+    -bb SPECS/{rpm_name}.spec
+
 
 # Fix permissions for Windows host
 chmod -R u+rwX /workspace/dist/rpmbuild
@@ -251,11 +274,11 @@ chmod -R u+rwX /workspace/dist/rpmbuild
     try:
         subprocess.run(docker_cmd, check=True, shell=False)  # noqa: S603
         # Verify the existence of the .rpm
-        rpm_file = next(Path("dist/rpmbuild/RPMS/noarch").glob("*.rpm"), None)
+        rpm_file = next(Path("dist/rpmbuild/RPMS/x86_64").glob("*.rpm"), None)
         if rpm_file:
             print(f"\nSuccess! RPM built: {rpm_file}")
         else:
-            print("Error: RPM not found in dist/rpmbuild/RPMS/noarch/", file=sys.stderr)
+            print("Error: RPM not found in dist/rpmbuild/RPMS/x86_64/", file=sys.stderr)
             sys.exit(1)
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}", file=sys.stderr)
