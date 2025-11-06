@@ -80,12 +80,12 @@ def build_rpm_with_docker():
         "-c",
         f"""set -ex
 # Install build dependencies
-dnf install -y rpm-build python3-devel python3-setuptools python3-wheel \\
-    python3-build python3-pip python3-virtualenv curl gcc openldap-devel git
+dnf install -y rpm-build python3.13-devel python3.13-setuptools python3.13-wheel \\
+    python3.13-build python3.13-pip python3.13-virtualenv curl gcc openldap-devel git
 
 # Clean up and build wheel
 rm -rf build dist
-python3 -m build --wheel
+python3.13 -m build --wheel
 
 # Get the wheel file name
 WHEEL_FILE=$(ls dist/*.whl)
@@ -134,11 +134,11 @@ Source1:        requirements.txt
 Source2:        $WHEEL_FILENAME
 
 BuildArch:      x86_64
-BuildRequires:  python3-devel python3-virtualenv gcc openldap-devel git
+BuildRequires:  python3.13-devel python3.13-virtualenv gcc openldap-devel git
 
 # Runtime dependencies
 Requires:       git
-Requires:       python3
+Requires:       python3.13
 Requires:       postgresql
 Requires:       postgresql-devel
 Requires:       openldap
@@ -162,7 +162,7 @@ AutoReqProv:    no
 {
             project.get(
                 "description",
-                "Automate open source license complianceand ensure supply chain integrity",
+                "Automate open source license compliance and ensure supply chain integrity",
             )
         }
 
@@ -180,7 +180,7 @@ mkdir -p %{{buildroot}}/opt/%{{name}}/src
 
 # Create virtual environment in a temporary location first
 mkdir -p /tmp/venv_build
-python3 -m venv /tmp/venv_build --copies
+python3.13 -m venv /tmp/venv_build --copies
 
 cd %{{_sourcedir}}
 /tmp/venv_build/bin/python -m pip install --upgrade pip
