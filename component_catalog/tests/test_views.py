@@ -2231,7 +2231,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected_other_languages, html=True)
         self.assertContains(response, "Scan Summary")
         self.assertContains(response, "Set values to Package")
-        self.assertContains(response, "Download Scan data")
+        self.assertContains(response, "Download Scan results")
 
         scan_data_as_file_url = reverse(
             "component_catalog:scan_data_as_file",

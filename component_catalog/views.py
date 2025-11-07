@@ -1675,7 +1675,7 @@ class ScanListView(
 ):
     paginate_by = 50
     template_name = "component_catalog/scan_list.html"
-    template_list_table = "component_catalog/includes/scan_list_table.html"
+    template_list_table = "component_catalog/tables/scan_list_table.html"
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
@@ -1720,6 +1720,7 @@ class ScanListView(
             package_download_url = get_package_download_url(scan)
             package = packages_by_url.get(package_download_url)
             scan["package"] = package
+            scan["view_url"] = f"{package.details_url}#scan" if package else None
             scan["download_result_url"] = get_scan_results_as_file_url(scan)
             scan["created_date"] = parse_datetime(scan.get("created_date"))
             scan["delete_url"] = reverse("component_catalog:scan_delete", args=[scan.get("uuid")])
@@ -2405,7 +2406,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 "icon_class": "fas fa-download",
             }
             scan_status_fields.append(
-                ("Download Scan data", field_context, None, "includes/field_button.html")
+                ("Download Scan results", field_context, None, "includes/field_button.html")
             )
 
         return scan_status_fields

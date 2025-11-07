@@ -21,7 +21,7 @@
             {% if scan.package %}
               <i class="fas fa-archive"></i>
               <strong style="font-size: 115%;">
-                <a href="{{ scan.package.details_url }}#scan">{{ scan.package }}</a>
+                <a href="{{ scan.view_url }}">{{ scan.package }}</a>
               </strong>
             {% else %}
               <i>Package not found in DejaCode</i>
@@ -39,7 +39,7 @@
               Created <span title="{{ scan.created_date }}">{{ scan.created_date|naturaltime }}</span>
             </div>
           </div>
-          <div class="col-auto" style="width: 200px;">
+          <div class="col-2">
             {% include 'component_catalog/includes/scan_progress.html' with scan=scan only %}
           </div>
         </div>
