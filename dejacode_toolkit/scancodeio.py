@@ -160,6 +160,16 @@ class ScanCodeIO(BaseService):
             logger.debug(f"{self.label} [Exception] {exception}")
         return False
 
+    def refresh_scan(self, project_uuid):
+        reset_url = self.get_scan_action_url(project_uuid, "reset")
+        logger.debug(f"{self.label}: refresh scan reset_url={reset_url}")
+        data = {
+            "keep_input": True,
+            "restore_pipelines": True,
+            "execute_now": True,
+        }
+        return self.session.post(url=reset_url, json=data, timeout=self.default_timeout)
+
     @staticmethod
     def get_status_from_scan_results(scan_results):
         status = ""

@@ -3,6 +3,9 @@ Release notes
 
 ### Version 5.5.0-dev
 
+- Add UI to refresh a package scan.
+  https://github.com/aboutcode-org/dejacode/issues/423
+
 - Update ProductPackage "unknown" license during "Scan all Packages".
   Only "unknown" licenses are updated.
   Products with a is_locked configuration status are excluded.

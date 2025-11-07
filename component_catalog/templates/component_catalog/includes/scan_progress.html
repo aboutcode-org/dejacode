@@ -1,5 +1,7 @@
 <strong class="ms-1">{{ scan.runs.0.status|title }}</strong>
 {% include 'component_catalog/includes/scan_status.html' with status=scan.runs.0.status only %}
 <div class="text-center mt-2">
-  {% include 'component_catalog/includes/scan_actions_list.html' with scan=scan only %}
+  {% if scan.runs.0.status != "running" %}
+    {% include 'component_catalog/includes/scan_actions_list.html' with scan=scan only %}
+  {% endif %}
 </div>
