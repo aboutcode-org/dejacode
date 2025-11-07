@@ -1,0 +1,23 @@
+<ul class="list-inline mb-0">
+  {% if scan.view_url %}
+    <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="View Scan results">
+      <a class="btn btn-outline-dark btn-sm" href="{{ scan.view_url }}" target="_blank">
+        <i class="far fa-file-alt"></i>{% if show_btn_label %} View Scan results{% endif %}
+      </a>
+    </li>
+  {% endif %}
+  {% if scan.download_result_url %}
+    <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Download Scan results">
+      <a class="btn btn-outline-dark btn-sm" href="{{ scan.download_result_url }}" target="_blank">
+        <i class="fas fa-download"></i>{% if show_btn_label %} Download Scan results{% endif %}
+      </a>
+    </li>
+  {% endif %}
+  {% if scan.delete_url %}
+    <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Delete Scan">
+      <a class="btn btn-outline-danger btn-sm scan_delete_link" href="#scan-delete-modal" role="button" data-delete-url="{{ scan.delete_url }}" data-bs-toggle="modal">
+        <i class="far fa-trash-alt"></i>{% if show_btn_label %} Delete Scan{% endif %}
+      </a>
+    </li>
+  {% endif %}
+</ul>

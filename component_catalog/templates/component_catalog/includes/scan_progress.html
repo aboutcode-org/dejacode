@@ -1,26 +1,5 @@
 <strong class="ms-1">{{ scan.runs.0.status|title }}</strong>
 {% include 'component_catalog/includes/scan_status.html' with status=scan.runs.0.status only %}
-
-<ul class="list-inline mt-2 mb-0 text-center">
-  {% if scan.view_url %}
-    <li class="list-inline-item" data-bs-toggle="tooltip" data-bs-title="View Scan results">
-      <a class="btn btn-outline-dark btn-sm" href="{{ scan.view_url }}" target="_blank">
-        <i class="far fa-file-alt"></i>
-      </a>
-    </li>
-  {% endif %}
-  {% if scan.download_result_url %}
-    <li class="list-inline-item" data-bs-toggle="tooltip" data-bs-title="Download Scan results">
-      <a class="btn btn-outline-dark btn-sm" href="{{ scan.download_result_url }}" target="_blank">
-        <i class="fas fa-download"></i>
-      </a>
-    </li>
-  {% endif %}
-  {% if scan.delete_url %}
-    <li class="list-inline-item" data-bs-toggle="tooltip" data-bs-title="Delete Scan">
-      <a class="btn btn-outline-danger btn-sm scan_delete_link" href="#scan-delete-modal" role="button" data-delete-url="{{ scan.delete_url }}" data-bs-toggle="modal">
-        <i class="far fa-trash-alt"></i>
-      </a>
-    </li>
-  {% endif %}
-</ul>
+<div class="text-center mt-2">
+  {% include 'component_catalog/includes/scan_actions_list.html' with scan=scan only %}
+</div>

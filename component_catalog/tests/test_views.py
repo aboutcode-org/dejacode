@@ -2134,6 +2134,10 @@ class PackageUserViewsTestCase(TestCase):
           <i class="fas fa-clipboard"></i></button>
           <pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>
         </dd>
+        <dt class="col-sm-2 text-end pt-2 pe-0"></dt>
+        <dd class="col-sm-10">
+          <ul class="list-inline mb-0"></ul>
+        </dd>
         </dl>
         """
         self.assertContains(response, expected, html=True)
