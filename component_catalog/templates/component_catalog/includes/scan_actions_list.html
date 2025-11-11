@@ -22,7 +22,7 @@
   {% endif %}
   {% if scan.refresh_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Refresh Scan">
-      <a class="btn btn-outline-dark btn-sm" href="{{ scan.refresh_url }}">
+      <a class="btn btn-outline-dark btn-sm scan_refresh_link" href="#scan-refresh-modal" role="button" data-refresh-url="{{ scan.refresh_url }}" data-bs-toggle="modal">
         <i class="fa-solid fa-rotate-right"></i>{% if show_btn_label %} Refresh Scan{% endif %}
       </a>
     </li>

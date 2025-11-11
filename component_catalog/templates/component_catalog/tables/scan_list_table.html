@@ -39,7 +39,7 @@
               Created <span title="{{ scan.created_date }}">{{ scan.created_date|naturaltime }}</span>
             </div>
           </div>
-          <div class="col-2">
+          <div class="col-auto">
             {% include 'component_catalog/includes/scan_progress.html' with scan=scan only %}
           </div>
         </div>
