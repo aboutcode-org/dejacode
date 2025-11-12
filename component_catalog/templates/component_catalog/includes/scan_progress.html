@@ -1,5 +1,5 @@
 <strong class="ms-1">{{ scan.status_for_display }}</strong>
 {% include 'component_catalog/includes/scan_status.html' with status=scan.status only %}
-<div class="text-center mt-2">
+<div class="text-center mt-2" style="min-width:190px;">
   {% include 'component_catalog/includes/scan_actions_list.html' with scan=scan only %}
 </div>
