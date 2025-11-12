@@ -1,12 +1,18 @@
 <ul class="list-inline mb-0">
-  {% if scan.view_url %}
-    <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="View Scan results">
-      <a class="btn btn-outline-dark btn-sm" href="{{ scan.view_url }}" target="_blank">
-        <i class="far fa-file-alt"></i>{% if show_btn_label %} View Scan results{% endif %}
-      </a>
-    </li>
-  {% else %}
-    <li class="list-inline-item" style="width:36px;"></li>
+  {% if not is_scan_tab %}
+    {% if scan.view_url %}
+      <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="View Scan results">
+        <a class="btn btn-outline-dark btn-sm" href="{{ scan.view_url }}" target="_blank">
+          <i class="far fa-file-alt"></i>{% if show_btn_label %} View Scan results{% endif %}
+        </a>
+      </li>
+    {% else %}
+      <li class="list-inline-item">
+        <a class="btn btn-outline-dark btn-sm disabled">
+          <i class="far fa-file-alt"></i>{% if show_btn_label %} View Scan results{% endif %}
+        </a>
+      </li>
+    {% endif %}
   {% endif %}
   {% if scan.download_result_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Download Scan results">
@@ -15,7 +21,11 @@
       </a>
     </li>
   {% else %}
-    <li class="list-inline-item" style="width:36px;"></li>
+    <li class="list-inline-item">
+      <a class="btn btn-outline-dark btn-sm disabled">
+        <i class="fas fa-download"></i>{% if show_btn_label %} Download Scan results{% endif %}
+      </a>
+    </li>
   {% endif %}
   {% if scan.delete_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Delete Scan">
@@ -24,7 +34,11 @@
       </a>
     </li>
   {% else %}
-    <li class="list-inline-item" style="width:36px;"></li>
+    <li class="list-inline-item">
+      <a class="btn btn-outline-danger btn-sm disabled">
+        <i class="far fa-trash-alt"></i>{% if show_btn_label %} Delete Scan{% endif %}
+      </a>
+    </li>
   {% endif %}
   {% if scan.refresh_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Refresh Scan">
@@ -33,6 +47,10 @@
       </a>
     </li>
   {% else %}
-    <li class="list-inline-item" style="width:36px;"></li>
+    <li class="list-inline-item">
+      <a class="btn btn-outline-dark btn-sm disabled">
+        <i class="fa-solid fa-rotate-right"></i>{% if show_btn_label %} Refresh Scan{% endif %}
+      </a>
+    </li>
   {% endif %}
 </ul>

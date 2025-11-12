@@ -2398,13 +2398,11 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         scan_run = scan.get("runs", [{}])[-1]
         status = scan_run.get("status")
         scan_uuid = scan.get("uuid")
-        issue_statuses = ["failure", "stale", "stopped"]
-        completed_statuses = ["success", *issue_statuses]
 
         scan_issue_request_template = settings.SCAN_ISSUE_REQUEST_TEMPLATE
         dataspace_name = package.dataspace.name
         request_template_uuid = scan_issue_request_template.get(dataspace_name)
-        if request_template_uuid and status in completed_statuses:
+        if request_template_uuid and status in ScanStatus.COMPLETED:
             request_form_url = reverse("workflow:request_add", args=[request_template_uuid])
             field_context = {
                 "href": f"{request_form_url}?content_object_id={package.id}",
@@ -2426,7 +2424,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             ]
         )
 
-        if status in issue_statuses:
+        if status in ScanStatus.ISSUES:
             log = scan_run.get("log")
             if log:
                 scan_status_fields.append(("Log", log, None, "includes/field_log.html"))
@@ -2438,7 +2436,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
         # Scan actions: download, delete, rescan
         download_result_url = None
-        if status == "success":
+        if status in ScanStatus.COMPLETED:
             filename = package.filename or package.package_url_filename
             download_result_url = reverse(
                 "component_catalog:scan_data_as_file",
@@ -2447,7 +2445,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
 
         delete_url = None
         refresh_url = None
-        if status in completed_statuses:
+        if status not in ScanStatus.IN_PROGRESS:
             delete_url = reverse("component_catalog:scan_delete", args=[scan_uuid])
             refresh_url = reverse("component_catalog:scan_refresh", args=[scan_uuid])
 
