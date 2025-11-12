@@ -20,7 +20,7 @@ from django.core.mail import send_mail
 from django_rq import job
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
+from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
 from dje.utils import is_available
 
 logger = logging.getLogger(__name__)
@@ -109,11 +109,17 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 
     scancodeio = ScanCodeIO(user.dataspace)
     for uri in uris:
-        if is_available(uri):
-            response_json = scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
-            check_for_existing_scan_workaround(response_json, uri, user)
-        else:
+        if not is_available(uri):
             logger.info(f'uri="{uri}" is not reachable.')
+            continue
+
+        # Check if a Scan is already available in ScanCode.io for this URI.
+        existing_project = scancodeio.get_project_info(download_url=uri)
+        if existing_project:
+            logger.info(f'Update the local uri="{uri}" package from available Scan data.')
+            update_package_from_existing_scan_data(uri, user)
+        else:
+            scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
 
 
 @job("default", timeout="3h")

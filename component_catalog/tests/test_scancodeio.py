@@ -17,9 +17,9 @@ import requests
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
 from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_notice_text_from_key_files
+from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
 from dje.models import Dataspace
 from dje.models import History
 from dje.tasks import scancodeio_submit_scan
@@ -67,9 +67,7 @@ class ScanCodeIOTestCase(TestCase):
 
         expected = [
             mock.call("http://okurl.com", user_uuid, dataspace_uuid),
-            mock.call().__bool__(),
             mock.call("https://okurl2.com", user_uuid, dataspace_uuid),
-            mock.call().__bool__(),
         ]
         self.assertEqual(expected, mock_submit_scan.mock_calls)
 
@@ -334,19 +332,13 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual("", notice_text)
 
     @mock.patch("component_catalog.models.Package.update_from_scan")
-    def test_scancodeio_check_for_existing_scan_workaround(self, mock_update_from_scan):
+    def test_scancodeio_update_package_from_existing_scan_data(self, mock_update_from_scan):
         mock_update_from_scan.return_value = ["updated_field"]
         download_url = self.package1.download_url
         user = self.basic_user
 
-        response_json = None
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        results = update_package_from_existing_scan_data("unknown_url", user)
         self.assertIsNone(results)
 
-        response_json = {"success": True}
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
-        self.assertIsNone(results)
-
-        response_json = {"name": "project with this name already exists."}
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        results = update_package_from_existing_scan_data(download_url, user)
         self.assertEqual(["updated_field"], results)
