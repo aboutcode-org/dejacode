@@ -2100,42 +2100,21 @@ class PackageUserViewsTestCase(TestCase):
         self.dataspace.save()
         response = self.client.get(self.package1_tab_scan_url)
 
-        expected = """
-        <dl class="row mb-0">
-        <dt class="col-sm-2 text-end pt-2 pe-0">Status</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">Created date</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-created-date">
-            Jun 21, 2018, 12:32 PM UTC
-          </pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-start-date">
-            Jun 21, 2018, 12:32 PM UTC
-          </pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
-        <dd class="col-sm-10 clipboard">
-          <pre class="pre-bg-body-tertiary mb-1 field-end-date">&nbsp;</pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">ScanCode.io version</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>
-        </dd>
-        </dl>
-        """
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>'
+        self.assertContains(response, expected, html=True)
+        expected = (
+            '<pre class="pre-bg-body-tertiary mb-1 field-created-date">'
+            "  Jun 21, 2018, 12:32 PM UTC"
+            "</pre>"
+        )
+        self.assertContains(response, expected, html=True)
+        expected = (
+            '<pre class="pre-bg-body-tertiary mb-1 field-start-date">'
+            "  Jun 21, 2018, 12:32 PM UTC"
+            "</pre>"
+        )
+        self.assertContains(response, expected, html=True)
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>'
         self.assertContains(response, expected, html=True)
         self.assertNotContains(response, "Set values to Package")
 
@@ -2231,7 +2210,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected_other_languages, html=True)
         self.assertContains(response, "Scan Summary")
         self.assertContains(response, "Set values to Package")
-        self.assertContains(response, "Download Scan data")
+        self.assertContains(response, "Download Scan results")
 
         scan_data_as_file_url = reverse(
             "component_catalog:scan_data_as_file",

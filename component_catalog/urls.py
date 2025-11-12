@@ -26,6 +26,7 @@ from component_catalog.views import delete_scan_view
 from component_catalog.views import get_scan_progress_htmx_view
 from component_catalog.views import package_create_ajax_view
 from component_catalog.views import package_scan_view
+from component_catalog.views import refresh_scan_view
 from component_catalog.views import send_scan_data_as_file_view
 from dje.views import DataspacedDeleteView
 from dje.views import ExportCycloneDXBOMView
@@ -146,6 +147,11 @@ scans_patterns = [
         "scans/<uuid:project_uuid>/delete/",
         delete_scan_view,
         name="scan_delete",
+    ),
+    path(
+        "scans/<uuid:project_uuid>/refresh/",
+        refresh_scan_view,
+        name="scan_refresh",
     ),
     path(
         "scans/",

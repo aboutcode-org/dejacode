@@ -1,4 +1,4 @@
-<div class="progress" style="width: 100%; margin-bottom: 0; height: .5rem;">
+<div class="progress mb-0 w-100" style="height: .5rem;">
   {% if status == 'success' %}
     <div class="progress-bar {% if has_errors %}bg-warning{% else %}bg-success{% endif %}" title="{{ status|title }}" role="progressbar" style="width: 100%" aria-label="Scan progress" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
   {% elif status == 'failure' or status == "stopped" or status == "stale" %}

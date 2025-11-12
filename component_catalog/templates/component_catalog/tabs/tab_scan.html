@@ -5,10 +5,10 @@
     <p class="m-0">As package scanning is enabled in your Dataspace, you can submit this package download URL to ScanCode.io for scanning.</p>
   </div>
   <div class="container mt-3">
-    <div class="row justify-content-md-center">
-      <div class="col-4 d-grid">
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#scan-package-modal">Submit Scan Request</button>
-      </div>
+    <div class="text-center">
+      <button type="button" class="btn btn-success px-5" data-bs-toggle="modal" data-bs-target="#scan-package-modal">
+        <i class="fas fa-barcode"></i> Submit Scan Request
+      </button>
     </div>
   </div>
   {% include 'component_catalog/includes/scan_package_modal.html' %}
@@ -28,4 +28,20 @@
   {% if scan_summary_to_package_form %}
     {% include 'component_catalog/includes/scan_summary_to_package_modal.html' %}
   {% endif %}
+  {% include 'component_catalog/modals/scan_delete_modal.html' %}
+  {% include 'component_catalog/modals/scan_refresh_modal.html' %}
+  <script>
+    document.querySelectorAll('.scan_delete_link').forEach(link => {
+      link.addEventListener('click', function() {
+        let deleteUrl = this.getAttribute('data-delete-url');
+        document.querySelector('#scan-delete-modal a.delete-confirm').setAttribute('href', deleteUrl);
+      });
+    });
+    document.querySelectorAll('.scan_refresh_link').forEach(link => {
+      link.addEventListener('click', function() {
+        let refreshUrl = this.getAttribute('data-refresh-url');
+        document.querySelector('#scan-refresh-modal a.refresh-confirm').setAttribute('href', refreshUrl);
+      });
+    });
+  </script>
 {% endif %}

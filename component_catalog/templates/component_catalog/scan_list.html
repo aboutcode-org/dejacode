@@ -29,7 +29,8 @@
   {% if has_add_package_permission %}
     {% include 'component_catalog/includes/add_package_modal.html' %}
   {% endif %}
-  {% include 'component_catalog/includes/scan_delete_modal.html' %}
+  {% include 'component_catalog/modals/scan_delete_modal.html' %}
+  {% include 'component_catalog/modals/scan_refresh_modal.html' %}
 {% endblock %}
 
 {% block javascripts %}
@@ -40,6 +41,12 @@
         link.addEventListener('click', function() {
           let deleteUrl = this.getAttribute('data-delete-url');
           document.querySelector('#scan-delete-modal a.delete-confirm').setAttribute('href', deleteUrl);
+        });
+      });
+      document.querySelectorAll('.scan_refresh_link').forEach(link => {
+        link.addEventListener('click', function() {
+          let refreshUrl = this.getAttribute('data-refresh-url');
+          document.querySelector('#scan-refresh-modal a.refresh-confirm').setAttribute('href', refreshUrl);
         });
       });
     });

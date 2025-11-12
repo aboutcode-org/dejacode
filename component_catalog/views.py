@@ -73,6 +73,7 @@ from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import ScanStatus
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dje import tasks
@@ -1665,7 +1666,54 @@ def delete_scan_view(request, project_uuid):
         raise Http404("Scan could not be deleted.")
 
     messages.success(request, "Scan deleted.")
+    if referer := request.META.get("HTTP_REFERER"):
+        return redirect(referer)
     return redirect("component_catalog:scan_list")
+
+
+@login_required
+def refresh_scan_view(request, project_uuid):
+    user = request.user
+    dataspace = user.dataspace
+    if not dataspace.enable_package_scanning:
+        raise Http404
+
+    scancodeio = ScanCodeIO(dataspace)
+    response = scancodeio.refresh_scan(str(project_uuid))
+
+    if response.status_code != 200:
+        raise Http404("Scan could not be refreshed.")
+
+    messages.success(request, "Refresh Scan started.")
+    if referer := request.META.get("HTTP_REFERER"):
+        return redirect(referer)
+    return redirect("component_catalog:scan_list")
+
+
+def get_scan_context_data(scan, package=None):
+    scan_uuid = scan.get("uuid")
+
+    status = ""
+    if scan_run := scan.get("runs"):
+        status = scan_run[-1].get("status")
+
+    context_data = {
+        "status": status,
+        "status_for_display": status.replace("_", " ").capitalize(),
+        "created_date": parse_datetime(scan.get("created_date")),
+        "package": package,
+    }
+
+    scan_status = ScanStatus(status)
+    if package and scan_status.is_completed:
+        context_data["view_url"] = f"{package.details_url}#scan" if package else None
+    if scan_status.is_completed:
+        context_data["download_result_url"] = get_scan_results_as_file_url(scan)
+    if not scan_status.is_in_progress:
+        context_data["delete_url"] = reverse("component_catalog:scan_delete", args=[scan_uuid])
+        context_data["refresh_url"] = reverse("component_catalog:scan_refresh", args=[scan_uuid])
+
+    return context_data
 
 
 class ScanListView(
@@ -1675,7 +1723,7 @@ class ScanListView(
 ):
     paginate_by = 50
     template_name = "component_catalog/scan_list.html"
-    template_list_table = "component_catalog/includes/scan_list_table.html"
+    template_list_table = "component_catalog/tables/scan_list_table.html"
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
@@ -1719,18 +1767,10 @@ class ScanListView(
         for scan in context_data["object_list"]:
             package_download_url = get_package_download_url(scan)
             package = packages_by_url.get(package_download_url)
-            scan["package"] = package
-            scan["download_result_url"] = get_scan_results_as_file_url(scan)
-            scan["created_date"] = parse_datetime(scan.get("created_date"))
-            scan["delete_url"] = reverse("component_catalog:scan_delete", args=[scan.get("uuid")])
-            scans.append(scan)
+            scan_context_data = get_scan_context_data(scan, package)
+            scans.append(scan_context_data)
 
-        context_data.update(
-            {
-                "scans": scans,
-            }
-        )
-
+        context_data["scans"] = scans
         return context_data
 
 
@@ -2353,19 +2393,19 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
         return scan_summary_fields
 
     def scan_status_fields(self, scan):
+        package = self.object
         scan_status_fields = []
         scan_run = scan.get("runs", [{}])[-1]
         status = scan_run.get("status")
-        issue_statuses = ["failure", "stale", "stopped"]
-        completed_statuses = ["success", *issue_statuses]
+        scan_uuid = scan.get("uuid")
 
         scan_issue_request_template = settings.SCAN_ISSUE_REQUEST_TEMPLATE
-        dataspace_name = self.object.dataspace.name
+        dataspace_name = package.dataspace.name
         request_template_uuid = scan_issue_request_template.get(dataspace_name)
-        if request_template_uuid and status in completed_statuses:
+        if request_template_uuid and status in ScanStatus.COMPLETED:
             request_form_url = reverse("workflow:request_add", args=[request_template_uuid])
             field_context = {
-                "href": f"{request_form_url}?content_object_id={self.object.id}",
+                "href": f"{request_form_url}?content_object_id={package.id}",
                 "target": "_blank",
                 "btn_class": "btn-outline-request",
                 "icon_class": "fas fa-bug",
@@ -2384,7 +2424,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             ]
         )
 
-        if status in issue_statuses:
+        if status in ScanStatus.ISSUES:
             log = scan_run.get("log")
             if log:
                 scan_status_fields.append(("Log", log, None, "includes/field_log.html"))
@@ -2394,19 +2434,31 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     ("Task output", task_output, None, "includes/field_log.html")
                 )
 
-        if status == "success":
-            filename = self.object.filename or self.object.package_url_filename
-            field_context = {
-                "href": reverse(
-                    "component_catalog:scan_data_as_file",
-                    args=[scan.get("uuid"), quote_plus(filename)],
-                ),
-                "target": "_blank",
-                "icon_class": "fas fa-download",
-            }
-            scan_status_fields.append(
-                ("Download Scan data", field_context, None, "includes/field_button.html")
+        # Scan actions: download, delete, rescan
+        download_result_url = None
+        if status in ScanStatus.COMPLETED:
+            filename = package.filename or package.package_url_filename
+            download_result_url = reverse(
+                "component_catalog:scan_data_as_file",
+                args=[scan_uuid, quote_plus(filename)],
             )
+
+        delete_url = None
+        refresh_url = None
+        if status not in ScanStatus.IN_PROGRESS:
+            delete_url = reverse("component_catalog:scan_delete", args=[scan_uuid])
+            refresh_url = reverse("component_catalog:scan_refresh", args=[scan_uuid])
+
+        field_context = {
+            "scan": {
+                "download_result_url": download_result_url,
+                "delete_url": delete_url,
+                "refresh_url": refresh_url,
+            }
+        }
+        scan_status_fields.append(
+            (None, field_context, None, "component_catalog/tabs/field_scan_actions.html")
+        )
 
         return scan_status_fields
 
