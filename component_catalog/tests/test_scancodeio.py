@@ -17,9 +17,9 @@ import requests
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
 from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_notice_text_from_key_files
+from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
 from dje.models import Dataspace
 from dje.models import History
 from dje.tasks import scancodeio_submit_scan
@@ -67,41 +67,38 @@ class ScanCodeIOTestCase(TestCase):
 
         expected = [
             mock.call("http://okurl.com", user_uuid, dataspace_uuid),
-            mock.call().__bool__(),
             mock.call("https://okurl2.com", user_uuid, dataspace_uuid),
-            mock.call().__bool__(),
         ]
         self.assertEqual(expected, mock_submit_scan.mock_calls)
 
     @mock.patch("requests.sessions.Session.get")
     def test_scancodeio_fetch_scan_list(self, mock_session_get):
         scancodeio = ScanCodeIO(self.dataspace)
-        self.assertIsNone(scancodeio.fetch_scan_list())
-        self.assertFalse(mock_session_get.called)
+        dataspace_uid = get_hash_uid(self.dataspace.uuid)
+        user_uid = get_hash_uid(self.basic_user.uuid)
 
-        scancodeio.fetch_scan_list(user=self.basic_user)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__endswith": get_hash_uid(self.basic_user.uuid)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_list(dataspace=self.basic_user.dataspace)
+        scancodeio.fetch_scan_list()
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
+            "name__contains": dataspace_uid,
         }
         self.assertEqual(expected, params)
 
-        scancodeio.fetch_scan_list(
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-            extra_params="extra",
-        )
+        scancodeio.fetch_scan_list(user=self.basic_user)
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
+            "name__contains": dataspace_uid,
+            "label": user_uid,
+        }
+        self.assertEqual(expected, params)
+
+        scancodeio.fetch_scan_list(extra_params="extra")
+        params = mock_session_get.call_args.kwargs["params"]
+        expected = {
+            "format": "json",
+            "name__contains": get_hash_uid(self.dataspace.uuid),
             "extra_params": "extra",
         }
         self.assertEqual(expected, params)
@@ -115,14 +112,9 @@ class ScanCodeIOTestCase(TestCase):
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "name__startswith": get_hash_uid(uri),
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
+            "name__contains": get_hash_uid(self.dataspace.uuid),
             "format": "json",
         }
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_info(uri=uri, user=self.basic_user)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected["name__endswith"] = get_hash_uid(self.basic_user.uuid)
         self.assertEqual(expected, params)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
@@ -340,19 +332,13 @@ class ScanCodeIOTestCase(TestCase):
         self.assertEqual("", notice_text)
 
     @mock.patch("component_catalog.models.Package.update_from_scan")
-    def test_scancodeio_check_for_existing_scan_workaround(self, mock_update_from_scan):
+    def test_scancodeio_update_package_from_existing_scan_data(self, mock_update_from_scan):
         mock_update_from_scan.return_value = ["updated_field"]
         download_url = self.package1.download_url
         user = self.basic_user
 
-        response_json = None
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        results = update_package_from_existing_scan_data("unknown_url", user)
         self.assertIsNone(results)
 
-        response_json = {"success": True}
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
-        self.assertIsNone(results)
-
-        response_json = {"name": "project with this name already exists."}
-        results = check_for_existing_scan_workaround(response_json, download_url, user)
+        results = update_package_from_existing_scan_data(download_url, user)
         self.assertEqual(["updated_field"], results)

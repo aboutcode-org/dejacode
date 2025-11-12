@@ -1742,7 +1742,6 @@ class ScanListView(
         scancodeio = ScanCodeIO(dataspace)
         self.list_data = (
             scancodeio.fetch_scan_list(
-                dataspace=dataspace,
                 user=user if self.request.GET.get("created_by_me") else None,
                 **filters,
             )
