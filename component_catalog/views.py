@@ -73,6 +73,7 @@ from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import ScanStatus
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dje import tasks
@@ -1689,6 +1690,32 @@ def refresh_scan_view(request, project_uuid):
     return redirect("component_catalog:scan_list")
 
 
+def get_scan_context_data(scan, package=None):
+    scan_uuid = scan.get("uuid")
+
+    status = ""
+    if scan_run := scan.get("runs"):
+        status = scan_run[-1].get("status")
+
+    context_data = {
+        "status": status,
+        "status_for_display": status.replace("_", " ").capitalize(),
+        "created_date": parse_datetime(scan.get("created_date")),
+        "package": package,
+    }
+
+    scan_status = ScanStatus(status)
+    if package and scan_status.is_completed:
+        context_data["view_url"] = f"{package.details_url}#scan" if package else None
+    if scan_status.is_completed:
+        context_data["download_result_url"] = get_scan_results_as_file_url(scan)
+    if not scan_status.is_in_progress:
+        context_data["delete_url"] = reverse("component_catalog:scan_delete", args=[scan_uuid])
+        context_data["refresh_url"] = reverse("component_catalog:scan_refresh", args=[scan_uuid])
+
+    return context_data
+
+
 class ScanListView(
     LoginRequiredMixin,
     AddPackagePermissionMixin,
@@ -1738,23 +1765,12 @@ class ScanListView(
 
         scans = []
         for scan in context_data["object_list"]:
-            scan_uuid = scan.get("uuid")
             package_download_url = get_package_download_url(scan)
             package = packages_by_url.get(package_download_url)
-            scan["package"] = package
-            scan["created_date"] = parse_datetime(scan.get("created_date"))
-            scan["view_url"] = f"{package.details_url}#scan" if package else None
-            scan["download_result_url"] = get_scan_results_as_file_url(scan)
-            scan["delete_url"] = reverse("component_catalog:scan_delete", args=[scan_uuid])
-            scan["refresh_url"] = reverse("component_catalog:scan_refresh", args=[scan_uuid])
-            scans.append(scan)
+            scan_context_data = get_scan_context_data(scan, package)
+            scans.append(scan_context_data)
 
-        context_data.update(
-            {
-                "scans": scans,
-            }
-        )
-
+        context_data["scans"] = scans
         return context_data
 
 

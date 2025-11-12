@@ -449,6 +449,43 @@ class ScanCodeIO(BaseService):
         return package_data_for_model
 
 
+class ScanStatus:
+    """List of ScanCode.io Run status."""
+
+    NOT_STARTED = "not_started"
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILURE = "failure"
+    STOPPED = "stopped"
+    STALE = "stale"
+
+    # Status groupings
+    IN_PROGRESS = [QUEUED, RUNNING]
+    COMPLETED = [SUCCESS, FAILURE, STOPPED, STALE]
+    ISSUES = [FAILURE, STOPPED, STALE]
+    PENDING = [NOT_STARTED]
+
+    def __init__(self, status):
+        self.value = status
+
+    @property
+    def is_in_progress(self):
+        return self.value in self.IN_PROGRESS
+
+    @property
+    def is_completed(self):
+        return self.value in self.COMPLETED
+
+    @property
+    def has_issues(self):
+        return self.value in self.ISSUES
+
+    @property
+    def is_pending(self):
+        return self.value in self.PENDING
+
+
 def get_hash_uid(value):
     """Return a Unique ID based on a 10 characters hash of the provided `value`."""
     return md5(str(value).encode("utf-8"), usedforsecurity=False).hexdigest()[:10]

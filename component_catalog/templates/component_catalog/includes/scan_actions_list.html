@@ -5,6 +5,8 @@
         <i class="far fa-file-alt"></i>{% if show_btn_label %} View Scan results{% endif %}
       </a>
     </li>
+  {% else %}
+    <li class="list-inline-item" style="width:36px;"></li>
   {% endif %}
   {% if scan.download_result_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Download Scan results">
@@ -12,6 +14,8 @@
         <i class="fas fa-download"></i>{% if show_btn_label %} Download Scan results{% endif %}
       </a>
     </li>
+  {% else %}
+    <li class="list-inline-item" style="width:36px;"></li>
   {% endif %}
   {% if scan.delete_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Delete Scan">
@@ -19,6 +23,8 @@
         <i class="far fa-trash-alt"></i>{% if show_btn_label %} Delete Scan{% endif %}
       </a>
     </li>
+  {% else %}
+    <li class="list-inline-item" style="width:36px;"></li>
   {% endif %}
   {% if scan.refresh_url %}
     <li class="list-inline-item"{% if not show_btn_label %} data-bs-toggle="tooltip"{% endif %} data-bs-title="Refresh Scan">
@@ -26,5 +32,7 @@
         <i class="fa-solid fa-rotate-right"></i>{% if show_btn_label %} Refresh Scan{% endif %}
       </a>
     </li>
+  {% else %}
+    <li class="list-inline-item" style="width:36px;"></li>
   {% endif %}
 </ul>
