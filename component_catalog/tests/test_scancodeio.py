@@ -76,32 +76,31 @@ class ScanCodeIOTestCase(TestCase):
     @mock.patch("requests.sessions.Session.get")
     def test_scancodeio_fetch_scan_list(self, mock_session_get):
         scancodeio = ScanCodeIO(self.dataspace)
-        self.assertIsNone(scancodeio.fetch_scan_list())
-        self.assertFalse(mock_session_get.called)
+        dataspace_uid = get_hash_uid(self.dataspace.uuid)
+        user_uid = get_hash_uid(self.basic_user.uuid)
 
-        scancodeio.fetch_scan_list(user=self.basic_user)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected = {"format": "json", "name__endswith": get_hash_uid(self.basic_user.uuid)}
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_list(dataspace=self.basic_user.dataspace)
+        scancodeio.fetch_scan_list()
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
+            "name__contains": dataspace_uid,
         }
         self.assertEqual(expected, params)
 
-        scancodeio.fetch_scan_list(
-            user=self.basic_user,
-            dataspace=self.basic_user.dataspace,
-            extra_params="extra",
-        )
+        scancodeio.fetch_scan_list(user=self.basic_user)
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "format": "json",
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
-            "name__endswith": get_hash_uid(self.basic_user.uuid),
+            "name__contains": dataspace_uid,
+            "label": user_uid,
+        }
+        self.assertEqual(expected, params)
+
+        scancodeio.fetch_scan_list(extra_params="extra")
+        params = mock_session_get.call_args.kwargs["params"]
+        expected = {
+            "format": "json",
+            "name__contains": get_hash_uid(self.dataspace.uuid),
             "extra_params": "extra",
         }
         self.assertEqual(expected, params)
@@ -115,14 +114,9 @@ class ScanCodeIOTestCase(TestCase):
         params = mock_session_get.call_args.kwargs["params"]
         expected = {
             "name__startswith": get_hash_uid(uri),
-            "name__contains": get_hash_uid(self.basic_user.dataspace.uuid),
+            "name__contains": get_hash_uid(self.dataspace.uuid),
             "format": "json",
         }
-        self.assertEqual(expected, params)
-
-        scancodeio.fetch_scan_info(uri=uri, user=self.basic_user)
-        params = mock_session_get.call_args.kwargs["params"]
-        expected["name__endswith"] = get_hash_uid(self.basic_user.uuid)
         self.assertEqual(expected, params)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
