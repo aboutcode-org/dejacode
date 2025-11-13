@@ -21,6 +21,8 @@ from django.core.management.base import BaseCommand
 import django_rq
 from rq.cron import CronScheduler
 
+from dje.tasks import update_vulnerabilities
+
 
 class Command(BaseCommand):
     help = (
@@ -44,7 +46,13 @@ class Command(BaseCommand):
         cron = CronScheduler(connection=connection, logging_level="INFO")
 
         # Register jobs
-        cron.register(print, queue_name="default", cron="* * * * *")
+        # cron.register(print, queue_name="default", cron="* * * * *")
+        cron.register(
+            func=update_vulnerabilities,
+            queue_name="default",
+            # cron=settings.DEJACODE_VULNERABILITIES_CRON,  # 3am daily by default
+            cron="0 * * * *",  # Every hour
+        )
 
         # Start the scheduler (this will block until interrupted)
         try:
