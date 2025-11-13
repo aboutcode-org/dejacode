@@ -566,11 +566,6 @@ LOGGING = {
             "propagate": False,
             "level": DEJACODE_LOG_LEVEL,
         },
-        "rq_scheduler.scheduler": {
-            "handlers": ["null"] if IS_TESTS else ["console"],
-            "propagate": False,
-            "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
-        },
     },
 }
 

@@ -66,9 +66,7 @@ services:
 
   scheduler:
     build: .
-    command: wait-for-it web:8000 -- sh -c "
-      ./manage.py setupcron &&
-      ./manage.py rqscheduler --interval=600"
+    command: wait-for-it web:8000 -- sh -c "./manage.py cronjobs"
     env_file:
       - docker.env
     volumes:
