@@ -35,12 +35,12 @@ dependencies = [
     "wheel==0.45.1",
     "pip==25.3",
     # Django
-    "Django==5.2.7",
+    "Django==5.2.8",
     "asgiref==3.10.0",
     "typing_extensions==4.15.0",
     "sqlparse==0.5.3",
     # Django apps
-    "django-crispy-forms==2.4",
+    "django-crispy-forms==2.5",
     "crispy_bootstrap5==2025.6",
     "django-grappelli==4.0.2",
     "django-filter==25.2",
@@ -48,7 +48,7 @@ dependencies = [
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.2.0",
     "django-environ==0.12.0",
-    "django-debug-toolbar==6.0.0",
+    "django-debug-toolbar==6.1.0",
     # CAPTCHA
     "altcha==0.2.0",
     "django_altcha==0.4.0",
@@ -62,13 +62,13 @@ dependencies = [
     # Track failed login attempts
     "django-axes==8.0.0",
     # Multi-factor authentication
-    "django-otp==1.6.1",
+    "django-otp==1.6.3",
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.2.10",
+    "psycopg==3.2.12",
     # Cache
-    "redis==6.4.0",
+    "redis==7.0.1",
     # redis dependencies:
     "packaging==25.0",
     "pyparsing==3.2.5",
@@ -83,13 +83,13 @@ dependencies = [
     "rq==2.6.0",
     "croniter==6.0.0",
     "django-rq==3.1.0",
-    "fakeredis==2.32.0",
+    "fakeredis==2.32.1",
     # Scheduler
     "rq-scheduler==0.14.0",
     "crontab==1.0.5",
     "freezegun==1.5.2",
     # Libs
-    "certifi==2025.10.5",
+    "certifi==2025.11.12",
     "urllib3==2.5.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
@@ -104,7 +104,7 @@ dependencies = [
     "zipp==3.23.0",
     "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.9",
+    "markdown==3.10",
     "bleach==6.3.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.5.1",
@@ -169,15 +169,13 @@ dependencies = [
 dev = [
     # Linter and Validation
     "ruff==0.14.0",
-    # Documentation
-    "doc8==1.1.2",
-    "stevedore==5.4.1",
-    "Pygments==2.19.2",
-    "docutils==0.21.2",
-    "restructuredtext-lint==1.4.0",
-    "pbr==6.1.1",
     # Parallel testing
     "tblib==3.1.0"
+]
+docs = [
+    "Sphinx==8.2.3",
+    "furo==2025.9.25",
+    "doc8==2.0.0",
 ]
 
 [project.urls]

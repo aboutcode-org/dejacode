@@ -1,0 +1,13 @@
+about_resource: django_otp-1.6.3-py3-none-any.whl
+name: django-otp
+version: 1.6.3
+download_url: https://files.pythonhosted.org/packages/77/23/22d8b4e9280351d6236fac1fa30b5f1fc8fff70c4b615ba9d78f20468b5f/django_otp-1.6.3-py3-none-any.whl
+package_url: pkg:pypi/django-otp@1.6.3
+license_expression: unlicense
+copyright: Copyright django-otp project contributors
+checksum_md5: ae6bbead484cfe7392b1f002de798b2b
+checksum_sha1: 7e87562afeec5146590eace690efef3c4a714d38
+licenses:
+  - key: unlicense
+    name: Unlicense
+    file: unlicense.LICENSE

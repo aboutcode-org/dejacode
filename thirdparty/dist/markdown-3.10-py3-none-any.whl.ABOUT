@@ -1,0 +1,17 @@
+about_resource: markdown-3.10-py3-none-any.whl
+name: markdown
+version: '3.10'
+download_url: https://files.pythonhosted.org/packages/70/81/54e3ce63502cd085a0c556652a4e1b919c45a446bd1e5300e10c44c8c521/markdown-3.10-py3-none-any.whl
+package_url: pkg:pypi/markdown@3.10
+license_expression: bsd-new AND unknown-license-reference
+copyright: Copyright markdown project contributors
+attribute: yes
+checksum_md5: b298eb2de64012fb300660876804003c
+checksum_sha1: eb6f09538c8776b0af349baf866ec77d104128cc
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
