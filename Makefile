@@ -58,11 +58,14 @@ envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
+doc_dependencies: virtualenv
+	@echo "-> Configure and install decumentation dependencies"
+	@${ACTIVATE} pip install --editable .[docs]
+
 doc8:
-	@echo "-> Run doc8 validation"
-	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ \
-	  --ignore-path docs/installation_and_sysadmin/ \
-	  --quiet docs/
+	@echo "-> Run documentation .rst validation"
+	@$(MAKE) doc_dependencies > /dev/null 2>&1
+	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
 
 valid:
 	@echo "-> Run Ruff format"
@@ -146,9 +149,9 @@ test:
 	${MANAGE} test --noinput --parallel auto
 
 docs:
-	@echo "-> Builds the installation_and_sysadmin docs"
+	@echo "-> Builds the documentation"
 	rm -rf ${DOCS_LOCATION}/_build/
-	@${ACTIVATE} pip install -r docs/requirements.txt
+	@$(MAKE) doc_dependencies > /dev/null 2>&1
 	@${ACTIVATE} sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
 	@${ACTIVATE} sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
@@ -172,4 +175,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile envfile_dev check doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile envfile_dev doc_dependencies check doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser
