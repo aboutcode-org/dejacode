@@ -1081,11 +1081,7 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
     form = DataspaceConfigurationForm
     verbose_name_plural = _("Configuration")
     verbose_name = _("Dataspace configuration")
-    fieldsets = [
-        (
-            "",
-            {"fields": ("homepage_layout",)},
-        ),
+    add_fieldsets = [
         (
             "AboutCode Integrations",
             {
@@ -1142,7 +1138,14 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             },
         ),
     ]
+    # Do not include the Dataspace related FKs on addition as the Dataspace does not exist yet
+    fieldsets = [("", {"fields": ("homepage_layout",)})] + add_fieldsets
     can_delete = False
+
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return self.add_fieldsets
+        return super().get_fieldsets(request, obj)
 
 
 @admin.register(Dataspace, site=dejacode_site)
@@ -1433,7 +1436,6 @@ class DejacodeUserAdmin(
     add_fieldsets = (
         (None, {"fields": ("username", "dataspace")}),
         (_("Personal information"), {"fields": ("email", "first_name", "last_name", "company")}),
-        (_("Profile"), {"fields": ("homepage_layout",)}),
         (
             _("Notifications"),
             {
@@ -1448,6 +1450,7 @@ class DejacodeUserAdmin(
         (_("Permissions"), {"fields": ("is_staff", "is_superuser", "groups")}),
     )
     fieldsets = add_fieldsets[:-1] + (
+        (_("Profile"), {"fields": ("homepage_layout",)}),
         (_("Permissions"), {"fields": ("is_active", "is_staff", "is_superuser", "groups")}),
         (_("Important dates"), {"fields": ("last_login", "last_api_access", "date_joined")}),
     )

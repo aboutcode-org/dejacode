@@ -413,6 +413,21 @@ class UsersTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
 
+    def test_user_admin_hide_dataspace_fk_on_addition(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("admin:dje_dejacodeuser_add")
+        response = self.client.get(url)
+
+        expected1 = "homepage_layout"
+        expected2 = "Homepage layout"
+        self.assertNotContains(response, expected1)
+        self.assertNotContains(response, expected2)
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected1)
+        self.assertContains(response, expected2)
+
     def test_user_admin_form_scope_homepage_layout_choices(self):
         self.client.login(username=self.nexb_user.username, password="secret")
         url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
