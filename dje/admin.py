@@ -1147,6 +1147,16 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
 
+    def get_readonly_fields(self, request, obj=None):
+        """Only a user from the current Dataspace can edit Dataspace related FKs."""
+        readonly_fields = super().get_readonly_fields(request, obj)
+
+        dataspace = obj
+        if dataspace and dataspace != request.user.dataspace:
+            readonly_fields += ("homepage_layout",)
+
+        return readonly_fields
+
 
 @admin.register(Dataspace, site=dejacode_site)
 class DataspaceAdmin(
@@ -1518,6 +1528,15 @@ class DejacodeUserAdmin(
                 return forms.ModelChoiceField(queryset=queryset, initial=user_dataspace)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        """Only a user from the current Dataspace can edit Dataspace related FKs."""
+        readonly_fields = super().get_readonly_fields(request, obj)
+
+        if obj and obj.dataspace != request.user.dataspace:
+            readonly_fields += ("homepage_layout",)
+
+        return readonly_fields
 
     def user_change_password(self, request, id, form_url=""):
         """
