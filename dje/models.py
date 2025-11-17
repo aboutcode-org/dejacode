@@ -22,7 +22,6 @@ from django.contrib.admin.models import ADDITION
 from django.contrib.admin.models import CHANGE
 from django.contrib.admin.models import DELETION
 from django.contrib.admin.models import LogEntry
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import Group
@@ -88,6 +87,41 @@ def is_content_type_related(model_class):
         for field in model_class._meta.get_fields()
         if field.many_to_one and field.related_model == ContentType
     )
+
+
+class DataspaceForeignKeyValidationMixin:
+    """Mixin that enforces all related objects share the same Dataspace as self."""
+
+    def save(self, *args, **kwargs):
+        """Validate all foreign keys share the same Dataspace before saving."""
+        self._validate_fk_dataspace()
+        super().save(*args, **kwargs)
+
+    def _validate_fk_dataspace(self):
+        """Check that all foreign key objects share this instance's Dataspace."""
+        # For these model classes, related objects can still be saved even if
+        # they have a dataspace which is not the current one.
+        allowed_models = [Dataspace, DejacodeUser, ContentType]
+
+        for fk_field in self.local_foreign_fields:
+            if fk_field.related_model in allowed_models:
+                continue
+
+            fk_field_value = getattr(self, fk_field.name, None)
+            if fk_field_value and fk_field_value.dataspace != self.dataspace:
+                raise ValueError(
+                    f'Foreign key field "{fk_field.name}": related object "{fk_field_value}" '
+                    f'has Dataspace "{fk_field_value.dataspace}", expected "{self.dataspace}"'
+                )
+
+    def _get_local_foreign_fields(self):
+        """
+        Return a list of ForeignKey type fields of the model.
+        GenericForeignKey are not included, filtered out with field.concrete
+        """
+        return [field for field in self._meta.get_fields() if field.many_to_one and field.concrete]
+
+    local_foreign_fields = property(_get_local_foreign_fields)
 
 
 class DataspaceManager(models.Manager):
@@ -414,7 +448,7 @@ class Dataspace(models.Model):
         return bool(self.get_configuration("tab_permissions"))
 
 
-class DataspaceConfiguration(models.Model):
+class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
     dataspace = models.OneToOneField(
         to="dje.Dataspace",
         on_delete=models.CASCADE,
@@ -756,7 +790,7 @@ class ProductSecuredQuerySet(DataspacedQuerySet):
         )
 
 
-class DataspacedModel(models.Model):
+class DataspacedModel(DataspaceForeignKeyValidationMixin, models.Model):
     """Abstract base model for all models that are keyed by Dataspace."""
 
     dataspace = models.ForeignKey(
@@ -847,19 +881,6 @@ class DataspacedModel(models.Model):
         # A `copy` argument is provided when calling save() from the copy.
         # It needs to be poped before calling the super().save()
         kwargs.pop("copy", None)
-
-        # For these model classes, related objects can still be saved even if
-        # they have a dataspace which is not the current one.
-        allowed_models = [Dataspace, get_user_model(), ContentType]
-
-        for field in self.local_foreign_fields:
-            if field.related_model not in allowed_models:
-                attr_value = getattr(self, field.name)
-                if attr_value and attr_value.dataspace != self.dataspace:
-                    raise ValueError(
-                        f'The Dataspace of the related object: "{attr_value}" '
-                        f'is not "{self.dataspace}"'
-                    )
 
         self.clean_extra_spaces_in_identifier_fields()
         super().save(*args, **kwargs)
@@ -1088,15 +1109,6 @@ class DataspacedModel(models.Model):
         urn = getattr(self, "urn", None)
         if urn:
             return format_html('<a href="{}">{}</a>', reverse("urn_resolve", args=[urn]), urn)
-
-    def _get_local_foreign_fields(self):
-        """
-        Return a list of ForeignKey type fields of the model.
-        GenericForeignKey are not included, filtered out with field.concrete
-        """
-        return [field for field in self._meta.get_fields() if field.many_to_one and field.concrete]
-
-    local_foreign_fields = property(_get_local_foreign_fields)
 
     @classmethod
     def get_identifier_fields(cls, *args, **kwargs):
@@ -1678,7 +1690,7 @@ class DejacodeUserManager(BaseUserManager, DataspacedManager.from_queryset(Dejac
         )
 
 
-class DejacodeUser(AbstractUser):
+class DejacodeUser(DataspaceForeignKeyValidationMixin, AbstractUser):
     uuid = models.UUIDField(
         _("UUID"),
         default=uuid.uuid4,

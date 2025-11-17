@@ -627,6 +627,7 @@ class UsersPasswordTestCase(TestCase):
 class DejaCodeUserModelTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
+        self.alternate_dataspace = Dataspace.objects.create(name="alternate")
 
     def test_user_model_queryset_manager(self):
         active = create_user("active", self.dataspace)
@@ -725,3 +726,18 @@ class DejaCodeUserModelTestCase(TestCase):
             "dataspace": "nexB",
         }
         self.assertEqual(expected, user.serialize_user_data())
+
+    def test_user_model_foreign_key_validation(self):
+        layout_dataspace = create("CardLayout", self.dataspace)
+        layout_alternate = create("CardLayout", self.alternate_dataspace)
+
+        expected_message = 'has Dataspace "alternate", expected "nexB"'
+        with self.assertRaisesMessage(ValueError, expected_message):
+            create_user("active", self.dataspace, homepage_layout=layout_alternate)
+
+        user = create_user("active", self.dataspace, homepage_layout=layout_dataspace)
+        self.assertTrue(user.id)
+
+        with self.assertRaisesMessage(ValueError, expected_message):
+            user.homepage_layout = layout_alternate
+            user.save()
