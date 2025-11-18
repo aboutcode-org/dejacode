@@ -182,13 +182,29 @@ let
 
   # Helper function to create packages with specific versions and disabled tests
   buildCustomPackage = { pname, version, format ? "wheel", src, ... }@attrs:
+    let
+      # Define special build inputs for specific packages
+      specialBuildInputs = {
+        python_ldap = {
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            python.pkgs.setuptools
+            python.pkgs.distutils
+          ];
+          buildInputs = with pkgs; [ openldap cyrus_sasl ];
+        };
+      };
+
+      # Get the special build inputs for this package, or empty if none
+      specialInputs = specialBuildInputs.${pname} or {};
+    in
     python.pkgs.buildPythonPackage ({
         inherit pname version format src;
         doCheck = false;
         doInstallCheck = false;
         doPytestCheck = false;
         pythonImportsCheck = [];
-    } // attrs);
+    } // specialInputs // attrs);
 
   pythonOverlay = self: super: {
 """
@@ -200,11 +216,7 @@ let
         version = dep["version"]
         # Handle 'django_notifications_patched', 'django-rest-hooks' and
         # 'python_ldap' separately
-        if (
-            name == "django-rest-hooks"
-            or name == "django_notifications_patched"
-            or name == "python_ldap"
-        ):
+        if name == "django-rest-hooks" or name == "django_notifications_patched":
             if name == "django-rest-hooks" and version == "1.6.1":
                 nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
                 nix_content += '        pname = "django-rest-hooks";\n'
@@ -232,24 +244,6 @@ let
                     '           sha256 = "sha256-RDAp2PKWa2xA5ge25VqkmRm8HCYVS4/fq2xKc80LDX8=";\n'
                 )
                 nix_content += "        };\n"
-                nix_content += "    };\n"
-            elif name == "python_ldap" and version == "3.4.5":
-                nix_content += "    " + name + " = buildCustomPackage {\n"
-                nix_content += '        pname = "python_ldap";\n'
-                nix_content += '        version = "3.4.5";\n'
-                nix_content += '        format = "setuptools";\n'
-                nix_content += "        src = pkgs.fetchurl {\n"
-                nix_content += '          url = "https://files.pythonhosted.org/packages/0c/88/8d2797decc42e1c1cdd926df4f005e938b0643d0d1219c08c2b5ee8ae0c0/python_ldap-3.4.5.tar.gz";\n'
-                nix_content += (
-                    '          sha256 = "16pplmqb5wqinzy4azbafr3iiqhy65qzwbi1hmd6lb7y6wffzxmj";\n'
-                )
-                nix_content += "        };\n"
-                nix_content += "        nativeBuildInputs = with pkgs; [\n"
-                nix_content += "        pkg-config\n"
-                nix_content += "        python.pkgs.setuptools\n"
-                nix_content += "        python.pkgs.distutils\n"
-                nix_content += "        ];\n"
-                nix_content += "        buildInputs = with pkgs; [ openldap cyrus_sasl ];\n"
                 nix_content += "    };\n"
             else:
                 need_review_packages_list.append(dep)
