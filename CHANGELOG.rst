@@ -17,6 +17,15 @@ Release notes
   Prior to this change only "superusers" could see and use this feature.
   https://github.com/aboutcode-org/dejacode/issues/385
 
+- Add Dataspace FK validation on Dataspace and DejacodeUser models.
+  Assigning an object from another Dataspace will raise an error at the ``save()``
+  level.
+  Do not include the ``homepage_layout`` field on Dataspace "addition" form since the
+  Dataspace does not exist yet.
+  Display the ``homepage_layout`` field as read-only on the Dataspace and User change
+  forms when the currently logged user is not looking at his own Dataspace.
+  https://github.com/aboutcode-org/dejacode/issues/428
+
 ### Version 5.4.2
 
 - Migrate the LDAP testing from using mockldap to slapdtest.

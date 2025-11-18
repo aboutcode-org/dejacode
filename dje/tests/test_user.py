@@ -413,6 +413,34 @@ class UsersTestCase(TestCase):
         )
         self.assertContains(response, expected, html=True)
 
+    def test_user_admin_hide_dataspace_fk_on_addition(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("admin:dje_dejacodeuser_add")
+        response = self.client.get(url)
+
+        expected1 = "homepage_layout"
+        expected2 = "Homepage layout"
+        self.assertNotContains(response, expected1)
+        self.assertNotContains(response, expected2)
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected1)
+        self.assertContains(response, expected2)
+
+    def test_user_admin_dataspace_fk_read_only_when_other_dataspace(self):
+        self.client.login(username=self.nexb_user.username, password="secret")
+
+        expected = "id_homepage_layout"
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.pk])
+        response = self.client.get(url)
+        self.assertNotContains(response, expected)
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected)
+
     def test_user_admin_form_scope_homepage_layout_choices(self):
         self.client.login(username=self.nexb_user.username, password="secret")
         url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
@@ -627,6 +655,7 @@ class UsersPasswordTestCase(TestCase):
 class DejaCodeUserModelTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
+        self.alternate_dataspace = Dataspace.objects.create(name="alternate")
 
     def test_user_model_queryset_manager(self):
         active = create_user("active", self.dataspace)
@@ -725,3 +754,18 @@ class DejaCodeUserModelTestCase(TestCase):
             "dataspace": "nexB",
         }
         self.assertEqual(expected, user.serialize_user_data())
+
+    def test_user_model_foreign_key_validation(self):
+        layout_dataspace = create("CardLayout", self.dataspace)
+        layout_alternate = create("CardLayout", self.alternate_dataspace)
+
+        expected_message = 'has Dataspace "alternate", expected "nexB"'
+        with self.assertRaisesMessage(ValueError, expected_message):
+            create_user("active", self.dataspace, homepage_layout=layout_alternate)
+
+        user = create_user("active", self.dataspace, homepage_layout=layout_dataspace)
+        self.assertTrue(user.id)
+
+        with self.assertRaisesMessage(ValueError, expected_message):
+            user.homepage_layout = layout_alternate
+            user.save()

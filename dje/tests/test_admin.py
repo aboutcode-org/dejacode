@@ -188,6 +188,35 @@ class DataspacedModelAdminTestCase(TestCase):
         response = self.client.post(url, data, follow=True)
         self.assertContains(response, "was changed successfully.")
 
+    def test_dataspace_admin_changeform_hide_dataspace_fk_on_addition(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        expected1 = "homepage_layout"
+        expected2 = "Homepage layout"
+
+        url = reverse("admin:dje_dataspace_add")
+        response = self.client.get(url)
+        self.assertNotContains(response, expected1)
+        self.assertNotContains(response, expected2)
+
+        url = reverse("admin:dje_dataspace_change", args=[self.other_dataspace.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected1)
+        self.assertContains(response, expected2)
+
+    def test_dataspace_admin_changeform_dataspace_fk_read_only_when_other_dataspace(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        expected = "configuration-0-homepage_layout"
+
+        url = reverse("admin:dje_dataspace_change", args=[self.other_dataspace.pk])
+        response = self.client.get(url)
+        self.assertNotContains(response, expected)
+
+        url = reverse("admin:dje_dataspace_change", args=[self.dataspace.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected)
+
     def test_dataspace_admin_changelist_missing_in_filter_availability(self):
         # MissingInFilter is only available to superusers
         url = reverse("admin:organization_owner_changelist")
