@@ -428,6 +428,19 @@ class UsersTestCase(TestCase):
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
 
+    def test_user_admin_dataspace_fk_read_only_when_other_dataspace(self):
+        self.client.login(username=self.nexb_user.username, password="secret")
+
+        expected = "id_homepage_layout"
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.pk])
+        response = self.client.get(url)
+        self.assertNotContains(response, expected)
+
+        url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
+        response = self.client.get(url)
+        self.assertContains(response, expected)
+
     def test_user_admin_form_scope_homepage_layout_choices(self):
         self.client.login(username=self.nexb_user.username, password="secret")
         url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
