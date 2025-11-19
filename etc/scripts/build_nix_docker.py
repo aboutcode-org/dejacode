@@ -93,6 +93,25 @@ def read_pyproject_toml():
     return pyproject_data
 
 
+def extract_python_version_from_pyproject():
+    """Extract Python version from pyproject.toml and return major.minor"""
+    pyproject_data = read_pyproject_toml()
+    requires_python = pyproject_data["project"].get("requires-python", "")
+
+    if requires_python:
+        import re
+
+        # Match any version pattern: 2.7, 3.8, 3.13, 4.0, etc.
+        version_match = re.search(r"(\d+)\.(\d+)", requires_python)
+        if version_match:
+            major = version_match.group(1)
+            minor = version_match.group(2)
+            return f"{major}.{minor}"
+
+    # Default to current Python version if not specified
+    return f"{sys.version_info.major}.{sys.version_info.minor}"
+
+
 def extract_project_meta(pyproject_data):
     # Extract project metadata from pyproject.toml data.
     project_data = pyproject_data["project"]
@@ -102,8 +121,26 @@ def extract_project_meta(pyproject_data):
     authors = project_data.get("authors")
     author_names = [author.get("name", "") for author in authors if "name" in author]
     author_str = ", ".join(author_names)
+    requires_python = project_data.get("requires-python", "")
+    # Current system's python version
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
 
-    meta_dict = {"name": name, "version": version, "description": description, "author": author_str}
+    if requires_python:
+        import re
+
+        version_match = re.search(r"(\d+)(?:\.(\d+))?", requires_python)
+        if version_match:
+            major = version_match.group(1)
+            minor = version_match.group(2) if version_match.group(2) else "0"
+            python_version = f"{major}.{minor}"
+
+    meta_dict = {
+        "name": name,
+        "version": version,
+        "description": description,
+        "author": author_str,
+        "requires_python": python_version,
+    }
 
     return meta_dict
 
@@ -131,15 +168,15 @@ def extract_project_dependencies(pyproject_data):
     return dependencies_list
 
 
-def extract_tags_from_url(url):
+def extract_tags_from_url(url, major, minor):
     """Extract tags from wheel URL"""
     tags = set()
 
     # Python version tags
-    if "cp313" in url:
-        tags.add("cp313")
-    if "py3" in url:
-        tags.add("py3")
+    if f"py{major}" in url:
+        tags.add(f"py{major}")
+    if f"cp{major}{minor}" in url:
+        tags.add(f"cp{major}{minor}")
 
     # Platform tags
     if "manylinux" in url:
@@ -154,20 +191,20 @@ def extract_tags_from_url(url):
     return tags
 
 
-def is_compatible_wheel(url):
+def is_compatible_wheel(url, python_version):
     """Check if wheel is compatible using tag matching"""
-    wheel_tags = extract_tags_from_url(url)
+    major, minor = python_version.split(".")
+    wheel_tags = extract_tags_from_url(url, major, minor)
 
-    # Define compatible tag combinations
-    compatible_python = {"cp313", "py3"}
-    # Architecture-free or linux
-    compatible_platforms = {"manylinux", "none", "any", "x86_64"}
+    # Check Python compatibility
+    has_required_python = any(tag in wheel_tags for tag in [f"py{major}", f"cp{major}{minor}"])
 
-    # Check if wheel has required python version AND compatible platform
-    has_required_python = not wheel_tags.isdisjoint(compatible_python)
-    has_compatible_platform = not wheel_tags.isdisjoint(compatible_platforms)
+    # Check platform
+    has_allowed_platform = ("any" in wheel_tags or "x86_64" in wheel_tags) and (
+        "manylinux" in wheel_tags or "none" in wheel_tags
+    )
 
-    return has_required_python and has_compatible_platform
+    return has_required_python and has_allowed_platform
 
 
 def create_defualt_nix(dependencies_list, meta_dict):
@@ -210,6 +247,7 @@ let
 """
     need_review_packages_list = []
     deps_size = len(dependencies_list)
+    python_version = meta_dict["requires_python"]
     for idx, dep in enumerate(dependencies_list):
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
@@ -257,10 +295,11 @@ let
                 url_section = data.get("urls", [])
                 build_from_src = True
                 package_added = False
+
                 for component in url_section:
                     if component.get("packagetype") == "bdist_wheel":
                         whl_url = component.get("url")
-                        if not is_compatible_wheel(whl_url):
+                        if not is_compatible_wheel(whl_url, python_version):
                             continue
                         whl_sha256 = get_sha256_hash(whl_url)
                         nix_content += "    " + name + " = buildCustomPackage {\n"
@@ -362,12 +401,20 @@ let
         name = dep["name"]
         nix_content += "      " + name + "\n"
 
-    nix_content += """
+    nix_content += (
+        """
     ];
 
     meta = with pkgs.lib; {
-      description = "Automate open source license compliance and ensure supply chain integrity";
-      license = "AGPL-3.0-only";
+      description =\""""
+        + meta_dict.get(
+            "description",
+            "Automate open source license compliance and ensure supply chain integrity.",
+        )
+        + """\";
+      license = \""""
+        + meta_dict.get("license", "AGPL-3.0-only")
+        + """\";
       maintainers = ["AboutCode.org"];
       platforms = platforms.linux;
     };
@@ -382,6 +429,7 @@ in
   default = pythonApp;
 }
 """
+    )
     return nix_content, need_review_packages_list
 
 
@@ -493,6 +541,14 @@ def main():
     # Parse arguments
     args = parser.parse_args()
 
+    # No argument is provided
+    if len(sys.argv) == 1 and Path("default.nix").exists():
+        print("Info: 'default.nix' exists and no arguments provided.")
+        print("Options:")
+        print("  --generate  Re-generate default.nix")
+        print("  --test      Test build with existing default.nix")
+        sys.exit(0)
+
     if args.generate or not Path("default.nix").exists():
         # Check if "nix-prefetch-url" is available
         if not shutil.which("nix-prefetch-url"):
@@ -502,6 +558,7 @@ def main():
         print("Generating default.nix")
         pyproject_data = read_pyproject_toml()
         meta_dict = extract_project_meta(pyproject_data)
+
         dependencies_list = extract_project_dependencies(pyproject_data)
         defualt_nix_content, need_review = create_defualt_nix(dependencies_list, meta_dict)
         with open("default.nix", "w") as file:
