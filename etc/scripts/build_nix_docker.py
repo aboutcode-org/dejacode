@@ -92,6 +92,7 @@ def read_pyproject_toml():
 
     return pyproject_data
 
+
 def extract_project_meta(pyproject_data):
     # Extract project metadata from pyproject.toml data.
     project_data = pyproject_data["project"]
@@ -194,13 +195,16 @@ def create_defualt_nix(dependencies_list, meta_dict):
     else:
         python_use = f"python{py_version_major}{py_version_minor}"
     # Create a default.nix
-    nix_content = """
+    nix_content = (
+        """
 {
   pkgs ? import <nixpkgs> { },
 }:
 
 let
-  python = pkgs.""" + python_use + """;
+  python = pkgs."""
+        + python_use
+        + """;
 
   # Helper function to create packages with specific versions and disabled tests
   buildCustomPackage = { pname, version, format ? "wheel", src, ... }@attrs:
@@ -214,6 +218,14 @@ let
             python.pkgs.distutils
           ];
           buildInputs = with pkgs; [ openldap cyrus_sasl ];
+        };
+        psycopg = {
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+          buildInputs = with pkgs; [
+            postgresql
+          ];
         };
       };
 
@@ -230,6 +242,7 @@ let
 
   pythonOverlay = self: super: {
 """
+    )
     need_review_packages_list = []
     deps_size = len(dependencies_list)
     for idx, dep in enumerate(dependencies_list):
@@ -366,6 +379,8 @@ let
       setuptools
       wheel
       pip
+      pkgs.pkg-config
+      pkgs.makeWrapper
     ];
 
     # Add PostgreSQL to buildInputs to ensure libpq is available at runtime
@@ -373,10 +388,21 @@ let
       postgresql
     ];
 
-    # This wrapper ensures the PostgreSQL libraries are available at runtime
-    makeWrapperArgs = [
-      "--set LD_LIBRARY_PATH ${pkgs.postgresql.lib}/lib"
-    ];
+    # Ensure proper runtime setup.
+    postInstall = ''
+      # Create source directory like RPM does (for source access)
+      mkdir -p $out/src
+      cp -r ${./.}/* $out/src/ 2>/dev/null || true
+
+      # Remove build artifacts from source copy
+      rm -rf $out/src/dist $out/src/build $out/src/result $out/src/default.nix 2>/dev/null || true
+
+      # Wrap the dejacode executable to set up the runtime environment
+      wrapProgram $out/bin/dejacode \
+          --set PYTHONPATH "$out/src:$out/lib/python*/site-packages" \
+          --set LD_LIBRARY_PATH "${pkgs.postgresql.lib}/lib:$LD_LIBRARY_PATH" \
+          --run "cd $out/src"
+    '';
 
     propagatedBuildInputs = with pythonWithOverlay.pkgs; [
 """
