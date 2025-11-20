@@ -92,26 +92,6 @@ def read_pyproject_toml():
 
     return pyproject_data
 
-
-def extract_python_version_from_pyproject():
-    """Extract Python version from pyproject.toml and return major.minor"""
-    pyproject_data = read_pyproject_toml()
-    requires_python = pyproject_data["project"].get("requires-python", "")
-
-    if requires_python:
-        import re
-
-        # Match any version pattern: 2.7, 3.8, 3.13, 4.0, etc.
-        version_match = re.search(r"(\d+)\.(\d+)", requires_python)
-        if version_match:
-            major = version_match.group(1)
-            minor = version_match.group(2)
-            return f"{major}.{minor}"
-
-    # Default to current Python version if not specified
-    return f"{sys.version_info.major}.{sys.version_info.minor}"
-
-
 def extract_project_meta(pyproject_data):
     # Extract project metadata from pyproject.toml data.
     project_data = pyproject_data["project"]
@@ -191,9 +171,8 @@ def extract_tags_from_url(url, major, minor):
     return tags
 
 
-def is_compatible_wheel(url, python_version):
+def is_compatible_wheel(url, major, minor):
     """Check if wheel is compatible using tag matching"""
-    major, minor = python_version.split(".")
     wheel_tags = extract_tags_from_url(url, major, minor)
 
     # Check Python compatibility
@@ -208,6 +187,12 @@ def is_compatible_wheel(url, python_version):
 
 
 def create_defualt_nix(dependencies_list, meta_dict):
+    python_version = meta_dict["requires_python"]
+    py_version_major, py_version_minor = python_version.split(".")
+    if py_version_minor == "0":
+        python_use = f"python{py_version_major}"
+    else:
+        python_use = f"python{py_version_major}{py_version_minor}"
     # Create a default.nix
     nix_content = """
 {
@@ -215,7 +200,7 @@ def create_defualt_nix(dependencies_list, meta_dict):
 }:
 
 let
-  python = pkgs.python313;
+  python = pkgs.""" + python_use + """;
 
   # Helper function to create packages with specific versions and disabled tests
   buildCustomPackage = { pname, version, format ? "wheel", src, ... }@attrs:
@@ -247,7 +232,6 @@ let
 """
     need_review_packages_list = []
     deps_size = len(dependencies_list)
-    python_version = meta_dict["requires_python"]
     for idx, dep in enumerate(dependencies_list):
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
@@ -299,7 +283,7 @@ let
                 for component in url_section:
                     if component.get("packagetype") == "bdist_wheel":
                         whl_url = component.get("url")
-                        if not is_compatible_wheel(whl_url, python_version):
+                        if not is_compatible_wheel(whl_url, py_version_major, py_version_minor):
                             continue
                         whl_sha256 = get_sha256_hash(whl_url)
                         nix_content += "    " + name + " = buildCustomPackage {\n"
