@@ -163,6 +163,7 @@ class ScanCodeIO(BaseService):
         logger.debug(f"{self.label}: refresh scan reset_url={reset_url}")
         data = {
             "keep_input": True,
+            "keep_webhook": True,
             "restore_pipelines": True,
             "execute_now": True,
         }
