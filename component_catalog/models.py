@@ -2506,9 +2506,16 @@ class Package(
         if download_url and not purldb_data:
             package_data = collect_package_data(download_url)
 
-        if sha1 := package_data.get("sha1"):
-            if sha1_match := scoped_packages_qs.filter(sha1=sha1):
-                package_link = sha1_match[0].get_absolute_link()
+        # Check for existing package by hash fields with a single database query
+        hash_fields = ["sha512", "sha256", "sha1", "md5"]
+        hash_filters = models.Q()
+        for hash_field in hash_fields:
+            if hash_value := package_data.get(hash_field):
+                hash_filters |= models.Q(**{hash_field: hash_value})
+
+        if hash_filters:
+            if package_match := scoped_packages_qs.filter(hash_filters).first():
+                package_link = package_match.get_absolute_link()
                 raise PackageAlreadyExistsWarning(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
@@ -2527,10 +2534,10 @@ class Package(
         """
         Return the PurlDB entries that correspond to this Package instance.
 
-        Matching on the following fields order:
-        - Package URL
-        - SHA1
-        - Download URL
+        Matching is performed in order of decreasing accuracy:
+        1. Hash - Most accurate, matches exact file content
+        2. Download URL - High accuracy, matches specific package source
+        3. Package URL - Broadest match, may return multiple versions/variants
 
         A `max_request_call` integer can be provided to limit the number of
         HTTP requests made to the PackageURL server.
@@ -2542,12 +2549,16 @@ class Package(
         purldb_entries = []
 
         package_url = self.package_url
-        if package_url:
-            payloads.append({"purl": package_url})
+        if self.sha256:
+            payloads.append({"sha256": self.sha256})
         if self.sha1:
             payloads.append({"sha1": self.sha1})
+        if self.md5:
+            payloads.append({"md5": self.md5})
         if self.download_url:
             payloads.append({"download_url": self.download_url})
+        if package_url:
+            payloads.append({"purl": package_url})
 
         purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
