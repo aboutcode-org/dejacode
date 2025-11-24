@@ -687,6 +687,7 @@ class PackageSerializer(
             "parties",
             "datasource_id",
             "file_references",
+            "package_content",
             "external_references",
             "created_date",
             "last_modified_date",

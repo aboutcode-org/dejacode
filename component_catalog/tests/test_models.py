@@ -1366,6 +1366,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "file_references",
                     "other_license_expression",
                     "parties",
+                    "package_content",
                 ],
             ),
         )
