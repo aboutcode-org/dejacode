@@ -90,3 +90,17 @@ def pick_purldb_entry(purldb_entries, purl=None):
         matches = [entry for entry in purldb_entries if entry.get("purl") == purl]
         if len(matches) == 1:
             return matches[0]
+
+
+def pick_source_package(purldb_entries):
+    """Pick a source package from a list of PurlDB entries."""
+    if not purldb_entries:
+        return
+
+    if len(purldb_entries) == 1:
+        return purldb_entries[0]
+
+    for entry in purldb_entries:
+        package_content = entry.get("package_content")
+        if package_content and package_content.lower() == "source_archive":
+            return entry

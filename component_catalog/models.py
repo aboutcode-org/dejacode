@@ -59,6 +59,7 @@ from dejacode_toolkit.download import DataCollectionException
 from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
+from dejacode_toolkit.purldb import pick_source_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import urn
 from dje.copier import post_copy
@@ -2535,7 +2536,7 @@ class Package(
             package_for_match = cls(download_url=download_url)
             package_for_match.set_package_url(package_url)
             purldb_entries = package_for_match.get_purldb_entries(user)
-            # Look for one ith the same exact purl in that case
+            # Look for one with the same exact purl in that case
             if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
                 # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
                 if release_date := purldb_data.get("release_date"):
@@ -2597,7 +2598,7 @@ class Package(
         if self.download_url:
             payloads.append({"download_url": self.download_url})
         if package_url:
-            payloads.append({"purl": package_url, "sort": "package_content"})
+            payloads.append({"purl": package_url})
 
         purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
@@ -2628,6 +2629,8 @@ class Package(
 
         - Retrieves matching entries from PurlDB using the given user.
         - If exactly one match is found, its data is used directly.
+        - If multiple entries are found, leverage the package_content value when
+          available to select a "source" package.
         - If multiple entries are found, only values that are non-empty and
           common across all entries are merged and used to update the Package.
         """
@@ -2638,6 +2641,11 @@ class Package(
         purldb_entries_count = len(purldb_entries)
         if purldb_entries_count == 1:
             package_data = purldb_entries[0]
+        elif source_package := pick_source_package(purldb_entries):
+            package_data = source_package
+            package_data["package_content"] = Package.get_package_content_value_from_label(
+                package_data["package_content"]
+            )
         else:
             package_data = merge_common_non_empty_values(purldb_entries)
 
@@ -2678,6 +2686,12 @@ class Package(
             override=False,
             override_unknown=True,
         )
+
+        if updated_fields:
+            msg = f"Automatically updated {', '.join(updated_fields)} from PurlDB."
+            logger.debug(f"PurlDB: {msg}")
+            History.log_change(user, self, message=msg)
+
         return updated_fields
 
     def update_from_scan(self, user, update_products=False):
