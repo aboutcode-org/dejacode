@@ -2506,30 +2506,16 @@ class Package(
         if download_url and not purldb_data:
             package_data = collect_package_data(download_url)
 
-        if sha512 := package_data.get("sha512"):
-            if sha512_match := scoped_packages_qs.filter(sha512=sha512):
-                package_link = sha512_match[0].get_absolute_link()
-                raise PackageAlreadyExistsWarning(
-                    f"{url} already exists in your Dataspace as {package_link}"
-                )
+        # Check for existing package by hash fields with a single database query
+        hash_fields = ["sha512", "sha256", "sha1", "md5"]
+        hash_filters = models.Q()
+        for hash_field in hash_fields:
+            if hash_value := package_data.get(hash_field):
+                hash_filters |= models.Q(**{hash_field: hash_value})
 
-        if sha256 := package_data.get("sha256"):
-            if sha256_match := scoped_packages_qs.filter(sha256=sha256):
-                package_link = sha256_match[0].get_absolute_link()
-                raise PackageAlreadyExistsWarning(
-                    f"{url} already exists in your Dataspace as {package_link}"
-                )
-
-        if sha1 := package_data.get("sha1"):
-            if sha1_match := scoped_packages_qs.filter(sha1=sha1):
-                package_link = sha1_match[0].get_absolute_link()
-                raise PackageAlreadyExistsWarning(
-                    f"{url} already exists in your Dataspace as {package_link}"
-                )
-
-        if md5 := package_data.get("md5"):
-            if md5_match := scoped_packages_qs.filter(md5=md5):
-                package_link = md5_match[0].get_absolute_link()
+        if hash_filters:
+            if package_match := scoped_packages_qs.filter(hash_filters).first():
+                package_link = package_match.get_absolute_link()
                 raise PackageAlreadyExistsWarning(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
