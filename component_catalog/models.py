@@ -2534,10 +2534,10 @@ class Package(
         """
         Return the PurlDB entries that correspond to this Package instance.
 
-        Matching on the following fields order:
-        - Hash
-        - Download URL
-        - Package URL
+        Matching is performed in order of decreasing accuracy:
+        1. Hash - Most accurate, matches exact file content
+        2. Download URL - High accuracy, matches specific package source
+        3. Package URL - Broadest match, may return multiple versions/variants
 
         A `max_request_call` integer can be provided to limit the number of
         HTTP requests made to the PackageURL server.
