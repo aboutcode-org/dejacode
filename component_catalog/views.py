@@ -1140,6 +1140,7 @@ class PackageDetailsView(
                 "parties",
                 "datasource_id",
                 "file_references",
+                "package_content",
             ],
         },
         "components": {
@@ -1293,6 +1294,7 @@ class PackageDetailsView(
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),
+            TabField("package_content"),
         ]
 
         fields = self.get_tab_fields(tab_fields)
