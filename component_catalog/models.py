@@ -1653,6 +1653,44 @@ class ComponentKeyword(DataspacedModel):
         return self.label
 
 
+class PackageContentFieldMixin(models.Model):
+    """
+    Field extracted from the `purldb.packagedb.models.Package` model.
+    It need to stay aligned with its upstream PurlDB implementation.
+    """
+
+    class PackageContentType(models.IntegerChoices):
+        CURATION = 1, "curation"
+        PATCH = 2, "patch"
+        SOURCE_REPO = 3, "source_repo"
+        SOURCE_ARCHIVE = 4, "source_archive"
+        BINARY = 5, "binary"
+        TEST = 6, "test"
+        DOC = 7, "doc"
+
+    package_content = models.IntegerField(
+        null=True,
+        blank=True,
+        choices=PackageContentType.choices,
+        help_text=_(
+            "Content of this Package as one of: {}".format(", ".join(PackageContentType.labels))
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_package_content_value_from_label(cls, label):
+        """Convert a package_content string label to its integer value."""
+        if not label:
+            return None
+        try:
+            return cls.PackageContentType[label.upper()].value
+        except (KeyError, AttributeError):
+            return None
+
+
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
@@ -1792,6 +1830,7 @@ class Package(
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
+    PackageContentFieldMixin,
     DataspacedModel,
 ):
     filename = models.CharField(
@@ -2558,7 +2597,7 @@ class Package(
         if self.download_url:
             payloads.append({"download_url": self.download_url})
         if package_url:
-            payloads.append({"purl": package_url})
+            payloads.append({"purl": package_url, "sort": "package_content"})
 
         purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
