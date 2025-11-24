@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
+from django.db import transaction
 from django.db.models import Count
 from django.db.models import Prefetch
 from django.http import FileResponse
@@ -1530,6 +1531,15 @@ def get_scan_progress_htmx_view(request, dataspace, uuid):
     return render(request, template, context)
 
 
+# Non-atomic mode ensures Package instances are committed to the database immediately
+# rather than being held in a transaction. This is critical when DEJACODE_ASYNC=False
+# (eager/synchronous mode), where the `send_scan_notification` callback from
+# ScanCode.io executes synchronously and must be able to query the newly created
+# Packages from the database.
+# Note: Using `transaction.on_commit()` would delay all scans until the entire
+# package set is created, whereas this approach starts scans immediately for faster
+# results.
+@transaction.non_atomic_requests
 @login_required
 @require_POST
 def package_create_ajax_view(request):
@@ -2394,7 +2404,8 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
     def scan_status_fields(self, scan):
         package = self.object
         scan_status_fields = []
-        scan_run = scan.get("runs", [{}])[-1]
+        scan_runs = scan.get("runs", None) or [{}]
+        scan_run = scan_runs[-1]
         status = scan_run.get("status")
         scan_uuid = scan.get("uuid")
 
