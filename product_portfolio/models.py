@@ -512,6 +512,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
                 existing_relation = other_assigned_versions[0]
                 other_version_object = getattr(existing_relation, object_model_name)
                 existing_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                # Update the weighted_risk_score from the new related_object
+                existing_relation.refresh_from_db()
+                existing_relation.update_weighted_risk_score()
                 message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
                 History.log_change(user, self, message)
                 return "updated", existing_relation
@@ -864,9 +867,9 @@ class ProductRelationshipMixin(
         weighted_risk_score = float(risk_score) * float(exposure_factor)
         return weighted_risk_score
 
-    def set_weighted_risk_score(self):
+    def set_weighted_risk_score(self, save=False):
         """
-        Update the `weighted_risk_score` for the current instance.
+        Set the `weighted_risk_score` for the current instance.
 
         The method computes the weighted risk score using `compute_weighted_risk_score()`
         and assigns the computed value to the `weighted_risk_score` field if it differs
@@ -877,6 +880,13 @@ class ProductRelationshipMixin(
         weighted_risk_score = self.compute_weighted_risk_score()
         if weighted_risk_score != self.weighted_risk_score:
             self.weighted_risk_score = weighted_risk_score
+
+    def update_weighted_risk_score(self):
+        """Update the `weighted_risk_score` for the current instance."""
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
+            self.raw_update(weighted_risk_score=weighted_risk_score)
 
     def as_spdx(self):
         """

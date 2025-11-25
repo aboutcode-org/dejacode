@@ -410,6 +410,21 @@ class ProductPortfolioModelsTestCase(TestCase):
         expected_message = 'Updated package "pkg:deb/debian/curl@1.0" to "pkg:deb/debian/curl@2.0"'
         self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
 
+    def test_product_model_assign_object_replace_version_package_update_vulnerability_scores(self):
+        self.assertEqual(0, self.product1.get_vulnerable_productpackages().count())
+        package1 = make_package(self.dataspace, name="a", version="1.0", is_vulnerable=True)
+        p1_p1 = make_product_package(self.product1, package1)
+        p1_p1.raw_update(weighted_risk_score=5.0)
+        self.assertTrue(self.product1.productpackages.vulnerable().exists())
+
+        package2 = make_package(self.dataspace, name="a", version="2.0")
+        status, p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        self.assertEqual("updated", status)
+
+        p1_p2.refresh_from_db()
+        self.assertIsNone(p1_p2.weighted_risk_score)
+        self.assertFalse(self.product1.productpackages.vulnerable().exists())
+
     def test_product_model_find_assigned_other_versions_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
         component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
