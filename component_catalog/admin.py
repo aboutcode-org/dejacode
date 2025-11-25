@@ -884,6 +884,7 @@ class PackageAdmin(
                     "parties",
                     "datasource_id",
                     "file_references",
+                    "package_content",
                 )
             },
         ),

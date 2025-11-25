@@ -339,6 +339,7 @@ class PackageForm(
             "version",
             "qualifiers",
             "subpath",
+            "package_content",
             "collect_data",
         ]
         widgets = {
@@ -407,7 +408,7 @@ class PackageForm(
                 HTML("<hr>"),
                 Group("description", "keywords"),
                 Group("primary_language", "cpe"),
-                Group("size", "release_date"),
+                Group("package_content", "size", "release_date"),
                 Group("dependencies", "notes"),
                 HTML("<hr>"),
                 Group("homepage_url", "code_view_url"),
@@ -1183,6 +1184,7 @@ class PackageMassUpdateForm(
             "version",
             "qualifiers",
             "subpath",
+            "package_content",
         ]
 
 

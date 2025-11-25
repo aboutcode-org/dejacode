@@ -30,6 +30,7 @@
     "sha1": "",
     "sha256": "",
     "sha512": "",
+    "package_content": null,
     "filename": "systemu-2.5.2.gem",
     "download_url": "https://s3.amazonaws.com/production.s3.rubygems.org/gems/systemu-2.5.2.gem",
     "size": null,
