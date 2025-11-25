@@ -122,7 +122,7 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
             scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
 
 
-@job("default", timeout=3600)
+@job("default", timeout=7200)
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
     from vulnerabilities.fetch import fetch_from_vulnerablecode
@@ -138,5 +138,5 @@ def update_vulnerabilities():
             batch_size=50,
             update=True,
             timeout=60,
-            log_func=logger.info,
+            log_func=logger.debug,
         )

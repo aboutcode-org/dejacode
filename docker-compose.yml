@@ -66,7 +66,7 @@ services:
 
   scheduler:
     build: .
-    command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs --logging-level DEBUG"
+    command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs"
     env_file:
       - docker.env
     volumes:
