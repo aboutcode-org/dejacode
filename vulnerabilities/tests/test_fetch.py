@@ -52,6 +52,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
             "+ Created 2 vulnerabilities"
             "+ Updated 0 vulnerabilities"
             "Completed in 0 seconds"
+            "Dataspace.vulnerabilities_updated_at updated"
         )
         self.assertEqual(expected, buffer.getvalue())
         self.dataspace.refresh_from_db()
