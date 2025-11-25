@@ -10,7 +10,6 @@ from rq import cron
 
 from dje.tasks import update_vulnerabilities
 
-
 cron.register(
     func=update_vulnerabilities,
     queue_name="default",

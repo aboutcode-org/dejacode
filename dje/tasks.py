@@ -133,4 +133,10 @@ def update_vulnerabilities():
 
     for dataspace in dataspace_qs:
         logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
-        fetch_from_vulnerablecode(dataspace, batch_size=50, update=True, timeout=60)
+        fetch_from_vulnerablecode(
+            dataspace,
+            batch_size=50,
+            update=True,
+            timeout=60,
+            log_func=logger.info,
+        )
