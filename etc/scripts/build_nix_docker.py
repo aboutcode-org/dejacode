@@ -188,6 +188,7 @@ def is_compatible_wheel(url, major, minor):
 
 
 def create_defualt_nix(dependencies_list, meta_dict):
+    """Generate the default.nix"""
     python_version = meta_dict["requires_python"]
     py_version_major, py_version_minor = python_version.split(".")
     if py_version_minor == "0":
@@ -219,14 +220,6 @@ let
           ];
           buildInputs = with pkgs; [ openldap cyrus_sasl ];
         };
-        psycopg = {
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-          ];
-          buildInputs = with pkgs; [
-            postgresql
-          ];
-        };
       };
 
       # Get the special build inputs for this package, or empty if none
@@ -249,8 +242,7 @@ let
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
         version = dep["version"]
-        # Handle 'django_notifications_patched', 'django-rest-hooks' and
-        # 'python_ldap' separately
+        # Handle 'django_notifications_patched' and 'django-rest-hooks' seperately
         if name == "django-rest-hooks" or name == "django_notifications_patched":
             if name == "django-rest-hooks" and version == "1.6.1":
                 nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
@@ -380,22 +372,21 @@ let
       wheel
       pip
       pkgs.pkg-config
-      pkgs.makeWrapper
-    ];
-
-    # Add PostgreSQL to buildInputs to ensure libpq is available at runtime
-    buildInputs = with pkgs; [
-      postgresql
     ];
 
     # Ensure proper runtime setup.
     postInstall = ''
-      # Create source directory like RPM does (for source access)
+      # Create source directory
       mkdir -p $out/src
-      cp -r ${./.}/* $out/src/ 2>/dev/null || true
+
+      # Copy source files, dereferencing symlinks to avoid broken links
+      cp -rL ${./.}/* $out/src/ 2>/dev/null || true
 
       # Remove build artifacts from source copy
       rm -rf $out/src/dist $out/src/build $out/src/result $out/src/default.nix 2>/dev/null || true
+
+      # Remove any bin directories that might contain symlinks
+      rm -rf $out/src/bin 2>/dev/null || true
 
       # Wrap the dejacode executable to set up the runtime environment
       wrapProgram $out/bin/dejacode \
@@ -405,6 +396,7 @@ let
     '';
 
     propagatedBuildInputs = with pythonWithOverlay.pkgs; [
+      psycopg2 # Add psycopg2 to fix ModuleNotFoundError issue in Django 5.2.7
 """
 
     for dep in dependencies_list:
