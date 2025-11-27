@@ -42,7 +42,7 @@ dependencies = [
     # Django apps
     "django-crispy-forms==2.5",
     "crispy_bootstrap5==2025.6",
-    "django-grappelli==4.0.2",
+    "django-grappelli==4.0.3",
     "django-filter==25.2",
     "django-registration==3.4",
     "confusable_homoglyphs==3.3.1",
