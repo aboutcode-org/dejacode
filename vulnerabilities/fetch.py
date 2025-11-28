@@ -58,6 +58,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
 
     dataspace.vulnerabilities_updated_at = timezone.now()
     dataspace.save(update_fields=["vulnerabilities_updated_at"])
+    log_func("Dataspace.vulnerabilities_updated_at updated")
 
 
 def fetch_for_packages(
