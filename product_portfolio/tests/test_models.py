@@ -561,6 +561,23 @@ class ProductPortfolioModelsTestCase(TestCase):
         pp1.refresh_from_db()
         self.assertEqual("apache-2.0", pp1.license_expression)
 
+    def test_product_model_affected_by_vulnerabilities(self):
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=10.0)
+        vulnerability2 = make_vulnerability(
+            self.dataspace, affecting=[self.product1], risk_score=1.0
+        )
+
+        affected_by = self.product1.affected_by_vulnerabilities.all()
+        self.assertQuerySetEqual([vulnerability2], affected_by)
+        self.product1.refresh_from_db()
+        # self.assertEqual(1.0, self.product1.risk_score)
+
+        vulnerability1.add_affected(self.product1)
+        affected_by = self.product1.affected_by_vulnerabilities.order_by("id")
+        self.assertQuerySetEqual([vulnerability1, vulnerability2], affected_by)
+        self.product1.refresh_from_db()
+        # self.assertEqual(10.0, self.product1.risk_score)
+
     def test_product_model_get_vulnerability_qs(self):
         package1 = make_package(self.dataspace)
         package2 = make_package(self.dataspace)

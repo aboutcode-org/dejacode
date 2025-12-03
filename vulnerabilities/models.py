@@ -60,7 +60,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     A software vulnerability with a unique identifier and alternate aliases.
 
     Adapted from the VulnerableCode models at
-    https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py#L164
+    https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py
 
     Note that this model implements the HistoryDateFieldsMixin but not the
     HistoryUserFieldsMixin as the Vulnerability records are usually created
@@ -173,11 +173,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     def add_affected(self, instances):
         """
-        Assign the ``instances`` (Package or Component) as affected to this
+        Assign the ``instances`` (Package, Component, or Product) as affected by this
         vulnerability.
         """
         from component_catalog.models import Component
         from component_catalog.models import Package
+        from product_portfolio.models import Product
 
         if not isinstance(instances, list):
             instances = [instances]
@@ -187,16 +188,23 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
                 self.add_affected_packages([instance])
             if isinstance(instance, Component):
                 self.add_affected_components([instance])
+            if isinstance(instance, Product):
+                self.add_affected_products([instance])
 
     def add_affected_packages(self, packages):
-        """Assign the ``packages`` as affected to this vulnerability."""
+        """Assign the ``packages`` as affected by this vulnerability."""
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_packages.add(*packages, through_defaults=through_defaults)
 
     def add_affected_components(self, components):
-        """Assign the ``components`` as affected to this vulnerability."""
+        """Assign the ``components`` as affected by this vulnerability."""
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_components.add(*components, through_defaults=through_defaults)
+
+    def add_affected_products(self, products):
+        """Assign the ``products`` as affected by this vulnerability."""
+        through_defaults = {"dataspace_id": self.dataspace_id}
+        self.affected_products.add(*products, through_defaults=through_defaults)
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
@@ -487,6 +495,7 @@ class AffectedByVulnerabilityMixin(models.Model):
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
 
+        # TODO: Looks like a bug....
         self.update(risk_score=vulnerability_data["risk_score"])
         if isinstance(self, Package):
             self.productpackages.update_weighted_risk_score()
