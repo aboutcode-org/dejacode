@@ -50,6 +50,8 @@ from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from vulnerabilities.fetch import fetch_for_packages
+from vulnerabilities.models import AffectedByVulnerabilityMixin
+from vulnerabilities.models import AffectedByVulnerabilityRelationship
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "
@@ -204,7 +206,13 @@ class ProductSecuredManager(DataspacedManager):
 BaseProductMixin = component_mixin_factory("product")
 
 
-class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedModel):
+class Product(
+    BaseProductMixin,
+    FieldChangesMixin,
+    KeywordsMixin,
+    AffectedByVulnerabilityMixin,
+    DataspacedModel,
+):
     license_expression = models.CharField(
         max_length=1024,
         blank=True,
@@ -276,6 +284,13 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     packages = models.ManyToManyField(
         to="component_catalog.Package",
         through="ProductPackage",
+    )
+
+    affected_by_vulnerabilities = models.ManyToManyField(
+        to="vulnerabilities.Vulnerability",
+        through="ProductAffectedByVulnerability",
+        related_name="affected_%(class)ss",
+        help_text=_("Vulnerabilities directly affecting this product."),
     )
 
     objects = ProductSecuredManager()
@@ -614,6 +629,16 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             )
 
         return vulnerability_qs
+
+
+class ProductAffectedByVulnerability(AffectedByVulnerabilityRelationship):
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        unique_together = (("product", "vulnerability"), ("dataspace", "uuid"))
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):

@@ -206,7 +206,7 @@ class ProductListView(
             )
             .annotate(
                 productinventoryitem_count=Count("productinventoryitem", distinct=True),
-                is_vulnerable=Exists(vulnerable_productpackage_qs),
+                has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
             )
             .order_by(
                 "name",
