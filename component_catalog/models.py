@@ -1478,7 +1478,7 @@ class Subcomponent(
     LicenseExpressionMixin,
     HistoryFieldsMixin,
     ComponentRelationshipMixin,
-    ParentChildRelationshipModel,
+     ParentChildRelationshipModel,
 ):
     parent = models.ForeignKey(
         to="component_catalog.Component",
