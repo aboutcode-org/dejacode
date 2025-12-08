@@ -4,21 +4,23 @@ CSAF Models
 Install the code generator
 --------------------------
 
-$ pip install 'datamodel-code-generator[http]'
+$ pip install 'datamodel-code-generator'
 
 Generate the models
 -------------------
 
 $ TARGET_PYTHON_VERSION=3.13
+
+# --use-schema-description \
+# --use-field-description \
+
 $ datamodel-codegen \
-    --input dejacode_toolkit/csaf/schema_v2.0/csaf_json_schema.json \
-    --output dejacode_toolkit/csaf/ \
-    --output-model-type pydantic_v2.BaseModel \
+    --input dejacode_toolkit/openvex/openvex_json_schema_0.2.0.json \
+    --output dejacode_toolkit/openvex/__init__.py \
+    --output-model-type dataclasses.dataclass \
     --input-file-type jsonschema \
     --target-python-version $TARGET_PYTHON_VERSION \
     --custom-file-header-path dejacode_toolkit/HEADER \
-    --use-schema-description \
-    --use-default-kwarg
+    --disable-future-imports
 
-$ rm dejacode_toolkit/csaf/cvss_v2.py dejacode_toolkit/csaf/cvss_v3.py
 $ make valid

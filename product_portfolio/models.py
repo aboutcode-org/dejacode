@@ -336,6 +336,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
     def get_export_csaf_url(self):
         return self.get_url("export_csaf")
 
+    def get_export_openvex_url(self):
+        return self.get_url("export_openvex")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)

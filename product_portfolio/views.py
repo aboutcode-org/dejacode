@@ -92,6 +92,7 @@ from dje.views import DataspacedUpdateView
 from dje.views import DataspaceScopeMixin
 from dje.views import ExportCSAFDocumentView
 from dje.views import ExportCycloneDXBOMView
+from dje.views import ExportOpenVEXView
 from dje.views import ExportSPDXDocumentView
 from dje.views import GetDataspacedObjectMixin
 from dje.views import Header
@@ -1953,6 +1954,10 @@ class ProductExportCycloneDXBOMView(BaseProductViewMixin, ExportCycloneDXBOMView
 
 
 class ProductExportCSAFDocumentView(BaseProductViewMixin, ExportCSAFDocumentView):
+    pass
+
+
+class ProductExportOpenVEXView(BaseProductViewMixin, ExportOpenVEXView):
     pass
 
 

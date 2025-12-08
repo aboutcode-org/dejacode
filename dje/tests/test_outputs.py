@@ -147,10 +147,10 @@ class OutputsTestCase(TestCase):
         bom_json = outputs.get_cyclonedx_bom_json(bom)
         self.assertIn('"bomFormat": "CycloneDX"', bom_json)
 
-    def test_outputs_get_cyclonedx_filename(self):
+    def test_outputs_get_filename(self):
         self.assertEqual(
             "dejacode_nexb_product_product1_with_space_1.0.cdx.json",
-            outputs.get_cyclonedx_filename(instance=self.product1),
+            outputs.get_filename(instance=self.product1, extension="cdx"),
         )
 
     def test_outputs_get_csaf_security_advisory(self):

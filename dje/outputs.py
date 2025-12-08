@@ -21,6 +21,7 @@ from cyclonedx.validation.json import JsonStrictValidator
 
 from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import csaf
+from dejacode_toolkit import openvex
 from dejacode_toolkit import spdx
 
 CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
@@ -190,7 +191,7 @@ def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
     return json.dumps(ordered_dict, indent=2)
 
 
-def get_cyclonedx_filename(instance, extension="cdx"):
+def get_filename(instance, extension):
     base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
     filename = f"{base_filename}_{instance}.{extension}.json"
     return safe_filename(filename)
@@ -345,6 +346,7 @@ def get_csaf_vulnerabilities(product):
     return vulnerabilities
 
 
+# Entry point!
 def get_csaf_security_advisory(product):
     security_advisory = csaf.CommonSecurityAdvisoryFramework(
         document=get_csaf_document(product),
@@ -352,3 +354,28 @@ def get_csaf_security_advisory(product):
         vulnerabilities=get_csaf_vulnerabilities(product),
     )
     return security_advisory
+
+
+def get_openvex_vulnerability(vulnerability):
+    return openvex.Vulnerability(
+        field_id=vulnerability.resource_url,
+        name=vulnerability.vulnerability_id,
+        description=vulnerability.summary,
+        aliases=vulnerability.aliases,
+    )
+
+
+def get_openvex_statements(product):
+    return []
+
+
+def get_openvex_document(product):
+    return openvex.OpenVEX(
+        field_context="https://openvex.dev/ns/v0.2.0",
+        field_id=f"OpenVEX-Document-{str(product.uuid)}",
+        author=product.dataspace.name,
+        timestamp=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f"),
+        version=1,
+        tooling=f"DejaCode-{dejacode_version}",
+        statements=get_openvex_statements(product),
+    )
