@@ -346,7 +346,6 @@ def get_csaf_vulnerabilities(product):
     return vulnerabilities
 
 
-# Entry point!
 def get_csaf_security_advisory(product):
     security_advisory = csaf.CommonSecurityAdvisoryFramework(
         document=get_csaf_document(product),
@@ -354,6 +353,10 @@ def get_csaf_security_advisory(product):
         vulnerabilities=get_csaf_vulnerabilities(product),
     )
     return security_advisory
+
+
+def get_openvex_timestamp():
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")
 
 
 def get_openvex_vulnerability(vulnerability):
@@ -365,8 +368,32 @@ def get_openvex_vulnerability(vulnerability):
     )
 
 
+def get_openvex_statement(vulnerability):
+    products = [
+        openvex.Component1(field_id=package.package_url)
+        for package in vulnerability.affected_packages.all()
+    ]
+
+    status = openvex.Status.under_investigation
+    vulnerability_analyses = vulnerability.vulnerability_analyses.all()
+    if len(vulnerability_analyses) == 1:
+        analysis = vulnerability_analyses[0]
+        print(analysis)
+
+    return openvex.Statement(
+        vulnerability=get_openvex_vulnerability(vulnerability),
+        timestamp=get_openvex_timestamp(),
+        products=products,
+        status=status,
+        # status_notes: analysis.detail
+        # justification: analysis.justification
+    )
+
+
 def get_openvex_statements(product):
-    return []
+    vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
+    statements = [get_openvex_statement(vulnerability) for vulnerability in vulnerability_qs]
+    return statements
 
 
 def get_openvex_document(product):
@@ -374,7 +401,7 @@ def get_openvex_document(product):
         field_context="https://openvex.dev/ns/v0.2.0",
         field_id=f"OpenVEX-Document-{str(product.uuid)}",
         author=product.dataspace.name,
-        timestamp=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f"),
+        timestamp=get_openvex_timestamp(),
         version=1,
         tooling=f"DejaCode-{dejacode_version}",
         statements=get_openvex_statements(product),
