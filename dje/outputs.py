@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import dataclasses
 import json
 import re
 from datetime import UTC
@@ -15,6 +14,7 @@ from datetime import datetime
 from django.http import FileResponse
 from django.http import Http404
 
+import msgspec
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
 from cyclonedx.schema import SchemaVersion
@@ -362,8 +362,8 @@ def get_openvex_timestamp():
 
 def get_openvex_vulnerability(vulnerability):
     return openvex.Vulnerability(
-        field_id=vulnerability.resource_url,
         name=vulnerability.vulnerability_id,
+        field_id=vulnerability.resource_url,
         description=vulnerability.summary,
         aliases=vulnerability.aliases,
     )
@@ -409,27 +409,8 @@ def get_openvex_document(product):
     )
 
 
-def to_json_key(field_name):
-    """
-    - field_id -> @id
-    - field_context -> @context
-    """
-    prefix = "field_"
-    if field_name.startswith(prefix):
-        return "@" + field_name.removeprefix(prefix)
-    return field_name
-
-
-def openvex_dict_factory(fields):
-    """Dict factory for dataclasses.asdict that converts field names to JSON keys."""
-    return {to_json_key(name): value for name, value in fields}
-
-
 def get_openvex_document_json(product, indent=2):
     openvex_document = get_openvex_document(product)
-    openvex_document_dict = dataclasses.asdict(
-        openvex_document,
-        dict_factory=openvex_dict_factory,
-    )
-    openvex_document_json = json.dumps(openvex_document_dict, indent=indent)
+    openvex_document_json = msgspec.json.encode(openvex_document)
+    openvex_document_json = msgspec.json.format(openvex_document_json, indent=indent)
     return openvex_document_json
