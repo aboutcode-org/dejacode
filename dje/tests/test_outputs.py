@@ -210,6 +210,7 @@ class OutputsTestCase(TestCase):
 
         self.assertJSONEqual(security_advisory_json, expected_location.read_text())
 
+    @mock.patch("dje.outputs.dejacode_version", "1000")
     def test_outputs_get_openvex_document_json(self):
         mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=UTC)
         with mock.patch("dje.outputs.datetime") as mock_datetime:

@@ -37,6 +37,9 @@ def get_attachment_response(file_content, filename, content_type):
     if not file_content or not filename:
         raise Http404
 
+    if isinstance(file_content, bytes):
+        file_content = file_content.decode("utf-8")
+
     response = FileResponse(
         file_content,
         filename=filename,
@@ -398,13 +401,14 @@ def get_openvex_statements(product):
 
 
 def get_openvex_document(product):
+    tooling = f"DejaCode-{dejacode_version}"
     return openvex.OpenVEX(
         field_context="https://openvex.dev/ns/v0.2.0",
         field_id=f"OpenVEX-Document-{str(product.uuid)}",
         author=product.dataspace.name,
         timestamp=get_openvex_timestamp(),
         version=1,
-        tooling=f"DejaCode-{dejacode_version}",
+        tooling=tooling,
         statements=get_openvex_statements(product),
     )
 
