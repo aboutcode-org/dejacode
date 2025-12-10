@@ -357,7 +357,7 @@ def get_csaf_security_advisory(product):
 
 
 def get_openvex_timestamp():
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")
+    return datetime.now(UTC).isoformat()
 
 
 def get_openvex_vulnerability(vulnerability):

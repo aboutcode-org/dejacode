@@ -2,7 +2,7 @@
   "@context": "https://openvex.dev/ns/v0.2.0",
   "@id": "OpenVEX-Document-b2561aa6-1092-44ef-afe2-b0b331514bab",
   "author": "nexB",
-  "timestamp": "2024-12-19T12:00:00.000000",
+  "timestamp": "2024-12-19T12:00:00+00:00",
   "version": 1,
   "statements": [
     {
@@ -15,7 +15,7 @@
         ]
       },
       "status": "under_investigation",
-      "timestamp": "2024-12-19T12:00:00.000000",
+      "timestamp": "2024-12-19T12:00:00+00:00",
       "products": [
         {
           "@id": "pkg:type/name@1.0"
@@ -30,7 +30,7 @@
         "aliases": []
       },
       "status": "under_investigation",
-      "timestamp": "2024-12-19T12:00:00.000000",
+      "timestamp": "2024-12-19T12:00:00+00:00",
       "products": [
         {
           "@id": "pkg:type/name@2.0"
@@ -45,7 +45,7 @@
         "aliases": []
       },
       "status": "under_investigation",
-      "timestamp": "2024-12-19T12:00:00.000000",
+      "timestamp": "2024-12-19T12:00:00+00:00",
       "products": [
         {
           "@id": "pkg:type/name@3.0"
@@ -53,5 +53,5 @@
       ]
     }
   ],
-  "tooling": "DejaCode-v5.4.1-20-g0f470c0"
+  "tooling": "DejaCode-v5.4.1-21-g9b9925b"
 }
