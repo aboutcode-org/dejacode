@@ -2441,11 +2441,8 @@ class ExportOpenVEXView(
     BaseDetailView,
 ):
     def get(self, request, *args, **kwargs):
-        import json
-
         product = self.get_object()
-        openvex_document = outputs.get_openvex_document(product)
-        openvex_document_json = json.dumps(openvex_document.__dict__, indent=2)
+        openvex_document_json = outputs.get_openvex_document_json(product)
         filename = outputs.get_filename(product, extension="openvex.json")
 
         return outputs.get_attachment_response(
