@@ -359,6 +359,30 @@ def get_csaf_security_advisory(product):
     return security_advisory
 
 
+CDX_STATE_TO_OPENVEX_STATUS = {
+    "resolved": openvex.Status.fixed,
+    "resolved_with_pedigree": openvex.Status.fixed,
+    "exploitable": openvex.Status.affected,
+    "in_triage": openvex.Status.under_investigation,
+    "false_positive": openvex.Status.not_affected,
+    "not_affected": openvex.Status.not_affected,
+}
+
+
+justification_ovex = openvex.Justification
+CDX_JUSTIFICATION_TO_OPENVEX_JUSTIFICATION = {
+    "code_not_present": justification_ovex.vulnerable_code_not_present,
+    "code_not_reachable": justification_ovex.vulnerable_code_not_in_execute_path,
+    "protected_at_perimeter": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+    "protected_at_runtime": justification_ovex.inline_mitigations_already_exist,
+    "protected_by_compiler": justification_ovex.inline_mitigations_already_exist,
+    "protected_by_mitigating_control": justification_ovex.inline_mitigations_already_exist,
+    "requires_configuration": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+    "requires_dependency": justification_ovex.component_not_present,
+    "requires_environment": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+}
+
+
 def get_openvex_timestamp():
     return datetime.now(UTC).isoformat()
 
@@ -373,24 +397,42 @@ def get_openvex_vulnerability(vulnerability):
 
 
 def get_openvex_statement(vulnerability):
-    products = [
+    components = [
         openvex.Component1(field_id=package.package_url)
         for package in vulnerability.affected_packages.all()
     ]
 
-    status = openvex.Status.under_investigation
+    status = default_status = openvex.Status.under_investigation
+    status_notes = msgspec.UNSET
+    justification = msgspec.UNSET
+    impact_statement = msgspec.UNSET
+    action_statement = msgspec.UNSET
+
     vulnerability_analyses = vulnerability.vulnerability_analyses.all()
     if len(vulnerability_analyses) == 1:
         analysis = vulnerability_analyses[0]
-        print(analysis)
+        status = CDX_STATE_TO_OPENVEX_STATUS.get(analysis.state, default_status)
+        status_notes = analysis.detail
+
+        if analysis.justification:
+            justification = CDX_JUSTIFICATION_TO_OPENVEX_JUSTIFICATION.get(analysis.justification)
+        if justification == msgspec.UNSET and status == openvex.Status.not_affected:
+            impact_statement = "Unknown"
+
+        if analysis.responses:
+            action_statement = ", ".join(analysis.responses)
+        elif status == openvex.Status.affected:
+            action_statement = "Unknown"
 
     return openvex.Statement(
         vulnerability=get_openvex_vulnerability(vulnerability),
         timestamp=get_openvex_timestamp(),
-        products=products,
+        products=components,
         status=status,
-        # status_notes: analysis.detail
-        # justification: analysis.justification
+        status_notes=status_notes,
+        justification=justification,
+        impact_statement=impact_statement,
+        action_statement=action_statement,
     )
 
 

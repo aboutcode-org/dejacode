@@ -14,13 +14,16 @@
           "CVE-1984-1010"
         ]
       },
-      "status": "under_investigation",
+      "status": "not_affected",
       "timestamp": "2024-12-19T12:00:00+00:00",
       "products": [
         {
           "@id": "pkg:type/name@1.0"
         }
-      ]
+      ],
+      "status_notes": "Code is not present",
+      "justification": "vulnerable_code_not_present",
+      "action_statement": "can_not_fix, rollback"
     },
     {
       "vulnerability": {
@@ -29,13 +32,16 @@
         "description": "",
         "aliases": []
       },
-      "status": "under_investigation",
+      "status": "affected",
       "timestamp": "2024-12-19T12:00:00+00:00",
       "products": [
         {
           "@id": "pkg:type/name@2.0"
         }
-      ]
+      ],
+      "status_notes": "Need an update",
+      "justification": "vulnerable_code_not_present",
+      "action_statement": "update"
     },
     {
       "vulnerability": {
