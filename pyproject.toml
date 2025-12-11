@@ -158,7 +158,9 @@ dependencies = [
     "maturin==1.8.6",
     "setuptools-rust==1.11.1",
     "annotated-types==0.7.0",
-    "semantic-version==2.10.0"
+    "semantic-version==2.10.0",
+    # OpenVEX
+    "msgspec==0.20.0"
 ]
 
 [project.optional-dependencies]
@@ -200,6 +202,7 @@ exclude = [
     "local",
     "var",
     "thirdparty",
+    "dejacode_toolkit/openvex/",
 ]
 
 [tool.ruff.lint]

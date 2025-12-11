@@ -44,6 +44,43 @@ class OutputsTestCase(TestCase):
             dataspace=self.dataspace,
         )
 
+        package1 = make_package(self.dataspace, package_url="pkg:type/name@1.0")
+        package2 = make_package(self.dataspace, package_url="pkg:type/name@2.0")
+        package3 = make_package(self.dataspace, package_url="pkg:type/name@3.0")
+        product_package1 = make_product_package(self.product1, package1)
+        product_package2 = make_product_package(self.product1, package2)
+        make_product_package(self.product1, package3)
+        vulnerability1 = make_vulnerability(
+            self.dataspace,
+            vulnerability_id="VCID-0001",
+            resource_url="https://public.vulnerablecode.io/vulnerabilities/VCID-0001",
+            aliases=["CVE-1984-1010"],
+            affecting=[package1],
+        )
+        vulnerability2 = make_vulnerability(
+            self.dataspace,
+            vulnerability_id="VCID-0002",
+            resource_url="https://public.vulnerablecode.io/vulnerabilities/VCID-0002",
+            affecting=[package2],
+        )
+        make_vulnerability(self.dataspace, vulnerability_id="VCID-0003", affecting=[package3])
+
+        make_vulnerability_analysis(
+            product_package1,
+            vulnerability1,
+            state=VulnerabilityAnalysis.State.NOT_AFFECTED,
+            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
+            detail="Code is not present",
+        )
+        make_vulnerability_analysis(
+            product_package2,
+            vulnerability2,
+            state=VulnerabilityAnalysis.State.EXPLOITABLE,
+            responses=[VulnerabilityAnalysis.Response.UPDATE],
+            is_reachable=True,
+            detail="Need an update",
+        )
+
     def test_outputs_safe_filename(self):
         self.assertEqual("low_-_up_", outputs.safe_filename("low -_UP*&//"))
 
@@ -56,17 +93,22 @@ class OutputsTestCase(TestCase):
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_outputs_get_spdx_document(self):
+        product = Product.objects.create(
+            name="Product With Space",
+            version="2.0",
+            dataspace=self.dataspace,
+        )
         package = make_package(self.dataspace, package_url="pkg:type/name")
-        make_product_package(self.product1, package)
+        make_product_package(product, package)
 
-        document = outputs.get_spdx_document(self.product1, self.super_user)
+        document = outputs.get_spdx_document(product, self.super_user)
         document.creation_info.created = "2000-01-01T01:02:03Z"
         expected = {
             "spdxVersion": "SPDX-2.3",
             "dataLicense": "CC0-1.0",
             "SPDXID": "SPDXRef-DOCUMENT",
-            "name": "dejacode_nexb_product_product1_with_space_1.0",
-            "documentNamespace": f"https://dejacode.com/spdxdocs/{self.product1.uuid}",
+            "name": "dejacode_nexb_product_product_with_space_2.0",
+            "documentNamespace": f"https://dejacode.com/spdxdocs/{product.uuid}",
             "creationInfo": {
                 "created": "2000-01-01T01:02:03Z",
                 "creators": [
@@ -123,7 +165,7 @@ class OutputsTestCase(TestCase):
             include_vex=True,
         )
         self.assertIsInstance(bom, cyclonedx_bom.Bom)
-        self.assertEqual(1, len(bom.vulnerabilities))
+        self.assertEqual(4, len(bom.vulnerabilities))
         self.assertEqual(vulnerability1.vulnerability_id, bom.vulnerabilities[0].id)
         self.assertIsNone(bom.vulnerabilities[0].analysis)
 
@@ -147,46 +189,13 @@ class OutputsTestCase(TestCase):
         bom_json = outputs.get_cyclonedx_bom_json(bom)
         self.assertIn('"bomFormat": "CycloneDX"', bom_json)
 
-    def test_outputs_get_cyclonedx_filename(self):
+    def test_outputs_get_filename(self):
         self.assertEqual(
             "dejacode_nexb_product_product1_with_space_1.0.cdx.json",
-            outputs.get_cyclonedx_filename(instance=self.product1),
+            outputs.get_filename(instance=self.product1, extension="cdx"),
         )
 
     def test_outputs_get_csaf_security_advisory(self):
-        package1 = make_package(self.dataspace, package_url="pkg:type/name@1.0")
-        package2 = make_package(self.dataspace, package_url="pkg:type/name@2.0")
-        package3 = make_package(self.dataspace, package_url="pkg:type/name@3.0")
-        product_package1 = make_product_package(self.product1, package1)
-        product_package2 = make_product_package(self.product1, package2)
-        make_product_package(self.product1, package3)
-        vulnerability1 = make_vulnerability(
-            self.dataspace,
-            vulnerability_id="VCID-0001",
-            aliases=["CVE-1984-1010"],
-            affecting=[package1],
-        )
-        vulnerability2 = make_vulnerability(
-            self.dataspace, vulnerability_id="VCID-0002", affecting=[package2]
-        )
-        make_vulnerability(self.dataspace, vulnerability_id="VCID-0003", affecting=[package3])
-
-        make_vulnerability_analysis(
-            product_package1,
-            vulnerability1,
-            state=VulnerabilityAnalysis.State.NOT_AFFECTED,
-            justification=VulnerabilityAnalysis.Justification.CODE_NOT_PRESENT,
-            detail="Code is not present",
-        )
-        make_vulnerability_analysis(
-            product_package2,
-            vulnerability2,
-            state=VulnerabilityAnalysis.State.EXPLOITABLE,
-            responses=[VulnerabilityAnalysis.Response.UPDATE],
-            is_reachable=True,
-            detail="Need an update",
-        )
-
         mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=UTC)
         with mock.patch("dje.outputs.datetime") as mock_datetime:
             mock_datetime.now.return_value = mock_now
@@ -200,3 +209,17 @@ class OutputsTestCase(TestCase):
         #     expected_location.write_text(security_advisory_json)
 
         self.assertJSONEqual(security_advisory_json, expected_location.read_text())
+
+    @mock.patch("dje.outputs.dejacode_version", "1000")
+    def test_outputs_get_openvex_document_json(self):
+        mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=UTC)
+        with mock.patch("dje.outputs.datetime") as mock_datetime:
+            mock_datetime.now.return_value = mock_now
+            mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+            openvex_document_json = outputs.get_openvex_document_json(self.product1)
+
+        expected_location = self.data / "openvex_document.json"
+        # if True:
+        #     expected_location.write_bytes(openvex_document_json)
+
+        self.assertJSONEqual(openvex_document_json, expected_location.read_text())
