@@ -2443,7 +2443,7 @@ class ExportOpenVEXView(
     def get(self, request, *args, **kwargs):
         product = self.get_object()
         openvex_document_json = outputs.get_openvex_document_json(product)
-        filename = outputs.get_filename(product, extension="openvex.json")
+        filename = outputs.get_filename(product, extension="openvex")
 
         return outputs.get_attachment_response(
             file_content=openvex_document_json,

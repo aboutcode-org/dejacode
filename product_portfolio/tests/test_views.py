@@ -3098,6 +3098,20 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn("vulnerabilities", response_str)
         self.assertIn(vulnerability1.vulnerability_id, response_str)
 
+    def test_product_portfolio_product_export_openvex_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        export_openvex_url = self.product1.get_export_openvex_url()
+        response = self.client.get(export_openvex_url)
+        self.assertEqual(
+            "dejacode_nexb_product_product1_with_space_1.0.openvex.json", response.filename
+        )
+        self.assertEqual("application/json", response.headers["Content-Type"])
+
+        content = io.BytesIO(b"".join(response.streaming_content))
+        bom_as_dict = json.loads(content.read().decode("utf-8"))
+        self.assertEqual("https://openvex.dev/ns/v0.2.0", bom_as_dict["@context"])
+        self.assertEqual(self.dataspace.name, bom_as_dict["author"])
+
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_product_portfolio_load_sbom_view(self, mock_submit):
         mock_submit.return_value = None
