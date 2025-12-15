@@ -1701,7 +1701,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         package.refresh_from_db()
         self.assertEqual("apache-2.0", package.declared_license_expression)
 
-    @mock.patch("component_catalog.models.collect_package_data")
+    @mock.patch("dejacode_toolkit.download.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
         self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
 
@@ -1728,6 +1728,15 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purl, package.package_url)
         mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+
+        purl = "pkg:pypi/django@5.2"
+        download_url = "https://files.pythonhosted.org/packages/Django-5.2.tar.gz"
+        mock_collect.return_value = {}
+        with mock.patch("dejacode_toolkit.download.PyPIFetcher.get_download_url") as mock_pypi_get:
+            mock_pypi_get.return_value = download_url
+            package = Package.create_from_url(url=purl, user=self.user)
+        self.assertEqual(purl, package.package_url)
+        mock_collect.assert_called_with(download_url)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
