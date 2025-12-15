@@ -468,7 +468,7 @@ def enable_rq_eager_mode():
     This function patch the django_rq.get_redis_connection to always return a fake
     redis connection using the `fakeredis` library.
     """
-    import django_rq.queues
+    from django_rq import connection_utils
     from fakeredis import FakeRedis
     from fakeredis import FakeStrictRedis
 
@@ -478,7 +478,7 @@ def enable_rq_eager_mode():
     def get_fake_redis_connection(config, use_strict_redis):
         return FakeStrictRedis() if use_strict_redis else FakeRedis()
 
-    django_rq.queues.get_redis_connection = get_fake_redis_connection
+    connection_utils.get_redis_connection = get_fake_redis_connection
 
 
 DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
