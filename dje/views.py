@@ -1071,7 +1071,7 @@ class TabSetMixin:
             ]
         )
 
-        if inferred_url := package.inferred_url:
+        if inferred_url := package.inferred_repo_url:
             inferred_url_help = (
                 "A URL deduced from the information available in a Package URL (purl)."
             )

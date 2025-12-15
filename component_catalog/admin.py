@@ -831,7 +831,7 @@ class PackageAdmin(
                     "version",
                     "qualifiers",
                     "subpath",
-                    "inferred_url",
+                    "inferred_repo_url",
                 )
             },
         ),
@@ -898,7 +898,7 @@ class PackageAdmin(
     ]
     readonly_fields = DataspacedAdmin.readonly_fields + (
         "package_url",
-        "inferred_url",
+        "inferred_repo_url",
     )
     form = PackageAdminForm
     importer_class = PackageImporter
@@ -1071,7 +1071,7 @@ class PackageAdmin(
 
     @admin.display(description="Inferred URL")
     def inferred_url(self, obj):
-        if inferred_url := obj.inferred_url:
+        if inferred_url := obj.inferred_repo_url:
             return urlize_target_blank(inferred_url)
         return ""
 
