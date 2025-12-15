@@ -2563,18 +2563,18 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual("Product 0\nComponent 1\n", package1.where_used(user=basic_user))
 
-    def test_package_model_inferred_url_property(self):
+    def test_package_model_inferred_repo_url_property(self):
         package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
-        self.assertIsNone(package1.inferred_url)
+        self.assertIsNone(package1.inferred_repo_url)
 
         package1.set_package_url("pkg:pypi/toml@0.10.2")
         package1.save()
-        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_url)
+        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_repo_url)
 
         package1.set_package_url("pkg:github/package-url/packageurl-python@0.10.4?version_prefix=v")
         package1.save()
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
-        self.assertEqual(expected, package1.inferred_url)
+        self.assertEqual(expected, package1.inferred_repo_url)
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries(self, mock_find_packages):

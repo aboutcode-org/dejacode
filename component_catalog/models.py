@@ -2035,7 +2035,7 @@ class Package(
         return get_valid_filename(cleaned_package_url)
 
     @property
-    def inferred_url(self):
+    def inferred_repo_url(self):
         """Return the URL deduced from the information available in a Package URL (purl)."""
         return purl2url.get_repo_url(self.package_url)
 

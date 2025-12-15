@@ -1083,7 +1083,7 @@ class PackageDetailsView(
                 "package_url",
                 "filename",
                 "download_url",
-                "inferred_url",
+                "inferred_repo_url",
                 "size",
                 "release_date",
                 "primary_language",
