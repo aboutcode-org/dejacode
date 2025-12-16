@@ -1719,6 +1719,10 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         """Return objects with Package URL defined."""
         return self.filter(~models.Q(type="") & ~models.Q(name=""))
 
+    def has_download_url(self):
+        """Return objects with download URL defined."""
+        return self.filter(~models.Q(download_url=""))
+
     def annotate_sortable_identifier(self):
         """
         Annotate the QuerySet with a `sortable_identifier` value that combines
@@ -2036,8 +2040,12 @@ class Package(
 
     @property
     def inferred_repo_url(self):
-        """Return the URL deduced from the information available in a Package URL (purl)."""
+        """Return the repo URL deduced from the Package URL (purl)."""
         return purl2url.get_repo_url(self.package_url)
+
+    def infer_download_url(self):
+        """Infer the download URL deduced from the Package URL (purl)."""
+        return download.infer_download_url(self.package_url)
 
     def get_url(self, name, params=None, include_identifier=False):
         if not params:
