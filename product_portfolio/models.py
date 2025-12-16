@@ -1555,6 +1555,9 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     scan_all_packages = models.BooleanField(
         default=False,
     )
+    infer_download_urls = models.BooleanField(
+        default=False,
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -1615,6 +1618,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             product=self.product,
             update_existing=self.update_existing_packages,
             scan_all_packages=self.scan_all_packages,
+            infer_download_urls=self.infer_download_urls,
         )
         created, existing, errors = importer.save()
 

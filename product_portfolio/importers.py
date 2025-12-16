@@ -26,6 +26,7 @@ from component_catalog.importers import PackageImporter
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import Package
+from dejacode_toolkit import download
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.copier import copy_object
 from dje.importers import BaseImporter
@@ -649,7 +650,15 @@ class ImportPackageFromScanCodeIO:
         "filename",
     ]
 
-    def __init__(self, user, project_uuid, product, update_existing=False, scan_all_packages=False):
+    def __init__(
+        self,
+        user,
+        project_uuid,
+        product,
+        update_existing=False,
+        scan_all_packages=False,
+        infer_download_urls=False,
+    ):
         self.licensing = Licensing()
         self.created = defaultdict(list)
         self.existing = defaultdict(list)
@@ -662,6 +671,7 @@ class ImportPackageFromScanCodeIO:
         self.product = product
         self.update_existing = update_existing
         self.scan_all_packages = scan_all_packages
+        self.infer_download_urls = infer_download_urls
 
         scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
@@ -695,6 +705,15 @@ class ImportPackageFromScanCodeIO:
 
         # Check if the package already exists to prevent duplication.
         package = self.look_for_existing_package(package_data)
+
+        # Infer a download URL from the Package URL
+        if (
+            self.infer_download_urls
+            and not package_data.get("download_url")
+            and (purl := package_data.get("purl"))
+            and (download_url := download.infer_download_url(purl))
+        ):
+            package_data["download_url"] = download_url
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
