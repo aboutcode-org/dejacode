@@ -727,7 +727,7 @@ class LoadSBOMsForm(BaseProductImportFormView):
 
 class ImportManifestsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
-    pipeline_name = "resolve_dependencies"
+    pipeline_name = "resolve_dependencies:StaticResolver,DynamicResolver"
 
     input_file = SmartFileField(
         label=_("Manifest file or zip archive"),
