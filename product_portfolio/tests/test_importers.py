@@ -1153,13 +1153,13 @@ class ProductImportFromScanTestCase(TestCase):
         package = importer.look_for_existing_package(package_data)
         self.assertEqual(package1, package)
 
-        # 2 packages are matched, cannot defined the one that should be used
+        # 2 packages are matched, cannot define the one that should be used
         package1.update(download_url=download_url)
         package = importer.look_for_existing_package(package_data)
         self.assertIsNone(package)
 
         # If the package data does not include a download_url value:
-        # Attemp to find an existing package using purl-only match.
+        # Attempt to find an existing package using purl-only match.
         package2.delete()
         package = importer.look_for_existing_package(package_data)
         self.assertEqual(package1, package)

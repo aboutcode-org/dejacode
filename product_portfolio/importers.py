@@ -675,9 +675,9 @@ class ImportPackageFromScanCodeIO:
 
         scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
-        if not self.packages:
-            raise Exception("Packages could not be fetched from ScanCode.io")
         self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
+        if not self.packages and not self.dependencies:
+            raise Exception("Packages could not be fetched from ScanCode.io")
 
     def save(self):
         self.import_packages()
