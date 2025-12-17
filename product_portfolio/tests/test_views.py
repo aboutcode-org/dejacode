@@ -1723,15 +1723,17 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         scan_all_packages_url = self.product1.get_scan_all_packages_url()
         response = self.client.get(scan_all_packages_url)
+        self.assertEqual(405, response.status_code)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(302, response.status_code)
 
         self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.super_user.dataspace.enable_package_scanning = True
         self.super_user.dataspace.save()
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.package1.download_url = "https://proper-url.com"
@@ -1748,7 +1750,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(len(self.product1.all_packages))
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.get(scan_all_packages_url, follow=True)
+            response = self.client.post(scan_all_packages_url, follow=True)
 
         self.assertRedirects(response, self.product1.get_absolute_url())
         self.assertContains(response, "Click here to see the Scans list.")
@@ -1762,12 +1764,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         self.client.login(username=self.basic_user.username, password="secret")
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         assign_perm("view_product", self.basic_user, self.product1)
         assign_perm("change_product", self.basic_user, self.product1)
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertRedirects(response, self.product1.get_absolute_url())
 
     def test_product_portfolio_product_add_view_permission_access(self):
