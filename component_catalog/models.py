@@ -2045,7 +2045,8 @@ class Package(
 
     def infer_download_url(self):
         """Infer the download URL deduced from the Package URL (purl)."""
-        return download.infer_download_url(self.package_url)
+        if self.package_url:
+            return download.infer_download_url(self.package_url)
 
     def get_url(self, name, params=None, include_identifier=False):
         if not params:
