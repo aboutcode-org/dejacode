@@ -1016,3 +1016,25 @@ class PullProjectDataForm(forms.Form):
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )
+
+
+class ScanAllPackagesForm(forms.Form):
+    infer_download_urls = forms.BooleanField(
+        label=_("Infer missing download URLs"),
+        required=False,
+        initial=True,
+        help_text=_(
+            "When a download URL is missing for packages, attempt to infer it "
+            "from the Package URL (purl). "
+            "A download URL is required for package scanning."
+        ),
+    )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_method = "post"
+        helper.form_id = "scan-all-packages-form"
+        helper.attrs = {"autocomplete": "off"}
+        helper.layout = Layout("infer_download_urls")
+        return helper

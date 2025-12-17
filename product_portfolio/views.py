@@ -126,6 +126,7 @@ from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
+from product_portfolio.forms import ScanAllPackagesForm
 from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import RELATION_LICENSE_EXPRESSION_HELP_TEXT
 from product_portfolio.models import CodebaseResource
@@ -715,6 +716,7 @@ class ProductDetailsView(
         if include_scancodeio_features:
             context["pull_project_data_form"] = PullProjectDataForm()
             context["display_scan_features"] = True
+            context["scan_all_packages_form"] = ScanAllPackagesForm()
 
         context["purldb_enabled"] = all(
             [
@@ -1961,6 +1963,7 @@ class ProductExportOpenVEXView(BaseProductViewMixin, ExportOpenVEXView):
     pass
 
 
+@require_POST
 @login_required
 def scan_all_packages_view(request, dataspace, name, version=""):
     user = request.user
@@ -1981,7 +1984,13 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     if not product.all_packages:
         raise Http404("No packages available for this product.")
 
-    transaction.on_commit(lambda: product.scan_all_packages_task(user))
+    scan_all_packages_form = ScanAllPackagesForm(data=request.POST)
+    if not scan_all_packages_form.is_valid():
+        raise Http404
+
+    infer_download_urls = scan_all_packages_form.cleaned_data.get("infer_download_urls")
+
+    transaction.on_commit(lambda: product.scan_all_packages_task(user, infer_download_urls))
 
     scan_list_url = reverse("component_catalog:scan_list")
     scancode_msg = format_html(
