@@ -407,6 +407,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         data = {
             "input_file": ContentFile("{}", name="sbom.json"),
+            "infer_download_urls": True,
             "update_existing_packages": False,
             "scan_all_packages": False,
         }
@@ -436,6 +437,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         data = {
             "input_file": ContentFile("Content", name="requirements.txt"),
+            "infer_download_urls": True,
             "update_existing_packages": False,
             "scan_all_packages": False,
         }

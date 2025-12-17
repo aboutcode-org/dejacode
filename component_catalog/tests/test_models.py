@@ -2576,6 +2576,15 @@ class ComponentCatalogModelsTestCase(TestCase):
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
         self.assertEqual(expected, package1.inferred_repo_url)
 
+    def test_package_model_infer_download_url(self):
+        package1 = make_package(self.dataspace, filename="package")
+        self.assertIsNone(package1.infer_download_url())
+
+        package1.set_package_url("pkg:nuget/Azure.Core@1.45.0")
+        package1.save()
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        self.assertEqual(expected_download_url, package1.infer_download_url())
+
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries(self, mock_find_packages):
         purl1 = "pkg:pypi/django@3.0"
@@ -2756,6 +2765,12 @@ class ComponentCatalogModelsTestCase(TestCase):
         package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
         make_package(self.dataspace)
         qs = Package.objects.has_package_url()
+        self.assertQuerySetEqual(qs, [package1])
+
+    def test_package_queryset_has_download_url(self):
+        package1 = make_package(self.dataspace, download_url="https://download.url")
+        make_package(self.dataspace)
+        qs = Package.objects.has_download_url()
         self.assertQuerySetEqual(qs, [package1])
 
     def test_package_queryset_annotate_sortable_identifier(self):

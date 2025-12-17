@@ -641,6 +641,15 @@ class BaseProductImportFormView(forms.Form):
             "for all of the packages assigned to your product."
         ),
     )
+    infer_download_urls = forms.BooleanField(
+        label=_("Infer missing download URLs"),
+        required=False,
+        initial=True,
+        help_text=_(
+            "When a download URL is missing from the input data, attempt to infer it "
+            "from the Package URL (purl). A download URL is required for package scanning."
+        ),
+    )
 
     @property
     def helper(self):
@@ -652,6 +661,7 @@ class BaseProductImportFormView(forms.Form):
             Fieldset(
                 None,
                 "input_file",
+                "infer_download_urls",
                 "update_existing_packages",
                 "scan_all_packages",
                 StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
@@ -667,6 +677,7 @@ class BaseProductImportFormView(forms.Form):
             input_file=self.cleaned_data.get("input_file"),
             update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=self.cleaned_data.get("scan_all_packages"),
+            infer_download_urls=self.cleaned_data.get("infer_download_urls"),
             created_by=user,
         )
 
@@ -716,7 +727,7 @@ class LoadSBOMsForm(BaseProductImportFormView):
 
 class ImportManifestsForm(BaseProductImportFormView):
     project_type = ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST
-    pipeline_name = "resolve_dependencies"
+    pipeline_name = "resolve_dependencies:StaticResolver,DynamicResolver"
 
     input_file = SmartFileField(
         label=_("Manifest file or zip archive"),
@@ -1005,3 +1016,25 @@ class PullProjectDataForm(forms.Form):
                 scancodeproject_uuid=scancode_project.uuid,
             )
         )
+
+
+class ScanAllPackagesForm(forms.Form):
+    infer_download_urls = forms.BooleanField(
+        label=_("Infer missing download URLs"),
+        required=False,
+        initial=True,
+        help_text=_(
+            "When a download URL is missing for packages, attempt to infer it "
+            "from the Package URL (purl). "
+            "A download URL is required for package scanning."
+        ),
+    )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_method = "post"
+        helper.form_id = "scan-all-packages-form"
+        helper.attrs = {"autocomplete": "off"}
+        helper.layout = Layout("infer_download_urls")
+        return helper
