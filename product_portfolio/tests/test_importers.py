@@ -974,13 +974,13 @@ class ProductImportFromScanTestCase(TestCase):
     def test_product_portfolio_import_packages_from_scancodeio_importer(
         self, mock_fetch_packages, mock_fetch_dependencies
     ):
-        purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
+        purl = "pkg:maven/abc/abc@1.0"
         mock_fetch_packages.return_value = [
             {
                 "type": "maven",
-                "namespace": "org.apache.activemq",
-                "name": "activemq-camel",
-                "version": "5.11.0",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
                 "primary_language": "Java",
                 "purl": purl,
                 "declared_license_expression": "bsd-new",
@@ -1011,12 +1011,15 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            infer_download_urls=True,
         )
         created, existing, errors = importer.save()
         created_package_package_url = created.get("package")[0]
         created_package = self.product1.packages.get()
         self.assertEqual("bsd-new", created_package.license_expression)
         self.assertEqual(created_package.package_url, created_package_package_url)
+        inferred_download_url = "https://repo.maven.apache.org/maven2/abc/abc/1.0/abc-1.0.jar"
+        self.assertEqual(inferred_download_url, created_package.download_url)
         self.assertEqual({}, existing)
         self.assertEqual({}, errors)
 
