@@ -1,0 +1,8 @@
+about_resource: openvex_json_schema_0.2.0.json
+name: openvex_json_schema
+version: '0.2.0'
+download_url: https://github.com/openvex/spec/raw/refs/heads/main/openvex_json_schema.json
+description: OpenVEX is an implementation of the Vulnerability Exploitability Exchange
+  (VEX for short) that is designed to be minimal, compliant, interoperable, and embeddable.
+homepage_url: https://github.com/openvex/spec
+license_expression: cc0-1.0

@@ -1723,15 +1723,17 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         scan_all_packages_url = self.product1.get_scan_all_packages_url()
         response = self.client.get(scan_all_packages_url)
+        self.assertEqual(405, response.status_code)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(302, response.status_code)
 
         self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.super_user.dataspace.enable_package_scanning = True
         self.super_user.dataspace.save()
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.package1.download_url = "https://proper-url.com"
@@ -1748,7 +1750,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(len(self.product1.all_packages))
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.get(scan_all_packages_url, follow=True)
+            response = self.client.post(scan_all_packages_url, follow=True)
 
         self.assertRedirects(response, self.product1.get_absolute_url())
         self.assertContains(response, "Click here to see the Scans list.")
@@ -1762,12 +1764,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         self.client.login(username=self.basic_user.username, password="secret")
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         assign_perm("view_product", self.basic_user, self.product1)
         assign_perm("change_product", self.basic_user, self.product1)
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertRedirects(response, self.product1.get_absolute_url())
 
     def test_product_portfolio_product_add_view_permission_access(self):
@@ -3097,6 +3099,20 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response_str = str(response.getvalue())
         self.assertIn("vulnerabilities", response_str)
         self.assertIn(vulnerability1.vulnerability_id, response_str)
+
+    def test_product_portfolio_product_export_openvex_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        export_openvex_url = self.product1.get_export_openvex_url()
+        response = self.client.get(export_openvex_url)
+        self.assertEqual(
+            "dejacode_nexb_product_product1_with_space_1.0.openvex.json", response.filename
+        )
+        self.assertEqual("application/json", response.headers["Content-Type"])
+
+        content = io.BytesIO(b"".join(response.streaming_content))
+        bom_as_dict = json.loads(content.read().decode("utf-8"))
+        self.assertEqual("https://openvex.dev/ns/v0.2.0", bom_as_dict["@context"])
+        self.assertEqual(self.dataspace.name, bom_as_dict["author"])
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_product_portfolio_load_sbom_view(self, mock_submit):

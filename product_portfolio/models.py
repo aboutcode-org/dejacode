@@ -351,6 +351,9 @@ class Product(
     def get_export_csaf_url(self):
         return self.get_url("export_csaf")
 
+    def get_export_openvex_url(self):
+        return self.get_url("export_openvex")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)
@@ -569,25 +572,40 @@ class Product(
 
         return created_count, updated_count, unchanged_count
 
-    def scan_all_packages_task(self, user):
+    def scan_all_packages_task(self, user, infer_download_urls=False):
         """
         Submit a Scan request to ScanCode.io for each package assigned to this Product.
         Only packages with a proper download URL are sent.
         """
-        package_urls = [
+        if infer_download_urls:
+            self.improve_packages_from_purl()
+
+        package_download_urls = [
             package.download_url
-            for package in self.all_packages
+            for package in self.all_packages.has_download_url()
             if package.download_url.startswith(("http", "https"))
         ]
 
         tasks.scancodeio_submit_scan.delay(
-            uris=package_urls,
+            uris=package_download_urls,
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
 
+    def improve_packages_from_purl(self):
+        """Infer missing packages download URL using the Package URL when possible."""
+        updated_packages = []
+
+        packages = self.all_packages.has_package_url().filter(models.Q(download_url=""))
+        for package in packages:
+            if download_url := package.infer_download_url():
+                package.update(download_url=download_url)
+                updated_packages.append(package)
+
+        return updated_packages
+
     def improve_packages_from_purldb(self, user):
-        """Update all Packages assigned to the Product using PurlDB data."""
+        """Update all packages assigned to thepProduct using PurlDB data."""
         updated_packages = []
         for package in self.packages.all():
             updated_fields = package.update_from_purldb(user)
@@ -1577,6 +1595,9 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     scan_all_packages = models.BooleanField(
         default=False,
     )
+    infer_download_urls = models.BooleanField(
+        default=False,
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -1637,6 +1658,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             product=self.product,
             update_existing=self.update_existing_packages,
             scan_all_packages=self.scan_all_packages,
+            infer_download_urls=self.infer_download_urls,
         )
         created, existing, errors = importer.save()
 

@@ -1701,7 +1701,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         package.refresh_from_db()
         self.assertEqual("apache-2.0", package.declared_license_expression)
 
-    @mock.patch("component_catalog.models.collect_package_data")
+    @mock.patch("dejacode_toolkit.download.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
         self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
 
@@ -1728,6 +1728,15 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purl, package.package_url)
         mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
+
+        purl = "pkg:pypi/django@5.2"
+        download_url = "https://files.pythonhosted.org/packages/Django-5.2.tar.gz"
+        mock_collect.return_value = {}
+        with mock.patch("dejacode_toolkit.download.PyPIFetcher.get_download_url") as mock_pypi_get:
+            mock_pypi_get.return_value = download_url
+            package = Package.create_from_url(url=purl, user=self.user)
+        self.assertEqual(purl, package.package_url)
+        mock_collect.assert_called_with(download_url)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
@@ -2554,18 +2563,27 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual("Product 0\nComponent 1\n", package1.where_used(user=basic_user))
 
-    def test_package_model_inferred_url_property(self):
+    def test_package_model_inferred_repo_url_property(self):
         package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
-        self.assertIsNone(package1.inferred_url)
+        self.assertIsNone(package1.inferred_repo_url)
 
         package1.set_package_url("pkg:pypi/toml@0.10.2")
         package1.save()
-        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_url)
+        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_repo_url)
 
         package1.set_package_url("pkg:github/package-url/packageurl-python@0.10.4?version_prefix=v")
         package1.save()
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
-        self.assertEqual(expected, package1.inferred_url)
+        self.assertEqual(expected, package1.inferred_repo_url)
+
+    def test_package_model_infer_download_url(self):
+        package1 = make_package(self.dataspace, filename="package")
+        self.assertIsNone(package1.infer_download_url())
+
+        package1.set_package_url("pkg:nuget/Azure.Core@1.45.0")
+        package1.save()
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        self.assertEqual(expected_download_url, package1.infer_download_url())
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries(self, mock_find_packages):
@@ -2747,6 +2765,12 @@ class ComponentCatalogModelsTestCase(TestCase):
         package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
         make_package(self.dataspace)
         qs = Package.objects.has_package_url()
+        self.assertQuerySetEqual(qs, [package1])
+
+    def test_package_queryset_has_download_url(self):
+        package1 = make_package(self.dataspace, download_url="https://download.url")
+        make_package(self.dataspace)
+        qs = Package.objects.has_download_url()
         self.assertQuerySetEqual(qs, [package1])
 
     def test_package_queryset_annotate_sortable_identifier(self):

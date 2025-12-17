@@ -1,0 +1,63 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "OpenVEX-Document-b2561aa6-1092-44ef-afe2-b0b331514bab",
+  "author": "nexB",
+  "timestamp": "2024-12-19T12:00:00+00:00",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "VCID-0001",
+        "@id": "https://public.vulnerablecode.io/vulnerabilities/VCID-0001",
+        "description": "",
+        "aliases": [
+          "CVE-1984-1010"
+        ]
+      },
+      "status": "not_affected",
+      "timestamp": "2024-12-19T12:00:00+00:00",
+      "products": [
+        {
+          "@id": "pkg:type/name@1.0"
+        }
+      ],
+      "status_notes": "Code is not present",
+      "justification": "vulnerable_code_not_present",
+      "action_statement": "can_not_fix, rollback"
+    },
+    {
+      "vulnerability": {
+        "name": "VCID-0002",
+        "@id": "https://public.vulnerablecode.io/vulnerabilities/VCID-0002",
+        "description": "",
+        "aliases": []
+      },
+      "status": "affected",
+      "timestamp": "2024-12-19T12:00:00+00:00",
+      "products": [
+        {
+          "@id": "pkg:type/name@2.0"
+        }
+      ],
+      "status_notes": "Need an update",
+      "justification": "vulnerable_code_not_present",
+      "action_statement": "update"
+    },
+    {
+      "vulnerability": {
+        "name": "VCID-0003",
+        "@id": "",
+        "description": "",
+        "aliases": []
+      },
+      "status": "under_investigation",
+      "timestamp": "2024-12-19T12:00:00+00:00",
+      "products": [
+        {
+          "@id": "pkg:type/name@3.0"
+        }
+      ]
+    }
+  ],
+  "tooling": "DejaCode-1000"
+}

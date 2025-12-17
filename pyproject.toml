@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "5.4.1"
+version = "5.5.0"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.13,<3.14"
@@ -158,7 +158,9 @@ dependencies = [
     "maturin==1.8.6",
     "setuptools-rust==1.11.1",
     "annotated-types==0.7.0",
-    "semantic-version==2.10.0"
+    "semantic-version==2.10.0",
+    # OpenVEX
+    "msgspec==0.20.0"
 ]
 
 [project.optional-dependencies]
@@ -200,6 +202,7 @@ exclude = [
     "local",
     "var",
     "thirdparty",
+    "dejacode_toolkit/openvex/",
 ]
 
 [tool.ruff.lint]

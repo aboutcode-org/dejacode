@@ -227,6 +227,12 @@ class LoadSBOMsFormSerializer(serializers.Serializer):
         required=True,
         help_text=LoadSBOMsForm.base_fields["input_file"].label,
     )
+    infer_download_urls = serializers.BooleanField(
+        required=False,
+        initial=True,
+        default=True,
+        help_text=LoadSBOMsForm.base_fields["infer_download_urls"].help_text,
+    )
     update_existing_packages = serializers.BooleanField(
         required=False,
         default=False,
@@ -245,6 +251,12 @@ class ImportManifestsFormSerializer(serializers.Serializer):
     input_file = serializers.FileField(
         required=True,
         help_text=ImportManifestsForm.base_fields["input_file"].label,
+    )
+    infer_download_urls = serializers.BooleanField(
+        required=False,
+        initial=True,
+        default=True,
+        help_text=ImportManifestsForm.base_fields["infer_download_urls"].help_text,
     )
     update_existing_packages = serializers.BooleanField(
         required=False,

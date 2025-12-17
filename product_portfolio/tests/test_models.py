@@ -544,6 +544,45 @@ class ProductPortfolioModelsTestCase(TestCase):
         product = Product.unsecured_objects.get(pk=product.pk)
         self.assertTrue(product.is_locked)
 
+    def test_product_model_improve_packages_from_purl(self):
+        product = make_product(self.dataspace)
+        package1 = make_package(self.dataspace, package_url="pkg:nuget/Azure.Core@1.45.0")
+        make_product_package(product, package=package1)
+
+        product.refresh_from_db()
+        updated_packages = product.improve_packages_from_purl()
+        self.assertEqual([package1], updated_packages)
+
+        package1.refresh_from_db()
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        self.assertEqual(expected_download_url, package1.download_url)
+
+    @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
+    def test_product_model_scan_all_packages_task(self, mock_scancodeio_submit_scan):
+        product = make_product(self.dataspace)
+        package1 = make_package(self.dataspace, package_url="pkg:nuget/Azure.Core@1.45.0")
+        make_product_package(product, package=package1)
+
+        mock_scancodeio_submit_scan.return_value = None
+        product.scan_all_packages_task(user=self.super_user)
+        mock_scancodeio_submit_scan.assert_called_with(
+            uris=[],
+            user_uuid=self.super_user.uuid,
+            dataspace_uuid=self.super_user.dataspace.uuid,
+        )
+        package1.refresh_from_db()
+        self.assertEqual("", package1.download_url)
+
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        product.scan_all_packages_task(user=self.super_user, infer_download_urls=True)
+        mock_scancodeio_submit_scan.assert_called_with(
+            uris=[expected_download_url],
+            user_uuid=self.super_user.uuid,
+            dataspace_uuid=self.super_user.dataspace.uuid,
+        )
+        package1.refresh_from_db()
+        self.assertEqual(expected_download_url, package1.download_url)
+
     @mock.patch("component_catalog.models.Package.update_from_purldb")
     def test_product_model_improve_packages_from_purldb(self, mock_update_from_purldb):
         mock_update_from_purldb.return_value = 1
