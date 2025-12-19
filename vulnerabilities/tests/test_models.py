@@ -126,6 +126,30 @@ class VulnerabilitiesModelsTestCase(TestCase):
         package2.update_risk_score()
         self.assertIsNone(package2.risk_score)
 
+    def test_vulnerability_mixin_add_affected_by(self):
+        package1 = make_package(self.dataspace)
+
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=1.0)
+        vulnerability2 = make_vulnerability(self.dataspace, risk_score=10.0)
+        vulnerability3 = make_vulnerability(self.dataspace, risk_score=5.0)
+
+        package1.add_affected_by(vulnerability1)
+        package1.refresh_from_db()
+        self.assertEqual("1.0", str(package1.risk_score))
+
+        package1.add_affected_by(vulnerability2)
+        package1.refresh_from_db()
+        self.assertEqual("10.0", str(package1.risk_score))
+
+        package1.add_affected_by(vulnerability3)
+        package1.refresh_from_db()
+        self.assertEqual("10.0", str(package1.risk_score))
+
+        self.assertEqual(package1, vulnerability1.affected_packages.get())
+        self.assertEqual(package1, vulnerability2.affected_packages.get())
+        self.assertEqual(package1, vulnerability3.affected_packages.get())
+        self.assertEqual(3, package1.affected_by_vulnerabilities.count())
+
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)

@@ -205,6 +205,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         """Assign the ``products`` as affected by this vulnerability."""
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_products.add(*products, through_defaults=through_defaults)
+        for product in products:
+            product.update_risk_score()
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
@@ -436,6 +438,12 @@ class AffectedByVulnerabilityMixin(models.Model):
         self.risk_score = max_score
         self.save(update_fields=["risk_score"])
         return self.risk_score
+
+    def add_affected_by(self, vulnerability):
+        """Add ``vulnerability`` as affecting this instance."""
+        through_defaults = {"dataspace_id": self.dataspace_id}
+        self.affected_by_vulnerabilities.add(vulnerability, through_defaults=through_defaults)
+        self.update_risk_score()
 
     def get_entry_for_package(self, vulnerablecode):
         if not self.package_url:
