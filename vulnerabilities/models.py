@@ -428,6 +428,15 @@ class AffectedByVulnerabilityMixin(models.Model):
     def is_vulnerable(self):
         return self.affected_by_vulnerabilities.exists()
 
+    def update_risk_score(self):
+        """Calculate and save the maximum risk score from all affected vulnerabilities."""
+        qs = self.affected_by_vulnerabilities.aggregate(models.Max("risk_score"))
+        max_score = qs["risk_score__max"]
+
+        self.risk_score = max_score
+        self.save(update_fields=["risk_score"])
+        return self.risk_score
+
     def get_entry_for_package(self, vulnerablecode):
         if not self.package_url:
             return
@@ -495,8 +504,7 @@ class AffectedByVulnerabilityMixin(models.Model):
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
 
-        # TODO: Looks like a bug....
-        self.update(risk_score=vulnerability_data["risk_score"])
+        self.update_risk_score()
         if isinstance(self, Package):
             self.productpackages.update_weighted_risk_score()
 

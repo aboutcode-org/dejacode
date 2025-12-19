@@ -756,7 +756,7 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
             product_package.update_license_unknown()
 
     def annotate_weighted_risk_score(self):
-        """Annotate the Queeryset with the weighted_risk_score computed value."""
+        """Annotate the Queryset with the weighted_risk_score computed value."""
         purpose = ProductItemPurpose.objects.filter(productpackage=OuterRef("pk"))
         package = Package.objects.filter(productpackages=OuterRef("pk"))
 

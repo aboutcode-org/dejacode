@@ -82,18 +82,49 @@ class VulnerabilitiesModelsTestCase(TestCase):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
+        vulnerabilities_data.append({"vulnerability_id": "VCID-0002", "risk_score": 5.0})
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
-
-        self.assertEqual(8.4, package1.risk_score)
+        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual("8.4", str(package1.risk_score))
         self.assertEqual("8.4", str(product1.productpackages.get().weighted_risk_score))
+
+    def test_vulnerability_mixin_update_risk_score(self):
+        package1 = make_package(self.dataspace)
+
+        # Test with no vulnerabilities
+        package1.update_risk_score()
+        self.assertIsNone(package1.risk_score)
+
+        # Test with one vulnerability with risk score
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace, risk_score=7.5)
+        vulnerability1.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("7.5", str(package1.risk_score))
+
+        # Test with multiple vulnerabilities, should use max
+        vulnerability2 = make_vulnerability(dataspace=self.dataspace, risk_score=9.2)
+        vulnerability2.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("9.2", str(package1.risk_score))
+
+        # Test with vulnerability with lower risk score, should keep max
+        vulnerability3 = make_vulnerability(dataspace=self.dataspace, risk_score=3.1)
+        vulnerability3.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("9.2", str(package1.risk_score))
+
+        # Test with all vulnerabilities having NULL risk scores
+        package2 = make_package(self.dataspace)
+        vulnerability4 = make_vulnerability(dataspace=self.dataspace, risk_score=None)
+        vulnerability5 = make_vulnerability(dataspace=self.dataspace, risk_score=None)
+        vulnerability4.add_affected(package2)
+        vulnerability5.add_affected(package2)
+        package2.update_risk_score()
+        self.assertIsNone(package2.risk_score)
 
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
