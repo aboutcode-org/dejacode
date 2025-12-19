@@ -155,8 +155,11 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_model_get_vulnerable_packages(self):
         self.assertEqual(0, self.product1.get_vulnerable_packages().count())
 
-        package1 = make_package(self.dataspace, is_vulnerable=True, risk_score=5.0)
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=5.0)
+        package1.add_affected_by(vulnerability1)
         make_product_package(self.product1, package1)
+
         self.assertEqual(1, self.product1.get_vulnerable_packages().count())
         self.assertEqual(0, self.product1.get_vulnerable_packages(risk_threshold=6.0).count())
         self.assertEqual(1, self.product1.get_vulnerable_packages(risk_threshold=4.0).count())

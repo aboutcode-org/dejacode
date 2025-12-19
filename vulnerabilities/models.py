@@ -172,41 +172,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
                 return alias
 
     def add_affected(self, instances):
-        """
-        Assign the ``instances`` (Package, Component, or Product) as affected by this
-        vulnerability.
-        """
-        from component_catalog.models import Component
-        from component_catalog.models import Package
-        from product_portfolio.models import Product
-
-        if not isinstance(instances, list):
+        """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
+        if not isinstance(instances, (list, tuple, models.QuerySet)):
             instances = [instances]
 
         for instance in instances:
-            if isinstance(instance, Package):
-                self.add_affected_packages([instance])
-            if isinstance(instance, Component):
-                self.add_affected_components([instance])
-            if isinstance(instance, Product):
-                self.add_affected_products([instance])
-
-    def add_affected_packages(self, packages):
-        """Assign the ``packages`` as affected by this vulnerability."""
-        through_defaults = {"dataspace_id": self.dataspace_id}
-        self.affected_packages.add(*packages, through_defaults=through_defaults)
-
-    def add_affected_components(self, components):
-        """Assign the ``components`` as affected by this vulnerability."""
-        through_defaults = {"dataspace_id": self.dataspace_id}
-        self.affected_components.add(*components, through_defaults=through_defaults)
-
-    def add_affected_products(self, products):
-        """Assign the ``products`` as affected by this vulnerability."""
-        through_defaults = {"dataspace_id": self.dataspace_id}
-        self.affected_products.add(*products, through_defaults=through_defaults)
-        for product in products:
-            product.update_risk_score()
+            instance.add_affected_by(vulnerability=self)
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
