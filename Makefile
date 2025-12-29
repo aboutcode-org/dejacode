@@ -59,7 +59,7 @@ envfile_dev: envfile
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
 doc_dependencies: virtualenv
-	@echo "-> Configure and install decumentation dependencies"
+	@echo "-> Configure and install documentation dependencies"
 	@${ACTIVATE} pip install --editable .[docs]
 
 doc8:
