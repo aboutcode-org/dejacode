@@ -9,14 +9,9 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.13"
-
-# Extra requirements section to install in addition to the package dependencies
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+  jobs:
+    post_install:
+      - pip install .[docs] --no-deps  # installs only the extras, not the package deps
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
