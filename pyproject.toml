@@ -171,9 +171,9 @@ dev = [
     "tblib==3.1.0"
 ]
 docs = [
-    "Sphinx==8.2.3",
-    "furo==2025.9.25",
-    "doc8==2.0.0",
+    "Sphinx",
+    "furo",
+    "doc8",
 ]
 
 [project.urls]

@@ -11,7 +11,7 @@ build:
     python: "3.13"
   jobs:
     post_install:
-      - make doc_dependencies
+      - pip install --upgrade furo
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
