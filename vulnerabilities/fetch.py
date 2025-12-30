@@ -135,7 +135,7 @@ def create_or_update_vulnerability(
         if updated_fields:
             results["updated"] += 1
 
-    vulnerability.add_affected_packages(affected_packages)
+    vulnerability.add_affected(affected_packages)
     return vulnerability
 
 

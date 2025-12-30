@@ -155,8 +155,11 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_model_get_vulnerable_packages(self):
         self.assertEqual(0, self.product1.get_vulnerable_packages().count())
 
-        package1 = make_package(self.dataspace, is_vulnerable=True, risk_score=5.0)
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=5.0)
+        package1.add_affected_by(vulnerability1)
         make_product_package(self.product1, package1)
+
         self.assertEqual(1, self.product1.get_vulnerable_packages().count())
         self.assertEqual(0, self.product1.get_vulnerable_packages(risk_threshold=6.0).count())
         self.assertEqual(1, self.product1.get_vulnerable_packages(risk_threshold=4.0).count())
@@ -599,6 +602,27 @@ class ProductPortfolioModelsTestCase(TestCase):
         # Updated from the package during improve_packages_from_purldb
         pp1.refresh_from_db()
         self.assertEqual("apache-2.0", pp1.license_expression)
+
+    def test_product_model_affected_by_vulnerabilities(self):
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=1.0)
+        vulnerability2 = make_vulnerability(self.dataspace, risk_score=10.0)
+        vulnerability3 = make_vulnerability(self.dataspace, risk_score=5.0)
+
+        vulnerability1.add_affected(self.product1)
+        affected_by = self.product1.affected_by_vulnerabilities.all()
+        self.assertQuerySetEqual([vulnerability1], affected_by)
+        self.product1.refresh_from_db()
+        self.assertEqual(1.0, self.product1.risk_score)
+
+        vulnerability2.add_affected(self.product1)
+        affected_by = self.product1.affected_by_vulnerabilities.order_by("id")
+        self.assertQuerySetEqual([vulnerability1, vulnerability2], affected_by)
+        self.product1.refresh_from_db()
+        self.assertEqual(10.0, self.product1.risk_score)
+
+        vulnerability3.add_affected(self.product1)
+        self.product1.refresh_from_db()
+        self.assertEqual(10.0, self.product1.risk_score)
 
     def test_product_model_get_vulnerability_qs(self):
         package1 = make_package(self.dataspace)
