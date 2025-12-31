@@ -699,9 +699,17 @@ class ImportPackageFromScanCodeIO:
         for dependency_data in self.dependencies:
             self.import_dependency(dependency_data)
 
+    @staticmethod
+    def import_vulnerability(vulnerability_data, package):
+        vulnerability_id = vulnerability_data.get("vulnerability_id")
+        if not vulnerability_id:
+            return
+
+        package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
+
     def import_package(self, package_data):
-        # Vulnerabilities are fetched post import.
-        package_data.pop("affected_by_vulnerabilities", None)
+        # Vulnerabilities are assigned after the package creation.
+        affected_by_vulnerabilities = package_data.pop("affected_by_vulnerabilities", [])
 
         # Check if the package already exists to prevent duplication.
         package = self.look_for_existing_package(package_data)
@@ -742,6 +750,9 @@ class ImportPackageFromScanCodeIO:
         )
         package_uid = package_data.get("package_uid") or package.uuid
         self.package_uid_mapping[package_uid] = package
+
+        for vulnerability_data in affected_by_vulnerabilities:
+            self.import_vulnerability(vulnerability_data, package)
 
     def import_dependency(self, dependency_data):
         dependency_uid = dependency_data.get("dependency_uid")

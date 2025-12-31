@@ -1255,3 +1255,47 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual({}, errors)
         self.assertEqual(2, self.product1.packages.count())
         self.assertEqual(1, self.product1.dependencies.count())
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_vex(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        vulnerability_data = {
+            # "id": "VCID-0001",
+            "vulnerability_id": "VCID-0001",
+            "summary": "complexity bugs may lead to a denial of service",
+            "cdx_vulnerability": {
+                "affects": [{"ref": "pkg:maven/abc/abc@1.0"}],
+                "bom-ref": "BomRef.1",
+                "description": "complexity bugs may lead to a denial of service",
+                "analysis": {
+                    "detail": "AAAA",
+                    "justification": "code_not_present",
+                    "response": ["can_not_fix", "update"],
+                    "state": "resolved",
+                },
+            },
+        }
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [vulnerability_data],
+            }
+        ]
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+            infer_download_urls=True,
+        )
+        created, existing, errors = importer.save()
+        created_package = self.product1.packages.get()
+        vulnerability = created_package.affected_by_vulnerabilities.get()
+        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability.vulnerability_id)
+        self.assertEqual(vulnerability_data["summary"], vulnerability.summary)
