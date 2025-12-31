@@ -700,12 +700,28 @@ class ImportPackageFromScanCodeIO:
             self.import_dependency(dependency_data)
 
     @staticmethod
-    def import_vulnerability(vulnerability_data, package):
+    def import_vulnerability(vulnerability_data, product_package):
+        from vulnerabilities.models import VulnerabilityAnalysis
+
         vulnerability_id = vulnerability_data.get("vulnerability_id")
         if not vulnerability_id:
             return
 
-        package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
+        package = product_package.package
+        # TODO: Add a lower-level create_vulnerability method
+        vulnerabilities = package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
+        vulnerability = vulnerabilities[0]
+
+        if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability"):
+            if analysis_data := cdx_vulnerability.get("analysis"):
+                VulnerabilityAnalysis.create_from_data(
+                    user=product_package.dataspace,
+                    data={
+                        "product_package": product_package,
+                        "vulnerability": vulnerability,
+                        **analysis_data,
+                    },
+                )
 
     def import_package(self, package_data):
         # Vulnerabilities are assigned after the package creation.
@@ -738,7 +754,7 @@ class ImportPackageFromScanCodeIO:
                 return
             self.created["package"].append(str(package))
 
-        ProductPackage.objects.get_or_create(
+        product_package, _ = ProductPackage.objects.get_or_create(
             product=self.product,
             package=package,
             dataspace=self.product.dataspace,
@@ -752,7 +768,7 @@ class ImportPackageFromScanCodeIO:
         self.package_uid_mapping[package_uid] = package
 
         for vulnerability_data in affected_by_vulnerabilities:
-            self.import_vulnerability(vulnerability_data, package)
+            self.import_vulnerability(vulnerability_data, product_package)
 
     def import_dependency(self, dependency_data):
         dependency_uid = dependency_data.get("dependency_uid")

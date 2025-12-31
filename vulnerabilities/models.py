@@ -487,6 +487,8 @@ class AffectedByVulnerabilityMixin(models.Model):
         if isinstance(self, Package):
             self.productpackages.update_weighted_risk_score()
 
+        return vulnerabilities
+
 
 class VulnerabilityAnalysis(
     VulnerabilityAnalysisMixin,

@@ -1272,7 +1272,7 @@ class ProductImportFromScanTestCase(TestCase):
                 "analysis": {
                     "detail": "AAAA",
                     "justification": "code_not_present",
-                    "response": ["can_not_fix", "update"],
+                    "responses": ["can_not_fix", "update"],
                     "state": "resolved",
                 },
             },
@@ -1299,3 +1299,12 @@ class ProductImportFromScanTestCase(TestCase):
         vulnerability = created_package.affected_by_vulnerabilities.get()
         self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability.vulnerability_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability.summary)
+
+        analysis = vulnerability.vulnerability_analyses.get()
+        self.assertEqual(vulnerability, analysis.vulnerability)
+        self.assertEqual(self.product1, analysis.product)
+        self.assertEqual(created_package, analysis.package)
+        self.assertEqual("resolved", analysis.state)
+        self.assertEqual("code_not_present", analysis.justification)
+        self.assertEqual("AAAA", analysis.detail)
+        self.assertEqual(["can_not_fix", "update"], analysis.responses)
