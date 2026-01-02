@@ -703,14 +703,11 @@ class ImportPackageFromScanCodeIO:
     def import_vulnerability(vulnerability_data, product_package):
         from vulnerabilities.models import VulnerabilityAnalysis
 
-        vulnerability_id = vulnerability_data.get("vulnerability_id")
-        if not vulnerability_id:
-            return
-
         package = product_package.package
-        # TODO: Add a lower-level create_vulnerability method
         vulnerabilities = package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
-        vulnerability = vulnerabilities[0]
+
+        if not vulnerabilities:
+            return
 
         if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability"):
             if analysis_data := cdx_vulnerability.get("analysis"):
@@ -718,7 +715,7 @@ class ImportPackageFromScanCodeIO:
                     user=product_package.dataspace,
                     data={
                         "product_package": product_package,
-                        "vulnerability": vulnerability,
+                        "vulnerability": vulnerabilities[0],
                         **analysis_data,
                     },
                 )

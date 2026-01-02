@@ -1262,8 +1262,7 @@ class ProductImportFromScanTestCase(TestCase):
         self, mock_fetch_packages, mock_fetch_dependencies
     ):
         vulnerability_data = {
-            # "id": "VCID-0001",
-            "vulnerability_id": "VCID-0001",
+            "id": "ID-0001",  # In CycloneDX the field name is "id"
             "summary": "complexity bugs may lead to a denial of service",
             "cdx_vulnerability": {
                 "affects": [{"ref": "pkg:maven/abc/abc@1.0"}],
@@ -1292,12 +1291,11 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
-            infer_download_urls=True,
         )
         created, existing, errors = importer.save()
         created_package = self.product1.packages.get()
         vulnerability = created_package.affected_by_vulnerabilities.get()
-        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability.vulnerability_id)
+        self.assertEqual(vulnerability_data["id"], vulnerability.vulnerability_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability.summary)
 
         analysis = vulnerability.vulnerability_analyses.get()
