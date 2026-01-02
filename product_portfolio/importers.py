@@ -705,12 +705,15 @@ class ImportPackageFromScanCodeIO:
 
         package = product_package.package
         vulnerabilities = package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
-
         if not vulnerabilities:
             return
 
-        if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability"):
+        if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability_data"):
             if analysis_data := cdx_vulnerability.get("analysis"):
+                # CycloneDX model uses "response" while the local model uses "response"
+                if response_value := analysis_data.pop("response", None):
+                    analysis_data["responses"] = response_value
+
                 VulnerabilityAnalysis.create_from_data(
                     user=product_package.dataspace,
                     data={

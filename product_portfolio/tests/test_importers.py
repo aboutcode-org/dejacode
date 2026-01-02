@@ -1264,14 +1264,14 @@ class ProductImportFromScanTestCase(TestCase):
         vulnerability_data = {
             "id": "ID-0001",  # In CycloneDX the field name is "id"
             "summary": "complexity bugs may lead to a denial of service",
-            "cdx_vulnerability": {
+            "cdx_vulnerability_data": {
                 "affects": [{"ref": "pkg:maven/abc/abc@1.0"}],
                 "bom-ref": "BomRef.1",
                 "description": "complexity bugs may lead to a denial of service",
                 "analysis": {
                     "detail": "AAAA",
                     "justification": "code_not_present",
-                    "responses": ["can_not_fix", "update"],
+                    "response": ["can_not_fix", "update"],
                     "state": "resolved",
                 },
             },
