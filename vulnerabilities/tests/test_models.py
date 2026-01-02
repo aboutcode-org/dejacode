@@ -230,6 +230,26 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
 
+    def test_vulnerability_model_get_or_create_from_data(self):
+        vulnerability_data = {
+            "id": "VCID-q4q6-yfng-aaag",
+            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
+        }
+
+        vulnerability1 = Vulnerability.get_or_create_from_data(
+            dataspace=self.dataspace,
+            data=vulnerability_data,
+        )
+        self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
+
+        vulnerability_data["vulnerability_id"] = vulnerability_data["id"]
+        vulnerability2 = Vulnerability.get_or_create_from_data(
+            dataspace=self.dataspace,
+            data=vulnerability_data,
+        )
+        self.assertEqual(vulnerability1.id, vulnerability2.id)
+
     def test_vulnerability_model_queryset_count_methods(self):
         package1 = make_package(self.dataspace)
         package2 = make_package(self.dataspace)

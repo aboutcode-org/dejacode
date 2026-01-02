@@ -181,12 +181,35 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
+        """Create a Vulnerability from provided ``data``."""
         instance = super().create_from_data(user=dataspace, data=data, validate=False)
 
         if affecting:
             instance.add_affected(affecting)
 
         return instance
+
+    @classmethod
+    def get_or_create_from_data(cls, dataspace, data, validate=False):
+        """Get or create a Vulnerability from provided ``data``."""
+        vulnerability_qs = Vulnerability.objects.scope(dataspace)
+
+        # Support for CycloneDX data structure
+        data = data.copy()
+        vulnerability_id = data.get("vulnerability_id") or data.pop("id", None)
+        if not vulnerability_id:
+            return
+        data["vulnerability_id"] = vulnerability_id
+
+        vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+        if not vulnerability:
+            vulnerability = cls.create_from_data(
+                dataspace=dataspace,
+                data=data,
+                validate=validate,
+            )
+
+        return vulnerability
 
     def as_cyclonedx(self, affected_instances, analysis=None):
         affects = [
@@ -465,27 +488,27 @@ class AffectedByVulnerabilityMixin(models.Model):
             self.create_vulnerabilities(vulnerabilities_data=affected_by_vulnerabilities)
 
     def create_vulnerabilities(self, vulnerabilities_data):
+        """Create and assign Vulnerabilities to this instance from provided vulnerabilities_data."""
         from component_catalog.models import Package
 
         vulnerabilities = []
-        vulnerability_qs = Vulnerability.objects.scope(self.dataspace)
-
         for vulnerability_data in vulnerabilities_data:
-            vulnerability_id = vulnerability_data["vulnerability_id"]
-            vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
-            if not vulnerability:
-                vulnerability = Vulnerability.create_from_data(
-                    dataspace=self.dataspace,
-                    data=vulnerability_data,
-                )
+            vulnerability = Vulnerability.get_or_create_from_data(
+                dataspace=self.dataspace,
+                data=vulnerability_data,
+            )
             vulnerabilities.append(vulnerability)
 
-        through_defaults = {"dataspace_id": self.dataspace_id}
-        self.affected_by_vulnerabilities.add(*vulnerabilities, through_defaults=through_defaults)
+        self.affected_by_vulnerabilities.add(
+            *vulnerabilities,
+            through_defaults={"dataspace_id": self.dataspace_id},
+        )
 
         self.update_risk_score()
         if isinstance(self, Package):
             self.productpackages.update_weighted_risk_score()
+
+        return vulnerabilities
 
 
 class VulnerabilityAnalysis(
