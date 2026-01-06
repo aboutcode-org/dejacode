@@ -1,0 +1,16 @@
+about_resource: certifi-2026.1.4-py3-none-any.whl
+name: certifi
+version: 2026.1.4
+download_url: https://files.pythonhosted.org/packages/e6/ad/3cc14f097111b4de0040c83a525973216457bbeeb63739ef1ed275c1c021/certifi-2026.1.4-py3-none-any.whl
+package_url: pkg:pypi/certifi@2026.1.4
+license_expression: mpl-2.0
+copyright: Copyright certifi project contributors
+redistribute: yes
+attribute: yes
+track_changes: yes
+checksum_md5: 1dab98768140ad2d8dbc9be8f14a2af9
+checksum_sha1: 7e321cad8e2cca84ad26eab15c2a2d5fa8972e0c
+licenses:
+  - key: mpl-2.0
+    name: Mozilla Public License 2.0
+    file: mpl-2.0.LICENSE

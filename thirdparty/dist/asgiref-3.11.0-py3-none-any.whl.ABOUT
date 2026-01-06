@@ -1,0 +1,14 @@
+about_resource: asgiref-3.11.0-py3-none-any.whl
+name: asgiref
+version: 3.11.0
+download_url: https://files.pythonhosted.org/packages/91/be/317c2c55b8bbec407257d45f5c8d1b6867abc76d12043f2d3d58c538a4ea/asgiref-3.11.0-py3-none-any.whl
+package_url: pkg:pypi/asgiref@3.11.0
+license_expression: bsd-new
+copyright: Copyright asgiref project contributors
+attribute: yes
+checksum_md5: 659fe6bbd7e43c8bde0b7ca065be0f6c
+checksum_sha1: 450de5a4aa731204f861dcd1a41a52a460b756de
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
