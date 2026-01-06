@@ -2649,9 +2649,6 @@ class Package(
             package_data = purldb_entries[0]
         elif source_package := pick_source_package(purldb_entries):
             package_data = source_package
-            package_data["package_content"] = Package.get_package_content_value_from_label(
-                package_data["package_content"]
-            )
         else:
             package_data = merge_common_non_empty_values(purldb_entries)
 
@@ -2659,6 +2656,10 @@ class Package(
         if release_date := package_data.get("release_date"):
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
+
+        if package_content := package_data.get("package_content"):
+            package_content_value = Package.get_package_content_value_from_label(package_content)
+            package_data["package_content"] = package_content_value
 
         # Avoid raising an IntegrityError when the values in `package_data` for the
         # identifier fields already exist on another Package instance.

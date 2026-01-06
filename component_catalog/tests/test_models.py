@@ -2646,6 +2646,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256": "0a1efde1b685a6c30999ba00902f23613cf5db864c5a1532d2edf3eda7896a37",
             "copyright": "(c) Copyright",
             "declared_license_expression": "(bsd-simplified AND bsd-new)",
+            "package_content": "source_archive",
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
@@ -2667,12 +2668,13 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256",
             "copyright",
             "declared_license_expression",
+            "package_content",
             "license_expression",
         ]
         self.assertEqual(expected, updated_fields)
 
         package1.refresh_from_db()
-        # Handle release_date separatly
+        # Handle release_date and package_content separatly
         updated_fields.remove("release_date")
         self.assertEqual(purldb_entry["release_date"], str(package1.release_date))
 
