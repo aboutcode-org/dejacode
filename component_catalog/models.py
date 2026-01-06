@@ -1683,12 +1683,10 @@ class PackageContentFieldMixin(models.Model):
     @classmethod
     def get_package_content_value_from_label(cls, label):
         """Convert a package_content string label to its integer value."""
-        if not label:
-            return None
         try:
             return cls.PackageContentType[label.upper()].value
         except (KeyError, AttributeError):
-            return None
+            return
 
 
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]

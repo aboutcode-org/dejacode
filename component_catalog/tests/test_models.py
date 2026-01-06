@@ -2382,6 +2382,16 @@ class ComponentCatalogModelsTestCase(TestCase):
             p.download_url = url
             self.assertEqual(expected, p.github_repo_url)
 
+    def test_package_model_get_package_content_value_from_label(self):
+        get_label_func = Package.get_package_content_value_from_label
+        self.assertIsNone(get_label_func(None))
+        self.assertIsNone(get_label_func(100))
+        self.assertIsNone(get_label_func("wrong"))
+
+        self.assertEqual(2, get_label_func("patch"))
+        self.assertEqual(2, get_label_func("Patch"))
+        self.assertEqual(2, get_label_func("PATCH"))
+
     @mock.patch("requests.get")
     def test_collect_package_data(self, mock_get):
         expected_message = (
