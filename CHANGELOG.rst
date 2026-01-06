@@ -1,6 +1,8 @@
 Release notes
 =============
 
+### Version 5.6.0-dev
+
 ### Version 5.5.0
 
 - Add UI to refresh a package scan.

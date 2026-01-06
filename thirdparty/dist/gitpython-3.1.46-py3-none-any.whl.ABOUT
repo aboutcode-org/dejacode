@@ -1,0 +1,14 @@
+about_resource: gitpython-3.1.46-py3-none-any.whl
+name: gitpython
+version: 3.1.46
+download_url: https://files.pythonhosted.org/packages/6a/09/e21df6aef1e1ffc0c816f0522ddc3f6dcded766c3261813131c78a704470/gitpython-3.1.46-py3-none-any.whl
+package_url: pkg:pypi/gitpython@3.1.46
+license_expression: bsd-new
+copyright: Copyright gitpython project contributors
+attribute: yes
+checksum_md5: 0b9ccbb78ace1a13175d9fbe935a295f
+checksum_sha1: f1bfc68d7e6f2697425a4f25a66dbaa21e872084
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
