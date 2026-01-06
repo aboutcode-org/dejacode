@@ -1140,6 +1140,7 @@ class PackageDetailsView(
                 "parties",
                 "datasource_id",
                 "file_references",
+                "package_content",
             ],
         },
         "components": {
@@ -1293,6 +1294,7 @@ class PackageDetailsView(
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),
+            TabField("package_content", source="get_package_content_display"),
         ]
 
         fields = self.get_tab_fields(tab_fields)
@@ -1930,6 +1932,12 @@ class PackageAddView(
         if purldb_entry := self.get_entry_from_purldb():
             # Duplicate the declared_license_expression as the "concluded" license_expression
             purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
+
+            # Convert package_content string label to integer value
+            if content_label := purldb_entry.pop("package_content", None):
+                if content_value := Package.get_package_content_value_from_label(content_label):
+                    purldb_entry["package_content"] = content_value
+
             model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
                 field_name: value

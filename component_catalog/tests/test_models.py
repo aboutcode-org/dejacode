@@ -1366,6 +1366,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "file_references",
                     "other_license_expression",
                     "parties",
+                    "package_content",
                 ],
             ),
         )
@@ -2381,6 +2382,16 @@ class ComponentCatalogModelsTestCase(TestCase):
             p.download_url = url
             self.assertEqual(expected, p.github_repo_url)
 
+    def test_package_model_get_package_content_value_from_label(self):
+        get_label_func = Package.get_package_content_value_from_label
+        self.assertIsNone(get_label_func(None))
+        self.assertIsNone(get_label_func(100))
+        self.assertIsNone(get_label_func("wrong"))
+
+        self.assertEqual(2, get_label_func("patch"))
+        self.assertEqual(2, get_label_func("Patch"))
+        self.assertEqual(2, get_label_func("PATCH"))
+
     @mock.patch("requests.get")
     def test_collect_package_data(self, mock_get):
         expected_message = (
@@ -2635,6 +2646,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256": "0a1efde1b685a6c30999ba00902f23613cf5db864c5a1532d2edf3eda7896a37",
             "copyright": "(c) Copyright",
             "declared_license_expression": "(bsd-simplified AND bsd-new)",
+            "package_content": "source_archive",
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
@@ -2656,12 +2668,13 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256",
             "copyright",
             "declared_license_expression",
+            "package_content",
             "license_expression",
         ]
         self.assertEqual(expected, updated_fields)
 
         package1.refresh_from_db()
-        # Handle release_date separatly
+        # Handle release_date and package_content separatly
         updated_fields.remove("release_date")
         self.assertEqual(purldb_entry["release_date"], str(package1.release_date))
 
@@ -2699,6 +2712,42 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("Django-3.0.tar.gz", package1.filename)
         self.assertEqual(["Keyword1", "Keyword2"], package1.keywords)
         self.assertEqual("Python", package1.primary_language)
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_multiple_entries_package_content(
+        self, mock_get_entries
+    ):
+        purldb_entry_binary = {
+            "uuid": "e133e70b-8dd3-4cf1-9711-72b1f57523a0",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26-py3-none-any.whl",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26-py3-none-any.whl",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26-py3-none-any.whl",
+            "package_content": "binary",
+        }
+        purldb_entry_source = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26.tar.gz",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26.tar.gz",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26.tar.gz",
+            "package_content": "source_archive",
+        }
+
+        mock_get_entries.return_value = [purldb_entry_binary, purldb_entry_source]
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/boto3@1.37.26")
+        updated_fields = package1.update_from_purldb(self.user)
+        expected = ["download_url", "filename", "package_content"]
+        self.assertEqual(expected, sorted(updated_fields))
+
+        package1.refresh_from_db()
+        self.assertEqual(purldb_entry_source["download_url"], package1.download_url)
+        self.assertEqual(purldb_entry_source["filename"], package1.filename)
+        self.assertEqual("source_archive", package1.get_package_content_display())
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):

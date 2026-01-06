@@ -58,6 +58,7 @@ from dejacode_toolkit import download
 from dejacode_toolkit import spdx
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
+from dejacode_toolkit.purldb import pick_source_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import urn
 from dje.copier import post_copy
@@ -1652,6 +1653,42 @@ class ComponentKeyword(DataspacedModel):
         return self.label
 
 
+class PackageContentFieldMixin(models.Model):
+    """
+    Field extracted from the `purldb.packagedb.models.Package` model.
+    It need to stay aligned with its upstream PurlDB implementation.
+    """
+
+    class PackageContentType(models.IntegerChoices):
+        CURATION = 1, "curation"
+        PATCH = 2, "patch"
+        SOURCE_REPO = 3, "source_repo"
+        SOURCE_ARCHIVE = 4, "source_archive"
+        BINARY = 5, "binary"
+        TEST = 6, "test"
+        DOC = 7, "doc"
+
+    package_content = models.IntegerField(
+        null=True,
+        blank=True,
+        choices=PackageContentType.choices,
+        help_text=_(
+            "Content of this Package as one of: {}".format(", ".join(PackageContentType.labels))
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_package_content_value_from_label(cls, label):
+        """Convert a package_content string label to its integer value."""
+        try:
+            return cls.PackageContentType[label.upper()].value
+        except (KeyError, AttributeError):
+            return
+
+
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
@@ -1795,6 +1832,7 @@ class Package(
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
+    PackageContentFieldMixin,
     DataspacedModel,
 ):
     filename = models.CharField(
@@ -2504,7 +2542,7 @@ class Package(
             package_for_match = cls(download_url=download_url)
             package_for_match.set_package_url(package_url)
             purldb_entries = package_for_match.get_purldb_entries(user)
-            # Look for one ith the same exact purl in that case
+            # Look for one with the same exact purl in that case
             if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
                 # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
                 if release_date := purldb_data.get("release_date"):
@@ -2597,6 +2635,8 @@ class Package(
 
         - Retrieves matching entries from PurlDB using the given user.
         - If exactly one match is found, its data is used directly.
+        - If multiple entries are found, leverage the package_content value when
+          available to select a "source" package.
         - If multiple entries are found, only values that are non-empty and
           common across all entries are merged and used to update the Package.
         """
@@ -2607,6 +2647,8 @@ class Package(
         purldb_entries_count = len(purldb_entries)
         if purldb_entries_count == 1:
             package_data = purldb_entries[0]
+        elif source_package := pick_source_package(purldb_entries):
+            package_data = source_package
         else:
             package_data = merge_common_non_empty_values(purldb_entries)
 
@@ -2614,6 +2656,10 @@ class Package(
         if release_date := package_data.get("release_date"):
             package_data["release_date"] = release_date.split("T")[0]
         package_data["license_expression"] = package_data.get("declared_license_expression")
+
+        if package_content := package_data.get("package_content"):
+            package_content_value = Package.get_package_content_value_from_label(package_content)
+            package_data["package_content"] = package_content_value
 
         # Avoid raising an IntegrityError when the values in `package_data` for the
         # identifier fields already exist on another Package instance.
@@ -2647,6 +2693,12 @@ class Package(
             override=False,
             override_unknown=True,
         )
+
+        if updated_fields:
+            msg = f"Automatically updated {', '.join(updated_fields)} from PurlDB."
+            logger.debug(f"PurlDB: {msg}")
+            History.log_change(user, self, message=msg)
+
         return updated_fields
 
     def update_from_scan(self, user, update_products=False):

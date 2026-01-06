@@ -618,6 +618,7 @@ class PackageSerializer(
         required=False,
         scope_content_type=True,
     )
+    package_content = serializers.ReadOnlyField(source="get_package_content_display")
     collect_data = serializers.BooleanField(
         write_only=True,
         required=False,
@@ -687,6 +688,7 @@ class PackageSerializer(
             "parties",
             "datasource_id",
             "file_references",
+            "package_content",
             "external_references",
             "created_date",
             "last_modified_date",
