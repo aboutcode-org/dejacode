@@ -3413,7 +3413,7 @@ class PackageUserViewsTestCase(TestCase):
             "description": "Abbot Java GUI Test Library",
             "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
-            'package_content': Package.PackageContentType.BINARY,
+            "package_content": Package.PackageContentType.BINARY,
         }
         self.assertEqual(expected, response.context["form"].initial)
 

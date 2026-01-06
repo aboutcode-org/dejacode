@@ -2712,6 +2712,42 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("Python", package1.primary_language)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_multiple_entries_package_content(
+        self, mock_get_entries
+    ):
+        purldb_entry_binary = {
+            "uuid": "e133e70b-8dd3-4cf1-9711-72b1f57523a0",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26-py3-none-any.whl",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26-py3-none-any.whl",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26-py3-none-any.whl",
+            "package_content": "binary",
+        }
+        purldb_entry_source = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26.tar.gz",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26.tar.gz",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26.tar.gz",
+            "package_content": "source_archive",
+        }
+
+        mock_get_entries.return_value = [purldb_entry_binary, purldb_entry_source]
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/boto3@1.37.26")
+        updated_fields = package1.update_from_purldb(self.user)
+        expected = ["download_url", "filename", "package_content"]
+        self.assertEqual(expected, sorted(updated_fields))
+
+        package1.refresh_from_db()
+        self.assertEqual(purldb_entry_source["download_url"], package1.download_url)
+        self.assertEqual(purldb_entry_source["filename"], package1.filename)
+        self.assertEqual("source_archive", package1.get_package_content_display())
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):
         package_url = "pkg:pypi/django@3.0"
         download_url = "https://files.pythonhosted.org/packages/38/Django-3.0.tar.gz"
