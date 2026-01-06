@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "5.4.1"
+version = "5.6.0-dev"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.13,<3.14"
@@ -35,14 +35,14 @@ dependencies = [
     "wheel==0.45.1",
     "pip==25.3",
     # Django
-    "Django==5.2.8",
-    "asgiref==3.10.0",
+    "Django==5.2.9",
+    "asgiref==3.11.0",
     "typing_extensions==4.15.0",
     "sqlparse==0.5.3",
     # Django apps
     "django-crispy-forms==2.5",
     "crispy_bootstrap5==2025.6",
-    "django-grappelli==4.0.2",
+    "django-grappelli==4.0.3",
     "django-filter==25.2",
     "django-registration==3.4",
     "confusable_homoglyphs==3.3.1",
@@ -50,8 +50,8 @@ dependencies = [
     "django-environ==0.12.0",
     "django-debug-toolbar==6.1.0",
     # CAPTCHA
-    "altcha==0.2.0",
-    "django_altcha==0.4.0",
+    "altcha==1.0.0",
+    "django_altcha==0.9.0",
     # REST API
     "djangorestframework==3.16.1",
     # API documentation
@@ -68,7 +68,7 @@ dependencies = [
     # Database
     "psycopg==3.2.12",
     # Cache
-    "redis==7.0.1",
+    "redis==7.1.0",
     # redis dependencies:
     "packaging==25.0",
     "pyparsing==3.2.5",
@@ -80,17 +80,13 @@ dependencies = [
     # Testing
     "model_bakery==1.10.1",
     # Task queue
-    "rq==2.6.0",
+    "rq==2.6.1",
     "croniter==6.0.0",
-    "django-rq==3.1.0",
-    "fakeredis==2.32.1",
-    # Scheduler
-    "rq-scheduler==0.14.0",
-    "crontab==1.0.5",
-    "freezegun==1.5.2",
+    "django-rq==3.2.1",
+    "fakeredis==2.33.0",
     # Libs
-    "certifi==2025.11.12",
-    "urllib3==2.5.0",
+    "certifi==2026.1.4",
+    "urllib3==2.6.2",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
     "PyJWT==2.10.1",
@@ -137,7 +133,7 @@ dependencies = [
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
     # PackageURL
-    "packageurl-python==0.17.5",
+    "packageurl-python==0.17.6",
     # Gunicorn
     "gunicorn==23.0.0",
     # SPDX validation
@@ -145,14 +141,14 @@ dependencies = [
     "jsonschema-specifications==2025.4.1",
     "referencing==0.36.2",
     "rpds-py==0.25.1",
-    "attrs==25.3.0",
+    "attrs==25.4.0",
     "pyrsistent==0.20.0",
     # CycloneDX
-    "cyclonedx-python-lib==11.1.0",
+    "cyclonedx-python-lib==11.6.0",
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
     # Git
-    "GitPython==3.1.45",
+    "GitPython==3.1.46",
     "gitdb==4.0.12",
     "smmap==5.0.2",
     # CSAF
@@ -162,7 +158,9 @@ dependencies = [
     "maturin==1.8.6",
     "setuptools-rust==1.11.1",
     "annotated-types==0.7.0",
-    "semantic-version==2.10.0"
+    "semantic-version==2.10.0",
+    # OpenVEX
+    "msgspec==0.20.0"
 ]
 
 [project.optional-dependencies]
@@ -170,12 +168,12 @@ dev = [
     # Linter and Validation
     "ruff==0.14.0",
     # Parallel testing
-    "tblib==3.1.0"
+    "tblib==3.2.2"
 ]
 docs = [
-    "Sphinx==8.2.3",
-    "furo==2025.9.25",
-    "doc8==2.0.0",
+    "Sphinx",
+    "furo",
+    "doc8",
 ]
 
 [project.urls]
@@ -204,6 +202,7 @@ exclude = [
     "local",
     "var",
     "thirdparty",
+    "dejacode_toolkit/openvex/",
 ]
 
 [tool.ruff.lint]

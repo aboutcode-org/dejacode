@@ -1,0 +1,20 @@
+about_resource: tblib-3.2.2-py3-none-any.whl
+name: tblib
+version: 3.2.2
+download_url: https://files.pythonhosted.org/packages/02/be/5d2d47b1fb58943194fb59dcf222f7c4e35122ec0ffe8c36e18b5d728f0b/tblib-3.2.2-py3-none-any.whl
+package_url: pkg:pypi/tblib@3.2.2
+license_expression: bsd-new AND bsd-simplified AND unknown-license-reference
+copyright: Copyright tblib project contributors
+attribute: yes
+checksum_md5: 2a6d3dd5596c0d1f9ac7b2adb5dae07b
+checksum_sha1: be31ad2c11ce3d180b3bceaeefe6487619198f43
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

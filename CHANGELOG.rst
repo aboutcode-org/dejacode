@@ -1,7 +1,9 @@
 Release notes
 =============
 
-### Version 5.5.0-dev
+### Version 5.6.0-dev
+
+### Version 5.5.0
 
 - Add UI to refresh a package scan.
   https://github.com/aboutcode-org/dejacode/issues/423
@@ -25,6 +27,27 @@ Release notes
   Display the ``homepage_layout`` field as read-only on the Dataspace and User change
   forms when the currently logged user is not looking at his own Dataspace.
   https://github.com/aboutcode-org/dejacode/issues/428
+
+- Prioritize hashes and download URL for PurlDB mapping.
+  https://github.com/aboutcode-org/dejacode/issues/430
+
+- Fix a bug with the scan_status_fields on empty runs.
+  https://github.com/aboutcode-org/dejacode/issues/433
+
+- Add option to infer_download_urls on product importers.
+  https://github.com/aboutcode-org/dejacode/issues/444
+
+- Add support for PyPI purls in purl resolution.
+  https://github.com/aboutcode-org/dejacode/pull/443
+
+- Export OpenVEX VEX document.
+  https://github.com/aboutcode-org/dejacode/issues/442
+
+- Migrate from rq-scheduler to new built-in CronScheduler.
+  https://github.com/aboutcode-org/dejacode/issues/435
+
+- Update weighted_risk_score on updating the relationship.
+  https://github.com/aboutcode-org/dejacode/issues/436
 
 ### Version 5.4.2
 

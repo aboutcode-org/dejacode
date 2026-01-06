@@ -54,9 +54,8 @@ from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.license_expression_dje import render_expression_as_html
+from dejacode_toolkit import download
 from dejacode_toolkit import spdx
-from dejacode_toolkit.download import DataCollectionException
-from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
 from dejacode_toolkit.purldb import pick_source_package
@@ -1759,6 +1758,10 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
         """Return objects with Package URL defined."""
         return self.filter(~models.Q(type="") & ~models.Q(name=""))
 
+    def has_download_url(self):
+        """Return objects with download URL defined."""
+        return self.filter(~models.Q(download_url=""))
+
     def annotate_sortable_identifier(self):
         """
         Annotate the QuerySet with a `sortable_identifier` value that combines
@@ -2076,9 +2079,14 @@ class Package(
         return get_valid_filename(cleaned_package_url)
 
     @property
-    def inferred_url(self):
-        """Return the URL deduced from the information available in a Package URL (purl)."""
+    def inferred_repo_url(self):
+        """Return the repo URL deduced from the Package URL (purl)."""
         return purl2url.get_repo_url(self.package_url)
+
+    def infer_download_url(self):
+        """Infer the download URL deduced from the Package URL (purl)."""
+        if self.package_url:
+            return download.infer_download_url(self.package_url)
 
     def get_url(self, name, params=None, include_identifier=False):
         if not params:
@@ -2162,8 +2170,8 @@ class Package(
             return
 
         try:
-            package_data = collect_package_data(self.download_url)
-        except DataCollectionException as e:
+            package_data = download.collect_package_data(self.download_url)
+        except download.DataCollectionException as e:
             tasks_logger.info(e)
             return
         tasks_logger.info("Package data collected.")
@@ -2516,7 +2524,7 @@ class Package(
         scoped_packages_qs = cls.objects.scope(user.dataspace)
 
         if is_purl_str(url):
-            download_url = purl2url.get_download_url(url)
+            download_url = download.infer_download_url(url)
             package_url = PackageURL.from_string(url)
             existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
         else:
@@ -2544,7 +2552,7 @@ class Package(
                 package_data.update(purldb_data)
 
         if download_url and not purldb_data:
-            package_data = collect_package_data(download_url)
+            package_data = download.collect_package_data(download_url)
 
         # Check for existing package by hash fields with a single database query
         hash_fields = ["sha512", "sha256", "sha1", "md5"]

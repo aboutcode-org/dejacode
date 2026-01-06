@@ -50,6 +50,8 @@ from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from vulnerabilities.fetch import fetch_for_packages
+from vulnerabilities.models import AffectedByVulnerabilityMixin
+from vulnerabilities.models import AffectedByVulnerabilityRelationship
 
 RELATION_LICENSE_EXPRESSION_HELP_TEXT = _(
     "The License Expression assigned to a DejaCode Product Package or Product "
@@ -204,7 +206,13 @@ class ProductSecuredManager(DataspacedManager):
 BaseProductMixin = component_mixin_factory("product")
 
 
-class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedModel):
+class Product(
+    BaseProductMixin,
+    FieldChangesMixin,
+    KeywordsMixin,
+    AffectedByVulnerabilityMixin,
+    DataspacedModel,
+):
     license_expression = models.CharField(
         max_length=1024,
         blank=True,
@@ -278,6 +286,13 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
         through="ProductPackage",
     )
 
+    affected_by_vulnerabilities = models.ManyToManyField(
+        to="vulnerabilities.Vulnerability",
+        through="ProductAffectedByVulnerability",
+        related_name="affected_%(class)ss",
+        help_text=_("Vulnerabilities directly affecting this product."),
+    )
+
     objects = ProductSecuredManager()
 
     # WARNING: Bypass the security system implemented in ProductSecuredManager.
@@ -335,6 +350,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
     def get_export_csaf_url(self):
         return self.get_url("export_csaf")
+
+    def get_export_openvex_url(self):
+        return self.get_url("export_openvex")
 
     @property
     def cyclonedx_bom_ref(self):
@@ -512,6 +530,9 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
                 existing_relation = other_assigned_versions[0]
                 other_version_object = getattr(existing_relation, object_model_name)
                 existing_relation.update(**{object_model_name: obj, "last_modified_by": user})
+                # Update the weighted_risk_score from the new related_object
+                existing_relation.refresh_from_db()
+                existing_relation.update_weighted_risk_score()
                 message = f'Updated {object_model_name} "{other_version_object}" to "{obj}"'
                 History.log_change(user, self, message)
                 return "updated", existing_relation
@@ -551,25 +572,40 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
 
         return created_count, updated_count, unchanged_count
 
-    def scan_all_packages_task(self, user):
+    def scan_all_packages_task(self, user, infer_download_urls=False):
         """
         Submit a Scan request to ScanCode.io for each package assigned to this Product.
         Only packages with a proper download URL are sent.
         """
-        package_urls = [
+        if infer_download_urls:
+            self.improve_packages_from_purl()
+
+        package_download_urls = [
             package.download_url
-            for package in self.all_packages
+            for package in self.all_packages.has_download_url()
             if package.download_url.startswith(("http", "https"))
         ]
 
         tasks.scancodeio_submit_scan.delay(
-            uris=package_urls,
+            uris=package_download_urls,
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
 
+    def improve_packages_from_purl(self):
+        """Infer missing packages download URL using the Package URL when possible."""
+        updated_packages = []
+
+        packages = self.all_packages.has_package_url().filter(models.Q(download_url=""))
+        for package in packages:
+            if download_url := package.infer_download_url():
+                package.update(download_url=download_url)
+                updated_packages.append(package)
+
+        return updated_packages
+
     def improve_packages_from_purldb(self, user):
-        """Update all Packages assigned to the Product using PurlDB data."""
+        """Update all packages assigned to thepProduct using PurlDB data."""
         updated_packages = []
         for package in self.packages.all():
             updated_fields = package.update_from_purldb(user)
@@ -611,6 +647,16 @@ class Product(BaseProductMixin, FieldChangesMixin, KeywordsMixin, DataspacedMode
             )
 
         return vulnerability_qs
+
+
+class ProductAffectedByVulnerability(AffectedByVulnerabilityRelationship):
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        unique_together = (("product", "vulnerability"), ("dataspace", "uuid"))
 
 
 class ProductRelationStatus(BaseStatusMixin, DataspacedModel):
@@ -710,7 +756,7 @@ class ProductPackageQuerySet(ProductSecuredQuerySet):
             product_package.update_license_unknown()
 
     def annotate_weighted_risk_score(self):
-        """Annotate the Queeryset with the weighted_risk_score computed value."""
+        """Annotate the Queryset with the weighted_risk_score computed value."""
         purpose = ProductItemPurpose.objects.filter(productpackage=OuterRef("pk"))
         package = Package.objects.filter(productpackages=OuterRef("pk"))
 
@@ -864,9 +910,9 @@ class ProductRelationshipMixin(
         weighted_risk_score = float(risk_score) * float(exposure_factor)
         return weighted_risk_score
 
-    def set_weighted_risk_score(self):
+    def set_weighted_risk_score(self, save=False):
         """
-        Update the `weighted_risk_score` for the current instance.
+        Set the `weighted_risk_score` for the current instance.
 
         The method computes the weighted risk score using `compute_weighted_risk_score()`
         and assigns the computed value to the `weighted_risk_score` field if it differs
@@ -877,6 +923,13 @@ class ProductRelationshipMixin(
         weighted_risk_score = self.compute_weighted_risk_score()
         if weighted_risk_score != self.weighted_risk_score:
             self.weighted_risk_score = weighted_risk_score
+
+    def update_weighted_risk_score(self):
+        """Update the `weighted_risk_score` for the current instance."""
+        weighted_risk_score = self.compute_weighted_risk_score()
+        if weighted_risk_score != self.weighted_risk_score:
+            self.weighted_risk_score = weighted_risk_score
+            self.raw_update(weighted_risk_score=weighted_risk_score)
 
     def as_spdx(self):
         """
@@ -1542,6 +1595,9 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     scan_all_packages = models.BooleanField(
         default=False,
     )
+    infer_download_urls = models.BooleanField(
+        default=False,
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -1602,6 +1658,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             product=self.product,
             update_existing=self.update_existing_packages,
             scan_all_packages=self.scan_all_packages,
+            infer_download_urls=self.infer_download_urls,
         )
         created, existing, errors = importer.save()
 

@@ -14,6 +14,7 @@ from datetime import datetime
 from django.http import FileResponse
 from django.http import Http404
 
+import msgspec
 from cyclonedx import output as cyclonedx_output
 from cyclonedx.model import bom as cyclonedx_bom
 from cyclonedx.schema import SchemaVersion
@@ -21,6 +22,7 @@ from cyclonedx.validation.json import JsonStrictValidator
 
 from dejacode import __version__ as dejacode_version
 from dejacode_toolkit import csaf
+from dejacode_toolkit import openvex
 from dejacode_toolkit import spdx
 
 CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
@@ -34,6 +36,9 @@ def safe_filename(filename):
 def get_attachment_response(file_content, filename, content_type):
     if not file_content or not filename:
         raise Http404
+
+    if isinstance(file_content, bytes):
+        file_content = file_content.decode("utf-8")
 
     response = FileResponse(
         file_content,
@@ -190,7 +195,7 @@ def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
     return json.dumps(ordered_dict, indent=2)
 
 
-def get_cyclonedx_filename(instance, extension="cdx"):
+def get_filename(instance, extension):
     base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
     filename = f"{base_filename}_{instance}.{extension}.json"
     return safe_filename(filename)
@@ -352,3 +357,106 @@ def get_csaf_security_advisory(product):
         vulnerabilities=get_csaf_vulnerabilities(product),
     )
     return security_advisory
+
+
+CDX_STATE_TO_OPENVEX_STATUS = {
+    "resolved": openvex.Status.fixed,
+    "resolved_with_pedigree": openvex.Status.fixed,
+    "exploitable": openvex.Status.affected,
+    "in_triage": openvex.Status.under_investigation,
+    "false_positive": openvex.Status.not_affected,
+    "not_affected": openvex.Status.not_affected,
+}
+
+
+justification_ovex = openvex.Justification
+CDX_JUSTIFICATION_TO_OPENVEX_JUSTIFICATION = {
+    "code_not_present": justification_ovex.vulnerable_code_not_present,
+    "code_not_reachable": justification_ovex.vulnerable_code_not_in_execute_path,
+    "protected_at_perimeter": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+    "protected_at_runtime": justification_ovex.inline_mitigations_already_exist,
+    "protected_by_compiler": justification_ovex.inline_mitigations_already_exist,
+    "protected_by_mitigating_control": justification_ovex.inline_mitigations_already_exist,
+    "requires_configuration": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+    "requires_dependency": justification_ovex.component_not_present,
+    "requires_environment": justification_ovex.vulnerable_code_cannot_be_controlled_by_adversary,
+}
+
+
+def get_openvex_timestamp():
+    return datetime.now(UTC).isoformat()
+
+
+def get_openvex_vulnerability(vulnerability):
+    return openvex.Vulnerability(
+        name=vulnerability.vulnerability_id,
+        field_id=vulnerability.resource_url,
+        description=vulnerability.summary,
+        aliases=vulnerability.aliases,
+    )
+
+
+def get_openvex_statement(vulnerability):
+    components = [
+        openvex.Component1(field_id=package.package_url)
+        for package in vulnerability.affected_packages.all()
+    ]
+
+    status = default_status = openvex.Status.under_investigation
+    status_notes = msgspec.UNSET
+    justification = msgspec.UNSET
+    impact_statement = msgspec.UNSET
+    action_statement = msgspec.UNSET
+
+    vulnerability_analyses = vulnerability.vulnerability_analyses.all()
+    if len(vulnerability_analyses) == 1:
+        analysis = vulnerability_analyses[0]
+        status = CDX_STATE_TO_OPENVEX_STATUS.get(analysis.state, default_status)
+        status_notes = analysis.detail
+
+        if analysis.justification:
+            justification = CDX_JUSTIFICATION_TO_OPENVEX_JUSTIFICATION.get(analysis.justification)
+        if justification == msgspec.UNSET and status == openvex.Status.not_affected:
+            impact_statement = "Unknown"
+
+        if analysis.responses:
+            action_statement = ", ".join(analysis.responses)
+        elif status == openvex.Status.affected:
+            action_statement = "Unknown"
+
+    return openvex.Statement(
+        vulnerability=get_openvex_vulnerability(vulnerability),
+        timestamp=get_openvex_timestamp(),
+        products=components,
+        status=status,
+        status_notes=status_notes,
+        justification=justification,
+        impact_statement=impact_statement,
+        action_statement=action_statement,
+    )
+
+
+def get_openvex_statements(product):
+    vulnerability_qs = product.get_vulnerability_qs(prefetch_related_packages=True)
+    statements = [get_openvex_statement(vulnerability) for vulnerability in vulnerability_qs]
+    return statements
+
+
+def get_openvex_document(product):
+    tooling = f"DejaCode-{dejacode_version}"
+    return openvex.OpenVEX(
+        field_context="https://openvex.dev/ns/v0.2.0",
+        field_id=f"OpenVEX-Document-{str(product.uuid)}",
+        author=product.dataspace.name,
+        timestamp=get_openvex_timestamp(),
+        version=1,
+        tooling=tooling,
+        statements=get_openvex_statements(product),
+    )
+
+
+def get_openvex_document_json(product, indent=2):
+    openvex_document = get_openvex_document(product)
+    openvex_document_json = msgspec.json.encode(openvex_document)
+    openvex_document_json = msgspec.json.format(openvex_document_json, indent=indent)
+    return openvex_document_json

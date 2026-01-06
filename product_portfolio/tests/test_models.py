@@ -155,8 +155,11 @@ class ProductPortfolioModelsTestCase(TestCase):
     def test_product_model_get_vulnerable_packages(self):
         self.assertEqual(0, self.product1.get_vulnerable_packages().count())
 
-        package1 = make_package(self.dataspace, is_vulnerable=True, risk_score=5.0)
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=5.0)
+        package1.add_affected_by(vulnerability1)
         make_product_package(self.product1, package1)
+
         self.assertEqual(1, self.product1.get_vulnerable_packages().count())
         self.assertEqual(0, self.product1.get_vulnerable_packages(risk_threshold=6.0).count())
         self.assertEqual(1, self.product1.get_vulnerable_packages(risk_threshold=4.0).count())
@@ -410,6 +413,21 @@ class ProductPortfolioModelsTestCase(TestCase):
         expected_message = 'Updated package "pkg:deb/debian/curl@1.0" to "pkg:deb/debian/curl@2.0"'
         self.assertEqual(expected_message, history_entries.latest("action_time").change_message)
 
+    def test_product_model_assign_object_replace_version_package_update_vulnerability_scores(self):
+        self.assertEqual(0, self.product1.get_vulnerable_productpackages().count())
+        package1 = make_package(self.dataspace, name="a", version="1.0", is_vulnerable=True)
+        p1_p1 = make_product_package(self.product1, package1)
+        p1_p1.raw_update(weighted_risk_score=5.0)
+        self.assertTrue(self.product1.productpackages.vulnerable().exists())
+
+        package2 = make_package(self.dataspace, name="a", version="2.0")
+        status, p1_p2 = self.product1.assign_object(package2, self.super_user, replace_version=True)
+        self.assertEqual("updated", status)
+
+        p1_p2.refresh_from_db()
+        self.assertIsNone(p1_p2.weighted_risk_score)
+        self.assertFalse(self.product1.productpackages.vulnerable().exists())
+
     def test_product_model_find_assigned_other_versions_component(self):
         component1 = Component.objects.create(name="c", version="1.0", dataspace=self.dataspace)
         component2 = Component.objects.create(name="c", version="2.0", dataspace=self.dataspace)
@@ -529,6 +547,45 @@ class ProductPortfolioModelsTestCase(TestCase):
         product = Product.unsecured_objects.get(pk=product.pk)
         self.assertTrue(product.is_locked)
 
+    def test_product_model_improve_packages_from_purl(self):
+        product = make_product(self.dataspace)
+        package1 = make_package(self.dataspace, package_url="pkg:nuget/Azure.Core@1.45.0")
+        make_product_package(product, package=package1)
+
+        product.refresh_from_db()
+        updated_packages = product.improve_packages_from_purl()
+        self.assertEqual([package1], updated_packages)
+
+        package1.refresh_from_db()
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        self.assertEqual(expected_download_url, package1.download_url)
+
+    @mock.patch("dje.tasks.scancodeio_submit_scan.delay")
+    def test_product_model_scan_all_packages_task(self, mock_scancodeio_submit_scan):
+        product = make_product(self.dataspace)
+        package1 = make_package(self.dataspace, package_url="pkg:nuget/Azure.Core@1.45.0")
+        make_product_package(product, package=package1)
+
+        mock_scancodeio_submit_scan.return_value = None
+        product.scan_all_packages_task(user=self.super_user)
+        mock_scancodeio_submit_scan.assert_called_with(
+            uris=[],
+            user_uuid=self.super_user.uuid,
+            dataspace_uuid=self.super_user.dataspace.uuid,
+        )
+        package1.refresh_from_db()
+        self.assertEqual("", package1.download_url)
+
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        product.scan_all_packages_task(user=self.super_user, infer_download_urls=True)
+        mock_scancodeio_submit_scan.assert_called_with(
+            uris=[expected_download_url],
+            user_uuid=self.super_user.uuid,
+            dataspace_uuid=self.super_user.dataspace.uuid,
+        )
+        package1.refresh_from_db()
+        self.assertEqual(expected_download_url, package1.download_url)
+
     @mock.patch("component_catalog.models.Package.update_from_purldb")
     def test_product_model_improve_packages_from_purldb(self, mock_update_from_purldb):
         mock_update_from_purldb.return_value = 1
@@ -545,6 +602,27 @@ class ProductPortfolioModelsTestCase(TestCase):
         # Updated from the package during improve_packages_from_purldb
         pp1.refresh_from_db()
         self.assertEqual("apache-2.0", pp1.license_expression)
+
+    def test_product_model_affected_by_vulnerabilities(self):
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=1.0)
+        vulnerability2 = make_vulnerability(self.dataspace, risk_score=10.0)
+        vulnerability3 = make_vulnerability(self.dataspace, risk_score=5.0)
+
+        vulnerability1.add_affected(self.product1)
+        affected_by = self.product1.affected_by_vulnerabilities.all()
+        self.assertQuerySetEqual([vulnerability1], affected_by)
+        self.product1.refresh_from_db()
+        self.assertEqual(1.0, self.product1.risk_score)
+
+        vulnerability2.add_affected(self.product1)
+        affected_by = self.product1.affected_by_vulnerabilities.order_by("id")
+        self.assertQuerySetEqual([vulnerability1, vulnerability2], affected_by)
+        self.product1.refresh_from_db()
+        self.assertEqual(10.0, self.product1.risk_score)
+
+        vulnerability3.add_affected(self.product1)
+        self.product1.refresh_from_db()
+        self.assertEqual(10.0, self.product1.risk_score)
 
     def test_product_model_get_vulnerability_qs(self):
         package1 = make_package(self.dataspace)

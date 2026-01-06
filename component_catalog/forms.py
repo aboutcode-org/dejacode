@@ -708,7 +708,7 @@ class AddToProductAdminForm(forms.Form):
     ids = forms.CharField(widget=forms.widgets.HiddenInput)
     replace_existing_version = forms.BooleanField(
         required=False,
-        initial=False,
+        initial=True,
         label="Replace existing relationships by newer version.",
         help_text=(
             "Select this option to replace any existing relationships with a different version "

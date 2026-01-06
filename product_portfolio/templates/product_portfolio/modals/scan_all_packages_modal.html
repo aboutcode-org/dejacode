@@ -1,24 +1,35 @@
+{% load crispy_forms_tags %}
 <div class="modal" tabindex="-1" role="dialog" id="scan-all-packages-modal">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Scan all Packages</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body bg-body-tertiary">
-        You are about to initiate multiple scans on the ScanCode.io server for all of the
-        Packages assigned to your Product, either by direct assignment or by assignment to a
-        Component assigned to your Product.<br><br>
-        <strong>Note that this may take some time to complete.</strong><br><br>
-        You can view the status of all the scans by selecting the
-        <a target="_blank" href="{% url 'component_catalog:scan_list' %}">Scans</a> option
-        from the DejaCode Tools dropdown menu, where you can also select each Package in the list
-        to view scan results details in the "Scan" tab of that Package.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <a id="scan_all_packages_submit" href="{{ object.get_scan_all_packages_url }}" class="btn btn-success">Submit Scan Request</a>
+  <form autocomplete="off" method="{{ scan_all_packages_form.helper.form_method }}" action="{{ object.get_scan_all_packages_url }}" id="{{ scan_all_packages_form.helper.form_id }}">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Scan all Packages</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-body-tertiary">
+          <p>
+            You are about to initiate multiple scans on the ScanCode.io server for all the
+            Packages assigned to your Product, either by direct assignment or by assignment to a
+            Component assigned to your Product.
+          </p>
+          <p>
+            <strong>Note that this may take some time to complete.</strong>
+          </p>
+          <p>
+            You can view the status of all the scans by selecting the
+            <a target="_blank" href="{% url 'component_catalog:scan_list' %}">Scans</a> option
+            from the DejaCode Tools dropdown menu, where you can also select each Package in the list
+            to view scan results details in the "Scan" tab of that Package.
+          </p>
+          <hr>
+          {% crispy scan_all_packages_form %}
+        </div>
+        <div class="modal-footer">
+          <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
+          <input type="submit" id="scan_all_packages_submit" value="Submit Scan Request" class="btn btn-primary btn-success">
+        </div>
       </div>
     </div>
-  </div>
+  </form>
 </div>

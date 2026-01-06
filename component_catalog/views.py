@@ -47,7 +47,6 @@ from django.views.generic.edit import BaseFormView
 from crispy_forms.utils import render_crispy_form
 from natsort import natsorted
 from packageurl import PackageURL
-from packageurl.contrib import purl2url
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -72,6 +71,7 @@ from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
+from dejacode_toolkit.download import infer_download_url
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import ScanStatus
@@ -1083,7 +1083,7 @@ class PackageDetailsView(
                 "package_url",
                 "filename",
                 "download_url",
-                "inferred_url",
+                "inferred_repo_url",
                 "size",
                 "release_date",
                 "primary_language",
@@ -1951,7 +1951,7 @@ class PackageAddView(
             purl = PackageURL.from_string(package_url)
             package_url_dict = purl.to_dict(encode=True, empty="")
             initial.update(package_url_dict)
-            if download_url := purl2url.get_download_url(package_url):
+            if download_url := infer_download_url(purl):
                 initial.update({"download_url": download_url})
 
         return initial

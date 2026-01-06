@@ -1,0 +1,21 @@
+about_resource: django-5.2.9-py3-none-any.whl
+name: django
+version: 5.2.9
+download_url: https://files.pythonhosted.org/packages/17/b0/7f42bfc38b8f19b78546d47147e083ed06e12fc29c42da95655e0962c6c2/django-5.2.9-py3-none-any.whl
+package_url: pkg:pypi/django@5.2.9
+license_expression: bsd-new AND python AND unknown-license-reference
+copyright: Copyright django project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 42dd57f28b8dd5750ef76b64277d3e9e
+checksum_sha1: c0808a610ea903a17736634e9c21556ea9d675e4
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: python
+    name: Python Software Foundation License v2
+    file: python.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

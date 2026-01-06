@@ -256,14 +256,14 @@ class DataspacedModelAdminTestCase(TestCase):
         self.assertEqual(302, response.status_code)
         self.assertIn("?e=1", response["Location"])
 
-        data = {MissingInFilter.parameter_name: 99}
+        data = {MissingInFilter.parameter_name: 999999}
         response = self.client.get(url, data=data)
         self.assertEqual(302, response.status_code)
         self.assertIn("?e=1", response["Location"])
 
         data = {
             MissingInFilter.parameter_name: self.other_dataspace.id,
-            DataspaceFilter.parameter_name: 99,
+            DataspaceFilter.parameter_name: 999999,
         }
         response = self.client.get(url, data=data)
         self.assertEqual(200, response.status_code)

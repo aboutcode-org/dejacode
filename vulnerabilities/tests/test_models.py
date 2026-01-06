@@ -82,18 +82,73 @@ class VulnerabilitiesModelsTestCase(TestCase):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
+        vulnerabilities_data.append({"vulnerability_id": "VCID-0002", "risk_score": 5.0})
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
-
-        self.assertEqual(8.4, package1.risk_score)
+        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual("8.4", str(package1.risk_score))
         self.assertEqual("8.4", str(product1.productpackages.get().weighted_risk_score))
+
+    def test_vulnerability_mixin_update_risk_score(self):
+        package1 = make_package(self.dataspace)
+
+        # Test with no vulnerabilities
+        package1.update_risk_score()
+        self.assertIsNone(package1.risk_score)
+
+        # Test with one vulnerability with risk score
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace, risk_score=7.5)
+        vulnerability1.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("7.5", str(package1.risk_score))
+
+        # Test with multiple vulnerabilities, should use max
+        vulnerability2 = make_vulnerability(dataspace=self.dataspace, risk_score=9.2)
+        vulnerability2.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("9.2", str(package1.risk_score))
+
+        # Test with vulnerability with lower risk score, should keep max
+        vulnerability3 = make_vulnerability(dataspace=self.dataspace, risk_score=3.1)
+        vulnerability3.add_affected(package1)
+        package1.update_risk_score()
+        self.assertEqual("9.2", str(package1.risk_score))
+
+        # Test with all vulnerabilities having NULL risk scores
+        package2 = make_package(self.dataspace)
+        vulnerability4 = make_vulnerability(dataspace=self.dataspace, risk_score=None)
+        vulnerability5 = make_vulnerability(dataspace=self.dataspace, risk_score=None)
+        vulnerability4.add_affected(package2)
+        vulnerability5.add_affected(package2)
+        package2.update_risk_score()
+        self.assertIsNone(package2.risk_score)
+
+    def test_vulnerability_mixin_add_affected_by(self):
+        package1 = make_package(self.dataspace)
+
+        vulnerability1 = make_vulnerability(self.dataspace, risk_score=1.0)
+        vulnerability2 = make_vulnerability(self.dataspace, risk_score=10.0)
+        vulnerability3 = make_vulnerability(self.dataspace, risk_score=5.0)
+
+        package1.add_affected_by(vulnerability1)
+        package1.refresh_from_db()
+        self.assertEqual("1.0", str(package1.risk_score))
+
+        package1.add_affected_by(vulnerability2)
+        package1.refresh_from_db()
+        self.assertEqual("10.0", str(package1.risk_score))
+
+        package1.add_affected_by(vulnerability3)
+        package1.refresh_from_db()
+        self.assertEqual("10.0", str(package1.risk_score))
+
+        self.assertEqual(package1, vulnerability1.affected_packages.get())
+        self.assertEqual(package1, vulnerability2.affected_packages.get())
+        self.assertEqual(package1, vulnerability3.affected_packages.get())
+        self.assertEqual(3, package1.affected_by_vulnerabilities.count())
 
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
@@ -174,6 +229,26 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["references"], vulnerability1.references)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
+
+    def test_vulnerability_model_get_or_create_from_data(self):
+        vulnerability_data = {
+            "id": "VCID-q4q6-yfng-aaag",
+            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
+        }
+
+        vulnerability1 = Vulnerability.get_or_create_from_data(
+            dataspace=self.dataspace,
+            data=vulnerability_data,
+        )
+        self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
+
+        vulnerability_data["vulnerability_id"] = vulnerability_data["id"]
+        vulnerability2 = Vulnerability.get_or_create_from_data(
+            dataspace=self.dataspace,
+            data=vulnerability_data,
+        )
+        self.assertEqual(vulnerability1.id, vulnerability2.id)
 
     def test_vulnerability_model_queryset_count_methods(self):
         package1 = make_package(self.dataspace)
