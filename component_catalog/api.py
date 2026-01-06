@@ -618,6 +618,7 @@ class PackageSerializer(
         required=False,
         scope_content_type=True,
     )
+    package_content = serializers.ReadOnlyField(source="get_package_content_display")
     collect_data = serializers.BooleanField(
         write_only=True,
         required=False,
