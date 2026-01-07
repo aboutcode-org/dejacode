@@ -658,7 +658,14 @@ def is_purl_fragment(string):
 
 def get_plain_purl(purl_str):
     """Remove the qualifiers and subpath from the `purl_str```."""
+    if not purl_str:
+        return ""
     return purl_str.split("?")[0]
+
+
+def plain_purls_equal(purl1, purl2):
+    """Check if two PURLs are equal, ignoring qualifiers and subpath."""
+    return get_plain_purl(purl1) == get_plain_purl(purl2)
 
 
 def remove_empty_values(input_dict):
