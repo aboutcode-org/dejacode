@@ -42,6 +42,7 @@ from dje.utils import localized_datetime
 from dje.utils import merge_common_non_empty_values
 from dje.utils import merge_relations
 from dje.utils import normalize_newlines_as_CR_plus_LF
+from dje.utils import plain_purls_equal
 from dje.utils import remove_field_from_query_dict
 from dje.utils import str_to_id_list
 from dje.views import get_previous_next
@@ -528,6 +529,7 @@ class DJEUtilsTestCase(TestCase):
             self.assertFalse(is_purl_fragment(fragment), msg=fragment)
 
     def test_utils_get_plain_purl(self):
+        self.assertEqual("", get_plain_purl(None))
         self.assertEqual("", get_plain_purl(""))
         self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
         self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
@@ -535,6 +537,23 @@ class DJEUtilsTestCase(TestCase):
         self.assertEqual(
             "pkg:npm/is-npm@1.0.0", get_plain_purl("pkg:npm/is-npm@1.0.0?qualifier=1#frament")
         )
+
+    def test_utils_plain_purls_equal(self):
+        purl1 = "pkg:npm/is-npm@1.0.0"
+        purl2 = "pkg:npm/is-npm@1.0.0"
+        self.assertTrue(plain_purls_equal(purl1, purl2))
+
+        purl1 = "pkg:npm/is-npm@1.0.0?qual=1#subpath"
+        purl2 = "pkg:npm/is-npm@1.0.0"
+        self.assertTrue(plain_purls_equal(purl1, purl2))
+
+        purl1 = "pkg:npm/is-npm@1.0.0?qual=1"
+        purl2 = "pkg:npm/is-npm@1.0.0?qual=2"
+        self.assertTrue(plain_purls_equal(purl1, purl2))
+
+        purl1 = "pkg:npm/is-npm@1.0.0"
+        purl2 = "pkg:npm/is-npm@2.0.0"
+        self.assertFalse(plain_purls_equal(purl1, purl2))
 
     def test_utils_localized_datetime(self):
         self.assertIsNone(localized_datetime(None))

@@ -75,9 +75,9 @@ from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
-from dje.utils import get_plain_purl
 from dje.utils import is_purl_str
 from dje.utils import merge_common_non_empty_values
+from dje.utils import plain_purls_equal
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -2618,13 +2618,13 @@ class Package(
             return []
 
         # Cleanup the PurlDB entries:
-        # Packages with different "plain" PURL are excluded. The qualifiers and
-        # subpaths are not involved in this comparison.
+        # Packages with different "plain" PURL are excluded.
+        # The qualifiers and subpaths are not involved in this comparison.
         if package_url:
             purldb_entries = [
                 entry
                 for entry in purldb_entries
-                if get_plain_purl(entry.get("purl", "")) == package_url
+                if plain_purls_equal(entry.get("purl"), package_url)
             ]
 
         return purldb_entries

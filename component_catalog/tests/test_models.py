@@ -2622,10 +2622,25 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         mock_find_packages.return_value = None
         purldb_entries = package1.get_purldb_entries(user=self.user)
+        self.assertEqual([], purldb_entries)
 
         mock_find_packages.return_value = [purldb_entry1, purldb_entry2, purldb_entry3]
         purldb_entries = package1.get_purldb_entries(user=self.user)
         # The purldb_entry2 is excluded as the PURL differs
+        self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries_plain_purls_equal(self, mock_find_packages):
+        purl1 = "pkg:maven/core/jackson-core@2.18.3?type=jar"
+        purl2 = "pkg:maven/core/jackson-core@2.18.3?classifier=sources&type=jar"
+
+        package1_purl = "pkg:maven/core/jackson-core@2.18.3?some=qualifier"
+        package1 = make_package(self.dataspace, package_url=package1_purl)
+        purldb_entry1 = {"purl": purl1}
+        purldb_entry2 = {"purl": purl2}
+
+        mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
+        purldb_entries = package1.get_purldb_entries(user=self.user)
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
