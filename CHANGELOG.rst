@@ -1,7 +1,28 @@
 Release notes
 =============
 
-### Version 5.6.0-dev
+### Version 5.6.0
+
+- feat: import vulnerability data from ScanCode.io
+  https://github.com/aboutcode-org/dejacode/issues/448
+
+- feat: ability to assign and manage vulnerabilities on products
+  https://github.com/aboutcode-org/dejacode/issues/439
+
+- feat: add package_content PurlDB field on Package model
+  https://github.com/aboutcode-org/dejacode/issues/434
+
+- fix: exclude qualifiers and subpath for PURL comparison in get_purldb_entries
+  https://github.com/aboutcode-org/dejacode/issues/453
+
+- fix: update the readthedocs.yml config to fix the build
+  https://github.com/aboutcode-org/dejacode/issues/447
+
+- chore: upgrade Django and related libraries to latest version
+  https://github.com/aboutcode-org/dejacode/issues/451
+
+- chore: upgrade altcha and django_altcha to latest versions
+  https://github.com/aboutcode-org/dejacode/issues/450
 
 ### Version 5.5.0
 
