@@ -370,6 +370,31 @@ class ReportDetailsViewTestCase(TestCase):
         response = self.client.get(self.report.get_absolute_url())
         self.assertContains(response, "Case-insensitive exact match.")
 
+    def test_run_report_view_date_field_filter_value(self):
+        self.client.login(username="test", password="t3st")
+        query = Query.objects.create(
+            dataspace=self.dataspace,
+            name="License activity",
+            content_type=ContentType.objects.get_for_model(License),
+            operator="or",
+        )
+        Filter.objects.create(
+            dataspace=self.dataspace,
+            query=query,
+            field_name="last_modified_date",
+            lookup="gte",
+            value="2025-01-01",
+            runtime_parameter=True,
+        )
+        report = Report.objects.create(
+            name="License activity",
+            query=query,
+            column_template=self.column_template,
+        )
+
+        response = self.client.get(report.get_absolute_url())
+        self.assertEqual(200, response.status_code)
+
     def test_run_report_view_results_count(self):
         self.client.login(username="test", password="t3st")
         response = self.client.get(self.report.get_absolute_url())

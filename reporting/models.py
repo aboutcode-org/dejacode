@@ -37,6 +37,7 @@ from dje.models import HistoryFieldsMixin
 from dje.models import is_secured
 from dje.models import secure_queryset_relational_fields
 from dje.utils import extract_name_version
+from dje.utils import parse_date_aware
 from reporting.fields import DATE_FILTER_CHOICES
 from reporting.fields import BooleanSelect
 from reporting.fields import DateFieldFilterSelect
@@ -358,6 +359,9 @@ class Filter(DataspacedModel):
                 final_part = field_parts[-1]
                 model_field_instance = model._meta.get_field(final_part)
 
+                if isinstance(model_field_instance, models.DateField):
+                    value = parse_date_aware(value)
+
                 # For non-RelatedFields use the model field's form field to
                 # coerce the value to a Python object
                 if not isinstance(model_field_instance, RelatedField):
@@ -368,10 +372,9 @@ class Filter(DataspacedModel):
                     # is required to run the custom validators declared on the
                     # Model field.
                     model_field_instance.clean(value, model)
-                    # We must check if ``fields_for_model()`` Return the field
-                    # we are considering.  For example ``AutoField`` returns
-                    # None for its form field and thus will not be in the
-                    # dictionary returned by ``fields_for_model()``.
+                    # We must check if ``fields_for_model()`` Return the field we are considering.
+                    # For example ``AutoField`` returns None for its form field and thus will not
+                    # be in the dictionary returned by ``fields_for_model()``.
                     form_field_instance = fields_for_model(model).get(final_part)
                     if form_field_instance:
                         widget_value = form_field_instance.widget.value_from_datadict(
@@ -410,7 +413,7 @@ class Filter(DataspacedModel):
         if value == BooleanSelect.ALL_CHOICE_VALUE:
             return
 
-        # Hack to support special values for date filtering, see #9049
+        # Hack to support special values for date filtering, such as "past_7_days"
         if value in [choice[0] for choice in DATE_FILTER_CHOICES]:
             value = DateFieldFilterSelect().value_from_datadict(
                 data={"value": value}, files=None, name="value"

@@ -692,6 +692,17 @@ def humanize_time(seconds):
     return message
 
 
+def parse_date_aware(value):
+    """
+    Parse a date or datetime string and return a timezone-aware datetime.
+    Supports both "2025-01-01" and "2025-01-01 14:30:00" formats.
+    """
+    dt = parse_datetime(value)
+    if dt and timezone.is_naive(dt):
+        dt = timezone.make_aware(dt)
+    return dt
+
+
 def localized_datetime(datetime):
     """
     Format a given datetime string into the application's default display format,

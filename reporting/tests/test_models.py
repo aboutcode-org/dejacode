@@ -7,6 +7,7 @@
 #
 
 import datetime
+import zoneinfo
 from unittest.util import safe_repr
 
 from django.contrib.contenttypes.models import ContentType
@@ -782,8 +783,27 @@ class FilterTestCase(TestCase):
             lookup="exact",
             value="True",
         )
+        self.assertEqual(True, f.get_coerced_value(f.value))
 
-        expected = True
+    def test_get_coerced_value_date_field(self):
+        query = Query.objects.create(
+            dataspace=self.dataspace,
+            name="Date",
+            content_type=self.license_ct,
+            operator="and",
+        )
+        f = Filter.objects.create(
+            dataspace=self.dataspace,
+            query=query,
+            field_name="last_modified_date",
+            lookup="gte",
+            value="2025-01-01",
+        )
+        expected = datetime.datetime(2025, 1, 1, 0, 0, tzinfo=zoneinfo.ZoneInfo(key="UTC"))
+        self.assertEqual(expected, f.get_coerced_value(f.value))
+
+        f.update(value="2025-01-01 14:30:00")
+        expected = datetime.datetime(2025, 1, 1, 14, 30, tzinfo=zoneinfo.ZoneInfo(key="UTC"))
         self.assertEqual(expected, f.get_coerced_value(f.value))
 
     def test_get_coerced_value_validation_from_model_validators(self):
@@ -905,12 +925,9 @@ class FilterTestCase(TestCase):
 
         today = DateFieldFilterSelect._get_today()
         past_7_days = today - datetime.timedelta(days=7)
-        self.assertEqual([("last_modified_date__gte", str(past_7_days))], f.get_q().children)
-
-        self.assertEqual([("last_modified_date__gte", str(today))], f.get_q("today").children)
-
-        with self.assertRaises(ValidationError):
-            f.get_q("invalid").children
+        self.assertEqual([("last_modified_date__gte", past_7_days)], f.get_q().children)
+        self.assertEqual([("last_modified_date__gte", today)], f.get_q("today").children)
+        self.assertEqual([("last_modified_date__gte", None)], f.get_q("invalid").children)
 
     def test_get_q_for_boolean_select_all_choice_value(self):
         query = Query.objects.create(
