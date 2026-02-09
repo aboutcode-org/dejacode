@@ -137,7 +137,6 @@ dependencies = [
     "referencing==0.37.0",
     "rpds-py==0.30.0",
     "attrs==25.4.0",
-    "pyrsistent==0.20.0",
     # CycloneDX
     "cyclonedx-python-lib==11.6.0",
     "sortedcontainers==2.4.0",
