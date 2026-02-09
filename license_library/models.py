@@ -209,6 +209,20 @@ class LicenseProfile(DataspacedModel):
         ),
     )
 
+    default_usage_policy = models.ForeignKey(
+        to="policy.UsagePolicy",
+        limit_choices_to={
+            "content_type__app_label": "license_library",
+            "content_type__model": "license",
+        },
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text=_(
+            "Default usage policy to be assigned to a license when using this license profile."
+        ),
+    )
+
     class Meta:
         unique_together = (("dataspace", "name"), ("dataspace", "uuid"))
         ordering = ["name"]
@@ -985,6 +999,20 @@ class License(
                 dataspace=self.dataspace,
                 defaults={"value": profile_assigned_tag.value},
             )
+
+    def set_usage_policy_from_license_profile(self):
+        """
+        Set default usage_policy value from the license_profile
+        when usage_policy is not already defined.
+        """
+        apply_default_usage_policy = all([
+            not self.usage_policy,
+            self.license_profile,
+            self.license_profile.default_usage_policy,
+        ])
+
+        if apply_default_usage_policy:
+            self.usage_policy = self.license_profile.default_usage_policy
 
     @staticmethod
     def get_extra_relational_fields():
