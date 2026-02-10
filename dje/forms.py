@@ -23,6 +23,7 @@ from django.forms.utils import ErrorDict
 from django.forms.utils import ErrorList
 from django.utils.html import conditional_escape
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
@@ -609,7 +610,7 @@ class CopyDefaultsForm(forms.Form):
         for model_class in models:
             model_name = str(model_class._meta.verbose_name)
             self.fields[model_name] = forms.MultipleChoiceField(
-                label=format_html("{}", model_name.title()),
+                label=mark_safe(model_name.title()),
                 required=False,
                 choices=model_class.get_exclude_choices(),
                 widget=forms.CheckboxSelectMultiple(attrs={"class": "inline"}),
@@ -652,7 +653,7 @@ class WarningDict(ErrorDict):
         if not self:
             return ""
         list_items = "".join(["<li>{}{}</li>".format(k, str(v)) for k, v in self.items()])
-        return format_html(f'<ul class="warninglist">{list_items}</ul>')
+        return mark_safe(f'<ul class="warninglist">{list_items}</ul>')
 
 
 class WarningList(ErrorList):
@@ -665,7 +666,7 @@ class WarningList(ErrorList):
         if not self:
             return ""
         list_items = "".join(["<li>{}</li>".format(conditional_escape(str(e))) for e in self])
-        return format_html(f'<ul class="warninglist">{list_items}</ul>')
+        return mark_safe(f'<ul class="warninglist">{list_items}</ul>')
 
 
 class BoundFieldWithWarnings(BoundField):
@@ -774,7 +775,7 @@ class TabPermissionsForm(forms.Form):
 
         for model_name, tabset in get_all_tabsets().items():
             check_all = '<input type="checkbox" class="float-end" style="margin-left: 15px;">'
-            label = format_html(f"{model_name.title()} {check_all}")
+            label = mark_safe(f"{model_name.title()} {check_all}")
             self.fields[model_name] = forms.MultipleChoiceField(
                 label=label,
                 required=False,

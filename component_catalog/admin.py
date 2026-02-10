@@ -16,6 +16,7 @@ from django.shortcuts import redirect
 from django.urls import path
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 
@@ -504,7 +505,7 @@ class ComponentAdmin(
                 "This license change impacts component usage in a Product or in another "
                 "Component.<br>{}".format(", ".join(changelist_links))
             )
-            self.message_user(request, format_html(msg), messages.WARNING)
+            self.message_user(request, mark_safe(msg), messages.WARNING)
 
         return response
 
@@ -1053,7 +1054,7 @@ class PackageAdmin(
         if not_updated:
             msg += f"<br>{not_updated} package(s) NOT updated (data already set or URL unavailable)"
 
-        self.message_user(request, format_html(msg), messages.SUCCESS)
+        self.message_user(request, mark_safe(msg), messages.SUCCESS)
 
     @admin.display(
         ordering="component",
@@ -1068,7 +1069,7 @@ class PackageAdmin(
             assigned_package.component.get_admin_link(target="_blank")
             for assigned_package in obj.componentassignedpackage_set.all()
         ]
-        return format_html("<br>".join(component_links))
+        return mark_safe("<br>".join(component_links))
 
     @admin.display(description="Inferred URL")
     def inferred_url(self, obj):

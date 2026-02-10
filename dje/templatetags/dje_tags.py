@@ -19,9 +19,9 @@ from django.urls import Resolver404
 from django.urls import get_script_prefix
 from django.urls import resolve
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.html import urlize as _urlize
 from django.utils.http import urlencode
-from django.utils.safestring import mark_safe
 
 register = Library()
 

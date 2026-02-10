@@ -50,6 +50,7 @@ from django.urls import reverse
 from django.utils.encoding import force_str
 from django.utils.html import format_html
 from django.utils.html import format_html_join
+from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 from django.views.generic import RedirectView
@@ -252,10 +253,10 @@ class ProhibitDataspaceLookupMixin:
     Remove the possibility to look into other Dataspaces.
     """
 
-    def lookup_allowed(self, lookup, value):
+    def lookup_allowed(self, lookup, value, request):
         if lookup.startswith("dataspace"):
             return False
-        return super().lookup_allowed(lookup, value)
+        return super().lookup_allowed(lookup, value, request)
 
     def check(self, **kwargs):
         errors = super().check(**kwargs)
@@ -413,7 +414,7 @@ class DataspacedChangeList(ChangeList):
         do_set_link = all(
             [
                 DataspaceFilter in self.model_admin.list_filter,
-                self.model_admin.lookup_allowed(DataspaceFilter.parameter_name, None),
+                self.model_admin.lookup_allowed(DataspaceFilter.parameter_name, None, request),
                 not self.is_popup,
             ]
         )
@@ -987,10 +988,10 @@ class DataspacedAdmin(
 
         return super().response_change(request, obj)
 
-    def lookup_allowed(self, lookup, value):
+    def lookup_allowed(self, lookup, value, request):
         if lookup in [EXTERNAL_SOURCE_LOOKUP]:
             return True
-        return super().lookup_allowed(lookup, value)
+        return super().lookup_allowed(lookup, value, request)
 
     @staticmethod
     def _limited_permission(request, obj, has_perm):
@@ -1750,7 +1751,7 @@ class GroupAdmin(ReferenceOnlyPermissions, HistoryAdminMixin, GroupAdmin):
 
     @admin.display(description=_("Permissions"))
     def get_permissions(self, obj):
-        return format_html("<br>".join(obj.permissions.values_list("name", flat=True)))
+        return mark_safe("<br>".join(obj.permissions.values_list("name", flat=True)))
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         """Limit the available Permissions."""

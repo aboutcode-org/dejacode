@@ -31,6 +31,7 @@ from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
 from django.utils.functional import cached_property
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import format_lazy
 from django.utils.text import get_valid_filename
 from django.utils.text import normalize_newlines
@@ -190,7 +191,7 @@ class LicenseExpressionMixin:
                 as_link=as_link,
                 show_policy=show_policy,
             )
-            return format_html(rendered)
+            return mark_safe(rendered)
 
     def get_license_expression_attribution(self):
         # note: the fields use in the template must be available as attributes or

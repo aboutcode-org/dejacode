@@ -22,8 +22,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 import markdown
@@ -529,7 +528,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
             else:
                 serialized_data.append(line)
 
-        return format_html(separator.join(serialized_data))
+        return mark_safe(separator.join(serialized_data))
 
     @property
     def serialized_data_html(self):
