@@ -185,6 +185,7 @@ where = ["."]
 
 [tool.ruff]
 line-length = 100
+target-version = "py313"
 exclude = [
     "migrations",
     "bin",
