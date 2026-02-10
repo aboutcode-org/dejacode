@@ -179,7 +179,7 @@ Pre-installation Checklist
 
 Before you install DejaCode, make sure you have the following prerequisites:
 
-#. **Python: versions 3.13** found at https://www.python.org/downloads/
+#. **Python: versions 3.14** found at https://www.python.org/downloads/
 #. **Git**: most recent release available at https://git-scm.com/
 #. **PostgreSQL**: release 16 or later found at https://www.postgresql.org/ or
    https://postgresapp.com/ on macOS
