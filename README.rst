@@ -1,42 +1,36 @@
+========
 DejaCode
 ========
 
-DejaCode is a complete enterprise-level application to automate open source license
-compliance and ensure software supply chain integrity, powered by
-`ScanCode <https://github.com/nexB/scancode-toolkit>`_,
+DejaCode provides an enterprise-level application to automate open source license 
+compliance and ensure software supply chain integrity, powered by `ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
 the industry-leading code scanner.
 
-- Run scans and track all the open source and third-party products and components used
-  in your software.
-- Apply usage policies at the license or component level, and integrate into
-  ScanCode to ensure compliance.
-- Capture software inventories (SBOMs), generate compliance artifacts, and keep
-  historical data.
-- Ensure FOSS compliance with enterprise-grade features and integrations for DevOps and
-  software systems.
-- Scan a software package, simply by providing its Download URL, to get comprehensive
-  details of its composition and create an SBOM.
-- Load software package data into DejaCode with the integration for the open source
-  ScanCode.io and ScanCode Toolkit projects to create a product’s SBOM.
-- Track and report vulnerability tracking and reporting by integrating with the open
-  source VulnerableCode project.
-- Create, publish and share SBOM documents in DejaCode, including detailed attribution
-  documentation and custom reports in multiple file formats and standards, such as
-  CycloneDX and SPDX.
+Why Use DejaCode?
+=================
 
-Getting started
----------------
+DejaCode is your system of record as a single source of truth with quality data for 
+licenses, vulnerabilities, and package provenance and metadata, enabling you to ensure 
+FOSS compliance with enterprise-grade features and integrations for DevOps and 
+software systems.
 
-The DejaCode documentation is available here: https://dejacode.readthedocs.io/
+Getting Started
+===============
 
-If you have questions please ask them in
-`Discussions <https://github.com/aboutcode-org/dejacode/discussions>`_.
+Instructions to get you up and running on your local machine are at `Getting Started <https://dejacode.readthedocs.io/en/stable/index.html>`_
 
-If you want to contribute to DejaCode, start with our
-`Contributing <https://dejacode.readthedocs.io/en/latest/contributing.html>`_ page.
+The DejaCode documentation also provides:
+
+- prerequisites for installing the software.
+- instructions for configuring DejaCode integration with `ScanCode.io <https://github.com/aboutcode-org/scancode.io>`_, `VulnerableCode <https://github.com/aboutcode-org/vulnerablecode>`_, and `PurlDB <https://github.com/aboutcode-org/purldb>`_.
+- tutorials that provide hands-on guidance to DejaCode features.
+- how to setup usage policies.
+- how to capture and share software inventories (SBOMs) in multiple file formats and standards, such as CycloneDX and SPDX.
+- how to customize your own workflows and reports.
+- guidelines for contributing to code development.
 
 Build and tests status
-----------------------
+======================
 
 +------------+-------------------+
 | **Tests**  | **Documentation** |
@@ -45,7 +39,7 @@ Build and tests status
 +------------+-------------------+
 
 DejaCode License Notice
------------------------
+=======================
 
 DejaCode is an enterprise-level application to automate open source license
 compliance and ensure software supply chain integrity, powered by ScanCode,
@@ -68,7 +62,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Commercial Services option
----------------------------
+==========================
 
 nexB offers a commercial services option for DejaCode.
 You can learn more about these options by contacting nexB at
@@ -84,7 +78,7 @@ https://www.nexb.com/contact-us/
     :alt: Documentation Build Status
 
 Acknowledgements, Funding, Support and Sponsoring
---------------------------------------------------------
+=================================================
 
 This project is funded, supported and sponsored by:
 
@@ -97,7 +91,6 @@ This project is funded, supported and sponsored by:
 - Microsoft and Microsoft Azure
 - AboutCode ASBL
 - nexB Inc. 
-
 
 
 |europa|   |dgconnect| 
@@ -179,10 +172,3 @@ Communications Networks, Content and Technology under grant agreement No 1010695
     :target: https://nlnet.nl/discovery/
     :height: 40
     :alt: NGI Discovery logo
-
-
-
-
-
-
-
