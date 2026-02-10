@@ -555,15 +555,23 @@ class ComponentAdmin(
             del actions["set_policy"]
         return actions
 
-    def log_deletion(self, request, object, object_repr):
+    def delete_model(self, request, obj):
         """
+        Handle single object deletion from the delete view.
         Add the option to delete associated `Package` instances.
-        We use this method rather than `self.delete_model()` since we want to support both
-        the delete_view and the `delete_selected` action.
         """
-        super().log_deletion(request, object, object_repr)
         if request.POST.get("delete_packages"):
-            object.packages.all().delete()
+            obj.packages.all().delete()
+        super().delete_model(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        """
+        Handle bulk deletion from the delete_selected action.
+        Add the option to delete associated `Package` instances.
+        """
+        if request.POST.get("delete_packages"):
+            Package.objects.filter(component__in=queryset).delete()
+        super().delete_queryset(request, queryset)
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         """
