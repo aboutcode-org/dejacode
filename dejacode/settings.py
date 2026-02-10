@@ -635,6 +635,9 @@ REST_FRAMEWORK = {
 # Although, this setting and registration views are needed for the user creation.
 ACCOUNT_ACTIVATION_DAYS = 10
 
+# django-altcha
+ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
+
 # https://github.com/zapier/django-rest-hooks
 HOOK_FINDER = "notification.models.find_and_fire_hook"
 HOOK_DELIVERER = "notification.tasks.deliver_hook_wrapper"
@@ -683,11 +686,20 @@ if DEBUG and DEBUG_TOOLBAR:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"]
 
+# drf-yasg DeprecationWarning
+SWAGGER_USE_COMPAT_RENDERERS = False
+
+# The default protocol in urlize and urlizetrunc will change from HTTP to HTTPS
+# in Django 7.0.
+# Set the transitional setting URLIZE_ASSUME_HTTPS to True to opt into assuming HTTPS
+# during the Django 6.x release cycle.
+URLIZE_ASSUME_HTTPS = env.bool("DEJACODE_URLIZE_ASSUME_HTTPS", default=True)
+
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
     # Do not pollute the MEDIA_ROOT location while running the tests.
-    MEDIA_ROOT = tempfile.TemporaryDirectory().name
+    MEDIA_ROOT = tempfile.mkdtemp()
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [
