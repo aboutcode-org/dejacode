@@ -12,7 +12,7 @@ from django.forms.widgets import Select
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from dateutil import parser
+import dateutil
 
 
 class BooleanSelect(Select):
@@ -102,12 +102,8 @@ class DateFieldFilterSelect(Select):
 
     @staticmethod
     def _get_today():
-        now = timezone.now()
-        # When time zone support is enabled, convert "now" to the user's time
-        # zone so Django's definition of "Today" matches what the user expects.
-        if timezone.is_aware(now):
-            now = timezone.localtime(now)
-        return now.replace(hour=0, minute=0, second=0, microsecond=0)
+        """Get today's date at midnight in the current timezone."""
+        return timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
 
     def render(self, name, value, attrs=None, renderer=None):
         if not value:
@@ -115,7 +111,10 @@ class DateFieldFilterSelect(Select):
             value = "ERROR"
 
         try:
-            value_as_date = parser.parse(value)
+            value_as_date = dateutil.parser.parse(value)
+            # Make the parsed datetime timezone-aware to match "today" value
+            if timezone.is_naive(value_as_date):
+                value_as_date = timezone.make_aware(value_as_date)
         except Exception:
             value = "any_date"
         else:
