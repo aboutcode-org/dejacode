@@ -16,3 +16,145 @@
         <p id="dialog-content"></p>
     </div>
 {% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    {% static "img/icon-related-lookup-m2m-hover.png" as related_lookup_icon %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function(){
+                $('select#id_license_style').each(function(){
+                    let select = $(this);
+                    let base_url = '{% url "admin:license_library_license_changelist" %}licensestyle/';
+                    $('<li><a href="#"><img src="{{ related_lookup_icon }}"></a></li>')
+                        .attr({ href: base_url })
+                        .attr('class', 'view_dialog')
+                        .attr('id', 'a_license_style')
+                        .attr('style', 'margin:2px 0 0 2px')
+                        .attr('title', 'View Item')
+                        .prependTo(select.parent().next('ul'))
+                        .hover(function(){
+                            let href = base_url + select.val() + '/';
+                            $(this).attr('href', href);
+                    });
+                    if (select.val() === '') $('#a_license_style').hide();
+                });
+
+                $('select#id_license_profile').each(function(){
+                    let select = $(this);
+                    let base_url = '{% url "admin:license_library_license_changelist" %}licenseprofile/';
+                    $('<li><a href="#"><img src="{{ related_lookup_icon }}"></a></li>')
+                        .attr({ href: base_url })
+                        .attr('class', 'view_dialog')
+                        .attr('id', 'a_license_profile')
+                        .attr('style', 'margin:2px 0 0 2px')
+                        .attr('title', 'View Item')
+                        .prependTo(select.parent().next('ul'))
+                        .hover(function(){
+                            let href = base_url + select.val() + '/';
+                            $(this).attr('href', href);
+                    });
+                    if (select.val() === '') $('#a_license_profile').hide();
+                });
+
+                $("#dialog").dialog({
+                    autoOpen: false,
+                    bgiframe: true,
+                    draggable: false,
+                    width: 1000,
+                    resizable: false,
+                    modal: true
+                });
+
+                $(".view_dialog").click(function(event) {
+                    event.preventDefault();
+                    $('#dialog-log').html('Loading...');
+                    $.ajax({
+                          url: $(this).attr('href'),
+                          global: false,
+                          cache: false,
+                          type: "GET",
+                          data: "_popup=1",
+                          dataType: "html",
+                          success: function(msg){
+                              var html = msg.replace('<div class="module footer">', '<div style=display:none>')
+                                            .replace('id="content"', '');
+                              $('#dialog-content').html(html);
+                          }
+                    });
+                    $('#dialog').dialog('open');
+                });
+
+                $("#id_license_style").change(function() {
+                    ($(this).val() === '') ? $('#a_license_style').hide() : $('#a_license_style').show();
+                });
+
+                $("#id_license_profile").change(function() {
+                    ($(this).val() === '') ? $('#a_license_profile').hide() : $('#a_license_profile').show();
+                });
+
+                /***************************************************************/
+                /** Inline Tags ************************************************/
+
+                // The "selects" do not exist in the "edit" case, they are readonly
+                var selects = $('select:visible[id*="license_tag"]');
+                for (var i=0; i<selects.length; i++) {
+                    selects[i].selectedIndex = i+1;
+                    var select = $(selects[i]);
+                    select.next('a').hide();
+                    var text = $(select.find("option:selected")[0]).text();
+                    select.after('<p>' + text + '</p>');
+                    select.hide();
+                }
+
+                // On Edition, the following is done in the ModelAdmin.
+                {% if not change %}
+                    var tags_data = new Array();
+                    {# The escapejs is essential in case of a tag.text containing multilines #}
+                    {% for tag in tags %}
+                    tags_data['{{ tag.label }}'] = ['{{ tag.text|escapejs }}', '{{ tag.default_value|escapejs }}', '{{ tag.id }}', '{{ tag.guidance|escapejs }}'];
+                    {% endfor %}
+
+                    var array = $(".license_tag > p:visible");  // Addition
+                    // Different block type on Edition
+                    if (array.length === 0) { array = $(".license_tag > .grp-readonly:visible"); }
+                    var value_mapping = new Array();
+                    value_mapping["True"] = 2;
+                    value_mapping["False"] = 3;
+
+                    for (i=0; i<array.length; i++) {
+                        text = array[i].innerHTML;
+                        var tr_parent = array[i].parentNode.parentNode;
+                        var tag_text = '&nbsp;';
+                        var default_value = '';
+                        var guidance = '&nbsp;';
+
+                        if (tags_data[text] !== undefined) {
+                            tag_text = tags_data[text][0];
+                            default_value = tags_data[text][1];
+                            guidance = tags_data[text][3];
+                        }
+
+                        var td_text = $(tr_parent).find('.text')[0];
+                        td_text.innerHTML = '<div class="grp-readonly">' + tag_text + '</div>';
+                        var td_guidance = $(tr_parent).find('.guidance')[0];
+                        td_guidance.innerHTML = '<div class="grp-readonly">' + guidance + '</div>';
+
+                        if (default_value == "True" || default_value == "False") {
+                            var option = $(tr_parent).find('select:visible[id$="value"] option[value='+value_mapping[default_value]+']');
+                            option.attr("selected", "selected");
+                        }
+                    }
+                {% endif %}
+
+                 // Cleaning
+                $('#licenseassignedtag_set-group .grp-tools-container').remove();
+                $('#licenseassignedtag_set-group .grp-transparent').remove();
+                $('#licenseassignedtag_set-group h2.grp-collapse-handler').remove();
+                $('#licenseassignedtag_set-group .grp-tools').remove();
+                $('#licenseassignedtag_set-group .add-another').remove();
+
+            });
+        })(grp.jQuery);
+    </script>
+{% endblock %}
