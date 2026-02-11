@@ -11,6 +11,7 @@ from django.db.models.fields import BLANK_CHOICE_DASH
 from django.forms import widgets
 from django.forms.utils import flatatt
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 
@@ -55,14 +56,13 @@ class DropDownWidget(LinkWidget):
         if options:
             output.append(options)
         output.append("</div>")
-        menu = format_html("\n".join(output))
 
         return format_html(
             self.dropdown_template,
-            menu=menu,
+            menu=mark_safe("\n".join(output)),
             active="active" if value else "",
             label=self.label if self.label else name.title(),
-            link_content=format_html(self.link_content or ""),
+            link_content=mark_safe(self.link_content or ""),
         )
 
     def render_option(self, name, selected_choices, option_value, option_label):

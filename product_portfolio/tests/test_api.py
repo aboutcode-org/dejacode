@@ -476,12 +476,13 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
 
         scan_input_location = self.testfiles_path / "import_from_scan.json"
-        data = {
-            "upload_file": scan_input_location.open(),
-            "create_codebase_resources": True,
-            "stop_on_error": False,
-        }
-        response = self.client.post(url, data)
+        with scan_input_location.open() as upload_file:
+            data = {
+                "upload_file": upload_file,
+                "create_codebase_resources": True,
+                "stop_on_error": False,
+            }
+            response = self.client.post(url, data)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         expected = {
             "status": "Imported from Scan: 1 Packages, 1 Product Packages, 3 Codebase Resources"

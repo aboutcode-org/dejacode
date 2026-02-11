@@ -618,7 +618,7 @@ def get_cpe_vuln_link(cpe):
     base_url = "https://nvd.nist.gov/vuln/search/results"
     params = "?adv_search=true&isCpeNameSearch=true"
     vuln_url = f"{base_url}{params}&query={cpe}"
-    return format_html(f'<a target="_blank" href="{vuln_url}">{cpe}</a>')
+    return mark_safe(f'<a target="_blank" href="{vuln_url}">{cpe}</a>')
 
 
 def safe_filename(filename):

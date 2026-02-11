@@ -54,7 +54,7 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
@@ -982,7 +982,7 @@ class TabSetMixin:
             label = f'Activity <span class="badge text-bg-request">{len(requests)}</span>'
             return {
                 "fields": activity_fields,
-                "label": format_html(label),
+                "label": mark_safe(label),
             }
 
     def tab_external_references(self):

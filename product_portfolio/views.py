@@ -43,6 +43,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -515,7 +516,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -538,7 +539,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -566,7 +567,7 @@ class ProductDetailsView(
         if not vulnerability_count and risk_threshold is None:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
-                "label": format_html(label),
+                "label": mark_safe(label),
                 "fields": [],
                 "disabled": True,
                 "tooltip": "No vulnerabilities found in this Product",
@@ -596,7 +597,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -619,7 +620,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -645,7 +646,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -2037,9 +2038,9 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 msg = "Imported from Scan:"
                 for key, value in created_counts.items():
                     msg += f"<br> &bull; {value} {key}"
-                messages.success(request, format_html(msg))
+                messages.success(request, mark_safe(msg))
             if warnings:
-                messages.warning(request, format_html("<br>".join(warnings)))
+                messages.warning(request, mark_safe("<br>".join(warnings)))
             return redirect(f"{product.get_absolute_url()}#imports")
     else:
         form = form_class(request.user)

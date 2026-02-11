@@ -1,0 +1,15 @@
+about_resource: cython-3.2.4-py3-none-any.whl
+name: cython
+version: 3.2.4
+download_url: https://files.pythonhosted.org/packages/ff/fa/d3c15189f7c52aaefbaea76fb012119b04b9013f4bf446cb4eb4c26c4e6b/cython-3.2.4-py3-none-any.whl
+package_url: pkg:pypi/cython@3.2.4
+license_expression: apache-2.0
+copyright: Copyright cython project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: cb1da7746fd0fc2077f78f5ae89a4c3c
+checksum_sha1: bbbedf37da4b846172f234097b1191e2d260e171
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

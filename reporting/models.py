@@ -26,7 +26,7 @@ from django.db.models.fields.related import RelatedField
 from django.forms import fields_for_model
 from django.urls import NoReverseMatch
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 
@@ -550,7 +550,7 @@ class ColumnTemplate(HistoryFieldsMixin, DataspacedModel):
         """Return a list of field name, usable as Report results headers."""
         headers = [field.display_name or field.field_name for field in self.fields.all()]
         if include_view_link:
-            headers.insert(0, format_html("&nbsp;"))
+            headers.insert(0, mark_safe("&nbsp;"))
         return headers
 
 
@@ -767,7 +767,7 @@ class Report(HistoryFieldsMixin, DataspacedModel):
         if queryset is None:
             queryset = self.query.get_qs(user=user)
 
-        icon = format_html('<i class="fas fa-external-link-alt"></i>')
+        icon = mark_safe('<i class="fas fa-external-link-alt"></i>')
         rows = []
 
         for instance in queryset:

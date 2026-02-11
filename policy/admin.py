@@ -11,7 +11,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.template.defaultfilters import linebreaksbr
 from django.urls import path
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.html import urlize
 from django.utils.translation import gettext_lazy as _
 
@@ -81,25 +81,23 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
         "Subcomponent relationships, and Packages."
     )
 
-    long_description = format_html(
-        urlize(
-            linebreaksbr(
-                "For each application object type, you can specify the Usage Policy "
-                "label text, icon, and icon color for each relevant policy position "
-                "that you need to communicate to your users. "
-                "Examples include Recommended, Approved, Restricted, and Prohibited.\n"
-                "You can also export your DejaCode License Usage Policy assignments as "
-                "a file to use in other applications by clicking the "
-                '"Download License Policies as YAML" button. '
-                "For an example of how to use this file in an open source tool, see "
-                "https://github.com/nexB/scancode-toolkit/wiki/License-Policy-Plugin "
-                "for a detailed explanation."
-            )
+    long_description = urlize(
+        linebreaksbr(
+            "For each application object type, you can specify the Usage Policy "
+            "label text, icon, and icon color for each relevant policy position "
+            "that you need to communicate to your users. "
+            "Examples include Recommended, Approved, Restricted, and Prohibited.\n"
+            "You can also export your DejaCode License Usage Policy assignments as "
+            "a file to use in other applications by clicking the "
+            '"Download License Policies as YAML" button. '
+            "For an example of how to use this file in an open source tool, see "
+            "https://github.com/nexB/scancode-toolkit/wiki/License-Policy-Plugin "
+            "for a detailed explanation."
         )
     )
 
     def associated_policies(self, obj):
-        return format_html(
+        return mark_safe(
             "<br>".join(
                 association.to_policy.str_with_content_type()
                 for association in obj.to_policies.all()

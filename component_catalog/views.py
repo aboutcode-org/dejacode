@@ -34,6 +34,7 @@ from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -275,7 +276,7 @@ class TabVulnerabilityMixin:
 
         return {
             "fields": [(None, context, None, self.template)],
-            "label": format_html(label),
+            "label": mark_safe(label),
         }
 
     def get_fixed_packages_html(self, vulnerability, dataspace):
@@ -311,7 +312,7 @@ class TabVulnerabilityMixin:
                 if is_vulnerable:
                     display_value += package.get_html_link(
                         href=f"{absolute_url}#vulnerabilities",
-                        value=format_html(vulnerability_icon),
+                        value=mark_safe(vulnerability_icon),
                     )
                 else:
                     display_value += no_vulnerabilities_icon
@@ -336,7 +337,7 @@ class TabVulnerabilityMixin:
                 )
                 fixed_packages_values.append(display_value)
 
-        return format_html("<br>".join(fixed_packages_values))
+        return mark_safe("<br>".join(fixed_packages_values))
 
 
 class ComponentListView(
@@ -703,7 +704,7 @@ class ComponentDetailsView(
             if dataspace.show_usage_policy_in_user_views:
                 usage_policy = subcomponent.get_usage_policy_display_with_icon()
                 if not usage_policy:
-                    usage_policy = format_html("&nbsp;")
+                    usage_policy = mark_safe("&nbsp;")
                 fields_data["usage_policy"] = usage_policy
 
             components.append(fields_data)
@@ -1053,7 +1054,7 @@ class PackageListView(
             return redirect(request.path)
 
         error_msg = f"Error assigning packages to a component.\n{form.errors}"
-        messages.error(request, format_html(error_msg))
+        messages.error(request, mark_safe(error_msg))
         return redirect(request.path)
 
     def post(self, request, *args, **kwargs):
@@ -1418,7 +1419,7 @@ class PackageDetailsView(
                 messages.warning(request, "No new values to assign.")
         else:
             error_msg = f"Error assigning values to the package.\n{form.errors}"
-            messages.error(request, format_html(error_msg))
+            messages.error(request, mark_safe(error_msg))
 
         return redirect(f"{request.path}#essentials")
 
@@ -1593,7 +1594,7 @@ def package_create_ajax_view(request):
     elif len_created > 1:
         packages = "\n".join([package.get_absolute_link() for package in created])
         msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
-        messages.success(request, format_html(msg))
+        messages.success(request, mark_safe(msg))
 
     purls_wihtout_download_url = [package for package in created if not package.download_url]
     if purls_wihtout_download_url:
@@ -1604,12 +1605,12 @@ def package_create_ajax_view(request):
             "\nAlternatively, you can directly provide a download URL instead of a "
             "package URL to create the packages.\n"
         )
-        messages.warning(request, format_html(msg + "\n".join(packages)))
+        messages.warning(request, mark_safe(msg + "\n".join(packages)))
 
     if errors:
-        messages.error(request, format_html("\n".join(errors)))
+        messages.error(request, mark_safe("\n".join(errors)))
     if warnings:
-        messages.warning(request, format_html("\n".join(warnings)))
+        messages.warning(request, mark_safe("\n".join(warnings)))
 
     return JsonResponse({"redirect_url": redirect_url})
 
@@ -2187,7 +2188,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             table.append(
                 {
                     "label": label,
-                    "value": format_html(value),
+                    "value": mark_safe(value),
                     "help_text": help_text,
                     "td_class": td_class,
                     "th_class": th_class,
@@ -2328,7 +2329,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
                 if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
-                        value = format_html("<br>".join([escape(entry) for entry in value]))
+                        value = mark_safe("<br>".join([escape(entry) for entry in value]))
                     else:
                         value = escape(value)
                     detected_package_fields.append((label, value))
@@ -2404,7 +2405,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     if entry.get("value")
                 ]
 
-            scan_summary_fields.append((label, format_html("\n".join(values))))
+            scan_summary_fields.append((label, mark_safe("\n".join(values))))
 
         scan_summary_fields.append(FieldSeparator)
         return scan_summary_fields

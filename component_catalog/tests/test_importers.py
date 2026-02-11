@@ -348,7 +348,7 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(importer.formset.is_valid())
         importer.save_all()
         added_component = importer.results["added"][0]
-        self.assertEqual("http://www.a.com", added_component.homepage_url)
+        self.assertEqual("https://www.a.com", added_component.homepage_url)
 
     def test_component_import_strip_input_values(self):
         file = os.path.join(TESTFILES_LOCATION, "valid_with_non_stripped_spaces.csv")

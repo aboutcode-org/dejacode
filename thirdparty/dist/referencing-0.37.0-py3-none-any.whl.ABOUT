@@ -1,0 +1,14 @@
+about_resource: referencing-0.37.0-py3-none-any.whl
+name: referencing
+version: 0.37.0
+download_url: https://files.pythonhosted.org/packages/2c/58/ca301544e1fa93ed4f80d724bf5b194f6e4b945841c5bfd555878eea9fcb/referencing-0.37.0-py3-none-any.whl
+package_url: pkg:pypi/referencing@0.37.0
+license_expression: mit
+copyright: Copyright referencing project contributors
+attribute: yes
+checksum_md5: 0be0d0a9f3691df1a295018982a60ce9
+checksum_sha1: d38a45a8772a997bf4e14a52bc1745e6a8458f68
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

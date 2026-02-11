@@ -18,7 +18,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 
 from dje.utils import get_preserved_filters
 from dje.utils import group_by
@@ -123,7 +123,7 @@ def request_add_view(request, template_uuid):
             f"</a>"
         )
 
-        messages.success(request, format_html(msg))
+        messages.success(request, mark_safe(msg))
         return redirect(instance.get_absolute_url())
 
     return render(request, "workflow/request_form.html", {"form": form})
@@ -187,7 +187,7 @@ def request_edit_view(request, request_uuid):
             f"</a>"
         )
 
-        messages.success(request, format_html(msg))
+        messages.success(request, mark_safe(msg))
         return redirect(request_instance)
 
     elif not form.has_changed():

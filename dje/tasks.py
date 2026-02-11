@@ -36,8 +36,13 @@ def send_mail_task(subject, message, from_email, recipient_list, fail_silently=T
 
     The subject is cleaned from newlines and limited to 255 characters.
     """
-    subject = "".join(subject.splitlines())[:255]
-    send_mail(subject, message, from_email, recipient_list, fail_silently)
+    send_mail(
+        subject="".join(subject.splitlines())[:255],
+        message=message,
+        from_email=from_email,
+        recipient_list=recipient_list,
+        fail_silently=fail_silently,
+    )
 
 
 @job
@@ -50,7 +55,13 @@ def send_mail_to_admins_task(subject, message, from_email=None, fail_silently=Tr
     if not recipient_list:
         return
 
-    send_mail_task(subject, message, from_email, recipient_list, fail_silently)
+    send_mail_task(
+        subject=subject,
+        message=message,
+        from_email=from_email,
+        recipient_list=recipient_list,
+        fail_silently=fail_silently,
+    )
 
 
 @job("default", timeout=7200)
