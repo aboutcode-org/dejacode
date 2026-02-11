@@ -1,0 +1,13 @@
+about_resource: wheel-0.46.3-py3-none-any.whl
+name: wheel
+version: 0.46.3
+download_url: https://files.pythonhosted.org/packages/87/22/b76d483683216dde3d67cba61fb2444be8d5be289bf628c13fc0fd90e5f9/wheel-0.46.3-py3-none-any.whl
+package_url: pkg:pypi/wheel@0.46.3
+license_expression: unknown-license-reference
+copyright: Copyright wheel project contributors
+checksum_md5: 268bf133a01ffa49c152e5e3a47296da
+checksum_sha1: 8587c24d65be32a081b824d914dc31935159e2b7
+licenses:
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

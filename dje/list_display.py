@@ -9,6 +9,7 @@
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.utils.formats import date_format
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import class_wrap
@@ -89,7 +90,7 @@ class AsJoinList(ListDisplayItem):
         super().__init__(name, **kwargs)
 
     def to_representation(self, value):
-        return format_html(self.join_str.join(value))
+        return mark_safe(self.join_str.join(value))
 
 
 class AsNaturalTime(ListDisplayItem):

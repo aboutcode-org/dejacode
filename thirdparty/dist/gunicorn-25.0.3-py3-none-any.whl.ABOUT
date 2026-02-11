@@ -1,0 +1,17 @@
+about_resource: gunicorn-25.0.3-py3-none-any.whl
+name: gunicorn
+version: 25.0.3
+download_url: https://files.pythonhosted.org/packages/5e/84/117f39896ded517149be72d16c02252885690e9b0d1b84281944928f61aa/gunicorn-25.0.3-py3-none-any.whl
+package_url: pkg:pypi/gunicorn@25.0.3
+license_expression: mit AND unknown-license-reference
+copyright: Copyright gunicorn project contributors
+attribute: yes
+checksum_md5: 05f4b3c61cc31c26de7f4604e00b367c
+checksum_sha1: 272e749a03817f7ecfee8fb7b1d6b86833229fcb
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

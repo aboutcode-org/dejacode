@@ -14,8 +14,6 @@ import os
 from collections import defaultdict
 from collections import namedtuple
 from contextlib import suppress
-from functools import partial
-from functools import wraps
 from urllib.parse import parse_qsl
 from urllib.parse import unquote_plus
 from urllib.parse import urlparse
@@ -56,7 +54,7 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
@@ -984,7 +982,7 @@ class TabSetMixin:
             label = f'Activity <span class="badge text-bg-request">{len(requests)}</span>'
             return {
                 "fields": activity_fields,
-                "label": format_html(label),
+                "label": mark_safe(label),
             }
 
     def tab_external_references(self):
@@ -1361,6 +1359,7 @@ def object_copy_get(request, m2m_formset_class):
             ct = ContentType.objects.get_for_model(related_model)
             m2m_initial.append({"ct": ct.id})
 
+    m2m_formset = m2m_formset_class(initial=m2m_initial, form_kwargs={"user": request.user})
     return render(
         request,
         "admin/object_copy.html",
@@ -1368,7 +1367,7 @@ def object_copy_get(request, m2m_formset_class):
             "copy_candidates": copy_candidates,
             "update_candidates": update_candidates,
             "form": form,
-            "m2m_formset": m2m_formset_class(initial=m2m_initial),
+            "m2m_formset": m2m_formset,
             "opts": source_object._meta,
             "preserved_filters": preserved_filters,
         },
@@ -1388,11 +1387,7 @@ def object_copy_view(request):
     This result as an extra step of presenting the target Dataspace list of
     choices.
     """
-    # Declared here as it required in GET and POST cases.
-    m2m_formset_class = formset_factory(
-        wraps(M2MCopyConfigurationForm)(partial(M2MCopyConfigurationForm, user=request.user)),
-        extra=0,
-    )
+    m2m_formset_class = formset_factory(M2MCopyConfigurationForm, extra=0)
 
     # Default entry point of the view, requested using a GET
     # At that stage, we are only looking at what the User requested,
@@ -1421,7 +1416,7 @@ def object_copy_view(request):
         exclude_update = {model_class: config_form.cleaned_data.get("exclude_update")}
 
         # Append the m2m copy configuration
-        for m2m_form in m2m_formset_class(request.POST):
+        for m2m_form in m2m_formset_class(request.POST, form_kwargs={"user": request.user}):
             if not m2m_form.is_valid():
                 continue
             m2m_model_class = m2m_form.model_class

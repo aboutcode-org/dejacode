@@ -14,7 +14,7 @@ from django.core.exceptions import ValidationError
 from django.forms import widgets
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.html import mark_safe
 
 from boolean.boolean import PARSE_ERRORS
 from license_expression import ExpressionError
@@ -149,7 +149,7 @@ def normalize_and_validate_expression(
         msg = str(ee)
         if include_available:
             msg += available_licenses_message(licensing)
-        raise ValidationError(format_html(msg), code="invalid")
+        raise ValidationError(mark_safe(msg), code="invalid")
 
     except ParseError as pe:
         msg = PARSE_ERRORS[pe.error_code]
@@ -157,15 +157,15 @@ def normalize_and_validate_expression(
             msg += ": " + pe.token_string
         if include_available:
             msg += available_licenses_message(licensing)
-        raise ValidationError(format_html(msg), code="invalid")
+        raise ValidationError(mark_safe(msg), code="invalid")
 
     except (ValueError, TypeError) as ve:
         msg = "Invalid reference licenses data.\n" + str(ve)
-        raise ValidationError(format_html(msg), code="invalid")
+        raise ValidationError(mark_safe(msg), code="invalid")
 
     except Exception as e:
         msg = "Invalid license expression.\n" + str(e)
-        raise ValidationError(format_html(msg), code="invalid")
+        raise ValidationError(mark_safe(msg), code="invalid")
 
     # NOTE: we test for None because an expression cannot be resolved to
     # a boolean and a plain "if parsed" would attempt to resolve the

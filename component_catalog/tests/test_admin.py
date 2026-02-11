@@ -2204,18 +2204,20 @@ class ComponentAdminViewsTestCase(TestCase):
         expected = "Would you also like to delete Packages associated with this Component"
         self.assertNotContains(response, expected)
 
-        package1 = Package.objects.create(filename="package1.zip", dataspace=self.dataspace1)
+        package1 = make_package(dataspace=self.dataspace1, filename="package1.zip")
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package1, dataspace=self.dataspace1
         )
-        package2 = Package.objects.create(filename="package2.zip", dataspace=self.dataspace1)
+        package2 = make_package(dataspace=self.dataspace1, filename="package2.zip")
         ComponentAssignedPackage.objects.create(
             component=self.component1, package=package2, dataspace=self.dataspace1
         )
+        self.assertEqual(2, self.component1.packages.count())
 
-        self.assertTrue(self.component1.packages.exists())
         response = self.client.get(delete_url)
         self.assertContains(response, expected)
+        field = '<input type="checkbox" name="enable_delete_packages" id="enable_delete_packages">'
+        self.assertContains(response, field)
 
         data = {
             "post": "yes",
@@ -2224,9 +2226,10 @@ class ComponentAdminViewsTestCase(TestCase):
         response = self.client.post(delete_url, data=data, follow=True)
         self.assertContains(response, "was deleted successfully.")
         self.assertFalse(Component.objects.filter(pk=self.component1.pk).exists())
-        self.assertFalse(Package.objects.filter(pk__in=[package1.pk, package2.pk]).exists())
+        package_qs = Package.objects.filter(pk__in=[package1.pk, package2.pk])
+        self.assertFalse(package_qs.exists())
 
-        package3 = Package.objects.create(filename="package3.zip", dataspace=self.dataspace1)
+        package3 = make_package(dataspace=self.dataspace1, filename="package3.zip")
         ComponentAssignedPackage.objects.create(
             component=self.component2, package=package3, dataspace=self.dataspace1
         )

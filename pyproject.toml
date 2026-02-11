@@ -7,7 +7,7 @@ name = "dejacode"
 version = "5.6.0"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.14,<3.15"
 license = "AGPL-3.0-only"
 license-files = ["LICENSE", "NOTICE"]
 authors = [
@@ -26,19 +26,20 @@ classifiers = [
     "Intended Audience :: Legal Industry",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Utilities"
 ]
 dependencies = [
     # Base configuration tools
-    "setuptools==80.9.0",
-    "wheel==0.45.1",
-    "pip==25.3",
+    "setuptools==82.0.0",
+    "wheel==0.46.3",
+    "packaging==26.0",
+    "pip==26.0.1",
     # Django
-    "Django==5.2.9",
-    "asgiref==3.11.0",
+    "Django==6.0.2",
+    "asgiref==3.11.1",
     "typing_extensions==4.15.0",
-    "sqlparse==0.5.3",
+    "sqlparse==0.5.5",
     # Django apps
     "django-crispy-forms==2.5",
     "crispy_bootstrap5==2025.6",
@@ -48,33 +49,27 @@ dependencies = [
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.2.0",
     "django-environ==0.12.0",
-    "django-debug-toolbar==6.1.0",
+    "django-debug-toolbar==6.2.0",
     # CAPTCHA
     "altcha==1.0.0",
     "django_altcha==0.9.0",
     # REST API
     "djangorestframework==3.16.1",
     # API documentation
-    "drf-yasg==1.21.11",
+    "drf-yasg==1.21.14",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
     "pytz==2025.2",
     # Track failed login attempts
     "django-axes==8.0.0",
     # Multi-factor authentication
-    "django-otp==1.6.3",
+    "django-otp==1.7.0",
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.2.12",
+    "psycopg==3.3.2",
     # Cache
-    "redis==7.1.0",
-    # redis dependencies:
-    "packaging==25.0",
-    "pyparsing==3.2.5",
-    "async-timeout==5.0.1",
-    "Deprecated==1.2.18",
-    "wrapt==1.17.3",
+    "redis==7.1.1",
     # Antivirus
     "clamd==1.0.2",
     # Testing
@@ -82,25 +77,25 @@ dependencies = [
     # Task queue
     "rq==2.6.1",
     "croniter==6.0.0",
-    "django-rq==3.2.1",
+    "django-rq==3.2.2",
     "fakeredis==2.33.0",
     # Libs
     "certifi==2026.1.4",
-    "urllib3==2.6.2",
+    "urllib3==2.6.3",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
-    "PyJWT==2.10.1",
+    "PyJWT==2.11.0",
     "natsort==8.4.0",
     "six==1.17.0",
     "requests==2.32.5",
     "idna==3.11",
     "charset-normalizer==3.4.4",
-    "PyYAML==6.0.2",
-    "cython==3.1.1",
+    "PyYAML==6.0.3",
+    "cython==3.2.4",
     "zipp==3.23.0",
     "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.10",
+    "markdown==3.10.2",
     "bleach==6.3.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.5.1",
@@ -111,10 +106,10 @@ dependencies = [
     "defusedxml==0.7.1",
     # LDAP Auth
     "python_ldap==3.4.5",
-    "setuptools-scm==9.2.1",
-    "pyasn1==0.6.1",
+    "setuptools-scm==9.2.2",
+    "pyasn1==0.6.2",
     "pyasn1-modules==0.4.2",
-    "django-auth-ldap==5.2.0",
+    "django-auth-ldap==5.3.0",
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",
@@ -126,23 +121,22 @@ dependencies = [
     "swapper==1.4.0",
     # AboutCode Toolkit
     "aboutcode_toolkit==11.1.1",
-    "click==8.2.1",
+    "click==8.3.1",
     "Jinja2==3.1.6",
-    "MarkupSafe==3.0.2",
+    "MarkupSafe==3.0.3",
     "saneyaml==0.6.1",
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
     # PackageURL
     "packageurl-python==0.17.6",
     # Gunicorn
-    "gunicorn==23.0.0",
+    "gunicorn==25.0.3",
     # SPDX validation
-    "jsonschema==4.24.0",
-    "jsonschema-specifications==2025.4.1",
-    "referencing==0.36.2",
-    "rpds-py==0.25.1",
+    "jsonschema==4.26.0",
+    "jsonschema-specifications==2025.9.1",
+    "referencing==0.37.0",
+    "rpds-py==0.30.0",
     "attrs==25.4.0",
-    "pyrsistent==0.20.0",
     # CycloneDX
     "cyclonedx-python-lib==11.6.0",
     "sortedcontainers==2.4.0",
@@ -152,11 +146,11 @@ dependencies = [
     "gitdb==4.0.12",
     "smmap==5.0.2",
     # CSAF
-    "pydantic==2.11.5",
-    "pydantic-core==2.33.2",
-    "typing-inspection==0.4.1",
-    "maturin==1.8.6",
-    "setuptools-rust==1.11.1",
+    "pydantic==2.12.5",
+    "pydantic-core==2.41.5",
+    "typing-inspection==0.4.2",
+    "maturin==1.11.5",
+    "setuptools-rust==1.12.0",
     "annotated-types==0.7.0",
     "semantic-version==2.10.0",
     # OpenVEX
@@ -166,7 +160,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Linter and Validation
-    "ruff==0.14.0",
+    "ruff==0.15.0",
     # Parallel testing
     "tblib==3.2.2"
 ]
@@ -191,6 +185,7 @@ where = ["."]
 
 [tool.ruff]
 line-length = 100
+target-version = "py313"
 exclude = [
     "migrations",
     "bin",
