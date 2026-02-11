@@ -1,0 +1,14 @@
+about_resource: deprecated-1.3.1-py2.py3-none-any.whl
+name: deprecated
+version: 1.3.1
+download_url: https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl
+package_url: pkg:pypi/deprecated@1.3.1
+license_expression: mit
+copyright: Copyright deprecated project contributors
+attribute: yes
+checksum_md5: f653365522f40405ec4059edab8618bd
+checksum_sha1: cdf474353a5b98598f306d2cad18478e3bcaa4db
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
