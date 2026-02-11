@@ -326,12 +326,13 @@ class HistoryAdminMixin:
 
         return history_entry
 
-    def log_deletion(self, request, object, object_repr):
+    def log_deletions(self, request, queryset):
         """
-        Log that an object will be deleted.
+        Log that objects will be deleted.
         Note that this method must be called before the deletion.
         """
-        return History.log_deletion(request.user, object)
+        for object in queryset:
+            History.log_deletion(request.user, object)
 
     def history_view(self, request, object_id, extra_context=None):
         response = super().history_view(request, object_id, extra_context)
@@ -765,7 +766,7 @@ class DataspacedAdmin(
         super().save_formset(request, form, formset, change)
 
     def delete_model(self, request, obj):
-        # We are using this rather than self.log_deletion because it's not called
+        # We are using this rather than self.log_deletions because it's not called
         # Here, History.log_deletion is called for  each object in the bulk.
         History.log_deletion(request.user, obj)
         super().delete_model(request, obj)
