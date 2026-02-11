@@ -147,12 +147,79 @@
                     }
                 {% endif %}
 
-                 // Cleaning
-                $('#licenseassignedtag_set-group .grp-tools-container').remove();
-                $('#licenseassignedtag_set-group .grp-transparent').remove();
-                $('#licenseassignedtag_set-group h2.grp-collapse-handler').remove();
-                $('#licenseassignedtag_set-group .grp-tools').remove();
-                $('#licenseassignedtag_set-group .add-another').remove();
+                // Cleaning
+                document.querySelectorAll(
+                    '#licenseassignedtag_set-group .grp-tools-container, ' +
+                    '#licenseassignedtag_set-group .grp-transparent, ' +
+                    '#licenseassignedtag_set-group h2.grp-collapse-handler, ' +
+                    '#licenseassignedtag_set-group .grp-tools, ' +
+                    '#licenseassignedtag_set-group .add-another'
+                ).forEach(function(element) {
+                    element.remove();
+                });
+
+                // Hack to move the transform the Inline into a "tab"
+                // Manipulate the DOM to prepare before activating the tags
+                // Add the tabs list links
+                var licenseForm = document.getElementById('license_form');
+                var tabsUl = document.createElement('ul');
+                tabsUl.setAttribute('style', 'float:right;');
+                tabsUl.innerHTML = '<li><a href="#tabs-1">License Data</a></li><li><a href="#tabs-2">Assigned Tag Values</a></li>';
+                licenseForm.insertBefore(tabsUl, licenseForm.firstChild);
+
+                document.getElementById('grp-content-container').setAttribute('style', 'clear:both;');
+
+                // We put a tabs-1 id on the wrapper div in the form
+                licenseForm.lastElementChild.id = 'tabs-1';
+
+                // Add a new div tabs-2 in the form and move the Inline into it
+                var tabs2 = document.createElement('div');
+                tabs2.id = 'tabs-2';
+                licenseForm.appendChild(tabs2);
+                tabs2.appendChild(document.getElementById('licenseassignedtag_set-group'));
+
+                // The footer needs to be moved too to be outside "tabs-1"
+                var footer = document.querySelector('footer');
+                if (footer) {
+                    licenseForm.appendChild(footer);
+                }
+
+                // Activate the tabs
+                $(licenseForm).tabs();
+
+                // Removing un-wanted class, to ensure visual consistency
+                licenseForm.classList.remove('ui-widget', 'ui-widget-content', 'ui-corner-all');
+                document.querySelectorAll('#tabs-1, #tabs-2').forEach(function(element) {
+                    element.classList.remove('ui-tabs-panel', 'ui-widget-content', 'ui-corner-bottom');
+                });
+
+                // Hack to regroup the Assigned Tag based on the group seq
+                // First, build a dict of the div to be moved with the tag label as the key
+                var divDict = {};
+                document.querySelectorAll('div[id^="licenseassignedtag_set"].grp-module').forEach(function(value) {
+                    var labelElement = value.querySelector('.license_tag > p:first-child');
+                    var label = labelElement ? labelElement.textContent : '';
+                    // Different block type on Edition
+                    if (!label || label.length === 0) {
+                        var readonlyElement = value.querySelector('.license_tag > .grp-readonly:first-child');
+                        label = readonlyElement ? readonlyElement.textContent : '';
+                    }
+                    divDict[label] = value;
+                });
+
+                // Re-organize the inline block
+                var moduleTable = document.querySelector('#licenseassignedtag_set-group > .grp-module.grp-table');
+                {% for seq, group in group_dict.items %}
+                    var groupDiv = document.createElement('div');
+                    groupDiv.className = 'grp-module grp-tbody groupbox';
+                    groupDiv.innerHTML = '<div class="grp-tr"><div class="grp-td">{{ group.0 }}</div><div class="grp-td">&nbsp;</div><div class="grp-td">&nbsp;</div><div class="grp-td">&nbsp;</div></div>';
+                    moduleTable.appendChild(groupDiv);
+                    {% for label in group.1 %}
+                        if (divDict['{{ label }}'] !== undefined) {
+                            moduleTable.appendChild(divDict['{{ label }}']);
+                        }
+                    {% endfor %}
+                {% endfor %}
 
             });
         })(grp.jQuery);
