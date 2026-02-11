@@ -154,48 +154,6 @@
                 $('#licenseassignedtag_set-group .grp-tools').remove();
                 $('#licenseassignedtag_set-group .add-another').remove();
 
-                // Hack to move the transform the Inline into a "tab"
-                // Manipulate the DOM to prepare before activating the tags
-                // Add the tabs list links
-                var tabs_ul = $('<ul style="float:right;"><li><a href="#tabs-1">License Data</a></li><li><a href="#tabs-2">Assigned Tag Values</a></li></ul>');
-                tabs_ul.prependTo('#license_form');
-                $("#grp-content-container").attr('style', 'clear:both;');
-                // We put a tabs-1 id on the wrapper div in the form
-                $("#license_form > div:last-child").attr('id', 'tabs-1');
-                // Add a new div tabs-2 in the form and move the Inline into it
-                $('<div id="tabs-2"></div>').appendTo('#license_form');
-                $("#licenseassignedtag_set-group").appendTo('#tabs-2');
-                // The footer needs to be moved too to be outside "tabs-1"
-                $("footer").appendTo('#license_form');
-
-                // Activate the tabs
-                $("#license_form").tabs();
-                // Removing un-wanted class, to ensure visual consistency
-                $("#license_form").removeClass("ui-widget ui-widget-content ui-corner-all");
-                $("#tabs-1, #tabs-2").removeClass("ui-tabs-panel ui-widget-content ui-corner-bottom");
-
-                // Hack to regroup the Assigned Tag based on the group seq
-                // First, build a dict of the div to be moved with the tag label as the key
-                var div_dict = new Array();
-                $.each($('div[id^="licenseassignedtag_set"].grp-module'), function(index, value) {
-                    var label = $(value).find('.license_tag > p:first').text(); // Addition
-                    // Different block type on Edition
-                    if (!label || 0 === label.length) { label = $(value).find('.license_tag > .grp-readonly:first').text(); }
-                    div_dict[label] = $(value);
-                });
-
-                // Re-organize the inline block
-                var module_table = $('#licenseassignedtag_set-group > .grp-module.grp-table');
-                {% for seq, group in group_dict.items %}
-                    var group_div = $('<div class="grp-module grp-tbody groupbox"><div class="grp-tr"><div class="grp-td">{{ group.0 }}</div><div class="grp-td">&nbsp;</div><div class="grp-td">&nbsp;</div><div class="grp-td">&nbsp;</div></div></div>')
-                    group_div.appendTo(module_table);
-                    {% for label in group.1 %}
-                        if (div_dict['{{ label }}'] !== undefined) {
-                            div_dict['{{ label }}'].appendTo(module_table);
-                        }
-                    {% endfor %}
-                {% endfor %}
-
             });
         })(grp.jQuery);
     </script>
