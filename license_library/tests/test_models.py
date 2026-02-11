@@ -355,6 +355,7 @@ class LicenseModelsTestCase(TestCase):
             (
                 LicenseProfile,
                 [
+                    "default_usage_policy",
                     "examples",
                     "notes",
                 ],
