@@ -28,6 +28,7 @@ from license_library.models import LicenseTag
 from license_library.models import LicenseTagGroup
 from license_library.models import LicenseTagGroupAssignedTag
 from organization.models import Owner
+from policy.tests import make_usage_policy
 from product_portfolio.models import Product
 
 
@@ -303,6 +304,20 @@ class LicenseModelsTestCase(TestCase):
         expected = [("License1 (license-1)", "license-1")]
         data_for_expression_builder = License.objects.all().data_for_expression_builder()
         self.assertEqual(expected, data_for_expression_builder)
+
+    def test_license_model_set_usage_policy_from_license_profile(self):
+        self.license1.set_usage_policy_from_license_profile()
+        self.assertIsNone(self.license1.usage_policy)
+
+        self.license1.update(license_profile=self.license_profile)
+        self.license1.set_usage_policy_from_license_profile()
+        self.assertIsNone(self.license1.usage_policy)
+
+        license_policy = make_usage_policy(self.dataspace, model=License)
+        self.license_profile.update(default_usage_policy=license_policy)
+
+        self.license1.set_usage_policy_from_license_profile()
+        self.assertEqual(license_policy, self.license1.usage_policy)
 
     def test_license_library_models_get_exclude_candidates_fields(self):
         input_data = (

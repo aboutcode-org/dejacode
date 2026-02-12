@@ -1005,12 +1005,10 @@ class License(
         Set default usage_policy value from the license_profile
         when usage_policy is not already defined.
         """
-        apply_default_usage_policy = all(
-            [
-                not self.usage_policy,
-                self.license_profile,
-                self.license_profile.default_usage_policy,
-            ]
+        apply_default_usage_policy = (
+            not self.usage_policy
+            and self.license_profile
+            and self.license_profile.default_usage_policy
         )
 
         if apply_default_usage_policy:
