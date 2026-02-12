@@ -36,6 +36,7 @@
     ],
     "uuid": "5a4ec739-50be-4744-a7d6-4ba36f9ba4cd",
     "name": "1: LicenseProfile1",
+    "default_usage_policy": null,
     "examples": "",
     "notes": ""
   }
