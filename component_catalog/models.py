@@ -2660,7 +2660,10 @@ class Package(
 
         if package_content := package_data.get("package_content"):
             package_content_value = Package.get_package_content_value_from_label(package_content)
-            package_data["package_content"] = package_content_value
+            if package_content_value is not None:
+                package_data["package_content"] = package_content_value
+            else:
+                package_data.pop("package_content", None)
 
         # Avoid raising an IntegrityError when the values in `package_data` for the
         # identifier fields already exist on another Package instance.
