@@ -1764,6 +1764,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
             "declared_license_expression": "bsd-new OR epl-1.0 OR apache-2.0",
             "package_url": "pkg:maven/abbot/abbot@1.4.0",
+            "package_content": "source_archive",
         }
         mock_get_purldb_entries.return_value = [purldb_entry]
 
@@ -1773,6 +1774,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purldb_entry["declared_license_expression"], package.license_expression)
+        self.assertEqual("source_archive", package.get_package_content_display())
 
         for field_name, value in purldb_entry.items():
             self.assertEqual(value, getattr(package, field_name))
