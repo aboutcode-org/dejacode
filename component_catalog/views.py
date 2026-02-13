@@ -1936,7 +1936,8 @@ class PackageAddView(
 
             # Convert package_content string label to integer value
             if content_label := purldb_entry.pop("package_content", None):
-                if content_value := Package.get_package_content_value_from_label(content_label):
+                content_value = Package.get_package_content_value_from_label(content_label)
+                if content_value is not None:
                     purldb_entry["package_content"] = content_value
 
             model_fields = [field.name for field in Package._meta.get_fields()]
