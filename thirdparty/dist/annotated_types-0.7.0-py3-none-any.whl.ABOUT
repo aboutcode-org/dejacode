@@ -1,0 +1,14 @@
+about_resource: annotated_types-0.7.0-py3-none-any.whl
+name: annotated-types
+version: 0.7.0
+download_url: https://files.pythonhosted.org/packages/78/b6/6307fbef88d9b5ee7421e68d78a9f162e0da4900bc5f5793f6d3d0e34fb8/annotated_types-0.7.0-py3-none-any.whl
+package_url: pkg:pypi/annotated-types@0.7.0
+license_expression: mit
+copyright: Copyright annotated-types project contributors
+attribute: yes
+checksum_md5: b132aea373e91e5a46e3b5425c9970e2
+checksum_sha1: ea2dd11b884eb6bc96d35b81d764010aa19eb952
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

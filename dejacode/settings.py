@@ -213,6 +213,7 @@ SILENCED_SYSTEM_CHECKS = [
     "security.W017",
     "urls.W005",
     "admin.E039",
+    "axes.W006",
 ]
 
 # Set the following to True to enable ClamAV scan on uploaded files
