@@ -61,7 +61,7 @@ dependencies = [
     "inflection==0.5.1",
     "pytz==2025.2",
     # Track failed login attempts
-    "django-axes==8.0.0",
+    "django-axes==8.3.1",
     # Multi-factor authentication
     "django-otp==1.7.0",
     "qrcode==8.2",
@@ -73,7 +73,7 @@ dependencies = [
     # Antivirus
     "clamd==1.0.2",
     # Testing
-    "model_bakery==1.10.1",
+    "model_bakery==1.23.2",
     # Task queue
     "rq==2.6.1",
     "croniter==6.0.0",
@@ -117,7 +117,7 @@ dependencies = [
     "django-rest-hooks==1.6.1",
     # django-notifications
     "django_notifications_patched==2.0.0",
-    "jsonfield==3.1.0",
+    "jsonfield==3.2.0",
     "swapper==1.4.0",
     # AboutCode Toolkit
     "aboutcode_toolkit==11.1.1",
