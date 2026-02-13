@@ -59,7 +59,7 @@ jobs:
         run: make check
 
       - name: Start Redis
-        uses: supercharge/redis-github-action@1.5.0
+        uses: supercharge/redis-github-action@1.8.1
 
       - name: Build the documentation
         run: make docs
