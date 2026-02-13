@@ -73,7 +73,7 @@ dependencies = [
     # Antivirus
     "clamd==1.0.2",
     # Testing
-    "model_bakery==1.10.1",
+    "model_bakery==1.23.2",
     # Task queue
     "rq==2.6.1",
     "croniter==6.0.0",
