@@ -156,20 +156,23 @@
 
                 // Hack to move the transform the Inline into a "tab"
                 // Manipulate the DOM to prepare before activating the tags
-                // Add the tabs list links
-                var tabs_ul = $('<ul style="float:right;"><li><a href="#tabs-1">License Data</a></li><li><a href="#tabs-2">Assigned Tag Values</a></li></ul>');
-                tabs_ul.prependTo('#license_form');
-                $("#grp-content-container").attr('style', 'clear:both;');
-                // We put a tabs-1 id on the wrapper div in the form
-                $("#license_form > div:last-child").attr('id', 'tabs-1');
-                // Add a new div tabs-2 in the form and move the Inline into it
-                $('<div id="tabs-2"></div>').appendTo('#license_form');
-                $("#licenseassignedtag_set-group").appendTo('#tabs-2');
-                // The footer needs to be moved too to be outside "tabs-1"
-                $("footer").appendTo('#license_form');
+                // Check if tabs already exist to prevent duplication
+                if ($('#license_form > ul').length === 0) {
+                    // Add the tabs list links
+                    var tabs_ul = $('<ul style="float:right;"><li><a href="#tabs-1">License Data</a></li><li><a href="#tabs-2">Assigned Tag Values</a></li></ul>');
+                    tabs_ul.prependTo('#license_form');
+                    $("#grp-content-container").attr('style', 'clear:both;');
+                    // We put a tabs-1 id on the wrapper div in the form
+                    $("#license_form > div:last-child").attr('id', 'tabs-1');
+                    // Add a new div tabs-2 in the form and move the Inline into it
+                    $('<div id="tabs-2"></div>').appendTo('#license_form');
+                    $("#licenseassignedtag_set-group").appendTo('#tabs-2');
+                    // The footer needs to be moved too to be outside "tabs-1"
+                    $("footer").appendTo('#license_form');
 
-                // Activate the tabs
-                $("#license_form").tabs();
+                    // Activate the tabs
+                    $("#license_form").tabs();
+                }
                 // Removing un-wanted class, to ensure visual consistency
                 $("#license_form").removeClass("ui-widget ui-widget-content ui-corner-all");
                 $("#tabs-1, #tabs-2").removeClass("ui-tabs-panel ui-widget-content ui-corner-bottom");
