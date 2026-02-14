@@ -1032,3 +1032,49 @@ select.bootstrap-select-filter {
     position: absolute;
     z-index: 1;
 }
+/* -- Responsive Navbar -- */
+/* Collapsed navbar (mobile view) */
+@media (max-width: 1199.98px) {
+  /* Dark mode */
+  [data-bs-theme=dark] #navbarCollapse,
+  :root:not([data-bs-theme=light]) #navbarCollapse {
+    background-color: #2d3e50 !important;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  }
+  /* Light mode */
+  [data-bs-theme=light] #navbarCollapse {
+    background-color: #ffffff !important;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  [data-bs-theme=light] #navbarCollapse .nav-link {
+    color: #212529 !important;
+  }
+  [data-bs-theme=light] #navbarCollapse .navbar-nav .nav-link:hover {
+    color: #0056b3 !important;
+  }
+  /* Search form width */
+  #navbarCollapse #search-form {
+    width: 100%;
+  }
+  #navbarCollapse #search-form .input-group {
+    width: 100%;
+  }
+  /* DejaCode dropdown width */
+  .navbar-brand .dropdown-menu {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+/* Dropdown positioning */
+.navbar-brand .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0;
+}
