@@ -1,4 +1,4 @@
-<script>
+<script nonce="{{ request.csp_nonce }}">
   document.addEventListener('DOMContentLoaded', function () {
     let dependencies_fields = $('pre.field-dependencies');
     dependencies_fields.each(function() {

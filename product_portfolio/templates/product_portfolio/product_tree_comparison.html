@@ -78,7 +78,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       $("#show-only-box input:checkbox").change(function (e) {
         var class_value = "." + $(this).val();

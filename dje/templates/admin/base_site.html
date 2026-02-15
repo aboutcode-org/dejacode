@@ -136,7 +136,7 @@
 {% block javascripts %}
     {{ block.super }}
     {{ client_data|json_script:"client_data" }}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         NEXB = {};
         NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
 

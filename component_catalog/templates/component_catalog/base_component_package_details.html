@@ -24,7 +24,7 @@
   <script src="{% static 'json-viewer/jquery.json-viewer-1.4.0.js' %}" integrity="sha384-mCd7P/7rxz1zpQAb195/BFZG4pDkLO6GdkRi772EZRiLTGdfnlhC74NrrwtSHvBI" crossorigin="anonymous"></script>
   {% include 'includes/dependencies-json-viewer.js.html' %}
   {% if open_add_to_package_modal %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       document.addEventListener('DOMContentLoaded', function () {
         $('#add-to-product-modal').modal('show');
       });

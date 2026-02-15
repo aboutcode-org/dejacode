@@ -1,5 +1,5 @@
 {% load static %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
     require(['{% static 'js/requirejs_config.js' %}'], function () {
 
         {% if debug %}

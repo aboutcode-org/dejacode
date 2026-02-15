@@ -71,7 +71,7 @@
 {% endblock %}
 
 {% block javascripts %}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     $(document).ready(function () {
       $('form#import-manifest-form').on('submit', function () {
         // Prevent from re-submitting the form by mistake

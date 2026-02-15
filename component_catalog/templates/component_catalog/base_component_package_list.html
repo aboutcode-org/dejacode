@@ -46,7 +46,7 @@
     {% include 'component_catalog/includes/add_to.js.html' %}
   {% endif %}
 
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     $(document).ready(function () {
       let download_aboutcode_btn = $('#download-aboutcode-files');
       let download_aboutcode_wrapper = download_aboutcode_btn.parent();

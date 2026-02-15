@@ -117,7 +117,7 @@
         })(grp.jQuery);
     </script>
 
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         (function ($) {
             $(function () {
                 $('.col_field input, .col_field select, .col_field textarea').each(function () {

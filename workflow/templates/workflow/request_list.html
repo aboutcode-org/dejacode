@@ -36,7 +36,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       // is_private icon tooltip
       $('.help_text').tooltip({ placement: 'right'});

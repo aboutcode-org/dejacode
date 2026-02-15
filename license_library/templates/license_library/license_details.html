@@ -18,7 +18,7 @@
     {% if use_annotator %}
         <script src="{% static 'js/annotator/annotator-full.1.2.10.min.js' %}" integrity="sha384-sEO2jPWk30x9NENDIYgqrh055b5T+L2LIwyjYmR7aUa2tcilfgpuZxJk+FVfGn7B" crossorigin="anonymous"></script>
         <script src="{% static 'js/annotator_plugins/TagsInSelect.js' %}" integrity="sha384-alg5wwJ8txecPoo95o+qi7GLwHYhkPVhtHp2TJeHI3eB5+GNTErrOj2sWXUM8vGj" crossorigin="anonymous"></script>
-        <script>
+        <script nonce="{{ request.csp_nonce }}">
             (function ($) {
                 $(document).ready(function () {
                     var annotator = $('#licensetext .clipboard').annotator({readOnly: true}).data('annotator');

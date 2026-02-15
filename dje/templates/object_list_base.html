@@ -90,7 +90,7 @@
 
 {% block javascripts %}
   <script src="{% static 'bootstrap-select-1.14.0-beta3/js/bootstrap-select.min.js' %}" integrity="sha384-9Q6WYox+EJ0woUyO2q27atOpUdbUzrABDlL6Qhpr4eDqY0CxPs8GYD4ZSJYwv4pB" crossorigin="anonymous"></script>
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
         document.addEventListener('DOMContentLoaded', () => {
             /* Tooltips on hierarchy and activity links */
             $('.h-link').tooltip({placement: 'bottom', title: 'Hierarchy view', container: 'body'});

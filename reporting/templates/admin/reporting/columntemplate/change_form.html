@@ -5,7 +5,7 @@
 {% block javascripts %}
     {{ block.super }}
     <script src="{% static 'js/spin.js' %}" integrity="sha384-0LswTjFRsquDy/jvRaoLlf9tDAAVefA0sbg/kXz/PM9mflkwnfXlaMvYcfiumYUC" crossorigin="anonymous"></script>
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         grp.jQuery(function () {
             var spinner = new Spinner({
                 lines: 13,

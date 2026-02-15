@@ -6,7 +6,7 @@
     {{ block.super }}
     {% if not_editable %}
         {# Removes the "Save" and "Save and continue editing" buttons #}
-        <script>
+        <script nonce="{{ request.csp_nonce }}">
             (function($){
                 $(document).ready(function(){
                     $("input[name='_continue']").parent().remove();
@@ -16,7 +16,7 @@
         </script>
     {% endif %}
 
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         (function($){
             function set_include_product_checkbox() {
                 var include_product = $("#id_include_product");

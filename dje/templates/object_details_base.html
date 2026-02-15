@@ -104,7 +104,7 @@
 
 {% block javascripts %}
   <script src="{% static 'js/clipboard-2.0.0.min.js' %}" integrity="sha384-5tfO0soa+FisnuBhaHP2VmPXQG/JZ8dLcRL43IkJFzbsXTXT6zIX8q8sIT0VSe2G" crossorigin="anonymous"></script>
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
   document.addEventListener('DOMContentLoaded', function() {
     // Activate the tags
     const triggerTabList = document.querySelectorAll('#details_tab button');

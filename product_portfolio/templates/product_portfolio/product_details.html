@@ -183,7 +183,7 @@
   {% endif %}
 
   {% if display_scan_features %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("scan-package-modal").addEventListener("show.bs.modal", function (event) {
           let triggerButton = event.relatedTarget; // Button that triggered the modal
@@ -203,7 +203,7 @@
   {% endif %}
 
   {% if has_scan_all_packages %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelector('#scan_all_packages_submit').addEventListener('click', function() {
           NEXB.displayOverlay("Submitting Scan Request...");
@@ -215,7 +215,7 @@
   {% if has_edit_productpackage or has_edit_productcomponent or has_add_productcomponent %}
     <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
     <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       $(document).ready(function () {
         let edit_modal = $('#edit-productrelation-modal');
         edit_modal.on('show.bs.modal', function (event) {
@@ -284,7 +284,7 @@
   {% endif %}
 
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       $(document).ready(function () {
         let vulnerability_modal = $('#vulnerability-analysis-modal');
         vulnerability_modal.on('show.bs.modal', function (event) {
@@ -344,7 +344,7 @@
   {% endif %}
 
   {% if purldb_enabled %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('check-package-versions').addEventListener('click', function (event) {
           event.preventDefault();
@@ -444,7 +444,7 @@
         })
       });
     </script>
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
       document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('#improve_from_purldb').addEventListener('click', function() {
           NEXB.displayOverlay("Fetching data from PurlDB...");

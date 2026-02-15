@@ -290,7 +290,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       // Enable toggle for the extended help
       $('.extended_help_link').on('click', function(e) {

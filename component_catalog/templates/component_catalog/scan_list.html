@@ -35,7 +35,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.scan_delete_link').forEach(link => {
         link.addEventListener('click', function() {

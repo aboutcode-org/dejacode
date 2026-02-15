@@ -27,7 +27,7 @@
 </p>
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     (function($){
         $(document).ready(function(){
             $("#search_help_dialog").dialog({

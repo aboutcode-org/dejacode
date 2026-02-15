@@ -67,7 +67,7 @@
     </div>
   </div>
 
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       // Turns the menu into an accordion-like menu to avoid overflow issues
       $('#menu-content').on('show.bs.collapse', function () {

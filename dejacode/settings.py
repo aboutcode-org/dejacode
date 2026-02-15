@@ -16,6 +16,7 @@ import environ
 import ldap
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
+from django.utils.csp import CSP
 
 # The home directory of the dejacode user that owns the installation.
 PROJECT_DIR = environ.Path(__file__) - 1
@@ -172,6 +173,7 @@ MIDDLEWARE = [
     # read or write the response body so that compression happens afterward.
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.security.ContentSecurityPolicyMiddleware",  # New in Django 6.0
     "dje.middleware.ProhibitInQueryStringMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -198,6 +200,26 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("SECURE_CONTENT_TYPE_NOSNIFF", default=Tr
 SECURE_CROSS_ORIGIN_OPENER_POLICY = env.str(
     "SECURE_CROSS_ORIGIN_OPENER_POLICY", default="same-origin"
 )
+
+# Content Security Policy (CSP) - Django 6.0
+# Initially set to Report Only to identify all required domains
+SECURE_CSP_REPORT_ONLY = True
+
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [
+        CSP.SELF,
+        CSP.NONCE,  # Crucial for inline scripts in DejaCode templates
+        "https://cdnjs.cloudflare.com",  # Used for external JS libraries
+    ],
+    "style-src": [
+        CSP.SELF,
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
+    ],
+    "img-src": [CSP.SELF, "data:", "https:"],
+    "connect-src": [CSP.SELF],  # Allows API calls to PurlDB/VulnerableCode
+}
 
 X_FRAME_OPTIONS = "DENY"
 # Note: The CSRF_COOKIE_HTTPONLY cannot be activated yet without breaking all

@@ -12,7 +12,7 @@
 
 {% block javascripts %}
     {{ block.super }}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     $(document).ready(function () {
         let compare_button = $('#compare_button');
         let compare_button_wrapper = compare_button.parent();

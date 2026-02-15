@@ -143,7 +143,7 @@
     <script src="{% static 'js/scroll_to.js' %}" integrity="sha384-5b5N+CiBiLgPGLMj4/gsf7MiPclQO0wtbtg1aUq+wogLo8D59FAoRjL/TfuKZf/t" crossorigin="anonymous"></script>
 
     {% if include_purldb %}
-        <script>
+        <script nonce="{{ request.csp_nonce }}">
         {% url 'purldb:purldb_search_table' as purldb_search_table_url %}
         document.addEventListener('DOMContentLoaded', function () {
             const purldb_section = $('#purldb_section');

@@ -1,4 +1,4 @@
-<script>
+<script nonce="{{ request.csp_nonce }}">
   function is_active_tab(id) {
     var active_tab_id = $('.tab-pane.active')[0].id;
     return (active_tab_id == id);

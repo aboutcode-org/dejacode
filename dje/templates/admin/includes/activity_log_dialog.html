@@ -21,7 +21,7 @@
     </form>
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     (function($){
         $(document).ready(function(){
             $("#activity_log_dialog").dialog({

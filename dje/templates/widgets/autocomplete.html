@@ -14,6 +14,6 @@
   </a>
 {% endif %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
   AutocompleteWidget.init("{{ field_selector }}", "#id_object_id", "#{{ object_link_id }}", "{{ display_attribute }}");
 </script>

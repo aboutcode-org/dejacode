@@ -22,7 +22,7 @@
     {% url 'admin:product_portfolio_productcomponent_changelist' as productcomponent_changelist_url %}
     {% url 'admin:product_portfolio_productpackage_changelist' as productpackage_changelist_url %}
     {% if original.is_active %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         (function($) {
             document.addEventListener('DOMContentLoaded', function () {
                 {% include 'includes/keywords_autocomplete.js.html' %}

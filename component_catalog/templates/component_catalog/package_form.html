@@ -2,7 +2,7 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       function build_purl(type, namespace, name, version, qualifiers, subpath) {
         if (!type || !name) return '';

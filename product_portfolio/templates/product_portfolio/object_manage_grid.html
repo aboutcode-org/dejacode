@@ -174,7 +174,7 @@
   {% endif %}
 
   {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       let related_verbose_name = '{{ related_verbose_name|capfirst }}';
 

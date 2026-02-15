@@ -47,7 +47,7 @@
   {% endif %}
   {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
   {{ form.identifier_fields|json_script:"identifier_fields" }}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
       if (typeof(flatpickr) != 'undefined') $('.datepicker').flatpickr();
 

@@ -282,7 +282,7 @@
 </div>
 {% endspaceless %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
   // Select all elements with the class 'toggle-details'
   document.querySelectorAll('.toggle-details').forEach(function(toggleDetail) {
       // Add event listener for 'click' event

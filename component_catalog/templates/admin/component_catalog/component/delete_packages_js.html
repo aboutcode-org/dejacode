@@ -1,4 +1,4 @@
-<script>
+<script nonce="{{ request.csp_nonce }}">
     (function($) {
         document.addEventListener('DOMContentLoaded', function () {
             // the `form` is only available if not perms_lacking and not protected

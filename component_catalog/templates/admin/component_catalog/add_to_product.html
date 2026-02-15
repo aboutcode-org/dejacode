@@ -65,7 +65,7 @@
 
 {% block javascripts %}
     {{ block.super }}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         (function($) {
             document.addEventListener('DOMContentLoaded', function () {
                 var api_url = "{% url 'api_v2:product-list' %}";

@@ -16,7 +16,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
   document.getElementById('scan-matches-modal').addEventListener('show.bs.modal', function(event) {
     let modal = event.target;
     let button = event.relatedTarget;

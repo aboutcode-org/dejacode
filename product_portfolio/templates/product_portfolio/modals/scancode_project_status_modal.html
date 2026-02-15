@@ -16,7 +16,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function () {
   $('#scancode-project-status-modal').on('show.bs.modal', function (event) {
     let modal_body = $('#scancode-project-status-modal div.modal-body')

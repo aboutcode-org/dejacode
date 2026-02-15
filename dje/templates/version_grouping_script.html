@@ -1,4 +1,4 @@
-<script>
+<script nonce="{{ request.csp_nonce }}">
     $('.j_expand_multiple_versions').click(function() {
         var active = $(this).data('active');
         if (active) {

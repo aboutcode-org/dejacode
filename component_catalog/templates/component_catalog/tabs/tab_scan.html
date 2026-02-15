@@ -12,7 +12,7 @@
     </div>
   </div>
   {% include 'component_catalog/includes/scan_package_modal.html' %}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.querySelector('a#submit-scan-request').addEventListener('click', function() {
       NEXB.displayOverlay("Submitting Scan Request...");
     });
@@ -30,7 +30,7 @@
   {% endif %}
   {% include 'component_catalog/modals/scan_delete_modal.html' %}
   {% include 'component_catalog/modals/scan_refresh_modal.html' %}
-  <script>
+  <script nonce="{{ request.csp_nonce }}">
     document.querySelectorAll('.scan_delete_link').forEach(link => {
       link.addEventListener('click', function() {
         let deleteUrl = this.getAttribute('data-delete-url');

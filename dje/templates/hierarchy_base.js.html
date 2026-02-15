@@ -1,4 +1,4 @@
-<script>
+<script nonce="{{ request.csp_nonce }}">
   const tabId = "{{ tab_name|default:"tab_hierarchy" }}"
 
   function isTabActive(id) {

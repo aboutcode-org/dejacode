@@ -71,7 +71,7 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
   document.addEventListener('DOMContentLoaded', function () {
     var showApiKey = document.getElementById('show_api_key');
     var apiKeyField = document.getElementById('api_key');

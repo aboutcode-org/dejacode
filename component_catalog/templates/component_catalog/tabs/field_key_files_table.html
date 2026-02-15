@@ -66,7 +66,7 @@
 {% if forloop.last %}</dl>{% endif %}
 
 <script src="{% static 'js/jquery.mark-8.11.1.min.js' %}" integrity="sha384-iqnguDoMujGknA4B5Jk7pbSn7sb7M8Tc0zVsTNQXm629Xx00jGEpD9TsZXbfNjKO" crossorigin="anonymous"></script>
-<script>
+<script nonce="{{ request.csp_nonce }}">
   $('#key-files-modal').on('show.bs.modal', function (event) {
     let button = $(event.relatedTarget);
     let content = button.data('content');

@@ -108,7 +108,7 @@
 </table>
 {% endspaceless %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
    $('.toggle-details')
       .tooltip({container: 'body', placement: 'top'})
       .on('click', function() {
