@@ -2538,19 +2538,17 @@ class Package(
             )
 
         # Matching in PurlDB early to avoid more processing in case of a match.
-        purldb_data = None
+        purldb_entry = None
         if user.dataspace.enable_purldb_access:
             package_for_match = cls(download_url=download_url)
             package_for_match.set_package_url(package_url)
             purldb_entries = package_for_match.get_purldb_entries(user)
             # Look for one with the same exact purl in that case
-            if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
-                # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
-                if release_date := purldb_data.get("release_date"):
-                    purldb_data["release_date"] = release_date.split("T")[0]
-                package_data.update(purldb_data)
+            if purldb_entry := pick_purldb_entry(purldb_entries, purl=url):
+                cls.clean_purldb_entry(purldb_entry)
+                package_data.update(purldb_entry)
 
-        if download_url and not purldb_data:
+        if download_url and not purldb_entry:
             package_data = download.collect_package_data(download_url)
 
         # Check for existing package by hash fields with a single database query
@@ -2630,6 +2628,27 @@ class Package(
 
         return purldb_entries
 
+    @classmethod
+    def normalize_purldb_release_date(cls, data):
+        """Strip the time portion from a PurlDB DateTimeField value."""
+        if release_date := data.get("release_date"):
+            data["release_date"] = release_date.split("T")[0]
+
+    @classmethod
+    def convert_purldb_package_content_label(cls, data):
+        """Convert package_content from a string label to its integer value in place."""
+        if content_label := data.get("package_content"):
+            if content_value := Package.get_package_content_value_from_label(content_label):
+                data["package_content"] = content_value
+
+    @classmethod
+    def clean_purldb_entry(cls, data):
+        """Normalize PurlDB entry data for local use."""
+        cls.normalize_purldb_release_date(data)
+        cls.convert_purldb_package_content_label(data)
+        # Set the declared_license_expression as the "concluded" license_expression
+        data["license_expression"] = data.get("declared_license_expression")
+
     def update_from_purldb(self, user):
         """
         Update this Package instance with data from PurlDB.
@@ -2653,14 +2672,7 @@ class Package(
         else:
             package_data = merge_common_non_empty_values(purldb_entries)
 
-        # The format from PURLDB is "2019-11-18T00:00:00Z"
-        if release_date := package_data.get("release_date"):
-            package_data["release_date"] = release_date.split("T")[0]
-        package_data["license_expression"] = package_data.get("declared_license_expression")
-
-        if package_content := package_data.get("package_content"):
-            package_content_value = Package.get_package_content_value_from_label(package_content)
-            package_data["package_content"] = package_content_value
+        self.clean_purldb_entry(package_data)
 
         # Avoid raising an IntegrityError when the values in `package_data` for the
         # identifier fields already exist on another Package instance.
