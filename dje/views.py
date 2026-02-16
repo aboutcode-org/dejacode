@@ -1880,6 +1880,7 @@ class DownloadableMixin:
         "doc": "application/msword",
         "html": "text/html",
         "json": "application/json",
+        "ods": "application/vnd.oasis.opendocument.spreadsheet",
         "xls": "application/vnd.ms-excel",
         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "yaml": "application/x-yaml",
