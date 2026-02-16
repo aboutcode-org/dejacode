@@ -15,5 +15,13 @@ jobs:
     steps:
       - uses: peakoss/anti-slop@v0
         with:
+          # Number of check failures needed before failure actions are triggered
           max-failures: 3
+          # List of commit author usernames to block
           blocked-commit-authors: "claude,copilot"
+          # Require the PR to reference at least one issue in the PR description.
+          require-linked-issue: true
+          # List of terms blocked from appearing in the PR description
+          blocked-terms: "MANGO"
+          # Minimum GitHub account age in days
+          min-account-age: 30
