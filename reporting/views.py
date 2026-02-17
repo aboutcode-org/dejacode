@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
+import odfdo
 import saneyaml
 import xlsxwriter
 
@@ -231,6 +232,28 @@ class ReportDetailsView(
         """Return serialized results as yaml content response."""
         dump = self.get_dump(saneyaml.dump)
         return HttpResponse(dump, **response_kwargs)
+
+    def get_ods_response(self, **response_kwargs):
+        """Return the results as ods format."""
+        context = self.get_context_data(**self.kwargs)
+        report_data = [context["headers"]] + context["output"]
+
+        document = odfdo.Document("spreadsheet")
+        table = odfdo.Table("Report")
+
+        for row_data in report_data:
+            row = odfdo.Row()
+            for cell_value in row_data:
+                row.append(odfdo.Cell(normalize_newlines(cell_value), cell_type="string"))
+            table.append(row)
+
+        document.body.clear()
+        document.body.append(table)
+
+        file_output = io.BytesIO()
+        document.save(file_output)
+
+        return HttpResponse(file_output.getvalue(), **response_kwargs)
 
     def get_xlsx_response(self, **response_kwargs):
         """Return the results as `xlsx` format."""

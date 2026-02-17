@@ -1,0 +1,63 @@
+about_resource: lxml-6.0.2.tar.gz
+name: lxml
+version: 6.0.2
+download_url: https://files.pythonhosted.org/packages/aa/88/262177de60548e5a2bfc46ad28232c9e9cbde697bd94132aeb80364675cb/lxml-6.0.2.tar.gz
+description: |
+  Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API.
+  lxml is a Pythonic, mature binding for the libxml2 and libxslt libraries.
+  It provides safe and convenient access to these libraries using the
+  ElementTree API.
+
+  It extends the ElementTree API significantly to offer support for XPath,
+  RelaxNG, XML Schema, XSLT, C14N and much more.
+
+  To contact the project, go to the `project home page <https://lxml.de/>`_
+  or see our bug tracker at https://launchpad.net/lxml
+
+  In case you want to use the current in-development version of lxml,
+  you can get it from the github repository at
+  https://github.com/lxml/lxml .  Note that this requires Cython to
+  build the sources, see the build instructions on the project home page.
+
+
+  After an official release of a new stable series, bug fixes may become available at
+  https://github.com/lxml/lxml/tree/lxml-6.0 .
+  Running ``pip install https://github.com/lxml/lxml/archive/refs/heads/lxml-6.0.tar.gz``
+  will install the unreleased branch state as soon as a maintenance branch has been established.
+  Note that this requires Cython to be installed at an appropriate version for the build.
+
+  6.0.2 (2025-09-21)
+  ==================
+
+  Bugs fixed
+  ----------
+
+  * LP#2125278: Compilation with libxml2 2.15.0 failed.
+    Original patch by Xi Ruoyao.
+
+  * Setting ``decompress=True`` in the parser had no effect in libxml2 2.15.
+
+  * Binary wheels on Linux and macOS use the library version libxml2 2.14.6.
+    See https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.14.6
+
+  * Test failures in libxml2 2.15.0 were fixed.
+
+  Other changes
+  -------------
+
+  * Binary wheels for Py3.9-3.11 on the ``riscv64`` architecture were added.
+
+  * Error constants were updated to match libxml2 2.15.0.
+
+  * Built using Cython 3.1.4.
+homepage_url: https://lxml.de/
+package_url: pkg:pypi/lxml@6.0.2
+license_expression: bsd-new
+copyright: Copyright Rick Jelliffe and Academia Sinica Computing Center
+attribute: yes
+checksum_md5: ac9a945976227fd854d3e9e034e52ca1
+checksum_sha1: 2b37a3d8ad8afe74b7ec616dc695ccc25a73bd97
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

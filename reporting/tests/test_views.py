@@ -429,7 +429,7 @@ class ReportDetailsViewTestCase(TestCase):
             [0, 1, 2], list(self.column_template.fields.all().values_list("seq", flat=True))
         )
 
-        # In case of a change: print repr(response.content)
+        # In case of a change: print(repr(response.content))
         expected = (
             "{\n    "
             '"key": "license_126",\n    '
@@ -448,9 +448,18 @@ class ReportDetailsViewTestCase(TestCase):
         )
         self.assertEqual(response["Content-Type"], "application/x-yaml")
 
-        # In case of a change: >>> print repr(response.content)
+        # In case of a change: >>> print(repr(response.content))
         expected = "- key: license_138\n  short_name: license_138\n  name: license_138\n"
         self.assertContains(response, expected)
+
+    def test_report_view_get_ods_response(self):
+        self.client.login(username="test", password="t3st")
+        url = self.report.get_absolute_url() + "?format=ods"
+        response = self.client.get(url)
+        self.assertEqual(
+            response["Content-Disposition"], 'attachment; filename="license-list-for-analysis.ods"'
+        )
+        self.assertEqual(response["Content-Type"], "application/vnd.oasis.opendocument.spreadsheet")
 
     def test_run_report_view_runtime_parameters_value_fields(self):
         self.client.login(username="test", password="t3st")

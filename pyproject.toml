@@ -154,7 +154,10 @@ dependencies = [
     "annotated-types==0.7.0",
     "semantic-version==2.10.0",
     # OpenVEX
-    "msgspec==0.20.0"
+    "msgspec==0.20.0",
+    # OpenDocument Format
+    "odfdo==3.20.2",
+    "lxml==6.0.2",
 ]
 
 [project.optional-dependencies]
