@@ -116,8 +116,7 @@ class ScopeAndProtectRelationships:
         for name in self.protected_fields:
             if self.is_bound:
                 self.fields.pop(name, None)
-            else:
-                field = self.fields[name]
+            elif field := self.fields.get(name):
                 field.disabled = True
                 if hasattr(field, "queryset"):
                     field.queryset = field.queryset.none()
