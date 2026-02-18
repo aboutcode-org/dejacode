@@ -109,18 +109,23 @@ class ScopeAndProtectRelationships:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        protected_fields = get_protected_fields(self._meta.model, self.user)
-        self.protected_fields = protected_fields
+        self.protected_fields = get_protected_fields(self._meta.model, self.user)
 
+        # On submit, remove protected fields so they are not validated or saved.
+        # On display, render them as disabled with an empty queryset.
+        for name in self.protected_fields:
+            if self.is_bound:
+                self.fields.pop(name, None)
+            elif field := self.fields.get(name):
+                field.disabled = True
+                if hasattr(field, "queryset"):
+                    field.queryset = field.queryset.none()
+
+        # Scope relational fields to the user's Dataspace
         for name, field in self.fields.items():
             has_queryset = hasattr(field, "queryset")
 
-            if name in protected_fields:
-                field.disabled = True
-                if has_queryset:
-                    field.queryset = field.queryset.none()
-
-            elif has_queryset and is_dataspace_related(field.queryset.model):
+            if has_queryset and is_dataspace_related(field.queryset.model):
                 field.queryset = field.queryset.scope(self.user.dataspace)
 
                 related_model = field.queryset.model

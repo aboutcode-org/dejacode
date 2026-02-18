@@ -3566,7 +3566,7 @@ class PackageUserViewsTestCase(TestCase):
             "usage_policy": policy_approved.pk,
         }
         form = PackageForm(user=self.super_user, data=data)
-        self.assertEqual(0, len(form.fields["usage_policy"].queryset))
+        self.assertNotIn("usage_policy", form.fields)
         self.assertTrue(form.is_valid())
         package = form.save()
         self.assertIsNone(package.usage_policy)
@@ -3574,7 +3574,8 @@ class PackageUserViewsTestCase(TestCase):
         data["filename"] = "with policy"
         self.super_user = add_perm(self.super_user, "change_usage_policy_on_package")
         form = PackageForm(user=self.super_user, data=data)
-        self.assertEqual(1, len(form.fields["usage_policy"].queryset))
+        self.assertIn("usage_policy", form.fields)
+        self.assertQuerySetEqual([policy_approved], form.fields["usage_policy"].queryset)
         self.assertTrue(form.is_valid())
         package = form.save()
         self.assertEqual(policy_approved, package.usage_policy)
@@ -4386,7 +4387,7 @@ class ComponentListViewTestCase(TestCase):
             "usage_policy": policy_approved.pk,
         }
         form = ComponentForm(user=self.user, data=data)
-        self.assertEqual(0, len(form.fields["usage_policy"].queryset))
+        self.assertNotIn("usage_policy", form.fields)
         self.assertTrue(form.is_valid())
         component = form.save()
         self.assertIsNone(component.usage_policy)
@@ -4394,7 +4395,8 @@ class ComponentListViewTestCase(TestCase):
         data["version"] = "with policy"
         self.user = add_perm(self.user, "change_usage_policy_on_component")
         form = ComponentForm(user=self.user, data=data)
-        self.assertEqual(1, len(form.fields["usage_policy"].queryset))
+        self.assertIn("usage_policy", form.fields)
+        self.assertQuerySetEqual([policy_approved], form.fields["usage_policy"].queryset)
         self.assertTrue(form.is_valid())
         component = form.save()
         self.assertEqual(policy_approved, component.usage_policy)
@@ -4413,6 +4415,7 @@ class ComponentListViewTestCase(TestCase):
             "homepage_url": "https://nexb.com",
             "configuration_status": status.pk,
             "release_date": "2019-03-01",
+            "usage_policy": policy_approved.pk,
             "submit": "Add Component",
         }
         form = ComponentForm(user=self.user, data=data)
@@ -4422,6 +4425,7 @@ class ComponentListViewTestCase(TestCase):
         self.assertEqual(status, component.configuration_status)
         self.assertEqual(license1.key, component.license_expression)
         self.assertEqual(["Key1", "Another keyword"], component.keywords)
+        self.assertEqual(policy_approved, component.usage_policy)
 
     def test_component_catalog_component_form_assigned_packages(self):
         data = {

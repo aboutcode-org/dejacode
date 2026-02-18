@@ -2680,6 +2680,45 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(manage_url)
         self.assertEqual(200, response.status_code)
 
+    def test_product_portfolio_product_manage_packages_grid_fields_permissions(self):
+        add_perms(self.basic_user, ["change_productpackage"])
+        assign_perm("view_product", self.basic_user, self.product1)
+        assign_perm("change_product", self.basic_user, self.product1)
+        self.client.login(username=self.basic_user.username, password="secret")
+
+        make_product_package(self.product1)
+        manage_url = self.product1.get_manage_packages_url()
+        response = self.client.get(manage_url)
+
+        self.assertEqual(200, response.status_code)
+        expected = (
+            '<select name="form-0-review_status" class="select form-select" disabled'
+            ' aria-describedby="id_form-0-review_status_helptext" id="id_form-0-review_status">'
+            ' <option value="" selected>---------</option>'
+            "</select>"
+        )
+        self.assertContains(response, expected, html=True)
+        form = response.context["formset"].forms[0]
+        self.assertIn("review_status", form.fields)
+        self.assertTrue(form.fields["review_status"].disabled)
+
+        data = {
+            "form-TOTAL_FORMS": 1,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 0,
+            "form-MAX_NUM_FORMS": 1000,
+            "form-0-product": self.product1.pk,
+            "form-0-package": self.package1.pk,
+            "form-0-object_display": str(self.package1),
+            "form-0-review_status": "PROTECTED FIELD",
+            "form-0-notes": "Some notes",
+        }
+        response = self.client.post(manage_url, data, follow=True)
+        self.assertContains(response, "Product changes saved.")
+        self.assertRedirects(response, manage_url)
+        pp2 = ProductPackage.objects.get(product=self.product1, package=self.package1.pk)
+        self.assertIsNone(pp2.review_status)
+
     def test_product_portfolio_product_manage_packages_grid_view_delete(self):
         self.client.login(username=self.basic_user.username, password="secret")
 
