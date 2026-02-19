@@ -879,6 +879,11 @@ class ScanDataUnavailable(APIException):
     default_detail = "Scan data is not available"
 
 
+class ScanFetchError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Could not fetch scan data"
+
+
 class PackageViewSet(
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
@@ -965,6 +970,8 @@ class PackageViewSet(
         project_uuid = project_info.get("uuid")
         scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
         scan_results = scancodeio.fetch_scan_data(scan_results_url)
+        if not scan_results:
+            raise ScanFetchError()
 
         return Response(scan_results)
 

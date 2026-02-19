@@ -1532,6 +1532,13 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         action_url = reverse("api_v2:package-scan-results", args=[self.package1.uuid])
         mock_is_available.return_value = True
         mock_get_project_info.return_value = {"uuid": "abcdef"}
+
+        mock_fetch_scan_data.return_value = None
+        response = self.client.get(action_url)
+        self.assertEqual(400, response.status_code)
+        error = {'detail': ErrorDetail(string='Could not fetch scan data', code='error')}
+        self.assertEqual(error, response.data)
+
         mock_fetch_scan_data.return_value = {"results": ""}
         response = self.client.get(action_url)
         self.assertEqual(200, response.status_code)
