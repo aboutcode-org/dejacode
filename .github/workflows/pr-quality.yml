@@ -25,3 +25,7 @@ jobs:
           blocked-terms: "MANGO"
           # Minimum GitHub account age in days
           min-account-age: 30
+          # Require all changed files to end with a newline character
+          final-newline: false
+          # PR does not allow maintainers to push to the source
+          require-maintainer-can-modify: false

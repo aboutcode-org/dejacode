@@ -10,7 +10,7 @@
 
 ## Checklist
 
-- [ ] I have read and understood the [contributing guidelines](https://dejacode.readthedocs.io/en/latest/contributing.html)
-- [ ] I linked an existing issue above
-- [ ] I tested these changes locally
-- [ ] I did not use AI to generate this PR without reviewing and understanding every line
+- [ ] I have read the [contributing guidelines](https://dejacode.readthedocs.io/en/latest/contributing.html)
+- [ ] I have linked an existing issue above
+- [ ] I have added unit tests covering the new code
+- [ ] I have reviewed and understood every line of this PR
