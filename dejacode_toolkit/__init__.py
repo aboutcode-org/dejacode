@@ -21,10 +21,13 @@ def get_settings(var_name, default=None):
     return getenv(var_name) or getattr(settings, var_name, default)
 
 
+REQUESTS_TIMEOUT = get_settings("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5)
+
+
 def is_service_available(label, session, url, raise_exceptions):
     """Check if a configured integration service is available."""
     try:
-        response = session.head(url, timeout=5)
+        response = session.head(url, timeout=REQUESTS_TIMEOUT)
         response.raise_for_status()
     except requests.exceptions.RequestException as request_exception:
         logger.debug(f"{label} is_available() error: {request_exception}")
@@ -40,7 +43,7 @@ class BaseService:
     settings_prefix = None
     url_field_name = None
     api_key_field_name = None
-    default_timeout = 5
+    default_timeout = REQUESTS_TIMEOUT
 
     def __init__(self, dataspace):
         if not dataspace:
