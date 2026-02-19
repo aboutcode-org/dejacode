@@ -696,6 +696,9 @@ SWAGGER_USE_COMPAT_RENDERERS = False
 # during the Django 6.x release cycle.
 URLIZE_ASSUME_HTTPS = env.bool("DEJACODE_URLIZE_ASSUME_HTTPS", default=True)
 
+# Default to 5 seconds.
+DEJACODE_INTEGRATION_REQUESTS_TIMEOUT = env.int("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5)
+
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})

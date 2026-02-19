@@ -126,7 +126,7 @@ class VulnerableCode(BaseService):
         if not cpes:
             return []
 
-        search_results = self.bulk_search_by_cpes(cpes, timeout=5)
+        search_results = self.bulk_search_by_cpes(cpes)
         if not search_results:
             return []
 

@@ -146,8 +146,16 @@ class ScanCodeIO(BaseService):
         return self.request_get(url=data_url)
 
     def stream_scan_data(self, data_url):
+        """
+        Stream scan data from the given URL.
+
+        With stream=True, only headers are fetched initially, so raise_for_status()
+        can fail fast on errors before any body content is downloaded.
+        """
         logger.debug(f"{self.label}: stream scan data data_url={data_url}")
-        return self.session.get(url=data_url, stream=True)
+        response = self.session.get(url=data_url, stream=True)
+        response.raise_for_status()
+        return response
 
     def delete_scan(self, detail_url):
         logger.debug(f"{self.label}: delete scan detail_url={detail_url}")

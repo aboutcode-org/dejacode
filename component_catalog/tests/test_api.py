@@ -17,6 +17,7 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+import requests
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
@@ -1523,19 +1524,32 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(project_info, response.data)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
-    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.stream_scan_data")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
     def test_api_package_viewset_scan_results_action(
-        self, mock_is_available, mock_fetch_scan_data, mock_get_project_info
+        self, mock_is_available, mock_stream_scan_data, mock_get_project_info
     ):
         self.client.login(username=self.base_user.username, password="secret")
         action_url = reverse("api_v2:package-scan-results", args=[self.package1.uuid])
         mock_is_available.return_value = True
         mock_get_project_info.return_value = {"uuid": "abcdef"}
-        mock_fetch_scan_data.return_value = {"results": ""}
+
+        mock_stream_scan_data.side_effect = requests.RequestException
+        response = self.client.get(action_url)
+        self.assertEqual(400, response.status_code)
+        error = {"detail": ErrorDetail(string="Could not fetch scan data", code="error")}
+        self.assertEqual(error, response.data)
+
+        mock_response = mock.Mock()
+        mock_response.iter_content.return_value = iter([b'{"results": ""}'])
+        mock_response.headers = {"Content-Type": "application/json"}
+        mock_stream_scan_data.side_effect = None
+        mock_stream_scan_data.return_value = mock_response
+
         response = self.client.get(action_url)
         self.assertEqual(200, response.status_code)
-        self.assertEqual({"results": ""}, response.data)
+        self.assertEqual(b'{"results": ""}', b"".join(response.streaming_content))
+        self.assertEqual("application/json", response.headers["Content-Type"])
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.get_project_info")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
