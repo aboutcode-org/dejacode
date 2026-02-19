@@ -1,0 +1,24 @@
+about_resource: packaging-26.0-py3-none-any.whl
+name: packaging
+version: '26.0'
+download_url: https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl
+package_url: pkg:pypi/packaging@26.0
+license_expression: apache-2.0 AND bsd-new AND bsd-simplified AND unknown-license-reference
+copyright: Copyright packaging project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 6612a2b4cddb48af24b6de0de620e353
+checksum_sha1: 4a6dc6fe247bea77685d5f010a10607105910fec
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

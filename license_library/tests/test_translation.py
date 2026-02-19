@@ -44,13 +44,13 @@ class LocaleTranslationTestCase(TestCase):
 
         translation.activate("en")
         response = self.client.get(url)
-        expected = '<label for="id_license_profile">License profile</label>'
+        expected = '<legend for="id_license_profile">License profile:</legend>'
         self.assertContains(response, expected)
 
         translation.activate("en_GB")  # Activate the custom translation locale
         response = self.client.get(url)
         # The verbose part of the label is properly translated.
-        expected = '<label for="id_license_profile">Attribution type</label>'
+        expected = '<legend for="id_license_profile">Attribution type:</legend>'
         self.assertContains(response, expected)
 
     def test_admin_index_view_translation(self):

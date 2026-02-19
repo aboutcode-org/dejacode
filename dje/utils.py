@@ -618,7 +618,7 @@ def get_cpe_vuln_link(cpe):
     base_url = "https://nvd.nist.gov/vuln/search/results"
     params = "?adv_search=true&isCpeNameSearch=true"
     vuln_url = f"{base_url}{params}&query={cpe}"
-    return format_html(f'<a target="_blank" href="{vuln_url}">{cpe}</a>')
+    return mark_safe(f'<a target="_blank" href="{vuln_url}">{cpe}</a>')
 
 
 def safe_filename(filename):
@@ -658,7 +658,14 @@ def is_purl_fragment(string):
 
 def get_plain_purl(purl_str):
     """Remove the qualifiers and subpath from the `purl_str```."""
+    if not purl_str:
+        return ""
     return purl_str.split("?")[0]
+
+
+def plain_purls_equal(purl1, purl2):
+    """Check if two PURLs are equal, ignoring qualifiers and subpath."""
+    return get_plain_purl(purl1) == get_plain_purl(purl2)
 
 
 def remove_empty_values(input_dict):
@@ -683,6 +690,17 @@ def humanize_time(seconds):
         message += f" ({seconds / 60:.1f} minutes)"
 
     return message
+
+
+def parse_date_aware(value):
+    """
+    Parse a date or datetime string and return a timezone-aware datetime.
+    Supports both "2025-01-01" and "2025-01-01 14:30:00" formats.
+    """
+    dt = parse_datetime(value)
+    if dt and timezone.is_naive(dt):
+        dt = timezone.make_aware(dt)
+    return dt
 
 
 def localized_datetime(datetime):

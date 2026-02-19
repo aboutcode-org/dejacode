@@ -62,15 +62,20 @@ class ScanCodeIO(BaseService):
         return scan_info.get("results")[0]
 
     def submit_scan(self, uri, user_uuid, dataspace_uuid):
+        """
+        Submit package scan request to ScanCode.io.
+        An unique ID for the user is set as a project label, available for filtering.
+        """
+        webhook_url = get_webhook_url("notifications:send_scan_notification", user_uuid)
+
         data = {
-            "name": get_project_name(uri, user_uuid, dataspace_uuid),
+            "name": get_project_name(uri, dataspace_uuid),
             "input_urls": uri,
             "pipeline": "scan_single_package",
             "execute_now": True,
+            "webhook_url": webhook_url,
+            "labels": [get_hash_uid(user_uuid)],
         }
-
-        webhook_url = get_webhook_url("notifications:send_scan_notification", user_uuid)
-        data["webhook_url"] = webhook_url
 
         logger.debug(f'{self.label}: submit scan uri="{uri}" webhook_url="{webhook_url}"')
         return self.request_post(url=self.project_api_url, json=data)
@@ -102,14 +107,11 @@ class ScanCodeIO(BaseService):
         start_pipeline_url = run_url + "start_pipeline/"
         return self.request_post(url=start_pipeline_url)
 
-    def fetch_scan_list(self, user=None, dataspace=None, **extra_payload):
-        payload = {}
-
-        if dataspace:
-            payload["name__contains"] = get_hash_uid(dataspace.uuid)
+    def fetch_scan_list(self, user=None, **extra_payload):
+        payload = {"name__contains": get_hash_uid(self.dataspace.uuid)}
 
         if user:
-            payload["name__endswith"] = get_hash_uid(user.uuid)
+            payload["label"] = get_hash_uid(user.uuid)
 
         payload.update(extra_payload)
         if not payload:
@@ -131,15 +133,11 @@ class ScanCodeIO(BaseService):
             if response.get("count") == 1:
                 return response.get("results")[0]
 
-    def fetch_scan_info(self, uri, user=None):
+    def fetch_scan_info(self, uri):
         payload = {
             "name__startswith": get_hash_uid(uri),
             "name__contains": get_hash_uid(self.dataspace.uuid),
         }
-
-        if user:
-            payload["name__endswith"] = get_hash_uid(user.uuid)
-
         logger.debug(f'{self.label}: fetch scan info uri="{uri}"')
         return self.request_get(url=self.project_api_url, params=payload)
 
@@ -148,8 +146,16 @@ class ScanCodeIO(BaseService):
         return self.request_get(url=data_url)
 
     def stream_scan_data(self, data_url):
+        """
+        Stream scan data from the given URL.
+
+        With stream=True, only headers are fetched initially, so raise_for_status()
+        can fail fast on errors before any body content is downloaded.
+        """
         logger.debug(f"{self.label}: stream scan data data_url={data_url}")
-        return self.session.get(url=data_url, stream=True)
+        response = self.session.get(url=data_url, stream=True)
+        response.raise_for_status()
+        return response
 
     def delete_scan(self, detail_url):
         logger.debug(f"{self.label}: delete scan detail_url={detail_url}")
@@ -159,6 +165,17 @@ class ScanCodeIO(BaseService):
         except (requests.RequestException, ValueError, TypeError) as exception:
             logger.debug(f"{self.label} [Exception] {exception}")
         return False
+
+    def refresh_scan(self, project_uuid):
+        reset_url = self.get_scan_action_url(project_uuid, "reset")
+        logger.debug(f"{self.label}: refresh scan reset_url={reset_url}")
+        data = {
+            "keep_input": True,
+            "keep_webhook": True,
+            "restore_pipelines": True,
+            "execute_now": True,
+        }
+        return self.session.post(url=reset_url, json=data, timeout=self.default_timeout)
 
     @staticmethod
     def get_status_from_scan_results(scan_results):
@@ -439,23 +456,58 @@ class ScanCodeIO(BaseService):
         return package_data_for_model
 
 
+class ScanStatus:
+    """List of ScanCode.io Run status."""
+
+    NOT_STARTED = "not_started"
+    QUEUED = "queued"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILURE = "failure"
+    STOPPED = "stopped"
+    STALE = "stale"
+
+    # Status groupings
+    IN_PROGRESS = [QUEUED, RUNNING]
+    COMPLETED = [SUCCESS, FAILURE, STOPPED, STALE]
+    ISSUES = [FAILURE, STOPPED, STALE]
+    PENDING = [NOT_STARTED]
+
+    def __init__(self, status):
+        self.value = status
+
+    @property
+    def is_in_progress(self):
+        return self.value in self.IN_PROGRESS
+
+    @property
+    def is_completed(self):
+        return self.value in self.COMPLETED
+
+    @property
+    def has_issues(self):
+        return self.value in self.ISSUES
+
+    @property
+    def is_pending(self):
+        return self.value in self.PENDING
+
+
 def get_hash_uid(value):
     """Return a Unique ID based on a 10 characters hash of the provided `value`."""
     return md5(str(value).encode("utf-8"), usedforsecurity=False).hexdigest()[:10]
 
 
-def get_project_name(uri, user_uuid, dataspace_uuid):
+def get_project_name(uri, dataspace_uuid):
     """
     Return a project name based on a hash of the provided `uri` combined with a hash
-    of the `user_uuid` and `dataspace_uuid`.
+    of the `dataspace_uuid`.
 
-    project_name = "uri_hash.dataspace_uuid_hash.user_uuid_hash"
+    project_name = "uri_hash.dataspace_uuid_hash"
     """
     uri_hash = get_hash_uid(uri)
     dataspace_hash = get_hash_uid(dataspace_uuid)
-    user_hash = get_hash_uid(user_uuid)
-
-    return f"{uri_hash}.{dataspace_hash}.{user_hash}"
+    return f"{uri_hash}.{dataspace_hash}"
 
 
 def get_webhook_url(view_name, user_uuid):
@@ -513,22 +565,15 @@ def get_notice_text_from_key_files(scan_summary, separator="\n\n---\n\n"):
     return notice_text
 
 
-def check_for_existing_scan_workaround(response_json, uri, user):
+def update_package_from_existing_scan_data(uri, user):
     """
-    Workaroud the case where the Scan already exisit on the ScanCode.io side before
+    Workaroud the case where the Scan already exisits on the ScanCode.io side before
     the package is created on the DejaCode side.
     This can happen if the package is deleted then re-created from the same user
     providing the same download URL.
     """
-    if not response_json or not isinstance(response_json, dict):
-        return
-
-    already_exists_message = "project with this name already exists."
-    already_exists = already_exists_message in response_json.get("name", [])
-
-    if already_exists:
-        Package = apps.get_model("component_catalog", "package")
-        package = Package.objects.get_or_none(download_url=uri, dataspace=user.dataspace)
-        if package:
-            updated_fields = package.update_from_scan(user)
-            return updated_fields
+    Package = apps.get_model("component_catalog", "package")
+    package = Package.objects.get_or_none(download_url=uri, dataspace=user.dataspace)
+    if package:
+        updated_fields = package.update_from_scan(user)
+        return updated_fields

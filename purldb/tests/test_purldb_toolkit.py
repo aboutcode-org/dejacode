@@ -12,6 +12,7 @@ from django.test import TestCase
 
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
+from dejacode_toolkit.purldb import pick_source_package
 from dje.models import Dataspace
 from dje.tests import create_user
 
@@ -75,3 +76,29 @@ class PurlDBToolkitTestCase(TestCase):
         self.assertEqual(entry2, pick_purldb_entry([entry1, entry2], purl=purl2))
         self.assertIsNone(pick_purldb_entry([entry1, entry1], purl=purl1))
         self.assertIsNone(pick_purldb_entry([entry1, entry2], purl=purl3))
+
+    def test_purldb_toolkit_pick_source_package(self):
+        self.assertIsNone(pick_source_package(None))
+        self.assertIsNone(pick_source_package([]))
+
+        entry_binary = {
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26-py3-none-any.whl",
+            "filename": "boto3-1.37.26-py3-none-any.whl",
+            "download_url": "https://files.pythonhosted.org/boto3-1.37.26-py3-none-any.whl",
+            "package_content": "binary",
+        }
+        entry_source = {
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26.tar.gz",
+            "filename": "boto3-1.37.26.tar.gz",
+            "download_url": "https://files.pythonhosted.org/boto3-1.37.26.tar.gz",
+            "package_content": "source_archive",
+        }
+
+        self.assertEqual(entry_binary, pick_source_package([entry_binary]))
+        self.assertIsNone(pick_source_package([entry_binary, entry_binary]))
+
+        self.assertEqual(entry_source, pick_source_package([entry_source]))
+        self.assertEqual(entry_source, pick_source_package([entry_source, entry_source]))
+
+        self.assertEqual(entry_source, pick_source_package([entry_source, entry_binary]))
+        self.assertEqual(entry_source, pick_source_package([entry_binary, entry_source]))

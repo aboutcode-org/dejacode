@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import signing
 from django.core.validators import EMPTY_VALUES
+from django.db import transaction
 from django.db.models import Count
 from django.db.models import Prefetch
 from django.http import FileResponse
@@ -33,6 +34,7 @@ from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -46,7 +48,6 @@ from django.views.generic.edit import BaseFormView
 from crispy_forms.utils import render_crispy_form
 from natsort import natsorted
 from packageurl import PackageURL
-from packageurl.contrib import purl2url
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -71,8 +72,10 @@ from component_catalog.models import Package
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.download import DataCollectionException
+from dejacode_toolkit.download import infer_download_url
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import ScanStatus
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dje import tasks
@@ -273,7 +276,7 @@ class TabVulnerabilityMixin:
 
         return {
             "fields": [(None, context, None, self.template)],
-            "label": format_html(label),
+            "label": mark_safe(label),
         }
 
     def get_fixed_packages_html(self, vulnerability, dataspace):
@@ -309,7 +312,7 @@ class TabVulnerabilityMixin:
                 if is_vulnerable:
                     display_value += package.get_html_link(
                         href=f"{absolute_url}#vulnerabilities",
-                        value=format_html(vulnerability_icon),
+                        value=mark_safe(vulnerability_icon),
                     )
                 else:
                     display_value += no_vulnerabilities_icon
@@ -334,7 +337,7 @@ class TabVulnerabilityMixin:
                 )
                 fixed_packages_values.append(display_value)
 
-        return format_html("<br>".join(fixed_packages_values))
+        return mark_safe("<br>".join(fixed_packages_values))
 
 
 class ComponentListView(
@@ -701,7 +704,7 @@ class ComponentDetailsView(
             if dataspace.show_usage_policy_in_user_views:
                 usage_policy = subcomponent.get_usage_policy_display_with_icon()
                 if not usage_policy:
-                    usage_policy = format_html("&nbsp;")
+                    usage_policy = mark_safe("&nbsp;")
                 fields_data["usage_policy"] = usage_policy
 
             components.append(fields_data)
@@ -1051,7 +1054,7 @@ class PackageListView(
             return redirect(request.path)
 
         error_msg = f"Error assigning packages to a component.\n{form.errors}"
-        messages.error(request, format_html(error_msg))
+        messages.error(request, mark_safe(error_msg))
         return redirect(request.path)
 
     def post(self, request, *args, **kwargs):
@@ -1081,7 +1084,7 @@ class PackageDetailsView(
                 "package_url",
                 "filename",
                 "download_url",
-                "inferred_url",
+                "inferred_repo_url",
                 "size",
                 "release_date",
                 "primary_language",
@@ -1138,6 +1141,7 @@ class PackageDetailsView(
                 "parties",
                 "datasource_id",
                 "file_references",
+                "package_content",
             ],
         },
         "components": {
@@ -1291,6 +1295,7 @@ class PackageDetailsView(
             TabField("parties"),
             TabField("datasource_id"),
             TabField("file_references"),
+            TabField("package_content", source="get_package_content_display"),
         ]
 
         fields = self.get_tab_fields(tab_fields)
@@ -1414,7 +1419,7 @@ class PackageDetailsView(
                 messages.warning(request, "No new values to assign.")
         else:
             error_msg = f"Error assigning values to the package.\n{form.errors}"
-            messages.error(request, format_html(error_msg))
+            messages.error(request, mark_safe(error_msg))
 
         return redirect(f"{request.path}#essentials")
 
@@ -1529,6 +1534,15 @@ def get_scan_progress_htmx_view(request, dataspace, uuid):
     return render(request, template, context)
 
 
+# Non-atomic mode ensures Package instances are committed to the database immediately
+# rather than being held in a transaction. This is critical when DEJACODE_ASYNC=False
+# (eager/synchronous mode), where the `send_scan_notification` callback from
+# ScanCode.io executes synchronously and must be able to query the newly created
+# Packages from the database.
+# Note: Using `transaction.on_commit()` would delay all scans until the entire
+# package set is created, whereas this approach starts scans immediately for faster
+# results.
+@transaction.non_atomic_requests
 @login_required
 @require_POST
 def package_create_ajax_view(request):
@@ -1580,7 +1594,7 @@ def package_create_ajax_view(request):
     elif len_created > 1:
         packages = "\n".join([package.get_absolute_link() for package in created])
         msg = f"The following Packages were successfully created{scan_msg}:\n{packages}"
-        messages.success(request, format_html(msg))
+        messages.success(request, mark_safe(msg))
 
     purls_wihtout_download_url = [package for package in created if not package.download_url]
     if purls_wihtout_download_url:
@@ -1591,12 +1605,12 @@ def package_create_ajax_view(request):
             "\nAlternatively, you can directly provide a download URL instead of a "
             "package URL to create the packages.\n"
         )
-        messages.warning(request, format_html(msg + "\n".join(packages)))
+        messages.warning(request, mark_safe(msg + "\n".join(packages)))
 
     if errors:
-        messages.error(request, format_html("\n".join(errors)))
+        messages.error(request, mark_safe("\n".join(errors)))
     if warnings:
-        messages.warning(request, format_html("\n".join(warnings)))
+        messages.warning(request, mark_safe("\n".join(warnings)))
 
     return JsonResponse({"redirect_url": redirect_url})
 
@@ -1665,7 +1679,54 @@ def delete_scan_view(request, project_uuid):
         raise Http404("Scan could not be deleted.")
 
     messages.success(request, "Scan deleted.")
+    if referer := request.META.get("HTTP_REFERER"):
+        return redirect(referer)
     return redirect("component_catalog:scan_list")
+
+
+@login_required
+def refresh_scan_view(request, project_uuid):
+    user = request.user
+    dataspace = user.dataspace
+    if not dataspace.enable_package_scanning:
+        raise Http404
+
+    scancodeio = ScanCodeIO(dataspace)
+    response = scancodeio.refresh_scan(str(project_uuid))
+
+    if response.status_code != 200:
+        raise Http404("Scan could not be refreshed.")
+
+    messages.success(request, "Refresh Scan started.")
+    if referer := request.META.get("HTTP_REFERER"):
+        return redirect(referer)
+    return redirect("component_catalog:scan_list")
+
+
+def get_scan_context_data(scan, package=None):
+    scan_uuid = scan.get("uuid")
+
+    status = ""
+    if scan_run := scan.get("runs"):
+        status = scan_run[-1].get("status")
+
+    context_data = {
+        "status": status,
+        "status_for_display": status.replace("_", " ").capitalize(),
+        "created_date": parse_datetime(scan.get("created_date")),
+        "package": package,
+    }
+
+    scan_status = ScanStatus(status)
+    if package and scan_status.is_completed:
+        context_data["view_url"] = f"{package.details_url}#scan" if package else None
+    if scan_status.is_completed:
+        context_data["download_result_url"] = get_scan_results_as_file_url(scan)
+    if not scan_status.is_in_progress:
+        context_data["delete_url"] = reverse("component_catalog:scan_delete", args=[scan_uuid])
+        context_data["refresh_url"] = reverse("component_catalog:scan_refresh", args=[scan_uuid])
+
+    return context_data
 
 
 class ScanListView(
@@ -1675,7 +1736,7 @@ class ScanListView(
 ):
     paginate_by = 50
     template_name = "component_catalog/scan_list.html"
-    template_list_table = "component_catalog/includes/scan_list_table.html"
+    template_list_table = "component_catalog/tables/scan_list_table.html"
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
@@ -1694,7 +1755,6 @@ class ScanListView(
         scancodeio = ScanCodeIO(dataspace)
         self.list_data = (
             scancodeio.fetch_scan_list(
-                dataspace=dataspace,
                 user=user if self.request.GET.get("created_by_me") else None,
                 **filters,
             )
@@ -1719,18 +1779,10 @@ class ScanListView(
         for scan in context_data["object_list"]:
             package_download_url = get_package_download_url(scan)
             package = packages_by_url.get(package_download_url)
-            scan["package"] = package
-            scan["download_result_url"] = get_scan_results_as_file_url(scan)
-            scan["created_date"] = parse_datetime(scan.get("created_date"))
-            scan["delete_url"] = reverse("component_catalog:scan_delete", args=[scan.get("uuid")])
-            scans.append(scan)
+            scan_context_data = get_scan_context_data(scan, package)
+            scans.append(scan_context_data)
 
-        context_data.update(
-            {
-                "scans": scans,
-            }
-        )
-
+        context_data["scans"] = scans
         return context_data
 
 
@@ -1761,7 +1813,7 @@ def send_scan_notification(request, key):
     run = json_data.get("run")
     scan_status = run.get("status")
     if scan_status.lower() == "success":
-        updated_fields = package.update_from_scan(user)
+        updated_fields = package.update_from_scan(user, update_products=True)
 
     if updated_fields:
         description = (
@@ -1879,8 +1931,8 @@ class PackageAddView(
         initial = super().get_initial()
 
         if purldb_entry := self.get_entry_from_purldb():
-            # Duplicate the declared_license_expression as the "concluded" license_expression
-            purldb_entry["license_expression"] = purldb_entry.get("declared_license_expression")
+            self.model.clean_purldb_entry(purldb_entry)
+
             model_fields = [field.name for field in Package._meta.get_fields()]
             initial_from_purldb_entry = {
                 field_name: value
@@ -1894,7 +1946,7 @@ class PackageAddView(
             purl = PackageURL.from_string(package_url)
             package_url_dict = purl.to_dict(encode=True, empty="")
             initial.update(package_url_dict)
-            if download_url := purl2url.get_download_url(package_url):
+            if download_url := infer_download_url(purl):
                 initial.update({"download_url": download_url})
 
         return initial
@@ -2130,7 +2182,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             table.append(
                 {
                     "label": label,
-                    "value": format_html(value),
+                    "value": mark_safe(value),
                     "help_text": help_text,
                     "td_class": td_class,
                     "th_class": th_class,
@@ -2271,7 +2323,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             for label, scan_field in ScanCodeIO.SCAN_PACKAGE_FIELD:
                 if value := self.detected_package_data.get(scan_field):
                     if isinstance(value, list):
-                        value = format_html("<br>".join([escape(entry) for entry in value]))
+                        value = mark_safe("<br>".join([escape(entry) for entry in value]))
                     else:
                         value = escape(value)
                     detected_package_fields.append((label, value))
@@ -2347,25 +2399,26 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     if entry.get("value")
                 ]
 
-            scan_summary_fields.append((label, format_html("\n".join(values))))
+            scan_summary_fields.append((label, mark_safe("\n".join(values))))
 
         scan_summary_fields.append(FieldSeparator)
         return scan_summary_fields
 
     def scan_status_fields(self, scan):
+        package = self.object
         scan_status_fields = []
-        scan_run = scan.get("runs", [{}])[-1]
+        scan_runs = scan.get("runs", None) or [{}]
+        scan_run = scan_runs[-1]
         status = scan_run.get("status")
-        issue_statuses = ["failure", "stale", "stopped"]
-        completed_statuses = ["success", *issue_statuses]
+        scan_uuid = scan.get("uuid")
 
         scan_issue_request_template = settings.SCAN_ISSUE_REQUEST_TEMPLATE
-        dataspace_name = self.object.dataspace.name
+        dataspace_name = package.dataspace.name
         request_template_uuid = scan_issue_request_template.get(dataspace_name)
-        if request_template_uuid and status in completed_statuses:
+        if request_template_uuid and status in ScanStatus.COMPLETED:
             request_form_url = reverse("workflow:request_add", args=[request_template_uuid])
             field_context = {
-                "href": f"{request_form_url}?content_object_id={self.object.id}",
+                "href": f"{request_form_url}?content_object_id={package.id}",
                 "target": "_blank",
                 "btn_class": "btn-outline-request",
                 "icon_class": "fas fa-bug",
@@ -2384,7 +2437,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             ]
         )
 
-        if status in issue_statuses:
+        if status in ScanStatus.ISSUES:
             log = scan_run.get("log")
             if log:
                 scan_status_fields.append(("Log", log, None, "includes/field_log.html"))
@@ -2394,19 +2447,31 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     ("Task output", task_output, None, "includes/field_log.html")
                 )
 
-        if status == "success":
-            filename = self.object.filename or self.object.package_url_filename
-            field_context = {
-                "href": reverse(
-                    "component_catalog:scan_data_as_file",
-                    args=[scan.get("uuid"), quote_plus(filename)],
-                ),
-                "target": "_blank",
-                "icon_class": "fas fa-download",
-            }
-            scan_status_fields.append(
-                ("Download Scan data", field_context, None, "includes/field_button.html")
+        # Scan actions: download, delete, rescan
+        download_result_url = None
+        if status in ScanStatus.COMPLETED:
+            filename = package.filename or package.package_url_filename
+            download_result_url = reverse(
+                "component_catalog:scan_data_as_file",
+                args=[scan_uuid, quote_plus(filename)],
             )
+
+        delete_url = None
+        refresh_url = None
+        if status not in ScanStatus.IN_PROGRESS:
+            delete_url = reverse("component_catalog:scan_delete", args=[scan_uuid])
+            refresh_url = reverse("component_catalog:scan_refresh", args=[scan_uuid])
+
+        field_context = {
+            "scan": {
+                "download_result_url": download_result_url,
+                "delete_url": delete_url,
+                "refresh_url": refresh_url,
+            }
+        }
+        scan_status_fields.append(
+            (None, field_context, None, "component_catalog/tabs/field_scan_actions.html")
+        )
 
         return scan_status_fields
 

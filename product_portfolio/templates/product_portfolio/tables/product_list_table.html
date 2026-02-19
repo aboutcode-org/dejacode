@@ -29,7 +29,7 @@
                   <a href="{% inject_preserved_filters product.get_absolute_url %}#activity" class="r-link"><span class="badge text-bg-request">R</span></a>
                 </li>
               {% endif %}
-              {% if product.is_vulnerable %}
+              {% if product.has_vulnerable_packages %}
                 <li class="list-inline-item">
                   {% include 'component_catalog/includes/vulnerability_icon_link.html' with url=product.get_absolute_url only %}
                 </li>
@@ -71,7 +71,7 @@
         </tr>
       {% endfor %}
     {% empty %}
-      <tr><td colspan="8">No results.</td></tr>
+      <tr><td colspan="9">No results.</td></tr>
     {% endfor %}
   </tbody>
 </table>

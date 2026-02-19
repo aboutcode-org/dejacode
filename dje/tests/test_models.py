@@ -20,6 +20,7 @@ from dje.models import History
 from dje.models import get_unsecured_manager
 from dje.models import is_dataspace_related
 from dje.models import is_secured
+from dje.tests import create
 from organization.models import Owner
 from organization.models import Subowner
 
@@ -221,6 +222,28 @@ class DataspacedModelTestCase(TestCase):
         self.assertFalse(self.dataspace.has_configuration)
         DataspaceConfiguration.objects.create(dataspace=self.dataspace)
         self.assertTrue(self.dataspace.has_configuration)
+
+    def test_dataspace_configuration_model_foreign_key_validation(self):
+        layout_dataspace = create("CardLayout", self.dataspace)
+        layout_alternate = create("CardLayout", self.alternate_dataspace)
+
+        expected_message = 'has Dataspace "alternate", expected "nexB"'
+        with self.assertRaisesMessage(ValueError, expected_message):
+            DataspaceConfiguration.objects.create(
+                dataspace=self.dataspace,
+                homepage_layout=layout_alternate,
+            )
+
+        with self.assertRaisesMessage(ValueError, expected_message):
+            self.dataspace.set_configuration("homepage_layout", layout_alternate)
+
+        self.dataspace.set_configuration("homepage_layout", layout_dataspace)
+
+        configuration = self.dataspace.get_configuration()
+
+        with self.assertRaisesMessage(ValueError, expected_message):
+            configuration.homepage_layout = layout_alternate
+            configuration.save()
 
     def test_dataspace_tab_permissions_enabled(self):
         self.assertFalse(self.dataspace.tab_permissions_enabled)

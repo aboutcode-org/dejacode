@@ -30,6 +30,7 @@
     "sha1": "",
     "sha256": "",
     "sha512": "",
+    "package_content": null,
     "filename": "systemu-2.5.2.gem",
     "download_url": "https://s3.amazonaws.com/production.s3.rubygems.org/gems/systemu-2.5.2.gem",
     "size": null,
@@ -74,6 +75,7 @@
     "uuid": "565737ed-ab23-46eb-bbcf-185da2da50dc",
     "created_date": "2011-08-24T09:20:01Z",
     "last_modified_date": "2011-08-24T09:20:01Z",
+    "risk_score": null,
     "keywords": [
       "Framework"
     ],

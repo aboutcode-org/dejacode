@@ -1092,6 +1092,33 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, delete_button)
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    def test_product_portfolio_detail_view_has_scan_all_packages(self, mock_is_configured):
+        mock_is_configured.return_value = True
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        self.assertFalse(self.basic_user.dataspace.enable_package_scanning)
+
+        url = self.product1.get_absolute_url()
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code)
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(response.context.get("has_scan_all_packages"))
+
+        self.basic_user.dataspace.enable_package_scanning = True
+        self.basic_user.dataspace.save()
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(response.context.get("has_scan_all_packages"))
+
+        assign_perm("change_product", self.basic_user, self.product1)
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.context.get("has_scan_all_packages"))
+
     def test_product_portfolio_detail_view_display_purldb_features(self):
         self.client.login(username=self.super_user.username, password="secret")
         self.assertFalse(self.super_user.dataspace.enable_purldb_access)
@@ -1251,10 +1278,10 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         manage_components_url = self.product1.get_manage_components_url()
         manage_packages_url = self.product1.get_manage_packages_url()
-        expected1 = "Scan all Packages"
+        expected_scan_all = "Scan all Packages"
 
         response = self.client.get(url)
-        self.assertContains(response, expected1, html=True)
+        self.assertContains(response, expected_scan_all, html=True)
         self.assertContains(response, manage_components_url)
         self.assertContains(response, manage_packages_url)
 
@@ -1271,33 +1298,33 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         assign_perm("view_product", self.super_user, self.product1)
         response = self.client.get(url)
-        self.assertNotContains(response, expected1, html=True)
+        self.assertNotContains(response, expected_scan_all, html=True)
         self.assertNotContains(response, manage_components_url)
         self.assertNotContains(response, manage_packages_url)
 
         perms = ["change_productcomponent"]
         self.super_user = add_perms(self.super_user, perms)
         response = self.client.get(url)
-        self.assertNotContains(response, expected1, html=True)
+        self.assertNotContains(response, expected_scan_all, html=True)
         self.assertNotContains(response, manage_components_url)
         self.assertNotContains(response, manage_packages_url)
 
         assign_perm("change_product", self.super_user, self.product1)
         response = self.client.get(url)
-        self.assertNotContains(response, expected1, html=True)
+        self.assertContains(response, expected_scan_all, html=True)
         self.assertContains(response, manage_components_url)
         self.assertNotContains(response, manage_packages_url)
 
         self.super_user = add_perms(self.super_user, ["change_productpackage"])
         response = self.client.get(url)
-        self.assertNotContains(response, expected1, html=True)
+        self.assertContains(response, expected_scan_all, html=True)
         self.assertContains(response, manage_components_url)
         self.assertContains(response, manage_packages_url)
 
         self.super_user.is_superuser = True
         self.super_user.save()
         response = self.client.get(url)
-        self.assertContains(response, expected1, html=True)
+        self.assertContains(response, expected_scan_all, html=True)
 
     def test_product_portfolio_list_view_request_links(self):
         self.client.login(username="nexb_user", password="secret")
@@ -1696,15 +1723,17 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         scan_all_packages_url = self.product1.get_scan_all_packages_url()
         response = self.client.get(scan_all_packages_url)
+        self.assertEqual(405, response.status_code)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(302, response.status_code)
 
         self.client.login(username=self.super_user.username, password="secret")
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.super_user.dataspace.enable_package_scanning = True
         self.super_user.dataspace.save()
-        response = self.client.get(scan_all_packages_url)
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
 
         self.package1.download_url = "https://proper-url.com"
@@ -1721,7 +1750,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(len(self.product1.all_packages))
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            response = self.client.get(scan_all_packages_url, follow=True)
+            response = self.client.post(scan_all_packages_url, follow=True)
 
         self.assertRedirects(response, self.product1.get_absolute_url())
         self.assertContains(response, "Click here to see the Scans list.")
@@ -1734,10 +1763,14 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             dataspace_uuid=self.super_user.dataspace.uuid,
         )
 
-        self.super_user.is_superuser = False
-        self.super_user.save()
-        response = self.client.get(scan_all_packages_url)
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.post(scan_all_packages_url)
         self.assertEqual(404, response.status_code)
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        assign_perm("change_product", self.basic_user, self.product1)
+        response = self.client.post(scan_all_packages_url)
+        self.assertRedirects(response, self.product1.get_absolute_url())
 
     def test_product_portfolio_product_add_view_permission_access(self):
         add_url = reverse("product_portfolio:product_add")
@@ -2647,6 +2680,45 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(manage_url)
         self.assertEqual(200, response.status_code)
 
+    def test_product_portfolio_product_manage_packages_grid_fields_permissions(self):
+        add_perms(self.basic_user, ["change_productpackage"])
+        assign_perm("view_product", self.basic_user, self.product1)
+        assign_perm("change_product", self.basic_user, self.product1)
+        self.client.login(username=self.basic_user.username, password="secret")
+
+        make_product_package(self.product1)
+        manage_url = self.product1.get_manage_packages_url()
+        response = self.client.get(manage_url)
+
+        self.assertEqual(200, response.status_code)
+        expected = (
+            '<select name="form-0-review_status" class="select form-select" disabled'
+            ' aria-describedby="id_form-0-review_status_helptext" id="id_form-0-review_status">'
+            ' <option value="" selected>---------</option>'
+            "</select>"
+        )
+        self.assertContains(response, expected, html=True)
+        form = response.context["formset"].forms[0]
+        self.assertIn("review_status", form.fields)
+        self.assertTrue(form.fields["review_status"].disabled)
+
+        data = {
+            "form-TOTAL_FORMS": 1,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 0,
+            "form-MAX_NUM_FORMS": 1000,
+            "form-0-product": self.product1.pk,
+            "form-0-package": self.package1.pk,
+            "form-0-object_display": str(self.package1),
+            "form-0-review_status": "PROTECTED FIELD",
+            "form-0-notes": "Some notes",
+        }
+        response = self.client.post(manage_url, data, follow=True)
+        self.assertContains(response, "Product changes saved.")
+        self.assertRedirects(response, manage_url)
+        pp2 = ProductPackage.objects.get(product=self.product1, package=self.package1.pk)
+        self.assertIsNone(pp2.review_status)
+
     def test_product_portfolio_product_manage_packages_grid_view_delete(self):
         self.client.login(username=self.basic_user.username, password="secret")
 
@@ -3066,6 +3138,20 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response_str = str(response.getvalue())
         self.assertIn("vulnerabilities", response_str)
         self.assertIn(vulnerability1.vulnerability_id, response_str)
+
+    def test_product_portfolio_product_export_openvex_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        export_openvex_url = self.product1.get_export_openvex_url()
+        response = self.client.get(export_openvex_url)
+        self.assertEqual(
+            "dejacode_nexb_product_product1_with_space_1.0.openvex.json", response.filename
+        )
+        self.assertEqual("application/json", response.headers["Content-Type"])
+
+        content = io.BytesIO(b"".join(response.streaming_content))
+        bom_as_dict = json.loads(content.read().decode("utf-8"))
+        self.assertEqual("https://openvex.dev/ns/v0.2.0", bom_as_dict["@context"])
+        self.assertEqual(self.dataspace.name, bom_as_dict["author"])
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.submit_project")
     def test_product_portfolio_load_sbom_view(self, mock_submit):

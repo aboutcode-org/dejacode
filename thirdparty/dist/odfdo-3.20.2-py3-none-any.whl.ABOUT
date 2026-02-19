@@ -1,0 +1,15 @@
+about_resource: odfdo-3.20.2-py3-none-any.whl
+name: odfdo
+version: 3.20.2
+download_url: https://files.pythonhosted.org/packages/8c/7d/b96844125aa731c4624e363708b55afc75f3855f47978a64ed8757bd37a8/odfdo-3.20.2-py3-none-any.whl
+package_url: pkg:pypi/odfdo@3.20.2
+license_expression: apache-2.0
+copyright: Copyright odfdo project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 6686aef9f543d835b262b8c916baa6a2
+checksum_sha1: 31d00a8500c19343b363e6981840b20a0ddd17ff
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE

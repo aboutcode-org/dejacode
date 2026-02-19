@@ -1,0 +1,14 @@
+about_resource: altcha-1.0.0-py3-none-any.whl
+name: altcha
+version: 1.0.0
+download_url: https://files.pythonhosted.org/packages/88/19/978dac535829b3e9175427d4d91a34b0ec6e120375a38fabd9840acf32ca/altcha-1.0.0-py3-none-any.whl
+package_url: pkg:pypi/altcha@1.0.0
+license_expression: mit
+copyright: Copyright altcha project contributors
+attribute: yes
+checksum_md5: 5c401435f14e149797f6b77343138ca4
+checksum_sha1: 402795bf7e9eaa34159fb974a1d61fb0616a54fd
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

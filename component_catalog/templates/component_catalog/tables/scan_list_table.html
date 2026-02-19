@@ -1,0 +1,52 @@
+{% load i18n %}
+{% load humanize %}
+<table class="table table-bordered table-hover text-break">
+  <thead>
+    <tr>
+      <th style="background-color: var(--bs-tertiary-bg); padding: .75rem 1.25rem;">
+        <div style="font-size: 120%;">
+          {% trans "Scans" %}: {{ paginator.count|intcomma }} results
+        </div>
+      </th>
+    </tr>
+    <tr>
+  </tr>
+  </thead>
+  <tbody>
+  {% for scan in scans %}
+    <tr>
+      <td style="padding: .5rem 1.25rem;">
+        <div class="row align-items-center">
+          <div class="col">
+            {% if scan.package %}
+              <i class="fas fa-archive"></i>
+              <strong style="font-size: 115%;">
+                <a href="{{ scan.view_url }}">{{ scan.package }}</a>
+              </strong>
+            {% else %}
+              <i>Package not found in DejaCode</i>
+            {% endif %}
+            <div>
+              <strong>
+                {% if scan.package %}
+                  {{ scan.package.download_url }}
+                {% else %}
+                  {{ scan.input_sources.0.source }}
+                {% endif %}
+              </strong>
+            </div>
+            <div class="text-muted-darker">
+              Created <span title="{{ scan.created_date }}">{{ scan.created_date|naturaltime }}</span>
+            </div>
+          </div>
+          <div class="col-auto">
+            {% include 'component_catalog/includes/scan_progress.html' with scan=scan only %}
+          </div>
+        </div>
+      </td>
+    </tr>
+  {% empty %}
+      <tr><td style="padding: .75rem 1.25rem;"><strong>No results.</strong></td></tr>
+  {% endfor %}
+  </tbody>
+</table>

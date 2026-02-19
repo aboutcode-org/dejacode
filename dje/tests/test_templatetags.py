@@ -20,7 +20,7 @@ class TemplateTagsTestCase(TestCase):
         inputs = [
             (
                 "domain.com",
-                '<a target="_blank" href="http://domain.com" rel="nofollow">domain.com</a>',
+                '<a target="_blank" href="https://domain.com" rel="nofollow">domain.com</a>',
             ),
             (
                 "http://domain.com",

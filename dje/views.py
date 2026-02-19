@@ -14,8 +14,6 @@ import os
 from collections import defaultdict
 from collections import namedtuple
 from contextlib import suppress
-from functools import partial
-from functools import wraps
 from urllib.parse import parse_qsl
 from urllib.parse import unquote_plus
 from urllib.parse import urlparse
@@ -56,7 +54,7 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView
@@ -984,7 +982,7 @@ class TabSetMixin:
             label = f'Activity <span class="badge text-bg-request">{len(requests)}</span>'
             return {
                 "fields": activity_fields,
-                "label": format_html(label),
+                "label": mark_safe(label),
             }
 
     def tab_external_references(self):
@@ -1071,7 +1069,7 @@ class TabSetMixin:
             ]
         )
 
-        if inferred_url := package.inferred_url:
+        if inferred_url := package.inferred_repo_url:
             inferred_url_help = (
                 "A URL deduced from the information available in a Package URL (purl)."
             )
@@ -1361,6 +1359,7 @@ def object_copy_get(request, m2m_formset_class):
             ct = ContentType.objects.get_for_model(related_model)
             m2m_initial.append({"ct": ct.id})
 
+    m2m_formset = m2m_formset_class(initial=m2m_initial, form_kwargs={"user": request.user})
     return render(
         request,
         "admin/object_copy.html",
@@ -1368,7 +1367,7 @@ def object_copy_get(request, m2m_formset_class):
             "copy_candidates": copy_candidates,
             "update_candidates": update_candidates,
             "form": form,
-            "m2m_formset": m2m_formset_class(initial=m2m_initial),
+            "m2m_formset": m2m_formset,
             "opts": source_object._meta,
             "preserved_filters": preserved_filters,
         },
@@ -1388,11 +1387,7 @@ def object_copy_view(request):
     This result as an extra step of presenting the target Dataspace list of
     choices.
     """
-    # Declared here as it required in GET and POST cases.
-    m2m_formset_class = formset_factory(
-        wraps(M2MCopyConfigurationForm)(partial(M2MCopyConfigurationForm, user=request.user)),
-        extra=0,
-    )
+    m2m_formset_class = formset_factory(M2MCopyConfigurationForm, extra=0)
 
     # Default entry point of the view, requested using a GET
     # At that stage, we are only looking at what the User requested,
@@ -1421,7 +1416,7 @@ def object_copy_view(request):
         exclude_update = {model_class: config_form.cleaned_data.get("exclude_update")}
 
         # Append the m2m copy configuration
-        for m2m_form in m2m_formset_class(request.POST):
+        for m2m_form in m2m_formset_class(request.POST, form_kwargs={"user": request.user}):
             if not m2m_form.is_valid():
                 continue
             m2m_model_class = m2m_form.model_class
@@ -1885,6 +1880,7 @@ class DownloadableMixin:
         "doc": "application/msword",
         "html": "text/html",
         "json": "application/json",
+        "ods": "application/vnd.oasis.opendocument.spreadsheet",
         "xls": "application/vnd.ms-excel",
         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "yaml": "application/x-yaml",
@@ -2410,7 +2406,7 @@ class ExportCycloneDXBOMView(
 
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,
-            filename=outputs.get_cyclonedx_filename(instance, extension),
+            filename=outputs.get_filename(instance, extension),
             content_type="application/json",
         )
 
@@ -2425,10 +2421,28 @@ class ExportCSAFDocumentView(
         product = self.get_object()
         security_advisory = outputs.get_csaf_security_advisory(product)
         security_advisory_json = security_advisory.model_dump_json(indent=2, exclude_none=True)
-        filename = outputs.get_cyclonedx_filename(product, extension="csaf.vex")
+        filename = outputs.get_filename(product, extension="csaf.vex")
 
         return outputs.get_attachment_response(
             file_content=security_advisory_json,
+            filename=filename,
+            content_type="application/json",
+        )
+
+
+class ExportOpenVEXView(
+    LoginRequiredMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    def get(self, request, *args, **kwargs):
+        product = self.get_object()
+        openvex_document_json = outputs.get_openvex_document_json(product)
+        filename = outputs.get_filename(product, extension="openvex")
+
+        return outputs.get_attachment_response(
+            file_content=openvex_document_json,
             filename=filename,
             content_type="application/json",
         )

@@ -26,6 +26,7 @@ from component_catalog.importers import PackageImporter
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Component
 from component_catalog.models import Package
+from dejacode_toolkit import download
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.copier import copy_object
 from dje.importers import BaseImporter
@@ -649,7 +650,15 @@ class ImportPackageFromScanCodeIO:
         "filename",
     ]
 
-    def __init__(self, user, project_uuid, product, update_existing=False, scan_all_packages=False):
+    def __init__(
+        self,
+        user,
+        project_uuid,
+        product,
+        update_existing=False,
+        scan_all_packages=False,
+        infer_download_urls=False,
+    ):
         self.licensing = Licensing()
         self.created = defaultdict(list)
         self.existing = defaultdict(list)
@@ -662,12 +671,13 @@ class ImportPackageFromScanCodeIO:
         self.product = product
         self.update_existing = update_existing
         self.scan_all_packages = scan_all_packages
+        self.infer_download_urls = infer_download_urls
 
         scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
-        if not self.packages:
-            raise Exception("Packages could not be fetched from ScanCode.io")
         self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
+        if not self.packages and not self.dependencies:
+            raise Exception("Packages could not be fetched from ScanCode.io")
 
     def save(self):
         self.import_packages()
@@ -689,12 +699,45 @@ class ImportPackageFromScanCodeIO:
         for dependency_data in self.dependencies:
             self.import_dependency(dependency_data)
 
+    @staticmethod
+    def import_vulnerability(vulnerability_data, product_package):
+        from vulnerabilities.models import VulnerabilityAnalysis
+
+        package = product_package.package
+        vulnerabilities = package.create_vulnerabilities(vulnerabilities_data=[vulnerability_data])
+        if not vulnerabilities:
+            return
+
+        if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability_data"):
+            if analysis_data := cdx_vulnerability.get("analysis"):
+                # CycloneDX model uses "response" while the local model uses "response"
+                if response_value := analysis_data.pop("response", None):
+                    analysis_data["responses"] = response_value
+
+                VulnerabilityAnalysis.create_from_data(
+                    user=product_package.dataspace,
+                    data={
+                        "product_package": product_package,
+                        "vulnerability": vulnerabilities[0],
+                        **analysis_data,
+                    },
+                )
+
     def import_package(self, package_data):
-        # Vulnerabilities are fetched post import.
-        package_data.pop("affected_by_vulnerabilities", None)
+        # Vulnerabilities are assigned after the package creation.
+        affected_by_vulnerabilities = package_data.pop("affected_by_vulnerabilities", [])
 
         # Check if the package already exists to prevent duplication.
         package = self.look_for_existing_package(package_data)
+
+        # Infer a download URL from the Package URL
+        if (
+            self.infer_download_urls
+            and not package_data.get("download_url")
+            and (purl := package_data.get("purl"))
+            and (download_url := download.infer_download_url(purl))
+        ):
+            package_data["download_url"] = download_url
 
         if license_expression := package_data.get("declared_license_expression"):
             license_expression = str(self.licensing.dedup(license_expression))
@@ -711,7 +754,7 @@ class ImportPackageFromScanCodeIO:
                 return
             self.created["package"].append(str(package))
 
-        ProductPackage.objects.get_or_create(
+        product_package, _ = ProductPackage.objects.get_or_create(
             product=self.product,
             package=package,
             dataspace=self.product.dataspace,
@@ -723,6 +766,9 @@ class ImportPackageFromScanCodeIO:
         )
         package_uid = package_data.get("package_uid") or package.uuid
         self.package_uid_mapping[package_uid] = package
+
+        for vulnerability_data in affected_by_vulnerabilities:
+            self.import_vulnerability(vulnerability_data, product_package)
 
     def import_dependency(self, dependency_data):
         dependency_uid = dependency_data.get("dependency_uid")

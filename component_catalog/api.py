@@ -11,8 +11,10 @@ from collections import defaultdict
 from django.db import transaction
 from django.forms.widgets import HiddenInput
 from django.http import FileResponse
+from django.http.response import StreamingHttpResponse
 
 import django_filters
+import requests
 from packageurl.contrib import url2purl
 from packageurl.contrib.django.filters import PackageURLFilter
 from rest_framework import serializers
@@ -618,6 +620,7 @@ class PackageSerializer(
         required=False,
         scope_content_type=True,
     )
+    package_content = serializers.ReadOnlyField(source="get_package_content_display")
     collect_data = serializers.BooleanField(
         write_only=True,
         required=False,
@@ -687,6 +690,7 @@ class PackageSerializer(
             "parties",
             "datasource_id",
             "file_references",
+            "package_content",
             "external_references",
             "created_date",
             "last_modified_date",
@@ -877,6 +881,11 @@ class ScanDataUnavailable(APIException):
     default_detail = "Scan data is not available"
 
 
+class ScanFetchError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Could not fetch scan data"
+
+
 class PackageViewSet(
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
@@ -954,7 +963,12 @@ class PackageViewSet(
 
     @action(detail=True, name="Scan results")
     def scan_results(self, request, uuid):
-        """Return the scan results from ScanCode.io."""
+        """
+        Stream scan results directly from ScanCode.io back to the client.
+
+        The response body is not loaded in memory but proxied chunk by chunk,
+        making it suitable for large scan result payloads.
+        """
         package = self.get_object()
         dataspace = request.user.dataspace
         scancodeio = ScanCodeIO(dataspace)
@@ -962,9 +976,16 @@ class PackageViewSet(
 
         project_uuid = project_info.get("uuid")
         scan_results_url = scancodeio.get_scan_action_url(project_uuid, "results")
-        scan_results = scancodeio.fetch_scan_data(scan_results_url)
 
-        return Response(scan_results)
+        try:
+            scan_response = scancodeio.stream_scan_data(scan_results_url)
+        except requests.RequestException:
+            raise ScanFetchError()
+
+        return StreamingHttpResponse(
+            scan_response.iter_content(chunk_size=8192),
+            content_type=scan_response.headers.get("Content-Type", "application/json"),
+        )
 
     @action(detail=True, name="Scan summary")
     def scan_summary(self, request, uuid):

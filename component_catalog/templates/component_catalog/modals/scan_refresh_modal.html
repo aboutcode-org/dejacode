@@ -1,0 +1,22 @@
+{% load i18n %}
+<div id="scan-refresh-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Refresh {% trans 'Scan' %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body bg-body-tertiary">
+        <p><strong>Are you sure you want to refresh this Scan?</strong></p>
+        <p>
+          All current data and results related to the Scan will be lost.<br>
+          If the Scan is in progress, it will be canceled.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a class="btn btn-success refresh-confirm" href="">Refresh Scan</a>
+      </div>
+    </div>
+  </div>
+</div>

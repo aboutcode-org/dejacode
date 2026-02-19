@@ -83,6 +83,7 @@ class ModelMaker:
         self.dataspace = dataspace
 
     def __call__(self, model, _quantity=None, make_m2m=False, **attrs):
+        attrs.pop("_create_files", None)
         return self.make(model, _quantity, make_m2m, **attrs)
 
     def make(self, model, _quantity=None, make_m2m=False, **attrs):

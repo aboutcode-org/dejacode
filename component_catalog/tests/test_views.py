@@ -1243,6 +1243,7 @@ class PackageUserViewsTestCase(TestCase):
         # Create a Package Set
         package_url = "pkg:pypi/django@5.0"
         self.package1.set_package_url(package_url)
+        self.package1.package_content = Package.PackageContentType.SOURCE_ARCHIVE
         self.package1.save()
         license_expression = "{} AND {}".format(self.license1.key, self.license2.key)
         make_package(self.dataspace, package_url=package_url, license_expression=license_expression)
@@ -1726,7 +1727,7 @@ class PackageUserViewsTestCase(TestCase):
             "sha1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
             "md5": "93b885adfe0da089cdf634904fd59f71",
         }
-        with mock.patch("component_catalog.models.collect_package_data") as collect:
+        with mock.patch("dejacode_toolkit.download.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 
@@ -1749,7 +1750,7 @@ class PackageUserViewsTestCase(TestCase):
         # Different URL but sha1 match in the db
         data = {"download_urls": "https://url.com/file.ext"}
         collected_data["download_url"] = data["download_urls"]
-        with mock.patch("component_catalog.models.collect_package_data") as collect:
+        with mock.patch("dejacode_toolkit.download.collect_package_data") as collect:
             collect.return_value = collected_data
             response = self.client.post(package_add_url, data)
 
@@ -2100,42 +2101,21 @@ class PackageUserViewsTestCase(TestCase):
         self.dataspace.save()
         response = self.client.get(self.package1_tab_scan_url)
 
-        expected = """
-        <dl class="row mb-0">
-        <dt class="col-sm-2 text-end pt-2 pe-0">Status</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">Created date</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-created-date">
-            Jun 21, 2018, 12:32 PM UTC
-          </pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">Start date</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-start-date">
-            Jun 21, 2018, 12:32 PM UTC
-          </pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">End date</dt>
-        <dd class="col-sm-10 clipboard">
-          <pre class="pre-bg-body-tertiary mb-1 field-end-date">&nbsp;</pre>
-        </dd>
-        <dt class="col-sm-2 text-end pt-2 pe-0">ScanCode.io version</dt>
-        <dd class="col-sm-10 clipboard">
-          <button class="btn-clipboard" data-bs-toggle="tooltip" title="Copy to clipboard">
-          <i class="fas fa-clipboard"></i></button>
-          <pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>
-        </dd>
-        </dl>
-        """
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-status">Scan running</pre>'
+        self.assertContains(response, expected, html=True)
+        expected = (
+            '<pre class="pre-bg-body-tertiary mb-1 field-created-date">'
+            "  Jun 21, 2018, 12:32 PM UTC"
+            "</pre>"
+        )
+        self.assertContains(response, expected, html=True)
+        expected = (
+            '<pre class="pre-bg-body-tertiary mb-1 field-start-date">'
+            "  Jun 21, 2018, 12:32 PM UTC"
+            "</pre>"
+        )
+        self.assertContains(response, expected, html=True)
+        expected = '<pre class="pre-bg-body-tertiary mb-1 field-scancodeio-version">31.0.0</pre>'
         self.assertContains(response, expected, html=True)
         self.assertNotContains(response, "Set values to Package")
 
@@ -2231,7 +2211,7 @@ class PackageUserViewsTestCase(TestCase):
         self.assertContains(response, expected_other_languages, html=True)
         self.assertContains(response, "Scan Summary")
         self.assertContains(response, "Set values to Package")
-        self.assertContains(response, "Download Scan data")
+        self.assertContains(response, "Download Scan results")
 
         scan_data_as_file_url = reverse(
             "component_catalog:scan_data_as_file",
@@ -3410,6 +3390,7 @@ class PackageUserViewsTestCase(TestCase):
             "description": "Abbot Java GUI Test Library",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
             "keywords": ["keyword1", "keyword2"],
+            "package_content": "binary",
         }
         mock_request_get.return_value = {
             "count": 1,
@@ -3423,7 +3404,7 @@ class PackageUserViewsTestCase(TestCase):
         expected = {
             "filename": "abbot-1.4.0.jar",
             "keywords": ["keyword1", "keyword2"],
-            "release_date": "2010-05-24T00:00:00Z",
+            "release_date": "2010-05-24",
             "type": "maven",
             "namespace": "abbot",
             "name": "abbot",
@@ -3432,6 +3413,7 @@ class PackageUserViewsTestCase(TestCase):
             "description": "Abbot Java GUI Test Library",
             "license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
             "declared_license_expression": "bsd-new OR eps-1.0 OR apache-2.0 OR mit",
+            "package_content": Package.PackageContentType.BINARY,
         }
         self.assertEqual(expected, response.context["form"].initial)
 
@@ -3584,7 +3566,7 @@ class PackageUserViewsTestCase(TestCase):
             "usage_policy": policy_approved.pk,
         }
         form = PackageForm(user=self.super_user, data=data)
-        self.assertEqual(0, len(form.fields["usage_policy"].queryset))
+        self.assertNotIn("usage_policy", form.fields)
         self.assertTrue(form.is_valid())
         package = form.save()
         self.assertIsNone(package.usage_policy)
@@ -3592,7 +3574,8 @@ class PackageUserViewsTestCase(TestCase):
         data["filename"] = "with policy"
         self.super_user = add_perm(self.super_user, "change_usage_policy_on_package")
         form = PackageForm(user=self.super_user, data=data)
-        self.assertEqual(1, len(form.fields["usage_policy"].queryset))
+        self.assertIn("usage_policy", form.fields)
+        self.assertQuerySetEqual([policy_approved], form.fields["usage_policy"].queryset)
         self.assertTrue(form.is_valid())
         package = form.save()
         self.assertEqual(policy_approved, package.usage_policy)
@@ -4404,7 +4387,7 @@ class ComponentListViewTestCase(TestCase):
             "usage_policy": policy_approved.pk,
         }
         form = ComponentForm(user=self.user, data=data)
-        self.assertEqual(0, len(form.fields["usage_policy"].queryset))
+        self.assertNotIn("usage_policy", form.fields)
         self.assertTrue(form.is_valid())
         component = form.save()
         self.assertIsNone(component.usage_policy)
@@ -4412,7 +4395,8 @@ class ComponentListViewTestCase(TestCase):
         data["version"] = "with policy"
         self.user = add_perm(self.user, "change_usage_policy_on_component")
         form = ComponentForm(user=self.user, data=data)
-        self.assertEqual(1, len(form.fields["usage_policy"].queryset))
+        self.assertIn("usage_policy", form.fields)
+        self.assertQuerySetEqual([policy_approved], form.fields["usage_policy"].queryset)
         self.assertTrue(form.is_valid())
         component = form.save()
         self.assertEqual(policy_approved, component.usage_policy)
@@ -4431,6 +4415,7 @@ class ComponentListViewTestCase(TestCase):
             "homepage_url": "https://nexb.com",
             "configuration_status": status.pk,
             "release_date": "2019-03-01",
+            "usage_policy": policy_approved.pk,
             "submit": "Add Component",
         }
         form = ComponentForm(user=self.user, data=data)
@@ -4440,6 +4425,7 @@ class ComponentListViewTestCase(TestCase):
         self.assertEqual(status, component.configuration_status)
         self.assertEqual(license1.key, component.license_expression)
         self.assertEqual(["Key1", "Another keyword"], component.keywords)
+        self.assertEqual(policy_approved, component.usage_policy)
 
     def test_component_catalog_component_form_assigned_packages(self):
         data = {

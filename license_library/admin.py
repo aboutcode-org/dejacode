@@ -357,11 +357,15 @@ class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
         self.message_user(request, msg)
 
     def save_model(self, request, obj, form, change):
+        # Needs to be set before the `save_model` method call.
+        if obj.license_profile:
+            obj.set_usage_policy_from_license_profile()
+
         if change:
             obj_before_save = License.objects.get(id=obj.id)
             super().save_model(request, obj, form, change)
             # If a LicenseProfile is set or changed, apply the values of the
-            # this Profile to the license assigned tags.
+            # Profile to the license assigned tags.
             if obj.license_profile and obj.license_profile != obj_before_save.license_profile:
                 self.set_assigned_tags_from_license_profile(request, obj)
         else:
@@ -452,7 +456,7 @@ class LicenseTagHolderBaseAdmin(DataspacedAdmin):
     The purpose of this class is to be extended by LicenseProfileAdmin and
     LicenseTagGroupAdmin. It's used to add a LicenseTag queryset in the context
     of the add and changes views, to display special data (added through
-    javascript) about tags in the page like text and guidance information.
+    avascript) about tags in the page like text and guidance information.
     """
 
     change_form_template = "admin/license_library/tag_holder/change_form.html"
@@ -519,11 +523,12 @@ class LicenseProfileAdmin(LicenseTagHolderBaseAdmin):
         "name",
         "get_assigned_tags_html",
         "examples",
+        "default_usage_policy",
         "get_dataspace",
     )
     fieldsets = (
         ("", {"fields": ("name",)}),
-        ("", {"fields": ("examples", "notes", "dataspace", "uuid")}),
+        ("", {"fields": ("examples", "notes", "default_usage_policy", "dataspace", "uuid")}),
     )
     search_fields = ("name",)
     list_filter = DataspacedAdmin.list_filter + (ReportingQueryListFilter,)
@@ -552,10 +557,6 @@ class LicenseProfileAdmin(LicenseTagHolderBaseAdmin):
         " so that its initial value \
         will be Unknown.",
     )
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.prefetch_related("licenseprofileassignedtag_set__license_tag")
 
 
 @admin.register(LicenseCategory, site=dejacode_site)

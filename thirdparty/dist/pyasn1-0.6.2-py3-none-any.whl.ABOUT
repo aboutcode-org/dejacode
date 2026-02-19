@@ -1,0 +1,14 @@
+about_resource: pyasn1-0.6.2-py3-none-any.whl
+name: pyasn1
+version: 0.6.2
+download_url: https://files.pythonhosted.org/packages/44/b5/a96872e5184f354da9c84ae119971a0a4c221fe9b27a4d94bd43f2596727/pyasn1-0.6.2-py3-none-any.whl
+package_url: pkg:pypi/pyasn1@0.6.2
+license_expression: bsd-simplified
+copyright: Copyright Ilya Etingof
+attribute: yes
+checksum_md5: cba2eaaeb038874e49a2b38564335ab1
+checksum_sha1: 0942be2a44f5db2de11d5311ee9d14aac6a4695f
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE

@@ -1,0 +1,17 @@
+about_resource: click-8.3.1-py3-none-any.whl
+name: click
+version: 8.3.1
+download_url: https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl
+package_url: pkg:pypi/click@8.3.1
+license_expression: bsd-new AND unknown-license-reference
+copyright: Copyright click project contributors
+attribute: yes
+checksum_md5: f032502934a5979330da77e3f09d889c
+checksum_sha1: 4645f956db291ad4bdb38a84f1e27ea87ca19a37
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

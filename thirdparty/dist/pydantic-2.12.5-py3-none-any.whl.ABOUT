@@ -1,0 +1,17 @@
+about_resource: pydantic-2.12.5-py3-none-any.whl
+name: pydantic
+version: 2.12.5
+download_url: https://files.pythonhosted.org/packages/5a/87/b70ad306ebb6f9b585f114d0ac2137d792b48be34d732d60e597c2f8465a/pydantic-2.12.5-py3-none-any.whl
+package_url: pkg:pypi/pydantic@2.12.5
+license_expression: mit AND unknown-license-reference
+copyright: Copyright pydantic project contributors
+attribute: yes
+checksum_md5: 0857f9b85480a4883a7ce20c8b07a025
+checksum_sha1: 1ae214c5e185c89b0ea88888b5b6d6f5badeef6d
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

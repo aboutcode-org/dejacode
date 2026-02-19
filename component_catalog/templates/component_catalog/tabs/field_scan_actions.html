@@ -1,0 +1,6 @@
+{% if forloop.first %}<dl class="row mb-0">{% endif %}
+<dt class="col-sm-2 text-end pt-2 pe-0"></dt>
+<dd class="col-sm-10">
+  {% include 'component_catalog/includes/scan_actions_list.html' with scan=values.scan show_btn_label=True is_scan_tab=True only %}
+</dd>
+{% if forloop.last %}</dl>{% endif %}

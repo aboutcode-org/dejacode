@@ -1,6 +1,81 @@
 Release notes
 =============
 
+### Version 5.6.0
+
+- feat: import vulnerability data from ScanCode.io
+  https://github.com/aboutcode-org/dejacode/issues/448
+
+- feat: ability to assign and manage vulnerabilities on products
+  https://github.com/aboutcode-org/dejacode/issues/439
+
+- feat: add package_content PurlDB field on Package model
+  https://github.com/aboutcode-org/dejacode/issues/434
+
+- fix: exclude qualifiers and subpath for PURL comparison in get_purldb_entries
+  https://github.com/aboutcode-org/dejacode/issues/453
+
+- fix: update the readthedocs.yml config to fix the build
+  https://github.com/aboutcode-org/dejacode/issues/447
+
+- chore: upgrade Django and related libraries to latest version
+  https://github.com/aboutcode-org/dejacode/issues/451
+
+- chore: upgrade altcha and django_altcha to latest versions
+  https://github.com/aboutcode-org/dejacode/issues/450
+
+### Version 5.5.0
+
+- Add UI to refresh a package scan.
+  https://github.com/aboutcode-org/dejacode/issues/423
+
+- Update ProductPackage "unknown" license during "Scan all Packages".
+  Only "unknown" licenses are updated.
+  Products with a is_locked configuration status are excluded.
+  Inactive is_active=False products are excluded.
+  https://github.com/aboutcode-org/dejacode/issues/388
+
+- Allow Product "Scan all packages" for users with the "change_product" permission
+  on the Product instance.
+  Prior to this change only "superusers" could see and use this feature.
+  https://github.com/aboutcode-org/dejacode/issues/385
+
+- Add Dataspace FK validation on Dataspace and DejacodeUser models.
+  Assigning an object from another Dataspace will raise an error at the ``save()``
+  level.
+  Do not include the ``homepage_layout`` field on Dataspace "addition" form since the
+  Dataspace does not exist yet.
+  Display the ``homepage_layout`` field as read-only on the Dataspace and User change
+  forms when the currently logged user is not looking at his own Dataspace.
+  https://github.com/aboutcode-org/dejacode/issues/428
+
+- Prioritize hashes and download URL for PurlDB mapping.
+  https://github.com/aboutcode-org/dejacode/issues/430
+
+- Fix a bug with the scan_status_fields on empty runs.
+  https://github.com/aboutcode-org/dejacode/issues/433
+
+- Add option to infer_download_urls on product importers.
+  https://github.com/aboutcode-org/dejacode/issues/444
+
+- Add support for PyPI purls in purl resolution.
+  https://github.com/aboutcode-org/dejacode/pull/443
+
+- Export OpenVEX VEX document.
+  https://github.com/aboutcode-org/dejacode/issues/442
+
+- Migrate from rq-scheduler to new built-in CronScheduler.
+  https://github.com/aboutcode-org/dejacode/issues/435
+
+- Update weighted_risk_score on updating the relationship.
+  https://github.com/aboutcode-org/dejacode/issues/436
+
+### Version 5.4.2
+
+- Migrate the LDAP testing from using mockldap to slapdtest.
+  The mockldap and funcparserlib dependencies has been removed.
+  https://github.com/aboutcode-org/dejacode/issues/394
+
 ### Version 5.4.1
 
 - Upgrade Django to latest security release 5.2.7

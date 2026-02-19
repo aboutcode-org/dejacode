@@ -16,7 +16,7 @@ $ datamodel-codegen \
     --output-model-type pydantic_v2.BaseModel \
     --input-file-type jsonschema \
     --target-python-version $TARGET_PYTHON_VERSION \
-    --custom-file-header-path dejacode_toolkit/csaf/HEADER \
+    --custom-file-header-path dejacode_toolkit/HEADER \
     --use-schema-description \
     --use-default-kwarg
 

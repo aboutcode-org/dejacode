@@ -219,7 +219,7 @@ def get_model_data_for_column_template(dataspace=None):
                 "package_url",
                 "short_package_url",
                 "where_used",
-                "inferred_url",
+                "inferred_repo_url",
                 "is_vulnerable",
             ],
         },

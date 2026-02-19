@@ -1,0 +1,31 @@
+about_resource: setuptools-82.0.0-py3-none-any.whl
+name: setuptools
+version: 82.0.0
+download_url: https://files.pythonhosted.org/packages/e1/c6/76dc613121b793286a3f91621d7b75a2b493e0390ddca50f11993eadf192/setuptools-82.0.0-py3-none-any.whl
+package_url: pkg:pypi/setuptools@82.0.0
+license_expression: apache-2.0 AND bsd-new AND bsd-simplified AND lgpl-3.0 AND mit AND unknown-license-reference
+copyright: Copyright setuptools project contributors
+redistribute: yes
+attribute: yes
+track_changes: yes
+checksum_md5: 46c24ad8ec6d79f6c341e76632afeb14
+checksum_sha1: 8125d8cfaf65276f0b73ed2906073f7f21b2077c
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: lgpl-3.0
+    name: GNU Lesser General Public License 3.0
+    file: lgpl-3.0.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

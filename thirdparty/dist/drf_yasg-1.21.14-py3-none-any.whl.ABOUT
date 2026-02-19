@@ -1,0 +1,17 @@
+about_resource: drf_yasg-1.21.14-py3-none-any.whl
+name: drf-yasg
+version: 1.21.14
+download_url: https://files.pythonhosted.org/packages/bb/de/61880040534036044572225c485b0a4adc99b4c92e3eed3e5741b31674fd/drf_yasg-1.21.14-py3-none-any.whl
+package_url: pkg:pypi/drf-yasg@1.21.14
+license_expression: bsd-new AND unknown-license-reference
+copyright: Copyright drf-yasg project contributors
+attribute: yes
+checksum_md5: e04c18879948bfa1f278046d55ab273e
+checksum_sha1: 8f20897ed76a47ba419560dd807f72dd15ee391d
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

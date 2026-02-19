@@ -4,7 +4,7 @@
     let add_to_btn_wrapper = add_to_btn.parentElement;
 
     let handle_button_display = function () {
-        let checkedCheckboxes = document.querySelectorAll('main input[type="checkbox"]:checked');
+        let checkedCheckboxes = document.querySelectorAll('#object-list-table input[type="checkbox"]:checked');
         if (checkedCheckboxes.length >= 1) {
             add_to_btn.classList.remove('disabled');
             add_to_btn_wrapper.setAttribute('data-bs-original-title', '');
@@ -15,7 +15,7 @@
     };
 
     // Adding change event listener to all checkboxes
-    document.querySelectorAll('main input[type="checkbox"]').forEach(function(checkbox) {
+    document.querySelectorAll('#object-list-table input[type="checkbox"]').forEach(function(checkbox) {
         checkbox.addEventListener('change', handle_button_display);
     });
 
@@ -27,35 +27,40 @@
         handle_button_display();
     });
 
-    $('#add-to-product-modal, #add-to-component-modal').on('show.bs.modal', function (event) {
-      // Do not include the select-all as its value is not an id we want to keep
-      let checked = $('main input[type="checkbox"]:checked').not('#checkbox-select-all');
+    document.querySelectorAll('#add-to-product-modal, #add-to-component-modal').forEach(function(modal) {
+      modal.addEventListener('show.bs.modal', function (event) {
+        // Do not include the select-all as its value is not an id we want to keep
+        let checked = Array.from(document.querySelectorAll('#object-list-table input[type="checkbox"]:checked'))
+          .filter(checkbox => checkbox.id !== 'checkbox-select-all');
 
-      if (checked.length < 1) {
-        event.preventDefault();
-        return false;
-      }
-
-      let ids_input = $(this).find('#id_ids');
-      let object_repr_list = $(this).find('#object-repe-list');
-
-      if (ids_input) {
-        let selected_ids = [];
-        object_repr_list.html('');
-
-        checked.each(function() {
-          selected_ids.push(this.value);
-          $('<li/>').text($(this).data('object-repr')).appendTo(object_repr_list);
-        });
-
-        ids_input.val(selected_ids);
-
-        let new_component_link = $('#new-component-link');
-        if (new_component_link) {
-            let new_component_url = new_component_link.data('add-url') + '?package_ids=' + selected_ids.join();
-            new_component_link.attr('href', new_component_url);
+        if (checked.length < 1) {
+          event.preventDefault();
+          return false;
         }
-      }
+
+        let ids_input = modal.querySelector('#id_ids');
+        let object_repr_list = modal.querySelector('#object-repr-list');
+
+        if (ids_input) {
+          let selected_ids = [];
+          object_repr_list.innerHTML = '';
+
+          checked.forEach(function(checkbox) {
+            selected_ids.push(checkbox.value);
+            let li = document.createElement('li');
+            li.textContent = checkbox.dataset.objectRepr;
+            object_repr_list.appendChild(li);
+          });
+
+          ids_input.value = selected_ids.join(',');
+
+          let new_component_link = document.getElementById('new-component-link');
+          if (new_component_link) {
+              let new_component_url = new_component_link.dataset.addUrl + '?package_ids=' + selected_ids.join(',');
+              new_component_link.setAttribute('href', new_component_url);
+          }
+        }
+      });
     });
 
     // Select all forms with id starting with "add-to-"

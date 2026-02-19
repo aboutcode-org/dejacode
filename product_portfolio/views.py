@@ -43,6 +43,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -92,6 +93,7 @@ from dje.views import DataspacedUpdateView
 from dje.views import DataspaceScopeMixin
 from dje.views import ExportCSAFDocumentView
 from dje.views import ExportCycloneDXBOMView
+from dje.views import ExportOpenVEXView
 from dje.views import ExportSPDXDocumentView
 from dje.views import GetDataspacedObjectMixin
 from dje.views import Header
@@ -125,6 +127,7 @@ from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.forms import ProductPackageInlineForm
 from product_portfolio.forms import PullProjectDataForm
+from product_portfolio.forms import ScanAllPackagesForm
 from product_portfolio.forms import TableInlineFormSetHelper
 from product_portfolio.models import RELATION_LICENSE_EXPRESSION_HELP_TEXT
 from product_portfolio.models import CodebaseResource
@@ -206,7 +209,7 @@ class ProductListView(
             )
             .annotate(
                 productinventoryitem_count=Count("productinventoryitem", distinct=True),
-                is_vulnerable=Exists(vulnerable_productpackage_qs),
+                has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
             )
             .order_by(
                 "name",
@@ -513,7 +516,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -536,7 +539,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -564,7 +567,7 @@ class ProductDetailsView(
         if not vulnerability_count and risk_threshold is None:
             label = 'Vulnerabilities <span class="badge bg-secondary">0</span>'
             return {
-                "label": format_html(label),
+                "label": mark_safe(label),
                 "fields": [],
                 "disabled": True,
                 "tooltip": "No vulnerabilities found in this Product",
@@ -594,7 +597,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -617,7 +620,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -643,7 +646,7 @@ class ProductDetailsView(
         }
 
         return {
-            "label": format_html(label),
+            "label": mark_safe(label),
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -704,9 +707,9 @@ class ProductDetailsView(
         include_scancodeio_features = all(
             [
                 scancodeio.is_configured(),
-                user.is_superuser,
                 dataspace.enable_package_scanning,
                 context["is_user_dataspace"],
+                context["has_change_permission"],
             ]
         )
         context["has_scan_all_packages"] = include_scancodeio_features
@@ -714,6 +717,7 @@ class ProductDetailsView(
         if include_scancodeio_features:
             context["pull_project_data_form"] = PullProjectDataForm()
             context["display_scan_features"] = True
+            context["scan_all_packages_form"] = ScanAllPackagesForm()
 
         context["purldb_enabled"] = all(
             [
@@ -1956,6 +1960,11 @@ class ProductExportCSAFDocumentView(BaseProductViewMixin, ExportCSAFDocumentView
     pass
 
 
+class ProductExportOpenVEXView(BaseProductViewMixin, ExportOpenVEXView):
+    pass
+
+
+@require_POST
 @login_required
 def scan_all_packages_view(request, dataspace, name, version=""):
     user = request.user
@@ -1964,7 +1973,6 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     scancodeio = ScanCodeIO(user_dataspace)
     conditions = [
         scancodeio.is_configured(),
-        user.is_superuser,
         user_dataspace.enable_package_scanning,
         user_dataspace.name == dataspace,
     ]
@@ -1972,13 +1980,18 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     if not all(conditions):
         raise Http404
 
-    guarded_qs = Product.objects.get_queryset(user)
+    guarded_qs = Product.objects.get_queryset(user, perms="change_product")
     product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
-
     if not product.all_packages:
         raise Http404("No packages available for this product.")
 
-    transaction.on_commit(lambda: product.scan_all_packages_task(user))
+    scan_all_packages_form = ScanAllPackagesForm(data=request.POST)
+    if not scan_all_packages_form.is_valid():
+        raise Http404
+
+    infer_download_urls = scan_all_packages_form.cleaned_data.get("infer_download_urls")
+
+    transaction.on_commit(lambda: product.scan_all_packages_task(user, infer_download_urls))
 
     scan_list_url = reverse("component_catalog:scan_list")
     scancode_msg = format_html(
@@ -2025,9 +2038,9 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 msg = "Imported from Scan:"
                 for key, value in created_counts.items():
                     msg += f"<br> &bull; {value} {key}"
-                messages.success(request, format_html(msg))
+                messages.success(request, mark_safe(msg))
             if warnings:
-                messages.warning(request, format_html("<br>".join(warnings)))
+                messages.warning(request, mark_safe("<br>".join(warnings)))
             return redirect(f"{product.get_absolute_url()}#imports")
     else:
         form = form_class(request.user)

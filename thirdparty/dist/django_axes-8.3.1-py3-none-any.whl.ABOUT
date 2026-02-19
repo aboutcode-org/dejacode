@@ -1,0 +1,14 @@
+about_resource: django_axes-8.3.1-py3-none-any.whl
+name: django-axes
+version: 8.3.1
+download_url: https://files.pythonhosted.org/packages/46/f6/777a5df7d5698eeb23c7c496cc268c0181f0489dbc5b5f2b235b30e5d8dd/django_axes-8.3.1-py3-none-any.whl
+package_url: pkg:pypi/django-axes@8.3.1
+license_expression: mit
+copyright: Copyright django-axes project contributors
+attribute: yes
+checksum_md5: 36393eb8d62a7caf22185a31414a752a
+checksum_sha1: fafe2e62da5f8181d80760656ca4948d16cf8524
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

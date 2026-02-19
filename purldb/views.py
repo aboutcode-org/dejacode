@@ -15,8 +15,8 @@ from django.core.exceptions import FieldDoesNotExist
 from django.http import Http404
 from django.template.defaultfilters import filesizeformat
 from django.urls import reverse
-from django.utils.html import format_html
 from django.utils.html import format_html_join
+from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView
@@ -94,7 +94,7 @@ def get_purldb_tab_fields(purldb_entry, dataspace):
         if field_name == "declared_license_expression":
             show_policy = dataspace.show_usage_policy_in_user_views
             licensing = get_dataspace_licensing(dataspace)
-            value = format_html(get_formatted_expression(licensing, value, show_policy))
+            value = mark_safe(get_formatted_expression(licensing, value, show_policy))
         elif field_name == "dependencies":
             value = json.dumps(value, indent=2)
         elif field_name == "size":
@@ -138,7 +138,7 @@ def inject_license_expression_formatted(dataspace, object_list):
         expression = obj.get("declared_license_expression")
         if expression:
             formatted_expression = get_formatted_expression(licensing, expression, show_policy)
-            obj["license_expression_formatted"] = format_html(formatted_expression)
+            obj["license_expression_formatted"] = mark_safe(formatted_expression)
 
     return object_list
 

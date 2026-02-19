@@ -213,6 +213,7 @@ SILENCED_SYSTEM_CHECKS = [
     "security.W017",
     "urls.W005",
     "admin.E039",
+    "axes.W006",
 ]
 
 # Set the following to True to enable ClamAV scan on uploaded files
@@ -468,7 +469,7 @@ def enable_rq_eager_mode():
     This function patch the django_rq.get_redis_connection to always return a fake
     redis connection using the `fakeredis` library.
     """
-    import django_rq.queues
+    from django_rq import connection_utils
     from fakeredis import FakeRedis
     from fakeredis import FakeStrictRedis
 
@@ -478,7 +479,7 @@ def enable_rq_eager_mode():
     def get_fake_redis_connection(config, use_strict_redis):
         return FakeStrictRedis() if use_strict_redis else FakeRedis()
 
-    django_rq.queues.get_redis_connection = get_fake_redis_connection
+    connection_utils.get_redis_connection = get_fake_redis_connection
 
 
 DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
@@ -566,11 +567,6 @@ LOGGING = {
             "propagate": False,
             "level": DEJACODE_LOG_LEVEL,
         },
-        "rq_scheduler.scheduler": {
-            "handlers": ["null"] if IS_TESTS else ["console"],
-            "propagate": False,
-            "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
-        },
     },
 }
 
@@ -640,6 +636,9 @@ REST_FRAMEWORK = {
 # Although, this setting and registration views are needed for the user creation.
 ACCOUNT_ACTIVATION_DAYS = 10
 
+# django-altcha
+ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
+
 # https://github.com/zapier/django-rest-hooks
 HOOK_FINDER = "notification.models.find_and_fire_hook"
 HOOK_DELIVERER = "notification.tasks.deliver_hook_wrapper"
@@ -688,11 +687,23 @@ if DEBUG and DEBUG_TOOLBAR:
     MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"]
 
+# drf-yasg DeprecationWarning
+SWAGGER_USE_COMPAT_RENDERERS = False
+
+# The default protocol in urlize and urlizetrunc will change from HTTP to HTTPS
+# in Django 7.0.
+# Set the transitional setting URLIZE_ASSUME_HTTPS to True to opt into assuming HTTPS
+# during the Django 6.x release cycle.
+URLIZE_ASSUME_HTTPS = env.bool("DEJACODE_URLIZE_ASSUME_HTTPS", default=True)
+
+# Default to 5 seconds.
+DEJACODE_INTEGRATION_REQUESTS_TIMEOUT = env.int("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5)
+
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})
     # Do not pollute the MEDIA_ROOT location while running the tests.
-    MEDIA_ROOT = tempfile.TemporaryDirectory().name
+    MEDIA_ROOT = tempfile.mkdtemp()
     # Set a faster hashing algorithm for running the tests
     # https://docs.djangoproject.com/en/dev/topics/testing/overview/#password-hashing
     PASSWORD_HASHERS = [

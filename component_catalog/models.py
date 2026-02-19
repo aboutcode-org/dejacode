@@ -31,6 +31,7 @@ from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
 from django.utils.functional import cached_property
 from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.text import format_lazy
 from django.utils.text import get_valid_filename
 from django.utils.text import normalize_newlines
@@ -54,11 +55,11 @@ from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.license_expression_dje import render_expression_as_html
+from dejacode_toolkit import download
 from dejacode_toolkit import spdx
-from dejacode_toolkit.download import DataCollectionException
-from dejacode_toolkit.download import collect_package_data
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.purldb import pick_purldb_entry
+from dejacode_toolkit.purldb import pick_source_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje import urn
 from dje.copier import post_copy
@@ -75,9 +76,9 @@ from dje.models import ParentChildModelMixin
 from dje.models import ParentChildRelationshipModel
 from dje.models import ReferenceNotesMixin
 from dje.tasks import logger as tasks_logger
-from dje.utils import get_plain_purl
 from dje.utils import is_purl_str
 from dje.utils import merge_common_non_empty_values
+from dje.utils import plain_purls_equal
 from dje.utils import set_fields_from_object
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
@@ -190,7 +191,7 @@ class LicenseExpressionMixin:
                 as_link=as_link,
                 show_policy=show_policy,
             )
-            return format_html(rendered)
+            return mark_safe(rendered)
 
     def get_license_expression_attribution(self):
         # note: the fields use in the template must be available as attributes or
@@ -1653,6 +1654,42 @@ class ComponentKeyword(DataspacedModel):
         return self.label
 
 
+class PackageContentFieldMixin(models.Model):
+    """
+    Field extracted from the `purldb.packagedb.models.Package` model.
+    It need to stay aligned with its upstream PurlDB implementation.
+    """
+
+    class PackageContentType(models.IntegerChoices):
+        CURATION = 1, "curation"
+        PATCH = 2, "patch"
+        SOURCE_REPO = 3, "source_repo"
+        SOURCE_ARCHIVE = 4, "source_archive"
+        BINARY = 5, "binary"
+        TEST = 6, "test"
+        DOC = 7, "doc"
+
+    package_content = models.IntegerField(
+        null=True,
+        blank=True,
+        choices=PackageContentType.choices,
+        help_text=_(
+            "Content of this Package as one of: {}".format(", ".join(PackageContentType.labels))
+        ),
+    )
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_package_content_value_from_label(cls, label):
+        """Convert a package_content string label to its integer value."""
+        try:
+            return cls.PackageContentType[label.upper()].value
+        except (KeyError, AttributeError):
+            return
+
+
 PACKAGE_URL_FIELDS = ["type", "namespace", "name", "version", "qualifiers", "subpath"]
 
 
@@ -1719,6 +1756,10 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
     def has_package_url(self):
         """Return objects with Package URL defined."""
         return self.filter(~models.Q(type="") & ~models.Q(name=""))
+
+    def has_download_url(self):
+        """Return objects with download URL defined."""
+        return self.filter(~models.Q(download_url=""))
 
     def annotate_sortable_identifier(self):
         """
@@ -1792,6 +1833,7 @@ class Package(
     URLFieldsMixin,
     HashFieldsMixin,
     PackageURLMixin,
+    PackageContentFieldMixin,
     DataspacedModel,
 ):
     filename = models.CharField(
@@ -2036,9 +2078,14 @@ class Package(
         return get_valid_filename(cleaned_package_url)
 
     @property
-    def inferred_url(self):
-        """Return the URL deduced from the information available in a Package URL (purl)."""
+    def inferred_repo_url(self):
+        """Return the repo URL deduced from the Package URL (purl)."""
         return purl2url.get_repo_url(self.package_url)
+
+    def infer_download_url(self):
+        """Infer the download URL deduced from the Package URL (purl)."""
+        if self.package_url:
+            return download.infer_download_url(self.package_url)
 
     def get_url(self, name, params=None, include_identifier=False):
         if not params:
@@ -2122,8 +2169,8 @@ class Package(
             return
 
         try:
-            package_data = collect_package_data(self.download_url)
-        except DataCollectionException as e:
+            package_data = download.collect_package_data(self.download_url)
+        except download.DataCollectionException as e:
             tasks_logger.info(e)
             return
         tasks_logger.info("Package data collected.")
@@ -2476,7 +2523,7 @@ class Package(
         scoped_packages_qs = cls.objects.scope(user.dataspace)
 
         if is_purl_str(url):
-            download_url = purl2url.get_download_url(url)
+            download_url = download.infer_download_url(url)
             package_url = PackageURL.from_string(url)
             existing_packages = scoped_packages_qs.for_package_url(url, exact_match=True)
         else:
@@ -2491,24 +2538,29 @@ class Package(
             )
 
         # Matching in PurlDB early to avoid more processing in case of a match.
-        purldb_data = None
+        purldb_entry = None
         if user.dataspace.enable_purldb_access:
             package_for_match = cls(download_url=download_url)
             package_for_match.set_package_url(package_url)
             purldb_entries = package_for_match.get_purldb_entries(user)
-            # Look for one ith the same exact purl in that case
-            if purldb_data := pick_purldb_entry(purldb_entries, purl=url):
-                # The format from PurlDB is "2019-11-18T00:00:00Z" from DateTimeField
-                if release_date := purldb_data.get("release_date"):
-                    purldb_data["release_date"] = release_date.split("T")[0]
-                package_data.update(purldb_data)
+            # Look for one with the same exact purl in that case
+            if purldb_entry := pick_purldb_entry(purldb_entries, purl=url):
+                cls.clean_purldb_entry(purldb_entry)
+                package_data.update(purldb_entry)
 
-        if download_url and not purldb_data:
-            package_data = collect_package_data(download_url)
+        if download_url and not purldb_entry:
+            package_data = download.collect_package_data(download_url)
 
-        if sha1 := package_data.get("sha1"):
-            if sha1_match := scoped_packages_qs.filter(sha1=sha1):
-                package_link = sha1_match[0].get_absolute_link()
+        # Check for existing package by hash fields with a single database query
+        hash_fields = ["sha512", "sha256", "sha1", "md5"]
+        hash_filters = models.Q()
+        for hash_field in hash_fields:
+            if hash_value := package_data.get(hash_field):
+                hash_filters |= models.Q(**{hash_field: hash_value})
+
+        if hash_filters:
+            if package_match := scoped_packages_qs.filter(hash_filters).first():
+                package_link = package_match.get_absolute_link()
                 raise PackageAlreadyExistsWarning(
                     f"{url} already exists in your Dataspace as {package_link}"
                 )
@@ -2527,10 +2579,10 @@ class Package(
         """
         Return the PurlDB entries that correspond to this Package instance.
 
-        Matching on the following fields order:
-        - Package URL
-        - SHA1
-        - Download URL
+        Matching is performed in order of decreasing accuracy:
+        1. Hash - Most accurate, matches exact file content
+        2. Download URL - High accuracy, matches specific package source
+        3. Package URL - Broadest match, may return multiple versions/variants
 
         A `max_request_call` integer can be provided to limit the number of
         HTTP requests made to the PackageURL server.
@@ -2542,12 +2594,16 @@ class Package(
         purldb_entries = []
 
         package_url = self.package_url
-        if package_url:
-            payloads.append({"purl": package_url})
+        if self.sha256:
+            payloads.append({"sha256": self.sha256})
         if self.sha1:
             payloads.append({"sha1": self.sha1})
+        if self.md5:
+            payloads.append({"md5": self.md5})
         if self.download_url:
             payloads.append({"download_url": self.download_url})
+        if package_url:
+            payloads.append({"purl": package_url})
 
         purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
@@ -2561,16 +2617,37 @@ class Package(
             return []
 
         # Cleanup the PurlDB entries:
-        # Packages with different "plain" PURL are excluded. The qualifiers and
-        # subpaths are not involved in this comparison.
+        # Packages with different "plain" PURL are excluded.
+        # The qualifiers and subpaths are not involved in this comparison.
         if package_url:
             purldb_entries = [
                 entry
                 for entry in purldb_entries
-                if get_plain_purl(entry.get("purl", "")) == package_url
+                if plain_purls_equal(entry.get("purl"), package_url)
             ]
 
         return purldb_entries
+
+    @classmethod
+    def normalize_purldb_release_date(cls, data):
+        """Strip the time portion from a PurlDB DateTimeField value."""
+        if release_date := data.get("release_date"):
+            data["release_date"] = release_date.split("T")[0]
+
+    @classmethod
+    def convert_purldb_package_content_label(cls, data):
+        """Convert package_content from a string label to its integer value in place."""
+        if content_label := data.get("package_content"):
+            if content_value := Package.get_package_content_value_from_label(content_label):
+                data["package_content"] = content_value
+
+    @classmethod
+    def clean_purldb_entry(cls, data):
+        """Normalize PurlDB entry data for local use."""
+        cls.normalize_purldb_release_date(data)
+        cls.convert_purldb_package_content_label(data)
+        # Set the declared_license_expression as the "concluded" license_expression
+        data["license_expression"] = data.get("declared_license_expression")
 
     def update_from_purldb(self, user):
         """
@@ -2578,6 +2655,8 @@ class Package(
 
         - Retrieves matching entries from PurlDB using the given user.
         - If exactly one match is found, its data is used directly.
+        - If multiple entries are found, leverage the package_content value when
+          available to select a "source" package.
         - If multiple entries are found, only values that are non-empty and
           common across all entries are merged and used to update the Package.
         """
@@ -2588,13 +2667,12 @@ class Package(
         purldb_entries_count = len(purldb_entries)
         if purldb_entries_count == 1:
             package_data = purldb_entries[0]
+        elif source_package := pick_source_package(purldb_entries):
+            package_data = source_package
         else:
             package_data = merge_common_non_empty_values(purldb_entries)
 
-        # The format from PURLDB is "2019-11-18T00:00:00Z"
-        if release_date := package_data.get("release_date"):
-            package_data["release_date"] = release_date.split("T")[0]
-        package_data["license_expression"] = package_data.get("declared_license_expression")
+        self.clean_purldb_entry(package_data)
 
         # Avoid raising an IntegrityError when the values in `package_data` for the
         # identifier fields already exist on another Package instance.
@@ -2628,21 +2706,36 @@ class Package(
             override=False,
             override_unknown=True,
         )
+
+        if updated_fields:
+            msg = f"Automatically updated {', '.join(updated_fields)} from PurlDB."
+            logger.debug(f"PurlDB: {msg}")
+            History.log_change(user, self, message=msg)
+
         return updated_fields
 
-    def update_from_scan(self, user):
-        scancodeio = ScanCodeIO(self.dataspace)
+    def update_from_scan(self, user, update_products=False):
+        package = self
+        dataspace = self.dataspace
+        scancodeio = ScanCodeIO(dataspace)
+
         can_update_from_scan = all(
             [
-                self.dataspace.enable_package_scanning,
-                self.dataspace.update_packages_from_scan,
+                dataspace.enable_package_scanning,
+                dataspace.update_packages_from_scan,
                 scancodeio.is_configured(),
             ]
         )
+        if not can_update_from_scan:
+            return
 
-        if can_update_from_scan:
-            updated_fields = scancodeio.update_from_scan(package=self, user=user)
-            return updated_fields
+        updated_fields = scancodeio.update_from_scan(package=package, user=user)
+
+        if update_products:
+            if "declared_license_expression" in updated_fields:
+                package.productpackages.update_license_unknown()
+
+        return updated_fields
 
     def get_related_packages_qs(self):
         """

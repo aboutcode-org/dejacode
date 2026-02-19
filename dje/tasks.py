@@ -20,7 +20,7 @@ from django.core.mail import send_mail
 from django_rq import job
 
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import check_for_existing_scan_workaround
+from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
 from dje.utils import is_available
 
 logger = logging.getLogger(__name__)
@@ -36,8 +36,13 @@ def send_mail_task(subject, message, from_email, recipient_list, fail_silently=T
 
     The subject is cleaned from newlines and limited to 255 characters.
     """
-    subject = "".join(subject.splitlines())[:255]
-    send_mail(subject, message, from_email, recipient_list, fail_silently)
+    send_mail(
+        subject="".join(subject.splitlines())[:255],
+        message=message,
+        from_email=from_email,
+        recipient_list=recipient_list,
+        fail_silently=fail_silently,
+    )
 
 
 @job
@@ -50,7 +55,13 @@ def send_mail_to_admins_task(subject, message, from_email=None, fail_silently=Tr
     if not recipient_list:
         return
 
-    send_mail_task(subject, message, from_email, recipient_list, fail_silently)
+    send_mail_task(
+        subject=subject,
+        message=message,
+        from_email=from_email,
+        recipient_list=recipient_list,
+        fail_silently=fail_silently,
+    )
 
 
 @job("default", timeout=7200)
@@ -109,14 +120,20 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 
     scancodeio = ScanCodeIO(user.dataspace)
     for uri in uris:
-        if is_available(uri):
-            response_json = scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
-            check_for_existing_scan_workaround(response_json, uri, user)
-        else:
+        if not is_available(uri):
             logger.info(f'uri="{uri}" is not reachable.')
+            continue
+
+        # Check if a Scan is already available in ScanCode.io for this URI.
+        existing_project = scancodeio.get_project_info(download_url=uri)
+        if existing_project:
+            logger.info(f'Update the local uri="{uri}" package from available Scan data.')
+            update_package_from_existing_scan_data(uri, user)
+        else:
+            scancodeio.submit_scan(uri, user_uuid, dataspace_uuid)
 
 
-@job("default", timeout="3h")
+@job("default", timeout=7200)
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
     from vulnerabilities.fetch import fetch_from_vulnerablecode
@@ -127,4 +144,10 @@ def update_vulnerabilities():
 
     for dataspace in dataspace_qs:
         logger.info(f"fetch_vulnerabilities for datapsace={dataspace}")
-        fetch_from_vulnerablecode(dataspace, batch_size=50, update=True, timeout=60)
+        fetch_from_vulnerablecode(
+            dataspace,
+            batch_size=50,
+            update=True,
+            timeout=60,
+            log_func=logger.debug,
+        )

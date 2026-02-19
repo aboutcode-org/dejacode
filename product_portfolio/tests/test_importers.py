@@ -974,13 +974,13 @@ class ProductImportFromScanTestCase(TestCase):
     def test_product_portfolio_import_packages_from_scancodeio_importer(
         self, mock_fetch_packages, mock_fetch_dependencies
     ):
-        purl = "pkg:maven/org.apache.activemq/activemq-camel@5.11.0"
+        purl = "pkg:maven/abc/abc@1.0"
         mock_fetch_packages.return_value = [
             {
                 "type": "maven",
-                "namespace": "org.apache.activemq",
-                "name": "activemq-camel",
-                "version": "5.11.0",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
                 "primary_language": "Java",
                 "purl": purl,
                 "declared_license_expression": "bsd-new",
@@ -1011,12 +1011,15 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            infer_download_urls=True,
         )
         created, existing, errors = importer.save()
         created_package_package_url = created.get("package")[0]
         created_package = self.product1.packages.get()
         self.assertEqual("bsd-new", created_package.license_expression)
         self.assertEqual(created_package.package_url, created_package_package_url)
+        inferred_download_url = "https://repo.maven.apache.org/maven2/abc/abc/1.0/abc-1.0.jar"
+        self.assertEqual(inferred_download_url, created_package.download_url)
         self.assertEqual({}, existing)
         self.assertEqual({}, errors)
 
@@ -1153,13 +1156,13 @@ class ProductImportFromScanTestCase(TestCase):
         package = importer.look_for_existing_package(package_data)
         self.assertEqual(package1, package)
 
-        # 2 packages are matched, cannot defined the one that should be used
+        # 2 packages are matched, cannot define the one that should be used
         package1.update(download_url=download_url)
         package = importer.look_for_existing_package(package_data)
         self.assertIsNone(package)
 
         # If the package data does not include a download_url value:
-        # Attemp to find an existing package using purl-only match.
+        # Attempt to find an existing package using purl-only match.
         package2.delete()
         package = importer.look_for_existing_package(package_data)
         self.assertEqual(package1, package)
@@ -1252,3 +1255,54 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual({}, errors)
         self.assertEqual(2, self.product1.packages.count())
         self.assertEqual(1, self.product1.dependencies.count())
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_vex(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        vulnerability_data = {
+            "id": "ID-0001",  # In CycloneDX the field name is "id"
+            "summary": "complexity bugs may lead to a denial of service",
+            "cdx_vulnerability_data": {
+                "affects": [{"ref": "pkg:maven/abc/abc@1.0"}],
+                "bom-ref": "BomRef.1",
+                "description": "complexity bugs may lead to a denial of service",
+                "analysis": {
+                    "detail": "AAAA",
+                    "justification": "code_not_present",
+                    "response": ["can_not_fix", "update"],
+                    "state": "resolved",
+                },
+            },
+        }
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [vulnerability_data],
+            }
+        ]
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        created, existing, errors = importer.save()
+        created_package = self.product1.packages.get()
+        vulnerability = created_package.affected_by_vulnerabilities.get()
+        self.assertEqual(vulnerability_data["id"], vulnerability.vulnerability_id)
+        self.assertEqual(vulnerability_data["summary"], vulnerability.summary)
+
+        analysis = vulnerability.vulnerability_analyses.get()
+        self.assertEqual(vulnerability, analysis.vulnerability)
+        self.assertEqual(self.product1, analysis.product)
+        self.assertEqual(created_package, analysis.package)
+        self.assertEqual("resolved", analysis.state)
+        self.assertEqual("code_not_present", analysis.justification)
+        self.assertEqual("AAAA", analysis.detail)
+        self.assertEqual(["can_not_fix", "update"], analysis.responses)

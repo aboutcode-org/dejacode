@@ -1,0 +1,13 @@
+about_resource: jsonfield-3.2.0-py3-none-any.whl
+name: jsonfield
+version: 3.2.0
+download_url: https://files.pythonhosted.org/packages/0a/22/2e08e7b957f50e5eceefde018ce9ee88aceb5126231128d9c1cb8167c1c8/jsonfield-3.2.0-py3-none-any.whl
+package_url: pkg:pypi/jsonfield@3.2.0
+license_expression: unknown-license-reference
+copyright: Copyright jsonfield project contributors
+checksum_md5: f96e7738372863025ae93a4f7bc4988c
+checksum_sha1: 3efe9e6222051aa4d2ebde604e96c2ef761e06d5
+licenses:
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

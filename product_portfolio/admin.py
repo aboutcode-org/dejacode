@@ -17,7 +17,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import models
 from django.shortcuts import get_object_or_404
-from django.utils.html import format_html
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from guardian.admin import GuardedModelAdminMixin
@@ -398,7 +398,7 @@ class ProductAdmin(
     def get_feature_datalist(self, obj):
         if obj.pk:
             return obj.get_feature_datalist()
-        return format_html('<datalist id="feature_datalist"></datalist>')
+        return mark_safe('<datalist id="feature_datalist"></datalist>')
 
     def get_queryset(self, request, include_inactive=False):
         return (
@@ -473,7 +473,7 @@ class ProductRelationshipAdminMixin(
     def get_feature_datalist(self, obj):
         if obj.id and obj.product:
             return obj.product.get_feature_datalist()
-        return format_html('<datalist id="feature_datalist"></datalist>')
+        return mark_safe('<datalist id="feature_datalist"></datalist>')
 
     def get_actions(self, request):
         actions = super().get_actions(request)

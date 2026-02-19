@@ -1,0 +1,14 @@
+about_resource: jsonschema-4.26.0-py3-none-any.whl
+name: jsonschema
+version: 4.26.0
+download_url: https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl
+package_url: pkg:pypi/jsonschema@4.26.0
+license_expression: mit
+copyright: Copyright jsonschema project contributors
+attribute: yes
+checksum_md5: 2b7e04c1ca5e5c280087b9765d9f3970
+checksum_sha1: 6930315c45b54c0e68d7a3d039a533c8b8e7b3f1
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

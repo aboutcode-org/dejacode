@@ -1366,6 +1366,7 @@ class ComponentCatalogModelsTestCase(TestCase):
                     "file_references",
                     "other_license_expression",
                     "parties",
+                    "package_content",
                 ],
             ),
         )
@@ -1701,7 +1702,7 @@ class ComponentCatalogModelsTestCase(TestCase):
         package.refresh_from_db()
         self.assertEqual("apache-2.0", package.declared_license_expression)
 
-    @mock.patch("component_catalog.models.collect_package_data")
+    @mock.patch("dejacode_toolkit.download.collect_package_data")
     def test_package_model_create_from_url(self, mock_collect):
         self.assertIsNone(Package.create_from_url(url=" ", user=self.user))
 
@@ -1729,6 +1730,15 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual(purl, package.package_url)
         mock_collect.assert_called_with("https://registry.npmjs.org/is-npm/-/is-npm-1.0.0.tgz")
 
+        purl = "pkg:pypi/django@5.2"
+        download_url = "https://files.pythonhosted.org/packages/Django-5.2.tar.gz"
+        mock_collect.return_value = {}
+        with mock.patch("dejacode_toolkit.download.PyPIFetcher.get_download_url") as mock_pypi_get:
+            mock_pypi_get.return_value = download_url
+            package = Package.create_from_url(url=purl, user=self.user)
+        self.assertEqual(purl, package.package_url)
+        mock_collect.assert_called_with(download_url)
+
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
     def test_package_model_create_from_url_enable_purldb_access(
@@ -1754,6 +1764,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha1": "a2363646a9dd05955633b450010b59a21af8a423",
             "declared_license_expression": "bsd-new OR epl-1.0 OR apache-2.0",
             "package_url": "pkg:maven/abbot/abbot@1.4.0",
+            "package_content": "source_archive",
         }
         mock_get_purldb_entries.return_value = [purldb_entry]
 
@@ -1763,28 +1774,40 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         self.assertEqual(self.user, package.created_by)
         self.assertEqual(purldb_entry["declared_license_expression"], package.license_expression)
+        self.assertEqual("source_archive", package.get_package_content_display())
 
         for field_name, value in purldb_entry.items():
             self.assertEqual(value, getattr(package, field_name))
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.update_from_scan")
-    def test_package_model_update_from_scan(self, mock_update_from_scan, mock_is_configured):
+    def test_package_model_update_from_scan(self, mock_scio_update_from_scan, mock_is_configured):
         mock_is_configured.return_value = True
-        package1 = make_package(self.dataspace)
+        package1 = make_package(self.dataspace, declared_license_expression="mit")
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        pp1 = product1.productpackages.get()
+        self.assertEqual("", pp1.license_expression)
+        pp1.update(license_expression="unknown")
 
         results = package1.update_from_scan(user=self.user)
-        mock_update_from_scan.assert_not_called()
+        mock_scio_update_from_scan.assert_not_called()
         self.assertIsNone(results)
 
         self.dataspace.enable_package_scanning = True
         self.dataspace.update_packages_from_scan = True
         self.dataspace.save()
 
-        mock_update_from_scan.return_value = ["updated_field"]
-        results = package1.update_from_scan(user=self.user)
-        mock_update_from_scan.assert_called()
-        self.assertEqual(["updated_field"], results)
+        mock_scio_update_from_scan.return_value = ["declared_license_expression"]
+        results = package1.update_from_scan(user=self.user, update_products=False)
+        mock_scio_update_from_scan.assert_called()
+        self.assertEqual(["declared_license_expression"], results)
+        pp1.refresh_from_db()
+        self.assertEqual("unknown", pp1.license_expression)
+
+        results = package1.update_from_scan(user=self.user, update_products=True)
+        pp1.refresh_from_db()
+        self.assertEqual("mit", pp1.license_expression)
 
     def test_package_model_get_url_methods(self):
         package = Package(
@@ -2361,6 +2384,16 @@ class ComponentCatalogModelsTestCase(TestCase):
             p.download_url = url
             self.assertEqual(expected, p.github_repo_url)
 
+    def test_package_model_get_package_content_value_from_label(self):
+        get_label_func = Package.get_package_content_value_from_label
+        self.assertIsNone(get_label_func(None))
+        self.assertIsNone(get_label_func(100))
+        self.assertIsNone(get_label_func("wrong"))
+
+        self.assertEqual(2, get_label_func("patch"))
+        self.assertEqual(2, get_label_func("Patch"))
+        self.assertEqual(2, get_label_func("PATCH"))
+
     @mock.patch("requests.get")
     def test_collect_package_data(self, mock_get):
         expected_message = (
@@ -2543,18 +2576,27 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual("Product 0\nComponent 1\n", package1.where_used(user=basic_user))
 
-    def test_package_model_inferred_url_property(self):
+    def test_package_model_inferred_repo_url_property(self):
         package1 = Package.objects.create(filename="package", dataspace=self.dataspace)
-        self.assertIsNone(package1.inferred_url)
+        self.assertIsNone(package1.inferred_repo_url)
 
         package1.set_package_url("pkg:pypi/toml@0.10.2")
         package1.save()
-        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_url)
+        self.assertEqual("https://pypi.org/project/toml/0.10.2/", package1.inferred_repo_url)
 
         package1.set_package_url("pkg:github/package-url/packageurl-python@0.10.4?version_prefix=v")
         package1.save()
         expected = "https://github.com/package-url/packageurl-python/tree/v0.10.4"
-        self.assertEqual(expected, package1.inferred_url)
+        self.assertEqual(expected, package1.inferred_repo_url)
+
+    def test_package_model_infer_download_url(self):
+        package1 = make_package(self.dataspace, filename="package")
+        self.assertIsNone(package1.infer_download_url())
+
+        package1.set_package_url("pkg:nuget/Azure.Core@1.45.0")
+        package1.save()
+        expected_download_url = "https://www.nuget.org/api/v2/package/Azure.Core/1.45.0"
+        self.assertEqual(expected_download_url, package1.infer_download_url())
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries(self, mock_find_packages):
@@ -2582,10 +2624,25 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         mock_find_packages.return_value = None
         purldb_entries = package1.get_purldb_entries(user=self.user)
+        self.assertEqual([], purldb_entries)
 
         mock_find_packages.return_value = [purldb_entry1, purldb_entry2, purldb_entry3]
         purldb_entries = package1.get_purldb_entries(user=self.user)
         # The purldb_entry2 is excluded as the PURL differs
+        self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries_plain_purls_equal(self, mock_find_packages):
+        purl1 = "pkg:maven/core/jackson-core@2.18.3?type=jar"
+        purl2 = "pkg:maven/core/jackson-core@2.18.3?classifier=sources&type=jar"
+
+        package1_purl = "pkg:maven/core/jackson-core@2.18.3?some=qualifier"
+        package1 = make_package(self.dataspace, package_url=package1_purl)
+        purldb_entry1 = {"purl": purl1}
+        purldb_entry2 = {"purl": purl2}
+
+        mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
+        purldb_entries = package1.get_purldb_entries(user=self.user)
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
@@ -2606,6 +2663,7 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256": "0a1efde1b685a6c30999ba00902f23613cf5db864c5a1532d2edf3eda7896a37",
             "copyright": "(c) Copyright",
             "declared_license_expression": "(bsd-simplified AND bsd-new)",
+            "package_content": "source_archive",
         }
 
         mock_get_purldb_entries.return_value = [purldb_entry]
@@ -2627,12 +2685,13 @@ class ComponentCatalogModelsTestCase(TestCase):
             "sha256",
             "copyright",
             "declared_license_expression",
+            "package_content",
             "license_expression",
         ]
         self.assertEqual(expected, updated_fields)
 
         package1.refresh_from_db()
-        # Handle release_date separatly
+        # Handle release_date and package_content separatly
         updated_fields.remove("release_date")
         self.assertEqual(purldb_entry["release_date"], str(package1.release_date))
 
@@ -2670,6 +2729,42 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual("Django-3.0.tar.gz", package1.filename)
         self.assertEqual(["Keyword1", "Keyword2"], package1.keywords)
         self.assertEqual("Python", package1.primary_language)
+
+    @mock.patch("component_catalog.models.Package.get_purldb_entries")
+    def test_package_model_update_from_purldb_multiple_entries_package_content(
+        self, mock_get_entries
+    ):
+        purldb_entry_binary = {
+            "uuid": "e133e70b-8dd3-4cf1-9711-72b1f57523a0",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26-py3-none-any.whl",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26-py3-none-any.whl",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26-py3-none-any.whl",
+            "package_content": "binary",
+        }
+        purldb_entry_source = {
+            "uuid": "326aa7a8-4f28-406d-89f9-c1404916925b",
+            "purl": "pkg:pypi/boto3@1.37.26?file_name=boto3-1.37.26.tar.gz",
+            "type": "pypi",
+            "name": "boto3",
+            "version": "1.37.26",
+            "filename": "boto3-1.37.26.tar.gz",
+            "download_url": "https://files.pythonhosted.org/packages/boto3-1.37.26.tar.gz",
+            "package_content": "source_archive",
+        }
+
+        mock_get_entries.return_value = [purldb_entry_binary, purldb_entry_source]
+        package1 = make_package(self.dataspace, package_url="pkg:pypi/boto3@1.37.26")
+        updated_fields = package1.update_from_purldb(self.user)
+        expected = ["download_url", "filename", "package_content"]
+        self.assertEqual(expected, sorted(updated_fields))
+
+        package1.refresh_from_db()
+        self.assertEqual(purldb_entry_source["download_url"], package1.download_url)
+        self.assertEqual(purldb_entry_source["filename"], package1.filename)
+        self.assertEqual("source_archive", package1.get_package_content_display())
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb_duplicate_exception(self, mock_get_purldb_entries):
@@ -2736,6 +2831,12 @@ class ComponentCatalogModelsTestCase(TestCase):
         package1 = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
         make_package(self.dataspace)
         qs = Package.objects.has_package_url()
+        self.assertQuerySetEqual(qs, [package1])
+
+    def test_package_queryset_has_download_url(self):
+        package1 = make_package(self.dataspace, download_url="https://download.url")
+        make_package(self.dataspace)
+        qs = Package.objects.has_download_url()
         self.assertQuerySetEqual(qs, [package1])
 
     def test_package_queryset_annotate_sortable_identifier(self):

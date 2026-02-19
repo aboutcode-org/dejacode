@@ -101,7 +101,7 @@ class Command(DataspacedCommand):
         # The proper policy will be set from the ``license_expression`` value
         component_data.pop("usage_policy", None)
 
-        if inferred_url := package.inferred_url:
+        if inferred_url := package.inferred_repo_url:
             component_data["code_view_url"] = inferred_url
             component_data["homepage_url"] = inferred_url
 
