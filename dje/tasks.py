@@ -19,9 +19,9 @@ from django.core.mail import send_mail
 
 from django_rq import job
 
-from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
-from dje.utils import is_available
+# WARNING: Imports must stay local to each task function to avoid circular imports
+# between the tasks module and the models/services it depends on.
+
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +102,10 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
     Submit the provided `uris` to ScanCode.io as an asynchronous task.
     Only publicly available URLs are sent to ScanCode.io.
     """
+    from dejacode_toolkit.scancodeio import ScanCodeIO
+    from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
+    from dje.utils import is_available
+
     logger.info(
         f"Entering scancodeio_submit_scan task with "
         f"uris={uris} user_uuid={user_uuid} dataspace_uuid={dataspace_uuid}"
