@@ -48,7 +48,7 @@ from django.utils.translation import gettext_lazy as _
 
 from notifications.models import Notification
 
-from dje.api_auth import AbstractAPIToken
+from aboutcode.api_auth import AbstractAPIToken
 from dje.fields import LastModifiedByField
 from dje.tasks import send_mail_task
 

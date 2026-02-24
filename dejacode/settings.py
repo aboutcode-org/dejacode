@@ -608,7 +608,7 @@ REST_API_RATE_THROTTLE = env.str("REST_API_RATE_THROTTLE", default="2/second")
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        "dje.api_auth.APITokenAuthentication",
+        "aboutcode.api_auth.APITokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
