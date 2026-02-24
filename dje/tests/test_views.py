@@ -243,9 +243,6 @@ class DJEViewsTestCase(TestCase):
         expected = f'<input type="text" name="email" value="{self.super_user.email}"'
         self.assertContains(response, expected)
 
-        expected = f'id="api_key" value="{self.super_user.auth_token.key}"'
-        self.assertContains(response, expected)
-
         expected = '<input type="text" name="first_name"'
         self.assertContains(response, expected)
 
@@ -295,26 +292,21 @@ class DJEViewsTestCase(TestCase):
         self.assertEqual(expected, history.change_message)
 
     def test_account_profile_view_regenerate_api_key(self):
-        url = reverse("account_profile")
+        url = reverse("generate_api_key")
         self.client.login(username=self.user.username, password="secret")
 
-        initial_key = str(self.user.auth_token.key)
-        self.assertEqual(40, len(initial_key))
-
-        self.client.post(url, data={"bad": "data"})
-        self.user.refresh_from_db()
-        new_key = str(self.user.auth_token.key)
-        self.assertEqual(40, len(new_key))
-        self.assertEqual(initial_key, new_key)
+        self.user.regenerate_api_key()
+        initial_token_prefix = self.user.api_token.prefix
+        self.assertEqual(8, len(initial_token_prefix))
 
         response = self.client.post(url, data={"regenerate-api-key": "yes"}, follow=True)
         self.user.refresh_from_db()
-        new_key = str(self.user.auth_token.key)
-        self.assertEqual(40, len(new_key))
-        self.assertNotEqual(initial_key, new_key)
+        new_token_prefix = self.user.api_token.prefix
+        self.assertEqual(8, len(new_token_prefix))
+        self.assertNotEqual(new_token_prefix, initial_token_prefix)
 
-        expected = "Your API key was regenerated."
-        self.assertEqual(expected, list(response.context["messages"])[0].message)
+        expected = "Your new API key:"
+        self.assertIn(expected, list(response.context["messages"])[0].message)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace", TEMPLATE_DATASPACE=None)
     def test_clone_dataset_view(self):

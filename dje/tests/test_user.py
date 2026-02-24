@@ -8,7 +8,7 @@
 
 from io import StringIO
 from unittest import mock
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation
@@ -690,20 +690,24 @@ class DejaCodeUserModelTestCase(TestCase):
         self.assertIn(superuser, admins_actives_qs)
         self.assertNotIn(inactive, admins_actives_qs)
 
-    def test_user_model_create_auth_token(self):
+    def test_user_model_create_api_token(self):
         user = create_user("active", self.dataspace)
-        self.assertEqual(40, len(user.auth_token.key))
-
-    def test_user_model_regenerate_api_key(self):
-        user = create_user("active", self.dataspace)
-
-        initial_key = str(user.auth_token.key)
-        self.assertEqual(40, len(initial_key))
+        self.assertFalse(hasattr(user, "api_token"))
 
         user.regenerate_api_key()
-        new_key = user.auth_token.key
-        self.assertEqual(40, len(new_key))
-        self.assertNotEqual(initial_key, new_key)
+        self.assertTrue(hasattr(user, "api_token"))
+
+    def test_user_model_regenerate_api_token(self):
+        user = create_user("active", self.dataspace)
+
+        user.regenerate_api_key()
+        first_token_prefix = user.api_token.prefix
+        self.assertEqual(8, len(first_token_prefix))
+
+        user.regenerate_api_key()
+        new_token_prefix = user.api_token.prefix
+        self.assertEqual(8, len(new_token_prefix))
+        self.assertNotEqual(first_token_prefix, new_token_prefix)
 
     def test_user_model_regenerate_get_homepage_layout(self):
         user = create_user("active", self.dataspace)
