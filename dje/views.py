@@ -2061,13 +2061,7 @@ class AccountProfileView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context.update(
-            {
-                "user_has_device": django_otp.user_has_device(self.request.user),
-            }
-        )
-
+        context["user_has_device"] = django_otp.user_has_device(self.request.user)
         return context
 
     def get_form_kwargs(self):
@@ -2076,19 +2070,18 @@ class AccountProfileView(
         return kwargs
 
     def form_valid(self, form):
-        if getattr(form, "changed_data", None):
+        if form.changed_data:
             form.save()
             messages.success(self.request, _("Profile updated."))
         return super().form_valid(form)
 
-    def post(self, request, *args, **kwargs):
-        """Add the ability to regenerate the API key."""
-        if request.POST.get("regenerate-api-key"):
-            plain_key = request.user.regenerate_api_key()
-            messages.success(request, _(f"Your new API key was generated: {plain_key}."))
-            return redirect(self.get_success_url())
 
-        return super().post(request, *args, **kwargs)
+class GenerateAPIKeyView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        plain_key = request.user.regenerate_api_key()
+        msg = f"Your new API key: {plain_key}. Copy it now, it will not be shown again."
+        messages.success(request, msg)
+        return redirect(reverse_lazy("account_profile"))
 
 
 @login_required

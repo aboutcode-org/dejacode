@@ -34,6 +34,7 @@ from dje.views import AccountProfileView
 from dje.views import AllNotificationsList
 from dje.views import DataspaceAwareAutocompleteLookup
 from dje.views import DataspaceAwareRelatedLookup
+from dje.views import GenerateAPIKeyView
 from dje.views import GlobalSearchListView
 from dje.views import IntegrationsStatusView
 from dje.views import UnreadNotificationsList
@@ -89,6 +90,7 @@ urlpatterns = [
     path("integrations_status/", IntegrationsStatusView.as_view(), name="integrations_status"),
     path("account/", include("django.contrib.auth.urls")),
     path("account/profile/", AccountProfileView.as_view(), name="account_profile"),
+    path("account/generate_api_key/", GenerateAPIKeyView.as_view(), name="generate_api_key"),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
     path(
         "login/",

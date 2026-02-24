@@ -49,7 +49,7 @@
           {% endif %}
         </div>
         <div>
-          <a href="#" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#regen-api-key">
+          <a href="#" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#generate-api-key">
             Generate API key
           </a>
         </div>
@@ -57,7 +57,7 @@
     </div>
   </form>
 
-  <div class="modal" tabindex="-1" role="dialog" id="regen-api-key">
+  <div class="modal" tabindex="-1" role="dialog" id="generate-api-key">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -65,7 +65,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body bg-body-tertiary">
-          You are about to generate your API key.<br>
+          You are about to generate your API key.<br><br>
           {% if request.user.api_token %}
             <div class="alert alert-danger m-0 mb-3" role="alert">
               <strong>
@@ -76,8 +76,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <form id="regenerate-api-key-form" method="post">{% csrf_token %}
-            <input type="hidden" name="regenerate-api-key" value="yes">
+          <form action="{% url 'generate_api_key' %}" id="generate-api-key-form" method="post">{% csrf_token %}
             <button type="submit" class="btn btn-success">Generate</button>
           </form>
         </div>
