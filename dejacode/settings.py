@@ -320,7 +320,6 @@ PREREQ_APPS = [
     "grappelli",
     "django.contrib.admin",
     "rest_framework",
-    "rest_framework.authtoken",
     "drf_yasg",
     "django_rq",
     "crispy_forms",

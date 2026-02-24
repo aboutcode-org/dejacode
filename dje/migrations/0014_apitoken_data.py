@@ -6,19 +6,32 @@ from django.contrib.auth.hashers import make_password
 
 def migrate_api_tokens(apps, schema_editor):
     """Migrate existing plain-text DRF tokens to the new hashed APIToken model."""
-    OldToken = apps.get_model("authtoken", "Token")
     APIToken = apps.get_model("dje", "APIToken")
-
     PREFIX_LENGTH = 8
 
-    for old_token in OldToken.objects.select_related("user").all():
-        plain_key = old_token.key
-        APIToken.objects.create(
-            user=old_token.user,
-            prefix=plain_key[:PREFIX_LENGTH],
-            key_hash=make_password(plain_key),
-            created=old_token.created,
+    with schema_editor.connection.cursor() as cursor:
+        try:
+            cursor.execute("SELECT user_id, key, created FROM authtoken_token")
+        except Exception:
+            return
+        rows = cursor.fetchall()
+
+    if not rows:
+        return
+
+    tokens_to_create = [
+        APIToken(
+            user_id=user_id,
+            prefix=key[:PREFIX_LENGTH],
+            key_hash=make_password(key),
+            created=created,
         )
+        for user_id, key, created in rows
+    ]
+
+    migrated_tokens = APIToken.objects.bulk_create(tokens_to_create, ignore_conflicts=True)
+    if migrated_tokens:
+        print(f" -> {len(migrated_tokens)} token migrated.")
 
 
 def reverse_migrate_api_tokens(apps, schema_editor):
@@ -35,4 +48,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(migrate_api_tokens, reverse_migrate_api_tokens),
+        migrations.RunSQL(
+            sql="DROP TABLE IF EXISTS authtoken_token",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
     ]
