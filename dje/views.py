@@ -2084,9 +2084,9 @@ class AccountProfileView(
     def post(self, request, *args, **kwargs):
         """Add the ability to regenerate the API key."""
         if request.POST.get("regenerate-api-key"):
-            request.user.regenerate_api_key()
-            messages.success(request, _("Your API key was regenerated."))
-            return self.form_valid(None)
+            plain_key = request.user.regenerate_api_key()
+            messages.success(request, _(f"Your new API key was generated: {plain_key}."))
+            return redirect(self.get_success_url())
 
         return super().post(request, *args, **kwargs)
 
