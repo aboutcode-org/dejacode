@@ -76,6 +76,9 @@ class AbstractAPIToken(models.Model):
     @classmethod
     def verify(cls, plain_key):
         """Return the token instance if the plain key is valid, None otherwise."""
+        if not plain_key:
+            return
+
         prefix = plain_key[: cls.PREFIX_LENGTH]
         token = cls.objects.filter(prefix=prefix).select_related("user").first()
 
