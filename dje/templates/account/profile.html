@@ -25,23 +25,33 @@
   {% endif %}
 
   <hr class="my-4">
+  {% include 'includes/header_title.html' with pretitle='REST API' title='API key' %}
   <form class="mb-5" autocomplete="off">
     <div class="row">
       <div class="col-6">
         <div>
-          <label for="api_key" class="form-label">API Key</label>
-          <div class="input-group">
-            <input type="password" class="form-control bg-transparent" readonly="readonly" id="api_key" value="{{ request.user.auth_token.key|default:'<i>Not available</i>' }}">
-            <button class="btn btn-secondary" type="button" id="show_api_key" data-bs-toggle="tooltip" title="Display/Hide API key" aria-label="Display/Hide API key">
-              <i id="eye_icon" class="far fa-eye-slash"></i>
-            </button>
-          </div>
-          <div class="form-text fw-bold">
-            An API key is like a password and should be treated with the same care.
-          </div>
+          <p>
+            Your personal API key provides access to the <a href="{% url 'api-docs:docs-index' %}" target="_blank">REST API</a>.<br>
+            <strong>Treat it like a password and keep it secure.</strong>
+          </p>
+          {% if request.user.api_token %}
+            <div class="alert alert-primary m-0 mb-3" role="alert">
+              Your API key <strong>{{ request.user.api_token.prefix }}...</strong>
+              was generated on {{ request.user.api_token.created }}<br>
+              For security reasons, the full key is only shown once at generation time.<br>
+              If you lose it, you will need to regenerate a new one.
+            </div>
+          {% else %}
+            <div class="alert alert-warning m-0 mb-3" role="alert">
+              <strong>No API key created.</strong><br>
+              Generate one using the button below to access the REST API.
+            </div>
+          {% endif %}
         </div>
         <div>
-          <a href="#" class="btn btn-outline-dark mt-3" data-bs-toggle="modal" data-bs-target="#regen-api-key">Regenerate API key</a>
+          <a href="#" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#regen-api-key">
+            Generate API key
+          </a>
         </div>
       </div>
     </div>
@@ -51,43 +61,27 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Regenerate API key</h5>
+          <h5 class="modal-title">Generate API key</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body bg-body-tertiary">
-          You are about to regenerate your API key.<br><br>
-          <strong>Your old key will be unusable once the new one is generated.</strong><br><br>
+          You are about to generate your API key.<br>
+          {% if request.user.api_token %}
+            <div class="alert alert-danger m-0 mb-3" role="alert">
+              <strong>
+                Your existing key will be immediately revoked.
+              </strong>
+            </div>
+          {% endif %}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <form id="regenerate-api-key-form" method="post">{% csrf_token %}
             <input type="hidden" name="regenerate-api-key" value="yes">
-            <button type="submit" class="btn btn-success">Regenerate</button>
+            <button type="submit" class="btn btn-success">Generate</button>
           </form>
         </div>
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block javascripts %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var showApiKey = document.getElementById('show_api_key');
-    var apiKeyField = document.getElementById('api_key');
-    var eyeIcon = document.getElementById('eye_icon');
-
-    showApiKey.addEventListener('click', function() {
-      if (apiKeyField.type === 'password') {
-        apiKeyField.type = 'text';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-      } else {
-        apiKeyField.type = 'password';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-      }
-    });
-  });
-</script>
 {% endblock %}
