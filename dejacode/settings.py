@@ -105,6 +105,9 @@ CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=False)
 # DejaCode User Model
 AUTH_USER_MODEL = "dje.DejacodeUser"
 
+# DejaCode APIToken Model
+API_TOKEN_MODEL = "dje.APIToken"  # noqa: S105
+
 
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
@@ -605,7 +608,7 @@ REST_API_RATE_THROTTLE = env.str("REST_API_RATE_THROTTLE", default="2/second")
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        "dje.api_auth.APITokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",

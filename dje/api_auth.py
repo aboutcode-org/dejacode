@@ -8,10 +8,16 @@
 
 import secrets
 
+from django.apps import apps as django_apps
 from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 
 class AbstractAPIToken(models.Model):
@@ -75,3 +81,41 @@ class AbstractAPIToken(models.Model):
 
         if token and check_password(plain_key, token.key_hash):
             return token
+
+    @classmethod
+    def regenerate(cls, user):
+        """Delete any existing token instance for the user and generate a new one."""
+        cls.objects.filter(user=user).delete()
+        return cls.create_token(user)
+
+
+class APITokenAuthentication(TokenAuthentication):
+    """
+    Token authentication using a hashed API token for secure verification.
+
+    Extends Django REST Framework's TokenAuthentication, replacing the plain-text lookup
+    with a prefix-based lookup and PBKDF2 hash verification.
+    """
+
+    model = None
+
+    def get_model(self):
+        if self.model is not None:
+            return self.model
+
+        try:
+            return django_apps.get_model(settings.API_TOKEN_MODEL)
+        except (ValueError, LookupError):
+            raise ImproperlyConfigured("API_TOKEN_MODEL must be of the form 'app_label.model_name'")
+
+    def authenticate_credentials(self, plain_key):
+        model = self.get_model()
+        token = model.verify(plain_key)
+
+        if token is None:
+            raise AuthenticationFailed(_("Invalid token."))
+
+        if not token.user.is_active:
+            raise AuthenticationFailed(_("User inactive or deleted."))
+
+        return (token.user, token)
