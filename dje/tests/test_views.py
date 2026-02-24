@@ -299,14 +299,15 @@ class DJEViewsTestCase(TestCase):
         initial_token_prefix = self.user.api_token.prefix
         self.assertEqual(8, len(initial_token_prefix))
 
-        response = self.client.post(url, data={"regenerate-api-key": "yes"}, follow=True)
+        response = self.client.post(url, follow=True)
         self.user.refresh_from_db()
         new_token_prefix = self.user.api_token.prefix
         self.assertEqual(8, len(new_token_prefix))
         self.assertNotEqual(new_token_prefix, initial_token_prefix)
 
-        expected = "Your new API key:"
-        self.assertIn(expected, list(response.context["messages"])[0].message)
+        message = list(response.context["messages"])[0].message
+        self.assertIn("Copy your API key now, it will not be shown again:", message)
+        self.assertIn(new_token_prefix, message)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace", TEMPLATE_DATASPACE=None)
     def test_clone_dataset_view(self):
