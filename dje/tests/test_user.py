@@ -8,7 +8,7 @@
 
 from io import StringIO
 from unittest import mock
-from django.core.exceptions import ObjectDoesNotExist
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation

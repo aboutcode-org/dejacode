@@ -54,6 +54,7 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
@@ -2079,8 +2080,14 @@ class AccountProfileView(
 class GenerateAPIKeyView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         plain_key = request.user.regenerate_api_key()
-        msg = f"Your new API key: {plain_key}. Copy it now, it will not be shown again."
-        messages.success(request, msg)
+        message = format_html(
+            "<strong>Copy your API key now, it will not be shown again:</strong>"
+            '<pre class="pre-bg-body-tertiary mt-1 mb-0">'
+            '<i class="fa fa-key me-2" aria-hidden="true"></i>{}'
+            "</pre>",
+            plain_key,
+        )
+        messages.success(request, message)
         return redirect(reverse_lazy("account_profile"))
 
 
