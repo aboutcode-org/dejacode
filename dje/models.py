@@ -35,7 +35,6 @@ from django.core.serializers import serialize
 from django.core.serializers.base import SerializationError
 from django.core.validators import EMPTY_VALUES
 from django.db import models
-from django.dispatch import receiver
 from django.forms.utils import flatatt
 from django.template.defaultfilters import capfirst
 from django.urls import NoReverseMatch
@@ -48,8 +47,8 @@ from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 from notifications.models import Notification
-from rest_framework.authtoken.models import Token
 
+from aboutcode.api_auth import AbstractAPIToken
 from dje.fields import LastModifiedByField
 from dje.tasks import send_mail_task
 
@@ -1839,13 +1838,8 @@ class DejacodeUser(DataspaceForeignKeyValidationMixin, AbstractUser):
         send_mail_task.delay(subject, message, from_email, [self.email], **kwargs)
 
     def regenerate_api_key(self):
-        """
-        Regenerate the user API key.
-        Since the `key` value is the primary key on the Token `model`,
-        the old key needs to be deleted first, a new one is then created.
-        """
-        self.auth_token.delete()
-        Token.objects.create(user=self)
+        """Regenerate the user API key."""
+        return APIToken.regenerate(user=self)
 
     def serialize_user_data(self):
         fields = [
@@ -1885,10 +1879,9 @@ class DejacodeUser(DataspaceForeignKeyValidationMixin, AbstractUser):
         )
 
 
-@receiver(models.signals.post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
+class APIToken(AbstractAPIToken):
+    class Meta:
+        verbose_name = "API Token"
 
 
 class HistoryManager(DataspacedManager):
