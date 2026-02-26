@@ -16,7 +16,7 @@
 {% url 'api_v2:api-root' as api_root_url %}
 {% url 'account_profile' as account_profile_url %}
 
-<nav class="navbar navbar-expand-xl navbar-dark fixed-top" role="navigation">
+<nav class="navbar navbar-expand-xl fixed-top" role="navigation">
   {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
