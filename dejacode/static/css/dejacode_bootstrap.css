@@ -127,6 +127,7 @@ table.text-break thead {
   --bs-navbar-brand-hover-color: var(--bs-white);
   --bs-navbar-padding-x: .5rem;
   --bs-navbar-padding-y: .375rem;
+  --bs-navbar-toggler-border-color: var(--bs-white);
   background-color: var(--bs-djc-blue-bg);
   height: 54px;
 }
@@ -139,9 +140,8 @@ table.text-break thead {
   text-underline-position: under;
   color: var(--bs-white);
 }
-.navbar #navbarCollapse.show {
-  background-color: var(--bs-djc-blue-bg);
-  padding: 0 1rem;
+.navbar .navbar-collapse {
+  background-color: inherit;
 }
 .navbar #search-input {
   color: var(--bs-white);

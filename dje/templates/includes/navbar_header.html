@@ -21,12 +21,12 @@
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
   {% else %}
     {% block nav-brand %}
-      <div class="navbar-brand me-4">{{ SITE_TITLE }}</div>
+      <div class="navbar-brand">{{ SITE_TITLE }}</div>
     {% endblock %}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarCollapse">
+    <div class="navbar-collapse collapse" id="navbarCollapse">
       <ul class="navbar-nav me-auto">
         {% include 'includes/navbar_header_left_menu.html' %}
         {% include 'includes/navbar_header_tools_menu.html' %}
