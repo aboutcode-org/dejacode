@@ -1931,7 +1931,7 @@ class DownloadableMixin:
 class BootstrapCSSMixin:
     def get_bootstrap_css_code(self):
         # Use the staticfiles.finders to get the absolute path of the file
-        bootstrap_css_path = os.path.join("bootstrap-5.3.2", "css", "bootstrap.min.css")
+        bootstrap_css_path = os.path.join("bootstrap-5.3.8", "css", "bootstrap.min.css")
         bootstrap_css_file_path = finders.find(bootstrap_css_path)
 
         with open(bootstrap_css_file_path) as f:

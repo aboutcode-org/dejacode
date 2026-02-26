@@ -1,0 +1,14 @@
+about_resource: bootstrap-5.3.8-dist.zip
+name: bootstrap
+version: v5.3.8
+download_url: https://github.com/twbs/bootstrap/releases/download/v5.3.8/bootstrap-5.3.8-dist.zip
+package_url: pkg:github/twbs/bootstrap@v5.3.8?download_url=https://github.com/twbs/bootstrap/releases/download/v5.3.8/bootstrap-5.3.8-dist.zip
+license_expression: mit
+copyright: Copyright bootstrap project contributors
+attribute: yes
+checksum_md5: 47618f513bb53f5ed4d36a2170d3c478
+checksum_sha1: c3c6d623ef78a8ccdd688765421ac20ee36126c5
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
