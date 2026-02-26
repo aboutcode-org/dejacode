@@ -35,7 +35,7 @@
       {% include 'includes/navbar_header_search_form.html' %}
     </div>
     {% block right-nav %}
-      <ul class="navbar-nav flex-row ms-auto">
+      <ul class="navbar-nav flex-row flex-wrap ms-xl-auto">
         {% if not user.is_authenticated and register_url %}
           <li class="nav-item">
             <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
@@ -47,13 +47,11 @@
             <a class="nav-item nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
           </li>
         {% else %}
-          <li class="nav-item position-relative">
+          <li class="nav-item">
             {% if user|has_notification %}
-              <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
-                <span>
-                  <i class="fa-solid fa-bell"></i>
-                  <span class="bg-danger notification-active">&nbsp;</span>
-                </span>
+              <a class="nav-link px-3 position-relative" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
+                <i class="fa-solid fa-bell"></i>
+                <span class="bg-danger notification-active">&nbsp;</span>
               </a>
             {% else %}
               <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="No unread notifications" data-bs-toggle="tooltip" aria-label="No unread notifications">
