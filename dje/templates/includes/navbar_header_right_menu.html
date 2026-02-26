@@ -2,7 +2,7 @@
 {% load has_notification from notifications_tags %}
 
 {% block right-nav %}
-  <ul class="navbar-nav flex-row flex-wrap ms-xl-auto">
+  <ul class="navbar-nav flex-row ms-xl-auto">
     {% if not user.is_authenticated and register_url %}
       <li class="nav-item">
         <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>

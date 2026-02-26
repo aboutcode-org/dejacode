@@ -140,7 +140,6 @@ table.text-break thead {
   color: var(--bs-white);
 }
 .navbar #search-input {
-  width: 220px;
   color: var(--bs-white);
   background-color: rgba(0,0,0,0.25);
 }
