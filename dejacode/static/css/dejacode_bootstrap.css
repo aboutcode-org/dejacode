@@ -139,6 +139,10 @@ table.text-break thead {
   text-underline-position: under;
   color: var(--bs-white);
 }
+.navbar #navbarCollapse.show {
+  background-color: var(--bs-djc-blue-bg);
+  padding: 0 1rem;
+}
 .navbar #search-input {
   color: var(--bs-white);
   background-color: rgba(0,0,0,0.25);
