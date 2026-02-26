@@ -125,7 +125,7 @@ table.text-break thead {
   --bs-navbar-active-color: var(--bs-white);
   --bs-navbar-brand-color: var(--bs-white);
   --bs-navbar-brand-hover-color: var(--bs-white);
-  --bs-navbar-padding-x: 1rem;
+  --bs-navbar-padding-x: .5rem;
   --bs-navbar-padding-y: .375rem;
   background-color: var(--bs-djc-blue-bg);
   height: 54px;

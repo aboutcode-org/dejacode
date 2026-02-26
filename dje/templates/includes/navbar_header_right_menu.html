@@ -2,13 +2,13 @@
 {% load has_notification from notifications_tags %}
 
 {% block right-nav %}
-  <ul class="navbar-nav flex-row ms-xl-auto">
+  <ul class="navbar-nav ms-xl-auto">
     {% if not user.is_authenticated and register_url %}
       <li class="nav-item">
         <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
       </li>
     {% endif %}
-    {% include 'includes/theme_toogle.html' %}
+    {% include 'includes/navbar_theme_toogle.html' %}
     {% if user.is_anonymous %}
       <li class="nav-item">
         <a class="nav-item nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
