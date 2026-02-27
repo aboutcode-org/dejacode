@@ -23,16 +23,21 @@
     {% block nav-brand %}
       <div class="navbar-brand">{{ SITE_TITLE }}</div>
     {% endblock %}
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="navbar-collapse collapse" id="navbarCollapse">
-      <ul class="navbar-nav me-auto">
-        {% include 'includes/navbar_header_left_menu.html' %}
-        {% include 'includes/navbar_header_tools_menu.html' %}
-      </ul>
-      {% include 'includes/navbar_header_search_form.html' %}
-      {% include 'includes/navbar_header_right_menu.html' %}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas" aria-labelledby="navbarOffcanvasLabel">
+      <div class="offcanvas-header text-white pb-0">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="navbar-nav me-auto">
+          {% include 'includes/navbar_header_left_menu.html' %}
+          {% include 'includes/navbar_header_tools_menu.html' %}
+        </ul>
+        {% include 'includes/navbar_header_search_form.html' %}
+        {% include 'includes/navbar_header_right_menu.html' %}
     </div>
   {% endif %}
 </nav>

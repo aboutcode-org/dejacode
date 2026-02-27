@@ -140,8 +140,8 @@ table.text-break thead {
   text-underline-position: under;
   color: var(--bs-white);
 }
-.navbar .navbar-collapse {
-  background-color: inherit;
+.navbar .offcanvas {
+  background-color: var(--bs-djc-blue-bg) !important;
 }
 .navbar #search-input {
   color: var(--bs-white);

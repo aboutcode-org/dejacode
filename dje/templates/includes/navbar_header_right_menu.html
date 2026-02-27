@@ -8,6 +8,9 @@
         <a class="nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
       </li>
     {% endif %}
+    <li class="nav-item">
+      <hr class="d-xl-none my-2 text-white-50">
+    </li>
     {% include 'includes/navbar_theme_toogle.html' %}
     {% if user.is_anonymous %}
       <li class="nav-item">
@@ -15,16 +18,24 @@
       </li>
     {% else %}
       <li class="nav-item">
+        <hr class="d-xl-none my-2 text-white-50">
+      </li>
+      <li class="nav-item">
         {% if user|has_notification %}
           <a class="nav-link px-3 position-relative" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
             <i class="fa-solid fa-bell"></i>
             <span class="bg-danger notification-active">&nbsp;</span>
+            <span class="d-xl-none ms-2">Notifications</span>
           </a>
         {% else %}
           <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="No unread notifications" data-bs-toggle="tooltip" aria-label="No unread notifications">
             <i class="fas fa-bell"></i>
+            <span class="d-xl-none ms-2">Notifications</span>
           </a>
         {% endif %}
+      </li>
+      <li class="nav-item">
+        <hr class="d-xl-none my-2 text-white-50">
       </li>
       <li class="nav-item dropdown">
         <button class="btn nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
