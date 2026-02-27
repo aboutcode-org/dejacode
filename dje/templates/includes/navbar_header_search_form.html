@@ -29,7 +29,7 @@
       <div role="separator" class="dropdown-divider"></div>
       <a class="dropdown-item" href="{{ global_search_url }}"><i class="fa fa-globe" aria-hidden="true"></i> {% trans 'Global' %}</a>
     </div>
-    <input type="text" class="form-control" id="search-input" name="q" placeholder="Search" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
+    <input type="text" class="form-control text-white bg-dark bg-opacity-25" id="search-input" name="q" placeholder="Search" aria-label="Search" autocomplete="off" value="{{ search_query|escape }}">
   </div>
   <a id="search-help-link" href="#search-help-modal" style="margin-top: 4px;margin-left:4px;color: white;" data-bs-toggle="modal" aria-label="Open search help"><i class="fas fa-question-circle fa-sm"></i></a>
   {% include 'includes/search_form_hidden_filters.html' %}

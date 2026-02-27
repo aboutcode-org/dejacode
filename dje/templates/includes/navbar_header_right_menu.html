@@ -22,13 +22,13 @@
       </li>
       <li class="nav-item">
         {% if user|has_notification %}
-          <a class="nav-link px-3 position-relative" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
+          <a class="nav-link px-xl-3 position-relative" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
             <i class="fa-solid fa-bell"></i>
-            <span class="bg-danger notification-active">&nbsp;</span>
+            <span class="d-none d-xl-inline position-absolute translate-middle p-1 bg-danger rounded-circle"></span>
             <span class="d-xl-none ms-2">Notifications</span>
           </a>
         {% else %}
-          <a class="nav-link px-3" href="{% url 'notifications:unread' %}" title="No unread notifications" data-bs-toggle="tooltip" aria-label="No unread notifications">
+          <a class="nav-link px-xl-3" href="{% url 'notifications:unread' %}" title="No unread notifications" data-bs-toggle="tooltip" aria-label="No unread notifications">
             <i class="fas fa-bell"></i>
             <span class="d-xl-none ms-2">Notifications</span>
           </a>
