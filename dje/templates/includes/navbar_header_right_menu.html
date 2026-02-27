@@ -5,13 +5,13 @@
   <ul class="navbar-nav ms-xl-auto">
     {% if not user.is_authenticated and register_url %}
       <li class="nav-item">
-        <a class="nav-item nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
+        <a class="nav-link" href="{{ register_url }}"><i class="fas fa-user-plus"></i> {% trans 'Sign Up' %}</a>
       </li>
     {% endif %}
     {% include 'includes/navbar_theme_toogle.html' %}
     {% if user.is_anonymous %}
       <li class="nav-item">
-        <a class="nav-item nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
+        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>
       </li>
     {% else %}
       <li class="nav-item">
