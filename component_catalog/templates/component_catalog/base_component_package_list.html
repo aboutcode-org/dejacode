@@ -3,7 +3,7 @@
 
 {% block top-right-buttons %}
   <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip">
-    <button class="btn btn-outline-dark disabled" id="download-aboutcode-files" href="{% if opts.model_name == 'package' %}{% url 'component_catalog:package_multi_about_files' %}{% elif opts.model_name == 'component' %}{% url 'component_catalog:component_multi_about_files' %}{% endif %}">
+    <button class="btn btn-outline-dark disabled" id="download-aboutcode-files" data-href="{% if opts.model_name == 'package' %}{% url 'component_catalog:package_multi_about_files' %}{% elif opts.model_name == 'component' %}{% url 'component_catalog:component_multi_about_files' %}{% endif %}">
       <i class="fas fa-download"></i> AboutCode
     </button>
   </span>
@@ -47,43 +47,42 @@
   {% endif %}
 
   <script>
-    $(document).ready(function () {
-      let download_aboutcode_btn = $('#download-aboutcode-files');
-      let download_aboutcode_wrapper = download_aboutcode_btn.parent();
+    document.addEventListener('DOMContentLoaded', function () {
+      const downloadAboutcodeBtn = document.getElementById('download-aboutcode-files');
+      const downloadAboutcodeWrapper = downloadAboutcodeBtn.parentElement;
 
-      let handle_button_display = function() {
-        let count = $('table input[type="checkbox"]:checked').length;
+      function handleButtonDisplay() {
+        const count = document.querySelectorAll('table input[type="checkbox"]:checked').length;
         if (count >= 1) {
-          download_aboutcode_btn.removeClass('disabled');
-          download_aboutcode_wrapper.attr('data-bs-original-title', 'Download AboutCode files');
+          downloadAboutcodeBtn.classList.remove('disabled');
+          downloadAboutcodeWrapper.setAttribute('data-bs-original-title', 'Download AboutCode files');
+        } else {
+          downloadAboutcodeBtn.classList.add('disabled');
+          downloadAboutcodeWrapper.setAttribute('data-bs-original-title', 'Select objects first');
         }
-        else {
-          download_aboutcode_btn.addClass('disabled');
-          download_aboutcode_wrapper.attr('data-bs-original-title', 'Select objects first');
-        }
-      };
+      }
 
-      $('main input[type="checkbox"]').on('change', function() {
-        handle_button_display();
+      document.querySelectorAll('main input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.addEventListener('change', handleButtonDisplay);
       });
 
       // Runs on load to support the "back" button of the browser
-      handle_button_display();
+      handleButtonDisplay();
 
-      download_aboutcode_btn.on('click', function(event) {
-        let checked = $('main input[type="checkbox"]:checked');
+      downloadAboutcodeBtn.addEventListener('click', function (event) {
+        const checked = document.querySelectorAll('main input[type="checkbox"]:checked');
         if (checked.length < 1) {
           event.preventDefault();
           return false;
         }
 
-        let selected_ids = [];
-        checked.each(function() {
-          selected_ids.push(this.value);
+        const selectedIds = [];
+        checked.forEach(function (checkbox) {
+          selectedIds.push(checkbox.value);
         });
 
-        let download_aboutcode_url = download_aboutcode_btn.attr('href') + '?ids=' + selected_ids.join();
-        window.open(download_aboutcode_url);
+        const downloadAboutcodeUrl = downloadAboutcodeBtn.getAttribute('data-href') + '?ids=' + selectedIds.join();
+        window.open(downloadAboutcodeUrl);
       });
     });
   </script>
