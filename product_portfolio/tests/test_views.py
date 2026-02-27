@@ -1377,7 +1377,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = resolve_url("product_portfolio:product_list")
         response = self.client.get(url)
         expected = """
-        <button id="compare_button" class="btn btn-outline-dark disabled" data-href="/products/compare/">
+        <button id="compare_button" class="btn btn-outline-dark disabled"
+          data-href="/products/compare/">
           <i class="fa-solid fa-code-compare"></i> Compare
         </button>
         """
