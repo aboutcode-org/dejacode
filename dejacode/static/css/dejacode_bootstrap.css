@@ -146,6 +146,9 @@ table.text-break thead {
 .navbar #search-input::placeholder {
   color: var(--bs-gray-300);
 }
+.navbar #search-form {
+  width: 350px;
+}
 
 /* -- Pagination -- */
 nav ul.pagination .disabled {
