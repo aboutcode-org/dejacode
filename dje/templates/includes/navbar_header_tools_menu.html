@@ -4,7 +4,7 @@
     <a class="nav-link dropdown-toggle{% if report_list_url in request.path or request_list_url in request.path or scan_list_url in request.path or purldb_list_url in request.path %} active{% endif %}" href="#" id="navbarDropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       Tools
     </a>
-    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+    <div class="dropdown-menu">
       <div class="dropdown-header">Reporting</div>
       <a class="dropdown-item{% if report_list_url in request.path %} active{% endif %}" href="{{ report_list_url }}">
         <i class="far fa-chart-bar" aria-hidden="true"></i>
