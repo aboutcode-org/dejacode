@@ -11,7 +11,8 @@ on:
 
 jobs:
   anti-slop:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    name: Detects and automatically closes low-quality and AI slop PRs
     steps:
       - uses: peakoss/anti-slop@v0
         with:
@@ -23,9 +24,9 @@ jobs:
           require-linked-issue: true
           # List of terms blocked from appearing in the PR description
           blocked-terms: "MANGO"
-          # Minimum GitHub account age in days
-          min-account-age: 30
           # Require all changed files to end with a newline character
-          final-newline: false
+          require-final-newline: false
           # PR does not allow maintainers to push to the source
           require-maintainer-can-modify: false
+          # Minimum number of profile signals the user must have to pass. Disabled.
+          min-profile-completeness: 0
