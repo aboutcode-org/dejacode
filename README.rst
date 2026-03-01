@@ -29,6 +29,12 @@ The DejaCode documentation also provides:
 - how to customize your own workflows and reports.
 - guidelines for contributing to code development.
 
+Contributing
+============
+
+Thank you for your interest in contributing to AboutCode projects.
+Please `read the following guidelines carefully <https://github.com/aboutcode-org/dejacode/blob/main/CONTRIBUTING.md>`_  before getting started.
+
 Build and tests status
 ======================
 
