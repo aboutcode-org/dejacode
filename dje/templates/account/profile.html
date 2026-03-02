@@ -48,13 +48,13 @@
         {% endif %}
       </div>
       <div>
-        <a href="#" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#generate-api-key">
+        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#generate-api-key">
           Generate API key
-        </a>
+        </button>
         {% if request.user.api_token %}
-          <form action="{% url 'revoke_api_key' %}" id="revoke-api-key-form" class="d-inline" method="post">{% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger">Revoke API key</button>
-          </form>
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#revoke-api-key">
+            Revoke API key
+          </button>
         {% endif %}
       </div>
     </div>
@@ -81,6 +81,33 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <form action="{% url 'generate_api_key' %}" id="generate-api-key-form" method="post">{% csrf_token %}
             <button type="submit" class="btn btn-success">Generate</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" tabindex="-1" role="dialog" id="revoke-api-key">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Revoke API key</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-body-tertiary">
+          <p>
+            <strong>Are you sure you want to delete your API key?</strong>
+          </p>
+          <div class="alert alert-danger m-0 mb-3" role="alert">
+            <strong>
+              Your existing key will be immediately revoked.
+            </strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <form action="{% url 'revoke_api_key' %}" id="revoke-api-key-form" method="post">{% csrf_token %}
+            <button type="submit" class="btn btn-danger">Revoke API key</button>
           </form>
         </div>
       </div>
