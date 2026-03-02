@@ -1,0 +1,17 @@
+about_resource: django_guardian-3.3.0-py3-none-any.whl
+name: django-guardian
+version: 3.3.0
+download_url: https://files.pythonhosted.org/packages/7c/3c/6517c5e27c6f9c165f989a5884f8798d66d25ce86fe44bf8c19aa4120351/django_guardian-3.3.0-py3-none-any.whl
+package_url: pkg:pypi/django-guardian@3.3.0
+license_expression: bsd-new AND bsd-simplified
+copyright: Copyright django-guardian project contributors
+attribute: yes
+checksum_md5: 3a5aa0cf9956674901b8049581e8d758
+checksum_sha1: 097986538e202561c4957f45fb52c8d789addcb6
+licenses:
+  - key: bsd-simplified
+    name: BSD-2-Clause
+    file: bsd-simplified.LICENSE
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE

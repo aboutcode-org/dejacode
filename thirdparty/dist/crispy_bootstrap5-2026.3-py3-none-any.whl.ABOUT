@@ -1,0 +1,17 @@
+about_resource: crispy_bootstrap5-2026.3-py3-none-any.whl
+name: crispy-bootstrap5
+version: '2026.3'
+download_url: https://files.pythonhosted.org/packages/9d/2d/93f78072f203aa28d961add6a130b929b47f7aa3fef6905898b4bb9a637d/crispy_bootstrap5-2026.3-py3-none-any.whl
+package_url: pkg:pypi/crispy-bootstrap5@2026.3
+license_expression: mit AND unknown-license-reference
+copyright: Copyright crispy-bootstrap5 project contributors
+attribute: yes
+checksum_md5: cfb86388b260ba60735c2d156ee26dcc
+checksum_sha1: 065b9b385fdfad76a4c499771affa9328ff14370
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE

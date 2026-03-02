@@ -1,0 +1,13 @@
+about_resource: django_crispy_forms-2.6-py3-none-any.whl
+name: django-crispy-forms
+version: '2.6'
+download_url: https://files.pythonhosted.org/packages/96/e3/4c5915a732d6ab54da8871400852b67529518eedfb6b78ecf10bbccfcabb/django_crispy_forms-2.6-py3-none-any.whl
+package_url: pkg:pypi/django-crispy-forms@2.6
+license_expression: unknown-license-reference
+copyright: Copyright django-crispy-forms project contributors
+checksum_md5: 6c45e06bdef246a29905cf96d1300036
+checksum_sha1: 2d5827887f31a44c0309278ca5fa2e7821063801
+licenses:
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
