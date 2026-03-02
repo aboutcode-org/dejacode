@@ -41,14 +41,14 @@ dependencies = [
     "typing_extensions==4.15.0",
     "sqlparse==0.5.5",
     # Django apps
-    "django-crispy-forms==2.5",
-    "crispy_bootstrap5==2025.6",
+    "django-crispy-forms==2.6",
+    "crispy_bootstrap5==2026.3",
     "django-grappelli==4.0.3",
     "django-filter==25.2",
     "django-registration==3.4",
     "confusable_homoglyphs==3.3.1",
-    "django-guardian==3.2.0",
-    "django-environ==0.12.0",
+    "django-guardian==3.3.0",
+    "django-environ==0.13.0",
     "django-debug-toolbar==6.2.0",
     # CAPTCHA
     "altcha==1.0.0",
@@ -56,7 +56,7 @@ dependencies = [
     # REST API
     "djangorestframework==3.16.1",
     # API documentation
-    "drf-yasg==1.21.14",
+    "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
     "pytz==2025.2",
@@ -67,20 +67,20 @@ dependencies = [
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.3.2",
+    "psycopg==3.3.3",
     # Cache
-    "redis==7.2.0",
+    "redis==7.2.1",
     # Antivirus
     "clamd==1.0.2",
     # Testing
-    "model_bakery==1.23.2",
+    "model_bakery==1.23.3",
     # Task queue
     "rq==2.7.0",
     "croniter==6.0.0",
     "django-rq==3.2.2",
-    "fakeredis==2.33.0",
+    "fakeredis==2.34.1",
     # Libs
-    "certifi==2026.1.4",
+    "certifi==2026.2.25",
     "urllib3==2.6.3",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
@@ -130,7 +130,7 @@ dependencies = [
     # PackageURL
     "packageurl-python==0.17.6",
     # Gunicorn
-    "gunicorn==25.0.3",
+    "gunicorn==25.1.0",
     # SPDX validation
     "jsonschema==4.26.0",
     "jsonschema-specifications==2025.9.1",
@@ -156,7 +156,7 @@ dependencies = [
     # OpenVEX
     "msgspec==0.20.0",
     # OpenDocument Format
-    "odfdo==3.20.2",
+    "odfdo==3.21.0",
     "lxml==6.0.2",
 ]
 
