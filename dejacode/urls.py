@@ -37,6 +37,7 @@ from dje.views import DataspaceAwareRelatedLookup
 from dje.views import GenerateAPIKeyView
 from dje.views import GlobalSearchListView
 from dje.views import IntegrationsStatusView
+from dje.views import RevokeAPIKeyView
 from dje.views import UnreadNotificationsList
 from dje.views import api_docs_view
 from dje.views import home_view
@@ -91,6 +92,7 @@ urlpatterns = [
     path("account/", include("django.contrib.auth.urls")),
     path("account/profile/", AccountProfileView.as_view(), name="account_profile"),
     path("account/generate_api_key/", GenerateAPIKeyView.as_view(), name="generate_api_key"),
+    path("account/revoke_api_key/", RevokeAPIKeyView.as_view(), name="revoke_api_key"),
     path("logout/", auth_views.LogoutView.as_view(next_page="login"), name="logout"),
     path(
         "login/",

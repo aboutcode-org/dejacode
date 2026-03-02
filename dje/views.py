@@ -2091,6 +2091,13 @@ class GenerateAPIKeyView(LoginRequiredMixin, View):
         return redirect(reverse_lazy("account_profile"))
 
 
+class RevokeAPIKeyView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        request.user.revoke_api_key()
+        messages.success(request, "API key revoked.")
+        return redirect(reverse_lazy("account_profile"))
+
+
 @login_required
 def docs_models_view(request):
     from dje.admin import dejacode_site

@@ -12,6 +12,7 @@ from django.contrib.admin.options import get_content_type_for_model
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.shortcuts import resolve_url
 from django.test import TestCase
@@ -308,6 +309,23 @@ class DJEViewsTestCase(TestCase):
         message = list(response.context["messages"])[0].message
         self.assertIn("Copy your API key now, it will not be shown again:", message)
         self.assertIn(new_token_prefix, message)
+
+    def test_account_profile_view_revoke_api_key(self):
+        url = reverse("revoke_api_key")
+        self.client.login(username=self.user.username, password="secret")
+
+        self.user.regenerate_api_key()
+        initial_token_prefix = self.user.api_token.prefix
+        self.assertEqual(8, len(initial_token_prefix))
+
+        response = self.client.post(url, follow=True)
+        self.user.refresh_from_db()
+        message = "DejacodeUser has no api_token"
+        with self.assertRaisesMessage(ObjectDoesNotExist, message):
+            self.user.api_token
+
+        message = list(response.context["messages"])[0].message
+        self.assertEqual("API key revoked.", message)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace", TEMPLATE_DATASPACE=None)
     def test_clone_dataset_view(self):

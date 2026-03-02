@@ -91,6 +91,11 @@ class AbstractAPIToken(models.Model):
         cls.objects.filter(user=user).delete()
         return cls.create_token(user)
 
+    @classmethod
+    def revoke(cls, user):
+        """Delete any existing token instance for the user."""
+        return cls.objects.filter(user=user).delete()
+
 
 class APITokenAuthentication(TokenAuthentication):
     """
