@@ -113,8 +113,8 @@ are the following:
 Defining your Usage Policies
 ============================
 
-The Reference licenses are intentionally not defined with Usage Policy assignments,
-since a Usage Policy assignment is specific to your organization.
+The Reference licenses Usage Policy assignments are suggestions only, since
+a Usage Policy assignment is specific to your organizational requirements.
 
 To get started:
 
