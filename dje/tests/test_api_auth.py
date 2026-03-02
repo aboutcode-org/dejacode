@@ -56,6 +56,13 @@ class AboutCodeAPIAuthTestCase(TestCase):
         APIToken.regenerate(user=self.base_user)
         self.assertEqual(1, APIToken.objects.count())
 
+    def test_api_auth_api_token_model_revoke(self):
+        self.assertEqual(0, APIToken.objects.count())
+        APIToken.regenerate(user=self.base_user)
+        self.assertEqual(1, APIToken.objects.count())
+        APIToken.revoke(user=self.base_user)
+        self.assertEqual(0, APIToken.objects.count())
+
     def test_api_auth_api_token_authentication_get_model(self):
         self.assertEqual(APIToken, APITokenAuthentication().get_model())
 

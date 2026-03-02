@@ -1841,6 +1841,10 @@ class DejacodeUser(DataspaceForeignKeyValidationMixin, AbstractUser):
         """Regenerate the user API key."""
         return APIToken.regenerate(user=self)
 
+    def revoke_api_key(self):
+        """Revoke the user API key."""
+        return APIToken.revoke(user=self)
+
     def serialize_user_data(self):
         fields = [
             "email",
