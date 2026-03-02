@@ -670,9 +670,9 @@ class License(
         blank=True,
         verbose_name=_("License profile"),
         help_text=format_lazy(
-            "{verbose_name}: a selection of license tags and their values, identified by a "
-            "numeric code, in order to provide a convenient way to assign a set of tag values to "
-            "a license. "
+            "{verbose_name}: a selection of license tags and their values, "
+            "identified by a descriptive name, in order to provide a convenient way to "
+            "assign a set of tag values to a license. "
             'A "Tag" identifies a frequently encountered obligation, restriction, or other '
             "notable characteristic of license terms. "
             "Note that individual tag value assignments may vary by license.",

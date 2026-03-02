@@ -117,14 +117,17 @@ class OwnerAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
         "check_updates_in_reference",
     ]
 
-    short_description = """An Owner is an entity that is the author, custodian,
-    or provider of one or more software objects (licenses, components,
-    products)."""
+    short_description = (
+        "An Owner is an entity that is the author, custodian, or provider of one or "
+        "more software objects (licenses, components, products)."
+    )
 
-    long_description = """An Owner can be an organization, person, project
-    team, or a foundation. An Owner may create and publish software components,
-    or it may simply be a standards organization. Any Owner can belong to (be
-    the child of) any other Owners."""
+    long_description = (
+        "An Owner can be an organization, person, project team, or a foundation. "
+        "An Owner may create and publish software components, or it may simply be a "
+        "standards organization. Any Owner can belong to (be the child of) any other "
+        "Owners."
+    )
 
     def get_queryset(self, request):
         return (
