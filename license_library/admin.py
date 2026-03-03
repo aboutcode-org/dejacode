@@ -535,27 +535,17 @@ class LicenseProfileAdmin(LicenseTagHolderBaseAdmin):
     inlines = (LicenseProfileAssignedTagInline,)
 
     short_description = format_lazy(
-        _("License Profile"),
-        ': a selection \
-    of license tags and their values, identified by a name, in \
-    order to provide a convenient way to assign a set of tag values to a \
-    license.\
-    A "Tag" identifies a frequently encountered obligation, restriction, \
-    or other notable characteristic of license terms. Note that \
-    individual tag value assignments may vary by license.',
+        "A {license_profile} is a selection of license tags and their values, "
+        "identified by a descriptive name, in order to provide a convenient way to "
+        "assign a set of tag values to a license. "
+        "A {license_profile} may also identify an associated default usage policy.",
+        license_profile=_("License profile"),
     )
 
-    long_description = format_lazy(
-        "An organization should review the ",
-        _("License Profile"),
-        " supplied as reference data with the application \
-        to determine if any additions or modifications are needed to meet the \
-        organization's business requirements. For example, if you always \
-        want to review a specific Tag assignment on each License, remove \
-        the Tag from the ",
-        _("License Profile"),
-        " so that its initial value \
-        will be Unknown.",
+    long_description = (
+        'A "Tag" identifies a frequently encountered obligation, restriction, '
+        "or other notable characteristic of license terms. "
+        "Note that individual tag value assignments may vary by license."
     )
 
 
@@ -564,16 +554,19 @@ class LicenseCategoryAdmin(DataspacedAdmin):
     list_display = ("label", "text", "license_type", "get_dataspace")
     search_fields = ("label",)
 
-    short_description = """A License Category, identified by a label,
-    provides a major grouping for licenses, generally describing the
-    relationship between the licensor and licensee."""
+    short_description = (
+        "A License Category, identified by a label, provides a major grouping for "
+        "licenses, generally describing the relationship between the licensor and "
+        "licensee."
+    )
 
-    long_description = """An organization should review the License
-    Categories provided with the application to determine if the
-    descriptions require refinement, or if new Categories need to be
-    defined, in order to meet the organization's needs. License Category
-    examples include Commercial, Copyleft, Copyleft Limited, Copyleft v3,
-    Liberal, Proprietary, and Other."""
+    long_description = (
+        "An organization should review the License Categories provided with the "
+        "application to determine if the descriptions require refinement, or if new "
+        "Categories need to be defined, in order to meet the organization's needs. "
+        "License Category examples include Commercial, Copyleft, Copyleft Limited, "
+        "Copyleft v3, Liberal, Proprietary, and Other."
+    )
 
 
 @admin.register(LicenseStyle, site=dejacode_site)
@@ -585,18 +578,21 @@ class LicenseStyleAdmin(DataspacedAdmin):
     )
     search_fields = ("name",)
 
-    short_description = """A License Style, identified by a License
-    Style Name, describes miscellaneous characteristics of a license that
-    are useful for analysis. Common License Styles include Apache 1.1, BSD,
-    MIT, and X11."""
+    short_description = (
+        "A License Style, identified by a License Style Name, describes miscellaneous "
+        "characteristics of a license that are useful for analysis. "
+        "Common License Styles include Apache 1.1, BSD, MIT, and X11."
+    )
 
-    long_description = """An organization should review the License
-    Styles supplied with the application to determine if any additions are
-    needed, or if the descriptions are pertinent to its business
-    requirements. An organization can modify the License Styles supplied
-    with the application, and it can also create new License Styles. It is
-    also OK to delete License Styles, although it is best to make sure that
-    they are not being used before deletion."""
+    long_description = (
+        "An organization should review the License Styles supplied with the "
+        "application to determine if any additions are needed, or if the descriptions "
+        "are pertinent to its business requirements. "
+        "An organization can modify the License Styles supplied with the application, "
+        "and it can also create new License Styles. It is also OK to delete License "
+        "Styles, although it is best to make sure that they are not being used "
+        "before deletion."
+    )
 
 
 @admin.register(LicenseStatus, site=dejacode_site)
@@ -605,16 +601,15 @@ class LicenseStatusAdmin(DataspacedAdmin):
     search_fields = ("code", "text")
 
     short_description = format_lazy(
-        "A License Status is defined by an \
-    Organization to assign to a License when it is Configured for that \
-    Organization's ",
-        _("License Library"),
-        " .",
+        "A License Status is defined by an Organization to assign to a License when "
+        "it is configured for that Organization's {license_library}.",
+        license_library=_("License Library"),
     )
 
-    long_description = """An Organization can use the License Status
-    to communicate the current stage of the license configuration review
-    process."""
+    long_description = (
+        "An Organization can use the License Status to communicate the current stage "
+        "of the license configuration review process."
+    )
 
 
 @admin.register(LicenseTag, site=dejacode_site)
@@ -752,14 +747,16 @@ class LicenseTagGroupAdmin(LicenseTagHolderBaseAdmin):
 
     get_assigned_tags_label.short_description = "Assigned tags"
 
-    short_description = """A License Tag Group is a logical grouping
-    of License Tags from a functional point of view."""
+    short_description = (
+        "A License Tag Group is a logical grouping of License Tags from a functional point of view."
+    )
 
-    long_description = """A License Tag Group is a logical grouping
-    of License Tags, by dataspace, to support administrator and
-    user comprehension of License Tag Assignments from a functional point
-    of view, including the order in which the License Tag Groups should be
-    presented in the application user interface."""
+    long_description = (
+        "A License Tag Group is a logical grouping of License Tags, by dataspace, "
+        "to support administrator and user comprehension of License Tag Assignments "
+        "from a functional point of view, including the order in which the "
+        "License Tag Groups should be presented in the application user interface."
+    )
 
 
 @admin.register(LicenseChoice, site=dejacode_site)
