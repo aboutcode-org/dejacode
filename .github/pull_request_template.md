@@ -10,7 +10,7 @@
 
 ## Checklist
 
-- [ ] I have read the [contributing guidelines](https://dejacode.readthedocs.io/en/latest/contributing.html)
+- [ ] I have read the [contributing guidelines](https://github.com/aboutcode-org/dejacode/blob/main/CONTRIBUTING.md)
 - [ ] I have linked an existing issue above
 - [ ] I have added unit tests covering the new code
 - [ ] I have reviewed and understood every line of this PR
