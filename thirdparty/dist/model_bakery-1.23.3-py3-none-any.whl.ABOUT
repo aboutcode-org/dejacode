@@ -1,0 +1,15 @@
+about_resource: model_bakery-1.23.3-py3-none-any.whl
+name: model-bakery
+version: 1.23.3
+download_url: https://files.pythonhosted.org/packages/6c/70/d2c827e2fb9aee0844da298d65e6df4d42a7bf182592c116af51037904f1/model_bakery-1.23.3-py3-none-any.whl
+package_url: pkg:pypi/model-bakery@1.23.3
+license_expression: apache-2.0
+copyright: Copyright model-bakery project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 80e0c0ca7ed4d6afceda5365c6df536a
+checksum_sha1: 17ac32069196ff00eb44675490c704b89c1020ab
+licenses:
+  - key: apache-2.0
+    name: Apache License 2.0
+    file: apache-2.0.LICENSE
