@@ -387,6 +387,23 @@ SHOW_PP_IN_NAV = env.bool("SHOW_PP_IN_NAV", default=True)
 PAGINATE_BY = env.int("PAGINATE_BY", default=None)
 TAB_PAGINATE_BY = env.int("TAB_PAGINATE_BY", default=100)
 
+# List views pagination, controls the number of items displayed per page.
+# Syntax in .env: DEJACODE_PAGINATE_BY=product=20,package=100
+DEJACODE_PAGINATE_BY = env.dict(
+    "DEJACODE_PAGINATE_BY",
+    default={
+        "product": 50,
+        "component": PAGINATE_BY or 100,
+        "package": 100,
+        "license": 100,
+        "owner": 100,
+        "report": 50,
+        "request": 50,
+        "scan": 50,
+        "vulnerability": 100,
+    },
+)
+
 ADMIN_FORMS_CONFIGURATION = env.dict("ADMIN_FORMS_CONFIGURATION", default={})
 
 # Location of the changelog file

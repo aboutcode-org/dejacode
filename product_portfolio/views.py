@@ -99,7 +99,7 @@ from dje.views import GetDataspacedObjectMixin
 from dje.views import Header
 from dje.views import LicenseDataForBuilderMixin
 from dje.views import ObjectDetailsView
-from dje.views import PreviousNextPaginationMixin
+from dje.views import PaginationMixin
 from dje.views import SendAboutFilesView
 from dje.views import TabContentView
 from dje.views import TabField
@@ -164,7 +164,6 @@ class ProductListView(
     filterset_class = ProductFilterSet
     template_name = "product_portfolio/product_list.html"
     template_list_table = "product_portfolio/tables/product_list_table.html"
-    paginate_by = 50
     put_results_in_session = False
     group_name_version = True
     table_headers = (
@@ -733,7 +732,7 @@ class ProductDetailsView(
 class ProductTabInventoryView(
     LoginRequiredMixin,
     BaseProductViewMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_inventory.html"
@@ -978,7 +977,7 @@ class ProductTabInventoryView(
 class ProductTabCodebaseView(
     LoginRequiredMixin,
     BaseProductViewMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_codebase.html"
@@ -1059,7 +1058,7 @@ class ProductTabCodebaseView(
 class ProductTabDependenciesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     TableHeaderMixin,
     TabContentView,
 ):
@@ -1138,7 +1137,7 @@ class ProductTabDependenciesView(
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     TableHeaderMixin,
     TabContentView,
 ):

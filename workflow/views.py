@@ -45,7 +45,6 @@ class RequestListView(
     filterset_class = RequestFilterSet
     template_name = "workflow/request_list.html"
     template_list_table = "workflow/includes/request_list_table.html"
-    paginate_by = 50
 
     def get_queryset(self):
         """

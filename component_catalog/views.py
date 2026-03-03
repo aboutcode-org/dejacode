@@ -353,7 +353,6 @@ class ComponentListView(
     template_list_table = "component_catalog/tables/component_list_table.html"
     include_reference_dataspace = True
     put_results_in_session = True
-    paginate_by = settings.PAGINATE_BY or 200
     group_name_version = True
 
     table_headers = (
@@ -1734,9 +1733,9 @@ class ScanListView(
     AddPackagePermissionMixin,
     APIWrapperListView,
 ):
-    paginate_by = 50
     template_name = "component_catalog/scan_list.html"
     template_list_table = "component_catalog/tables/scan_list_table.html"
+    paginate_by = settings.DEJACODE_PAGINATE_BY.get("scan", 50)
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
