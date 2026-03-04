@@ -10,6 +10,7 @@
 
 import sys
 import tempfile
+import warnings
 from pathlib import Path
 
 import environ
@@ -383,17 +384,22 @@ SHOW_TOOLS_IN_NAV = env.bool("SHOW_TOOLS_IN_NAV", default=True)
 # Set False to hide the "Product Portfolio" section in the navbar.
 SHOW_PP_IN_NAV = env.bool("SHOW_PP_IN_NAV", default=True)
 
-# An integer specifying how many objects should be displayed per page.
-PAGINATE_BY = env.int("PAGINATE_BY", default=None)
+# An integer specifying how many objects should be displayed per table whithin tabs.
 TAB_PAGINATE_BY = env.int("TAB_PAGINATE_BY", default=100)
 
+# An integer specifying how many objects should be displayed per page.
+PAGINATE_BY = env.int("PAGINATE_BY", default=None)
+if PAGINATE_BY:
+    warnings.warn("The PAGINATE_BY setting is deprecated. Use DEJACODE_PAGINATE_BY instead.")
+
+
 # List views pagination, controls the number of items displayed per page.
-# Syntax in .env: DEJACODE_PAGINATE_BY=product=20,package=100
+# Syntax in .env: DEJACODE_PAGINATE_BY=product=20,package=100,license=100,request=50,scan=50
 DEJACODE_PAGINATE_BY = env.dict(
     "DEJACODE_PAGINATE_BY",
     default={
         "product": 50,
-        "component": PAGINATE_BY or 100,
+        "component": 100,
         "package": 100,
         "license": 100,
         "owner": 100,
