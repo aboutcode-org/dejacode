@@ -16,10 +16,12 @@ env:
 jobs:
   run-unit-tests:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:16.13
         env:
           POSTGRES_DB: ${{ env.DATABASE_NAME }}
           POSTGRES_USER: ${{ env.DATABASE_USER }}
@@ -35,10 +37,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false  # do not keep the token around
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: "3.14"
 
@@ -59,7 +63,7 @@ jobs:
         run: make check
 
       - name: Start Redis
-        uses: supercharge/redis-github-action@1.8.1
+        uses: supercharge/redis-github-action@bc274cb7238cd63a45029db04ee48c07a72609fd  # v1.8.1
 
       - name: Build the documentation
         run: make docs
