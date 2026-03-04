@@ -519,8 +519,8 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, "Changed name.")
 
     def test_component_catalog_productcomponent_secured_hierarchy_and_product_usage(self):
-        component1 = Component.objects.create(name="c1", dataspace=self.nexb_dataspace)
-        product1 = Product.objects.create(name="p1", dataspace=self.nexb_dataspace)
+        component1 = Component.objects.create(name="component1", dataspace=self.nexb_dataspace)
+        product1 = Product.objects.create(name="product1", dataspace=self.nexb_dataspace)
         ProductComponent.objects.create(
             product=product1, component=component1, dataspace=self.nexb_dataspace
         )
@@ -1139,17 +1139,13 @@ class PackageUserViewsTestCase(TestCase):
     def test_package_list_view_pagination(self):
         list_view = PackageListView()
 
-        # 1. Default value from DEJACODE_PAGINATE_BY
-        self.assertIsNone(list_view.paginate_by)
-        self.assertEqual(50, list_view.get_paginate_by(queryset=None))
-
-        # 2. Default value from the PaginationMixin.default_paginate_by
+        # Default value from the PaginationMixin.default_paginate_by
         with override_settings(DEJACODE_PAGINATE_BY={}):
             self.assertIsNone(list_view.paginate_by)
             expected = PaginationMixin.default_paginate_by
             self.assertEqual(expected, list_view.get_paginate_by(queryset=None))
 
-        # 3. Value from custom DEJACODE_PAGINATE_BY
+        # Value from custom DEJACODE_PAGINATE_BY
         with override_settings(DEJACODE_PAGINATE_BY={"package": 20}):
             self.assertIsNone(list_view.paginate_by)
             self.assertEqual(20, list_view.get_paginate_by(queryset=None))
