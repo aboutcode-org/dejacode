@@ -277,10 +277,13 @@ class PaginationMixin:
         if self.paginate_by:
             return self.paginate_by
 
-        if self.model:
+        if self.model and settings.DEJACODE_PAGINATE_BY:
             model_name = self.model._meta.model_name
             if paginate_by := settings.DEJACODE_PAGINATE_BY.get(model_name):
-                return paginate_by
+                try:
+                    return int(paginate_by)
+                except ValueError:
+                    return self.default_paginate_by
 
         return self.default_paginate_by
 

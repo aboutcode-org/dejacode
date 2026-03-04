@@ -42,6 +42,7 @@ from component_catalog.models import Subcomponent
 from component_catalog.tests import make_package
 from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
+from component_catalog.views import PackageListView
 from component_catalog.views import PackageTabScanView
 from dejacode_toolkit.scancodeio import get_webhook_url
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -55,6 +56,7 @@ from dje.tests import add_perm
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
+from dje.views import PaginationMixin
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from license_library.models import LicenseTag
@@ -1133,6 +1135,24 @@ class PackageUserViewsTestCase(TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         with self.assertNumQueries(16):
             self.client.get(reverse("component_catalog:package_list"))
+
+    def test_package_list_view_pagination(self):
+        list_view = PackageListView()
+
+        # 1. Default value from DEJACODE_PAGINATE_BY
+        self.assertIsNone(list_view.paginate_by)
+        self.assertEqual(50, list_view.get_paginate_by(queryset=None))
+
+        # 2. Default value from the PaginationMixin.default_paginate_by
+        with override_settings(DEJACODE_PAGINATE_BY={}):
+            self.assertIsNone(list_view.paginate_by)
+            expected = PaginationMixin.default_paginate_by
+            self.assertEqual(expected, list_view.get_paginate_by(queryset=None))
+
+        # 3. Value from custom DEJACODE_PAGINATE_BY
+        with override_settings(DEJACODE_PAGINATE_BY={"package": 20}):
+            self.assertIsNone(list_view.paginate_by)
+            self.assertEqual(20, list_view.get_paginate_by(queryset=None))
 
     def test_package_views_urls(self):
         p1 = Package(
