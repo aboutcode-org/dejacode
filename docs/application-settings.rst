@@ -162,6 +162,16 @@ longer than this value.
     # 1 hour, in seconds.
     SESSION_COOKIE_AGE=3600
 
+.. _dejacode_settings_paginate_by:
+
+DEJACODE_PAGINATE_BY
+--------------------
+
+The number of objects display per page for each object type can be customized with the
+following setting::
+
+    DEJACODE_PAGINATE_BY=product=20,package=100,license=100,report=50,request=50,scan=50
+
 DEJACODE_LOG_LEVEL
 ------------------
 

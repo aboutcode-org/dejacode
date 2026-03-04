@@ -260,8 +260,32 @@ class DataspaceScopeMixin:
         return qs.scope(dataspace, include_reference=self.include_reference_dataspace)
 
 
-class PreviousNextPaginationMixin:
+class PaginationMixin:
     query_dict_page_param = "page"
+    paginate_by = None
+    default_paginate_by = 100
+
+    def get_paginate_by(self, queryset):
+        """
+        Determine the number of items per page.
+
+        Resolution order:
+            1. ``paginate_by`` set directly on the view instance.
+            2. Per-model value from the ``DEJACODE_PAGINATE_BY`` setting.
+            3. ``default_paginate_by`` as a fallback.
+        """
+        if self.paginate_by:
+            return self.paginate_by
+
+        if self.model and settings.DEJACODE_PAGINATE_BY:
+            model_name = self.model._meta.model_name
+            if paginate_by := settings.DEJACODE_PAGINATE_BY.get(model_name):
+                try:
+                    return int(paginate_by)
+                except ValueError:
+                    return self.default_paginate_by
+
+        return self.default_paginate_by
 
     def get_previous_next(self, page_obj):
         """Return url links for the previous and next navigation."""
@@ -330,12 +354,11 @@ class DataspacedFilterView(
     GetDataspaceMixin,
     HasPermissionMixin,
     TableHeaderMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     FilterView,
 ):
     template_name = "object_list_base.html"
     template_list_table = None
-    paginate_by = settings.PAGINATE_BY or 100
     # Required if `show_previous_and_next_object_links` enabled on the
     # details view.
     put_results_in_session = False
@@ -2246,7 +2269,7 @@ class APIWrapperPaginator(Paginator):
 
 
 class APIWrapperListView(
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     ListView,
 ):
     paginate_by = 100

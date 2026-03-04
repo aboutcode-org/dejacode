@@ -34,7 +34,7 @@ from dje.views import BootstrapCSSMixin
 from dje.views import DataspacedFilterView
 from dje.views import DownloadableMixin
 from dje.views import HasPermissionMixin
-from dje.views import PreviousNextPaginationMixin
+from dje.views import PaginationMixin
 from reporting.filters import ReportFilterSet
 from reporting.forms import RuntimeFilterBaseFormSet
 from reporting.forms import RuntimeFilterForm
@@ -81,7 +81,7 @@ class DetailListHybridView(SingleObjectMixin, MultipleObjectMixin, TemplateView)
 
 class ReportDetailsView(
     LoginRequiredMixin,
-    PreviousNextPaginationMixin,
+    PaginationMixin,
     BootstrapCSSMixin,
     DownloadableMixin,
     HasPermissionMixin,
@@ -294,7 +294,6 @@ class ReportListView(
     filterset_class = ReportFilterSet
     template_name = "reporting/report_list.html"
     template_list_table = "reporting/includes/report_list_table.html"
-    paginate_by = 50
 
     def get_queryset(self):
         qs = super().get_queryset()
