@@ -19,6 +19,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
+__version__ = "0.1.0"
+
 
 class AbstractAPIToken(models.Model):
     """

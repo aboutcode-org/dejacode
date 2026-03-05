@@ -1,0 +1,44 @@
+[build-system]
+requires = ["flot"]
+build-backend = "flot.buildapi"
+
+[project]
+name = "aboutcode.api_auth"
+version = "0.1.0"
+description = ""
+license = { text = "Apache-2.0" }
+readme = "aboutcode/api_auth/README.md"
+requires-python = ">=3.11"
+authors = [ { name = "nexB. Inc. and others", email = "info@aboutcode.org" } ]
+keywords = [
+    "open source",
+    "api",
+    "authentication",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/aboutcode-org/dejacode"
+Documentation = "https://dejacode.readthedocs.io/"
+Repository = "https://github.com/aboutcode-org/dejacode/tree/main/aboutcode/api_auth"
+Issues = "https://github.com/aboutcode-org/dejacode/issues"
+
+[tool.flot]
+includes = [
+    "aboutcode/api_auth/*",
+]
+metadata_files = [
+    "LICENSE",
+    "NOTICE",
+]
