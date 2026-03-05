@@ -27,7 +27,7 @@ jobs:
         run: python -m pip install flot --user
 
       - name: Build a binary wheel and a source tarball
-        run: python -m flot --pyproject pipeline-pyproject.toml --sdist --wheel --output-dir dist/
+        run: python -m flot --pyproject api_auth-pyproject.toml --sdist --wheel --output-dir dist/
 
       - name: Upload package distributions as GitHub workflow artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
