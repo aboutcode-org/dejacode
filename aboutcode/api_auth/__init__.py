@@ -99,6 +99,14 @@ class AbstractAPIToken(models.Model):
         return cls.objects.filter(user=user).delete()
 
 
+def get_api_token_model():
+    """Return the concrete APIToken model from the API_TOKEN_MODEL setting."""
+    try:
+        return django_apps.get_model(settings.API_TOKEN_MODEL)
+    except (ValueError, LookupError):
+        raise ImproperlyConfigured("API_TOKEN_MODEL is not properly defined.")
+
+
 class APITokenAuthentication(TokenAuthentication):
     """
     Token authentication using a hashed API token for secure verification.
@@ -112,11 +120,7 @@ class APITokenAuthentication(TokenAuthentication):
     def get_model(self):
         if self.model is not None:
             return self.model
-
-        try:
-            return django_apps.get_model(settings.API_TOKEN_MODEL)
-        except (ValueError, LookupError):
-            raise ImproperlyConfigured("API_TOKEN_MODEL must be of the form 'app_label.model_name'")
+        return get_api_token_model()
 
     def authenticate_credentials(self, plain_key):
         model = self.get_model()

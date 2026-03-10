@@ -12,6 +12,7 @@ from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.views.generic import View
 
+from . import get_api_token_model
 
 class BaseAPIKeyActionView(View):
     """Base view for API key management actions."""
@@ -37,7 +38,8 @@ class BaseGenerateAPIKeyView(BaseAPIKeyActionView):
     """Generate a new API key and display it once via a success message."""
 
     def post(self, request, *args, **kwargs):
-        plain_key = request.user.regenerate_api_key()
+        token_model = get_api_token_model()
+        plain_key = token_model.regenerate(user=request.user)
         messages.success(request, self.get_success_message(plain_key=plain_key))
         return redirect(self.get_success_url())
 
@@ -46,6 +48,7 @@ class BaseRevokeAPIKeyView(BaseAPIKeyActionView):
     """Revoke the current user's API key."""
 
     def post(self, request, *args, **kwargs):
-        request.user.revoke_api_key()
+        token_model = get_api_token_model()
+        token_model.revoke(user=request.user)
         messages.success(request, self.get_success_message())
         return redirect(self.get_success_url())
