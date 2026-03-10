@@ -10,6 +10,6 @@ from aboutcode.api_auth.auth import APITokenAuthentication
 from aboutcode.api_auth.models import AbstractAPIToken
 from aboutcode.api_auth.models import get_api_token_model
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = ["APITokenAuthentication", "AbstractAPIToken", "get_api_token_model"]
