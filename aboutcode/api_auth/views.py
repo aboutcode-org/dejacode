@@ -12,7 +12,8 @@ from django.shortcuts import redirect
 from django.utils.html import format_html
 from django.views.generic import View
 
-from . import get_api_token_model
+from aboutcode.api_auth.models import get_api_token_model
+
 
 class BaseAPIKeyActionView(View):
     """Base view for API key management actions."""
