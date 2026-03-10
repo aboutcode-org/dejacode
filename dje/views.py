@@ -54,7 +54,6 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
@@ -76,6 +75,8 @@ from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
 from notifications import views as notifications_views
 
+from aboutcode.api_auth.views import BaseGenerateAPIKeyView
+from aboutcode.api_auth.views import BaseRevokeAPIKeyView
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import render_expression_as_html
 from dejacode_toolkit.purldb import PurlDB
@@ -2100,25 +2101,19 @@ class AccountProfileView(
         return super().form_valid(form)
 
 
-class GenerateAPIKeyView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        plain_key = request.user.regenerate_api_key()
-        message = format_html(
-            "<strong>Copy your API key now, it will not be shown again:</strong>"
-            '<pre class="pre-bg-body-tertiary mt-1 mb-0">'
-            '<i class="fa fa-key me-2" aria-hidden="true"></i>{}'
-            "</pre>",
-            plain_key,
-        )
-        messages.success(request, message)
-        return redirect(reverse_lazy("account_profile"))
+class GenerateAPIKeyView(LoginRequiredMixin, BaseGenerateAPIKeyView):
+    success_url = reverse_lazy("account_profile")
+    success_message = (
+        "<strong>Copy your API key now, it will not be shown again:</strong>"
+        '<pre class="pre-bg-body-tertiary mt-1 mb-0">'
+        '<i class="fa fa-key me-2" aria-hidden="true"></i>{plain_key}'
+        "</pre>"
+    )
 
 
-class RevokeAPIKeyView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        request.user.revoke_api_key()
-        messages.success(request, "API key revoked.")
-        return redirect(reverse_lazy("account_profile"))
+class RevokeAPIKeyView(LoginRequiredMixin, BaseRevokeAPIKeyView):
+    success_url = reverse_lazy("account_profile")
+    success_message = "API key revoked."
 
 
 @login_required
