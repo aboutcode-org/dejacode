@@ -13,9 +13,12 @@ jobs:
       contents: write  # needed to create releases and upload assets
 
     steps:
-      - name: Create a GitHub release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b  # v2.5.0
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
-          generate_release_notes: true
-          draft: false
-          files: dist/*
+          persist-credentials: false
+
+      - name: Create a GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
