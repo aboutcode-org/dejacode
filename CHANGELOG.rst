@@ -1,6 +1,47 @@
 Release notes
 =============
 
+### Version 5.7.0
+
+- Upgrade Python version to 3.14
+  https://github.com/aboutcode-org/dejacode/pull/465
+
+- Update Django to version 6.x
+  https://github.com/aboutcode-org/dejacode/pull/466
+
+- Fix parsing of str into timezone aware dates in reporting
+  https://github.com/aboutcode-org/dejacode/pull/461
+
+- Set usage policy from license profile
+  https://github.com/aboutcode-org/dejacode/pull/463
+
+- Add support for OpenDocument format in report export
+  https://github.com/aboutcode-org/dejacode/pull/478
+
+- Form validation on permission protected fields
+  https://github.com/aboutcode-org/dejacode/pull/479
+
+- Fix  stream scan results data instead of silencing timeouts
+  https://github.com/aboutcode-org/dejacode/pull/481
+
+- Fix upgrade RQ to fix a worker failure
+  https://github.com/aboutcode-org/dejacode/pull/483
+
+- Replace plain-text DRF token with PBKDF2-hashed API token
+  https://github.com/aboutcode-org/dejacode/pull/484
+
+- Fix rendering of the burger menu as offcanvas
+  https://github.com/aboutcode-org/dejacode/pull/486
+
+- Add ability to revoke an API key from profile view
+  https://github.com/aboutcode-org/dejacode/pull/491
+
+- Rework the pagination with per-model setting
+  https://github.com/aboutcode-org/dejacode/pull/494
+
+- Add generic views for API key management in `aboutcode.api_auth` module
+  https://github.com/aboutcode-org/dejacode/pull/500
+
 ### Version 5.6.0
 
 - feat: import vulnerability data from ScanCode.io
@@ -12,10 +53,10 @@ Release notes
 - feat: add package_content PurlDB field on Package model
   https://github.com/aboutcode-org/dejacode/issues/434
 
-- fix: exclude qualifiers and subpath for PURL comparison in get_purldb_entries
+- Fix exclude qualifiers and subpath for PURL comparison in get_purldb_entries
   https://github.com/aboutcode-org/dejacode/issues/453
 
-- fix: update the readthedocs.yml config to fix the build
+- Fix update the readthedocs.yml config to fix the build
   https://github.com/aboutcode-org/dejacode/issues/447
 
 - chore: upgrade Django and related libraries to latest version
