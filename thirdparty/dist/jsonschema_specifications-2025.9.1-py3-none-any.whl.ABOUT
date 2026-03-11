@@ -1,0 +1,38 @@
+about_resource: jsonschema_specifications-2025.9.1-py3-none-any.whl
+name: jsonschema-specifications
+version: 2025.9.1
+download_url: https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl
+description: |
+  The JSON Schema meta-schemas and vocabularies, exposed as a Registry
+  =============================
+  ``jsonschema-specifications``
+  =============================
+
+  |PyPI| |Pythons| |CI| |ReadTheDocs|
+
+  JSON support files from the `JSON Schema Specifications <https://json-schema.org/specification.html>`_ (metaschemas, vocabularies, etc.), packaged for runtime access from Python as a `referencing-based Schema Registry <https://referencing.readthedocs.io/en/stable/api/#referencing.Registry>`_.
+
+  .. |PyPI| image:: https://img.shields.io/pypi/v/jsonschema-specifications.svg
+    :alt: PyPI version
+    :target: https://pypi.org/project/jsonschema-specifications/
+
+  .. |Pythons| image:: https://img.shields.io/pypi/pyversions/jsonschema-specifications.svg
+    :alt: Supported Python versions
+    :target: https://pypi.org/project/jsonschema-specifications/
+
+  .. |CI| image:: https://github.com/python-jsonschema/jsonschema-specifications/workflows/CI/badge.svg
+    :alt: Build status
+    :target: https://github.com/python-jsonschema/jsonschema-specifications/actions?query=workflow%3ACI
+
+  .. |ReadTheDocs| image:: https://readthedocs.org/projects/jsonschema-specifications/badge/?version=stable&style=flat
+    :alt: ReadTheDocs status
+    :target: https://jsonschema-specifications.readthedocs.io/en/stable/
+package_url: pkg:pypi/jsonschema-specifications@2025.9.1
+license_expression: mit
+copyright: Copyright jsonschema-specifications project contributors
+attribute: yes
+checksum_md5: 3bc19f16b4b7bf78e337a39664d3d7ac
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
