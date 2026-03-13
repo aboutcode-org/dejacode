@@ -377,8 +377,8 @@ class PackageFilterSetTestCase(TestCase):
 
         data = {"q": "django"}
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
-        expected = ["pkg:pypi/django@4.0", "pkg:pypi/django@5.0"]
-        self.assertEqual(sorted(expected), self.sorted_results(filterset.qs))
+        expected = ["pkg:pypi/django@5.0", "pkg:pypi/django@4.0"]
+        self.assertEqual([str(package) for package in filterset.qs], expected)
 
     def test_package_filterset_is_vulnerable_filter(self):
         package1 = make_package(self.dataspace, is_vulnerable=True)
