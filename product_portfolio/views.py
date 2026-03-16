@@ -22,7 +22,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import Exists
@@ -84,6 +84,7 @@ from dje.utils import chunked
 from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
 from dje.utils import group_by_simple
+from dje.utils import group_by_name_version
 from dje.utils import is_uuid4
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedDeleteView
@@ -176,6 +177,31 @@ class ProductListView(
         Header("productinventoryitem_count", "Inventory", help_text="Inventory count"),
         Header("keywords", "Keywords", filter="keywords"),
     )
+    
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        if not self.request.GET.get("sort", None):
+            all_groups = group_by_name_version(self.object_list)
+            paginator = Paginator(all_groups, self.paginate_by)
+            page_number = self.request.GET.get(self.page_kwarg, 1)
+
+            try:
+                page = paginator.page(page_number)
+            except (EmptyPage, InvalidPage):
+                page = paginator.page(paginator.num_pages)
+
+            context_data.update({
+                "name_version_groups": list(page),
+                "is_grouping_active": bool(
+                    [1 for group in page if len(group) > 1]
+                ),
+                "paginator": paginator,
+                "page_obj": page,
+                "is_paginated": paginator.num_pages > 1,
+            })
+
+        return context_data
 
     def get_queryset(self):
         vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
