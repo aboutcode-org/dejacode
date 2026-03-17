@@ -48,6 +48,7 @@ class DejaCodeUserRegistrationTestCase(TestCase):
     def tearDown(self):
         self.captcha_patch.stop()
 
+    @override_settings(ALTCHA_HMAC_KEY="abcdef123456")
     def test_user_registration_form_submit(self):
         url = reverse("django_registration_register")
         response = self.client.get(url)
@@ -83,6 +84,7 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         body = mail.outbox[0].body
         self.assertTrue("New registration for user username username@company.com" in body)
 
+    @override_settings(ALTCHA_HMAC_KEY="abcdef123456")
     def test_user_registration_form_validators(self):
         self.captcha_patch.stop()
 

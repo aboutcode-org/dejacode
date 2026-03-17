@@ -1,0 +1,14 @@
+about_resource: redis-7.3.0-py3-none-any.whl
+name: redis
+version: 7.3.0
+download_url: https://files.pythonhosted.org/packages/f0/28/84e57fce7819e81ec5aa1bd31c42b89607241f4fb1a3ea5b0d2dbeaea26c/redis-7.3.0-py3-none-any.whl
+package_url: pkg:pypi/redis@7.3.0
+license_expression: mit
+copyright: Copyright redis project contributors
+attribute: yes
+checksum_md5: d325df6ff9304b16c23445ba77b774f4
+checksum_sha1: ac668056b0c7a5a570a2e976341fab7766792e98
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE
