@@ -1,0 +1,14 @@
+about_resource: croniter-6.2.2-py3-none-any.whl
+name: croniter
+version: 6.2.2
+download_url: https://files.pythonhosted.org/packages/d0/39/783980e78cb92c2d7bdb1fc7dbc86e94ccc6d58224d76a7f1f51b6c51e30/croniter-6.2.2-py3-none-any.whl
+package_url: pkg:pypi/croniter@6.2.2
+license_expression: mit
+copyright: Copyright croniter project contributors
+attribute: yes
+checksum_md5: f082e4f95beab0874ed9691ed41d6e54
+checksum_sha1: 688b5a8465f65bec362e67b576c8dbbc899931fa
+licenses:
+  - key: mit
+    name: MIT License
+    file: mit.LICENSE

@@ -52,7 +52,7 @@ dependencies = [
     "django-debug-toolbar==6.2.0",
     # CAPTCHA
     "altcha==1.0.0",
-    "django_altcha==0.9.0",
+    "django_altcha==0.10.0",
     # REST API
     "djangorestframework==3.16.1",
     # API documentation
@@ -69,14 +69,14 @@ dependencies = [
     # Database
     "psycopg==3.3.3",
     # Cache
-    "redis==7.2.1",
+    "redis==7.3.0",
     # Antivirus
     "clamd==1.0.2",
     # Testing
     "model_bakery==1.23.3",
     # Task queue
     "rq==2.7.0",
-    "croniter==6.0.0",
+    "croniter==6.2.2",
     "django-rq==3.2.2",
     "fakeredis==2.34.1",
     # Libs
@@ -84,7 +84,7 @@ dependencies = [
     "urllib3==2.6.3",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
-    "PyJWT==2.11.0",
+    "PyJWT==2.12.1",
     "natsort==8.4.0",
     "six==1.17.0",
     "requests==2.32.5",
@@ -107,7 +107,7 @@ dependencies = [
     # LDAP Auth
     "python_ldap==3.4.5",
     "setuptools-scm==9.2.2",
-    "pyasn1==0.6.2",
+    "pyasn1==0.6.3",
     "pyasn1-modules==0.4.2",
     "django-auth-ldap==5.3.0",
     # license expressions
@@ -156,7 +156,7 @@ dependencies = [
     # OpenVEX
     "msgspec==0.20.0",
     # OpenDocument Format
-    "odfdo==3.21.0",
+    "odfdo==3.22.0",
     "lxml==6.0.2",
 ]
 
