@@ -1,0 +1,13 @@
+about_resource: pyjwt-2.12.1-py3-none-any.whl
+name: pyjwt
+version: 2.12.1
+download_url: https://files.pythonhosted.org/packages/e5/7a/8dd906bd22e79e47397a61742927f6747fe93242ef86645ee9092e610244/pyjwt-2.12.1-py3-none-any.whl
+package_url: pkg:pypi/pyjwt@2.12.1
+license_expression: unknown-license-reference
+copyright: Copyright pyjwt project contributors
+checksum_md5: 57ad6a13037c27e4b58d97747c3fea97
+checksum_sha1: 1fad5e87cfed4d960f7e1c0545c53e493cf5edd7
+licenses:
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
