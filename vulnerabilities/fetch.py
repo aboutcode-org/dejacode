@@ -50,15 +50,17 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
         timeout=timeout,
         log_func=log_func,
     )
+
     run_time = timer() - start_time
     if log_func:
         log_func(f"+ Created {intcomma(results.get('created', 0))} vulnerabilities")
         log_func(f"+ Updated {intcomma(results.get('updated', 0))} vulnerabilities")
         log_func(f"Completed in {humanize_time(run_time)}")
 
-    dataspace.vulnerabilities_updated_at = timezone.now()
-    dataspace.save(update_fields=["vulnerabilities_updated_at"])
-    log_func("Dataspace.vulnerabilities_updated_at updated")
+    if results:
+        dataspace.vulnerabilities_updated_at = timezone.now()
+        dataspace.save(update_fields=["vulnerabilities_updated_at"])
+        log_func("Dataspace.vulnerabilities_updated_at updated")
 
 
 def fetch_for_packages(
@@ -66,12 +68,13 @@ def fetch_for_packages(
 ):
     from product_portfolio.models import ProductPackage
 
+    results = {"created": 0, "updated": 0}
+
     object_count = queryset.count()
     if object_count < 1:
-        return
+        return results
 
     vulnerablecode = VulnerableCode(dataspace)
-    results = {"created": 0, "updated": 0}
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
         if log_func:

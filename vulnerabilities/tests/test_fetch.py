@@ -58,6 +58,20 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.dataspace.refresh_from_db()
         self.assertIsNotNone(self.dataspace.vulnerabilities_updated_at)
 
+        buffer = io.StringIO()
+        dataspace_empty = Dataspace.objects.create(name="empty")
+        mock_fetch_for_packages.return_value = {}
+        fetch_from_vulnerablecode(
+            dataspace_empty, batch_size=1, update=True, timeout=None, log_func=buffer.write
+        )
+        expected = (
+            "0 Packages in the queue."
+            "+ Created 0 vulnerabilities"
+            "+ Updated 0 vulnerabilities"
+            "Completed in 0 seconds"
+        )
+        self.assertEqual(expected, buffer.getvalue())
+
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
     def test_vulnerabilities_fetch_for_packages(self, mock_bulk_search_by_purl):
         buffer = io.StringIO()
