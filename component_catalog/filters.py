@@ -205,6 +205,13 @@ class PackageFilterSet(DataspacedFilterSet):
             "sha1",
             "md5",
         ],
+        ordering=[
+            "type",
+            "namespace",
+            "name",
+            # In a search context, we want to display the most recent versions first
+            "-version",
+        ],
         search_fields=[
             "type",
             "namespace",

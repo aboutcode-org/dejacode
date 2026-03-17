@@ -230,9 +230,10 @@ class MatchOrderedSearchFilter(SearchRankFilter):
     https://www.postgresql.org/docs/10/static/functions-matching.html#POSIX-CONSTRAINT-ESCAPES-TABLE
     """
 
-    def __init__(self, match_order_fields, *args, **kwargs):
+    def __init__(self, match_order_fields, ordering=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.match_order_fields = match_order_fields
+        self.ordering = ordering
 
     def get_match_order_lookups(self, lookup_type, value):
         or_queries = [
@@ -258,12 +259,13 @@ class MatchOrderedSearchFilter(SearchRankFilter):
             output_field=IntegerField(),
         )
 
-        default_ordering = self.model._meta.ordering
+        ordering = self.ordering or self.model._meta.ordering
 
         simple_search_qs = (
             qs.filter(self.get_match_order_lookups("icontains", value))
             .annotate(match_order=match_order)
-            .order_by("match_order", *default_ordering)
+            # Sort by match pertiance first, then by field values
+            .order_by("match_order", *ordering)
         )
 
         if simple_search_qs.exists():
