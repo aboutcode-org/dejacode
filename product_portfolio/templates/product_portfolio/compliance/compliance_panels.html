@@ -45,9 +45,9 @@
                 </a>
               </td>
               <td class="text-end">
-                {% if license.usage_policy__compliance_alert == "error" %}
+                {% if license.compliance_alert == "error" %}
                   <span class="badge text-bg-danger">{% trans "Error" %}</span>
-                {% elif license.usage_policy__compliance_alert == "warning" %}
+                {% elif license.compliance_alert == "warning" %}
                   <span class="badge text-bg-warning">{% trans "Warning" %}</span>
                 {% else %}
                   <span class="badge text-bg-success">{% trans "OK" %}</span>
