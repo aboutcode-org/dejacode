@@ -70,33 +70,44 @@
   {# Security panel #}
   <div class="col-lg-6">
     <div class="border rounded-3 p-3 h-100">
+      {# Header #}
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fs-6 fw-medium mb-0">{% trans "Security compliance" %}</h3>
-        {% if vulnerability_count == 0 %}
-          <span class="badge text-bg-success">{% trans "OK" %}</span>
-        {% elif above_threshold_count == 0 %}
+        {% if vulnerability_count == 0 or above_threshold_count == 0 %}
           <span class="badge text-bg-success">{% trans "OK" %}</span>
         {% elif max_vulnerability_severity == "critical" %}
           <span class="badge text-bg-danger">{% trans "Critical" %}</span>
         {% elif max_vulnerability_severity == "high" %}
-          <span class="badge text-bg-warning">{% trans "High" %}</span>
+          <span class="badge" style="background-color: var(--bs-orange); color: #fff;">{% trans "High" %}</span>
+        {% elif max_vulnerability_severity == "medium" %}
+          <span class="badge text-bg-warning">{% trans "Medium" %}</span>
         {% else %}
-          <span class="badge text-bg-info">{% trans "Medium" %}</span>
+          <span class="badge text-bg-info">{% trans "Low" %}</span>
         {% endif %}
       </div>
 
-      {% if vulnerability_count > 0 and above_threshold_count == 0 %}
-        <p class="text-secondary small mb-3">
-          {{ vulnerability_count }} {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }}
-          {% trans "below risk threshold" %} ({{ risk_threshold }})
-        </p>
-      {% elif above_threshold_count > 0 %}
-        <p class="text-secondary small mb-3">
-          {{ above_threshold_count }} {% trans "vulnerabilit" %}{{ above_threshold_count|pluralize:"y,ies" }}
-          {% trans "at or above risk threshold" %} ({{ risk_threshold }})
+      {# Summary #}
+      {% if vulnerability_count > 0 %}
+        <p class="text-body-secondary small mb-3">
+          {% if risk_threshold_number %}
+            {% if above_threshold_count > 0 %}
+              {{ above_threshold_count }} {% trans "of" %} {{ vulnerability_count }}
+              {% trans "vulnerabilit" %}{{ above_threshold_count|pluralize:"y,ies" }}
+              {% trans "at or above risk threshold" %} ({{ risk_threshold }})
+            {% else %}
+              {{ vulnerability_count }}
+              {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }},
+              {% trans "all below risk threshold" %} ({{ risk_threshold }})
+            {% endif %}
+          {% else %}
+            {{ vulnerability_count }}
+            {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }}
+            — {% trans "no risk threshold set" %}
+          {% endif %}
         </p>
       {% endif %}
 
+      {# Vulnerability list #}
       {% for vulnerability in vulnerabilities %}
         <div class="d-flex align-items-center border-bottom gap-3 py-2">
           {% if vulnerability.risk_score_label == "critical" %}
@@ -114,7 +125,6 @@
             {{ vulnerability.vulnerability_id }}
           </a>
           <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>
-          <span class="fs-xs text-body-secondary d-none d-lg-inline">{{ vulnerability.package }}</span>
         </div>
       {% empty %}
         <div class="text-center text-body-tertiary py-4">
@@ -123,21 +133,13 @@
         </div>
       {% endfor %}
 
+      {# View all link #}
       {% if vulnerabilities|length < vulnerability_count %}
         <div class="mt-2">
           <a href="{{ product.get_absolute_url }}#vulnerabilities" class="text-decoration-none small">
             {% trans "View all" %} {{ vulnerability_count }} {% trans "vulnerabilities" %}
             <i class="fas fa-arrow-right ms-1"></i>
           </a>
-        </div>
-      {% endif %}
-
-      {% if risk_threshold and above_threshold_count == 0 and vulnerability_count > 0 %}
-        <div class="border-top mt-2 pt-2">
-          <small class="text-body-tertiary">
-            {% trans "Risk threshold set to" %} {{ risk_threshold }} &mdash;
-            {% trans "items shown are informational only" %}
-          </small>
         </div>
       {% endif %}
     </div>

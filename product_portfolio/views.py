@@ -2763,31 +2763,34 @@ class ProductTabComplianceView(
         risk_threshold = product.get_vulnerabilities_risk_threshold()
         risk_threshold_label = get_risk_score_label(risk_threshold)
 
-        vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
-        vulnerability_count = vulnerabilities.count()
+        all_vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
+        vulnerability_count = all_vulnerabilities.count()
 
-        most_risked = vulnerabilities.order_by("-risk_score")[:display_limit]
-        max_vulnerability_severity = None
-        if most_risked:
-            max_vulnerability_severity = get_risk_score_label(most_risked[0].risk_score)
-
-        if risk_threshold:
-            above_threshold_count = 0
+        if risk_threshold is not None:
+            above_threshold = all_vulnerabilities.filter(risk_score__gte=risk_threshold)
         else:
-            above_threshold_count = vulnerability_count
+            above_threshold = all_vulnerabilities
 
-        critical_count = vulnerabilities.filter(risk_score__gte=8.0)
-        high_count = vulnerabilities.filter(risk_score__gte=6.0, risk_score__lte=7.9)
-        medium_count = vulnerabilities.filter(risk_score__gte=3.0, risk_score__lte=5.9)
-        low_count = vulnerabilities.filter(risk_score__lte=2.9)
+        above_threshold_count = above_threshold.count()
+
+        max_vulnerability_severity = None
+        if vulnerability_count:
+            top = all_vulnerabilities.order_by("-risk_score").first()
+            if top:
+                max_vulnerability_severity = get_risk_score_label(top.risk_score)
+
+        critical_count = all_vulnerabilities.filter(risk_score__gte=8.0).count()
+        high_count = all_vulnerabilities.filter(risk_score__gte=6.0, risk_score__lt=8.0).count()
+        medium_count = all_vulnerabilities.filter(risk_score__gte=3.0, risk_score__lt=6.0).count()
+        low_count = all_vulnerabilities.filter(risk_score__gte=0.1, risk_score__lt=3.0).count()
 
         return {
             "risk_threshold_number": risk_threshold,
             "risk_threshold": risk_threshold_label,
             "max_vulnerability_severity": max_vulnerability_severity,
             "vulnerability_count": vulnerability_count,
-            "vulnerabilities": vulnerabilities.order_by("-risk_score")[:display_limit],
             "above_threshold_count": above_threshold_count,
+            "vulnerabilities": all_vulnerabilities.order_by("-risk_score")[:display_limit],
             "critical_count": critical_count,
             "high_count": high_count,
             "medium_count": medium_count,
