@@ -2651,3 +2651,88 @@ def delete_scan_htmx_view(request, project_uuid, package_uuid):
         "user": request.user,
     }
     return render(request, template, context)
+
+
+@login_required
+def product_compliance_detail(request, dataspace, name, version=""):
+    """Compliance drill-down view for a single product."""
+    user = request.user
+    qs = Product.objects.get_queryset(user, perms="view_product")
+    product = get_object_or_404(qs, name=unquote_plus(name), version=unquote_plus(version))
+
+    productpackages = product.productpackages.select_related("package")
+    packages = product.packages.all()
+    licenses = License.objects.filter(package__in=packages)
+
+    # License compliance
+    license_distribution_limit = 10
+    license_distribution = (
+        licenses.values(
+            "key",
+            "short_name",
+            "spdx_license_key",
+            "usage_policy__compliance_alert",
+        )
+        .annotate(package_count=Count("package"))
+        .order_by("-package_count")
+    )
+    license_issues = licenses.filter(usage_policy__compliance_alert__in=["error", "warning"])
+    license_error_count = license_issues.filter(usage_policy__compliance_alert="error").count()
+    license_warning_count = license_issues.filter(usage_policy__compliance_alert="warning").count()
+
+    total_licenses = licenses.count()
+    compliant_licenses = total_licenses - license_issues.count()
+    license_compliance_pct = (
+        round((compliant_licenses / total_licenses) * 100) if total_licenses else 100
+    )
+
+    # Packages with no license
+    no_license_count = packages.filter(license_expression="").count()
+
+    # Policy coverage
+    no_policy_count = packages.filter(usage_policy__isnull=True).count()
+    policy_coverage_count = packages.count() - no_policy_count
+
+    # Vulnerability data
+    # base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold=None)
+    vulnerability_qs = product.get_vulnerability_qs(risk_threshold=None)
+    product_risk_threshold = product.get_vulnerabilities_risk_threshold()
+
+    overall_status = "ok"
+    if license_warning_count:
+        overall_status = "warning"
+    if license_error_count:
+        overall_status = "error"
+
+    context = {
+        "product": product,
+        # Overall
+        "overall_status": overall_status,  # "ok" | "warning" | "error"
+        "total_packages": productpackages.count(),
+        "no_license_count": no_license_count,
+        "no_policy_count": no_policy_count,
+        "policy_coverage_count": policy_coverage_count,
+        # License compliance
+        "license_compliance_pct": license_compliance_pct,
+        "total_licenses": total_licenses,
+        "compliant_licenses": compliant_licenses,
+        "license_issues_count": license_error_count + license_warning_count,
+        "license_error_count": license_error_count,
+        "license_warning_count": license_warning_count,
+        "compliant_packages": productpackages.count() - license_issues.count(),
+        "license_distribution": license_distribution[:license_distribution_limit],
+        "license_distribution_limit": license_distribution_limit,
+        "remaining_license_count": max(0, license_distribution.count() - 5),
+        # Security compliance
+        "vulnerability_count": vulnerability_qs.count(),
+        "above_threshold_count": 0,  # vulnerabilities at or above risk_threshold
+        "max_vulnerability_severity": "critical",  # worst severity present
+        "critical_count": 0,
+        "high_count": 0,
+        "medium_count": 0,
+        "risk_threshold": "high",
+        "product_risk_threshold": product_risk_threshold,
+        "vulnerabilities": vulnerability_qs.order_by("-risk_score")[:10],
+    }
+
+    return render(request, "product_portfolio/product_compliance.html", context)

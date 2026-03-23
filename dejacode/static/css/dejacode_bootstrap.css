@@ -43,6 +43,9 @@ a.dropdown-item:hover {
 .fs-110pct {
   font-size: 110%;
 }
+.fs-xs {
+  font-size: .75rem;
+}
 .header {
   margin-bottom: 1rem;
 }

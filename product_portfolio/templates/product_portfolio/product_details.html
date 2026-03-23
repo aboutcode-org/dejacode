@@ -4,6 +4,7 @@
 
 {% block pager-toolbar %}
   {% if is_user_dataspace %}
+    <a class="btn btn-outline-dark" href="{{ object.get_compliance_detail_url }}">Compliance</a>
     {% if product.is_locked %}
       <span class="d-inline-block" data-bs-toggle="tooltip" title="Inventory is locked">
         <button type="button" class="btn btn-outline-dark dropdown-toggle" disabled>

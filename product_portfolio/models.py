@@ -333,6 +333,9 @@ class Product(
     def get_license_summary_url(self):
         return self.get_url("license_summary")
 
+    def get_compliance_detail_url(self):
+        return self.get_url("compliance_detail")
+
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
 
