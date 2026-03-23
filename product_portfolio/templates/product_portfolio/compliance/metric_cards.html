@@ -8,7 +8,7 @@
         {% if package_issues_count == 0 %}
           {% trans "No policy violations" %}
         {% else %}
-          {{ package_issues_count }} {% trans "policy violation" %}{{ package_issues_count|pluralize }}
+          {{ package_issues_count }} {% trans "package policy violation" %}{{ package_issues_count|pluralize }}
         {% endif %}
       </div>
     </div>
@@ -20,10 +20,10 @@
         {{ license_compliance_pct }}%
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
-        {% if license_issues_count == 0 %}
-          {% trans "No policy violations" %}
+        {% if packages_with_license_issues == 0 %}
+          {% trans "All packages within policy" %}
         {% else %}
-          {{ license_issues_count }} {% trans "policy violation" %}{{ license_issues_count|pluralize }}
+          {{ packages_with_license_issues }} {% trans "of" %} {{ total_packages }} {% trans "packages with policy violations" %}
         {% endif %}
       </div>
     </div>

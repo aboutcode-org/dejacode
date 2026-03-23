@@ -2698,6 +2698,17 @@ class ProductTabComplianceView(
         package_issues = packages.filter(usage_policy__compliance_alert__in=["warning", "error"])
         package_issues_count = package_issues.count()
 
+        packages_with_license_issues = (
+            packages.filter(licenses__usage_policy__compliance_alert__in=["error", "warning"])
+            .distinct()
+            .count()
+        )
+        license_compliance_pct = (
+            round(((total_packages - packages_with_license_issues) / total_packages) * 100)
+            if total_packages
+            else 100
+        )
+
         context.update(
             {
                 "product": product,
@@ -2706,6 +2717,8 @@ class ProductTabComplianceView(
                 "package_without_license_count": package_without_license_count,
                 "packages_with_license_count": packages_with_license_count,
                 "package_issues_count": package_issues_count,
+                "packages_with_license_issues": packages_with_license_issues,
+                "license_compliance_pct": license_compliance_pct,
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
             }
@@ -2723,8 +2736,6 @@ class ProductTabComplianceView(
             )
             .order_by("-package_count")
         )
-
-        total_licenses = len(license_distribution)
         license_error_count = sum(
             1 for entry in license_distribution if entry["compliance_alert"] == "error"
         )
@@ -2733,18 +2744,11 @@ class ProductTabComplianceView(
             1 for entry in license_distribution if entry["compliance_alert"] == "warning"
         )
         license_issues_count = license_error_count + license_warning_count
-        compliant_licenses = total_licenses - license_issues_count
-
-        license_compliance_pct = (
-            round((compliant_licenses / total_licenses) * 100) if total_licenses else 100
-        )
         remaining_license_count = max(0, len(license_distribution) - distribution_limit)
 
         return {
-            "total_licenses": total_licenses,
-            "compliant_licenses": compliant_licenses,
-            "license_compliance_pct": license_compliance_pct,
-            "license_issues_count": license_error_count + license_warning_count,
+            # "total_licenses": len(license_distribution),
+            "license_issues_count": license_issues_count,
             "license_error_count": license_error_count,
             "license_warning_count": license_warning_count,
             "license_distribution": license_distribution[:distribution_limit],
