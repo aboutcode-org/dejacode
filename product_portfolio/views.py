@@ -2689,18 +2689,18 @@ class ProductTabComplianceView(
         licenses = License.objects.filter(package__in=packages)
 
         # Packages with no license
-        no_license_count = packages.filter(license_expression="").count()
-        # Policy coverage
-        no_policy_count = packages.filter(usage_policy__isnull=True).count()
-        policy_coverage_count = packages.count() - no_policy_count
+        package_without_license_count = packages.filter(license_expression="").count()
+        package_issues = packages.filter(
+            usage_policy__compliance_alert__in=["warning", "error"]
+        )
+        package_issues_count = package_issues.count()
 
         context.update(
             {
                 "product": product,
                 "total_packages": packages.count(),
-                "no_license_count": no_license_count,
-                "no_policy_count": no_policy_count,
-                "policy_coverage_count": policy_coverage_count,
+                "package_without_license_count": package_without_license_count,
+                "package_issues_count": package_issues_count,
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
             }
@@ -2776,7 +2776,6 @@ class ProductTabComplianceView(
             "risk_threshold_number": risk_threshold,
             "risk_threshold": risk_threshold_label,
             "max_vulnerability_severity": max_vulnerability_severity,
-            # "vulnerable_package_count": vulnerable_package_count,
             "vulnerability_count": vulnerability_count,
             "vulnerabilities": vulnerabilities.order_by("-risk_score")[:display_limit],
             "above_threshold_count": above_threshold_count,

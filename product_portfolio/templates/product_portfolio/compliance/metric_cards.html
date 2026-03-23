@@ -5,7 +5,13 @@
       <div class="small text-body-secondary mb-1">{% trans "Total packages" %}</div>
       <div class="fs-4 fw-medium lh-sm">{{ total_packages|intcomma }}</div>
       <div class="text-body-tertiary fs-xs mt-1">
-        TODO: {% trans "policy violation" %}
+        {% if package_issues_count == 0 %}
+          {% trans "No policy violations" %}
+        {% else %}
+          <span class="text-danger">
+            {{ package_issues_count }} {% trans "policy violation" %}{{ package_issues_count|pluralize }}
+          </span>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -20,6 +26,21 @@
           {% trans "No policy violations" %}
         {% else %}
           {{ license_issues_count }} {% trans "policy violation" %}{{ license_issues_count|pluralize }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="bg-body-secondary rounded-3 p-3">
+      <div class="small text-body-secondary mb-1">{% trans "License coverage" %}</div>
+      <div class="fs-4 fw-medium lh-sm {% if package_without_license_count %}text-warning{% else %}text-success{% endif %}">
+        {{ package_without_license_count }}
+      </div>
+      <div class="text-body-tertiary fs-xs mt-1">
+        {% if package_without_license_count %}
+          {% trans "package" %}{{ no_license_count|pluralize }} {% trans "with no license" %}
+        {% else %}
+          {% trans "All packages have a license" %}
         {% endif %}
       </div>
     </div>
@@ -41,26 +62,6 @@
           {% trans "All below risk threshold" %}{% if risk_threshold_number %} of {{ risk_threshold_number }}{% endif %}
         {% endif %}
       </div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Package coverage" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if no_license_count %}text-warning{% else %}text-success{% endif %}">
-        {{ no_license_count }}
-      </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if no_license_count %}
-          {% trans "package" %}{{ no_license_count|pluralize }} {% trans "with no license" %}
-        {% else %}
-          {% trans "All packages have a license" %}
-        {% endif %}
-      </div>
-      {% if no_policy_count %}
-        <div class="text-body-tertiary fs-xs mt-1">
-          {{ no_policy_count }} {% trans "without usage policy" %}
-        </div>
-      {% endif %}
     </div>
   </div>
 </div>
