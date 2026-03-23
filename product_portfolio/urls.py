@@ -23,6 +23,7 @@ from product_portfolio.views import ProductExportSPDXDocumentView
 from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
+from product_portfolio.views import ProductTabComplianceView
 from product_portfolio.views import ProductTabDependenciesView
 from product_portfolio.views import ProductTabImportsView
 from product_portfolio.views import ProductTabInventoryView
@@ -38,7 +39,6 @@ from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
 from product_portfolio.views import license_summary_view
-from product_portfolio.views import product_compliance_detail
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -124,8 +124,8 @@ urlpatterns = [
     *product_path("tab_vulnerabilities", ProductTabVulnerabilitiesView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
+    *product_path("tab_compliance", ProductTabComplianceView.as_view()),
     *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),
-    *product_path("compliance_detail", product_compliance_detail),
     path(
         "<str:dataspace>/<str:name>/<str:version>/",
         ProductDetailsView.as_view(),

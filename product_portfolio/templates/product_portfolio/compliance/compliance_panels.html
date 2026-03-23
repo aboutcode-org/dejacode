@@ -113,7 +113,7 @@
           <a href="{{ vulnerability.get_absolute_url }}" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
             {{ vulnerability.vulnerability_id }}
           </a>
-          <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatewords:10 }}</span>
+          <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>
           <span class="fs-xs text-body-secondary d-none d-lg-inline">{{ vulnerability.package }}</span>
         </div>
       {% empty %}
