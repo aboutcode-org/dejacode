@@ -9,20 +9,14 @@
           <span class="badge text-bg-success">
             {% trans "OK" %}
           </span>
+        {% elif license_error_count > 0 %}
+          <span class="badge text-bg-danger">
+            {% trans "Error" %}
+          </span>
         {% else %}
-          <div>
-            {% if license_warning_count > 0 %}
-              <span class="badge text-bg-warning">
-                {{ license_warning_count }} {% trans "warning" %}{{ license_warning_count|pluralize }}
-              </span>
-            {% endif %}
-            {% if license_error_count > 0 %}
-              <span class="badge text-bg-danger ms-1">
-                {{ license_error_count }} {% trans "error" %}{{ license_error_count|pluralize }}
-              </span>
-            {% endif %}
-
-          </div>
+          <span class="badge text-bg-warning">
+            {% trans "Warning" %}
+          </span>
         {% endif %}
       </div>
 
