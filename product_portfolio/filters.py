@@ -171,6 +171,12 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
     )
+    licenses = django_filters.ModelMultipleChoiceFilter(
+        label=_("License"),
+        field_name="licenses__key",
+        to_field_name="key",
+        queryset=License.objects.only("key", "short_name", "dataspace__id"),
+    )
 
     @staticmethod
     def filter_object_type(queryset, name, value):
