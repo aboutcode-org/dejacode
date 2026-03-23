@@ -9,14 +9,20 @@
           <span class="badge text-bg-success">
             {% trans "OK" %}
           </span>
-        {% elif license_error_count > 0 %}
-          <span class="badge text-bg-danger">
-            {{ license_error_count }} {% trans "error" %}{{ license_error_count|pluralize }}
-          </span>
         {% else %}
-          <span class="badge text-bg-warning">
-            {{ license_warning_count }} {% trans "warning" %}{{ license_warning_count|pluralize }}
-          </span>
+          <div>
+            {% if license_warning_count > 0 %}
+              <span class="badge text-bg-warning">
+                {{ license_warning_count }} {% trans "warning" %}{{ license_warning_count|pluralize }}
+              </span>
+            {% endif %}
+            {% if license_error_count > 0 %}
+              <span class="badge text-bg-danger ms-1">
+                {{ license_error_count }} {% trans "error" %}{{ license_error_count|pluralize }}
+              </span>
+            {% endif %}
+
+          </div>
         {% endif %}
       </div>
 
@@ -110,7 +116,7 @@
           {% else %}
             <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
           {% endif %}
-          <a href="{{ vulnerability.get_absolute_url }}" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
+          <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
             {{ vulnerability.vulnerability_id }}
           </a>
           <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>

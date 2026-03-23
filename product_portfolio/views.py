@@ -2687,29 +2687,22 @@ class ProductTabComplianceView(
         product = self.object
         packages = product.packages.all()
         licenses = License.objects.filter(package__in=packages)
-        vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
 
         # Packages with no license
         no_license_count = packages.filter(license_expression="").count()
-
         # Policy coverage
         no_policy_count = packages.filter(usage_policy__isnull=True).count()
         policy_coverage_count = packages.count() - no_policy_count
 
-        # Vulnerability data
-        product_risk_threshold = product.get_vulnerabilities_risk_threshold()
-
         context.update(
             {
                 "product": product,
-                "product_risk_threshold": product_risk_threshold,
-                # Overall
                 "total_packages": packages.count(),
                 "no_license_count": no_license_count,
                 "no_policy_count": no_policy_count,
                 "policy_coverage_count": policy_coverage_count,
                 **self.get_license_compliance_context(licenses),
-                **self.get_security_compliance_context(vulnerabilities),
+                **self.get_security_compliance_context(product),
             }
         )
 
@@ -2755,14 +2748,40 @@ class ProductTabComplianceView(
         }
 
     @staticmethod
-    def get_security_compliance_context(vulnerabilities, limit=10):
+    def get_security_compliance_context(product, display_limit=10):
+        from vulnerabilities.models import get_risk_score_label
+
+        risk_threshold = product.get_vulnerabilities_risk_threshold()
+        risk_threshold_label = get_risk_score_label(risk_threshold)
+
+        vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
+        vulnerability_count = vulnerabilities.count()
+
+        most_risked = vulnerabilities.order_by("-risk_score")[:display_limit]
+        max_vulnerability_severity = None
+        if most_risked:
+            max_vulnerability_severity = get_risk_score_label(most_risked[0].risk_score)
+
+        if risk_threshold:
+            above_threshold_count = 0
+        else:
+            above_threshold_count = vulnerability_count
+
+        critical_count = vulnerabilities.filter(risk_score__gte=8.0)
+        high_count = vulnerabilities.filter(risk_score__gte=6.0, risk_score__lte=7.9)
+        medium_count = vulnerabilities.filter(risk_score__gte=3.0, risk_score__lte=5.9)
+        low_count = vulnerabilities.filter(risk_score__lte=2.9)
+
         return {
-            "vulnerability_count": vulnerabilities.count(),
-            "above_threshold_count": 0,  # vulnerabilities at or above risk_threshold
-            "max_vulnerability_severity": "critical",  # worst severity present
-            "critical_count": 0,
-            "high_count": 0,
-            "medium_count": 0,
-            "risk_threshold": "high",
-            "vulnerabilities": vulnerabilities.order_by("-risk_score")[:limit],
+            "risk_threshold_number": risk_threshold,
+            "risk_threshold": risk_threshold_label,
+            "max_vulnerability_severity": max_vulnerability_severity,
+            # "vulnerable_package_count": vulnerable_package_count,
+            "vulnerability_count": vulnerability_count,
+            "vulnerabilities": vulnerabilities.order_by("-risk_score")[:display_limit],
+            "above_threshold_count": above_threshold_count,
+            "critical_count": critical_count,
+            "high_count": high_count,
+            "medium_count": medium_count,
+            "low_count": low_count,
         }

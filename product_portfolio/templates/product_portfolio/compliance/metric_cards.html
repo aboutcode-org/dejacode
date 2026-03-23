@@ -38,7 +38,7 @@
         {% elif max_vulnerability_severity == "high" %}
           {{ high_count }} {% trans "high" %}{% if medium_count %}, {{ medium_count }} {% trans "medium" %}{% endif %}
         {% else %}
-          {% trans "All below risk threshold" %}
+          {% trans "All below risk threshold" %}{% if risk_threshold_number %} of {{ risk_threshold_number }}{% endif %}
         {% endif %}
       </div>
     </div>
