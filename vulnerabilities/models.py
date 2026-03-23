@@ -27,6 +27,24 @@ from dje.models import ProductSecuredQuerySet
 
 logger = logging.getLogger("dje")
 
+RISK_SCORE_RANGES = {
+    "low": (0.1, 2.9),
+    "medium": (3.0, 5.9),
+    "high": (6.0, 7.9),
+    "critical": (8.0, 10.0),
+}
+
+
+def get_risk_score_label(score):
+    """Return the severity label for a given risk score."""
+    if score is None:
+        return ""
+    score = float(score)
+    for label, (low, high) in RISK_SCORE_RANGES.items():
+        if low <= score <= high:
+            return label
+    return ""
+
 
 class VulnerabilityQuerySet(DataspacedQuerySet):
     def with_affected_products_count(self):
@@ -170,6 +188,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         for alias in self.aliases:
             if alias.startswith("CVE-"):
                 return alias
+
+    @property
+    def risk_score_label(self):
+        """Return the severity label for this risk score."""
+        return get_risk_score_label(self.risk_score)
 
     def add_affected(self, instances):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""

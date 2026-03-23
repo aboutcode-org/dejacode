@@ -34,8 +34,8 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
-from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 
