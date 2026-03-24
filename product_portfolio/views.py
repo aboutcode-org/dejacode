@@ -2711,7 +2711,9 @@ class ProductTabComplianceView(
         package_issues_count = package_issues.count()
 
         packages_with_license_issues = (
-            productpackages.filter(licenses__usage_policy__compliance_alert__in=["warning", "error"])
+            productpackages.filter(
+                licenses__usage_policy__compliance_alert__in=["warning", "error"]
+            )
             .distinct()
             .count()
         )

@@ -22,12 +22,12 @@ from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import DefaultOrderingFilter
 from dje.filters import HasRelationFilter
+from dje.filters import HasValueFilter
 from dje.filters import MatchOrderedSearchFilter
 from dje.filters import SearchFilter
 from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
-from dje.filters import HasValueFilter
 from license_library.models import License
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
