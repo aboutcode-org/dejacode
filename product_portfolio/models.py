@@ -364,6 +364,7 @@ class Product(
 
         return all(
             [
+                not self.is_locked,
                 user.has_perm("product_portfolio.change_product"),
                 has_change_permission_on_product,
             ]

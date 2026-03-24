@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import copy
 import csv
 import json
 from collections import OrderedDict
@@ -34,6 +35,7 @@ from django.forms import modelformset_factory
 from django.http import FileResponse
 from django.http import Http404
 from django.http import HttpResponse
+from django.http import HttpResponseForbidden
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -1236,13 +1238,18 @@ class ProductTabVulnerabilitiesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        # Set the proper VulnerabilityAnalysis instance on the Package instance
+        # Set the proper VulnerabilityAnalysis instance on each Vulnerability
         for product_package in page_obj.object_list:
+            vulnerabilities_with_analysis = []
             for vulnerability in product_package.package.affected_by_vulnerabilities.all():
+                v_copy = copy.copy(vulnerability)
+                v_copy.vulnerability_analysis = None
                 for analysis in vulnerability.vulnerability_analyses.all():
                     if analysis.product_package_id == product_package.id:
-                        vulnerability.vulnerability_analysis = analysis
-                        continue
+                        v_copy.vulnerability_analysis = analysis
+                        break
+                vulnerabilities_with_analysis.append(v_copy)
+            product_package.vulnerabilities_with_analysis = vulnerabilities_with_analysis
 
         context_data.update(
             {
@@ -2572,6 +2579,9 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability
 
     product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
     vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
+
+    if not product_package.product.can_be_changed_by(user):
+        return HttpResponseForbidden("Permission denied: Product is locked")
 
     # Fetch the existing Analysis values for each affected products
     product_analysis = vulnerability_analysis_qs.filter(
