@@ -44,26 +44,29 @@
     </div>
   </div>
   <div class="col-6 col-md-3">
-  <div class="bg-body-secondary rounded-3 p-3">
-    <div class="small text-body-secondary mb-1">{% trans "Vulnerabilities" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if vulnerability_count == 0 %}text-success{% elif max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' %}text-warning{% elif max_vulnerability_severity == 'medium' %}text-warning{% else %}text-info{% endif %}">
-        {{ vulnerability_count }}
-      </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if vulnerability_count == 0 %}
-          {% trans "No known vulnerabilities" %}
-        {% elif max_vulnerability_severity == "critical" %}
-          {{ critical_count }} {% trans "critical" %}{% if high_count %}, {{ high_count }} {% trans "high" %}{% endif %}
-        {% elif max_vulnerability_severity == "high" %}
-          {{ high_count }} {% trans "high" %}{% if medium_count %}, {{ medium_count }} {% trans "medium" %}{% endif %}
-        {% elif max_vulnerability_severity == "medium" %}
-          {{ medium_count }} {% trans "medium" %}{% if low_count %}, {{ low_count }} {% trans "low" %}{% endif %}
-        {% elif max_vulnerability_severity == "low" %}
-          {{ low_count }} {% trans "low" %}
-        {% else %}
-          {% trans "All below risk threshold" %}{% if risk_threshold_number %} of {{ risk_threshold_number }}{% endif %}
-        {% endif %}
-      </div>
+    <div class="bg-body-secondary rounded-3 p-3">
+      <div class="small text-body-secondary mb-1">{% trans "Vulnerabilities" %}</div>
+      {% if vulnerability_count == 0 %}
+        <div class="fs-4 fw-medium lh-sm text-success">0</div>
+        <div class="text-body-tertiary fs-xs mt-1">{% trans "No known vulnerabilities" %}</div>
+      {% elif risk_threshold_number and above_threshold_count == 0 %}
+        <div class="fs-4 fw-medium lh-sm text-success">0</div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {{ vulnerability_count }} {% trans "below risk threshold of" %} {{ risk_threshold_number }}
+        </div>
+      {% elif risk_threshold_number %}
+        <div class="fs-4 fw-medium lh-sm text-danger">{{ above_threshold_count }}</div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% trans "of" %} {{ vulnerability_count }} {% trans "above threshold of" %} {{ risk_threshold_number }}
+        </div>
+      {% else %}
+        <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' %}text-warning{% else %}text-info{% endif %}">
+          {{ vulnerability_count }}
+        </div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if critical_count %}{{ critical_count }} {% trans "critical" %}{% endif %}{% if critical_count and high_count %}, {% endif %}{% if high_count %}{{ high_count }} {% trans "high" %}{% endif %}{% if medium_count and critical_count or medium_count and high_count %}, {% endif %}{% if medium_count %}{{ medium_count }} {% trans "medium" %}{% endif %}{% if low_count and vulnerability_count == low_count %}{{ low_count }} {% trans "low" %}{% endif %}
+        </div>
+      {% endif %}
     </div>
   </div>
 </div>

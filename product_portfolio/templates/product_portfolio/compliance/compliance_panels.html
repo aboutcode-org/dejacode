@@ -93,11 +93,11 @@
             {% if above_threshold_count > 0 %}
               {{ above_threshold_count }} {% trans "of" %} {{ vulnerability_count }}
               {% trans "vulnerabilit" %}{{ above_threshold_count|pluralize:"y,ies" }}
-              {% trans "at or above risk threshold" %} ({{ risk_threshold }})
+              {% trans "above risk threshold of" %} {{ risk_threshold_number }}
             {% else %}
               {{ vulnerability_count }}
               {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }},
-              {% trans "all below risk threshold" %} ({{ risk_threshold }})
+              {% trans "all below risk threshold of" %} {{ risk_threshold_number }}
             {% endif %}
           {% else %}
             {{ vulnerability_count }}
@@ -110,17 +110,19 @@
       {# Vulnerability list #}
       {% for vulnerability in vulnerabilities %}
         <div class="d-flex align-items-center border-bottom gap-3 py-2">
-          {% if vulnerability.risk_score_label == "critical" %}
-            <span class="badge text-bg-danger">{% trans "Critical" %}</span>
-          {% elif vulnerability.risk_score_label == "high" %}
-            <span class="badge" style="background-color: var(--bs-orange); color: #fff;">{% trans "High" %}</span>
-          {% elif vulnerability.risk_score_label == "medium" %}
-            <span class="badge text-bg-warning">{% trans "Medium" %}</span>
-          {% elif vulnerability.risk_score_label == "low" %}
-            <span class="badge text-bg-info">{% trans "Low" %}</span>
-          {% else %}
-            <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
-          {% endif %}
+          <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
+            {% if vulnerability.risk_score_label == "critical" %}
+              <span class="badge text-bg-danger">{% trans "Critical" %}</span>
+            {% elif vulnerability.risk_score_label == "high" %}
+              <span class="badge" style="background-color: var(--bs-orange); color: #fff;">{% trans "High" %}</span>
+            {% elif vulnerability.risk_score_label == "medium" %}
+              <span class="badge text-bg-warning">{% trans "Medium" %}</span>
+            {% elif vulnerability.risk_score_label == "low" %}
+              <span class="badge text-bg-info">{% trans "Low" %}</span>
+            {% else %}
+              <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
+            {% endif %}
+          </span>
           <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
             {{ vulnerability.vulnerability_id }}
           </a>
@@ -136,7 +138,7 @@
       {# View all link #}
       {% if vulnerabilities|length < vulnerability_count %}
         <div class="mt-2">
-          <a href="{{ product.get_absolute_url }}#vulnerabilities" class="text-decoration-none small">
+          <a href="#vulnerabilities" class="text-decoration-none small" onclick="new bootstrap.Tab(document.querySelector('#tab_vulnerabilities-tab')).show()">
             {% trans "View all" %} {{ vulnerability_count }} {% trans "vulnerabilities" %}
             <i class="fas fa-arrow-right ms-1"></i>
           </a>
