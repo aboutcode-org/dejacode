@@ -275,7 +275,11 @@ class ProductDetailsView(
                 "dataspace",
             ],
         },
-        "compliance": {},
+        "compliance": {
+            "fields": [
+                "packages",
+            ],
+        },
         "inventory": {
             "fields": [
                 "components",
@@ -497,6 +501,9 @@ class ProductDetailsView(
         return {"fields": [(None, context, None, template)]}
 
     def tab_compliance(self):
+        if not self.has_packages:
+            return
+
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -563,6 +570,9 @@ class ProductDetailsView(
         }
 
     def tab_vulnerabilities(self):
+        if not self.has_packages:
+            return
+
         product = self.object
         dataspace = product.dataspace
         vulnerablecode = VulnerableCode(dataspace)
@@ -673,6 +683,7 @@ class ProductDetailsView(
         product = self.object
         user = self.request.user
         dataspace = user.dataspace
+        self.has_packages = self.object.productpackages.exists()
 
         # This behavior does not works well in the context of getting informed about
         # tasks completion on the Product.
