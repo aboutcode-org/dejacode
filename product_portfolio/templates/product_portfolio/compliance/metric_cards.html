@@ -60,7 +60,7 @@
           {% trans "of" %} {{ vulnerability_count }} {% trans "above threshold of" %} {{ risk_threshold_number }}
         </div>
       {% else %}
-        <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' %}text-warning{% else %}text-info{% endif %}">
+        <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' or max_vulnerability_severity == 'medium' %}text-warning{% else %}text-info{% endif %}">
           {{ vulnerability_count }}
         </div>
         <div class="text-body-tertiary fs-xs mt-1">
