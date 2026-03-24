@@ -18,7 +18,7 @@
   <div class="col-6 col-md-3">
     <div class="bg-body-secondary rounded-3 p-3">
       <div class="small text-body-secondary mb-1">{% trans "License compliance" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if license_compliance_pct == 100 %}text-success{% elif license_compliance_pct >= 90 %}text-warning{% else %}text-danger{% endif %}">
+      <div class="fs-4 fw-medium lh-sm {% if license_compliance_pct == 100 %}text-success{% elif license_compliance_pct >= 90 %}text-warning-orange{% else %}text-danger{% endif %}">
         {{ license_compliance_pct }}%
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
@@ -35,7 +35,7 @@
   <div class="col-6 col-md-3">
     <div class="bg-body-secondary rounded-3 p-3">
       <div class="small text-body-secondary mb-1">{% trans "License coverage" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if license_coverage_pct == 100 %}text-success{% elif license_coverage_pct >= 90 %}text-warning{% else %}text-danger{% endif %}">
+      <div class="fs-4 fw-medium lh-sm {% if license_coverage_pct == 100 %}text-success{% elif license_coverage_pct >= 90 %}text-warning-orange{% else %}text-danger{% endif %}">
         {{ license_coverage_pct }}%
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
@@ -66,7 +66,7 @@
           {% trans "of" %} {{ vulnerability_count }} {% trans "above threshold of" %} {{ risk_threshold_number }}
         </div>
       {% else %}
-        <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' or max_vulnerability_severity == 'medium' %}text-warning{% else %}text-info{% endif %}">
+        <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' %}text-warning-orange{% elif max_vulnerability_severity == 'medium' %}text-warning{% else %}text-info{% endif %}">
           {{ vulnerability_count }}
         </div>
         <div class="text-body-tertiary fs-xs mt-1">

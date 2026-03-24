@@ -94,6 +94,10 @@ table.text-break thead {
 }
 .bg-warning-orange {
   background-color: var(--bs-orange);
+  color: #000;
+}
+.text-warning-orange {
+  color: var(--bs-orange) !important;
 }
 .spinner-border-md {
   --bs-spinner-width: 1.5rem;

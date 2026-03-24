@@ -130,6 +130,23 @@ class ProductFilterSet(DataspacedFilterSet):
         ]
 
 
+class HasComplianceIssueFilter(django_filters.BooleanFilter):
+    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label", _("Compliance issues"))
+        kwargs.setdefault("field_name", "compliance_alert")
+        super().__init__(*args, **kwargs)
+
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        lookup = {f"{self.field_name}__in": ["warning", "error"]}
+        if value:
+            return qs.filter(**lookup)
+        return qs.exclude(**lookup)
+
+
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
     dropdown_fields = [
@@ -149,6 +166,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     )
     is_modified = BooleanChoiceFilter()
     object_type = django_filters.CharFilter(
+        label="Item type",
         method="filter_object_type",
         widget=DropDownWidget(
             anchor="#inventory",
@@ -177,6 +195,14 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         field_name="licenses__key",
         to_field_name="key",
         queryset=License.objects.only("key", "short_name", "dataspace__id"),
+    )
+    has_licenses = HasValueFilter(
+        label=_("Has licenses"),
+        field_name="license_expression",
+    )
+    license_compliance_issues = HasComplianceIssueFilter(
+        label="License compliance issues",
+        field_name="licenses__usage_policy__compliance_alert",
     )
 
     @staticmethod
@@ -244,6 +270,9 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
+    compliance_issues = HasComplianceIssueFilter(
+        field_name="component__usage_policy__compliance_alert",
+    )
 
     class Meta:
         model = ProductComponent
@@ -254,23 +283,6 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
             "is_deployed",
             "is_modified",
         ]
-
-
-class HasComplianceIssueFilter(django_filters.BooleanFilter):
-    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label", _("Compliance issues"))
-        kwargs.setdefault("field_name", "compliance_alert")
-        super().__init__(*args, **kwargs)
-
-    def filter(self, qs, value):
-        if value is None:
-            return qs
-        lookup = {f"{self.field_name}__in": ["warning", "error"]}
-        if value:
-            return qs.filter(**lookup)
-        return qs.exclude(**lookup)
 
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
@@ -331,17 +343,8 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("unknown", _("Reachability not known")),
         ),
     )
-    has_licenses = HasValueFilter(
-        label=_("Has licenses"),
-        field_name="license_expression",
-    )
     compliance_issues = HasComplianceIssueFilter(
-        label="Package compliance issues",
         field_name="package__usage_policy__compliance_alert",
-    )
-    license_compliance_issues = HasComplianceIssueFilter(
-        label="License compliance issues",
-        field_name="licenses__usage_policy__compliance_alert",
     )
 
     class Meta:
@@ -356,9 +359,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "vulnerability_analyses__justification",
             "is_reachable",
             "exploitability",
-            "has_licenses",
-            "compliance_issues",
-            "license_compliance_issues",
         ]
 
     def __init__(self, *args, **kwargs):

@@ -78,7 +78,7 @@
         {% elif max_vulnerability_severity == "critical" %}
           <span class="badge text-bg-danger">{% trans "Critical" %}</span>
         {% elif max_vulnerability_severity == "high" %}
-          <span class="badge" style="background-color: var(--bs-orange); color: #fff;">{% trans "High" %}</span>
+          <span class="badge bg-warning-orange">{% trans "High" %}</span>
         {% elif max_vulnerability_severity == "medium" %}
           <span class="badge text-bg-warning">{% trans "Medium" %}</span>
         {% else %}
@@ -114,7 +114,7 @@
             {% if vulnerability.risk_score_label == "critical" %}
               <span class="badge text-bg-danger">{% trans "Critical" %}</span>
             {% elif vulnerability.risk_score_label == "high" %}
-              <span class="badge" style="background-color: var(--bs-orange); color: #fff;">{% trans "High" %}</span>
+              <span class="badge bg-warning-orange">{% trans "High" %}</span>
             {% elif vulnerability.risk_score_label == "medium" %}
               <span class="badge text-bg-warning">{% trans "Medium" %}</span>
             {% elif vulnerability.risk_score_label == "low" %}
