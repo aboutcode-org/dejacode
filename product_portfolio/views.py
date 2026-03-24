@@ -2758,7 +2758,6 @@ class ProductTabComplianceView(
         remaining_license_count = max(0, len(license_distribution) - distribution_limit)
 
         return {
-            # "total_licenses": len(license_distribution),
             "license_issues_count": license_issues_count,
             "license_error_count": license_error_count,
             "license_warning_count": license_warning_count,
@@ -2779,14 +2778,13 @@ class ProductTabComplianceView(
 
         if risk_threshold is not None:
             above_threshold = all_vulnerabilities.filter(risk_score__gte=risk_threshold)
+            above_threshold_count = above_threshold.count()
         else:
-            above_threshold = all_vulnerabilities
-
-        above_threshold_count = above_threshold.count()
+            above_threshold_count = vulnerability_count
 
         max_vulnerability_severity = None
         if vulnerability_count:
-            top = all_vulnerabilities.order_by("-risk_score").first()
+            top = all_vulnerabilities.order_by_risk().first()
             if top:
                 max_vulnerability_severity = get_risk_score_label(top.risk_score)
 
@@ -2795,13 +2793,15 @@ class ProductTabComplianceView(
         medium_count = all_vulnerabilities.filter(risk_score__gte=3.0, risk_score__lt=6.0).count()
         low_count = all_vulnerabilities.filter(risk_score__gte=0.1, risk_score__lt=3.0).count()
 
+        vulnerabilities_for_display = all_vulnerabilities.order_by_risk()[:display_limit]
+
         return {
             "risk_threshold_number": risk_threshold,
             "risk_threshold": risk_threshold_label,
             "max_vulnerability_severity": max_vulnerability_severity,
             "vulnerability_count": vulnerability_count,
             "above_threshold_count": above_threshold_count,
-            "vulnerabilities": all_vulnerabilities.order_by("-risk_score")[:display_limit],
+            "vulnerabilities": vulnerabilities_for_display,
             "critical_count": critical_count,
             "high_count": high_count,
             "medium_count": medium_count,
