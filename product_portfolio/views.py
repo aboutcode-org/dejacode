@@ -2697,10 +2697,11 @@ class ProductTabComplianceView(
 
         product = self.object
         packages = product.packages.all()
+        productpackages = product.productpackages.all()
         licenses = License.objects.filter(package__in=packages)
 
-        total_packages = packages.count()
-        package_without_license_count = packages.filter(license_expression="").count()
+        total_packages = productpackages.count()
+        package_without_license_count = productpackages.filter(license_expression="").count()
         packages_with_license_count = total_packages - package_without_license_count
         license_coverage_pct = (
             round((packages_with_license_count / total_packages) * 100) if total_packages else 100
@@ -2710,7 +2711,7 @@ class ProductTabComplianceView(
         package_issues_count = package_issues.count()
 
         packages_with_license_issues = (
-            packages.filter(licenses__usage_policy__compliance_alert__in=["error", "warning"])
+            productpackages.filter(licenses__usage_policy__compliance_alert__in=["warning", "error"])
             .distinct()
             .count()
         )
