@@ -570,46 +570,47 @@ class VulnerabilityAnalysis(
     def propagate(self, product_uuid, user):
         """Propagate this Analysis to another Product."""
         from product_portfolio.models import ProductPackage
-
-        # Get the equivalent ProductPackage in the target product.
         product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
-        try:
-            product_package = product_package_qs.get(
-                product__uuid=product_uuid,
-                package=self.package,
-                dataspace=self.dataspace,
-            )
-        except models.ObjectDoesNotExist:
-            return
 
-        target_analysis_base_data = {
-            "product_package": product_package,
-            "vulnerability": self.vulnerability,
-            "dataspace": self.dataspace,
-        }
+        # Get all equivalent ProductPackage instances in the target product.
+        target_product_packages = product_package_qs.filter(
+            product__uuid=product_uuid,
+            package=self.package,
+            dataspace=self.dataspace,
+        )
 
-        existing_analysis = VulnerabilityAnalysis.objects.filter(**target_analysis_base_data)
-        if existing_analysis:  # Update
-            target_analysis = existing_analysis[0]
-            target_analysis.last_modified_by = user
-        else:  # New
-            target_analysis = VulnerabilityAnalysis(
-                **target_analysis_base_data,
-                created_by=user,
-                last_modified_by=user,
-            )
+        propagated_analyses = []
+        for product_package in target_product_packages:
+            target_analysis_base_data = {
+                "product_package": product_package,
+                "vulnerability": self.vulnerability,
+                "dataspace": self.dataspace,
+            }
 
-        fields_to_clone = [
-            "state",
-            "justification",
-            "responses",
-            "detail",
-            "is_reachable",
-        ]
-        for field_name in fields_to_clone:
-            field_value = getattr(self, field_name, None)
-            if field_value is not None:
-                setattr(target_analysis, field_name, field_value)
+            existing_analysis = VulnerabilityAnalysis.objects.filter(**target_analysis_base_data)
+            if existing_analysis:  # Update
+                target_analysis = existing_analysis[0]
+                target_analysis.last_modified_by = user
+            else:  # New
+                target_analysis = VulnerabilityAnalysis(
+                    **target_analysis_base_data,
+                    created_by=user,
+                    last_modified_by=user,
+                )
 
-        target_analysis.save()
-        return target_analysis
+            fields_to_clone = [
+                "state",
+                "justification",
+                "responses",
+                "detail",
+                "is_reachable",
+            ]
+            for field_name in fields_to_clone:
+                field_value = getattr(self, field_name, None)
+                if field_value is not None:
+                    setattr(target_analysis, field_name, field_value)
+
+            target_analysis.save()
+            propagated_analyses.append(target_analysis)
+
+        return propagated_analyses
