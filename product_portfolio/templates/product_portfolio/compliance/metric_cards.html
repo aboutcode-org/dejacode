@@ -8,7 +8,9 @@
         {% if package_issues_count == 0 %}
           {% trans "No policy violations" %}
         {% else %}
-          {{ package_issues_count }} {% trans "package policy violation" %}{{ package_issues_count|pluralize }}
+          <a href="?inventory-compliance_issues=true#inventory">
+            {{ package_issues_count }} {% trans "package policy violation" %}{{ package_issues_count|pluralize }}
+          </a>
         {% endif %}
       </div>
     </div>
@@ -23,7 +25,9 @@
         {% if packages_with_license_issues == 0 %}
           {% trans "All packages within policy" %}
         {% else %}
-          {{ packages_with_license_issues }} {% trans "of" %} {{ total_packages }} {% trans "packages with policy violations" %}
+          <a href="?inventory-license_compliance_issues=true#inventory">
+            {{ packages_with_license_issues }} {% trans "packages with license policy violations" %}
+          </a>
         {% endif %}
       </div>
     </div>
@@ -38,7 +42,9 @@
         {% if license_coverage_pct == 100 %}
           {% trans "All packages have a license" %}
         {% else %}
-          {{ packages_with_license_count }} {% trans "of" %} {{ total_packages }} {% trans "packages with license" %}
+          <a href="?inventory-has_licenses=no#inventory">
+            {{ package_without_license_count }} {% trans "packages without license" %}
+          </a>
         {% endif %}
       </div>
     </div>
