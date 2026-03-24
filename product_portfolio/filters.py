@@ -27,6 +27,7 @@ from dje.filters import SearchFilter
 from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
+from dje.filters import HasValueFilter
 from license_library.models import License
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
@@ -255,6 +256,23 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
         ]
 
 
+class HasComplianceIssueFilter(django_filters.BooleanFilter):
+    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label", _("Compliance issues"))
+        kwargs.setdefault("field_name", "compliance_alert")
+        super().__init__(*args, **kwargs)
+
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        lookup = {f"{self.field_name}__in": ["warning", "error"]}
+        if value:
+            return qs.filter(**lookup)
+        return qs.exclude(**lookup)
+
+
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
     field_name_prefix = "package"
     dropdown_fields = [
@@ -313,6 +331,18 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("unknown", _("Reachability not known")),
         ),
     )
+    has_licenses = HasValueFilter(
+        label=_("Has licenses"),
+        field_name="license_expression",
+    )
+    compliance_issues = HasComplianceIssueFilter(
+        label="Package compliance issues",
+        field_name="package__usage_policy__compliance_alert",
+    )
+    license_compliance_issues = HasComplianceIssueFilter(
+        label="License compliance issues",
+        field_name="licenses__usage_policy__compliance_alert",
+    )
 
     class Meta:
         model = ProductPackage
@@ -326,6 +356,9 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "vulnerability_analyses__justification",
             "is_reachable",
             "exploitability",
+            "has_licenses",
+            "compliance_issues",
+            "license_compliance_issues",
         ]
 
     def __init__(self, *args, **kwargs):
