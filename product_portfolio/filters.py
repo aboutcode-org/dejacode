@@ -143,8 +143,12 @@ class HasComplianceIssueFilter(django_filters.BooleanFilter):
             return qs
         lookup = {f"{self.field_name}__in": ["warning", "error"]}
         if value:
-            return qs.filter(**lookup)
-        return qs.exclude(**lookup)
+            qs = qs.filter(**lookup)
+        else:
+            qs = qs.exclude(**lookup)
+
+        return qs.distinct() if self.distinct else qs
+
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
@@ -203,6 +207,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     license_compliance_issues = HasComplianceIssueFilter(
         label="License compliance issues",
         field_name="licenses__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     @staticmethod
@@ -272,6 +277,7 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
     )
     compliance_issues = HasComplianceIssueFilter(
         field_name="component__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     class Meta:
@@ -345,6 +351,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
     )
     compliance_issues = HasComplianceIssueFilter(
         field_name="package__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     class Meta:

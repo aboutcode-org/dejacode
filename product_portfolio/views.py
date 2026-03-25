@@ -2742,12 +2742,12 @@ class ProductTabComplianceView(
 
         return {
             "total_packages": total_packages,
-            "license_coverage_pct": license_coverage_pct,
-            "package_without_license_count": package_without_license_count,
-            "packages_with_license_count": packages_with_license_count,
             "package_issues_count": package_issues_count,
             "packages_with_license_issues": packages_with_license_issues,
             "license_compliance_pct": license_compliance_pct,
+            "license_coverage_pct": license_coverage_pct,
+            "package_without_license_count": package_without_license_count,
+            "packages_with_license_count": packages_with_license_count,
         }
 
     @staticmethod
