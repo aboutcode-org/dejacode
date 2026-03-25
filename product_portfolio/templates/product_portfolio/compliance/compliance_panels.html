@@ -92,7 +92,7 @@
           {% if risk_threshold_number %}
             {% if above_threshold_count > 0 %}
               {{ above_threshold_count }} {% trans "of" %} {{ vulnerability_count }}
-              {% trans "vulnerabilit" %}{{ above_threshold_count|pluralize:"y,ies" }}
+              {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }}
               {% trans "above risk threshold of" %} {{ risk_threshold_number }}
             {% else %}
               {{ vulnerability_count }}
