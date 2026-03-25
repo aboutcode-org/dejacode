@@ -150,7 +150,6 @@ class HasComplianceIssueFilter(django_filters.BooleanFilter):
         return qs.distinct() if self.distinct else qs
 
 
-
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
     dropdown_fields = [

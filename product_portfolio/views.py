@@ -2698,13 +2698,12 @@ class ProductTabComplianceView(
         context = super().get_context_data(**kwargs)
 
         product = self.object
-        packages = product.packages.all()
         productpackages = product.productpackages.all()
         licenses = License.objects.filter(productpackage__in=productpackages)
 
         context.update(
             {
-                **self.get_package_compliance_context(productpackages, packages),
+                **self.get_package_compliance_context(productpackages),
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
             }
@@ -2713,11 +2712,12 @@ class ProductTabComplianceView(
         return context
 
     @staticmethod
-    def get_package_compliance_context(productpackages, packages):
+    def get_package_compliance_context(productpackages):
         # "Total packages" card: alert at the Package level.
         total_packages = productpackages.count()
-        package_issues = packages.filter(usage_policy__compliance_alert__in=["warning", "error"])
-        package_issues_count = package_issues.count()
+        package_issues_count = productpackages.filter(
+            package__usage_policy__compliance_alert__in=["warning", "error"]
+        ).count()
 
         # "License compliance" card: alert at the ProductPackage license level.
         packages_with_license_issues = (
@@ -2735,9 +2735,10 @@ class ProductTabComplianceView(
 
         # "License coverage" card: missing license at the ProductPackage level.
         package_without_license_count = productpackages.filter(license_expression="").count()
-        packages_with_license_count = total_packages - package_without_license_count
         license_coverage_pct = (
-            round((packages_with_license_count / total_packages) * 100) if total_packages else 100
+            round(((total_packages - package_without_license_count) / total_packages) * 100)
+            if total_packages
+            else 100
         )
 
         return {
@@ -2747,7 +2748,6 @@ class ProductTabComplianceView(
             "license_compliance_pct": license_compliance_pct,
             "license_coverage_pct": license_coverage_pct,
             "package_without_license_count": package_without_license_count,
-            "packages_with_license_count": packages_with_license_count,
         }
 
     @staticmethod
@@ -2763,20 +2763,17 @@ class ProductTabComplianceView(
         license_error_count = sum(
             1 for entry in license_distribution if entry["compliance_alert"] == "error"
         )
-
         license_warning_count = sum(
             1 for entry in license_distribution if entry["compliance_alert"] == "warning"
         )
-        license_issues_count = license_error_count + license_warning_count
-        remaining_license_count = max(0, len(license_distribution) - distribution_limit)
 
         return {
-            "license_issues_count": license_issues_count,
+            "license_issues_count": license_error_count + license_warning_count,
             "license_error_count": license_error_count,
             "license_warning_count": license_warning_count,
             "license_distribution": license_distribution[:distribution_limit],
             "license_distribution_limit": distribution_limit,
-            "remaining_license_count": remaining_license_count,
+            "remaining_license_count": max(0, len(license_distribution) - distribution_limit),
         }
 
     @staticmethod
@@ -2788,16 +2785,18 @@ class ProductTabComplianceView(
         vulnerability_count = all_vulnerabilities.count()
 
         if risk_threshold is not None:
-            above_threshold = all_vulnerabilities.filter(risk_score__gte=risk_threshold)
-            above_threshold_count = above_threshold.count()
+            above_threshold_count = all_vulnerabilities.filter(
+                risk_score__gte=risk_threshold
+            ).count()
         else:
             above_threshold_count = vulnerability_count
 
+        all_vulnerabilities_ordered = all_vulnerabilities.order_by_risk()
+
         max_vulnerability_severity = None
-        if vulnerability_count:
-            top = all_vulnerabilities.order_by_risk().first()
-            if top:
-                max_vulnerability_severity = get_risk_score_label(top.risk_score)
+        first = all_vulnerabilities_ordered.first()
+        if first:
+            max_vulnerability_severity = get_risk_score_label(first.risk_score)
 
         severity_counts = all_vulnerabilities.aggregate(
             critical_count=Count("id", filter=Q(risk_score__gte=8.0)),
@@ -2806,14 +2805,12 @@ class ProductTabComplianceView(
             low_count=Count("id", filter=Q(risk_score__gte=0.1, risk_score__lt=3.0)),
         )
 
-        vulnerabilities_for_display = all_vulnerabilities.order_by_risk()[:display_limit]
-
         return {
             "risk_threshold_number": risk_threshold,
             "risk_threshold": risk_threshold_label,
             "max_vulnerability_severity": max_vulnerability_severity,
             "vulnerability_count": vulnerability_count,
             "above_threshold_count": above_threshold_count,
-            "vulnerabilities": vulnerabilities_for_display,
+            "vulnerabilities": all_vulnerabilities_ordered[:display_limit],
             **severity_counts,
         }
