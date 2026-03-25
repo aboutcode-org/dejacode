@@ -29,6 +29,7 @@ from django.db.models import Exists
 from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Prefetch
+from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -144,6 +145,7 @@ from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
+from vulnerabilities.models import get_risk_score_label
 
 
 class BaseProductViewMixin:
@@ -2698,18 +2700,26 @@ class ProductTabComplianceView(
         product = self.object
         packages = product.packages.all()
         productpackages = product.productpackages.all()
-        licenses = License.objects.filter(package__in=packages)
+        licenses = License.objects.filter(productpackage__in=productpackages)
 
-        total_packages = productpackages.count()
-        package_without_license_count = productpackages.filter(license_expression="").count()
-        packages_with_license_count = total_packages - package_without_license_count
-        license_coverage_pct = (
-            round((packages_with_license_count / total_packages) * 100) if total_packages else 100
+        context.update(
+            {
+                **self.get_package_compliance_context(productpackages, packages),
+                **self.get_license_compliance_context(licenses),
+                **self.get_security_compliance_context(product),
+            }
         )
 
+        return context
+
+    @staticmethod
+    def get_package_compliance_context(productpackages, packages):
+        # "Total packages" card: alert at the Package level.
+        total_packages = productpackages.count()
         package_issues = packages.filter(usage_policy__compliance_alert__in=["warning", "error"])
         package_issues_count = package_issues.count()
 
+        # "License compliance" card: alert at the ProductPackage license level.
         packages_with_license_issues = (
             productpackages.filter(
                 licenses__usage_policy__compliance_alert__in=["warning", "error"]
@@ -2723,29 +2733,29 @@ class ProductTabComplianceView(
             else 100
         )
 
-        context.update(
-            {
-                "product": product,
-                "total_packages": total_packages,
-                "license_coverage_pct": license_coverage_pct,
-                "package_without_license_count": package_without_license_count,
-                "packages_with_license_count": packages_with_license_count,
-                "package_issues_count": package_issues_count,
-                "packages_with_license_issues": packages_with_license_issues,
-                "license_compliance_pct": license_compliance_pct,
-                **self.get_license_compliance_context(licenses),
-                **self.get_security_compliance_context(product),
-            }
+        # "License coverage" card: missing license at the ProductPackage level.
+        package_without_license_count = productpackages.filter(license_expression="").count()
+        packages_with_license_count = total_packages - package_without_license_count
+        license_coverage_pct = (
+            round((packages_with_license_count / total_packages) * 100) if total_packages else 100
         )
 
-        return context
+        return {
+            "total_packages": total_packages,
+            "license_coverage_pct": license_coverage_pct,
+            "package_without_license_count": package_without_license_count,
+            "packages_with_license_count": packages_with_license_count,
+            "package_issues_count": package_issues_count,
+            "packages_with_license_issues": packages_with_license_issues,
+            "license_compliance_pct": license_compliance_pct,
+        }
 
     @staticmethod
     def get_license_compliance_context(licenses, distribution_limit=10):
         license_distribution = list(
             licenses.values("key", "short_name", "spdx_license_key")
             .annotate(
-                package_count=Count("package"),
+                package_count=Count("productpackage"),
                 compliance_alert=F("usage_policy__compliance_alert"),
             )
             .order_by("-package_count")
@@ -2771,8 +2781,6 @@ class ProductTabComplianceView(
 
     @staticmethod
     def get_security_compliance_context(product, display_limit=10):
-        from vulnerabilities.models import get_risk_score_label
-
         risk_threshold = product.get_vulnerabilities_risk_threshold()
         risk_threshold_label = get_risk_score_label(risk_threshold)
 
@@ -2791,10 +2799,12 @@ class ProductTabComplianceView(
             if top:
                 max_vulnerability_severity = get_risk_score_label(top.risk_score)
 
-        critical_count = all_vulnerabilities.filter(risk_score__gte=8.0).count()
-        high_count = all_vulnerabilities.filter(risk_score__gte=6.0, risk_score__lt=8.0).count()
-        medium_count = all_vulnerabilities.filter(risk_score__gte=3.0, risk_score__lt=6.0).count()
-        low_count = all_vulnerabilities.filter(risk_score__gte=0.1, risk_score__lt=3.0).count()
+        severity_counts = all_vulnerabilities.aggregate(
+            critical_count=Count("id", filter=Q(risk_score__gte=8.0)),
+            high_count=Count("id", filter=Q(risk_score__gte=6.0, risk_score__lt=8.0)),
+            medium_count=Count("id", filter=Q(risk_score__gte=3.0, risk_score__lt=6.0)),
+            low_count=Count("id", filter=Q(risk_score__gte=0.1, risk_score__lt=3.0)),
+        )
 
         vulnerabilities_for_display = all_vulnerabilities.order_by_risk()[:display_limit]
 
@@ -2805,8 +2815,5 @@ class ProductTabComplianceView(
             "vulnerability_count": vulnerability_count,
             "above_threshold_count": above_threshold_count,
             "vulnerabilities": vulnerabilities_for_display,
-            "critical_count": critical_count,
-            "high_count": high_count,
-            "medium_count": medium_count,
-            "low_count": low_count,
+            **severity_counts,
         }
