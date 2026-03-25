@@ -11,7 +11,12 @@ import logging
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Case
+from django.db.models import CharField
 from django.db.models import Count
+from django.db.models import GeneratedField
+from django.db.models import Value
+from django.db.models import When
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -35,8 +40,8 @@ RISK_SCORE_RANGES = {
 }
 
 
-def get_risk_score_label(score):
-    """Return the severity label for a given risk score."""
+def get_risk_level(score):
+    """Return the risk severity level for a given risk score."""
     if score is None:
         return ""
     score = float(score)
@@ -166,6 +171,18 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "exploitability, capped at 10."
         ),
     )
+    risk_level = GeneratedField(
+        expression=Case(
+            When(risk_score__gte=8.0, then=Value("critical")),
+            When(risk_score__gte=6.0, then=Value("high")),
+            When(risk_score__gte=3.0, then=Value("medium")),
+            When(risk_score__gte=0.1, then=Value("low")),
+            default=Value(""),
+            output_field=CharField(max_length=8),
+        ),
+        output_field=CharField(max_length=8),
+        db_persist=True,
+    )
 
     objects = DataspacedManager.from_queryset(VulnerabilityQuerySet)()
 
@@ -174,6 +191,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["vulnerability_id"]),
+            models.Index(fields=["risk_level"]),
         ]
 
     def __str__(self):
@@ -188,11 +206,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         for alias in self.aliases:
             if alias.startswith("CVE-"):
                 return alias
-
-    @property
-    def risk_score_label(self):
-        """Return the severity label for this risk score."""
-        return get_risk_score_label(self.risk_score)
 
     def add_affected(self, instances):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""

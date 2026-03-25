@@ -111,13 +111,13 @@
       {% for vulnerability in vulnerabilities %}
         <div class="d-flex align-items-center border-bottom gap-3 py-2">
           <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
-            {% if vulnerability.risk_score_label == "critical" %}
+            {% if vulnerability.risk_level == "critical" %}
               <span class="badge text-bg-danger">{% trans "Critical" %}</span>
-            {% elif vulnerability.risk_score_label == "high" %}
+            {% elif vulnerability.risk_level == "high" %}
               <span class="badge bg-warning-orange">{% trans "High" %}</span>
-            {% elif vulnerability.risk_score_label == "medium" %}
+            {% elif vulnerability.risk_level == "medium" %}
               <span class="badge text-bg-warning">{% trans "Medium" %}</span>
-            {% elif vulnerability.risk_score_label == "low" %}
+            {% elif vulnerability.risk_level == "low" %}
               <span class="badge text-bg-info">{% trans "Low" %}</span>
             {% else %}
               <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>

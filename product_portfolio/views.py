@@ -145,7 +145,7 @@ from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
-from vulnerabilities.models import get_risk_score_label
+from vulnerabilities.models import get_risk_level
 
 
 class BaseProductViewMixin:
@@ -2779,7 +2779,7 @@ class ProductTabComplianceView(
     @staticmethod
     def get_security_compliance_context(product, display_limit=10):
         risk_threshold = product.get_vulnerabilities_risk_threshold()
-        risk_threshold_label = get_risk_score_label(risk_threshold)
+        risk_threshold_label = get_risk_level(risk_threshold)
 
         all_vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
         vulnerability_count = all_vulnerabilities.count()
@@ -2796,13 +2796,13 @@ class ProductTabComplianceView(
         max_vulnerability_severity = None
         first = all_vulnerabilities_ordered.first()
         if first:
-            max_vulnerability_severity = get_risk_score_label(first.risk_score)
+            max_vulnerability_severity = first.risk_level
 
         severity_counts = all_vulnerabilities.aggregate(
-            critical_count=Count("id", filter=Q(risk_score__gte=8.0)),
-            high_count=Count("id", filter=Q(risk_score__gte=6.0, risk_score__lt=8.0)),
-            medium_count=Count("id", filter=Q(risk_score__gte=3.0, risk_score__lt=6.0)),
-            low_count=Count("id", filter=Q(risk_score__gte=0.1, risk_score__lt=3.0)),
+            critical_count=Count("id", filter=Q(risk_level="critical")),
+            high_count=Count("id", filter=Q(risk_level="high")),
+            medium_count=Count("id", filter=Q(risk_level="medium")),
+            low_count=Count("id", filter=Q(risk_level="low")),
         )
 
         return {
