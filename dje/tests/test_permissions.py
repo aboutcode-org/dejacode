@@ -133,6 +133,7 @@ class DejaCodePermissionTestCase(TestCase):
             ],
             "product": [
                 "essentials",
+                "compliance",
                 "inventory",
                 "codebase",
                 "hierarchy",

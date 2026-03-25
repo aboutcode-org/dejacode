@@ -134,7 +134,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(30):
+        with self.assertNumQueries(29):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -464,6 +464,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         self.dataspace.enable_vulnerablecodedb_access = True
         self.dataspace.save()
+        make_product_package(self.product1)
         response = self.client.get(url)
         expected = 'aria-controls="tab_vulnerabilities" aria-selected="false" disabled="disabled"'
         self.assertContains(response, expected)
