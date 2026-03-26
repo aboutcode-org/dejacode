@@ -169,7 +169,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     )
     is_modified = BooleanChoiceFilter()
     object_type = django_filters.CharFilter(
-        label="Item type",
+        label=_("Item type"),
         method="filter_object_type",
         widget=DropDownWidget(
             anchor="#inventory",
@@ -204,7 +204,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         field_name="license_expression",
     )
     license_compliance_issues = HasComplianceIssueFilter(
-        label="License compliance issues",
+        label=_("License compliance issues"),
         field_name="licenses__usage_policy__compliance_alert",
         distinct=True,
     )
