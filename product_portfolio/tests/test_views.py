@@ -3417,3 +3417,151 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(product_package, analysis.product_package)
         self.assertEqual(vulnerability1, analysis.vulnerability)
         self.assertEqual("resolved", analysis.state)
+
+    def test_product_portfolio_tab_compliance_view_empty(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, response.context["total_packages"])
+        self.assertEqual(100, response.context["license_compliance_pct"])
+        self.assertEqual(100, response.context["license_coverage_pct"])
+        self.assertEqual(0, response.context["vulnerability_count"])
+
+    def test_product_portfolio_tab_compliance_view_package_compliance(self):
+        self.client.login(username="nexb_user", password="secret")
+
+        owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        license1 = License.objects.create(
+            key="l1", name="L1", short_name="L1", owner=owner1, dataspace=self.dataspace
+        )
+        package_policy = UsagePolicy.objects.create(
+            label="PackagePolicy",
+            icon="icon",
+            content_type=ContentType.objects.get_for_model(Package),
+            compliance_alert=UsagePolicy.Compliance.ERROR,
+            dataspace=self.dataspace,
+        )
+
+        package2 = make_package(self.dataspace, usage_policy=package_policy)
+        package3 = make_package(self.dataspace)
+
+        # package2 has a policy issue, package3 does not
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=package2,
+            dataspace=self.dataspace,
+            license_expression=license1.key,
+        )
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=package3,
+            dataspace=self.dataspace,
+        )
+
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(2, response.context["total_packages"])
+        self.assertEqual(1, response.context["package_issues_count"])
+        # One package without license expression
+        self.assertEqual(1, response.context["package_without_license_count"])
+        self.assertEqual(50, response.context["license_coverage_pct"])
+
+    def test_product_portfolio_tab_compliance_view_license_compliance(self):
+        self.client.login(username="nexb_user", password="secret")
+
+        owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        license_policy_error = UsagePolicy.objects.create(
+            label="LicensePolicyError",
+            icon="icon",
+            content_type=ContentType.objects.get_for_model(License),
+            compliance_alert=UsagePolicy.Compliance.ERROR,
+            dataspace=self.dataspace,
+        )
+        license_policy_warning = UsagePolicy.objects.create(
+            label="LicensePolicyWarning",
+            icon="icon",
+            content_type=ContentType.objects.get_for_model(License),
+            compliance_alert=UsagePolicy.Compliance.WARNING,
+            dataspace=self.dataspace,
+        )
+        license1 = License.objects.create(
+            key="l1",
+            name="L1",
+            short_name="L1",
+            owner=owner1,
+            usage_policy=license_policy_error,
+            dataspace=self.dataspace,
+        )
+        license2 = License.objects.create(
+            key="l2",
+            name="L2",
+            short_name="L2",
+            owner=owner1,
+            usage_policy=license_policy_warning,
+            dataspace=self.dataspace,
+        )
+
+        package2 = make_package(self.dataspace)
+        package3 = make_package(self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=package2,
+            dataspace=self.dataspace,
+            license_expression=license1.key,
+        )
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=package3,
+            dataspace=self.dataspace,
+            license_expression=license2.key,
+        )
+
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(2, response.context["license_issues_count"])
+        self.assertEqual(1, response.context["license_error_count"])
+        self.assertEqual(1, response.context["license_warning_count"])
+        # Both packages have license issues, so 0% compliance
+        self.assertEqual(0, response.context["license_compliance_pct"])
+
+    def test_product_portfolio_tab_compliance_view_security_compliance(self):
+        self.client.login(username="nexb_user", password="secret")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        p3 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=6.5)
+        make_vulnerability(self.dataspace, affecting=[p3], risk_score=2.0)
+
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+        url = product1.get_url("tab_compliance")
+        response = self.client.get(url)
+
+        self.assertEqual(3, response.context["vulnerability_count"])
+        self.assertEqual(3, response.context["above_threshold_count"])
+        self.assertEqual("critical", response.context["max_vulnerability_severity"])
+        self.assertEqual(1, response.context["critical_count"])
+        self.assertEqual(1, response.context["high_count"])
+        self.assertEqual(0, response.context["medium_count"])
+        self.assertEqual(1, response.context["low_count"])
+
+    def test_product_portfolio_tab_compliance_view_security_with_risk_threshold(self):
+        self.client.login(username="nexb_user", password="secret")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=2.0)
+
+        product1 = make_product(self.dataspace, inventory=[p1, p2])
+        product1.update(vulnerabilities_risk_threshold=6.0)
+
+        url = product1.get_url("tab_compliance")
+        response = self.client.get(url)
+
+        self.assertEqual(2, response.context["vulnerability_count"])
+        self.assertEqual(1, response.context["above_threshold_count"])
+        self.assertEqual("high", response.context["risk_threshold"])
+        self.assertEqual(6.0, response.context["risk_threshold_number"])
