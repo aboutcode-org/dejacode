@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false  # do not keep the token around
 
       - name: Fail on known vulnerabilities
-        uses: aboutcode-org/scancode-action@8adbf888f487c3cdf6c15386035769cd03a94c66
+        uses: aboutcode-org/scancode-action@6e900c920928c44932e756e308561451b09ec58b
         with:
           pipelines: "inspect_packages:StaticResolver,find_vulnerabilities"
           check-compliance: true
