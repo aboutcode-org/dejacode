@@ -43,6 +43,9 @@ a.dropdown-item:hover {
 .fs-110pct {
   font-size: 110%;
 }
+.fs-xs {
+  font-size: .75rem;
+}
 .header {
   margin-bottom: 1rem;
 }
@@ -91,6 +94,10 @@ table.text-break thead {
 }
 .bg-warning-orange {
   background-color: var(--bs-orange);
+  color: #000;
+}
+.text-warning-orange {
+  color: var(--bs-orange) !important;
 }
 .spinner-border-md {
   --bs-spinner-width: 1.5rem;

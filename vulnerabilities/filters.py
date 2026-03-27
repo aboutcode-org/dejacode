@@ -16,15 +16,9 @@ from dje.filters import DataspacedFilterSet
 from dje.filters import SearchFilter
 from dje.widgets import DropDownRightWidget
 from dje.widgets import SortDropDownWidget
+from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
-
-RISK_SCORE_RANGES = {
-    "low": (0.1, 2.9),
-    "medium": (3.0, 5.9),
-    "high": (6.0, 7.9),
-    "critical": (8.0, 10.0),
-}
 
 
 class NullsLastOrderingFilter(django_filters.OrderingFilter):

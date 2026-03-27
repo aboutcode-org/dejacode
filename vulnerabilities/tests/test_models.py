@@ -24,6 +24,7 @@ from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
+from vulnerabilities.models import get_risk_level
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
 
@@ -369,3 +370,66 @@ class VulnerabilitiesModelsTestCase(TestCase):
         analysis1.update(state=VulnerabilityAnalysis.State.EXPLOITABLE)
         new_analysis = analysis1.propagate(product2.uuid, self.super_user)
         self.assertEqual(VulnerabilityAnalysis.State.EXPLOITABLE, new_analysis.state)
+
+    def test_vulnerability_model_get_risk_level(self):
+        self.assertEqual("", get_risk_level(None))
+        self.assertEqual("", get_risk_level(0.0))
+        self.assertEqual("low", get_risk_level(0.1))
+        self.assertEqual("low", get_risk_level(2.9))
+        self.assertEqual("medium", get_risk_level(3.0))
+        self.assertEqual("medium", get_risk_level(5.9))
+        self.assertEqual("high", get_risk_level(6.0))
+        self.assertEqual("high", get_risk_level(7.9))
+        self.assertEqual("critical", get_risk_level(8.0))
+        self.assertEqual("critical", get_risk_level(10.0))
+        self.assertEqual("", get_risk_level(10.1))
+        self.assertEqual("high", get_risk_level("7.5"))
+
+    def test_vulnerability_model_risk_level_generated_field(self):
+        vulnerability1 = make_vulnerability(dataspace=self.dataspace, risk_score=None)
+        self.assertEqual("", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 0.0
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 0.1
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("low", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 2.9
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("low", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 3.0
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("medium", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 5.9
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("medium", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 6.0
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("high", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 7.9
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("high", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 8.0
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("critical", vulnerability1.risk_level)
+
+        vulnerability1.risk_score = 10.0
+        vulnerability1.save()
+        vulnerability1.refresh_from_db()
+        self.assertEqual("critical", vulnerability1.risk_level)

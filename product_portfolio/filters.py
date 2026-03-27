@@ -22,6 +22,7 @@ from dje.filters import BooleanChoiceFilter
 from dje.filters import DataspacedFilterSet
 from dje.filters import DefaultOrderingFilter
 from dje.filters import HasRelationFilter
+from dje.filters import HasValueFilter
 from dje.filters import MatchOrderedSearchFilter
 from dje.filters import SearchFilter
 from dje.widgets import BootstrapSelectMultipleWidget
@@ -34,8 +35,8 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductStatus
-from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 
@@ -129,6 +130,26 @@ class ProductFilterSet(DataspacedFilterSet):
         ]
 
 
+class HasComplianceIssueFilter(django_filters.BooleanFilter):
+    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label", _("Compliance issues"))
+        kwargs.setdefault("field_name", "compliance_alert")
+        super().__init__(*args, **kwargs)
+
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        lookup = {f"{self.field_name}__in": ["warning", "error"]}
+        if value:
+            qs = qs.filter(**lookup)
+        else:
+            qs = qs.exclude(**lookup)
+
+        return qs.distinct() if self.distinct else qs
+
+
 class BaseProductRelationFilterSet(DataspacedFilterSet):
     field_name_prefix = None
     dropdown_fields = [
@@ -148,6 +169,7 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     )
     is_modified = BooleanChoiceFilter()
     object_type = django_filters.CharFilter(
+        label=_("Item type"),
         method="filter_object_type",
         widget=DropDownWidget(
             anchor="#inventory",
@@ -170,6 +192,21 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
     weighted_risk_score = ScoreRangeFilter(
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
+    )
+    licenses = django_filters.ModelMultipleChoiceFilter(
+        label=_("License"),
+        field_name="licenses__key",
+        to_field_name="key",
+        queryset=License.objects.only("key", "short_name", "dataspace__id"),
+    )
+    has_licenses = HasValueFilter(
+        label=_("Has licenses"),
+        field_name="license_expression",
+    )
+    license_compliance_issues = HasComplianceIssueFilter(
+        label=_("License compliance issues"),
+        field_name="licenses__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     @staticmethod
@@ -236,6 +273,10 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
         widget=DropDownWidget(
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
+    )
+    compliance_issues = HasComplianceIssueFilter(
+        field_name="component__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     class Meta:
@@ -306,6 +347,10 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("no", _("Not reachable")),
             ("unknown", _("Reachability not known")),
         ),
+    )
+    compliance_issues = HasComplianceIssueFilter(
+        field_name="package__usage_policy__compliance_alert",
+        distinct=True,
     )
 
     class Meta:

@@ -20,8 +20,8 @@ from dje.api import ProductRelatedViewSet
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
-from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 

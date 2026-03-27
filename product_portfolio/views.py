@@ -26,8 +26,10 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import Exists
+from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Prefetch
+from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
@@ -143,6 +145,7 @@ from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
+from vulnerabilities.models import get_risk_level
 
 
 class BaseProductViewMixin:
@@ -272,6 +275,11 @@ class ProductDetailsView(
                 "code_view_url",
                 "bug_tracking_url",
                 "dataspace",
+            ],
+        },
+        "compliance": {
+            "fields": [
+                "packages",
             ],
         },
         "inventory": {
@@ -494,6 +502,27 @@ class ProductDetailsView(
 
         return {"fields": [(None, context, None, template)]}
 
+    def tab_compliance(self):
+        if not self.has_packages:
+            return
+
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_compliance")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "compliance",
+        }
+
+        return {
+            "label": "Compliance",
+            "fields": [(None, tab_context, None, template)],
+        }
+
     def tab_inventory(self):
         productcomponents_count = self.object.productcomponents.count()
         productpackages_count = self.object.productpackages.count()
@@ -543,6 +572,9 @@ class ProductDetailsView(
         }
 
     def tab_vulnerabilities(self):
+        if not self.has_packages:
+            return
+
         product = self.object
         dataspace = product.dataspace
         vulnerablecode = VulnerableCode(dataspace)
@@ -653,6 +685,7 @@ class ProductDetailsView(
         product = self.object
         user = self.request.user
         dataspace = user.dataspace
+        self.has_packages = self.object.productpackages.exists()
 
         # This behavior does not works well in the context of getting informed about
         # tasks completion on the Product.
@@ -2651,3 +2684,133 @@ def delete_scan_htmx_view(request, project_uuid, package_uuid):
         "user": request.user,
     }
     return render(request, template, context)
+
+
+class ProductTabComplianceView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_compliance.html"
+    tab_id = "compliance"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        product = self.object
+        productpackages = product.productpackages.all()
+        licenses = License.objects.filter(productpackage__in=productpackages)
+
+        context.update(
+            {
+                **self.get_package_compliance_context(productpackages),
+                **self.get_license_compliance_context(licenses),
+                **self.get_security_compliance_context(product),
+            }
+        )
+
+        return context
+
+    @staticmethod
+    def get_package_compliance_context(productpackages):
+        # "Total packages" card: alert at the Package level.
+        total_packages = productpackages.count()
+        package_issues_count = productpackages.filter(
+            package__usage_policy__compliance_alert__in=["warning", "error"]
+        ).count()
+
+        # "License compliance" card: alert at the ProductPackage license level.
+        packages_with_license_issues = (
+            productpackages.filter(
+                licenses__usage_policy__compliance_alert__in=["warning", "error"]
+            )
+            .distinct()
+            .count()
+        )
+        license_compliance_pct = (
+            round(((total_packages - packages_with_license_issues) / total_packages) * 100)
+            if total_packages
+            else 100
+        )
+
+        # "License coverage" card: missing license at the ProductPackage level.
+        package_without_license_count = productpackages.filter(license_expression="").count()
+        license_coverage_pct = (
+            round(((total_packages - package_without_license_count) / total_packages) * 100)
+            if total_packages
+            else 100
+        )
+
+        return {
+            "total_packages": total_packages,
+            "package_issues_count": package_issues_count,
+            "packages_with_license_issues": packages_with_license_issues,
+            "license_compliance_pct": license_compliance_pct,
+            "license_coverage_pct": license_coverage_pct,
+            "package_without_license_count": package_without_license_count,
+        }
+
+    @staticmethod
+    def get_license_compliance_context(licenses, distribution_limit=10):
+        license_distribution = list(
+            licenses.values("key", "short_name", "spdx_license_key")
+            .annotate(
+                package_count=Count("productpackage"),
+                compliance_alert=F("usage_policy__compliance_alert"),
+            )
+            .order_by("-package_count")
+        )
+        license_error_count = sum(
+            1 for entry in license_distribution if entry["compliance_alert"] == "error"
+        )
+        license_warning_count = sum(
+            1 for entry in license_distribution if entry["compliance_alert"] == "warning"
+        )
+
+        return {
+            "license_issues_count": license_error_count + license_warning_count,
+            "license_error_count": license_error_count,
+            "license_warning_count": license_warning_count,
+            "license_distribution": license_distribution[:distribution_limit],
+            "license_distribution_limit": distribution_limit,
+            "remaining_license_count": max(0, len(license_distribution) - distribution_limit),
+        }
+
+    @staticmethod
+    def get_security_compliance_context(product, display_limit=10):
+        risk_threshold = product.get_vulnerabilities_risk_threshold()
+        risk_threshold_label = get_risk_level(risk_threshold)
+
+        all_vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
+        vulnerability_count = all_vulnerabilities.count()
+
+        if risk_threshold is not None:
+            above_threshold_count = all_vulnerabilities.filter(
+                risk_score__gte=risk_threshold
+            ).count()
+        else:
+            above_threshold_count = vulnerability_count
+
+        all_vulnerabilities_ordered = all_vulnerabilities.order_by_risk()
+
+        max_vulnerability_severity = None
+        first = all_vulnerabilities_ordered.first()
+        if first:
+            max_vulnerability_severity = first.risk_level
+
+        severity_counts = all_vulnerabilities.aggregate(
+            critical_count=Count("id", filter=Q(risk_level="critical")),
+            high_count=Count("id", filter=Q(risk_level="high")),
+            medium_count=Count("id", filter=Q(risk_level="medium")),
+            low_count=Count("id", filter=Q(risk_level="low")),
+        )
+
+        return {
+            "risk_threshold_number": risk_threshold,
+            "risk_threshold": risk_threshold_label,
+            "max_vulnerability_severity": max_vulnerability_severity,
+            "vulnerability_count": vulnerability_count,
+            "above_threshold_count": above_threshold_count,
+            "vulnerabilities": all_vulnerabilities_ordered[:display_limit],
+            **severity_counts,
+        }

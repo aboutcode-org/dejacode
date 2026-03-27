@@ -58,8 +58,8 @@ from dje.views import SendAboutFilesMixin
 from license_library.models import License
 from organization.api import OwnerEmbeddedSerializer
 from vulnerabilities.api import VulnerabilitySerializer
-from vulnerabilities.filters import RISK_SCORE_RANGES
 from vulnerabilities.filters import ScoreRangeFilter
+from vulnerabilities.models import RISK_SCORE_RANGES
 
 
 class LicenseSummaryMixin:
