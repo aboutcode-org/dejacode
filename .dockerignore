@@ -1,40 +1,24 @@
-**/.*
-**/.git
-**/.gitignore
-**/.github
-**/.vscode
-**/.idea
-**/coverage
-**/.aws
-**/.ssh
-**/.DS_Store
-**/.aof
-**/venv
-**/.venv
-**/env
-**/bin
-# **/docs we want to keep dje/templates/rest_framework/docs/
-docs/
-# **/dist we want to keep ./thirdparty/dist/
-# **/etc we need to keep ./etc/
-**/lib
-**/include
-**/share
-**/var
-**/*.egg-info
-**/*.log
-**/__pycache__
-**/.*cache
-*.pyc
-.dockerignore
-.readthedocs.yaml
-docker.env
-.env
-Makefile
-Dockerfile
-README.rst
-CHANGELOG.rst
-CONTRIBUTING.rst
-MANIFEST.in
-docker-compose.yml
-pyvenv.cfg
+# Ignore everything
+*
+
+# Allow only what the build needs
+!aboutcode/
+!component_catalog/
+!data/
+!dejacode/
+!dejacode_toolkit/
+!dje/
+!license_library/
+!notification/
+!organization/
+!policy/
+!product_portfolio/
+!purldb/
+!reporting/
+!thirdparty/
+!vulnerabilities/
+!workflow/
+!LICENSE
+!manage.py
+!NOTICE
+!pyproject.toml
