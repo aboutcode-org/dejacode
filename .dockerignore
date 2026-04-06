@@ -2,6 +2,7 @@
 *
 
 # Allow only what the build needs
+!aboutcode/
 !component_catalog/
 !data/
 !dejacode/
@@ -15,7 +16,7 @@
 !purldb/
 !reporting/
 !thirdparty/
-!vulnerability/
+!vulnerabilities/
 !workflow/
 !LICENSE
 !manage.py
