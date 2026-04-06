@@ -25,6 +25,7 @@ DB_CONTAINER_NAME=db
 DB_INIT_FILE=./data/postgresql/initdb.sql.gz
 POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
 TIMESTAMP=$(shell date +"%Y-%m-%d_%H%M")
+IMAGE_NAME=dejacode
 
 # Use sudo for postgres, only on Linux
 UNAME := $(shell uname)
@@ -156,11 +157,11 @@ docs:
 	@${ACTIVATE} sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
 build:
-	@echo "-> Build the Docker images"
-	${DOCKER_COMPOSE} build
+	@echo "-> Build the Docker image"
+	docker build -t $(IMAGE_NAME) .
 
 bash:
-	${DOCKER_EXEC} web bash
+	docker run -it $(IMAGE_NAME) bash
 
 shell:
 	${DOCKER_EXEC} web ./manage.py shell
