@@ -27,8 +27,8 @@ ENV VENV_LOCATION=/opt/$APP_NAME/.venv
 ENV PYTHONUNBUFFERED=1
 # Do not write Python .pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
-# Add the app dir in the Python path for entry points availability
-ENV PYTHONPATH=$PYTHONPATH:$APP_DIR
+# Set the app dir in the Python path for entry points availability
+ENV PYTHONPATH=$APP_DIR
 
 # OS requirements
 RUN apt-get update \
