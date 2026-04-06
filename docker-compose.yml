@@ -96,8 +96,6 @@ services:
     volumes:
       - clamav_data:/var/lib/clamav
       - media:/var/dejacode/media
-    ports:
-      - "3310:3310"
     restart: always
 
 volumes:
