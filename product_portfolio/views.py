@@ -2874,9 +2874,7 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             ),
             low_count=Count(
                 "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(
-                    productpackages__package__affected_by_vulnerabilities__risk_level="low"
-                ),
+                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="low"),
                 distinct=True,
             ),
             license_warning_count=Count(
