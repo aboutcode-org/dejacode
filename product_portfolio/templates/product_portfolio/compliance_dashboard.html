@@ -63,7 +63,7 @@
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
         {% if total_critical %}
-          {{ total_critical }} {% trans "critical" %}{% if total_high %}, {{ total_high }} {% trans "high" %}{% endif %}
+          {{ total_critical }} {% trans "critical" %}{% if total_high %}, {{ total_high }} {% trans "high" %}{% endif %}{% if total_medium %}, {{ total_medium }} {% trans "medium" %}{% endif %}{% if total_low %}, {{ total_low }} {% trans "low" %}{% endif %}
         {% elif total_vulnerabilities %}
           {% trans "across all products" %}
         {% else %}
@@ -78,11 +78,11 @@
   <table class="table table-sm mb-0">
     <thead>
       <tr>
-        <th class="">{% trans "Product" %}</th>
-        <th class="text-end">{% trans "Packages" %}</th>
-        <th class="text-end">{% trans "License compliance" %}</th>
-        <th class="text-end">{% trans "Security compliance" %}</th>
-        <th class="text-end">{% trans "Vulnerabilities" %}</th>
+        <th class="fw-medium">{% trans "Product" %}</th>
+        <th class="fw-medium text-end">{% trans "Packages" %}</th>
+        <th class="fw-medium text-end">{% trans "License compliance" %}</th>
+        <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
+        <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
       </tr>
     </thead>
     <tbody>
@@ -134,8 +134,14 @@
             {% if product.high_count %}
               <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
             {% endif %}
-            {% if not product.critical_count and not product.high_count %}
-              <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ product.vulnerability_count }}</span>
+            {% if product.medium_count %}
+              <span class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</span>
+            {% endif %}
+            {% if product.low_count %}
+              <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</span>
+            {% endif %}
+            {% if not product.vulnerability_count %}
+              <span class="text-body-tertiary small">{% trans "None" %}</span>
             {% endif %}
           </td>
         </tr>

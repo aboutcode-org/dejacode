@@ -2845,6 +2845,14 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
                 distinct=True,
             ),
             max_risk_score=Max("productpackages__package__affected_by_vulnerabilities__risk_score"),
+            max_risk_level=Case(
+                When(max_risk_score__gte=8.0, then=Value("critical")),
+                When(max_risk_score__gte=6.0, then=Value("high")),
+                When(max_risk_score__gte=3.0, then=Value("medium")),
+                When(max_risk_score__gte=0.1, then=Value("low")),
+                default=Value(""),
+                output_field=CharField(max_length=8),
+            ),
             critical_count=Count(
                 "productpackages__package__affected_by_vulnerabilities",
                 filter=Q(
@@ -2857,6 +2865,20 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
                 filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="high"),
                 distinct=True,
             ),
+            medium_count=Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=Q(
+                    productpackages__package__affected_by_vulnerabilities__risk_level="medium"
+                ),
+                distinct=True,
+            ),
+            low_count=Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=Q(
+                    productpackages__package__affected_by_vulnerabilities__risk_level="low"
+                ),
+                distinct=True,
+            ),
             license_warning_count=Count(
                 "productpackages__licenses",
                 filter=Q(productpackages__licenses__usage_policy__compliance_alert="warning"),
@@ -2867,20 +2889,12 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
                 filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
                 distinct=True,
             ),
-            max_risk_level=Case(
-                When(max_risk_score__gte=8.0, then=Value("critical")),
-                When(max_risk_score__gte=6.0, then=Value("high")),
-                When(max_risk_score__gte=3.0, then=Value("medium")),
-                When(max_risk_score__gte=0.1, then=Value("low")),
-                default=Value(""),
-                output_field=CharField(max_length=8),
-            ),
         ).order_by(
             F("max_risk_score").desc(nulls_last=True),
             "-license_error_count",
             "-license_warning_count",
             "name",
-            "version",
+            "-version",
         )
 
     def get_context_data(self, **kwargs):
@@ -2910,6 +2924,8 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             total_vulnerabilities=Sum("vulnerability_count"),
             total_critical=Sum("critical_count"),
             total_high=Sum("high_count"),
+            total_medium=Sum("medium_count"),
+            total_low=Sum("low_count"),
         )
 
         context.update(
@@ -2921,6 +2937,8 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
                 "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
                 "total_critical": totals["total_critical"] or 0,
                 "total_high": totals["total_high"] or 0,
+                "total_medium": totals["total_medium"] or 0,
+                "total_low": totals["total_low"] or 0,
             }
         )
 
