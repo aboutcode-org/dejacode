@@ -2884,42 +2884,43 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         )
 
     def get_context_data(self, **kwargs):
+        from django.db.models import Sum
+
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
         total_products = products.count()
 
+        products_with_issues = products.filter(
+            Q(license_error_count__gt=0)
+            | Q(license_warning_count__gt=0)
+            | Q(critical_count__gt=0)
+            | Q(high_count__gt=0)
+        ).count()
+
         products_with_license_issues = products.filter(
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
         ).count()
 
-        products_with_vulnerabilities = products.filter(vulnerability_count__gt=0).count()
-
-        products_with_critical = products.filter(critical_count__gt=0).count()
-
-        products_ok = products.filter(
-            license_error_count=0,
-            license_warning_count=0,
-            vulnerability_count=0,
+        products_with_critical_or_high = products.filter(
+            Q(critical_count__gt=0) | Q(high_count__gt=0)
         ).count()
 
-        products_security_ok = products.filter(
-            Q(vulnerability_count=0) | Q(critical_count=0, high_count=0)
-        ).count()
-
-        security_compliance_pct = (
-            round((products_security_ok / total_products) * 100) if total_products else 100
+        totals = products.aggregate(
+            total_vulnerabilities=Sum("vulnerability_count"),
+            total_critical=Sum("critical_count"),
+            total_high=Sum("high_count"),
         )
 
         context.update(
             {
                 "total_products": total_products,
+                "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
-                "products_with_vulnerabilities": products_with_vulnerabilities,
-                "products_with_critical": products_with_critical,
-                "products_ok": products_ok,
-                "products_security_ok": products_security_ok,
-                "security_compliance_pct": security_compliance_pct,
+                "products_with_critical_or_high": products_with_critical_or_high,
+                "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
+                "total_critical": totals["total_critical"] or 0,
+                "total_high": totals["total_high"] or 0,
             }
         )
 

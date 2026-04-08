@@ -10,14 +10,18 @@
 </div>
 
 <div class="row g-3 mb-3">
-    <div class="col-6 col-md-3">
+  <div class="col-6 col-md-3">
     <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Products" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if products_ok == total_products %}text-success{% else %}text-warning-orange{% endif %}">
-        {{ products_ok }} / {{ total_products }}
+      <div class="small text-body-secondary mb-1">{% trans "Products with issues" %}</div>
+      <div class="fs-4 fw-medium lh-sm {% if products_with_issues %}text-danger{% else %}text-success{% endif %}">
+        {{ products_with_issues }}
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
-        {% trans "active products with no issues" %}
+        {% if products_with_issues %}
+          {% trans "of" %} {{ total_products }} {% trans "active products" %}
+        {% else %}
+          {% trans "All" %} {{ total_products }} {% trans "products are compliant" %}
+        {% endif %}
       </div>
     </div>
   </div>
@@ -38,30 +42,30 @@
   </div>
   <div class="col-6 col-md-3">
     <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Security compliance" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if security_compliance_pct == 100 %}text-success{% elif security_compliance_pct >= 90 %}text-warning-orange{% else %}text-danger{% endif %}">
-        {{ security_compliance_pct }}%
+      <div class="small text-body-secondary mb-1">{% trans "Security issues" %}</div>
+      <div class="fs-4 fw-medium lh-sm {% if products_with_critical_or_high %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
+        {{ products_with_critical_or_high }}
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
-        {% if products_security_ok == total_products %}
-          {% trans "No critical or high vulnerabilities" %}
+        {% if products_with_critical_or_high %}
+          {% trans "products with critical/high vulnerabilities" %}
         {% else %}
-          {{ products_security_ok }} {% trans "of" %} {{ total_products }} {% trans "products without critical/high" %}
+          {% trans "No critical or high vulnerabilities" %}
         {% endif %}
       </div>
     </div>
   </div>
   <div class="col-6 col-md-3">
     <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Vulnerabilities" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if products_with_critical %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
-        {{ products_with_vulnerabilities }}
+      <div class="small text-body-secondary mb-1">{% trans "Total vulnerabilities" %}</div>
+      <div class="fs-4 fw-medium lh-sm {% if total_critical %}text-danger{% elif total_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
+        {{ total_vulnerabilities|intcomma }}
       </div>
       <div class="text-body-tertiary fs-xs mt-1">
-        {% if products_with_critical %}
-          {{ products_with_critical }} {% trans "with critical vulnerabilities" %}
-        {% elif products_with_vulnerabilities %}
-          {% trans "products with vulnerabilities" %}
+        {% if total_critical %}
+          {{ total_critical }} {% trans "critical" %}{% if total_high %}, {{ total_high }} {% trans "high" %}{% endif %}
+        {% elif total_vulnerabilities %}
+          {% trans "across all products" %}
         {% else %}
           {% trans "No known vulnerabilities" %}
         {% endif %}
@@ -70,7 +74,7 @@
   </div>
 </div>
 
-<div class="border rounded-3 p-3">
+<div class="border rounded-3 p-3 pt-2">
   <table class="table table-sm mb-0">
     <thead>
       <tr>
@@ -131,7 +135,7 @@
               <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
             {% endif %}
             {% if not product.critical_count and not product.high_count %}
-              <span class="text-body-secondary small">{{ product.vulnerability_count }}</span>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ product.vulnerability_count }}</span>
             {% endif %}
           </td>
         </tr>
