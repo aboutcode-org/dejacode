@@ -2814,3 +2814,113 @@ class ProductTabComplianceView(
             "vulnerabilities": all_vulnerabilities_ordered[:display_limit],
             **severity_counts,
         }
+
+
+class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
+    """Compliance control center: overview of all products."""
+
+    template_name = "product_portfolio/compliance_dashboard.html"
+    model = Product
+    filterset_class = ProductFilterSet
+    paginate_by = 50
+
+    def get_queryset(self):
+        from django.db.models import Case
+        from django.db.models import CharField
+        from django.db.models import Max
+        from django.db.models import Value
+        from django.db.models import When
+
+        base_qs = Product.objects.get_queryset(
+            user=self.request.user,
+            perms="view_product",
+            include_inactive=False,
+            exclude_locked=True,
+        )
+
+        return base_qs.annotate(
+            package_count=Count("productpackages", distinct=True),
+            vulnerability_count=Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                distinct=True,
+            ),
+            max_risk_score=Max("productpackages__package__affected_by_vulnerabilities__risk_score"),
+            critical_count=Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=Q(
+                    productpackages__package__affected_by_vulnerabilities__risk_level="critical"
+                ),
+                distinct=True,
+            ),
+            high_count=Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="high"),
+                distinct=True,
+            ),
+            license_warning_count=Count(
+                "productpackages__licenses",
+                filter=Q(productpackages__licenses__usage_policy__compliance_alert="warning"),
+                distinct=True,
+            ),
+            license_error_count=Count(
+                "productpackages__licenses",
+                filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
+                distinct=True,
+            ),
+            max_risk_level=Case(
+                When(max_risk_score__gte=8.0, then=Value("critical")),
+                When(max_risk_score__gte=6.0, then=Value("high")),
+                When(max_risk_score__gte=3.0, then=Value("medium")),
+                When(max_risk_score__gte=0.1, then=Value("low")),
+                default=Value(""),
+                output_field=CharField(max_length=8),
+            ),
+        ).order_by(
+            F("max_risk_score").desc(nulls_last=True),
+            "-license_error_count",
+            "-license_warning_count",
+            "name",
+            "version",
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        products = self.object_list
+        total_products = products.count()
+
+        products_with_license_issues = products.filter(
+            Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
+        ).count()
+
+        products_with_vulnerabilities = products.filter(vulnerability_count__gt=0).count()
+
+        products_with_critical = products.filter(critical_count__gt=0).count()
+
+        products_ok = products.filter(
+            license_error_count=0,
+            license_warning_count=0,
+            vulnerability_count=0,
+        ).count()
+
+        products_security_ok = products.filter(
+            Q(vulnerability_count=0) | Q(critical_count=0, high_count=0)
+        ).count()
+
+        security_compliance_pct = (
+            round((products_security_ok / total_products) * 100) if total_products else 100
+        )
+
+        context.update(
+            {
+                "total_products": total_products,
+                "products_with_license_issues": products_with_license_issues,
+                "products_with_vulnerabilities": products_with_vulnerabilities,
+                "products_with_critical": products_with_critical,
+                "products_ok": products_ok,
+                "products_security_ok": products_security_ok,
+                "security_compliance_pct": security_compliance_pct,
+            }
+        )
+
+        return context
