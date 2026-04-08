@@ -801,8 +801,7 @@ pre.log {
 .nav-pills .show>.nav-link {
   background-color: var(--bs-djc-blue-bg);
 }
-.card,
-.table {
+.card {
   box-shadow: rgba(0, 0, 0, 0.05) 0 0.0625rem 0.125rem;
 }
 .table-md th,

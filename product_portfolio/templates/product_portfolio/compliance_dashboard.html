@@ -78,22 +78,22 @@
   <table class="table table-sm mb-0">
     <thead>
       <tr>
-        <th class="fw-medium">{% trans "Product" %}</th>
-        <th class="fw-medium text-end">{% trans "Packages" %}</th>
-        <th class="fw-medium text-end">{% trans "License compliance" %}</th>
-        <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
-        <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
+        <th class="">{% trans "Product" %}</th>
+        <th class="text-end">{% trans "Packages" %}</th>
+        <th class="text-end">{% trans "License compliance" %}</th>
+        <th class="text-end">{% trans "Security compliance" %}</th>
+        <th class="text-end">{% trans "Vulnerabilities" %}</th>
       </tr>
     </thead>
     <tbody>
       {% for product in object_list %}
       {% with product_url=product.get_absolute_url %}
         <tr>
-          <td>
+          <th class="align-middle">
             <a href="{{ product_url }}#compliance">
               {{ product }}
             </a>
-          </td>
+          </th>
           <td class="text-end">
             <a href="{{ product_url }}#inventory">
               {{ product.package_count|intcomma }}
