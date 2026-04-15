@@ -24,6 +24,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Case
+from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
 from django.db.models import F
@@ -31,6 +33,9 @@ from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Subquery
+from django.db.models import Sum
+from django.db.models import Value
+from django.db.models import When
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import FileResponse
@@ -2814,3 +2819,89 @@ class ProductTabComplianceView(
             "vulnerabilities": all_vulnerabilities_ordered[:display_limit],
             **severity_counts,
         }
+
+
+class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
+    """Compliance control center: overview of all products."""
+
+    template_name = "product_portfolio/compliance_dashboard.html"
+    model = Product
+    filterset_class = ProductFilterSet
+    paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
+
+    def get_queryset(self):
+        base_qs = Product.objects.get_queryset(
+            user=self.request.user,
+            perms="view_product",
+            include_inactive=False,
+            exclude_locked=True,
+        )
+
+        return (
+            base_qs.with_risk_threshold()
+            .with_vulnerability_counts()
+            .with_license_compliance_counts()
+            .annotate(
+                package_count=Count("productpackages", distinct=True),
+                max_risk_level=Case(
+                    When(max_risk_score__gte=8.0, then=Value("critical")),
+                    When(max_risk_score__gte=6.0, then=Value("high")),
+                    When(max_risk_score__gte=3.0, then=Value("medium")),
+                    When(max_risk_score__gte=0.1, then=Value("low")),
+                    default=Value(""),
+                    output_field=CharField(max_length=8),
+                ),
+            )
+            .order_by(
+                F("max_risk_score").desc(nulls_last=True),
+                "-license_error_count",
+                "-license_warning_count",
+                "name",
+                "-version",
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        products = self.object_list
+        total_products = products.count()
+
+        products_with_issues = products.filter(
+            Q(license_error_count__gt=0)
+            | Q(license_warning_count__gt=0)
+            | Q(critical_count__gt=0)
+            | Q(high_count__gt=0)
+        ).count()
+
+        products_with_license_issues = products.filter(
+            Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
+        ).count()
+
+        products_with_critical_or_high = products.filter(
+            Q(critical_count__gt=0) | Q(high_count__gt=0)
+        ).count()
+
+        totals = products.aggregate(
+            total_vulnerabilities=Sum("vulnerability_count"),
+            total_critical=Sum("critical_count"),
+            total_high=Sum("high_count"),
+            total_medium=Sum("medium_count"),
+            total_low=Sum("low_count"),
+        )
+
+        context.update(
+            {
+                "total_products": total_products,
+                "products_with_issues": products_with_issues,
+                "products_with_license_issues": products_with_license_issues,
+                "products_with_critical_or_high": products_with_critical_or_high,
+                "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
+                "total_critical": totals["total_critical"] or 0,
+                "total_high": totals["total_high"] or 0,
+                "total_medium": totals["total_medium"] or 0,
+                "total_low": totals["total_low"] or 0,
+            }
+        )
+
+        return context
