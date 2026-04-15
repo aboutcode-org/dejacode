@@ -2827,7 +2827,7 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     template_name = "product_portfolio/compliance_dashboard.html"
     model = Product
     filterset_class = ProductFilterSet
-    paginate_by = 50
+    paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
 
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(

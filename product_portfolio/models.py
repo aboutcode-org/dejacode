@@ -147,36 +147,36 @@ class ProductQuerySet(DataspacedQuerySet):
         )
 
     def with_vulnerability_counts(self):
+        threshold_filter = Q(
+            productpackages__package__affected_by_vulnerabilities__risk_score__gte=F(
+                "risk_threshold"
+            )
+        )
+        no_threshold = Q(risk_threshold__isnull=True)
+
+        def count_vulns(extra_filter=None):
+            combined = no_threshold | threshold_filter
+            if extra_filter:
+                combined = combined & extra_filter
+            return Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=combined,
+                distinct=True,
+            )
+
+        def risk_level_filter(level):
+            return Q(productpackages__package__affected_by_vulnerabilities__risk_level=level)
+
         return self.annotate(
-            vulnerability_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                distinct=True,
+            vulnerability_count=count_vulns(),
+            max_risk_score=Max(
+                "productpackages__package__affected_by_vulnerabilities__risk_score",
+                filter=no_threshold | threshold_filter,
             ),
-            critical_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(
-                    productpackages__package__affected_by_vulnerabilities__risk_level="critical"
-                ),
-                distinct=True,
-            ),
-            high_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="high"),
-                distinct=True,
-            ),
-            medium_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(
-                    productpackages__package__affected_by_vulnerabilities__risk_level="medium"
-                ),
-                distinct=True,
-            ),
-            low_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="low"),
-                distinct=True,
-            ),
-            max_risk_score=Max("productpackages__package__affected_by_vulnerabilities__risk_score"),
+            critical_count=count_vulns(risk_level_filter("critical")),
+            high_count=count_vulns(risk_level_filter("high")),
+            medium_count=count_vulns(risk_level_filter("medium")),
+            low_count=count_vulns(risk_level_filter("low")),
         )
 
     def with_license_compliance_counts(self):
