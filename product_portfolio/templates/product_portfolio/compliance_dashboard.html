@@ -128,7 +128,7 @@
               {% endif %}
             </td>
             <td class="text-end">
-              {% if product.risk_threshold %}
+              {% if product.risk_threshold and product.vulnerability_count %}
                 <span class="text-body-tertiary fs-xs" data-bs-toggle="tooltip" title="{% trans 'Risk threshold' %}">
                   &ge; {{ product.risk_threshold }}
                 </span>
