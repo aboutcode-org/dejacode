@@ -4,156 +4,162 @@
 {% block page_title %}{% trans "Compliance Control Center" %}{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-baseline gap-3 mb-3">
-  <h1 class="h3 mb-0">{% trans "Compliance Control Center" %}</h1>
-  <span class="text-body-secondary">{{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}</span>
-</div>
+  <div class="d-flex align-items-baseline gap-3 mb-3">
+    <h1 class="h3 mb-0">{% trans "Compliance Control Center" %}</h1>
+    <span class="text-body-secondary">{{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}</span>
+  </div>
 
-<div class="row g-3 mb-3">
-  <div class="col-6 col-md-3">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Products with issues" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if products_with_issues %}text-danger{% else %}text-success{% endif %}">
-        {{ products_with_issues }}
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "Products with issues" %}</div>
+        <div class="fs-4 fw-medium lh-sm {% if products_with_issues %}text-danger{% else %}text-success{% endif %}">
+          {{ products_with_issues }}
+        </div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if products_with_issues %}
+            {% trans "of" %} {{ total_products }} {% trans "active products" %}
+          {% else %}
+            {% trans "All" %} {{ total_products }} {% trans "products are compliant" %}
+          {% endif %}
+        </div>
       </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if products_with_issues %}
-          {% trans "of" %} {{ total_products }} {% trans "active products" %}
-        {% else %}
-          {% trans "All" %} {{ total_products }} {% trans "products are compliant" %}
-        {% endif %}
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
+        <div class="fs-4 fw-medium lh-sm {% if products_with_license_issues %}text-danger{% else %}text-success{% endif %}">
+          {{ products_with_license_issues }}
+        </div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if products_with_license_issues %}
+            {% trans "products with policy violations" %}
+          {% else %}
+            {% trans "All products within policy" %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "Security issues" %}</div>
+        <div class="fs-4 fw-medium lh-sm {% if products_with_critical_or_high %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
+          {{ products_with_critical_or_high }}
+        </div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if products_with_critical_or_high %}
+            {% trans "products with critical/high vulnerabilities" %}
+          {% else %}
+            {% trans "No critical or high vulnerabilities" %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "Total vulnerabilities" %}</div>
+        <div class="fs-4 fw-medium lh-sm {% if total_critical %}text-danger{% elif total_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
+          {{ total_vulnerabilities|intcomma }}
+        </div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if total_critical %}
+            {{ total_critical }} {% trans "critical" %}{% if total_high %}, {{ total_high }} {% trans "high" %}{% endif %}{% if total_medium %}, {{ total_medium }} {% trans "medium" %}{% endif %}{% if total_low %}, {{ total_low }} {% trans "low" %}{% endif %}
+          {% elif total_vulnerabilities %}
+            {% trans "across all products" %}
+          {% else %}
+            {% trans "No known vulnerabilities" %}
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if products_with_license_issues %}text-danger{% else %}text-success{% endif %}">
-        {{ products_with_license_issues }}
-      </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if products_with_license_issues %}
-          {% trans "products with policy violations" %}
-        {% else %}
-          {% trans "All products within policy" %}
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Security issues" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if products_with_critical_or_high %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
-        {{ products_with_critical_or_high }}
-      </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if products_with_critical_or_high %}
-          {% trans "products with critical/high vulnerabilities" %}
-        {% else %}
-          {% trans "No critical or high vulnerabilities" %}
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Total vulnerabilities" %}</div>
-      <div class="fs-4 fw-medium lh-sm {% if total_critical %}text-danger{% elif total_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
-        {{ total_vulnerabilities|intcomma }}
-      </div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if total_critical %}
-          {{ total_critical }} {% trans "critical" %}{% if total_high %}, {{ total_high }} {% trans "high" %}{% endif %}{% if total_medium %}, {{ total_medium }} {% trans "medium" %}{% endif %}{% if total_low %}, {{ total_low }} {% trans "low" %}{% endif %}
-        {% elif total_vulnerabilities %}
-          {% trans "across all products" %}
-        {% else %}
-          {% trans "No known vulnerabilities" %}
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
 
-<div class="border rounded-3 p-3 pt-2">
-  <table class="table table-sm mb-0">
-    <thead>
-      <tr>
-        <th class="fw-medium">{% trans "Product" %}</th>
-        <th class="fw-medium text-end">{% trans "Packages" %}</th>
-        <th class="fw-medium text-end">{% trans "License compliance" %}</th>
-        <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
-        <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for product in object_list %}
-      {% with product_url=product.get_absolute_url %}
+  <div class="border rounded-3 p-3 pt-2 mb-3">
+    <table class="table table-sm mb-0">
+      <thead>
         <tr>
-          <th class="align-middle">
-            <a href="{{ product_url }}#compliance">
-              {{ product }}
-            </a>
-          </th>
-          <td class="text-end">
-            <a href="{{ product_url }}#inventory">
-              {{ product.package_count|intcomma }}
-            </a>
-          </td>
-          <td class="text-end">
-            {% if product.license_error_count %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">
-                {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
-              </span>
-            {% endif %}
-            {% if product.license_warning_count %}
-              <span class="badge bg-warning-subtle text-warning-emphasis ms-1">
-                {{ product.license_warning_count }} {% trans "warning" %}{{ product.license_warning_count|pluralize }}
-              </span>
-            {% endif %}
-            {% if not product.license_error_count and not product.license_warning_count %}
-              <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
-            {% endif %}
-          </td>
-          <td class="text-end">
-            {% if product.max_risk_level == "critical" %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
-            {% elif product.max_risk_level == "high" %}
-              <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
-            {% elif product.max_risk_level == "medium" %}
-              <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
-            {% elif product.max_risk_level == "low" %}
-              <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
-            {% else %}
-              <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
-            {% endif %}
-          </td>
-          <td class="text-end">
-            {% if product.critical_count %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</span>
-            {% endif %}
-            {% if product.high_count %}
-              <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
-            {% endif %}
-            {% if product.medium_count %}
-              <span class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</span>
-            {% endif %}
-            {% if product.low_count %}
-              <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</span>
-            {% endif %}
-            {% if not product.vulnerability_count %}
-              <span class="text-body-tertiary small">{% trans "None" %}</span>
-            {% endif %}
-          </td>
+          <th class="fw-medium">{% trans "Product" %}</th>
+          <th class="fw-medium text-end">{% trans "Packages" %}</th>
+          <th class="fw-medium text-end">{% trans "License compliance" %}</th>
+          <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
+          <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
         </tr>
-      {% endwith %}
-      {% empty %}
-        <tr>
-          <td colspan="5" class="text-center text-body-tertiary py-4">
-            {% trans "No active products" %}
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {% for product in object_list %}
+        {% with product_url=product.get_absolute_url %}
+          <tr>
+            <th class="align-middle">
+              <a href="{{ product_url }}#compliance">
+                {{ product }}
+              </a>
+            </th>
+            <td class="text-end">
+              <a href="{{ product_url }}#inventory">
+                {{ product.package_count|intcomma }}
+              </a>
+            </td>
+            <td class="text-end">
+              {% if product.license_error_count %}
+                <span class="badge bg-danger-subtle text-danger-emphasis">
+                  {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
+                </span>
+              {% endif %}
+              {% if product.license_warning_count %}
+                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">
+                  {{ product.license_warning_count }} {% trans "warning" %}{{ product.license_warning_count|pluralize }}
+                </span>
+              {% endif %}
+              {% if not product.license_error_count and not product.license_warning_count %}
+                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if product.max_risk_level == "critical" %}
+                <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
+              {% elif product.max_risk_level == "high" %}
+                <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
+              {% elif product.max_risk_level == "medium" %}
+                <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
+              {% elif product.max_risk_level == "low" %}
+                <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if product.critical_count %}
+                <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</span>
+              {% endif %}
+              {% if product.high_count %}
+                <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
+              {% endif %}
+              {% if product.medium_count %}
+                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</span>
+              {% endif %}
+              {% if product.low_count %}
+                <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</span>
+              {% endif %}
+              {% if not product.vulnerability_count %}
+                <span class="text-body-tertiary small">{% trans "None" %}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endwith %}
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-body-tertiary py-4">
+              {% trans "No active products" %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <div class="d-flex justify-content-center">
+      {% include 'pagination/object_list_pagination.html' %}
+    </div>
+  {% endif %}
 {% endblock %}
