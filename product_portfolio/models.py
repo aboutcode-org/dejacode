@@ -19,6 +19,7 @@ from django.db.models import Count
 from django.db.models import DecimalField
 from django.db.models import F
 from django.db.models import FloatField
+from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Q
 from django.db.models import Value
@@ -175,6 +176,7 @@ class ProductQuerySet(DataspacedQuerySet):
                 filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="low"),
                 distinct=True,
             ),
+            max_risk_score=Max("productpackages__package__affected_by_vulnerabilities__risk_score"),
         )
 
     def with_license_compliance_counts(self):

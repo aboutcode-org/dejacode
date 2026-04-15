@@ -29,7 +29,6 @@ from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
 from django.db.models import F
-from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Q
@@ -2844,9 +2843,6 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             .with_license_compliance_counts()
             .annotate(
                 package_count=Count("productpackages", distinct=True),
-                max_risk_score=Max(
-                    "productpackages__package__affected_by_vulnerabilities__risk_score"
-                ),
                 max_risk_level=Case(
                     When(max_risk_score__gte=8.0, then=Value("critical")),
                     When(max_risk_score__gte=6.0, then=Value("high")),
