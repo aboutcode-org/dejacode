@@ -24,13 +24,19 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Case
+from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
 from django.db.models import F
+from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Subquery
+from django.db.models import Sum
+from django.db.models import Value
+from django.db.models import When
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import FileResponse
@@ -2825,12 +2831,6 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     paginate_by = 50
 
     def get_queryset(self):
-        from django.db.models import Case
-        from django.db.models import CharField
-        from django.db.models import Max
-        from django.db.models import Value
-        from django.db.models import When
-
         base_qs = Product.objects.get_queryset(
             user=self.request.user,
             perms="view_product",
@@ -2896,8 +2896,6 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         )
 
     def get_context_data(self, **kwargs):
-        from django.db.models import Sum
-
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
