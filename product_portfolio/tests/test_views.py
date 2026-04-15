@@ -3661,7 +3661,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
         make_vulnerability(self.dataspace, affecting=[p2], risk_score=6.5)
 
-        product1 = make_product(self.dataspace, inventory=[p1, p2])
+        make_product(self.dataspace, inventory=[p1, p2])
 
         response = self.client.get(url)
         self.assertEqual(1, response.context["products_with_critical_or_high"])

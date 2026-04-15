@@ -2838,61 +2838,31 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             exclude_locked=True,
         )
 
-        return base_qs.annotate(
-            package_count=Count("productpackages", distinct=True),
-            vulnerability_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                distinct=True,
-            ),
-            max_risk_score=Max("productpackages__package__affected_by_vulnerabilities__risk_score"),
-            max_risk_level=Case(
-                When(max_risk_score__gte=8.0, then=Value("critical")),
-                When(max_risk_score__gte=6.0, then=Value("high")),
-                When(max_risk_score__gte=3.0, then=Value("medium")),
-                When(max_risk_score__gte=0.1, then=Value("low")),
-                default=Value(""),
-                output_field=CharField(max_length=8),
-            ),
-            critical_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(
-                    productpackages__package__affected_by_vulnerabilities__risk_level="critical"
+        return (
+            base_qs.with_risk_threshold()
+            .with_vulnerability_counts()
+            .with_license_compliance_counts()
+            .annotate(
+                package_count=Count("productpackages", distinct=True),
+                max_risk_score=Max(
+                    "productpackages__package__affected_by_vulnerabilities__risk_score"
                 ),
-                distinct=True,
-            ),
-            high_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="high"),
-                distinct=True,
-            ),
-            medium_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(
-                    productpackages__package__affected_by_vulnerabilities__risk_level="medium"
+                max_risk_level=Case(
+                    When(max_risk_score__gte=8.0, then=Value("critical")),
+                    When(max_risk_score__gte=6.0, then=Value("high")),
+                    When(max_risk_score__gte=3.0, then=Value("medium")),
+                    When(max_risk_score__gte=0.1, then=Value("low")),
+                    default=Value(""),
+                    output_field=CharField(max_length=8),
                 ),
-                distinct=True,
-            ),
-            low_count=Count(
-                "productpackages__package__affected_by_vulnerabilities",
-                filter=Q(productpackages__package__affected_by_vulnerabilities__risk_level="low"),
-                distinct=True,
-            ),
-            license_warning_count=Count(
-                "productpackages__licenses",
-                filter=Q(productpackages__licenses__usage_policy__compliance_alert="warning"),
-                distinct=True,
-            ),
-            license_error_count=Count(
-                "productpackages__licenses",
-                filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
-                distinct=True,
-            ),
-        ).order_by(
-            F("max_risk_score").desc(nulls_last=True),
-            "-license_error_count",
-            "-license_warning_count",
-            "name",
-            "-version",
+            )
+            .order_by(
+                F("max_risk_score").desc(nulls_last=True),
+                "-license_error_count",
+                "-license_warning_count",
+                "name",
+                "-version",
+            )
         )
 
     def get_context_data(self, **kwargs):
