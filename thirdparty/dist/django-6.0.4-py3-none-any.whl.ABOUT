@@ -1,0 +1,21 @@
+about_resource: django-6.0.4-py3-none-any.whl
+name: django
+version: 6.0.4
+download_url: https://files.pythonhosted.org/packages/e9/47/3d61d611609764aa71a37f7037b870e7bfb22937366974c4fd46cada7bab/django-6.0.4-py3-none-any.whl
+package_url: pkg:pypi/django@6.0.4
+license_expression: bsd-new AND python AND unknown-license-reference
+copyright: Copyright django project contributors
+attribute: yes
+track_changes: yes
+checksum_md5: 48574fa2e00fde976bd35d62f336bcd7
+checksum_sha1: b1e01ebdd99e6d06de34a8e92e62da256eaf5e8e
+licenses:
+  - key: bsd-new
+    name: BSD-3-Clause
+    file: bsd-new.LICENSE
+  - key: python
+    name: Python Software Foundation License v2
+    file: python.LICENSE
+  - key: unknown-license-reference
+    name: Unknown License file reference
+    file: unknown-license-reference.LICENSE
