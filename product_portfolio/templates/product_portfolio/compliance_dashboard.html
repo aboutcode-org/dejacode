@@ -115,6 +115,11 @@
               {% endif %}
             </td>
             <td class="text-end">
+              {% if product.risk_threshold %}
+                <span class="text-body-tertiary fs-xs" data-bs-toggle="tooltip" title="{% trans 'Risk threshold' %}">
+                  &ge; {{ product.risk_threshold }}
+                </span>
+              {% endif %}
               {% if product.max_risk_level == "critical" %}
                 <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
               {% elif product.max_risk_level == "high" %}

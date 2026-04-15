@@ -139,7 +139,7 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
 class ProductQuerySet(DataspacedQuerySet):
     def with_risk_threshold(self):
         return self.annotate(
-            effective_threshold=Coalesce(
+            risk_threshold=Coalesce(
                 "vulnerabilities_risk_threshold",
                 "dataspace__configuration__vulnerabilities_risk_threshold",
                 output_field=DecimalField(),
