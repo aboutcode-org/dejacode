@@ -449,7 +449,7 @@ class UsersTestCase(TestCase):
         card_layout_other = create("CardLayout", self.other_dataspace)
 
         response = self.client.get(url)
-        expected = '<legend for="id_homepage_layout">Homepage layout:</legend>'
+        expected = '<label for="id_homepage_layout">Homepage layout</label>'
         self.assertContains(response, expected, html=True)
         self.assertContains(response, card_layout_nexb.name)
         self.assertNotContains(response, card_layout_other.name)
