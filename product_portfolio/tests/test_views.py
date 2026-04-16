@@ -3565,3 +3565,291 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, response.context["above_threshold_count"])
         self.assertEqual("high", response.context["risk_threshold"])
         self.assertEqual(6.0, response.context["risk_threshold_number"])
+
+    def test_product_portfolio_compliance_dashboard_view_access(self):
+        url = reverse("product_portfolio:compliance_dashboard")
+        response = self.client.get(url)
+        self.assertRedirects(response, f"/login/?next={url}")
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "Compliance Control Center")
+
+    def test_product_portfolio_compliance_dashboard_view_empty(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+        response = self.client.get(url)
+        self.assertEqual(0, response.context["total_products"])
+        self.assertEqual(0, response.context["products_with_issues"])
+        self.assertEqual(0, response.context["total_vulnerabilities"])
+        self.assertContains(response, "No active products")
+
+    def test_product_portfolio_compliance_dashboard_view_product_visibility(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url)
+        self.assertEqual(0, response.context["total_products"])
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["total_products"])
+
+    def test_product_portfolio_compliance_dashboard_view_excludes_inactive(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url)
+        self.assertIn(self.product1, response.context["object_list"])
+
+        self.product1.is_active = False
+        self.product1.save()
+        response = self.client.get(url)
+        self.assertNotIn(self.product1, response.context["object_list"])
+
+    def test_product_portfolio_compliance_dashboard_view_excludes_locked(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url)
+        self.assertIn(self.product1, response.context["object_list"])
+
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        self.product1.update(configuration_status=locked_status)
+        response = self.client.get(url)
+        self.assertNotIn(self.product1, response.context["object_list"])
+
+    def test_product_portfolio_compliance_dashboard_view_license_issues(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
+        license_policy = UsagePolicy.objects.create(
+            label="LicensePolicy",
+            icon="icon",
+            content_type=ContentType.objects.get_for_model(License),
+            compliance_alert=UsagePolicy.Compliance.ERROR,
+            dataspace=self.dataspace,
+        )
+        license1 = License.objects.create(
+            key="l1",
+            name="L1",
+            short_name="L1",
+            owner=owner1,
+            usage_policy=license_policy,
+            dataspace=self.dataspace,
+        )
+        package1 = make_package(self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=package1,
+            dataspace=self.dataspace,
+            license_expression=license1.key,
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["products_with_license_issues"])
+        self.assertEqual(1, response.context["products_with_issues"])
+
+    def test_product_portfolio_compliance_dashboard_view_vulnerability_counts(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=6.5)
+
+        make_product(self.dataspace, inventory=[p1, p2])
+
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["products_with_critical_or_high"])
+        self.assertEqual(2, response.context["total_vulnerabilities"])
+        self.assertEqual(1, response.context["total_critical"])
+        self.assertEqual(1, response.context["total_high"])
+        self.assertEqual(0, response.context["total_medium"])
+        self.assertEqual(0, response.context["total_low"])
+
+    def test_product_portfolio_compliance_dashboard_view_ordering(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=3.0)
+
+        product_critical = make_product(self.dataspace, inventory=[p1])
+        product_medium = make_product(self.dataspace, inventory=[p2])
+
+        response = self.client.get(url)
+        products = list(response.context["object_list"])
+        critical_index = products.index(product_critical)
+        medium_index = products.index(product_medium)
+        self.assertLess(critical_index, medium_index)
+
+    def test_product_portfolio_compliance_dashboard_view_pagination(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url)
+        self.assertFalse(response.context["is_paginated"])
+
+        for index in range(55):
+            Product.objects.create(
+                name=f"PaginationProduct{index}",
+                version="1.0",
+                dataspace=self.dataspace,
+            )
+
+        response = self.client.get(url)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(50, len(response.context["object_list"]))
+
+        response = self.client.get(url + "?page=2")
+        self.assertEqual(7, len(response.context["object_list"]))
+
+    def test_product_portfolio_compliance_dashboard_view_risk_threshold_product(self):
+        """Vulnerability counts respect per-product risk threshold."""
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        p3 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=6.5)
+        make_vulnerability(self.dataspace, affecting=[p3], risk_score=2.0)
+
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+
+        # No threshold: all 3 vulns count
+        response = self.client.get(url)
+        product_in_list = [p for p in response.context["object_list"] if p.pk == product1.pk][0]
+        self.assertEqual(3, product_in_list.vulnerability_count)
+        self.assertEqual(1, product_in_list.critical_count)
+        self.assertEqual(1, product_in_list.high_count)
+        self.assertEqual(0, product_in_list.medium_count)
+        self.assertEqual(1, product_in_list.low_count)
+
+        # Set threshold to 6.0: only critical and high count
+        product1.update(vulnerabilities_risk_threshold=6.0)
+        response = self.client.get(url)
+        product_in_list = [p for p in response.context["object_list"] if p.pk == product1.pk][0]
+        self.assertEqual(2, product_in_list.vulnerability_count)
+        self.assertEqual(1, product_in_list.critical_count)
+        self.assertEqual(1, product_in_list.high_count)
+        self.assertEqual(0, product_in_list.medium_count)
+        self.assertEqual(0, product_in_list.low_count)
+
+        # Set threshold to 8.0: only critical counts
+        product1.update(vulnerabilities_risk_threshold=8.0)
+        response = self.client.get(url)
+        product_in_list = [p for p in response.context["object_list"] if p.pk == product1.pk][0]
+        self.assertEqual(1, product_in_list.vulnerability_count)
+        self.assertEqual(1, product_in_list.critical_count)
+        self.assertEqual(0, product_in_list.high_count)
+
+    def test_product_portfolio_compliance_dashboard_view_risk_threshold_dataspace(self):
+        """Vulnerability counts fall back to dataspace threshold."""
+        from dje.models import DataspaceConfiguration
+
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=2.0)
+
+        make_product(self.dataspace, inventory=[p1, p2])
+
+        # No threshold anywhere: all vulns count
+        response = self.client.get(url)
+        self.assertEqual(2, response.context["total_vulnerabilities"])
+
+        # Set dataspace threshold to 6.0: only critical counts
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace,
+            vulnerabilities_risk_threshold=6.0,
+        )
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["total_vulnerabilities"])
+        self.assertEqual(1, response.context["total_critical"])
+        self.assertEqual(0, response.context["total_low"])
+
+    def test_product_portfolio_compliance_dashboard_view_risk_threshold_product_overrides_dataspace(
+        self,
+    ):
+        """Product threshold takes precedence over dataspace threshold."""
+        from dje.models import DataspaceConfiguration
+
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        p3 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=5.0)
+        make_vulnerability(self.dataspace, affecting=[p3], risk_score=2.0)
+
+        product1 = make_product(self.dataspace, inventory=[p1, p2, p3])
+
+        # Dataspace threshold at 6.0
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace,
+            vulnerabilities_risk_threshold=6.0,
+        )
+        response = self.client.get(url)
+        product_in_list = [p for p in response.context["object_list"] if p.pk == product1.pk][0]
+        self.assertEqual(1, product_in_list.vulnerability_count)
+
+        # Product threshold at 3.0 overrides dataspace
+        product1.update(vulnerabilities_risk_threshold=3.0)
+        response = self.client.get(url)
+        product_in_list = [p for p in response.context["object_list"] if p.pk == product1.pk][0]
+        self.assertEqual(2, product_in_list.vulnerability_count)
+
+    def test_product_portfolio_compliance_dashboard_view_risk_threshold_totals(self):
+        """Summary totals respect per-product thresholds."""
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        p3 = make_package(self.dataspace)
+        p4 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=2.0)
+        make_vulnerability(self.dataspace, affecting=[p3], risk_score=8.5)
+        make_vulnerability(self.dataspace, affecting=[p4], risk_score=1.0)
+
+        # Product A: threshold 6.0, only p1 (9.0) counts
+        product_a = make_product(self.dataspace, inventory=[p1, p2])
+        product_a.update(vulnerabilities_risk_threshold=6.0)
+
+        # Product B: no threshold, both p3 (8.5) and p4 (1.0) count
+        make_product(self.dataspace, inventory=[p3, p4])
+
+        response = self.client.get(url)
+        # Product A: 1 (critical), Product B: 2 (critical + low)
+        self.assertEqual(3, response.context["total_vulnerabilities"])
+        self.assertEqual(2, response.context["total_critical"])
+        self.assertEqual(0, response.context["total_high"])
+        self.assertEqual(1, response.context["total_low"])
+
+    def test_product_portfolio_compliance_dashboard_view_risk_threshold_display(self):
+        """Risk threshold value is displayed in the template."""
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        product1 = make_product(self.dataspace, inventory=[p1])
+        product1.update(vulnerabilities_risk_threshold=7.0)
+
+        response = self.client.get(url)
+        self.assertContains(response, "7.0")
+        self.assertContains(response, "Risk threshold")

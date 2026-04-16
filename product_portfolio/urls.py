@@ -9,6 +9,7 @@
 from django.urls import path
 
 from product_portfolio.views import AttributionView
+from product_portfolio.views import ComplianceDashboardView
 from product_portfolio.views import ImportManifestsView
 from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView
@@ -65,6 +66,11 @@ def product_path(path_segment, view):
 
 
 urlpatterns = [
+    path(
+        "compliance_dashboard/",
+        ComplianceDashboardView.as_view(),
+        name="compliance_dashboard",
+    ),
     path(
         "import_packages_from_scancodeio/<str:key>/",
         import_packages_from_scancodeio_view,

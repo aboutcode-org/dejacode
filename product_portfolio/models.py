@@ -15,11 +15,15 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Case
+from django.db.models import Count
+from django.db.models import DecimalField
 from django.db.models import F
 from django.db.models import FloatField
+from django.db.models import Max
+from django.db.models import OuterRef
+from django.db.models import Q
 from django.db.models import Value
 from django.db.models import When
-from django.db.models.expressions import OuterRef
 from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django.utils.html import format_html
@@ -41,6 +45,7 @@ from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
 from dje.models import DataspacedModel
+from dje.models import DataspacedQuerySet
 from dje.models import History
 from dje.models import HistoryFieldsMixin
 from dje.models import ProductSecuredQuerySet
@@ -129,6 +134,64 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
 
     class Meta(BaseStatusMixin.Meta):
         verbose_name_plural = _("product status")
+
+
+class ProductQuerySet(DataspacedQuerySet):
+    def with_risk_threshold(self):
+        return self.annotate(
+            risk_threshold=Coalesce(
+                "vulnerabilities_risk_threshold",
+                "dataspace__configuration__vulnerabilities_risk_threshold",
+                output_field=DecimalField(),
+            ),
+        )
+
+    def with_vulnerability_counts(self):
+        threshold_filter = Q(
+            productpackages__package__affected_by_vulnerabilities__risk_score__gte=F(
+                "risk_threshold"
+            )
+        )
+        no_threshold = Q(risk_threshold__isnull=True)
+
+        def count_vulns(extra_filter=None):
+            combined = no_threshold | threshold_filter
+            if extra_filter:
+                combined = combined & extra_filter
+            return Count(
+                "productpackages__package__affected_by_vulnerabilities",
+                filter=combined,
+                distinct=True,
+            )
+
+        def risk_level_filter(level):
+            return Q(productpackages__package__affected_by_vulnerabilities__risk_level=level)
+
+        return self.annotate(
+            vulnerability_count=count_vulns(),
+            max_risk_score=Max(
+                "productpackages__package__affected_by_vulnerabilities__risk_score",
+                filter=no_threshold | threshold_filter,
+            ),
+            critical_count=count_vulns(risk_level_filter("critical")),
+            high_count=count_vulns(risk_level_filter("high")),
+            medium_count=count_vulns(risk_level_filter("medium")),
+            low_count=count_vulns(risk_level_filter("low")),
+        )
+
+    def with_license_compliance_counts(self):
+        return self.annotate(
+            license_warning_count=Count(
+                "productpackages__licenses",
+                filter=Q(productpackages__licenses__usage_policy__compliance_alert="warning"),
+                distinct=True,
+            ),
+            license_error_count=Count(
+                "productpackages__licenses",
+                filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
+                distinct=True,
+            ),
+        )
 
 
 class ProductSecuredManager(DataspacedManager):
@@ -293,7 +356,7 @@ class Product(
         help_text=_("Vulnerabilities directly affecting this product."),
     )
 
-    objects = ProductSecuredManager()
+    objects = ProductSecuredManager.from_queryset(ProductQuerySet)()
 
     # WARNING: Bypass the security system implemented in ProductSecuredManager.
     # This is to be used only in a few cases where the User scoping is not appropriated.
