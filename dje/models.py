@@ -490,7 +490,7 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
 
     scancodeio_api_key = models.CharField(
         _("ScanCode.io API key"),
-        max_length=40,
+        max_length=255,
         blank=True,
         help_text=_(
             "If your organization's private ScanCode.io instance requires an API key "
@@ -511,7 +511,7 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
 
     vulnerablecode_api_key = models.CharField(
         _("VulnerableCode API key"),
-        max_length=40,
+        max_length=255,
         blank=True,
         help_text=_(
             "If your private VulnerableCode instance requires an API key for access, "
@@ -543,7 +543,7 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
 
     purldb_api_key = models.CharField(
         _("PurlDB API key"),
-        max_length=40,
+        max_length=255,
         blank=True,
         help_text=_(
             "If your organization's private PurlDB instance requires an API key for "
