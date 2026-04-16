@@ -112,6 +112,7 @@ class ProductFilterSet(DataspacedFilterSet):
     )
     is_vulnerable = IsVulnerableBooleanFilter(
         label=_("Is Vulnerable"),
+        field_name="has_vulnerable_packages",
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
