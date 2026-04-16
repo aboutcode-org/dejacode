@@ -1,6 +1,23 @@
 Release notes
 =============
 
+### Version 5.7.1
+
+- feat: Product compliance tab
+  https://github.com/aboutcode-org/dejacode/issues/507
+
+- feat: Compliance control center dashboard
+  https://github.com/aboutcode-org/dejacode/issues/513
+
+- feat: refine package search to display the most recent versions first
+  https://github.com/aboutcode-org/dejacode/issues/504
+
+- fix: increase the max_length to 255 for api key fields
+  https://github.com/aboutcode-org/dejacode/issues/518
+
+- fix: product is_vulnerable filter on list view
+  https://github.com/aboutcode-org/dejacode/issues/516
+
 ### Version 5.7.0
 
 - Upgrade Python version to 3.14
