@@ -58,8 +58,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
-import csv
-from django.http import HttpResponse
+
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
@@ -68,6 +67,7 @@ from openpyxl.styles import Border
 from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
+from openpyxl.utils import get_column_letter
 
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
@@ -2830,11 +2830,6 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
 
-    def get(self, request, *args, **kwargs):
-        if request.GET.get("export") == "csv":
-            return self.export_csv()
-        return super().get(request, *args, **kwargs)
-
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(
             user=self.request.user,
@@ -2912,13 +2907,14 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
 
         return context
 
-    def export_csv(self):
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.csv"'
+    def get(self, request, *args, **kwargs):
+        export_format = request.GET.get("export")
+        if export_format in ("csv", "xlsx"):
+            return self.export(export_format)
+        return super().get(request, *args, **kwargs)
 
-        products = self.get_queryset()
-        writer = csv.writer(response)
-        writer.writerow([
+    def get_export_headers(self):
+        return [
             "Product",
             "Version",
             "Packages",
@@ -2931,8 +2927,10 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             "Medium",
             "Low",
             "Total vulnerabilities",
-        ])
-        rows = products.values_list(
+        ]
+
+    def get_export_rows(self):
+        return self.get_queryset().values_list(
             "name",
             "version",
             "package_count",
@@ -2946,6 +2944,50 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             "low_count",
             "vulnerability_count",
         )
-        writer.writerows(rows)
 
+    def export(self, export_format):
+        if export_format == "csv":
+            return self.export_csv()
+        return self.export_xlsx()
+
+    def export_csv(self):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(self.get_export_headers())
+        writer.writerows(self.get_export_rows())
+        return response
+
+    def export_xlsx(self):
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Compliance Dashboard"
+
+        headers = self.get_export_headers()
+        worksheet.append(headers)
+
+        # Header styling
+        header_style = NamedStyle(name="header")
+        header_style.font = Font(bold=True)
+        header_style.border = Border(bottom=Side(border_style="thin"))
+        header_style.alignment = Alignment(horizontal="center", vertical="center")
+        for cell in worksheet[1]:
+            cell.style = header_style
+
+        worksheet.freeze_panes = "A2"
+
+        for row in self.get_export_rows():
+            worksheet.append(row)
+
+        # Auto-width columns
+        for col_index, header in enumerate(headers, 1):
+            column_letter = get_column_letter(col_index)
+            worksheet.column_dimensions[column_letter].width = max(len(header) + 4, 12)
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.xlsx"'
+        workbook.save(response)
         return response
