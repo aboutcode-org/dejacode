@@ -2829,6 +2829,7 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
+    export_filename = "compliance_dashboard"
     export_fields = {
         "name": "Product",
         "version": "Version",
@@ -2945,7 +2946,7 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
 
     def export_csv(self):
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.csv"'
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.csv"'
 
         writer = csv.writer(response)
         writer.writerow(self.get_export_headers())
@@ -2981,7 +2982,7 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.xlsx"'
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.xlsx"'
         workbook.save(response)
         return response
 
@@ -2991,5 +2992,5 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
             json.dumps(data, indent=2, default=str),
             content_type="application/json",
         )
-        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.json"'
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.json"'
         return response
