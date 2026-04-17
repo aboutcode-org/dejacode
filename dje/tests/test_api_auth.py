@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.contrib.auth.hashers import check_password
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
@@ -80,3 +81,16 @@ class AboutCodeAPIAuthTestCase(TestCase):
         self.base_user.save()
         with self.assertRaisesMessage(AuthenticationFailed, "User inactive or deleted."):
             api_token_auth.authenticate_credentials(plain_key=plain_key)
+
+    def test_api_auth_api_token_model_set_key(self):
+        plain_key = APIToken.generate_key()
+        token = APIToken(user=self.base_user)
+        token.set_key(plain_key)
+
+        self.assertEqual(plain_key[: APIToken.PREFIX_LENGTH], token.prefix)
+        self.assertEqual(59, len(token.key_hash))
+        self.assertTrue(check_password(plain_key, token.key_hash))
+        # set_key must not save the instance
+        self.assertEqual(0, APIToken.objects.count())
+        token.save()
+        self.assertEqual(1, APIToken.objects.count())
