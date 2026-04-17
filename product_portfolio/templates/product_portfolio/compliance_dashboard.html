@@ -5,8 +5,34 @@
 
 {% block content %}
   <div class="d-flex align-items-baseline gap-3 mb-3">
-    <h1 class="h3 mb-0">{% trans "Compliance Control Center" %}</h1>
-    <span class="text-body-secondary">{{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}</span>
+    <h1 class="h3 mb-0">
+      {% trans "Compliance Control Center" %}
+    </h1>
+    <span class="text-body-secondary">
+      {{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}
+    </span>
+    <div class="dropdown ms-auto">
+      <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="fas fa-download me-1"></i>{% trans "Export" %}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <a class="dropdown-item" href="?export=csv">
+            <i class="fas fa-download me-1"></i>{% trans "CSV" %}
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="?export=xlsx">
+            <i class="fas fa-download me-1"></i>{% trans "XLSX" %}
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="?export=json">
+            <i class="fas fa-download me-1"></i>{% trans "JSON" %}
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div class="row g-3 mb-3">

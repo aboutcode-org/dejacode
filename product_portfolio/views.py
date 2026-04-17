@@ -67,6 +67,7 @@ from openpyxl.styles import Border
 from openpyxl.styles import Font
 from openpyxl.styles import NamedStyle
 from openpyxl.styles import Side
+from openpyxl.utils import get_column_letter
 
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
@@ -2828,6 +2829,21 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
+    export_filename = "compliance_dashboard"
+    export_fields = {
+        "name": "Product",
+        "version": "Version",
+        "package_count": "Packages",
+        "license_error_count": "License errors",
+        "license_warning_count": "License warnings",
+        "max_risk_level": "Max risk level",
+        "risk_threshold": "Risk threshold",
+        "critical_count": "Critical",
+        "high_count": "High",
+        "medium_count": "Medium",
+        "low_count": "Low",
+        "vulnerability_count": "Total vulnerabilities",
+    }
 
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(
@@ -2905,3 +2921,76 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         )
 
         return context
+
+    def get(self, request, *args, **kwargs):
+        export_format = request.GET.get("export")
+        if export_format in ("csv", "xlsx", "json"):
+            return self.export(export_format)
+        return super().get(request, *args, **kwargs)
+
+    def export(self, export_format):
+        if export_format == "csv":
+            return self.export_csv()
+        if export_format == "xlsx":
+            return self.export_xlsx()
+        return self.export_json()
+
+    def get_export_headers(self):
+        return list(self.export_fields.values())
+
+    def get_export_fields(self):
+        return list(self.export_fields.keys())
+
+    def get_export_rows(self):
+        return self.get_queryset().values_list(*self.get_export_fields())
+
+    def export_csv(self):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(self.get_export_headers())
+        writer.writerows(self.get_export_rows())
+        return response
+
+    def export_xlsx(self):
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Compliance Dashboard"
+
+        headers = self.get_export_headers()
+        worksheet.append(headers)
+
+        # Header styling
+        header_style = NamedStyle(name="header")
+        header_style.font = Font(bold=True)
+        header_style.border = Border(bottom=Side(border_style="thin"))
+        header_style.alignment = Alignment(horizontal="center", vertical="center")
+        for cell in worksheet[1]:
+            cell.style = header_style
+
+        worksheet.freeze_panes = "A2"
+
+        for row in self.get_export_rows():
+            worksheet.append(row)
+
+        # Auto-width columns
+        for col_index, header in enumerate(headers, 1):
+            column_letter = get_column_letter(col_index)
+            worksheet.column_dimensions[column_letter].width = max(len(header) + 4, 12)
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.xlsx"'
+        workbook.save(response)
+        return response
+
+    def export_json(self):
+        data = list(self.get_queryset().values(*self.get_export_fields()))
+        response = HttpResponse(
+            json.dumps(data, indent=2, default=str),
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.json"'
+        return response
