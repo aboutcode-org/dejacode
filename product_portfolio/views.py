@@ -2829,6 +2829,20 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
+    export_fields = {
+        "name": "Product",
+        "version": "Version",
+        "package_count": "Packages",
+        "license_error_count": "License errors",
+        "license_warning_count": "License warnings",
+        "max_risk_level": "Max risk level",
+        "risk_threshold": "Risk threshold",
+        "critical_count": "Critical",
+        "high_count": "High",
+        "medium_count": "Medium",
+        "low_count": "Low",
+        "vulnerability_count": "Total vulnerabilities",
+    }
 
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(
@@ -2909,46 +2923,25 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
 
     def get(self, request, *args, **kwargs):
         export_format = request.GET.get("export")
-        if export_format in ("csv", "xlsx"):
+        if export_format in ("csv", "xlsx", "json"):
             return self.export(export_format)
         return super().get(request, *args, **kwargs)
-
-    def get_export_headers(self):
-        return [
-            "Product",
-            "Version",
-            "Packages",
-            "License errors",
-            "License warnings",
-            "Max risk level",
-            "Risk threshold",
-            "Critical",
-            "High",
-            "Medium",
-            "Low",
-            "Total vulnerabilities",
-        ]
-
-    def get_export_rows(self):
-        return self.get_queryset().values_list(
-            "name",
-            "version",
-            "package_count",
-            "license_error_count",
-            "license_warning_count",
-            "max_risk_level",
-            "risk_threshold",
-            "critical_count",
-            "high_count",
-            "medium_count",
-            "low_count",
-            "vulnerability_count",
-        )
 
     def export(self, export_format):
         if export_format == "csv":
             return self.export_csv()
-        return self.export_xlsx()
+        if export_format == "xlsx":
+            return self.export_xlsx()
+        return self.export_json()
+
+    def get_export_headers(self):
+        return list(self.export_fields.values())
+
+    def get_export_fields(self):
+        return list(self.export_fields.keys())
+
+    def get_export_rows(self):
+        return self.get_queryset().values_list(*self.get_export_fields())
 
     def export_csv(self):
         response = HttpResponse(content_type="text/csv")
@@ -2990,4 +2983,13 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         )
         response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.xlsx"'
         workbook.save(response)
+        return response
+
+    def export_json(self):
+        data = list(self.get_queryset().values(*self.get_export_fields()))
+        response = HttpResponse(
+            json.dumps(data, indent=2, default=str),
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.json"'
         return response
