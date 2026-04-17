@@ -57,16 +57,18 @@ class AbstractAPIToken(models.Model):
         """Generate a plain (not encrypted) key."""
         return secrets.token_hex(32)
 
+    def set_key(self, plain_key):
+        """Set the prefix and hashed key from a plain key. Does not save."""
+        self.prefix = plain_key[: self.PREFIX_LENGTH]
+        self.key_hash = make_password(plain_key)
+
     @classmethod
     def create_token(cls, user):
         """Generate a new token for the given user and return the plain key once."""
         plain_key = cls.generate_key()
-        prefix = plain_key[: cls.PREFIX_LENGTH]
-        cls.objects.create(
-            user=user,
-            prefix=prefix,
-            key_hash=make_password(plain_key),
-        )
+        token = cls(user=user)
+        token.set_key(plain_key)
+        token.save()
         return plain_key
 
     @classmethod
