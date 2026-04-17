@@ -5,8 +5,15 @@
 
 {% block content %}
   <div class="d-flex align-items-baseline gap-3 mb-3">
-    <h1 class="h3 mb-0">{% trans "Compliance Control Center" %}</h1>
-    <span class="text-body-secondary">{{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}</span>
+    <h1 class="h3 mb-0">
+      {% trans "Compliance Control Center" %}
+    </h1>
+    <span class="text-body-secondary">
+      {{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}
+    </span>
+    <a href="?export=csv" class="btn btn-sm btn-outline-secondary ms-auto">
+      <i class="fas fa-download me-1"></i>{% trans "Export CSV" %}
+    </a>
   </div>
 
   <div class="row g-3 mb-3">

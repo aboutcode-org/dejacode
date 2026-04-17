@@ -58,7 +58,8 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
-
+import csv
+from django.http import HttpResponse
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
@@ -2829,6 +2830,11 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
 
+    def get(self, request, *args, **kwargs):
+        if request.GET.get("export") == "csv":
+            return self.export_csv()
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(
             user=self.request.user,
@@ -2905,3 +2911,41 @@ class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
         )
 
         return context
+
+    def export_csv(self):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="compliance_dashboard.csv"'
+
+        products = self.get_queryset()
+        writer = csv.writer(response)
+        writer.writerow([
+            "Product",
+            "Version",
+            "Packages",
+            "License errors",
+            "License warnings",
+            "Max risk level",
+            "Risk threshold",
+            "Critical",
+            "High",
+            "Medium",
+            "Low",
+            "Total vulnerabilities",
+        ])
+        rows = products.values_list(
+            "name",
+            "version",
+            "package_count",
+            "license_error_count",
+            "license_warning_count",
+            "max_risk_level",
+            "risk_threshold",
+            "critical_count",
+            "high_count",
+            "medium_count",
+            "low_count",
+            "vulnerability_count",
+        )
+        writer.writerows(rows)
+
+        return response
