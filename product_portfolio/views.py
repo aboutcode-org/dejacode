@@ -7,6 +7,7 @@
 #
 
 import csv
+import io
 import json
 from collections import OrderedDict
 from collections import defaultdict
@@ -59,6 +60,7 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
 
+import odfdo
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
@@ -2811,12 +2813,12 @@ class ProductTabComplianceView(
 class ExportComplianceMixin:
     """Mixin for views that support CSV, XLSX, and JSON export."""
 
-    export_filename = "export"
+    export_filename = "compliance_dashboard"
     export_fields = {}
 
     def get(self, request, *args, **kwargs):
         export_format = request.GET.get("export")
-        if export_format in ("csv", "xlsx", "json"):
+        if export_format in ("csv", "xlsx", "json", "ods"):
             return self.export(export_format)
         return super().get(request, *args, **kwargs)
 
@@ -2837,6 +2839,8 @@ class ExportComplianceMixin:
             return self.export_csv()
         if export_format == "xlsx":
             return self.export_xlsx()
+        if export_format == "ods":
+            return self.export_ods()
         return self.export_json()
 
     def export_csv(self):
@@ -2874,6 +2878,30 @@ class ExportComplianceMixin:
             content_type="application/json",
         )
         response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.json"'
+        return response
+
+    def export_ods(self):
+        title = self.export_filename.replace("_", " ").title()
+        table = odfdo.Table(title)
+
+        for row_data in [self.get_export_headers()] + list(self.get_export_rows()):
+            row = odfdo.Row()
+            for value in row_data:
+                row.append(odfdo.Cell(str(value if value is not None else ""), cell_type="string"))
+            table.append(row)
+
+        document = odfdo.Document("spreadsheet")
+        document.body.clear()
+        document.body.append(table)
+
+        file_output = io.BytesIO()
+        document.save(file_output)
+
+        response = HttpResponse(
+            file_output.getvalue(),
+            content_type="application/vnd.oasis.opendocument.spreadsheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.ods"'
         return response
 
 
