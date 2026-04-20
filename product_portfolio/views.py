@@ -62,12 +62,6 @@ from django.views.generic import TemplateView
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.styles import Border
-from openpyxl.styles import Font
-from openpyxl.styles import NamedStyle
-from openpyxl.styles import Side
-from openpyxl.utils import get_column_letter
 
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
@@ -93,6 +87,7 @@ from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
+from dje.utils import style_xlsx_worksheet
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedDeleteView
 from dje.views import DataspacedFilterView
@@ -1697,16 +1692,7 @@ class ProductTreeComparisonView(
             ws.append(row)
 
         # Styling
-        header = NamedStyle(name="header")
-        header.font = Font(bold=True)
-        header.border = Border(bottom=Side(border_style="thin"))
-        header.alignment = Alignment(horizontal="center", vertical="center")
-        header_row = ws[1]
-        for cell in header_row:
-            cell.style = header
-
-        # Freeze first header row
-        ws.freeze_panes = "A2"
+        style_xlsx_worksheet(ws)
 
         # Columns width
         ws.column_dimensions["B"].width = 40
@@ -2869,20 +2855,10 @@ class ExportComplianceMixin:
         headers = self.get_export_headers()
         worksheet.append(headers)
 
-        header_style = NamedStyle(name="header")
-        header_style.font = Font(bold=True)
-        header_style.border = Border(bottom=Side(border_style="thin"))
-        header_style.alignment = Alignment(horizontal="center", vertical="center")
-        for cell in worksheet[1]:
-            cell.style = header_style
-        worksheet.freeze_panes = "A2"
-
         for row in self.get_export_rows():
             worksheet.append(row)
 
-        for col_index, header in enumerate(headers, 1):
-            column_letter = get_column_letter(col_index)
-            worksheet.column_dimensions[column_letter].width = max(len(header) + 4, 12)
+        style_xlsx_worksheet(worksheet, headers)
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
