@@ -7,6 +7,7 @@
 #
 
 import csv
+import io
 import json
 from collections import OrderedDict
 from collections import defaultdict
@@ -48,6 +49,7 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.html import mark_safe
@@ -59,14 +61,11 @@ from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
 
+import odfdo
+import saneyaml
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.styles import Border
-from openpyxl.styles import Font
-from openpyxl.styles import NamedStyle
-from openpyxl.styles import Side
 
 from component_catalog.forms import ComponentAjaxForm
 from component_catalog.license_expression_dje import build_licensing
@@ -92,6 +91,7 @@ from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
+from dje.utils import style_xlsx_worksheet
 from dje.views import DataspacedCreateView
 from dje.views import DataspacedDeleteView
 from dje.views import DataspacedFilterView
@@ -1696,16 +1696,7 @@ class ProductTreeComparisonView(
             ws.append(row)
 
         # Styling
-        header = NamedStyle(name="header")
-        header.font = Font(bold=True)
-        header.border = Border(bottom=Side(border_style="thin"))
-        header.alignment = Alignment(horizontal="center", vertical="center")
-        header_row = ws[1]
-        for cell in header_row:
-            cell.style = header
-
-        # Freeze first header row
-        ws.freeze_panes = "A2"
+        style_xlsx_worksheet(ws)
 
         # Columns width
         ws.column_dimensions["B"].width = 40
@@ -2821,13 +2812,143 @@ class ProductTabComplianceView(
         }
 
 
-class ComplianceDashboardView(LoginRequiredMixin, DataspacedFilterView):
+class ExportComplianceMixin:
+    """Mixin for views that support CSV, XLSX, and JSON export."""
+
+    export_filename = "export"
+    export_fields = {}
+
+    def get(self, request, *args, **kwargs):
+        export_format = request.GET.get("export")
+        if export_format in ("csv", "xlsx", "json", "ods", "yaml"):
+            return self.export(export_format)
+        return super().get(request, *args, **kwargs)
+
+    def get_export_headers(self):
+        return list(self.export_fields.values())
+
+    def get_export_fields(self):
+        return list(self.export_fields.keys())
+
+    def get_export_queryset(self):
+        return self.get_queryset()
+
+    def get_export_rows(self):
+        return self.get_export_queryset().values_list(*self.get_export_fields())
+
+    def get_export_filename(self, extension):
+        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
+        return f"{self.export_filename}_{timestamp}.{extension}"
+
+    def get_content_disposition(self, extension):
+        return f'attachment; filename="{self.get_export_filename(extension)}"'
+
+    def export(self, export_format):
+        if export_format == "csv":
+            return self.export_csv()
+        if export_format == "xlsx":
+            return self.export_xlsx()
+        if export_format == "ods":
+            return self.export_ods()
+        if export_format == "yaml":
+            return self.export_yaml()
+        return self.export_json()
+
+    def export_csv(self):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = self.get_content_disposition("csv")
+        writer = csv.writer(response)
+        writer.writerow(self.get_export_headers())
+        writer.writerows(self.get_export_rows())
+        return response
+
+    def export_xlsx(self):
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = self.export_filename.replace("_", " ").title()
+
+        headers = self.get_export_headers()
+        worksheet.append(headers)
+
+        for row in self.get_export_rows():
+            worksheet.append(row)
+
+        style_xlsx_worksheet(worksheet, headers)
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = self.get_content_disposition("xlsx")
+        workbook.save(response)
+        return response
+
+    def export_json(self):
+        data = list(self.get_export_queryset().values(*self.get_export_fields()))
+        response = HttpResponse(
+            json.dumps(data, indent=2, default=str),
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = self.get_content_disposition("json")
+        return response
+
+    def export_ods(self):
+        title = self.export_filename.replace("_", " ").title()
+        table = odfdo.Table(title)
+
+        for row_data in [self.get_export_headers()] + list(self.get_export_rows()):
+            row = odfdo.Row()
+            for value in row_data:
+                row.append(odfdo.Cell(str(value if value is not None else ""), cell_type="string"))
+            table.append(row)
+
+        document = odfdo.Document("spreadsheet")
+        document.body.clear()
+        document.body.append(table)
+
+        file_output = io.BytesIO()
+        document.save(file_output)
+
+        response = HttpResponse(
+            file_output.getvalue(),
+            content_type="application/vnd.oasis.opendocument.spreadsheet",
+        )
+        response["Content-Disposition"] = self.get_content_disposition("ods")
+        return response
+
+    def export_yaml(self):
+        fields = self.get_export_fields()
+        # Round-trip through JSON to convert Decimal and other non-serializable types
+        data = json.loads(json.dumps(list(self.get_export_queryset().values(*fields)), default=str))
+        response = HttpResponse(
+            saneyaml.dump(data),
+            content_type="application/x-yaml",
+        )
+        response["Content-Disposition"] = self.get_content_disposition("yaml")
+        return response
+
+
+class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, DataspacedFilterView):
     """Compliance control center: overview of all products."""
 
     template_name = "product_portfolio/compliance_dashboard.html"
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
+    export_filename = "compliance_dashboard"
+    export_fields = {
+        "name": "Product",
+        "version": "Version",
+        "package_count": "Packages",
+        "license_error_count": "License errors",
+        "license_warning_count": "License warnings",
+        "max_risk_level": "Max risk level",
+        "risk_threshold": "Risk threshold",
+        "critical_count": "Critical",
+        "high_count": "High",
+        "medium_count": "Medium",
+        "low_count": "Low",
+        "vulnerability_count": "Total vulnerabilities",
+    }
 
     def get_queryset(self):
         base_qs = Product.objects.get_queryset(

@@ -3853,3 +3853,147 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, "7.0")
         self.assertContains(response, "Risk threshold")
+
+    def test_product_portfolio_compliance_dashboard_view_export_csv(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_product(self.dataspace, inventory=[p1])
+
+        response = self.client.get(url + "?export=csv")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("text/csv", response["Content-Type"])
+        self.assertIn("compliance_dashboard_", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn("Product,Version,Packages", content)
+        self.assertIn("critical", content)
+
+    def test_product_portfolio_compliance_dashboard_view_export_xlsx(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        make_product_package(self.product1)
+
+        response = self.client.get(url + "?export=xlsx")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("compliance_dashboard_", response["Content-Disposition"])
+        self.assertIn(".xlsx", response["Content-Disposition"])
+
+    def test_product_portfolio_compliance_dashboard_view_export_json(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        product1 = make_product(self.dataspace, inventory=[p1])
+
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertIn("compliance_dashboard_", response["Content-Disposition"])
+        self.assertIn(".json", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertTrue(len(data) > 0)
+        first = next(entry for entry in data if entry["name"] == product1.name)
+        self.assertEqual(1, first["critical_count"])
+
+    def test_product_portfolio_compliance_dashboard_view_export_ods(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        make_product_package(self.product1)
+
+        response = self.client.get(url + "?export=ods")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.oasis.opendocument.spreadsheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("compliance_dashboard_", response["Content-Disposition"])
+        self.assertIn(".ods", response["Content-Disposition"])
+
+    def test_product_portfolio_compliance_dashboard_view_export_yaml(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        product1 = make_product(self.dataspace, inventory=[p1])
+
+        response = self.client.get(url + "?export=yaml")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/x-yaml", response["Content-Type"])
+        self.assertIn("compliance_dashboard_", response["Content-Disposition"])
+        self.assertIn(".yaml", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn(product1.name, content)
+        self.assertIn("critical_count", content)
+
+    def test_product_portfolio_compliance_dashboard_view_export_respects_permissions(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        product1 = make_product(self.dataspace, inventory=[p1])
+
+        # Without permission, export should return empty data
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        product_names = [entry["name"] for entry in data]
+        self.assertNotIn(product1.name, product_names)
+
+        # With permission, product should appear
+        assign_perm("view_product", self.basic_user, product1)
+        response = self.client.get(url + "?export=json")
+        data = json.loads(response.content)
+        product_names = [entry["name"] for entry in data]
+        self.assertIn(product1.name, product_names)
+
+    def test_product_portfolio_compliance_dashboard_view_export_invalid_format(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url + "?export=pdf")
+        self.assertEqual(200, response.status_code)
+        # Invalid format falls through to normal HTML view
+        self.assertContains(response, "Compliance Control Center")
+
+    def test_product_portfolio_compliance_dashboard_view_export_filename_has_timestamp(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        response = self.client.get(url + "?export=csv")
+        disposition = response["Content-Disposition"]
+        # Format: compliance_dashboard_YYYY-MM-DD_HHMMSS.csv
+        self.assertRegex(
+            disposition,
+            r"compliance_dashboard_\d{4}-\d{2}-\d{2}_\d{6}\.csv",
+        )
+
+    def test_product_portfolio_compliance_dashboard_view_export_risk_threshold(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+
+        p1 = make_package(self.dataspace)
+        p2 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[p1], risk_score=9.0)
+        make_vulnerability(self.dataspace, affecting=[p2], risk_score=2.0)
+
+        product1 = make_product(self.dataspace, inventory=[p1, p2])
+        product1.update(vulnerabilities_risk_threshold=6.0)
+
+        response = self.client.get(url + "?export=json")
+        data = json.loads(response.content)
+        product_data = next(entry for entry in data if entry["name"] == product1.name)
+        # Only the critical vulnerability (9.0) should count, low (2.0) is below threshold
+        self.assertEqual(1, product_data["vulnerability_count"])
+        self.assertEqual(1, product_data["critical_count"])
+        self.assertEqual(0, product_data["low_count"])

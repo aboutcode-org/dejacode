@@ -34,6 +34,12 @@ from django.utils.html import mark_safe
 from django.utils.http import urlencode
 
 import requests
+from openpyxl.styles import Alignment
+from openpyxl.styles import Border
+from openpyxl.styles import Font
+from openpyxl.styles import NamedStyle
+from openpyxl.styles import Side
+from openpyxl.utils import get_column_letter
 from packageurl import PackageURL
 
 
@@ -747,3 +753,21 @@ def merge_common_non_empty_values(dicts):
             merged_result[key] = values[0]
 
     return merged_result
+
+
+def style_xlsx_worksheet(worksheet, headers=None, auto_width=True):
+    """Apply standard styling to an XLSX worksheet."""
+    header_style = NamedStyle(name="header")
+    header_style.font = Font(bold=True)
+    header_style.border = Border(bottom=Side(border_style="thin"))
+    header_style.alignment = Alignment(horizontal="center", vertical="center")
+
+    for cell in worksheet[1]:
+        cell.style = header_style
+
+    worksheet.freeze_panes = "A2"
+
+    if auto_width and headers:
+        for col_index, header in enumerate(headers, 1):
+            column_letter = get_column_letter(col_index)
+            worksheet.column_dimensions[column_letter].width = max(len(str(header)) + 4, 12)
