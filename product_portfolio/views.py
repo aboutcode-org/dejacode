@@ -61,6 +61,7 @@ from django.views.generic import FormView
 from django.views.generic import TemplateView
 
 import odfdo
+import saneyaml
 from crispy_forms.utils import render_crispy_form
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
@@ -2818,7 +2819,7 @@ class ExportComplianceMixin:
 
     def get(self, request, *args, **kwargs):
         export_format = request.GET.get("export")
-        if export_format in ("csv", "xlsx", "json", "ods"):
+        if export_format in ("csv", "xlsx", "json", "ods", "yaml"):
             return self.export(export_format)
         return super().get(request, *args, **kwargs)
 
@@ -2841,6 +2842,8 @@ class ExportComplianceMixin:
             return self.export_xlsx()
         if export_format == "ods":
             return self.export_ods()
+        if export_format == "yaml":
+            return self.export_yaml()
         return self.export_json()
 
     def export_csv(self):
@@ -2902,6 +2905,17 @@ class ExportComplianceMixin:
             content_type="application/vnd.oasis.opendocument.spreadsheet",
         )
         response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.ods"'
+        return response
+
+    def export_yaml(self):
+        fields = self.get_export_fields()
+        # Round-trip through JSON to convert Decimal and other non-serializable types
+        data = json.loads(json.dumps(list(self.get_export_queryset().values(*fields)), default=str))
+        response = HttpResponse(
+            saneyaml.dump(data),
+            content_type="application/x-yaml",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.yaml"'
         return response
 
 
