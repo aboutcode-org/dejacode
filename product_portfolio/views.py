@@ -49,6 +49,7 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.html import mark_safe
@@ -2814,7 +2815,7 @@ class ProductTabComplianceView(
 class ExportComplianceMixin:
     """Mixin for views that support CSV, XLSX, and JSON export."""
 
-    export_filename = "compliance_dashboard"
+    export_filename = "export"
     export_fields = {}
 
     def get(self, request, *args, **kwargs):
@@ -2835,6 +2836,13 @@ class ExportComplianceMixin:
     def get_export_rows(self):
         return self.get_export_queryset().values_list(*self.get_export_fields())
 
+    def get_export_filename(self, extension):
+        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
+        return f"{self.export_filename}_{timestamp}.{extension}"
+
+    def get_content_disposition(self, extension):
+        return f'attachment; filename="{self.get_export_filename(extension)}"'
+
     def export(self, export_format):
         if export_format == "csv":
             return self.export_csv()
@@ -2848,7 +2856,7 @@ class ExportComplianceMixin:
 
     def export_csv(self):
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.csv"'
+        response["Content-Disposition"] = self.get_content_disposition("csv")
         writer = csv.writer(response)
         writer.writerow(self.get_export_headers())
         writer.writerows(self.get_export_rows())
@@ -2870,7 +2878,7 @@ class ExportComplianceMixin:
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.xlsx"'
+        response["Content-Disposition"] = self.get_content_disposition("xlsx")
         workbook.save(response)
         return response
 
@@ -2880,7 +2888,7 @@ class ExportComplianceMixin:
             json.dumps(data, indent=2, default=str),
             content_type="application/json",
         )
-        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.json"'
+        response["Content-Disposition"] = self.get_content_disposition("json")
         return response
 
     def export_ods(self):
@@ -2904,7 +2912,7 @@ class ExportComplianceMixin:
             file_output.getvalue(),
             content_type="application/vnd.oasis.opendocument.spreadsheet",
         )
-        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.ods"'
+        response["Content-Disposition"] = self.get_content_disposition("ods")
         return response
 
     def export_yaml(self):
@@ -2915,7 +2923,7 @@ class ExportComplianceMixin:
             saneyaml.dump(data),
             content_type="application/x-yaml",
         )
-        response["Content-Disposition"] = f'attachment; filename="{self.export_filename}.yaml"'
+        response["Content-Disposition"] = self.get_content_disposition("yaml")
         return response
 
 
