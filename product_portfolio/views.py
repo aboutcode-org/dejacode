@@ -60,6 +60,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
+from django.views.generic.detail import BaseDetailView
 
 import odfdo
 import saneyaml
@@ -3026,3 +3027,65 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         )
 
         return context
+
+
+class ProductLicenseComplianceExportView(
+    LoginRequiredMixin,
+    ExportComplianceMixin,
+    BaseProductViewMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    """Export license compliance data for a single product."""
+
+    export_filename = "license_compliance"
+    export_fields = {
+        "spdx_license_key": "SPDX license key",
+        "short_name": "Short name",
+        "key": "Key",
+        "package_count": "Packages",
+        "compliance_alert": "Compliance alert",
+    }
+
+    def get_export_filename(self, extension):
+        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
+        product = self.get_object()
+        slug = f"{product.name}_{product.version}".replace(" ", "_")
+        return f"{self.export_filename}_{slug}_{timestamp}.{extension}"
+
+    def get_export_queryset(self):
+        productpackages = self.object.productpackages.all()
+        licenses = License.objects.filter(productpackage__in=productpackages)
+        return (
+            licenses.values("key", "short_name", "spdx_license_key")
+            .annotate(
+                package_count=Count("productpackage"),
+                compliance_alert=F("usage_policy__compliance_alert"),
+            )
+            .order_by("-package_count")
+        )
+
+    def get_export_rows(self):
+        return [
+            tuple(entry.get(field, "") or "" for field in self.export_fields)
+            for entry in self.get_export_queryset()
+        ]
+
+    def export_json(self):
+        data = list(self.get_export_queryset())
+        response = HttpResponse(
+            json.dumps(data, indent=2, default=str),
+            content_type="application/json",
+        )
+        response["Content-Disposition"] = self.get_content_disposition("json")
+        return response
+
+    def export_yaml(self):
+        data = json.loads(json.dumps(list(self.get_export_queryset()), default=str))
+        response = HttpResponse(
+            saneyaml.dump(data),
+            content_type="application/x-yaml",
+        )
+        response["Content-Disposition"] = self.get_content_disposition("yaml")
+        return response

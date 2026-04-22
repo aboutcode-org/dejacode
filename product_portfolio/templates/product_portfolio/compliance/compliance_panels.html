@@ -18,6 +18,40 @@
             {% trans "Warning" %}
           </span>
         {% endif %}
+        <div class="dropdown">
+          <button class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="dropdown">
+            <i class="fas fa-download"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            {% with export_license_compliance_url=product.get_export_license_compliance_url %}
+            <li>
+              <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=csv">
+                <i class="fas fa-download me-1"></i>{% trans "Comma-separated Values (.csv)" %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=json">
+                <i class="fas fa-download me-1"></i>{% trans "JSON (.json)" %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=ods">
+                <i class="fas fa-download me-1"></i>{% trans "OpenDocument (.ods)" %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=xlsx">
+                <i class="fas fa-download me-1"></i>{% trans "Microsoft Excel (.xlsx)" %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=yaml">
+                <i class="fas fa-download me-1"></i>{% trans "YAML (.yaml)" %}
+              </a>
+            </li>
+            {% endwith %}
+          </ul>
+        </div>
       </div>
 
       <p class="text-secondary small mb-2">
