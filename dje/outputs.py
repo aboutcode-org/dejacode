@@ -13,6 +13,7 @@ from datetime import datetime
 
 from django.http import FileResponse
 from django.http import Http404
+from django.utils import timezone
 
 import msgspec
 from cyclonedx import output as cyclonedx_output
@@ -31,6 +32,27 @@ CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
 def safe_filename(filename):
     """Convert the provided `filename` to a safe filename."""
     return re.sub("[^A-Za-z0-9.-]+", "_", filename).lower()
+
+
+def get_filename(instance, extension):
+    filename = f"dejacode_{instance.dataspace.name}_{instance}.{extension}"
+    return safe_filename(filename)
+
+
+def get_export_filename(dataspace, report_type, extension, instance=None):
+    """Return a safe filename for exports."""
+    timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
+    if instance:
+        filename = f"dejacode_{dataspace.name}_{instance}_{report_type}_{timestamp}.{extension}"
+    else:
+        filename = f"dejacode_{dataspace.name}_{report_type}_{timestamp}.{extension}"
+    return safe_filename(filename)
+
+
+def get_spdx_filename(spdx_document):
+    document_name = spdx_document.as_dict()["name"]
+    filename = f"{document_name}.spdx.json"
+    return safe_filename(filename)
 
 
 def get_attachment_response(file_content, filename, content_type):
@@ -95,12 +117,6 @@ def get_spdx_document(instance, user):
     )
 
     return document
-
-
-def get_spdx_filename(spdx_document):
-    document_name = spdx_document.as_dict()["name"]
-    filename = f"{document_name}.spdx.json"
-    return safe_filename(filename)
 
 
 def get_cyclonedx_bom(instance, user, include_components=True, include_vex=False):
@@ -193,12 +209,6 @@ def sort_bom_with_schema_ordering(bom_as_dict, schema_version):
     ordered_dict = {key: bom_as_dict.get(key) for key in order_from_schema if key in bom_as_dict}
 
     return json.dumps(ordered_dict, indent=2)
-
-
-def get_filename(instance, extension):
-    base_filename = f"dejacode_{instance.dataspace.name}_{instance._meta.model_name}"
-    filename = f"{base_filename}_{instance}.{extension}.json"
-    return safe_filename(filename)
 
 
 CDX_STATE_TO_CSAF_STATUS = {

@@ -191,9 +191,35 @@ class OutputsTestCase(TestCase):
 
     def test_outputs_get_filename(self):
         self.assertEqual(
-            "dejacode_nexb_product_product1_with_space_1.0.cdx.json",
-            outputs.get_filename(instance=self.product1, extension="cdx"),
+            "dejacode_nexb_product1_with_space_1.0.cdx.json",
+            outputs.get_filename(instance=self.product1, extension="cdx.json"),
         )
+
+    def test_outputs_get_export_filename(self):
+        mock_now = datetime(2024, 10, 10, 12, 0, 0, tzinfo=UTC)
+        with mock.patch("dje.outputs.timezone") as mock_timezone:
+            mock_timezone.now.return_value = mock_now
+
+            filename_without_instance = outputs.get_export_filename(
+                dataspace=self.dataspace,
+                report_type="vulnerabilities",
+                extension="csv",
+            )
+            self.assertEqual(
+                "dejacode_nexb_vulnerabilities_2024-10-10_120000.csv",
+                filename_without_instance,
+            )
+
+            filename_with_instance = outputs.get_export_filename(
+                dataspace=self.dataspace,
+                report_type="vulnerabilities",
+                extension="csv",
+                instance=self.product1,
+            )
+            self.assertEqual(
+                "dejacode_nexb_product1_with_space_1.0_vulnerabilities_2024-10-10_120000.csv",
+                filename_with_instance,
+            )
 
     def test_outputs_get_csaf_security_advisory(self):
         mock_now = datetime(2024, 12, 19, 12, 0, 0, tzinfo=UTC)

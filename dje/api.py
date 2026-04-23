@@ -660,6 +660,6 @@ class CycloneDXSOMActionMixin:
 
         return outputs.get_attachment_response(
             file_content=cyclonedx_bom_json,
-            filename=outputs.get_filename(instance, extension="cdx"),
+            filename=outputs.get_filename(instance, extension="cdx.json"),
             content_type="application/json",
         )

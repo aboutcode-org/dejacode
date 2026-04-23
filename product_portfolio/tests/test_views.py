@@ -3060,9 +3060,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
         response = self.client.get(export_cyclonedx_url)
-        self.assertEqual(
-            "dejacode_nexb_product_product1_with_space_1.0.cdx.json", response.filename
-        )
+        self.assertEqual("dejacode_nexb_product1_with_space_1.0.cdx.json", response.filename)
         self.assertEqual("application/json", response.headers["Content-Type"])
 
         content = io.BytesIO(b"".join(response.streaming_content))
@@ -3145,9 +3143,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         export_openvex_url = self.product1.get_export_openvex_url()
         response = self.client.get(export_openvex_url)
-        self.assertEqual(
-            "dejacode_nexb_product_product1_with_space_1.0.openvex.json", response.filename
-        )
+        self.assertEqual("dejacode_nexb_product1_with_space_1.0.openvex.json", response.filename)
         self.assertEqual("application/json", response.headers["Content-Type"])
 
         content = io.BytesIO(b"".join(response.streaming_content))

@@ -49,7 +49,6 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.html import mark_safe
@@ -81,6 +80,7 @@ from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import outputs
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
 from dje.filters import HasCountFilter
@@ -2837,12 +2837,22 @@ class ExportComplianceMixin:
     def get_export_rows(self):
         return self.get_export_queryset().values_list(*self.get_export_fields())
 
-    def get_export_filename(self, extension):
-        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
-        return f"{self.export_filename}_{timestamp}.{extension}"
+    def build_export_filename(self, extension):
+        instance = getattr(self, "object", None)
+        if instance:
+            dataspace = instance.dataspace
+        else:
+            dataspace = self.dataspace
+
+        return outputs.get_export_filename(
+            dataspace=dataspace,
+            report_type=self.export_filename,
+            extension=extension,
+            instance=instance,
+        )
 
     def get_content_disposition(self, extension):
-        return f'attachment; filename="{self.get_export_filename(extension)}"'
+        return f'attachment; filename="{self.build_export_filename(extension)}"'
 
     def export(self, export_format):
         if export_format == "csv":
@@ -3051,12 +3061,6 @@ class ProductLicenseComplianceExportView(
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().get(request, *args, **kwargs)
-
-    def get_export_filename(self, extension):
-        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
-        product = self.get_object()
-        slug = f"{product.name}_{product.version}".replace(" ", "_")
-        return f"{self.export_filename}_{slug}_{timestamp}.{extension}"
 
     def get_export_queryset(self):
         productpackages = self.object.productpackages.all()
