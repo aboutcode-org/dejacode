@@ -13,6 +13,18 @@
 {% url 'api_v2:api-root' as api_root_url %}
 {% url 'account_profile' as account_profile_url %}
 
+<style>
+  #sideMenu .nav-pills .nav-link.active {
+    color: #fff !important;
+  }
+  #sideMenu .nav-link {
+    text-decoration: none;
+  }
+  #sideMenu .nav-pills .nav-link:not(.active):hover {
+    background-color: var(--bs-tertiary-bg);
+  }
+</style>
+
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu" aria-labelledby="sideMenuLabel" style="width: 290px;">
   <div class="offcanvas-header border-bottom">
     <h5 class="offcanvas-title fw-semibold d-flex align-items-center" id="sideMenuLabel">
@@ -23,7 +35,7 @@
 
   <div class="offcanvas-body p-0 d-flex flex-column">
 
-    <ul class="nav nav-pills flex-column p-2 gap-1">
+    <ul class="nav nav-pills flex-column p-2">
 
       {# Home #}
       <li class="nav-item">
@@ -33,7 +45,7 @@
       </li>
 
       {# Catalog section #}
-      <li class="nav-item mt-2">
+      <li class="nav-item mt-4">
         <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
           {% trans "Catalog" %}
         </span>
@@ -71,7 +83,7 @@
       {% endif %}
 
       {# Tools section #}
-      <li class="nav-item mt-2">
+      <li class="nav-item mt-4">
         <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
           {% trans "Tools" %}
         </span>
@@ -98,7 +110,7 @@
       {# Integrations section #}
       {% if not user.is_anonymous %}
         {% if user.dataspace.enable_package_scanning or user.dataspace.enable_purldb_access or user.dataspace.enable_vulnerablecodedb_access or user.is_staff %}
-          <li class="nav-item mt-2">
+          <li class="nav-item mt-4">
             <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
               {% trans "Integrations" %}
             </span>
@@ -111,12 +123,12 @@
             </li>
           {% endif %}
           {% if user.dataspace.enable_vulnerablecodedb_access %}
-          <li class="nav-item">
-            <a href="{{ vulnerability_list_url }}" class="nav-link text-body d-flex align-items-center {% if vulnerability_list_url in request.path %}active{% endif %}">
-              <i class="fas fa-bug fa-fw me-2"></i>{% trans "Vulnerabilities" %}
-            </a>
-          </li>
-        {% endif %}
+            <li class="nav-item">
+              <a href="{{ vulnerability_list_url }}" class="nav-link text-body d-flex align-items-center {% if vulnerability_list_url in request.path %}active{% endif %}">
+                <i class="fas fa-bug fa-fw me-2"></i>{% trans "Vulnerabilities" %}
+              </a>
+            </li>
+          {% endif %}
           {% if user.dataspace.enable_purldb_access %}
             <li class="nav-item">
               <a href="{{ purldb_list_url }}" class="nav-link text-body d-flex align-items-center {% if purldb_list_url in request.path %}active{% endif %}">
@@ -136,7 +148,7 @@
 
       {# Developer section #}
       {% if not user.is_anonymous %}
-        <li class="nav-item mt-2">
+        <li class="nav-item mt-4">
           <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
             {% trans "Developer" %}
           </span>
@@ -155,7 +167,7 @@
 
       {# Administration section (staff only) #}
       {% if user.is_staff %}
-        <li class="nav-item mt-2">
+        <li class="nav-item mt-4">
           <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
             {% trans "Administration" %}
           </span>
