@@ -420,6 +420,9 @@ class Product(
     def get_export_license_compliance_url(self):
         return self.get_url("export_license_compliance")
 
+    def get_export_security_compliance_url(self):
+        return self.get_url("export_security_compliance")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)

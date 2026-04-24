@@ -2865,12 +2865,21 @@ class ExportComplianceMixin:
             return self.export_yaml()
         return self.export_json()
 
+    @staticmethod
+    def normalize_cell_value(value):
+        """Convert list values to comma-joined strings for spreadsheet cells."""
+        if isinstance(value, list):
+            return ", ".join(str(item) for item in value)
+        return value
+
     def export_csv(self):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = self.get_content_disposition("csv")
         writer = csv.writer(response)
         writer.writerow(self.get_export_headers())
-        writer.writerows(self.get_export_rows())
+        writer.writerows(
+            [self.normalize_cell_value(value) for value in row] for row in self.get_export_rows()
+        )
         return response
 
     def export_xlsx(self):
@@ -2882,7 +2891,7 @@ class ExportComplianceMixin:
         worksheet.append(headers)
 
         for row in self.get_export_rows():
-            worksheet.append(row)
+            worksheet.append([self.normalize_cell_value(value) for value in row])
 
         style_xlsx_worksheet(worksheet, headers)
 
@@ -2909,7 +2918,9 @@ class ExportComplianceMixin:
         for row_data in [self.get_export_headers()] + list(self.get_export_rows()):
             row = odfdo.Row()
             for value in row_data:
-                row.append(odfdo.Cell(str(value if value is not None else ""), cell_type="string"))
+                normalized = self.normalize_cell_value(value)
+                cell_value = str(normalized) if normalized is not None else ""
+                row.append(odfdo.Cell(cell_value, cell_type="string"))
             table.append(row)
 
         document = odfdo.Document("spreadsheet")
@@ -3069,3 +3080,44 @@ class ProductLicenseComplianceExportView(
             package_count=Count("productpackage"),
             compliance_alert=F("usage_policy__compliance_alert"),
         ).order_by("-package_count")
+
+
+class ProductSecurityComplianceExportView(
+    LoginRequiredMixin,
+    ExportComplianceMixin,
+    BaseProductViewMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    """Export security compliance data for a single product."""
+
+    export_filename = "security_compliance"
+    export_fields = {
+        "vulnerability_id": "Vulnerability ID",
+        "aliases": "Aliases",
+        "summary": "Summary",
+        "risk_level": "Risk level",
+        "risk_score": "Risk score",
+        "exploitability": "Exploitability",
+        "weighted_severity": "Weighted severity",
+        "affected_package_count": "Affected packages",
+        "fixed_packages_count": "Fixed packages",
+        "resource_url": "Reference URL",
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def get_export_queryset(self):
+        product = self.object
+        vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
+        package_ids = product.productpackages.values_list("package_id", flat=True)
+        return vulnerabilities.annotate(
+            affected_package_count=Count(
+                "affected_packages",
+                filter=Q(affected_packages__in=package_ids),
+                distinct=True,
+            ),
+        ).order_by_risk()

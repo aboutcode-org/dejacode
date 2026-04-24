@@ -4110,3 +4110,142 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         self.assertEqual("mit", data[0]["key"])
+
+    def test_product_portfolio_product_security_compliance_export_view_csv(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        response = self.client.get(url + "?export=csv")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("text/csv", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+        self.assertIn("product1_with_space", response["Content-Disposition"])
+
+        content = response.content.decode()
+        expected_header = (
+            "Vulnerability ID,Aliases,Summary,Risk level,Risk score,"
+            "Exploitability,Weighted severity,Affected packages,Fixed packages,"
+            "Reference URL"
+        )
+        self.assertIn(expected_header, content)
+        self.assertIn(vulnerability.vulnerability_id, content)
+        # Aliases must be flattened to a comma-joined string, not a Python list repr.
+        self.assertIn('"CVE-2024-42005, GHSA-pv4p-cwwg-4rph, PYSEC-2024-70"', content)
+        self.assertNotIn("['CVE-2024-42005'", content)
+
+    def test_product_portfolio_product_security_compliance_export_view_json(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertEqual(1, len(data))
+        self.assertEqual(vulnerability.vulnerability_id, data[0]["vulnerability_id"])
+        # Aliases stay a real list in JSON, not a comma-joined string.
+        self.assertEqual(
+            ["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+            data[0]["aliases"],
+        )
+        self.assertEqual(1, data[0]["affected_package_count"])
+
+    def test_product_portfolio_product_security_compliance_export_view_xlsx(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=xlsx")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".xlsx", response["Content-Disposition"])
+
+    def test_product_portfolio_product_security_compliance_export_view_ods(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=ods")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.oasis.opendocument.spreadsheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".ods", response["Content-Disposition"])
+
+    def test_product_portfolio_product_security_compliance_export_view_yaml(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=yaml")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/x-yaml", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".yaml", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn(vulnerability.vulnerability_id, content)
+        self.assertIn("vulnerability_id", content)
+
+    def test_product_portfolio_product_security_compliance_export_view_respects_permissions(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        # Without permission, the detail lookup should 404
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(404, response.status_code)
+
+        # With permission, the export is returned
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        vulnerability_ids = [entry["vulnerability_id"] for entry in data]
+        self.assertIn(vulnerability.vulnerability_id, vulnerability_ids)
