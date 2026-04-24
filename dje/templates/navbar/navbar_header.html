@@ -1,20 +1,9 @@
 {% load i18n static %}
-
 {% url 'product_portfolio:product_list' as product_list_url %}
-{% url 'component_catalog:component_list' as component_list_url %}
 {% url 'component_catalog:package_list' as package_list_url %}
 {% url 'license_library:license_list' as license_list_url %}
-{% url 'organization:owner_list' as owner_list_url %}
-{% url 'global_search' as global_search_url %}
 {% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
-{% url 'reporting:report_list' as report_list_url %}
-{% url 'workflow:request_list' as request_list_url %}
-{% url 'component_catalog:scan_list' as scan_list_url %}
-{% url 'purldb:purldb_list' as purldb_list_url %}
-{% url 'vulnerabilities:vulnerability_list' as vulnerability_list_url %}
 {% url 'django_registration_register' as register_url %}
-{% url 'api_v2:api-root' as api_root_url %}
-{% url 'account_profile' as account_profile_url %}
 
 <nav class="navbar navbar-expand-xl fixed-top">
   {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
@@ -27,7 +16,7 @@
       <i class="fas fa-bars"></i>
     </button>
     {% block nav-brand %}
-      <div class="navbar-brand">{{ SITE_TITLE }}</div>
+      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
     {% endblock %}
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -40,7 +29,7 @@
       <div class="offcanvas-body">
         <ul class="navbar-nav">
           {% include 'navbar/navbar_header_left_menu.html' %}
-          {% include 'navbar/navbar_header_tools_menu.html' %}
+          {# include 'navbar/navbar_header_tools_menu.html' #}
         </ul>
         <ul class="navbar-nav ms-xl-auto">
           {% include 'navbar/navbar_header_search_form.html' %}

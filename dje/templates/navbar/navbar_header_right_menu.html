@@ -60,38 +60,8 @@
           <div class="dropdown-header">Administration</div>
           <a class="dropdown-item" href="{% url 'admin:index' %}">
             <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
-            Dashboard
+            Admin Dashboard
           </a>
-          {% if perms.product_portfolio.change_product %}
-            <a class="dropdown-item" href="{% url 'admin:product_portfolio_product_changelist' %}">
-              <i class="fa fa-briefcase" aria-hidden="true"></i>
-              {% trans 'Products' %}
-            </a>
-          {% endif %}
-          {% if perms.component_catalog.change_component %}
-            <a class="dropdown-item" href="{% url 'admin:component_catalog_component_changelist' %}">
-              <i class="fa fa-puzzle-piece" aria-hidden="true"></i>
-              {% trans 'Components' %}
-            </a>
-          {% endif %}
-          {% if perms.component_catalog.change_package %}
-            <a class="dropdown-item" href="{% url 'admin:component_catalog_package_changelist' %}">
-              <i class="fas fa-archive" aria-hidden="true"></i>
-              {% trans 'Packages' %}
-            </a>
-          {% endif %}
-          {% if perms.license_library.change_license %}
-            <a class="dropdown-item" href="{% url 'admin:license_library_license_changelist' %}">
-              <i class="fa fa-book" aria-hidden="true"></i>
-              {% trans 'Licenses' %}
-            </a>
-          {% endif %}
-          {% if perms.organization.change_owner %}
-            <a class="dropdown-item" href="{% url 'admin:organization_owner_changelist' %}">
-              <i class="fa fa-users" aria-hidden="true"></i>
-              {% trans 'Owners' %}
-            </a>
-          {% endif %}
         {% endif %}
         {% if user.is_staff %}
           <div class="dropdown-divider"></div>
@@ -107,7 +77,7 @@
         <form id="logout-form" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button type="submit" class="dropdown-item">
-            <i class="fa fa-power-off" aria-hidden="true"></i>
+            <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
             {% trans "Sign Out" %}
           </button>
         </form>
