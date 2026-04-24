@@ -21,7 +21,9 @@ from product_portfolio.views import ProductExportCSAFDocumentView
 from product_portfolio.views import ProductExportCycloneDXBOMView
 from product_portfolio.views import ProductExportOpenVEXView
 from product_portfolio.views import ProductExportSPDXDocumentView
+from product_portfolio.views import ProductLicenseComplianceExportView
 from product_portfolio.views import ProductListView
+from product_portfolio.views import ProductSecurityComplianceExportView
 from product_portfolio.views import ProductSendAboutFilesView
 from product_portfolio.views import ProductTabCodebaseView
 from product_portfolio.views import ProductTabComplianceView
@@ -115,6 +117,8 @@ urlpatterns = [
     *product_path("export_cyclonedx", ProductExportCycloneDXBOMView.as_view()),
     *product_path("export_csaf", ProductExportCSAFDocumentView.as_view()),
     *product_path("export_openvex", ProductExportOpenVEXView.as_view()),
+    *product_path("export_license_compliance", ProductLicenseComplianceExportView.as_view()),
+    *product_path("export_security_compliance", ProductSecurityComplianceExportView.as_view()),
     *product_path("attribution", AttributionView.as_view()),
     *product_path("change", ProductUpdateView.as_view()),
     *product_path("delete", ProductDeleteView.as_view()),

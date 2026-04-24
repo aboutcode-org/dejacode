@@ -2407,11 +2407,11 @@ class ExportCycloneDXBOMView(
         spec_version = self.request.GET.get("spec_version")
         content = self.request.GET.get("content", "sbom")
 
-        extension = "cdx"
+        extension = "cdx.json"
         include_components = True
         include_vex = False
         if content == "vex":
-            extension = "vex"
+            extension = "vex.json"
             include_components = False
             include_vex = True
         elif content == "combined":
@@ -2446,7 +2446,7 @@ class ExportCSAFDocumentView(
         product = self.get_object()
         security_advisory = outputs.get_csaf_security_advisory(product)
         security_advisory_json = security_advisory.model_dump_json(indent=2, exclude_none=True)
-        filename = outputs.get_filename(product, extension="csaf.vex")
+        filename = outputs.get_filename(product, extension="csaf.vex.json")
 
         return outputs.get_attachment_response(
             file_content=security_advisory_json,
@@ -2464,7 +2464,7 @@ class ExportOpenVEXView(
     def get(self, request, *args, **kwargs):
         product = self.get_object()
         openvex_document_json = outputs.get_openvex_document_json(product)
-        filename = outputs.get_filename(product, extension="openvex")
+        filename = outputs.get_filename(product, extension="openvex.json")
 
         return outputs.get_attachment_response(
             file_content=openvex_document_json,

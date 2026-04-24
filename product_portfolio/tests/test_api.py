@@ -573,7 +573,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
         response = self.client.get(url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        expected = 'attachment; filename="dejacode_nexb_product_p1.cdx.json"'
+        expected = 'attachment; filename="dejacode_nexb_p1.cdx.json"'
         self.assertEqual(expected, response["Content-Disposition"])
         self.assertEqual("application/json", response["Content-Type"])
         self.assertIn('"specVersion": "1.6"', str(response.getvalue()))

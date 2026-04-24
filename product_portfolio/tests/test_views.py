@@ -38,8 +38,10 @@ from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
 from license_library.models import License
+from license_library.tests import make_license
 from organization.models import Owner
 from policy.models import UsagePolicy
+from policy.tests import make_usage_policy
 from product_portfolio.forms import ProductForm
 from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
@@ -3060,9 +3062,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
         response = self.client.get(export_cyclonedx_url)
-        self.assertEqual(
-            "dejacode_nexb_product_product1_with_space_1.0.cdx.json", response.filename
-        )
+        self.assertEqual("dejacode_nexb_product1_with_space_1.0.cdx.json", response.filename)
         self.assertEqual("application/json", response.headers["Content-Type"])
 
         content = io.BytesIO(b"".join(response.streaming_content))
@@ -3145,9 +3145,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username=self.super_user.username, password="secret")
         export_openvex_url = self.product1.get_export_openvex_url()
         response = self.client.get(export_openvex_url)
-        self.assertEqual(
-            "dejacode_nexb_product_product1_with_space_1.0.openvex.json", response.filename
-        )
+        self.assertEqual("dejacode_nexb_product1_with_space_1.0.openvex.json", response.filename)
         self.assertEqual("application/json", response.headers["Content-Type"])
 
         content = io.BytesIO(b"".join(response.streaming_content))
@@ -3997,3 +3995,257 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, product_data["vulnerability_count"])
         self.assertEqual(1, product_data["critical_count"])
         self.assertEqual(0, product_data["low_count"])
+
+    def test_product_portfolio_product_license_compliance_export_view_csv(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        usage_policy = make_usage_policy(
+            self.dataspace,
+            model=License,
+            compliance_alert="error",
+        )
+        license1 = make_license(
+            self.dataspace,
+            key="mit",
+            short_name="MIT",
+            spdx_license_key="MIT",
+            usage_policy=usage_policy,
+        )
+        make_product_package(self.product1, license_expression=license1.key)
+
+        response = self.client.get(url + "?export=csv")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("text/csv", response["Content-Type"])
+        self.assertIn("license_compliance_", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+        # Filename includes the product since the view carries a detail object
+        self.assertIn("product1_with_space", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn("SPDX license key,Short name,Key,Packages,Compliance alert", content)
+        self.assertIn("MIT,MIT,mit,1,error", content)
+
+    def test_product_portfolio_product_license_compliance_export_view_json(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        license1 = make_license(self.dataspace, key="mit", short_name="MIT")
+        license2 = make_license(self.dataspace, key="apache-2.0", short_name="Apache 2.0")
+        make_product_package(self.product1, license_expression=license1.key)
+        make_product_package(self.product1, license_expression=f"{license1.key} AND {license2.key}")
+
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertIn("license_compliance_", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertEqual(2, len(data))
+        # Ordered by package_count desc: MIT (2 packages) before Apache (1 package)
+        self.assertEqual("mit", data[0]["key"])
+        self.assertEqual(2, data[0]["package_count"])
+        self.assertEqual("apache-2.0", data[1]["key"])
+        self.assertEqual(1, data[1]["package_count"])
+
+    def test_product_portfolio_product_license_compliance_export_view_xlsx(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        license1 = make_license(self.dataspace, key="mit", short_name="MIT")
+        make_product_package(self.product1, license_expression=license1.key)
+        response = self.client.get(url + "?export=xlsx")
+
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("license_compliance_", response["Content-Disposition"])
+        self.assertIn(".xlsx", response["Content-Disposition"])
+
+    def test_product_portfolio_product_license_compliance_export_view_ods(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        license1 = make_license(self.dataspace, key="mit", short_name="MIT")
+        make_product_package(self.product1, license_expression=license1.key)
+
+        response = self.client.get(url + "?export=ods")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.oasis.opendocument.spreadsheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("license_compliance_", response["Content-Disposition"])
+        self.assertIn(".ods", response["Content-Disposition"])
+
+    def test_product_portfolio_product_license_compliance_export_view_yaml(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        license1 = make_license(self.dataspace, key="mit", short_name="MIT")
+        make_product_package(self.product1, license_expression=license1.key)
+
+        response = self.client.get(url + "?export=yaml")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/x-yaml", response["Content-Type"])
+        self.assertIn("license_compliance_", response["Content-Disposition"])
+        self.assertIn(".yaml", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn("mit", content)
+        self.assertIn("package_count", content)
+
+    def test_product_portfolio_product_license_compliance_export_view_respects_permissions(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = self.product1.get_export_license_compliance_url()
+
+        license1 = make_license(self.dataspace, key="mit", short_name="MIT")
+        make_product_package(self.product1, license_expression=license1.key)
+
+        # Without permission, the detail lookup should 404
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(404, response.status_code)
+
+        # With permission, the export is returned
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("mit", data[0]["key"])
+
+    def test_product_portfolio_product_security_compliance_export_view_csv(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        response = self.client.get(url + "?export=csv")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("text/csv", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".csv", response["Content-Disposition"])
+        self.assertIn("product1_with_space", response["Content-Disposition"])
+
+        content = response.content.decode()
+        expected_header = (
+            "Vulnerability ID,Aliases,Summary,Risk level,Risk score,"
+            "Exploitability,Weighted severity,Affected packages,Fixed packages,"
+            "Reference URL"
+        )
+        self.assertIn(expected_header, content)
+        self.assertIn(vulnerability.vulnerability_id, content)
+        # Aliases must be flattened to a comma-joined string, not a Python list repr.
+        self.assertIn('"CVE-2024-42005, GHSA-pv4p-cwwg-4rph, PYSEC-2024-70"', content)
+        self.assertNotIn("['CVE-2024-42005'", content)
+
+    def test_product_portfolio_product_security_compliance_export_view_json(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+
+        data = json.loads(response.content)
+        self.assertEqual(1, len(data))
+        self.assertEqual(vulnerability.vulnerability_id, data[0]["vulnerability_id"])
+        # Aliases stay a real list in JSON, not a comma-joined string.
+        self.assertEqual(
+            ["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+            data[0]["aliases"],
+        )
+        self.assertEqual(1, data[0]["affected_package_count"])
+
+    def test_product_portfolio_product_security_compliance_export_view_xlsx(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=xlsx")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".xlsx", response["Content-Disposition"])
+
+    def test_product_portfolio_product_security_compliance_export_view_ods(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=ods")
+        self.assertEqual(200, response.status_code)
+        expected_type = "application/vnd.oasis.opendocument.spreadsheet"
+        self.assertEqual(expected_type, response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".ods", response["Content-Disposition"])
+
+    def test_product_portfolio_product_security_compliance_export_view_yaml(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=self.package1,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=self.package1)
+
+        response = self.client.get(url + "?export=yaml")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/x-yaml", response["Content-Type"])
+        self.assertIn("security_compliance_", response["Content-Disposition"])
+        self.assertIn(".yaml", response["Content-Disposition"])
+
+        content = response.content.decode()
+        self.assertIn(vulnerability.vulnerability_id, content)
+        self.assertIn("vulnerability_id", content)
+
+    def test_product_portfolio_product_security_compliance_export_view_respects_permissions(self):
+        self.client.login(username=self.basic_user.username, password="secret")
+        url = self.product1.get_export_security_compliance_url()
+
+        package = make_package(self.dataspace, filename="isolated")
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            aliases=["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
+        )
+        make_product_package(self.product1, package=package)
+
+        # Without permission, the detail lookup should 404
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(404, response.status_code)
+
+        # With permission, the export is returned
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(url + "?export=json")
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        vulnerability_ids = [entry["vulnerability_id"] for entry in data]
+        self.assertIn(vulnerability.vulnerability_id, vulnerability_ids)

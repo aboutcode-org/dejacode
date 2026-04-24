@@ -49,7 +49,6 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 from django.utils.html import mark_safe
@@ -60,6 +59,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
 from django.views.generic import TemplateView
+from django.views.generic.detail import BaseDetailView
 
 import odfdo
 import saneyaml
@@ -80,6 +80,7 @@ from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dje import outputs
 from dje.client_data import add_client_data
 from dje.filters import BooleanChoiceFilter
 from dje.filters import HasCountFilter
@@ -2836,12 +2837,22 @@ class ExportComplianceMixin:
     def get_export_rows(self):
         return self.get_export_queryset().values_list(*self.get_export_fields())
 
-    def get_export_filename(self, extension):
-        timestamp = timezone.now().strftime("%Y-%m-%d_%H%M%S")
-        return f"{self.export_filename}_{timestamp}.{extension}"
+    def build_export_filename(self, extension):
+        instance = getattr(self, "object", None)
+        if instance:
+            dataspace = instance.dataspace
+        else:
+            dataspace = self.dataspace
+
+        return outputs.get_export_filename(
+            dataspace=dataspace,
+            report_type=self.export_filename,
+            extension=extension,
+            instance=instance,
+        )
 
     def get_content_disposition(self, extension):
-        return f'attachment; filename="{self.get_export_filename(extension)}"'
+        return f'attachment; filename="{self.build_export_filename(extension)}"'
 
     def export(self, export_format):
         if export_format == "csv":
@@ -2854,12 +2865,21 @@ class ExportComplianceMixin:
             return self.export_yaml()
         return self.export_json()
 
+    @staticmethod
+    def normalize_cell_value(value):
+        """Convert list values to comma-joined strings for spreadsheet cells."""
+        if isinstance(value, list):
+            return ", ".join(str(item) for item in value)
+        return value
+
     def export_csv(self):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = self.get_content_disposition("csv")
         writer = csv.writer(response)
         writer.writerow(self.get_export_headers())
-        writer.writerows(self.get_export_rows())
+        writer.writerows(
+            [self.normalize_cell_value(value) for value in row] for row in self.get_export_rows()
+        )
         return response
 
     def export_xlsx(self):
@@ -2871,7 +2891,7 @@ class ExportComplianceMixin:
         worksheet.append(headers)
 
         for row in self.get_export_rows():
-            worksheet.append(row)
+            worksheet.append([self.normalize_cell_value(value) for value in row])
 
         style_xlsx_worksheet(worksheet, headers)
 
@@ -2898,7 +2918,9 @@ class ExportComplianceMixin:
         for row_data in [self.get_export_headers()] + list(self.get_export_rows()):
             row = odfdo.Row()
             for value in row_data:
-                row.append(odfdo.Cell(str(value if value is not None else ""), cell_type="string"))
+                normalized = self.normalize_cell_value(value)
+                cell_value = str(normalized) if normalized is not None else ""
+                row.append(odfdo.Cell(cell_value, cell_type="string"))
             table.append(row)
 
         document = odfdo.Document("spreadsheet")
@@ -3026,3 +3048,76 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         )
 
         return context
+
+
+class ProductLicenseComplianceExportView(
+    LoginRequiredMixin,
+    ExportComplianceMixin,
+    BaseProductViewMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    """Export license compliance data for a single product."""
+
+    export_filename = "license_compliance"
+    export_fields = {
+        "spdx_license_key": "SPDX license key",
+        "short_name": "Short name",
+        "key": "Key",
+        "package_count": "Packages",
+        "compliance_alert": "Compliance alert",
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def get_export_queryset(self):
+        productpackages = self.object.productpackages.all()
+        licenses = License.objects.filter(productpackage__in=productpackages)
+        return licenses.annotate(
+            package_count=Count("productpackage"),
+            compliance_alert=F("usage_policy__compliance_alert"),
+        ).order_by("-package_count")
+
+
+class ProductSecurityComplianceExportView(
+    LoginRequiredMixin,
+    ExportComplianceMixin,
+    BaseProductViewMixin,
+    DataspaceScopeMixin,
+    GetDataspacedObjectMixin,
+    BaseDetailView,
+):
+    """Export security compliance data for a single product."""
+
+    export_filename = "security_compliance"
+    export_fields = {
+        "vulnerability_id": "Vulnerability ID",
+        "aliases": "Aliases",
+        "summary": "Summary",
+        "risk_level": "Risk level",
+        "risk_score": "Risk score",
+        "exploitability": "Exploitability",
+        "weighted_severity": "Weighted severity",
+        "affected_package_count": "Affected packages",
+        "fixed_packages_count": "Fixed packages",
+        "resource_url": "Reference URL",
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def get_export_queryset(self):
+        product = self.object
+        vulnerabilities = product.get_vulnerability_qs(risk_threshold=None)
+        package_ids = product.productpackages.values_list("package_id", flat=True)
+        return vulnerabilities.annotate(
+            affected_package_count=Count(
+                "affected_packages",
+                filter=Q(affected_packages__in=package_ids),
+                distinct=True,
+            ),
+        ).order_by_risk()

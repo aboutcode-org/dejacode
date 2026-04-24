@@ -5,19 +5,49 @@
     <div class="border rounded-3 p-3 h-100">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fs-6 fw-medium mb-0">{% trans "License compliance" %}</h3>
-        {% if license_issues_count == 0 %}
-          <span class="badge text-bg-success">
-            {% trans "OK" %}
-          </span>
-        {% elif license_error_count > 0 %}
-          <span class="badge text-bg-danger">
-            {% trans "Error" %}
-          </span>
-        {% else %}
-          <span class="badge text-bg-warning">
-            {% trans "Warning" %}
-          </span>
-        {% endif %}
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="dropdown">
+              <i class="fas fa-download"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% with export_license_compliance_url=product.get_export_license_compliance_url %}
+              <li>
+                <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=csv">
+                  <i class="fas fa-download me-1"></i>{% trans "Comma-separated Values (.csv)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=json">
+                  <i class="fas fa-download me-1"></i>{% trans "JSON (.json)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=ods">
+                  <i class="fas fa-download me-1"></i>{% trans "OpenDocument (.ods)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=xlsx">
+                  <i class="fas fa-download me-1"></i>{% trans "Microsoft Excel (.xlsx)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_license_compliance_url }}?export=yaml">
+                  <i class="fas fa-download me-1"></i>{% trans "YAML (.yaml)" %}
+                </a>
+              </li>
+              {% endwith %}
+            </ul>
+          </div>
+          {% if license_issues_count == 0 %}
+            <span class="badge text-bg-success">{% trans "OK" %}</span>
+          {% elif license_error_count > 0 %}
+            <span class="badge text-bg-danger">{% trans "Error" %}</span>
+          {% else %}
+            <span class="badge text-bg-warning">{% trans "Warning" %}</span>
+          {% endif %}
+        </div>
       </div>
 
       <p class="text-secondary small mb-2">
@@ -73,17 +103,53 @@
       {# Header #}
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fs-6 fw-medium mb-0">{% trans "Security compliance" %}</h3>
-        {% if vulnerability_count == 0 or above_threshold_count == 0 %}
-          <span class="badge text-bg-success">{% trans "OK" %}</span>
-        {% elif max_vulnerability_severity == "critical" %}
-          <span class="badge text-bg-danger">{% trans "Critical" %}</span>
-        {% elif max_vulnerability_severity == "high" %}
-          <span class="badge bg-warning-orange">{% trans "High" %}</span>
-        {% elif max_vulnerability_severity == "medium" %}
-          <span class="badge text-bg-warning">{% trans "Medium" %}</span>
-        {% else %}
-          <span class="badge text-bg-info">{% trans "Low" %}</span>
-        {% endif %}
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="dropdown">
+              <i class="fas fa-download"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% with export_security_compliance_url=product.get_export_security_compliance_url %}
+              <li>
+                <a class="dropdown-item" href="{{ export_security_compliance_url }}?export=csv">
+                  <i class="fas fa-download me-1"></i>{% trans "Comma-separated Values (.csv)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_security_compliance_url }}?export=json">
+                  <i class="fas fa-download me-1"></i>{% trans "JSON (.json)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_security_compliance_url }}?export=ods">
+                  <i class="fas fa-download me-1"></i>{% trans "OpenDocument (.ods)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_security_compliance_url }}?export=xlsx">
+                  <i class="fas fa-download me-1"></i>{% trans "Microsoft Excel (.xlsx)" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ export_security_compliance_url }}?export=yaml">
+                  <i class="fas fa-download me-1"></i>{% trans "YAML (.yaml)" %}
+                </a>
+              </li>
+              {% endwith %}
+            </ul>
+          </div>
+          {% if vulnerability_count == 0 or above_threshold_count == 0 %}
+            <span class="badge text-bg-success">{% trans "OK" %}</span>
+          {% elif max_vulnerability_severity == "critical" %}
+            <span class="badge text-bg-danger">{% trans "Critical" %}</span>
+          {% elif max_vulnerability_severity == "high" %}
+            <span class="badge bg-warning-orange">{% trans "High" %}</span>
+          {% elif max_vulnerability_severity == "medium" %}
+            <span class="badge text-bg-warning">{% trans "Medium" %}</span>
+          {% else %}
+            <span class="badge text-bg-info">{% trans "Low" %}</span>
+          {% endif %}
+        </div>
       </div>
 
       {# Summary #}
