@@ -10,7 +10,7 @@
   <li class="nav-item">
     <hr class="d-xl-none my-2 text-white-50">
   </li>
-  {% include 'includes/navbar_theme_toogle.html' %}
+  {% include 'navbar/navbar_theme_toogle.html' %}
   {% if user.is_anonymous %}
     <li class="nav-item">
       <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> {% trans 'Sign in' %}</a>

@@ -5,12 +5,6 @@
       Tools
     </a>
     <div class="dropdown-menu">
-      <div class="dropdown-header">Compliance</div>
-      <a class="dropdown-item{% if compliance_dashboard_url in request.path %} active{% endif %}" href="{{ compliance_dashboard_url }}">
-        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-        Control Center
-      </a>
-      <div class="dropdown-divider"></div>
       <div class="dropdown-header">Reporting</div>
       <a class="dropdown-item{% if report_list_url in request.path %} active{% endif %}" href="{{ report_list_url }}">
         <i class="far fa-chart-bar" aria-hidden="true"></i>
@@ -55,6 +49,16 @@
       <a class="dropdown-item" href="{% url 'api-docs:docs-index' %}">
         <i class="fab fa-leanpub" aria-hidden="true"></i>
         API Documentation
+      </a>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-header">Models</div>
+      <a class="dropdown-item{% if component_list_url in request.path %} active{% endif %}" href="{{ component_list_url }}">
+        <i class="fa fa-puzzle-piece"></i>
+        Components
+      </a>
+      <a class="dropdown-item{% if owner_list_url in request.path %} active{% endif %}" href="{{ owner_list_url }}">
+        <i class="fa fa-users"></i>
+        Owner
       </a>
     </div>
   </li>
