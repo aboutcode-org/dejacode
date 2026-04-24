@@ -45,7 +45,7 @@
       </li>
 
       {# Catalog section #}
-      <li class="nav-item mt-4">
+      <li class="nav-item mt-3">
         <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
           {% trans "Catalog" %}
         </span>
@@ -185,7 +185,7 @@
       {% if user.is_authenticated %}
         <div class="p-3 pb-2">
           <div class="dropup w-100">
-            <button type="button" class="btn btn-light w-100 d-flex align-items-center text-start border" data-bs-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn w-100 d-flex align-items-center text-start border bg-body-tertiary text-body" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-circle-user fa-fw fa-lg me-2"></i>
               <span class="flex-grow-1 text-truncate">
                 <span class="fw-semibold">{% firstof user.first_name user.username|truncatechars:14 %}</span>

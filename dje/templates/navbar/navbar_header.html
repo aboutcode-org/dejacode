@@ -10,8 +10,10 @@
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
   {% else %}
-    <button class="btn btn-outline-secondary me-2" type="button"
-            data-bs-toggle="offcanvas" data-bs-target="#sideMenu" aria-controls="sideMenu"
+    <button class="btn btn-link nav-link px-2 border me-2 fs-5" type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#sideMenu"
+            aria-controls="sideMenu"
             aria-label="Open menu">
       <i class="fas fa-bars"></i>
     </button>
