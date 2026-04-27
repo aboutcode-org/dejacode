@@ -1,8 +1,10 @@
 {% load i18n %}
-<li class="nav-item me-3">
-  <button type="button" class="btn btn-warning btn-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#search-modal" aria-label="{% trans 'Open search' %}">
-    <i class="fas fa-magnifying-glass me-2"></i>
-    <span class="me-3 text-start" style="min-width: 180px;">{% trans "Search" %}...</span>
-    <kbd class="small bg-dark bg-opacity-25 px-2 py-1 rounded">/</kbd>
+<li class="nav-item d-flex align-items-center me-3">
+  <button type="button" class="btn btn-sm bg-body bg-opacity-10 border border-white border-opacity-25 text-white d-flex align-items-center rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#search-modal" aria-label="{% trans 'Open search' %}">
+    <i class="fas fa-magnifying-glass me-2 opacity-75"></i>
+    <span class="opacity-75 text-start flex-grow-1" style="min-width: 150px;">
+      {% trans "Search" %}
+    </span>
+    <kbd class="ms-3 bg-white bg-opacity-10 text-white border border-white border-opacity-25 px-2 rounded fw-normal">/</kbd>
   </button>
 </li>
