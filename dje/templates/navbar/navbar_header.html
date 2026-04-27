@@ -10,7 +10,7 @@
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
   {% else %}
-    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-2" type="button"
+    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-3 nav-chip" type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#side-menu"
             aria-controls="side-menu"
