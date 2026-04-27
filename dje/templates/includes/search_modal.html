@@ -17,18 +17,18 @@
         <div class="p-3 border-bottom">
           <div class="text-body-secondary small text-uppercase fw-semibold mb-2">{% trans "Search in" %}</div>
           <div class="d-flex flex-wrap gap-2" id="search-scope-buttons">
-            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if not product_list_url in request.path and not component_list_url in request.path and not package_list_url in request.path and not license_list_url in request.path and not owner_list_url in request.path %}active{% endif %}" data-scope-action="{{ global_search_url }}" data-scope-label="<i class='fa fa-globe'></i> {% trans 'Global' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if not product_list_url in request.path and not component_list_url in request.path and not package_list_url in request.path and not license_list_url in request.path and not owner_list_url in request.path %}active{% endif %}" data-scope-action="{{ global_search_url }}" data-scope-label="<i class='fa fa-globe'></i> {% trans 'Global' %}">
               <i class="fa fa-globe me-1"></i>{% trans "Global" %}
             </button>
             {% if not user.is_anonymous %}
-              <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if product_list_url in request.path %}active{% endif %}" data-scope-action="{{ product_list_url }}" data-scope-label="<i class='fa fa-briefcase'></i> {% trans 'Product' %}">
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if product_list_url in request.path %}active{% endif %}" data-scope-action="{{ product_list_url }}" data-scope-label="<i class='fa fa-briefcase'></i> {% trans 'Product' %}">
                 <i class="fa fa-briefcase me-1"></i>{% trans "Product" %}
               </button>
             {% endif %}
-            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if package_list_url in request.path %}active{% endif %}" data-scope-action="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fas fa-archive'></i> {% trans 'Package' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if package_list_url in request.path %}active{% endif %}" data-scope-action="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fas fa-archive'></i> {% trans 'Package' %}">
               <i class="fas fa-archive me-1"></i>{% trans "Package" %}
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if license_list_url in request.path %}active{% endif %}" data-scope-action="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fa fa-book'></i> {% trans 'License' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if license_list_url in request.path %}active{% endif %}" data-scope-action="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fa fa-book'></i> {% trans 'License' %}">
               <i class="fa fa-book me-1"></i>{% trans "License" %}
             </button>
           </div>
