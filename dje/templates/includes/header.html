@@ -2,24 +2,5 @@
 {% load i18n %}
 
 {% block nav-brand %}
-  <div class="navbar-nav navbar-brand">
-    <div class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle d-inline" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-        {{ SITE_TITLE }}
-      </a>
-      <div class="dropdown-menu position-absolute">
-        <a class="dropdown-item" href="/">Home</a>{# No trans for Home on purpose #}
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="https://dejacode.readthedocs.io/en/latest/" target="_blank" rel="noreferrer">{% trans 'Documentation' %}</a>
-        <a class="dropdown-item" href="https://www.nexb.com/resources/#support" target="_blank" rel="noreferrer">{% trans 'Support' %}</a>
-        <a class="dropdown-item" href="https://www.nexb.com/dejacode/" target="_blank" rel="noreferrer">{% trans 'About' %}</a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="https://github.com/aboutcode-org/dejacode" target="_blank" rel="noreferrer">{% trans 'Source Code' %}</a>
-        <a class="dropdown-item" href="https://github.com/aboutcode-org/dejacode/releases" target="_blank" rel="noreferrer">{% trans 'Releases' %}</a>
-        <a class="dropdown-item" href="https://scancode-licensedb.aboutcode.org/agpl-3.0.html" target="_blank" rel="noreferrer">{% trans 'License' %}</a>
-        <div class="dropdown-divider"></div>
-        <h6 class="dropdown-header">v{{ DEJACODE_VERSION }}</h6>
-      </div>
-    </div>
-  </div>
+  <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
 {% endblock %}
