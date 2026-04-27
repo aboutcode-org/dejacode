@@ -10,16 +10,17 @@
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
   {% else %}
-    <button class="btn btn-link nav-link px-2 me-2 fs-5" type="button"
+    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-2" type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#side-menu"
             aria-controls="side-menu"
             aria-label="Open menu">
-      <i class="fas fa-bars"></i>
+      <i class="fas fa-bars-staggered fs-6 opacity-75"></i>
+      <span class="fs-5 fw-semibold">DejaCode</span>
     </button>
-    {% block nav-brand %}
-      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
-    {% endblock %}
+<!--    {% block nav-brand %}-->
+<!--      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>-->
+<!--    {% endblock %}-->
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
