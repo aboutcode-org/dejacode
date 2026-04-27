@@ -1,0 +1,101 @@
+{% load i18n %}
+<div id="search-modal" class="modal fade" tabindex="-1" aria-labelledby="search-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form id="search-form" role="search" class="d-flex flex-column" action="{% if product_list_url in request.path %}{{ product_list_url }}{% elif component_list_url in request.path %}{{ component_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif package_list_url in request.path %}{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif license_list_url in request.path %}{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% elif owner_list_url in request.path %}{{ owner_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}{% else %}{{ global_search_url }}{% endif %}">
+
+        {# Search input #}
+        <div class="input-group input-group-lg border-bottom">
+          <span class="input-group-text bg-transparent border-0 ps-3">
+            <i class="fas fa-magnifying-glass text-body-secondary"></i>
+          </span>
+          <input type="text" class="form-control form-control-lg border-0 shadow-none" id="search-input" name="q" placeholder="{% trans 'Search...' %}" aria-label="{% trans 'Search' %}" autocomplete="off" value="{{ search_query|escape }}">
+          <button type="button" class="btn-close me-3 align-self-center" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+        </div>
+
+        {# Scope selector #}
+        <div class="p-3 border-bottom">
+          <div class="text-body-secondary small text-uppercase fw-semibold mb-2">{% trans "Search in" %}</div>
+          <div class="d-flex flex-wrap gap-2" id="search-scope-buttons">
+            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if not product_list_url in request.path and not component_list_url in request.path and not package_list_url in request.path and not license_list_url in request.path and not owner_list_url in request.path %}active{% endif %}" data-scope-action="{{ global_search_url }}" data-scope-label="<i class='fa fa-globe'></i> {% trans 'Global' %}">
+              <i class="fa fa-globe me-1"></i>{% trans "Global" %}
+            </button>
+            {% if not user.is_anonymous %}
+              <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if product_list_url in request.path %}active{% endif %}" data-scope-action="{{ product_list_url }}" data-scope-label="<i class='fa fa-briefcase'></i> {% trans 'Product' %}">
+                <i class="fa fa-briefcase me-1"></i>{% trans "Product" %}
+              </button>
+            {% endif %}
+            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if package_list_url in request.path %}active{% endif %}" data-scope-action="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fas fa-archive'></i> {% trans 'Package' %}">
+              <i class="fas fa-archive me-1"></i>{% trans "Package" %}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary search-scope-btn {% if license_list_url in request.path %}active{% endif %}" data-scope-action="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fa fa-book'></i> {% trans 'License' %}">
+              <i class="fa fa-book me-1"></i>{% trans "License" %}
+            </button>
+          </div>
+        </div>
+
+        {# Carry over current list filters into the search #}
+        {% for field in filter.form %}
+          {% if field.value and field.name != 'q' and field.name != 'sort' %}
+            {{ field.as_hidden }}
+          {% endif %}
+        {% endfor %}
+
+        {# Collapsible help section, always above the footer #}
+        <div id="search-help-content" class="collapse">
+          <div class="p-3 small bg-body-tertiary border-bottom">
+            <div class="d-flex mb-3">
+              <i class="fas fa-font fa-fw text-body-secondary mt-1 me-3"></i>
+              <div>
+                <div class="fw-semibold mb-1">{% trans "Case-insensitive" %}</div>
+                <div class="text-body-secondary">
+                  <span class="font-monospace fw-semibold">apache</span>,
+                  <span class="font-monospace fw-semibold">Apache</span>, and
+                  <span class="font-monospace fw-semibold">APACHE</span>
+                  {% trans "are all equivalent." %}
+                </div>
+              </div>
+            </div>
+            <div class="d-flex mb-3">
+              <i class="fas fa-magnifying-glass fa-fw text-body-secondary mt-1 me-3"></i>
+              <div>
+                <div class="fw-semibold mb-1">{% trans "How it works" %}</div>
+                <div class="text-body-secondary">{% trans "Searches the Name field first (exact matches first), then falls back to ranked search across other identifying fields if nothing matches." %}</div>
+              </div>
+            </div>
+            <div class="d-flex mb-3">
+              <i class="fas fa-list-ol fa-fw text-body-secondary mt-1 me-3"></i>
+              <div>
+                <div class="fw-semibold mb-1">{% trans "Result order" %}</div>
+                <div class="text-body-secondary">{% trans "Exact matches, then word matches, then string matches, alphabetical within each group." %}</div>
+              </div>
+            </div>
+            <div class="d-flex">
+              <i class="fas fa-triangle-exclamation fa-fw text-body-secondary mt-1 me-3"></i>
+              <div>
+                <div class="fw-semibold mb-1">{% trans "Spelling matters" %}</div>
+                <div class="text-body-secondary">{% trans "DejaCode does not auto-correct typos like Google does." %}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Footer: always the last row, owns the bottom radius #}
+        <div class="px-3 py-2 d-flex align-items-center justify-content-between">
+          <button type="button" class="btn btn-sm btn-link text-body-secondary text-decoration-none p-0" data-bs-toggle="collapse" data-bs-target="#search-help-content" aria-expanded="false">
+            <i class="fas fa-circle-question me-1"></i>{% trans "Search tips" %}
+          </button>
+          <div>
+            <span class="small text-body-secondary">
+              <kbd class="small">Esc</kbd> {% trans "to close" %}
+            </span>
+            <span class="px-2">/</span>
+            <span class="small text-body-secondary">
+              <kbd class="small">Enter</kbd> {% trans "to search" %}
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

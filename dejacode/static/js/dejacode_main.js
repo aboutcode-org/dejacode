@@ -128,6 +128,46 @@ function setupHTMX() {
   });
 }
 
+function setupSearchModal() {
+  const searchForm = document.getElementById('search-form');
+  const searchInput = document.getElementById('search-input');
+  const searchModal = document.getElementById('search-modal');
+
+  if (!searchModal) return;
+
+  // Scope selector buttons
+  if (searchForm) {
+    document.querySelectorAll('.search-scope-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.search-scope-btn').forEach(b => b.classList.remove('active'));
+        button.classList.add('active');
+        searchForm.setAttribute('action', button.dataset.scopeAction);
+        searchInput.focus();
+      });
+    });
+  }
+
+  // Autofocus input when modal opens
+  searchModal.addEventListener('shown.bs.modal', () => {
+    searchInput.focus();
+    searchInput.select();
+  });
+
+  // Keyboard shortcuts: Ctrl/Cmd+K and / to open the modal
+  document.addEventListener('keydown', (event) => {
+    const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable;
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(searchModal);
+
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      event.preventDefault();
+      modalInstance.show();
+    } else if (event.key === '/' && !isTyping) {
+      event.preventDefault();
+      modalInstance.show();
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -157,17 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
   }
 
-  // Search selection in the header
-  $('#search-selector-list a').click(function(event) {
-    event.preventDefault();
-    $('#search-form').attr('action', $(this).attr('href'));
-    $('#search-selector-content').html($(this).html());
-    $('#search-input').focus();
-  });
-
   setupTooltips();
   setupPopovers();
   setupSelectionCheckboxes();
   setupBackToTop();
   setupHTMX();
+  setupSearchModal();
 });
