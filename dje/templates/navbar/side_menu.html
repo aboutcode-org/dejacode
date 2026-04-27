@@ -32,6 +32,30 @@
         </a>
       </li>
 
+      {# Tools section #}
+      <li class="nav-item mt-4">
+        <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+          {% trans "Tools" %}
+        </span>
+      </li>
+      <li class="nav-item">
+        <a href="{{ compliance_dashboard_url }}" class="nav-link text-body d-flex align-items-center {% if compliance_dashboard_url in request.path %}active{% endif %}">
+          <i class="fa-solid fa-shield-halved fa-fw me-2"></i>{% trans "Compliance" %}
+        </a>
+      </li>
+      {% if not user.is_anonymous %}
+        <li class="nav-item">
+          <a href="{{ request_list_url }}" class="nav-link text-body d-flex align-items-center {% if request_list_url in request.path %}active{% endif %}">
+            <span class="badge text-bg-request me-2">R</span>{% trans "Requests" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ report_list_url }}" class="nav-link text-body d-flex align-items-center {% if report_list_url in request.path %}active{% endif %}">
+            <i class="far fa-chart-bar fa-fw me-2"></i>{% trans "Reports" %}
+          </a>
+        </li>
+      {% endif %}
+
       {# Catalog section #}
       <li class="nav-item mt-3">
         <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
@@ -68,31 +92,6 @@
             <i class="fa fa-users fa-fw me-2"></i>{% trans "Owners" %}
           </a>
         </li>
-      {% endif %}
-
-      {# Tools section #}
-      <li class="nav-item mt-4">
-        <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
-          {% trans "Tools" %}
-        </span>
-      </li>
-      <li class="nav-item">
-        <a href="{{ compliance_dashboard_url }}" class="nav-link text-body d-flex align-items-center {% if compliance_dashboard_url in request.path %}active{% endif %}">
-          <i class="fa-solid fa-shield-halved fa-fw me-2"></i>{% trans "Compliance" %}
-        </a>
-      </li>
-      {% if not user.is_anonymous %}
-        <li class="nav-item">
-          <a href="{{ request_list_url }}" class="nav-link text-body d-flex align-items-center {% if request_list_url in request.path %}active{% endif %}">
-            <span class="badge text-bg-request me-2">R</span>{% trans "Requests" %}
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{{ report_list_url }}" class="nav-link text-body d-flex align-items-center {% if report_list_url in request.path %}active{% endif %}">
-            <i class="far fa-chart-bar fa-fw me-2"></i>{% trans "Reports" %}
-          </a>
-        </li>
-
       {% endif %}
 
       {# Integrations section #}
