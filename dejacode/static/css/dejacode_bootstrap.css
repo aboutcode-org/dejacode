@@ -160,6 +160,17 @@ table.text-break thead {
   width: 350px;
 }
 
+/* -- Side menu -- */
+#side-menu .nav-pills .nav-link.active {
+  color: #fff !important;
+}
+#side-menu .nav-link {
+  text-decoration: none;
+}
+#side-menu .nav-pills .nav-link:not(.active):hover {
+  background-color: var(--bs-tertiary-bg);
+}
+
 /* -- Pagination -- */
 nav ul.pagination .disabled {
   --bs-pagination-disabled-bg: var(--bs-pagination-disabled-bg);

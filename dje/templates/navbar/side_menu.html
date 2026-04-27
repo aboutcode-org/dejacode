@@ -13,21 +13,9 @@
 {% url 'api_v2:api-root' as api_root_url %}
 {% url 'account_profile' as account_profile_url %}
 
-<style>
-  #sideMenu .nav-pills .nav-link.active {
-    color: #fff !important;
-  }
-  #sideMenu .nav-link {
-    text-decoration: none;
-  }
-  #sideMenu .nav-pills .nav-link:not(.active):hover {
-    background-color: var(--bs-tertiary-bg);
-  }
-</style>
-
-<div class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu" aria-labelledby="sideMenuLabel" style="width: 290px;">
+<div class="offcanvas offcanvas-start" tabindex="-1" id="side-menu" aria-labelledby="side-menu-label" style="width: 290px;">
   <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title fw-semibold d-flex align-items-center" id="sideMenuLabel">
+    <h5 class="offcanvas-title fw-semibold d-flex align-items-center" id="side-menu-label">
       {{ SITE_TITLE }}
     </h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{% trans 'Close' %}"></button>
