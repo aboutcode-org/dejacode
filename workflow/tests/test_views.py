@@ -137,7 +137,7 @@ class RequestUserViewsTestCase(TestCase):
             content_type=self.component_ct,
         )
 
-    @override_settings(ANONYMOUS_USERS_DATASPACE="nexB", SHOW_TOOLS_IN_NAV=True)
+    @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")
     def test_workflow_request_link_availability_in_user_menu(self):
         url = reverse("workflow:request_list")
         response = self.client.get(reverse("license_library:license_list"))
