@@ -150,8 +150,8 @@ table.text-break thead {
   text-underline-position: under;
   color: var(--bs-white);
 }
-.navbar #search-input::placeholder {
-  color: var(--bs-gray-300);
+.navbar .offcanvas {
+  background-color: var(--bs-djc-blue-bg) !important;
 }
 .offcanvas {
   --bs-offcanvas-width: 280px;
