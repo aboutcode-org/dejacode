@@ -381,9 +381,6 @@ DEJACODE_SUPPORT_EMAIL = env.str("DEJACODE_SUPPORT_EMAIL", default="")
 # links to the "Requests" and "Reporting" views.
 SHOW_TOOLS_IN_NAV = env.bool("SHOW_TOOLS_IN_NAV", default=True)
 
-# Set False to hide the "Product Portfolio" section in the navbar.
-SHOW_PP_IN_NAV = env.bool("SHOW_PP_IN_NAV", default=True)
-
 # An integer specifying how many objects should be displayed per table whithin tabs.
 TAB_PAGINATE_BY = env.int("TAB_PAGINATE_BY", default=100)
 

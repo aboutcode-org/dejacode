@@ -4,7 +4,7 @@
 {% url 'license_library:license_list' as license_list_url %}
 {% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
 
-{% if not user.is_anonymous and SHOW_PP_IN_NAV %}
+{% if not user.is_anonymous %}
   <li class="nav-item{% if product_list_url in request.path and 'compliance' not in request.path %} active{% endif %}">
     <a class="nav-link" href="{{ product_list_url }}">
       {% trans 'Products' %}
