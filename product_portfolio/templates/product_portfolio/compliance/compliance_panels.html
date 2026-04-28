@@ -41,11 +41,11 @@
             </ul>
           </div>
           {% if license_issues_count == 0 %}
-            <span class="badge text-bg-success">{% trans "OK" %}</span>
+            <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
           {% elif license_error_count > 0 %}
-            <span class="badge text-bg-danger">{% trans "Error" %}</span>
+            <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</span>
           {% else %}
-            <span class="badge text-bg-warning">{% trans "Warning" %}</span>
+            <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</span>
           {% endif %}
         </div>
       </div>
@@ -76,11 +76,11 @@
               </td>
               <td class="text-end">
                 {% if license.compliance_alert == "error" %}
-                  <span class="badge text-bg-danger">{% trans "Error" %}</span>
+                  <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</span>
                 {% elif license.compliance_alert == "warning" %}
-                  <span class="badge text-bg-warning">{% trans "Warning" %}</span>
+                  <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</span>
                 {% else %}
-                  <span class="badge text-bg-success">{% trans "OK" %}</span>
+                  <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
                 {% endif %}
               </td>
             </tr>
@@ -139,15 +139,15 @@
             </ul>
           </div>
           {% if vulnerability_count == 0 or above_threshold_count == 0 %}
-            <span class="badge text-bg-success">{% trans "OK" %}</span>
+            <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
           {% elif max_vulnerability_severity == "critical" %}
-            <span class="badge text-bg-danger">{% trans "Critical" %}</span>
+            <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
           {% elif max_vulnerability_severity == "high" %}
-            <span class="badge bg-warning-orange">{% trans "High" %}</span>
+            <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
           {% elif max_vulnerability_severity == "medium" %}
-            <span class="badge text-bg-warning">{% trans "Medium" %}</span>
+            <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
           {% else %}
-            <span class="badge text-bg-info">{% trans "Low" %}</span>
+            <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
           {% endif %}
         </div>
       </div>
@@ -178,13 +178,13 @@
         <div class="d-flex align-items-center border-bottom gap-3 py-2">
           <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
             {% if vulnerability.risk_level == "critical" %}
-              <span class="badge text-bg-danger">{% trans "Critical" %}</span>
+              <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
             {% elif vulnerability.risk_level == "high" %}
-              <span class="badge bg-warning-orange">{% trans "High" %}</span>
+              <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
             {% elif vulnerability.risk_level == "medium" %}
-              <span class="badge text-bg-warning">{% trans "Medium" %}</span>
+              <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
             {% elif vulnerability.risk_level == "low" %}
-              <span class="badge text-bg-info">{% trans "Low" %}</span>
+              <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
             {% else %}
               <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
             {% endif %}
