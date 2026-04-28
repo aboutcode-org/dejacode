@@ -141,9 +141,6 @@ table.text-break thead {
   background-color: var(--bs-djc-blue-bg);
   height: 54px;
 }
-.navbar .offcanvas {
-  background-color: var(--bs-djc-blue-bg) !important;
-}
 .navbar-nav .active>.nav-link,
 .navbar-nav .show>.nav-link
 .navbar-nav .nav-link.active,
@@ -156,8 +153,8 @@ table.text-break thead {
 .navbar #search-input::placeholder {
   color: var(--bs-gray-300);
 }
-.navbar #search-form {
-  width: 350px;
+.offcanvas {
+  --bs-offcanvas-width: 280px;
 }
 .nav-chip {
   transition: background-color 0.15s ease, border-color 0.15s ease;

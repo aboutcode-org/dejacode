@@ -13,7 +13,7 @@
 {% url 'api_v2:api-root' as api_root_url %}
 {% url 'account_profile' as account_profile_url %}
 
-<div class="offcanvas offcanvas-start" tabindex="-1" id="side-menu" aria-labelledby="side-menu-label" style="width: 290px;">
+<div class="offcanvas offcanvas-start" tabindex="-1" id="side-menu" aria-labelledby="side-menu-label">
   <div class="offcanvas-header border-bottom">
     <h5 class="offcanvas-title fw-semibold d-flex align-items-center" id="side-menu-label">
       {{ SITE_TITLE }}
@@ -164,7 +164,7 @@
             {% trans "Administration" %}
           </span>
         </li>
-        <li class="nav-item">
+        <li class="nav-item mb-2">
           <a href="{% url 'admin:index' %}" class="nav-link text-body d-flex align-items-center">
             <i class="fas fa-tachometer-alt fa-fw me-2"></i>{% trans "Admin Dashboard" %}
           </a>
