@@ -6,7 +6,7 @@
 {% url 'django_registration_register' as register_url %}
 {% url 'global_search' as global_search_url %}
 
-<nav class="navbar navbar-expand-lg fixed-top">
+<nav class="navbar navbar-expand-md fixed-top">
   {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
@@ -22,6 +22,10 @@
 <!--    {% block nav-brand %}-->
 <!--      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>-->
 <!--    {% endblock %}-->
+    {# Left menu: inline in navbar, just disappears below lg, no offcanvas fallback needed #}
+    <ul class="navbar-nav d-none d-lg-flex">
+      {% include 'navbar/navbar_header_left_menu.html' %}
+    </ul>
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -31,10 +35,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <ul class="navbar-nav">
-          {% include 'navbar/navbar_header_left_menu.html' %}
-        </ul>
-        <ul class="navbar-nav ms-lg-auto">
+        <ul class="navbar-nav ms-md-auto">
           {% include 'navbar/navbar_header_search_form.html' %}
           {% include 'navbar/navbar_header_right_menu.html' %}
         </ul>
