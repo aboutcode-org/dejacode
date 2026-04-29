@@ -153,6 +153,11 @@ function setupSearchModal() {
     searchInput.select();
   });
 
+  // Move focus out before aria-hidden is restored to avoid accessibility warning
+  searchModal.addEventListener('hide.bs.modal', () => {
+    if (document.activeElement) document.activeElement.blur();
+  });
+
   // Keyboard shortcuts: Ctrl/Cmd+K and / to open the modal
   document.addEventListener('keydown', (event) => {
     const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable;
