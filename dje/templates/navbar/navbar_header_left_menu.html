@@ -23,17 +23,19 @@
     {% trans 'Licenses' %}
   </a>
 </li>
-<li class="nav-item py-2">
-  <div class="vr d-none d-lg-flex h-100 mx-lg-1 text-white"></div>
-  <hr class="d-lg-none my-2 text-white-50">
-</li>
-<li class="nav-item{% if compliance_dashboard_url in request.path %} active{% endif %}">
-  <a class="nav-link" href="{{ compliance_dashboard_url }}">
-    {% trans 'Compliance' %}
-  </a>
-</li>
-<li class="nav-item{% if request_list_url in request.path %} active{% endif %} d-none d-xl-flex">
-  <a class="nav-link" href="{{ request_list_url }}">
-    {% trans 'Requests' %}
-  </a>
-</li>
+{% if not user.is_anonymous %}
+  <li class="nav-item py-2">
+    <div class="vr d-none d-lg-flex h-100 mx-lg-1 text-white"></div>
+    <hr class="d-lg-none my-2 text-white-50">
+  </li>
+  <li class="nav-item{% if compliance_dashboard_url in request.path %} active{% endif %}">
+    <a class="nav-link" href="{{ compliance_dashboard_url }}">
+      {% trans 'Compliance' %}
+    </a>
+  </li>
+  <li class="nav-item{% if request_list_url in request.path %} active{% endif %} d-none d-xl-flex">
+    <a class="nav-link" href="{{ request_list_url }}">
+      {% trans 'Requests' %}
+    </a>
+  </li>
+{% endif %}

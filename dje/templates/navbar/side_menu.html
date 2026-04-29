@@ -33,17 +33,17 @@
       </li>
 
       {# Tools section #}
-      <li class="nav-item mt-3">
-        <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
-          {% trans "Tools" %}
-        </span>
-      </li>
-      <li class="nav-item">
-        <a href="{{ compliance_dashboard_url }}" class="nav-link text-body d-flex align-items-center {% if compliance_dashboard_url in request.path %}active{% endif %}">
-          <i class="fa-solid fa-shield-halved fa-fw me-2"></i>{% trans "Compliance" %}
-        </a>
-      </li>
       {% if not user.is_anonymous %}
+        <li class="nav-item mt-3">
+          <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+            {% trans "Tools" %}
+          </span>
+        </li>
+        <li class="nav-item">
+          <a href="{{ compliance_dashboard_url }}" class="nav-link text-body d-flex align-items-center {% if compliance_dashboard_url in request.path %}active{% endif %}">
+            <i class="fa-solid fa-shield-halved fa-fw me-2"></i>{% trans "Compliance" %}
+          </a>
+        </li>
         <li class="nav-item">
           <a href="{{ request_list_url }}" class="nav-link text-body d-flex align-items-center {% if request_list_url in request.path %}active{% endif %}">
             <span class="badge text-bg-request me-2">R</span>{% trans "Requests" %}
@@ -74,25 +74,21 @@
           <i class="fas fa-archive fa-fw me-2"></i>{% trans "Packages" %}
         </a>
       </li>
-      {% if not user.is_anonymous %}
-        <li class="nav-item">
-          <a href="{{ component_list_url }}" class="nav-link text-body d-flex align-items-center {% if component_list_url in request.path %}active{% endif %}">
-            <i class="fa fa-puzzle-piece fa-fw me-2"></i>{% trans "Components" %}
-          </a>
-        </li>
-      {% endif %}
+      <li class="nav-item">
+        <a href="{{ component_list_url }}" class="nav-link text-body d-flex align-items-center {% if component_list_url in request.path %}active{% endif %}">
+          <i class="fa fa-puzzle-piece fa-fw me-2"></i>{% trans "Components" %}
+        </a>
+      </li>
       <li class="nav-item">
         <a href="{{ license_list_url }}" class="nav-link text-body d-flex align-items-center {% if license_list_url in request.path %}active{% endif %}">
           <i class="fa fa-book fa-fw me-2"></i>{% trans "Licenses" %}
         </a>
       </li>
-      {% if not user.is_anonymous %}
-        <li class="nav-item">
-          <a href="{{ owner_list_url }}" class="nav-link text-body d-flex align-items-center {% if owner_list_url in request.path %}active{% endif %}">
-            <i class="fa fa-users fa-fw me-2"></i>{% trans "Owners" %}
-          </a>
-        </li>
-      {% endif %}
+      <li class="nav-item">
+        <a href="{{ owner_list_url }}" class="nav-link text-body d-flex align-items-center {% if owner_list_url in request.path %}active{% endif %}">
+          <i class="fa fa-users fa-fw me-2"></i>{% trans "Owners" %}
+        </a>
+      </li>
 
       {# Integrations section #}
       {% if not user.is_anonymous %}
@@ -215,7 +211,7 @@
         </div>
       {% else %}
         <div class="p-3">
-          <a href="{% url 'login' %}" class="btn btn-primary w-100">
+          <a href="{% url 'login' %}" class="btn btn-warning w-100">
             <i class="fas fa-right-to-bracket me-2"></i>{% trans "Sign in" %}
           </a>
         </div>
