@@ -20,8 +20,7 @@ def dejacode_context(request):
         "SITE_TITLE": settings.SITE_TITLE,
         "HEADER_TEMPLATE": settings.HEADER_TEMPLATE,
         "FOOTER_TEMPLATE": settings.FOOTER_TEMPLATE,
-        "SHOW_PP_IN_NAV": settings.SHOW_PP_IN_NAV,
-        "SHOW_TOOLS_IN_NAV": settings.SHOW_TOOLS_IN_NAV,
+        "SHOW_MENU_EXTERNAL_LINKS": settings.SHOW_MENU_EXTERNAL_LINKS,
         "AXES_ENABLED": settings.AXES_ENABLED,
         "LOGIN_FORM_ALERT": settings.LOGIN_FORM_ALERT,
     }

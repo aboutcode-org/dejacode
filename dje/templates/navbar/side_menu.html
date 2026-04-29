@@ -1,0 +1,221 @@
+{% load i18n %}
+{% url 'product_portfolio:product_list' as product_list_url %}
+{% url 'component_catalog:component_list' as component_list_url %}
+{% url 'component_catalog:package_list' as package_list_url %}
+{% url 'license_library:license_list' as license_list_url %}
+{% url 'organization:owner_list' as owner_list_url %}
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
+{% url 'reporting:report_list' as report_list_url %}
+{% url 'workflow:request_list' as request_list_url %}
+{% url 'component_catalog:scan_list' as scan_list_url %}
+{% url 'purldb:purldb_list' as purldb_list_url %}
+{% url 'vulnerabilities:vulnerability_list' as vulnerability_list_url %}
+{% url 'api_v2:api-root' as api_root_url %}
+{% url 'account_profile' as account_profile_url %}
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="side-menu" aria-labelledby="side-menu-label">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fw-semibold" id="side-menu-label">
+      {{ SITE_TITLE }}
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{% trans 'Close' %}"></button>
+  </div>
+
+  <div class="offcanvas-body p-0 d-flex flex-column">
+
+    <ul class="nav nav-pills flex-column p-2">
+
+      {# Home #}
+      <li class="nav-item">
+        <a href="/" class="nav-link text-body d-flex align-items-center {% if request.path == '/' %}active{% endif %}">
+          <i class="fas fa-house fa-fw me-2"></i>Home
+        </a>
+      </li>
+
+      {# Tools section #}
+      {% if not user.is_anonymous %}
+        <li class="nav-item mt-3">
+          <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+            {% trans "Tools" %}
+          </span>
+        </li>
+        <li class="nav-item">
+          <a href="{{ compliance_dashboard_url }}" class="nav-link text-body d-flex align-items-center {% if compliance_dashboard_url in request.path %}active{% endif %}">
+            <i class="fa-solid fa-shield-halved fa-fw me-2"></i>{% trans "Compliance" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ request_list_url }}" class="nav-link text-body d-flex align-items-center {% if request_list_url in request.path %}active{% endif %}">
+            <span class="badge text-bg-request me-2">R</span>{% trans "Requests" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ report_list_url }}" class="nav-link text-body d-flex align-items-center {% if report_list_url in request.path %}active{% endif %}">
+            <i class="far fa-chart-bar fa-fw me-2"></i>{% trans "Reports" %}
+          </a>
+        </li>
+      {% endif %}
+
+      {# Catalog section #}
+      <li class="nav-item mt-4">
+        <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+          {% trans "Catalog" %}
+        </span>
+      </li>
+      {% if not user.is_anonymous %}
+        <li class="nav-item">
+          <a href="{{ product_list_url }}" class="nav-link text-body d-flex align-items-center {% if product_list_url in request.path and 'compliance' not in request.path %}active{% endif %}">
+            <i class="fa fa-briefcase fa-fw me-2"></i>{% trans "Products" %}
+          </a>
+        </li>
+      {% endif %}
+      <li class="nav-item">
+        <a href="{{ package_list_url }}" class="nav-link text-body d-flex align-items-center {% if package_list_url in request.path %}active{% endif %}">
+          <i class="fas fa-archive fa-fw me-2"></i>{% trans "Packages" %}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ component_list_url }}" class="nav-link text-body d-flex align-items-center {% if component_list_url in request.path %}active{% endif %}">
+          <i class="fa fa-puzzle-piece fa-fw me-2"></i>{% trans "Components" %}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ license_list_url }}" class="nav-link text-body d-flex align-items-center {% if license_list_url in request.path %}active{% endif %}">
+          <i class="fa fa-book fa-fw me-2"></i>{% trans "Licenses" %}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{{ owner_list_url }}" class="nav-link text-body d-flex align-items-center {% if owner_list_url in request.path %}active{% endif %}">
+          <i class="fa fa-users fa-fw me-2"></i>{% trans "Owners" %}
+        </a>
+      </li>
+
+      {# Integrations section #}
+      {% if not user.is_anonymous %}
+        {% if user.dataspace.enable_package_scanning or user.dataspace.enable_purldb_access or user.dataspace.enable_vulnerablecodedb_access or user.is_staff %}
+          <li class="nav-item mt-4">
+            <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+              {% trans "Integrations" %}
+            </span>
+          </li>
+          {% if user.dataspace.enable_package_scanning %}
+            <li class="nav-item">
+              <a href="{{ scan_list_url }}" class="nav-link text-body d-flex align-items-center {% if scan_list_url in request.path %}active{% endif %}">
+                <i class="fas fa-barcode fa-fw me-2"></i>{% trans "Scans" %}
+              </a>
+            </li>
+          {% endif %}
+          {% if user.dataspace.enable_vulnerablecodedb_access %}
+            <li class="nav-item">
+              <a href="{{ vulnerability_list_url }}" class="nav-link text-body d-flex align-items-center {% if vulnerability_list_url in request.path %}active{% endif %}">
+                <i class="fas fa-bug fa-fw me-2"></i>{% trans "Vulnerabilities" %}
+              </a>
+            </li>
+          {% endif %}
+          {% if user.dataspace.enable_purldb_access %}
+            <li class="nav-item">
+              <a href="{{ purldb_list_url }}" class="nav-link text-body d-flex align-items-center {% if purldb_list_url in request.path %}active{% endif %}">
+                <i class="fas fa-database fa-fw me-2"></i>{% trans "PurlDB" %}
+              </a>
+            </li>
+          {% endif %}
+          {% if user.is_staff %}
+            <li class="nav-item">
+              <a href="{% url 'integrations_status' %}" class="nav-link text-body d-flex align-items-center">
+                <i class="fas fa-stethoscope fa-fw me-2"></i>{% trans "Integrations Status" %}
+              </a>
+            </li>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {# Developer section #}
+      {% if not user.is_anonymous %}
+        <li class="nav-item mt-4">
+          <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+            {% trans "Developer" %}
+          </span>
+        </li>
+        <li class="nav-item">
+          <a href="https://dejacode.readthedocs.io/en/latest/" target="_blank" rel="noreferrer" class="nav-link text-body d-flex align-items-center">
+            <i class="fas fa-book-open fa-fw me-2"></i>{% trans "Documentation" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ api_root_url }}" class="nav-link text-body d-flex align-items-center">
+            <i class="fa fa-retweet fa-fw me-2"></i>{% trans "API Browser" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'api-docs:docs-index' %}" class="nav-link text-body d-flex align-items-center">
+            <i class="fab fa-leanpub fa-fw me-2"></i>{% trans "API Documentation" %}
+          </a>
+        </li>
+      {% endif %}
+
+      {# Administration section (staff only) #}
+      {% if user.is_staff %}
+        <li class="nav-item mt-4">
+          <span class="text-body-secondary text-uppercase small fw-semibold px-3 py-1 d-block">
+            {% trans "Administration" %}
+          </span>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'admin:index' %}" class="nav-link text-body d-flex align-items-center">
+            <i class="fas fa-tachometer-alt fa-fw me-2"></i>{% trans "Admin Dashboard" %}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+
+    {# Footer area: user dropup + version, pushed to bottom with mt-auto #}
+    <div class="mt-auto border-top bg-body-tertiary">
+      {% if user.is_authenticated %}
+        <div class="p-3 pb-2">
+          <div class="dropup w-100">
+            <button type="button" class="btn w-100 d-flex align-items-center text-start border bg-body-tertiary text-body" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-circle-user fa-fw fa-lg me-2"></i>
+              <span class="flex-grow-1 text-truncate">
+                <span class="fw-semibold">{% firstof user.first_name user.username|truncatechars:14 %}</span>
+                <small class="text-body-secondary d-block text-truncate">{{ user.dataspace }}</small>
+              </span>
+              <i class="fas fa-ellipsis-vertical ms-2 text-body-secondary"></i>
+            </button>
+            <ul class="dropdown-menu w-100 shadow">
+              <li class="dropdown-header text-truncate">{{ user.email }}</li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item {% if account_profile_url in request.path %}active{% endif %}" href="{{ account_profile_url }}">
+                  <i class="fas fa-user-circle fa-fw me-2"></i>{% trans "Profile Settings" %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'password_change' %}">
+                  <i class="fa fa-key fa-fw me-2"></i>{% trans "Change Password" %}
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form id="logout-form" method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item">
+                    <i class="fas fa-right-from-bracket fa-fw me-2"></i>{% trans "Sign Out" %}
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="text-center text-body-secondary small pb-2">
+          v{{ DEJACODE_VERSION }}
+        </div>
+      {% else %}
+        <div class="p-3">
+          <a href="{% url 'login' %}" class="btn btn-warning w-100">
+            <i class="fas fa-right-to-bracket me-2"></i>{% trans "Sign in" %}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

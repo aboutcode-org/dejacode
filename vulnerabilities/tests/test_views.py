@@ -47,18 +47,15 @@ class VulnerabilityViewsTestCase(TestCase):
         vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
         response = self.client.get(vulnerability_list_url)
         self.assertEqual(200, response.status_code)
-        vulnerability_header_link = (
-            f'<a class="dropdown-item active" href="{vulnerability_list_url}">'
-        )
-        self.assertContains(response, vulnerability_header_link)
+        self.assertContains(response, vulnerability_list_url)
 
         self.dataspace.enable_vulnerablecodedb_access = False
         self.dataspace.save()
-        response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
+        response = self.client.get(vulnerability_list_url)
         self.assertEqual(404, response.status_code)
 
         response = self.client.get(reverse("component_catalog:package_list"))
-        self.assertNotContains(response, vulnerability_header_link)
+        self.assertNotContains(response, vulnerability_list_url)
 
     def test_vulnerability_list_view_vulnerability_id_link(self):
         self.client.login(username=self.super_user.username, password="secret")

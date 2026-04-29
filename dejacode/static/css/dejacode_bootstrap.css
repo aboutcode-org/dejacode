@@ -141,9 +141,6 @@ table.text-break thead {
   background-color: var(--bs-djc-blue-bg);
   height: 54px;
 }
-.navbar .offcanvas {
-  background-color: var(--bs-djc-blue-bg) !important;
-}
 .navbar-nav .active>.nav-link,
 .navbar-nav .show>.nav-link
 .navbar-nav .nav-link.active,
@@ -153,11 +150,30 @@ table.text-break thead {
   text-underline-position: under;
   color: var(--bs-white);
 }
-.navbar #search-input::placeholder {
-  color: var(--bs-gray-300);
+.navbar .offcanvas {
+  background-color: var(--bs-djc-blue-bg) !important;
 }
-.navbar #search-form {
-  width: 350px;
+.offcanvas {
+  --bs-offcanvas-width: 280px;
+}
+.nav-chip {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.nav-chip:hover,
+.nav-chip:focus-visible {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* -- Side menu -- */
+#side-menu .nav-pills .nav-link.active {
+  color: #fff !important;
+}
+#side-menu .nav-link {
+  text-decoration: none;
+}
+#side-menu .nav-pills .nav-link:not(.active):hover {
+  background-color: var(--bs-tertiary-bg);
 }
 
 /* -- Pagination -- */

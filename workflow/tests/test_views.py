@@ -137,22 +137,23 @@ class RequestUserViewsTestCase(TestCase):
             content_type=self.component_ct,
         )
 
-    @override_settings(ANONYMOUS_USERS_DATASPACE="nexB", SHOW_TOOLS_IN_NAV=True)
+    @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")
     def test_workflow_request_link_availability_in_user_menu(self):
-        url = reverse("workflow:request_list")
-        response = self.client.get(reverse("license_library:license_list"))
-        self.assertNotContains(response, url)
+        request_list_url = reverse("workflow:request_list")
+        license_list_url = reverse("license_library:license_list")
+        response = self.client.get(license_list_url)
+        self.assertNotContains(response, request_list_url)
 
         self.client.login(username="nexb_user", password="secret")
         self.nexb_user.is_superuser = False
         self.nexb_user.save()
-        response = self.client.get(reverse("license_library:license_list"))
-        self.assertContains(response, url)
+        response = self.client.get(license_list_url)
+        self.assertContains(response, request_list_url)
 
         self.nexb_user.is_superuser = True
         self.nexb_user.save()
-        response = self.client.get(reverse("license_library:license_list"))
-        self.assertContains(response, url)
+        response = self.client.get(license_list_url)
+        self.assertContains(response, request_list_url)
 
     def test_workflow_request_list_view_listing(self):
         url = reverse("workflow:request_list")

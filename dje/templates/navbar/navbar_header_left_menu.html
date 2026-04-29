@@ -1,0 +1,41 @@
+{% load i18n %}
+{# Keep the URLs here as needed for includes of this template #}
+{% url 'product_portfolio:product_list' as product_list_url %}
+{% url 'component_catalog:package_list' as package_list_url %}
+{% url 'license_library:license_list' as license_list_url %}
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
+{% url 'workflow:request_list' as request_list_url %}
+
+{% if not user.is_anonymous %}
+  <li class="nav-item{% if product_list_url in request.path and 'compliance' not in request.path %} active{% endif %}">
+    <a class="nav-link" href="{{ product_list_url }}">
+      {% trans 'Products' %}
+    </a>
+  </li>
+{% endif %}
+<li class="nav-item{% if package_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ package_list_url }}">
+    {% trans 'Packages' %}
+  </a>
+</li>
+<li class="nav-item{% if license_list_url in request.path %} active{% endif %}">
+  <a class="nav-link" href="{{ license_list_url }}">
+    {% trans 'Licenses' %}
+  </a>
+</li>
+{% if not user.is_anonymous %}
+  <li class="nav-item py-2">
+    <div class="vr d-none d-lg-flex h-100 mx-lg-1 text-white"></div>
+    <hr class="d-lg-none my-2 text-white-50">
+  </li>
+  <li class="nav-item{% if compliance_dashboard_url in request.path %} active{% endif %}">
+    <a class="nav-link" href="{{ compliance_dashboard_url }}">
+      {% trans 'Compliance' %}
+    </a>
+  </li>
+  <li class="nav-item{% if request_list_url in request.path %} active{% endif %} d-none d-xl-flex">
+    <a class="nav-link" href="{{ request_list_url }}">
+      {% trans 'Requests' %}
+    </a>
+  </li>
+{% endif %}

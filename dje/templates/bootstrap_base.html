@@ -15,6 +15,9 @@
     {% if FAVICON_HREF %}<link rel="icon" href="{{ FAVICON_HREF }}">{% endif %}
   </head>
   <body class="d-flex flex-column h-100 {% block bodyclass %}{% endblock %}">
+    {% block side_menu %}
+      {% include 'navbar/side_menu.html' %}
+    {% endblock %}
     <header>
       {% block header %}
         {% include HEADER_TEMPLATE %}
