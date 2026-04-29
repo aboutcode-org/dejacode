@@ -1,4 +1,11 @@
 {% load i18n %}
+{# Keep the URLs here as needed for includes of this template #}
+{% url 'product_portfolio:product_list' as product_list_url %}
+{% url 'component_catalog:package_list' as package_list_url %}
+{% url 'license_library:license_list' as license_list_url %}
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
+{% url 'workflow:request_list' as request_list_url %}
+
 {% if not user.is_anonymous %}
   <li class="nav-item{% if product_list_url in request.path and 'compliance' not in request.path %} active{% endif %}">
     <a class="nav-link" href="{{ product_list_url }}">
