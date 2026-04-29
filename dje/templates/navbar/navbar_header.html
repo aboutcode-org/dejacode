@@ -7,41 +7,46 @@
 {% url 'global_search' as global_search_url %}
 {% url 'workflow:request_list' as request_list_url %}
 
-<nav class="navbar navbar-expand-md fixed-top">
-  {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
-  {% if not user.is_authenticated and not user.dataspace %}
-    <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
-  {% else %}
-    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-2 nav-chip" type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#side-menu"
-            aria-controls="side-menu"
-            aria-label="Open menu">
-      <i class="fas fa-bars-staggered fs-6 text-warning"></i>
-      <span class="fs-5 fw-semibold">DejaCode</span>
-    </button>
-<!--    {% block nav-brand %}-->
-<!--      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>-->
-<!--    {% endblock %}-->
-    {# Left menu: inline in navbar, just disappears below lg, no offcanvas fallback needed #}
-    <ul class="navbar-nav d-none d-lg-flex">
-      {% include 'navbar/navbar_header_left_menu.html' %}
-    </ul>
-    <button class="navbar-toggler btn btn-link text-white px-2 py-1 bg-opacity-10 border border-white border-opacity-25 nav-chip" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas">
-      <div class="offcanvas-header text-white pb-0">
-        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      <div class="offcanvas-body">
-        <ul class="navbar-nav ms-md-auto">
-          {% include 'navbar/navbar_header_search_form.html' %}
-          {% include 'navbar/navbar_header_right_menu.html' %}
+{% block navbar %}
+  <nav class="navbar navbar-expand-md fixed-top">
+    {# If the anonymous feature is enabled, the user will have a dataspace assigned at that point #}
+    {% if not user.is_authenticated and not user.dataspace %}
+      <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
+    {% else %}
+      {% block navbar-brand %}
+        <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-2 nav-chip" type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#side-menu"
+                aria-controls="side-menu"
+                aria-label="Open menu">
+          <i class="fas fa-bars-staggered fs-6 text-warning"></i>
+          <span class="fs-5 fw-semibold">{{ SITE_TITLE }}</span>
+        </button>
+      {% endblock navbar-brand %}
+      {% block navbar_nav_left %}
+        {# Left menu list: inline in navbar, just disappears below lg, no offcanvas fallback needed #}
+        <ul class="navbar-nav d-none d-lg-flex">
+          {% include 'navbar/navbar_header_left_menu.html' %}
         </ul>
-      </div>
-    </div>
-  {% endif %}
-</nav>
-{% include 'modals/search_modal.html' %}
+      {% endblock navbar_nav_left %}
+      {% block navbar_nav_right %}
+        <button class="navbar-toggler btn btn-link text-white px-2 py-1 bg-opacity-10 border border-white border-opacity-25 nav-chip" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas">
+          <div class="offcanvas-header text-white pb-0">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav ms-md-auto">
+              {% include 'navbar/navbar_header_search_form.html' %}
+              {% include 'navbar/navbar_header_right_menu.html' %}
+            </ul>
+          </div>
+        </div>
+      {% endblock navbar_nav_right %}
+    {% endif %}
+  </nav>
+  {% include 'modals/search_modal.html' %}
+{% endblock navbar %}
