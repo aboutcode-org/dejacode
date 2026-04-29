@@ -12,7 +12,7 @@
   {% if not user.is_authenticated and not user.dataspace %}
     <a class="navbar-brand" href="{% url 'index_dispatch' %}">{{ SITE_TITLE }}</a>
   {% else %}
-    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-3 nav-chip" type="button"
+    <button class="btn btn-link text-decoration-none text-white px-3 py-1 d-flex align-items-center gap-1 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-pill me-2 nav-chip" type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#side-menu"
             aria-controls="side-menu"
@@ -27,7 +27,7 @@
     <ul class="navbar-nav d-none d-lg-flex">
       {% include 'navbar/navbar_header_left_menu.html' %}
     </ul>
-    <button class="navbar-toggler text-white px-2 py-1 d-flex bg-opacity-10 border border-white border-opacity-25 nav-chip" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
+    <button class="navbar-toggler btn btn-link text-white px-2 py-1 bg-opacity-10 border border-white border-opacity-25 nav-chip" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="offcanvas offcanvas-end" tabindex="-1" id="navbarOffcanvas">
