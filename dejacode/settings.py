@@ -355,6 +355,7 @@ INSTALLED_APPS = PREREQ_APPS + PROJECT_APPS + EXTRA_APPS
 SITE_TITLE = env.str("SITE_TITLE", default="DejaCode")
 HEADER_TEMPLATE = env.str("HEADER_TEMPLATE", default="includes/header.html")
 FOOTER_TEMPLATE = env.str("FOOTER_TEMPLATE", default="includes/footer.html")
+SHOW_MENU_EXTERNAL_LINKS = env.bool("SHOW_MENU_EXTERNAL_LINKS", default=True)
 
 GRAPPELLI_INDEX_DASHBOARD = "dje.dashboard.DejaCodeDashboard"
 GRAPPELLI_CLEAN_INPUT_TYPES = False
