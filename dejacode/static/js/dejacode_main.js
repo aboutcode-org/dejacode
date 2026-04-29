@@ -168,6 +168,28 @@ function setupSearchModal() {
   });
 }
 
+function setupThemeSwitcher() {
+  // Reflects the active theme on the dropdown buttons since Bootstrap's own
+  // script targets its docs-specific markup and skips ours.
+  const getActiveTheme = () => localStorage.getItem('theme') || 'auto';
+
+  const markActiveTheme = theme => {
+    document.querySelectorAll('[data-bs-theme-value]').forEach(btn => {
+      const isActive = btn.getAttribute('data-bs-theme-value') === theme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive);
+    });
+  };
+
+  markActiveTheme(getActiveTheme());
+
+  document.querySelectorAll('[data-bs-theme-value]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      markActiveTheme(btn.getAttribute('data-bs-theme-value'));
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -203,4 +225,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupBackToTop();
   setupHTMX();
   setupSearchModal();
+  setupThemeSwitcher();
 });
