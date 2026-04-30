@@ -21,7 +21,7 @@ def get_settings(var_name, default=None):
     return getenv(var_name) or getattr(settings, var_name, default)
 
 
-REQUESTS_TIMEOUT = get_settings("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5)
+REQUESTS_TIMEOUT = int(get_settings("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5))
 
 
 def is_service_available(label, session, url, raise_exceptions):
