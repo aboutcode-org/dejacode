@@ -54,19 +54,6 @@ class VulnerableCode(BaseService):
             timeout=timeout,
         )
 
-    def get_vulnerabilities_by_cpe(
-        self,
-        cpe,
-        timeout=None,
-    ):
-        """Get list of vulnerabilities providing a package or component `cpe`."""
-        return self.get_vulnerabilities(
-            url=f"{self.api_url}cpes/",
-            field_name="cpe",
-            field_value=cpe,
-            timeout=timeout,
-        )
-
     def bulk_search_by_purl(
         self,
         purls,
@@ -85,21 +72,6 @@ class VulnerableCode(BaseService):
         logger.debug(f"VulnerableCode: url={url} purls_count={len(purls)}")
         return self.request_post(url=url, json=data, timeout=timeout)
 
-    def bulk_search_by_cpes(
-        self,
-        cpes,
-        timeout=None,
-    ):
-        """Bulk search of vulnerabilities using the provided list of `cpes`."""
-        url = f"{self.api_url}cpes/bulk_search"
-
-        data = {
-            "cpes": cpes,
-        }
-
-        logger.debug(f"VulnerableCode: url={url} cpes_count={len(cpes)}")
-        return self.request_post(url, json=data, timeout=timeout)
-
     def get_vulnerable_purls(self, packages, purl_only=True, timeout=10):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
@@ -116,29 +88,6 @@ class VulnerableCode(BaseService):
             timeout=timeout,
         )
         return vulnerable_purls or []
-
-    def get_vulnerable_cpes(self, components):
-        """
-        Return a list of vulnerable CPEs found in the VulnerableCodeDB for the given
-        list of `components`.
-        """
-        cpes = [component.cpe for component in components if component.cpe]
-
-        if not cpes:
-            return []
-
-        search_results = self.bulk_search_by_cpes(cpes)
-        if not search_results:
-            return []
-
-        vulnerable_cpes = [
-            reference.get("reference_id")
-            for entry in search_results
-            for reference in entry.get("references")
-            if reference.get("reference_id").startswith("cpe")
-        ]
-
-        return list(set(vulnerable_cpes))
 
     def get_package_url_available_types(self):
         # Replace by fetching the endpoint once available.

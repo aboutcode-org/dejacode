@@ -488,16 +488,7 @@ class AffectedByVulnerabilityMixin(models.Model):
             affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
             return affected_by_vulnerabilities
 
-    def get_entry_for_component(self, vulnerablecode):
-        if not self.cpe:
-            return
-
-        # Support for Component is paused as the CPES endpoint do not work properly.
-        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
-        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
-
     def get_entry_from_vulnerablecode(self):
-        from component_catalog.models import Component
         from component_catalog.models import Package
         from dejacode_toolkit.vulnerablecode import VulnerableCode
 
@@ -513,8 +504,6 @@ class AffectedByVulnerabilityMixin(models.Model):
         if not is_vulnerablecode_enabled:
             return
 
-        if isinstance(self, Component):
-            return self.get_entry_for_component(vulnerablecode)
         elif isinstance(self, Package):
             return self.get_entry_for_package(vulnerablecode)
 
