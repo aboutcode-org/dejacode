@@ -19,6 +19,7 @@ class VulnerableCode(BaseService):
     settings_prefix = "VULNERABLECODE"
     url_field_name = "vulnerablecode_url"
     api_key_field_name = "vulnerablecode_api_key"
+    api_version = "v3"
 
     def get_vulnerabilities(
         self,
