@@ -167,11 +167,6 @@ dev = [
     # Parallel testing
     "tblib==3.2.2"
 ]
-docs = [
-    "Sphinx",
-    "furo",
-    "doc8",
-]
 
 [project.urls]
 Homepage = "https://github.com/aboutcode-org/dejacode"
@@ -185,6 +180,21 @@ dejacode = "dejacode:command_line"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.uv]
+# Disable PyPI and any remote index, only use local sources
+no-index = true
+# Look for wheels in this local directory only
+find-links = ["./thirdparty/dist"]
+# Copy files instead of hardlinking, works across all filesystems
+link-mode = "copy"
+# Ignore package versions published in the last 7 days for safety
+exclude-newer = "7 days"
+# Only resolve for Linux and macOS
+environments = [
+    "sys_platform == 'linux'",
+    "sys_platform == 'darwin'",
+]
 
 [tool.ruff]
 line-length = 100

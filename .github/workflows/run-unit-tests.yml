@@ -56,6 +56,9 @@ jobs:
           sudo ln -s /etc/apparmor.d/usr.sbin.slapd /etc/apparmor.d/disable/
           sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.slapd
 
+      - name: Install uv from vendored wheel
+        run: pip install --no-index --find-links=./thirdparty/dist uv
+
       - name: Install dependencies
         run: make dev envfile
 

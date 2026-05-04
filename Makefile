@@ -6,13 +6,11 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-PYTHON_EXE=python3.14
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
 MANAGE=${VENV_LOCATION}/bin/python manage.py
 # Do not depend on Python to generate the SECRET_KEY
 GET_SECRET_KEY=`head -c50 /dev/urandom | base64 | head -c50`
-PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
 ENV_FILE=.env
 DOCS_LOCATION=./docs
@@ -36,18 +34,44 @@ else
 endif
 
 virtualenv:
-	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
-	${PYTHON_EXE} -m venv ${VENV_LOCATION}
+	@echo "-> Bootstrap the virtualenv with uv"
+	uv venv --allow-existing ${VENV_LOCATION}
 
 conf: virtualenv
 	@echo "-> Install dependencies"
-	@${ACTIVATE} pip install ${PIP_ARGS} --editable .
+	uv sync --frozen
 	@echo "-> Create the var/ directory"
 	@mkdir -p var
 
 dev: virtualenv
 	@echo "-> Configure and install development dependencies"
-	@${ACTIVATE} pip install ${PIP_ARGS} --editable .[dev]
+	uv sync --frozen --extra dev
+
+outdated:
+	@echo "-> Check for outdated packages (with 7 days cooldown)"
+	uv pip list --outdated \
+		--no-config \
+		--index-url https://pypi.org/simple \
+		--exclude-newer "7 days"
+
+upgrade:
+	@if [ -z "$(PACKAGE)" ]; then \
+		echo "Usage: make upgrade PACKAGE=django==x.x.x"; \
+		exit 1; \
+	fi
+	@echo "-> Download $(PACKAGE) wheels"
+	@${ACTIVATE} pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform macosx_11_0_arm64 \
+		--platform manylinux2014_x86_64 \
+		--python-version 3.14 \
+		--dest ./thirdparty/dist/
+	@echo "-> Update pyproject.toml and uv.lock"
+	uv add $(PACKAGE)
+
+lock:
+	@echo "-> Regenerate uv.lock from local wheels"
+	uv lock
 
 envfile:
 	@echo "-> Create the .env file and generate a secret key"
@@ -59,14 +83,9 @@ envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
-doc_dependencies: virtualenv
-	@echo "-> Configure and install documentation dependencies"
-	@${ACTIVATE} pip install --editable .[docs]
-
 doc8:
 	@echo "-> Run documentation .rst validation"
-	@$(MAKE) doc_dependencies > /dev/null 2>&1
-	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
+	uvx doc8==2.0.0 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
 
 valid:
 	@echo "-> Run Ruff format"
@@ -116,11 +135,6 @@ migrate:
 	@echo "-> Apply database migrations"
 	${MANAGE} migrate
 
-upgrade:
-	@echo "-> Upgrade local git checkout"
-	@git pull
-	@$(MAKE) migrate
-
 postgresdb:
 	@echo "-> Configure PostgreSQL database"
 	@echo "-> Create database user ${DB_NAME}"
@@ -152,9 +166,8 @@ test:
 docs:
 	@echo "-> Builds the documentation"
 	rm -rf ${DOCS_LOCATION}/_build/
-	@$(MAKE) doc_dependencies > /dev/null 2>&1
-	@${ACTIVATE} sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
-	@${ACTIVATE} sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
 build:
 	@echo "-> Build the Docker image"
@@ -176,4 +189,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile envfile_dev doc_dependencies check doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log createsuperuser
