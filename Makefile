@@ -48,6 +48,8 @@ dev: virtualenv
 	uv sync --frozen --extra dev
 
 outdated:
+	@echo "-> Audit the project's dependencies for known vulnerabilities"
+	uv audit
 	@echo "-> Check for outdated packages (with 7 days cooldown)"
 	uv pip list --outdated \
 		--no-config \
@@ -59,11 +61,17 @@ upgrade:
 		echo "Usage: make upgrade PACKAGE=django==x.x.x"; \
 		exit 1; \
 	fi
-	@echo "-> Download $(PACKAGE) wheels"
-	@${ACTIVATE} pip download $(PACKAGE) \
+	@echo "-> Download $(PACKAGE) wheels for Linux x86_64"
+	pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform manylinux_2_28_x86_64 \
+		--platform manylinux_2_17_x86_64 \
+		--python-version 3.14 \
+		--dest ./thirdparty/dist/
+	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
+	pip download $(PACKAGE) \
 		--only-binary=:all: \
 		--platform macosx_11_0_arm64 \
-		--platform manylinux2014_x86_64 \
 		--python-version 3.14 \
 		--dest ./thirdparty/dist/
 	@echo "-> Update pyproject.toml and uv.lock"

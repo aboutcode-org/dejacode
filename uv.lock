@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-27T06:07:39.297003Z"
+exclude-newer = "2026-04-27T11:09:14.353917Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -95,18 +95,19 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.2.25"
+version = "2026.4.22"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "certifi-2026.2.25-py3-none-any.whl" },
+    { path = "certifi-2026.4.22-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "charset-normalizer"
-version = "3.4.4"
+version = "3.4.7"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "charset_normalizer-3.4.4-py3-none-any.whl" },
+    { path = "charset_normalizer-3.4.7-cp314-cp314-macosx_10_15_universal2.whl" },
+    { path = "charset_normalizer-3.4.7-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -119,10 +120,10 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.3.1"
+version = "8.3.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "click-8.3.1-py3-none-any.whl" },
+    { path = "click-8.3.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -310,10 +311,10 @@ requires-dist = [
     { name = "bleach", specifier = "==6.3.0" },
     { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
-    { name = "certifi", specifier = "==2026.2.25" },
-    { name = "charset-normalizer", specifier = "==3.4.4" },
+    { name = "certifi", specifier = "==2026.4.22" },
+    { name = "charset-normalizer", specifier = "==3.4.7" },
     { name = "clamd", specifier = "==1.0.2" },
-    { name = "click", specifier = "==8.3.1" },
+    { name = "click", specifier = "==8.3.3" },
     { name = "confusable-homoglyphs", specifier = "==3.3.1" },
     { name = "crispy-bootstrap5", specifier = "==2026.3" },
     { name = "croniter", specifier = "==6.2.2" },
@@ -325,11 +326,11 @@ requires-dist = [
     { name = "django-auth-ldap", specifier = "==5.3.0" },
     { name = "django-axes", specifier = "==8.3.1" },
     { name = "django-crispy-forms", specifier = "==2.6" },
-    { name = "django-debug-toolbar", specifier = "==6.2.0" },
+    { name = "django-debug-toolbar", specifier = "==6.3.0" },
     { name = "django-environ", specifier = "==0.13.0" },
     { name = "django-filter", specifier = "==25.2" },
-    { name = "django-grappelli", specifier = "==4.0.3" },
-    { name = "django-guardian", specifier = "==3.3.0" },
+    { name = "django-grappelli", specifier = "==5.0.0" },
+    { name = "django-guardian", specifier = "==3.3.1" },
     { name = "django-notifications-patched", specifier = "==2.0.0" },
     { name = "django-otp", specifier = "==1.7.0" },
     { name = "django-registration", specifier = "==3.4" },
@@ -338,10 +339,10 @@ requires-dist = [
     { name = "djangorestframework", specifier = "==3.16.1" },
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
-    { name = "fakeredis", specifier = "==2.34.1" },
+    { name = "fakeredis", specifier = "==2.35.1" },
     { name = "gitdb", specifier = "==4.0.12" },
-    { name = "gitpython", specifier = "==3.1.46" },
-    { name = "gunicorn", specifier = "==25.1.0" },
+    { name = "gitpython", specifier = "==3.1.49" },
+    { name = "gunicorn", specifier = "==25.3.0" },
     { name = "idna", specifier = "==3.11" },
     { name = "inflection", specifier = "==0.5.1" },
     { name = "jinja2", specifier = "==3.1.6" },
@@ -349,7 +350,7 @@ requires-dist = [
     { name = "jsonschema", specifier = "==4.26.0" },
     { name = "jsonschema-specifications", specifier = "==2025.9.1" },
     { name = "license-expression", specifier = "==30.4.4" },
-    { name = "lxml", specifier = "==6.0.2" },
+    { name = "lxml", specifier = "==6.1.0" },
     { name = "markdown", specifier = "==3.10.2" },
     { name = "markupsafe", specifier = "==3.0.3" },
     { name = "maturin", specifier = "==1.11.5" },
@@ -360,9 +361,9 @@ requires-dist = [
     { name = "odfdo", specifier = "==3.22.0" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
-    { name = "packaging", specifier = "==26.0" },
-    { name = "pip", specifier = "==26.0.1" },
-    { name = "psycopg", specifier = "==3.3.3" },
+    { name = "packaging", specifier = "==26.2" },
+    { name = "pip", specifier = "==26.1" },
+    { name = "psycopg", specifier = "==3.3.4" },
     { name = "py-serializable", specifier = "==2.1.0" },
     { name = "pyasn1", specifier = "==0.6.3" },
     { name = "pyasn1-modules", specifier = "==0.4.2" },
@@ -374,15 +375,15 @@ requires-dist = [
     { name = "python-ldap", specifier = "==3.4.5" },
     { name = "python-mimeparse", specifier = "==2.0.0" },
     { name = "python3-openid", specifier = "==3.2.0" },
-    { name = "pytz", specifier = "==2025.2" },
+    { name = "pytz", specifier = "==2026.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
-    { name = "redis", specifier = "==7.3.0" },
+    { name = "redis", specifier = "==7.4.0" },
     { name = "referencing", specifier = "==0.37.0" },
     { name = "requests", specifier = "==2.33.0" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "rpds-py", specifier = "==0.30.0" },
-    { name = "rq", specifier = "==2.7.0" },
+    { name = "rq", specifier = "==2.8.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.0" },
     { name = "saneyaml", specifier = "==0.6.1" },
     { name = "semantic-version", specifier = "==2.10.0" },
@@ -390,7 +391,7 @@ requires-dist = [
     { name = "setuptools-rust", specifier = "==1.12.0" },
     { name = "setuptools-scm", specifier = "==9.2.2" },
     { name = "six", specifier = "==1.17.0" },
-    { name = "smmap", specifier = "==5.0.2" },
+    { name = "smmap", specifier = "==5.0.3" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
     { name = "sqlparse", specifier = "==0.5.5" },
     { name = "swapper", specifier = "==1.4.0" },
@@ -400,7 +401,7 @@ requires-dist = [
     { name = "uritemplate", specifier = "==4.2.0" },
     { name = "urllib3", specifier = "==2.6.3" },
     { name = "webencodings", specifier = "==0.5.1" },
-    { name = "wheel", specifier = "==0.46.3" },
+    { name = "wheel", specifier = "==0.47.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
     { name = "zipp", specifier = "==3.23.0" },
 ]
@@ -467,14 +468,14 @@ wheels = [
 
 [[package]]
 name = "django-debug-toolbar"
-version = "6.2.0"
+version = "6.3.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "django_debug_toolbar-6.2.0-py3-none-any.whl" },
+    { path = "django_debug_toolbar-6.3.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -498,21 +499,21 @@ wheels = [
 
 [[package]]
 name = "django-grappelli"
-version = "4.0.3"
+version = "5.0.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "django_grappelli-4.0.3-py2.py3-none-any.whl" },
+    { path = "django_grappelli-5.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "django-guardian"
-version = "3.3.0"
+version = "3.3.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "django_guardian-3.3.0-py3-none-any.whl" },
+    { path = "django_guardian-3.3.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -612,14 +613,14 @@ wheels = [
 
 [[package]]
 name = "fakeredis"
-version = "2.34.1"
+version = "2.35.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "fakeredis-2.34.1-py3-none-any.whl" },
+    { path = "fakeredis-2.35.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -635,24 +636,24 @@ wheels = [
 
 [[package]]
 name = "gitpython"
-version = "3.1.46"
+version = "3.1.49"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "gitdb", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "gitpython-3.1.46-py3-none-any.whl" },
+    { path = "gitpython-3.1.49-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "gunicorn"
-version = "25.1.0"
+version = "25.3.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "gunicorn-25.1.0-py3-none-any.whl" },
+    { path = "gunicorn-25.3.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -731,12 +732,11 @@ wheels = [
 
 [[package]]
 name = "lxml"
-version = "6.0.2"
+version = "6.1.0"
 source = { registry = "thirdparty/dist" }
-sdist = { path = "lxml-6.0.2.tar.gz" }
 wheels = [
-    { path = "lxml-6.0.2-cp314-cp314-macosx_10_13_universal2.whl" },
-    { path = "lxml-6.0.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
+    { path = "lxml-6.1.0-cp314-cp314-macosx_10_15_universal2.whl" },
+    { path = "lxml-6.1.0-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -832,26 +832,26 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.0"
+version = "26.2"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "packaging-26.0-py3-none-any.whl" },
+    { path = "packaging-26.2-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "pip"
-version = "26.0.1"
+version = "26.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pip-26.0.1-py3-none-any.whl" },
+    { path = "pip-26.1-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "psycopg"
-version = "3.3.3"
+version = "3.3.4"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "psycopg-3.3.3-py3-none-any.whl" },
+    { path = "psycopg-3.3.4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -969,10 +969,10 @@ wheels = [
 
 [[package]]
 name = "pytz"
-version = "2025.2"
+version = "2026.2"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pytz-2025.2-py2.py3-none-any.whl" },
+    { path = "pytz-2026.2-py2.py3-none-any.whl" },
 ]
 
 [[package]]
@@ -995,10 +995,10 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "7.3.0"
+version = "7.4.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "redis-7.3.0-py3-none-any.whl" },
+    { path = "redis-7.4.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1051,7 +1051,7 @@ wheels = [
 
 [[package]]
 name = "rq"
-version = "2.7.0"
+version = "2.8.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "click", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -1059,7 +1059,7 @@ dependencies = [
     { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "rq-2.7.0-py3-none-any.whl" },
+    { path = "rq-2.8.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1133,10 +1133,10 @@ wheels = [
 
 [[package]]
 name = "smmap"
-version = "5.0.2"
+version = "5.0.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "smmap-5.0.2-py3-none-any.whl" },
+    { path = "smmap-5.0.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1216,13 +1216,13 @@ wheels = [
 
 [[package]]
 name = "wheel"
-version = "0.46.3"
+version = "0.47.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "wheel-0.46.3-py3-none-any.whl" },
+    { path = "wheel-0.47.0-py3-none-any.whl" },
 ]
 
 [[package]]
