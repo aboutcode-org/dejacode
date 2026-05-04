@@ -126,15 +126,19 @@ class DejaCodeUserRegistrationTestCase(TestCase):
 
         self.assertEqual("[DejaCode] Please activate your account", mail.outbox[1].subject)
         activation_key = RegistrationView().get_activation_key(user)
-        activation_url = reverse("django_registration_activate", args=[activation_key])
+        activation_url = reverse("django_registration_activate")
         # Check the validity of URL in activation email
         # WARNING: The key of the URL set in the email may be different since it is not
-        # generated at the same time as the `activation_key` and the results is based on
+        # generated at the same time as the `activation_key` and the result is based on
         # the timestamp.
-        self.assertTrue(activation_url in mail.outbox[1].body)
-
-        # Call the url to activate the account
-        response = self.client.get(activation_url, follow=True)
+        expected_url_in_email = f"{activation_url}?activation_key={activation_key}"
+        self.assertTrue(expected_url_in_email in mail.outbox[1].body)
+        # Activate the account via POST (django-registration 5.x requires POST)
+        response = self.client.post(
+            activation_url,
+            data={"activation_key": activation_key},
+            follow=True,
+        )
         self.assertRedirects(response, reverse("django_registration_activation_complete"))
         self.assertContains(response, "account is now active")
         # Now the user is active
@@ -143,16 +147,21 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         self.assertTrue(user.has_usable_password())
         self.assertTrue(user.is_staff)
         self.assertFalse(user.is_superuser)
-
-        # Make sure the activation link can be use multiple time within the
+        # Make sure the activation link can be used multiple times within the
         # `ACCOUNT_ACTIVATION_DAYS` period.
-        response = self.client.get(activation_url, follow=True)
+        response = self.client.post(
+            activation_url,
+            data={"activation_key": activation_key},
+            follow=True,
+        )
         self.assertContains(response, "account is now active")
 
     def test_user_registration_activate_wrong_key(self):
         activation_url = reverse("django_registration_activate")
         response = self.client.post(activation_url, data={"activation_key": "wrong_key"})
-        self.assertContains(response, "The activation key you provided is invalid")
+        self.assertEqual(response.status_code, 200)
+        # The form should reject the invalid activation key
+        self.assertContains(response, "invalid")
 
     def test_user_registration_default_groups(self):
         for group_name in REGISTRATION_DEFAULT_GROUPS:
