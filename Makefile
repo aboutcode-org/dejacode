@@ -83,14 +83,9 @@ envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
-doc_dependencies: virtualenv
-	@echo "-> Configure and install documentation dependencies"
-	uv sync --frozen --extra dev
-
 doc8:
 	@echo "-> Run documentation .rst validation"
-	@$(MAKE) doc_dependencies > /dev/null 2>&1
-	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
+	uvx doc8==2.0.0 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
 
 valid:
 	@echo "-> Run Ruff format"
@@ -108,7 +103,7 @@ check:
 	@${ACTIVATE} about check ./data/
 	@${ACTIVATE} about check ./dje/
 	@${ACTIVATE} about check ./dejacode_toolkit/
-	# @$(MAKE) doc8
+	@$(MAKE) doc8
 
 check-deploy:
 	@echo "-> Check Django deployment settings"
@@ -171,9 +166,8 @@ test:
 docs:
 	@echo "-> Builds the documentation"
 	rm -rf ${DOCS_LOCATION}/_build/
-	@$(MAKE) doc_dependencies > /dev/null 2>&1
-	@${ACTIVATE} sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
-	@${ACTIVATE} sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
 build:
 	@echo "-> Build the Docker image"
@@ -195,4 +189,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev doc_dependencies check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log createsuperuser

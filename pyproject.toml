@@ -167,11 +167,6 @@ dev = [
     # Parallel testing
     "tblib==3.2.2"
 ]
-#docs = [
-#    "Sphinx",
-#    "furo",
-#    "doc8",
-#]
 
 [project.urls]
 Homepage = "https://github.com/aboutcode-org/dejacode"
