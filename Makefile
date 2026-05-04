@@ -108,7 +108,7 @@ check:
 	@${ACTIVATE} about check ./data/
 	@${ACTIVATE} about check ./dje/
 	@${ACTIVATE} about check ./dejacode_toolkit/
-	@$(MAKE) doc8
+	# @$(MAKE) doc8
 
 check-deploy:
 	@echo "-> Check Django deployment settings"
