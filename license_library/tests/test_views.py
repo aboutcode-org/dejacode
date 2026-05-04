@@ -140,7 +140,7 @@ class LicenseListViewTestCase(TestCase):
         license_list_url = resolve_url("license_library:license_list")
 
         response = self.client.get(license_list_url)
-        login_redirect_url = f"{reverse("login")}?next={license_list_url}"
+        login_redirect_url = f"{reverse('login')}?next={license_list_url}"
         self.assertRedirects(response, login_redirect_url)
 
         self.client.login(username="nexb_user", password="t3st")
