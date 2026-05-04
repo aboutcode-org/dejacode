@@ -150,9 +150,9 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         self.assertContains(response, "account is now active")
 
     def test_user_registration_activate_wrong_key(self):
-        activation_url = reverse("django_registration_activate", args=["wrong_key"])
-        response = self.client.get(activation_url)
-        self.assertContains(response, "Error during your account activation")
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(activation_url, data={"activation_key": "wrong_key"})
+        self.assertContains(response, "The activation key you provided is invalid")
 
     def test_user_registration_default_groups(self):
         for group_name in REGISTRATION_DEFAULT_GROUPS:

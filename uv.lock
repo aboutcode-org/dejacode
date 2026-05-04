@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-27T11:09:14.353917Z"
+exclude-newer = "2026-04-27T11:37:45.819719Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -333,7 +333,7 @@ requires-dist = [
     { name = "django-guardian", specifier = "==3.3.1" },
     { name = "django-notifications-patched", specifier = "==2.0.0" },
     { name = "django-otp", specifier = "==1.7.0" },
-    { name = "django-registration", specifier = "==3.4" },
+    { name = "django-registration", specifier = "==5.2.1" },
     { name = "django-rest-hooks", specifier = "==1.6.1" },
     { name = "django-rq", specifier = "==3.2.2" },
     { name = "djangorestframework", specifier = "==3.16.1" },
@@ -540,14 +540,14 @@ wheels = [
 
 [[package]]
 name = "django-registration"
-version = "3.4"
+version = "5.2.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "confusable-homoglyphs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "django_registration-3.4-py3-none-any.whl" },
+    { path = "django_registration-5.2.1-py3-none-any.whl" },
 ]
 
 [[package]]

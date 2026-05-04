@@ -45,7 +45,7 @@ dependencies = [
     "crispy_bootstrap5==2026.3",
     "django-grappelli==5.0.0",
     "django-filter==25.2",
-    "django-registration==3.4",
+    "django-registration==5.2.1",
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.3.1",
     "django-environ==0.13.0",
