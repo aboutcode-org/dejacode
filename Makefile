@@ -47,6 +47,32 @@ dev: virtualenv
 	@echo "-> Configure and install development dependencies"
 	uv sync --frozen --extra dev
 
+outdated:
+	@echo "-> Check for outdated packages (with 7 days cooldown)"
+	uv pip list --outdated \
+		--no-config \
+		--index-url https://pypi.org/simple \
+		--exclude-newer "7 days"
+
+upgrade:
+	@if [ -z "$(PACKAGE)" ]; then \
+		echo "Usage: make upgrade PACKAGE=django==x.x.x"; \
+		exit 1; \
+	fi
+	@echo "-> Download $(PACKAGE) wheels"
+	@${ACTIVATE} pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform macosx_11_0_arm64 \
+		--platform manylinux2014_x86_64 \
+		--python-version 3.14 \
+		--dest ./thirdparty/dist/
+	@echo "-> Update pyproject.toml and uv.lock"
+	uv add $(PACKAGE)
+
+lock:
+	@echo "-> Regenerate uv.lock from local wheels"
+	uv lock
+
 envfile:
 	@echo "-> Create the .env file and generate a secret key"
 	@if test -f ${ENV_FILE}; then echo "${ENV_FILE} file exists already"; exit 1; fi
@@ -114,11 +140,6 @@ migrate:
 	@echo "-> Apply database migrations"
 	${MANAGE} migrate
 
-upgrade:
-	@echo "-> Upgrade local git checkout"
-	@git pull
-	@$(MAKE) migrate
-
 postgresdb:
 	@echo "-> Configure PostgreSQL database"
 	@echo "-> Create database user ${DB_NAME}"
@@ -174,4 +195,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile envfile_dev doc_dependencies check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev doc_dependencies check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log createsuperuser
