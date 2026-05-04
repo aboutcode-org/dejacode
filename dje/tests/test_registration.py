@@ -6,17 +6,21 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core import mail
+from django.core import signing
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from django_altcha import AltchaField
+from django_registration.backends.activation.views import REGISTRATION_SALT
 from django_registration.backends.activation.views import RegistrationView
 
 from dje.registration import REGISTRATION_DEFAULT_GROUPS
@@ -67,6 +71,8 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         self.assertTrue("Your DejaCode Evaluation account is pending activation." in body)
         self.assertTrue("Username: {}".format(self.registration_data["username"]) in body)
         self.assertTrue("{} days to activate".format(settings.ACCOUNT_ACTIVATION_DAYS) in body)
+        # Verify the activation URL uses the querystring format
+        self.assertTrue("?activation_key=" in body)
 
         new_user = get_user_model().objects.get(username=self.registration_data["username"])
         self.assertEqual(new_user.email, self.registration_data["email"])
@@ -156,12 +162,91 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         )
         self.assertContains(response, "account is now active")
 
+    def test_user_registration_activation_form_displayed_on_get(self):
+        url = reverse("django_registration_register")
+        self.client.post(url, self.registration_data)
+        user = get_user_model().objects.get(username=self.registration_data["username"])
+        activation_key = RegistrationView().get_activation_key(user)
+        activation_url = reverse("django_registration_activate")
+
+        response = self.client.get(f"{activation_url}?activation_key={activation_key}")
+        self.assertEqual(response.status_code, 200)
+        # The page should display the activation form, not redirect or auto-activate
+        self.assertContains(response, "Activate my account")
+        # User should NOT be active yet (security: GET should not activate)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
     def test_user_registration_activate_wrong_key(self):
         activation_url = reverse("django_registration_activate")
         response = self.client.post(activation_url, data={"activation_key": "wrong_key"})
         self.assertEqual(response.status_code, 200)
         # The form should reject the invalid activation key
         self.assertContains(response, "invalid")
+        # No user should have been created or activated
+        self.assertEqual(get_user_model().objects.count(), 0)
+
+    def test_user_registration_activate_empty_key(self):
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(activation_url, data={"activation_key": ""})
+        self.assertEqual(response.status_code, 200)
+        # Form should reject the empty key
+        self.assertContains(response, "required")
+
+    def test_user_registration_activate_expired_key(self):
+        url = reverse("django_registration_register")
+        self.client.post(url, self.registration_data)
+        user = get_user_model().objects.get(username=self.registration_data["username"])
+
+        # Generate a key with a timestamp older than ACCOUNT_ACTIVATION_DAYS
+        expired_days = settings.ACCOUNT_ACTIVATION_DAYS + 1
+        with patch("django.core.signing.time.time") as mock_time:
+            past_timestamp = (timezone.now() - timedelta(days=expired_days)).timestamp()
+            mock_time.return_value = past_timestamp
+            expired_key = signing.dumps(obj=user.username, salt=REGISTRATION_SALT)
+
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(activation_url, data={"activation_key": expired_key})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "expired")
+        # User should remain inactive
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+    def test_user_registration_activate_unknown_user(self):
+        # Generate a key for a user that doesn't exist
+        bogus_key = signing.dumps(obj="nonexistent_user", salt=REGISTRATION_SALT)
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(activation_url, data={"activation_key": bogus_key}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        # Should display the activation error template content
+        self.assertContains(response, "The account you attempted to activate is invalid")
+
+    def test_user_registration_unique_email(self):
+        url = reverse("django_registration_register")
+        # First registration succeeds
+        self.client.post(url, self.registration_data)
+        # Second registration with same email but different username
+        duplicate_data = dict(self.registration_data)
+        duplicate_data["username"] = "different_username"
+        response = self.client.post(url, duplicate_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("email", response.context["form"].errors)
+
+    def test_user_registration_unique_username(self):
+        url = reverse("django_registration_register")
+        self.client.post(url, self.registration_data)
+        duplicate_data = dict(self.registration_data)
+        duplicate_data["email"] = "different@company.com"
+        response = self.client.post(url, duplicate_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("username", response.context["form"].errors)
+
+    def test_user_registration_default_dataspace_assigned(self):
+        url = reverse("django_registration_register")
+        self.client.post(url, self.registration_data)
+        new_user = get_user_model().objects.get(username=self.registration_data["username"])
+        self.assertEqual(new_user.dataspace.name, "Evaluation")
 
     def test_user_registration_default_groups(self):
         for group_name in REGISTRATION_DEFAULT_GROUPS:
@@ -173,7 +258,41 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         new_user = get_user_model().objects.get(username=self.registration_data["username"])
         self.assertEqual(len(REGISTRATION_DEFAULT_GROUPS), new_user.groups.count())
 
+    def test_user_registration_default_groups_missing(self):
+        # Don't create any groups
+        url = reverse("django_registration_register")
+        response = self.client.post(url, self.registration_data, follow=True)
+        # Registration should succeed
+        self.assertRedirects(response, reverse("django_registration_complete"))
+        new_user = get_user_model().objects.get(username=self.registration_data["username"])
+        self.assertEqual(0, new_user.groups.count())
+
+    def test_user_registration_password_field_only_password1(self):
+        url = reverse("django_registration_register")
+        response = self.client.get(url)
+        self.assertContains(response, 'name="password1"')
+        self.assertNotContains(response, 'name="password2"')
+
     @override_settings(REGISTRATION_OPEN=False)
     def test_user_registration_closed(self):
         resp = self.client.get(reverse("django_registration_register"))
         self.assertRedirects(resp, reverse("django_registration_disallowed"))
+
+    @override_settings(REGISTRATION_OPEN=False)
+    def test_user_registration_closed_post_blocked(self):
+        resp = self.client.post(reverse("django_registration_register"), self.registration_data)
+        self.assertRedirects(resp, reverse("django_registration_disallowed"))
+        # No user should have been created
+        self.assertEqual(get_user_model().objects.count(), 0)
+
+    def test_user_registration_admin_notification_email_sent(self):
+        url = reverse("django_registration_register")
+        self.client.post(url, self.registration_data)
+
+        admin_email = mail.outbox[0]
+        self.assertEqual("[DejaCode] New User registration", admin_email.subject)
+        # Check that admin@nexb.com is in any of the recipient tuples or strings
+        recipients_str = str(admin_email.to)
+        self.assertIn("admin@nexb.com", recipients_str)
+        self.assertIn(self.registration_data["username"], admin_email.body)
+        self.assertIn(self.registration_data["email"], admin_email.body)
