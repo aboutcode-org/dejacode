@@ -6,13 +6,11 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-PYTHON_EXE=python3.14
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
 MANAGE=${VENV_LOCATION}/bin/python manage.py
 # Do not depend on Python to generate the SECRET_KEY
 GET_SECRET_KEY=`head -c50 /dev/urandom | base64 | head -c50`
-PIP_ARGS=--find-links=./thirdparty/dist/ --no-index --no-cache-dir
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
 ENV_FILE=.env
 DOCS_LOCATION=./docs
@@ -36,18 +34,18 @@ else
 endif
 
 virtualenv:
-	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
-	${PYTHON_EXE} -m venv ${VENV_LOCATION}
+	@echo "-> Bootstrap the virtualenv with uv"
+	uv venv --allow-existing ${VENV_LOCATION}
 
 conf: virtualenv
 	@echo "-> Install dependencies"
-	@${ACTIVATE} pip install ${PIP_ARGS} --editable .
+	uv sync --frozen
 	@echo "-> Create the var/ directory"
 	@mkdir -p var
 
 dev: virtualenv
 	@echo "-> Configure and install development dependencies"
-	@${ACTIVATE} pip install ${PIP_ARGS} --editable .[dev]
+	uv sync --frozen --extra dev
 
 envfile:
 	@echo "-> Create the .env file and generate a secret key"
@@ -61,7 +59,7 @@ envfile_dev: envfile
 
 doc_dependencies: virtualenv
 	@echo "-> Configure and install documentation dependencies"
-	@${ACTIVATE} pip install --editable .[docs]
+	uv sync --frozen --extra dev
 
 doc8:
 	@echo "-> Run documentation .rst validation"
@@ -176,4 +174,4 @@ log:
 createsuperuser:
 	${DOCKER_EXEC} web ./manage.py createsuperuser
 
-.PHONY: virtualenv conf dev envfile envfile_dev doc_dependencies check doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev envfile envfile_dev doc_dependencies check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate upgrade run test docs build psql bash shell log createsuperuser

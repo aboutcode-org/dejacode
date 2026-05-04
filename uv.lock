@@ -1,0 +1,1242 @@
+version = 1
+revision = 3
+requires-python = "==3.14.*"
+resolution-markers = [
+    "sys_platform == 'linux'",
+    "sys_platform == 'darwin'",
+]
+supported-markers = [
+    "sys_platform == 'linux'",
+    "sys_platform == 'darwin'",
+]
+
+[options]
+exclude-newer = "2026-04-27T06:07:39.297003Z"
+exclude-newer-span = "P7D"
+
+[[package]]
+name = "aboutcode-toolkit"
+version = "11.1.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "attrs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "boolean-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "click", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jinja2", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "license-expression", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "openpyxl", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "packageurl-python", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "saneyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "aboutcode_toolkit-11.1.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "altcha"
+version = "1.0.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "altcha-1.0.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "annotated-types"
+version = "0.7.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "annotated_types-0.7.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "asgiref"
+version = "3.11.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "asgiref-3.11.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "attrs"
+version = "25.4.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "attrs-25.4.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "bleach"
+version = "6.3.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "webencodings", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "bleach-6.3.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "bleach-allowlist"
+version = "1.0.3"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "bleach_allowlist-1.0.3-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "boolean-py"
+version = "5.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "boolean_py-5.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "certifi"
+version = "2026.2.25"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "certifi-2026.2.25-py3-none-any.whl" },
+]
+
+[[package]]
+name = "charset-normalizer"
+version = "3.4.4"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "charset_normalizer-3.4.4-py3-none-any.whl" },
+]
+
+[[package]]
+name = "clamd"
+version = "1.0.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "clamd-1.0.2-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "click"
+version = "8.3.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "click-8.3.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "confusable-homoglyphs"
+version = "3.3.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "confusable_homoglyphs-3.3.1-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "crispy-bootstrap5"
+version = "2026.3"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-crispy-forms", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "crispy_bootstrap5-2026.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "croniter"
+version = "6.2.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "croniter-6.2.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "cyclonedx-python-lib"
+version = "11.6.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "license-expression", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "packageurl-python", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "py-serializable", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "cyclonedx_python_lib-11.6.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "cython"
+version = "3.2.4"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "cython-3.2.4-py3-none-any.whl" },
+    { path = "cython-3.2.4-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "cython-3.2.4-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+]
+
+[[package]]
+name = "defusedxml"
+version = "0.7.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "defusedxml-0.7.1-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "dejacode"
+version = "5.7.1"
+source = { editable = "." }
+dependencies = [
+    { name = "aboutcode-toolkit", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "altcha", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "annotated-types", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "asgiref", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "attrs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "bleach", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "bleach-allowlist", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "boolean-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "charset-normalizer", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "clamd", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "click", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "confusable-homoglyphs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "crispy-bootstrap5", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "croniter", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "cyclonedx-python-lib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "cython", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "defusedxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-altcha", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-auth-ldap", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-axes", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-crispy-forms", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-debug-toolbar", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-environ", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-filter", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-grappelli", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-guardian", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-notifications-patched", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-otp", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-registration", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-rest-hooks", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django-rq", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "djangorestframework", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "drf-yasg", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "et-xmlfile", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "fakeredis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "gitdb", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "gitpython", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "gunicorn", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "idna", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "inflection", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jinja2", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jsonfield", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jsonschema", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jsonschema-specifications", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "license-expression", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "lxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "markdown", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "markupsafe", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "maturin", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "model-bakery", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "msgspec", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "natsort", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "oauthlib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "odfdo", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "openpyxl", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "packageurl-python", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pip", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "psycopg", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "py-serializable", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyasn1", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyasn1-modules", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pydantic-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyjwt", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pypng", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "python-ldap", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "python-mimeparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "python3-openid", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pytz", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "qrcode", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "referencing", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "requests-oauthlib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "rpds-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "rq", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "saneyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "semantic-version", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "setuptools", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "setuptools-rust", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "setuptools-scm", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "six", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "smmap", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "swapper", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "typing-inspection", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "uritemplate", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "webencodings", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "wheel", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "xlsxwriter", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "zipp", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "ruff", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "tblib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aboutcode-toolkit", specifier = "==11.1.1" },
+    { name = "altcha", specifier = "==1.0.0" },
+    { name = "annotated-types", specifier = "==0.7.0" },
+    { name = "asgiref", specifier = "==3.11.1" },
+    { name = "attrs", specifier = "==25.4.0" },
+    { name = "bleach", specifier = "==6.3.0" },
+    { name = "bleach-allowlist", specifier = "==1.0.3" },
+    { name = "boolean-py", specifier = "==5.0" },
+    { name = "certifi", specifier = "==2026.2.25" },
+    { name = "charset-normalizer", specifier = "==3.4.4" },
+    { name = "clamd", specifier = "==1.0.2" },
+    { name = "click", specifier = "==8.3.1" },
+    { name = "confusable-homoglyphs", specifier = "==3.3.1" },
+    { name = "crispy-bootstrap5", specifier = "==2026.3" },
+    { name = "croniter", specifier = "==6.2.2" },
+    { name = "cyclonedx-python-lib", specifier = "==11.6.0" },
+    { name = "cython", specifier = "==3.2.4" },
+    { name = "defusedxml", specifier = "==0.7.1" },
+    { name = "django", specifier = "==6.0.4" },
+    { name = "django-altcha", specifier = "==0.10.0" },
+    { name = "django-auth-ldap", specifier = "==5.3.0" },
+    { name = "django-axes", specifier = "==8.3.1" },
+    { name = "django-crispy-forms", specifier = "==2.6" },
+    { name = "django-debug-toolbar", specifier = "==6.2.0" },
+    { name = "django-environ", specifier = "==0.13.0" },
+    { name = "django-filter", specifier = "==25.2" },
+    { name = "django-grappelli", specifier = "==4.0.3" },
+    { name = "django-guardian", specifier = "==3.3.0" },
+    { name = "django-notifications-patched", specifier = "==2.0.0" },
+    { name = "django-otp", specifier = "==1.7.0" },
+    { name = "django-registration", specifier = "==3.4" },
+    { name = "django-rest-hooks", specifier = "==1.6.1" },
+    { name = "django-rq", specifier = "==3.2.2" },
+    { name = "djangorestframework", specifier = "==3.16.1" },
+    { name = "drf-yasg", specifier = "==1.21.15" },
+    { name = "et-xmlfile", specifier = "==2.0.0" },
+    { name = "fakeredis", specifier = "==2.34.1" },
+    { name = "gitdb", specifier = "==4.0.12" },
+    { name = "gitpython", specifier = "==3.1.46" },
+    { name = "gunicorn", specifier = "==25.1.0" },
+    { name = "idna", specifier = "==3.11" },
+    { name = "inflection", specifier = "==0.5.1" },
+    { name = "jinja2", specifier = "==3.1.6" },
+    { name = "jsonfield", specifier = "==3.2.0" },
+    { name = "jsonschema", specifier = "==4.26.0" },
+    { name = "jsonschema-specifications", specifier = "==2025.9.1" },
+    { name = "license-expression", specifier = "==30.4.4" },
+    { name = "lxml", specifier = "==6.0.2" },
+    { name = "markdown", specifier = "==3.10.2" },
+    { name = "markupsafe", specifier = "==3.0.3" },
+    { name = "maturin", specifier = "==1.11.5" },
+    { name = "model-bakery", specifier = "==1.23.3" },
+    { name = "msgspec", specifier = "==0.20.0" },
+    { name = "natsort", specifier = "==8.4.0" },
+    { name = "oauthlib", specifier = "==3.3.1" },
+    { name = "odfdo", specifier = "==3.22.0" },
+    { name = "openpyxl", specifier = "==3.1.5" },
+    { name = "packageurl-python", specifier = "==0.17.6" },
+    { name = "packaging", specifier = "==26.0" },
+    { name = "pip", specifier = "==26.0.1" },
+    { name = "psycopg", specifier = "==3.3.3" },
+    { name = "py-serializable", specifier = "==2.1.0" },
+    { name = "pyasn1", specifier = "==0.6.3" },
+    { name = "pyasn1-modules", specifier = "==0.4.2" },
+    { name = "pydantic", specifier = "==2.12.5" },
+    { name = "pydantic-core", specifier = "==2.41.5" },
+    { name = "pyjwt", specifier = "==2.12.1" },
+    { name = "pypng", specifier = "==0.20220715.0" },
+    { name = "python-dateutil", specifier = "==2.9.0.post0" },
+    { name = "python-ldap", specifier = "==3.4.5" },
+    { name = "python-mimeparse", specifier = "==2.0.0" },
+    { name = "python3-openid", specifier = "==3.2.0" },
+    { name = "pytz", specifier = "==2025.2" },
+    { name = "pyyaml", specifier = "==6.0.3" },
+    { name = "qrcode", specifier = "==8.2" },
+    { name = "redis", specifier = "==7.3.0" },
+    { name = "referencing", specifier = "==0.37.0" },
+    { name = "requests", specifier = "==2.33.0" },
+    { name = "requests-oauthlib", specifier = "==2.0.0" },
+    { name = "rpds-py", specifier = "==0.30.0" },
+    { name = "rq", specifier = "==2.7.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.0" },
+    { name = "saneyaml", specifier = "==0.6.1" },
+    { name = "semantic-version", specifier = "==2.10.0" },
+    { name = "setuptools", specifier = "==82.0.0" },
+    { name = "setuptools-rust", specifier = "==1.12.0" },
+    { name = "setuptools-scm", specifier = "==9.2.2" },
+    { name = "six", specifier = "==1.17.0" },
+    { name = "smmap", specifier = "==5.0.2" },
+    { name = "sortedcontainers", specifier = "==2.4.0" },
+    { name = "sqlparse", specifier = "==0.5.5" },
+    { name = "swapper", specifier = "==1.4.0" },
+    { name = "tblib", marker = "extra == 'dev'", specifier = "==3.2.2" },
+    { name = "typing-extensions", specifier = "==4.15.0" },
+    { name = "typing-inspection", specifier = "==0.4.2" },
+    { name = "uritemplate", specifier = "==4.2.0" },
+    { name = "urllib3", specifier = "==2.6.3" },
+    { name = "webencodings", specifier = "==0.5.1" },
+    { name = "wheel", specifier = "==0.46.3" },
+    { name = "xlsxwriter", specifier = "==3.2.9" },
+    { name = "zipp", specifier = "==3.23.0" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "django"
+version = "6.0.4"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "asgiref", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django-6.0.4-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-altcha"
+version = "0.10.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "altcha", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_altcha-0.10.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-auth-ldap"
+version = "5.3.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "python-ldap", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_auth_ldap-5.3.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-axes"
+version = "8.3.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "asgiref", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_axes-8.3.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-crispy-forms"
+version = "2.6"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_crispy_forms-2.6-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-debug-toolbar"
+version = "6.2.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_debug_toolbar-6.2.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-environ"
+version = "0.13.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "django_environ-0.13.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-filter"
+version = "25.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_filter-25.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-grappelli"
+version = "4.0.3"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "django_grappelli-4.0.3-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-guardian"
+version = "3.3.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_guardian-3.3.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-notifications-patched"
+version = "2.0.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jsonfield", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "swapper", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+sdist = { path = "django-notifications-patched-2.0.0.tar.gz" }
+
+[[package]]
+name = "django-otp"
+version = "1.7.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_otp-1.7.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-registration"
+version = "3.4"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "confusable-homoglyphs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_registration-3.4-py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-rest-hooks"
+version = "1.6.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_rest_hooks-1.6.1-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "django-rq"
+version = "3.2.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "rq", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "django_rq-3.2.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "djangorestframework"
+version = "3.16.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "djangorestframework-3.16.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "drf-yasg"
+version = "1.21.15"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "djangorestframework", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "inflection", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pytz", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "uritemplate", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "drf_yasg-1.21.15-py3-none-any.whl" },
+]
+
+[[package]]
+name = "et-xmlfile"
+version = "2.0.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "et_xmlfile-2.0.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "fakeredis"
+version = "2.34.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "fakeredis-2.34.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "gitdb"
+version = "4.0.12"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "smmap", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "gitdb-4.0.12-py3-none-any.whl" },
+]
+
+[[package]]
+name = "gitpython"
+version = "3.1.46"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "gitdb", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "gitpython-3.1.46-py3-none-any.whl" },
+]
+
+[[package]]
+name = "gunicorn"
+version = "25.1.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "gunicorn-25.1.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "idna"
+version = "3.11"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "idna-3.11-py3-none-any.whl" },
+]
+
+[[package]]
+name = "inflection"
+version = "0.5.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "inflection-0.5.1-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "jinja2"
+version = "3.1.6"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "markupsafe", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "jinja2-3.1.6-py3-none-any.whl" },
+]
+
+[[package]]
+name = "jsonfield"
+version = "3.2.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "jsonfield-3.2.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "jsonschema"
+version = "4.26.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "attrs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "jsonschema-specifications", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "referencing", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "rpds-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "jsonschema-4.26.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "jsonschema-specifications"
+version = "2025.9.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "referencing", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "jsonschema_specifications-2025.9.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "license-expression"
+version = "30.4.4"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "boolean-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "license_expression-30.4.4-py3-none-any.whl" },
+]
+
+[[package]]
+name = "lxml"
+version = "6.0.2"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "lxml-6.0.2.tar.gz" }
+wheels = [
+    { path = "lxml-6.0.2-cp314-cp314-macosx_10_13_universal2.whl" },
+    { path = "lxml-6.0.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
+]
+
+[[package]]
+name = "markdown"
+version = "3.10.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "markdown-3.10.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "markupsafe"
+version = "3.0.3"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "markupsafe-3.0.3.tar.gz" }
+wheels = [
+    { path = "markupsafe-3.0.3-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+]
+
+[[package]]
+name = "maturin"
+version = "1.11.5"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "maturin-1.11.5.tar.gz" }
+wheels = [
+    { path = "maturin-1.11.5-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl" },
+    { path = "maturin-1.11.5-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl" },
+]
+
+[[package]]
+name = "model-bakery"
+version = "1.23.3"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "model_bakery-1.23.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "msgspec"
+version = "0.20.0"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "msgspec-0.20.0.tar.gz" }
+
+[[package]]
+name = "natsort"
+version = "8.4.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "natsort-8.4.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "oauthlib"
+version = "3.3.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "oauthlib-3.3.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "odfdo"
+version = "3.22.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "lxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "odfdo-3.22.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "openpyxl"
+version = "3.1.5"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "et-xmlfile", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "openpyxl-3.1.5-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "packageurl-python"
+version = "0.17.6"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "packageurl_python-0.17.6-py3-none-any.whl" },
+]
+
+[[package]]
+name = "packaging"
+version = "26.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "packaging-26.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pip"
+version = "26.0.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "pip-26.0.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "psycopg"
+version = "3.3.3"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "psycopg-3.3.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "py-serializable"
+version = "2.1.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "defusedxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "py_serializable-2.1.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pyasn1"
+version = "0.6.3"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "pyasn1-0.6.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pyasn1-modules"
+version = "0.4.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "pyasn1", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "pyasn1_modules-0.4.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pydantic"
+version = "2.12.5"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "annotated-types", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pydantic-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "typing-inspection", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "pydantic-2.12.5-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pydantic-core"
+version = "2.41.5"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+sdist = { path = "pydantic_core-2.41.5.tar.gz" }
+wheels = [
+    { path = "pydantic_core-2.41.5-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
+]
+
+[[package]]
+name = "pyjwt"
+version = "2.12.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "pyjwt-2.12.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pypng"
+version = "0.20220715.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "pypng-0.20220715.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "six", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "python_dateutil-2.9.0.post0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "python-ldap"
+version = "3.4.5"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "pyasn1", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyasn1-modules", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+sdist = { path = "python_ldap-3.4.5.tar.gz" }
+
+[[package]]
+name = "python-mimeparse"
+version = "2.0.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "python_mimeparse-2.0.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "python3-openid"
+version = "3.2.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "defusedxml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "python3_openid-3.2.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "pytz"
+version = "2025.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "pytz-2025.2-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "pyyaml"
+version = "6.0.3"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "pyyaml-6.0.3.tar.gz" }
+wheels = [
+    { path = "pyyaml-6.0.3-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+]
+
+[[package]]
+name = "qrcode"
+version = "8.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "qrcode-8.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "redis"
+version = "7.3.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "redis-7.3.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "referencing"
+version = "0.37.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "attrs", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "rpds-py", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "referencing-0.37.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "requests"
+version = "2.33.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "charset-normalizer", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "idna", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "requests-2.33.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "requests-oauthlib"
+version = "2.0.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "oauthlib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "requests_oauthlib-2.0.0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "rpds-py"
+version = "0.30.0"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "rpds_py-0.30.0.tar.gz" }
+wheels = [
+    { path = "rpds_py-0.30.0-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "rpds_py-0.30.0-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
+]
+
+[[package]]
+name = "rq"
+version = "2.7.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "click", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "croniter", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "rq-2.7.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "ruff"
+version = "0.15.0"
+source = { registry = "thirdparty/dist" }
+sdist = { path = "ruff-0.15.0.tar.gz" }
+wheels = [
+    { path = "ruff-0.15.0-py3-none-macosx_11_0_arm64.whl" },
+    { path = "ruff-0.15.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
+]
+
+[[package]]
+name = "saneyaml"
+version = "0.6.1"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "saneyaml-0.6.1-py3-none-any.whl" },
+]
+
+[[package]]
+name = "semantic-version"
+version = "2.10.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "semantic_version-2.10.0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "setuptools"
+version = "82.0.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "setuptools-82.0.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "setuptools-rust"
+version = "1.12.0"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "semantic-version", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "setuptools", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "setuptools_rust-1.12.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "setuptools-scm"
+version = "9.2.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "setuptools", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "setuptools_scm-9.2.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "six"
+version = "1.17.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "six-1.17.0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "smmap"
+version = "5.0.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "smmap-5.0.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "sortedcontainers-2.4.0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "sqlparse"
+version = "0.5.5"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "sqlparse-0.5.5-py3-none-any.whl" },
+]
+
+[[package]]
+name = "swapper"
+version = "1.4.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "swapper-1.4.0-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "tblib"
+version = "3.2.2"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "tblib-3.2.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "typing-extensions"
+version = "4.15.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "typing_extensions-4.15.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "typing-inspection"
+version = "0.4.2"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "typing_inspection-0.4.2-py3-none-any.whl" },
+]
+
+[[package]]
+name = "uritemplate"
+version = "4.2.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "uritemplate-4.2.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "urllib3"
+version = "2.6.3"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "urllib3-2.6.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "webencodings"
+version = "0.5.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "webencodings-0.5.1-py2.py3-none-any.whl" },
+]
+
+[[package]]
+name = "wheel"
+version = "0.46.3"
+source = { registry = "thirdparty/dist" }
+dependencies = [
+    { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+wheels = [
+    { path = "wheel-0.46.3-py3-none-any.whl" },
+]
+
+[[package]]
+name = "xlsxwriter"
+version = "3.2.9"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "xlsxwriter-3.2.9-py3-none-any.whl" },
+]
+
+[[package]]
+name = "zipp"
+version = "3.23.0"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "zipp-3.23.0-py3-none-any.whl" },
+]
