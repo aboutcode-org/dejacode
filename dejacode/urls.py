@@ -102,6 +102,19 @@ urlpatterns = [
         ),
         name="login",
     ),
+    # User activation.
+    # Activation views are required for the user creation flow, even when
+    # self-registration (ENABLE_SELF_REGISTRATION) is turned off.
+    path(
+        "account/activate/complete/",
+        TemplateView.as_view(template_name="django_registration/activation_complete.html"),
+        name="django_registration_activation_complete",
+    ),
+    path(
+        "account/activate/",
+        DejaCodeActivationView.as_view(),
+        name="django_registration_activate",
+    ),
     # Two-factor authentication
     path("account/2fa/enable/", two_factor.EnableView.as_view(), name="account_2fa_enable"),
     path("account/2fa/disable/", two_factor.DisableView.as_view(), name="account_2fa_disable"),
@@ -167,25 +180,11 @@ if settings.ENABLE_SELF_REGISTRATION:
     from django_registration.backends.activation.views import RegistrationView
 
     urlpatterns += [
-        # Activation and password views are required for the user creation flow.
-        # registration_activation_complete needs to be register before registration_activate
-        # so the 'complete/' segment is not caught as the activation_key
-        path(
-            "account/activate/complete/",
-            TemplateView.as_view(template_name="django_registration/activation_complete.html"),
-            name="django_registration_activation_complete",
-        ),
         # Override the registration view to use our custom form
         path(
             "account/register/",
             RegistrationView.as_view(form_class=DejaCodeRegistrationForm),
             name="django_registration_register",
-        ),
-        # Override the activation view with our custom logic
-        path(
-            "account/activate/",
-            DejaCodeActivationView.as_view(),
-            name="django_registration_activate",
         ),
         # Include the rest (complete, disallowed, etc.) from the default backend
         path("account/", include("django_registration.backends.activation.urls")),
