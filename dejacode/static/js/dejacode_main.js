@@ -135,13 +135,24 @@ function setupSearchModal() {
 
   if (!searchModal) return;
 
+  // Apply a scope button as the active one and sync the form action
+  const applyScope = (button) => {
+    document.querySelectorAll('.search-scope-btn').forEach(b => b.classList.remove('active'));
+    button.classList.add('active');
+    searchForm.setAttribute('action', button.dataset.scopeAction);
+  };
+
+  // Sync form action with the currently active scope button on page load
+  const activeButton = document.querySelector('.search-scope-btn.active');
+  if (searchForm && activeButton) {
+    searchForm.setAttribute('action', activeButton.dataset.scopeAction);
+  }
+
   // Scope selector buttons
   if (searchForm) {
     document.querySelectorAll('.search-scope-btn').forEach(button => {
       button.addEventListener('click', () => {
-        document.querySelectorAll('.search-scope-btn').forEach(b => b.classList.remove('active'));
-        button.classList.add('active');
-        searchForm.setAttribute('action', button.dataset.scopeAction);
+        applyScope(button);
         searchInput.focus();
       });
     });
