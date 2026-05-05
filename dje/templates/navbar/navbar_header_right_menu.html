@@ -60,6 +60,12 @@
         </a>
         {% if user.is_staff %}
           <div class="dropdown-divider"></div>
+          <div class="dropdown-header">Administration</div>
+          <a class="dropdown-item" href="{% url 'admin:index' %}">
+            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+            Admin Dashboard
+          </a>
+          <div class="dropdown-divider"></div>
           <div class="dropdown-header">Status</div>
           <a class="dropdown-item" href="{% url 'integrations_status' %}">
             <i class="fas fa-stethoscope"></i>
