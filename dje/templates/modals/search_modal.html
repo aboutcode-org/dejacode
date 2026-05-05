@@ -15,22 +15,50 @@
 
         {# Scope selector #}
         <div class="p-3 border-bottom">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-2">{% trans "Search in" %}</div>
-          <div class="d-flex flex-wrap gap-2" id="search-scope-buttons">
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if not product_list_url in request.path and not component_list_url in request.path and not package_list_url in request.path and not license_list_url in request.path and not owner_list_url in request.path %}active{% endif %}" data-scope-action="{{ global_search_url }}" data-scope-label="<i class='fa fa-globe'></i> {% trans 'Global' %}">
+          <div class="text-body-secondary small text-uppercase fw-semibold mb-2">
+            {% trans "Search in" %}
+          </div>
+          {# Catalogs #}
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if not product_list_url in request.path and not component_list_url in request.path and not package_list_url in request.path and not license_list_url in request.path and not owner_list_url in request.path and not request_list_url in request.path and not report_list_url in request.path and not vulnerability_list_url in request.path and not purldb_list_url in request.path %}active{% endif %}" data-scope-action="{{ global_search_url }}">
               <i class="fa fa-globe me-1"></i>{% trans "Global" %}
             </button>
             {% if not user.is_anonymous %}
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if product_list_url in request.path %}active{% endif %}" data-scope-action="{{ product_list_url }}" data-scope-label="<i class='fa fa-briefcase'></i> {% trans 'Product' %}">
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if product_list_url in request.path %}active{% endif %}" data-scope-action="{{ product_list_url }}">
                 <i class="fa fa-briefcase me-1"></i>{% trans "Product" %}
               </button>
             {% endif %}
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if package_list_url in request.path %}active{% endif %}" data-scope-action="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fas fa-archive'></i> {% trans 'Package' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if package_list_url in request.path %}active{% endif %}" data-scope-action="{{ package_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
               <i class="fas fa-archive me-1"></i>{% trans "Package" %}
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if license_list_url in request.path %}active{% endif %}" data-scope-action="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}" data-scope-label="<i class='fa fa-book'></i> {% trans 'License' %}">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if license_list_url in request.path %}active{% endif %}" data-scope-action="{{ license_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
               <i class="fa fa-book me-1"></i>{% trans "License" %}
             </button>
+          </div>
+
+          {# Tools and integrations #}
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if request_list_url in request.path %}active{% endif %}" data-scope-action="{{ request_list_url }}">
+              <span class="badge text-bg-request me-1">R</span>{% trans "Request" %}
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if report_list_url in request.path %}active{% endif %}" data-scope-action="{{ report_list_url }}">
+              <i class="fa fa-chart-bar me-1"></i>{% trans "Report" %}
+            </button>
+            {% if user.dataspace.enable_vulnerablecodedb_access %}
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if vulnerability_list_url in request.path %}active{% endif %}" data-scope-action="{{ vulnerability_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                <i class="fas fa-bug me-1"></i>{% trans "Vulnerability" %}
+              </button>
+            {% endif %}
+            {% if user.dataspace.enable_package_scanning %}
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if scan_list_url in request.path %}active{% endif %}" data-scope-action="{{ scan_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                <i class="fas fa-barcode me-1"></i>{% trans "Scan" %}
+              </button>
+            {% endif %}
+            {% if user.dataspace.enable_purldb_access %}
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if purldb_list_url in request.path %}active{% endif %}" data-scope-action="{{ purldb_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                <i class="fas fa-database me-1"></i>{% trans "PurlDB" %}
+              </button>
+            {% endif %}
           </div>
         </div>
 
