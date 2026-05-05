@@ -335,8 +335,12 @@ class UsersTestCase(TestCase):
 
         # Call the url to activate the account
         activation_key = signing.dumps(obj=data["username"], salt=REGISTRATION_SALT)
-        activation_url = reverse("django_registration_activate", args=[activation_key])
-        response = self.client.get(activation_url, follow=True)
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(
+            activation_url,
+            data={"activation_key": activation_key},
+            follow=True,
+        )
         password_reset_form_url = response.redirect_chain[-1][0]
 
         data = {
@@ -383,18 +387,22 @@ class UsersTestCase(TestCase):
         self.assertEqual("[DejaCode] Please activate your account", mail.outbox[0].subject)
         body = mail.outbox[0].body
 
-        # Grep the key form the email body
+        # Grep the key from the email body (now in querystring format)
         activation_key = ""
         for line in body.split("\n"):
-            if line.startswith("http"):
-                activation_key = line.rstrip("/").rpartition("/")[-1]
+            if "activation_key=" in line:
+                activation_key = line.partition("activation_key=")[-1].strip()
 
-        activation_url = reverse("django_registration_activate", args=[activation_key])
+        activation_url = reverse("django_registration_activate")
         self.assertTrue("DejaCode {} account".format(self.other_user.dataspace.name) in body)
         self.assertTrue("Username: {}".format(self.other_user.username) in body)
         self.assertTrue("{} days to activate".format(settings.ACCOUNT_ACTIVATION_DAYS) in body)
 
-        response = self.client.get(activation_url, follow=True)
+        response = self.client.post(
+            activation_url,
+            data={"activation_key": activation_key},
+            follow=True,
+        )
         self.assertContains(response, "DejaCode Password Assistance")
 
     def test_user_admin_changeform_group_field_includes_link_to_details(self):

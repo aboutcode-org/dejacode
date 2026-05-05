@@ -1,0 +1,33 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n %}
+{% block page_title %}{% trans 'Account activation' %}{% endblock %}
+{% block bodyclass %}bg-body-tertiary{% endblock %}
+{% block content %}
+  {% if activation_error %}
+    {% include 'includes/header_title.html' with pretitle='Account' title='Error during your account activation' %}
+    <p>{{ activation_error.message }}</p>
+    {% if DEJACODE_SUPPORT_EMAIL %}
+      <p>
+        If the problem persists, send us an email at <a href="mailto:{{ DEJACODE_SUPPORT_EMAIL }}">{{ DEJACODE_SUPPORT_EMAIL }}</a>
+      </p>
+    {% endif %}
+  {% else %}
+    {% include 'includes/header_title.html' with pretitle='Account' title='Confirm your account activation' %}
+    {% if form.activation_key.errors %}
+      <div class="alert alert-danger">
+        {% for error in form.activation_key.errors %}
+          <p class="mb-0">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Click the button below to activate your DejaCode account.</p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="activation_key" value="{{ form.activation_key.value|default:'' }}">
+      <button type="submit" class="btn btn-warning">
+        {% trans 'Activate my account' %}
+      </button>
+    </form>
+  {% endif %}
+{% endblock %}

@@ -46,6 +46,12 @@ REGISTRATION_DEFAULT_GROUPS = (
 class DejaCodeActivationView(ActivationView):
     def get_success_url(self, user=None):
         """Add support for 'Sign Up' registration and User creation in admin."""
+        # In django-registration 5.x, get_success_url is called with user=user
+        # as a keyword argument. The default ``user=None`` keeps it safe when
+        # called without a user (e.g. from base FormView code paths).
+        if user is None:
+            return self.success_url
+
         if user.has_usable_password():
             # User created from registration process
             return self.success_url
