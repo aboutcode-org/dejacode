@@ -16,7 +16,7 @@
           <div class="small text-muted-darker">
             {% if req.last_modified_by %}
               <div>
-                Last edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                Edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
               </div>
             {% else %}
               <div>

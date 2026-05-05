@@ -58,6 +58,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from django.views.generic import FormView
+from django.views.generic import ListView
 from django.views.generic import TemplateView
 from django.views.generic.detail import BaseDetailView
 
@@ -2949,6 +2950,39 @@ class ExportComplianceMixin:
         return response
 
 
+def get_compliance_queryset(user):
+    """Return all viewable products annotated for compliance and severity-sorted."""
+    base_qs = Product.objects.get_queryset(
+        user=user,
+        perms="view_product",
+        include_inactive=False,
+        exclude_locked=True,
+    )
+    return (
+        base_qs.with_risk_threshold()
+        .with_vulnerability_counts()
+        .with_license_compliance_counts()
+        .annotate(
+            package_count=Count("productpackages", distinct=True),
+            max_risk_level=Case(
+                When(max_risk_score__gte=8.0, then=Value("critical")),
+                When(max_risk_score__gte=6.0, then=Value("high")),
+                When(max_risk_score__gte=3.0, then=Value("medium")),
+                When(max_risk_score__gte=0.1, then=Value("low")),
+                default=Value(""),
+                output_field=CharField(max_length=8),
+            ),
+        )
+        .order_by(
+            F("max_risk_score").desc(nulls_last=True),
+            "-license_error_count",
+            "-license_warning_count",
+            "name",
+            "-version",
+        )
+    )
+
+
 class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, DataspacedFilterView):
     """Compliance control center: overview of all products."""
 
@@ -2973,36 +3007,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
     }
 
     def get_queryset(self):
-        base_qs = Product.objects.get_queryset(
-            user=self.request.user,
-            perms="view_product",
-            include_inactive=False,
-            exclude_locked=True,
-        )
-
-        return (
-            base_qs.with_risk_threshold()
-            .with_vulnerability_counts()
-            .with_license_compliance_counts()
-            .annotate(
-                package_count=Count("productpackages", distinct=True),
-                max_risk_level=Case(
-                    When(max_risk_score__gte=8.0, then=Value("critical")),
-                    When(max_risk_score__gte=6.0, then=Value("high")),
-                    When(max_risk_score__gte=3.0, then=Value("medium")),
-                    When(max_risk_score__gte=0.1, then=Value("low")),
-                    default=Value(""),
-                    output_field=CharField(max_length=8),
-                ),
-            )
-            .order_by(
-                F("max_risk_score").desc(nulls_last=True),
-                "-license_error_count",
-                "-license_warning_count",
-                "name",
-                "-version",
-            )
-        )
+        return get_compliance_queryset(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -3047,6 +3052,39 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             }
         )
 
+        return context
+
+
+def get_products_with_compliance_issues(user):
+    """Filter the compliance queryset to products that need attention."""
+    return get_compliance_queryset(user).filter(
+        Q(license_error_count__gt=0)
+        | Q(license_warning_count__gt=0)
+        | Q(critical_count__gt=0)
+        | Q(high_count__gt=0)
+    )
+
+
+class ComplianceWatchlistCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    DataspaceScopeMixin,
+    ListView,
+):
+    """HTMX partial: top products with compliance issues for the home dashboard."""
+
+    template_name = "product_portfolio/compliance/compliance_watchlist_card.html"
+    context_object_name = "compliance_qs"
+    limit = 5
+
+    def get_queryset(self):
+        return get_products_with_compliance_issues(self.request.user)[: self.limit]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_products_with_issues"] = get_products_with_compliance_issues(
+            self.request.user
+        ).count()
         return context
 
 

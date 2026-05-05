@@ -20,6 +20,7 @@
     </strong>
   </div>
 
+  {# Custom reporting cards #}
   {% if cards %}
     <div class="row sm-gutter mb-3">
       {% for card in cards %}
@@ -55,6 +56,26 @@
   {% endif %}
 
   <div class="row row-cols-3 sm-gutter">
+    {# Compliance #}
+    <div class="col">
+      <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
+        <div class="h6 ms-4">
+          <i class="fas fa-spinner fa-spin"></i> Fetching...
+        </div>
+      </div>
+    </div>
+
+    {# Requests #}
+    {% if request_assigned_to_me or request_followed_by_me %}
+      <div class="col">
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Requests assigned to me' filter_name='assignee' %}
+      </div>
+      <div class="col">
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Requests I am following' filter_name='following' %}
+      </div>
+    {% endif %}
+
+    {# Documentation and support links #}
     <div class="col">
       <div class="card">
         <div class="card-body pb-1">
@@ -69,14 +90,5 @@
         </div>
       </div>
     </div>
-
-    {% if request_assigned_to_me or request_followed_by_me %}
-      <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Requests assigned to me' filter_name='assignee' %}
-      </div>
-      <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Requests I am following' filter_name='following' %}
-      </div>
-    {% endif %}
   </div>
 {% endblock %}
