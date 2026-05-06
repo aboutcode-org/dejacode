@@ -10,6 +10,7 @@
     DejaCode for <strong>{{ user.dataspace }}</strong>
   </h1>
 
+  {# Announcements #}
   <div class="alert alert-success" role="alert">
     <strong>
       {% if user.dataspace.home_page_announcements %}
@@ -18,6 +19,28 @@
         Welcome to DejaCode!
       {% endif %}
     </strong>
+  </div>
+
+  {# Documentation and support links #}
+  <div class="card my-3">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        {% for header, urls in sections.items %}
+          {% if not forloop.first %}
+            <span class="mx-2 text-muted">|</span>
+          {% endif %}
+          <span class="fw-semibold text-body-secondary small text-uppercase me-1">
+            {{ header }}
+          </span>
+          {% for value, url in urls.items %}
+            {% if not forloop.first %}
+              <span class="text-muted small mx-1">|</span>
+            {% endif %}
+            <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
   </div>
 
   {# Custom reporting cards #}
@@ -55,8 +78,7 @@
     </div>
   {% endif %}
 
-
-<div class="row row-cols-1 row-cols-lg-3 sm-gutter">
+  <div class="row row-cols-1 row-cols-lg-3 sm-gutter">
     {# Compliance #}
     <div class="col">
       <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
@@ -74,28 +96,5 @@
         {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' filter_name='following' %}
       </div>
     {% endif %}
-  </div>
-
-  {# Documentation and support links #}
-  <div class="card mt-3">
-    <div class="card-body py-2 px-3">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        {% for header, urls in sections.items %}
-          {% if not forloop.first %}
-            <span class="mx-2 text-muted">|</span>
-          {% endif %}
-          <span class="fw-semibold text-body-secondary small text-uppercase me-1">
-            {{ header }}
-          </span>
-          {% for value, url in urls.items %}
-            {% if not forloop.first %}
-              <span class="text-muted small mx-1">|</span>
-            {% endif %}
-            <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
-          {% endfor %}
-        {% endfor %}
-      </div>
-    </div>
-
   </div>
 {% endblock %}
