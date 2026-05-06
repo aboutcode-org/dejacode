@@ -45,11 +45,11 @@
 
   {# Custom reporting cards #}
   {% if cards %}
-    <div class="row sm-gutter mb-3">
+    <div class="row row-cols-1 row-cols-lg-3 g-3 mb-3">
       {% for card in cards %}
-        <div class="col">
-          <div class="card shadow-sm">
-            <div class="h6 card-header fw-bold px-2">{{ card.title }}</div>
+        <div class="col d-flex">
+          <div class="card flex-fill shadow-sm">
+            <h2 class="card-header fw-bold px-2 h6">{{ card.title }}</h2>
             <div class="card-body p-2">
               {% for obj in card.object_list %}
                 {% if forloop.first %}
@@ -66,8 +66,8 @@
             {% if card.display_changelist_link and request.user.is_staff %}
               {% with changelist_url=card.query.get_changelist_url_with_filters %}
                 {% if changelist_url %}
-                  <div class="card-footer text-center p-2">
-                    <a href="{{ changelist_url }}" class="card-link smaller">View all the objects in changelist</a>
+                  <div class="card-footer text-center p-2 smaller">
+                    <a href="{{ changelist_url }}">View all the objects in changelist</a>
                   </div>
                 {% endif %}
               {% endwith %}
