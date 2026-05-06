@@ -15,6 +15,7 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Case
+from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import DecimalField
 from django.db.models import F
@@ -146,6 +147,18 @@ class ProductQuerySet(DataspacedQuerySet):
             ),
         )
 
+    def with_max_risk_level(self):
+        return self.annotate(
+            max_risk_level=Case(
+                When(max_risk_score__gte=8.0, then=Value("critical")),
+                When(max_risk_score__gte=6.0, then=Value("high")),
+                When(max_risk_score__gte=3.0, then=Value("medium")),
+                When(max_risk_score__gte=0.1, then=Value("low")),
+                default=Value(""),
+                output_field=CharField(max_length=8),
+            ),
+        )
+
     def with_vulnerability_counts(self):
         threshold_filter = Q(
             productpackages__package__affected_by_vulnerabilities__risk_score__gte=F(
@@ -191,6 +204,31 @@ class ProductQuerySet(DataspacedQuerySet):
                 filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
                 distinct=True,
             ),
+        )
+
+    def with_compliance_data(self):
+        """Apply all compliance annotations and severity-based ordering."""
+        return (
+            self.with_risk_threshold()
+            .with_vulnerability_counts()
+            .with_license_compliance_counts()
+            .annotate(package_count=Count("productpackages", distinct=True))
+            .order_by(
+                F("max_risk_score").desc(nulls_last=True),
+                "-license_error_count",
+                "-license_warning_count",
+                "name",
+                "-version",
+            )
+        )
+
+    def with_compliance_issues(self):
+        """Filter to products that have license or critical/high vulnerability issues."""
+        return self.filter(
+            Q(license_error_count__gt=0)
+            | Q(license_warning_count__gt=0)
+            | Q(critical_count__gt=0)
+            | Q(high_count__gt=0)
         )
 
 
