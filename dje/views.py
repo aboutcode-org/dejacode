@@ -1886,6 +1886,7 @@ class GlobalSearchListView(AcceptAnonymousMixin, TemplateView):
             )
 
         include_purldb_conditions = [
+            user.is_authenticated,
             user_dataspace.enable_purldb_access,
             PurlDB(user_dataspace).is_available(),
         ]
