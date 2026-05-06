@@ -37,29 +37,31 @@
           </div>
 
           {# Tools and integrations #}
-          <div class="d-flex flex-wrap gap-2 mt-3">
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if request_list_url in request.path %}active{% endif %}" data-scope-action="{{ request_list_url }}">
-              <span class="badge text-bg-request me-1">R</span>{% trans "Request" %}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if report_list_url in request.path %}active{% endif %}" data-scope-action="{{ report_list_url }}">
-              <i class="fa fa-chart-bar me-1"></i>{% trans "Report" %}
-            </button>
-            {% if user.dataspace.enable_vulnerablecodedb_access %}
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if vulnerability_list_url in request.path %}active{% endif %}" data-scope-action="{{ vulnerability_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
-                <i class="fas fa-bug me-1"></i>{% trans "Vulnerability" %}
+          {% if not user.is_anonymous %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if request_list_url in request.path %}active{% endif %}" data-scope-action="{{ request_list_url }}">
+                <span class="badge text-bg-request me-1">R</span>{% trans "Request" %}
               </button>
-            {% endif %}
-            {% if user.dataspace.enable_package_scanning %}
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if scan_list_url in request.path %}active{% endif %}" data-scope-action="{{ scan_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
-                <i class="fas fa-barcode me-1"></i>{% trans "Scan" %}
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if report_list_url in request.path %}active{% endif %}" data-scope-action="{{ report_list_url }}">
+                <i class="fa fa-chart-bar me-1"></i>{% trans "Report" %}
               </button>
-            {% endif %}
-            {% if user.dataspace.enable_purldb_access %}
-              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if purldb_list_url in request.path %}active{% endif %}" data-scope-action="{{ purldb_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
-                <i class="fas fa-database me-1"></i>{% trans "PurlDB" %}
-              </button>
-            {% endif %}
-          </div>
+              {% if user.dataspace.enable_vulnerablecodedb_access %}
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if vulnerability_list_url in request.path %}active{% endif %}" data-scope-action="{{ vulnerability_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                  <i class="fas fa-bug me-1"></i>{% trans "Vulnerability" %}
+                </button>
+              {% endif %}
+              {% if user.dataspace.enable_package_scanning %}
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if scan_list_url in request.path %}active{% endif %}" data-scope-action="{{ scan_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                  <i class="fas fa-barcode me-1"></i>{% trans "Scan" %}
+                </button>
+              {% endif %}
+              {% if user.dataspace.enable_purldb_access %}
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill search-scope-btn {% if purldb_list_url in request.path %}active{% endif %}" data-scope-action="{{ purldb_list_url }}{% if is_reference_data %}{{ dataspace.name }}{% endif %}">
+                  <i class="fas fa-database me-1"></i>{% trans "PurlDB" %}
+                </button>
+              {% endif %}
+            </div>
+          {% endif %}
         </div>
 
         {# Carry over current list filters into the search #}
