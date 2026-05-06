@@ -3038,7 +3038,6 @@ class ComplianceWatchlistCardView(
             get_viewable_products(self.request.user)
             .with_compliance_data()
             .with_compliance_issues()
-            .none()
         )
         context["compliance_qs"] = products_with_issues[: self.limit]
         context["total_products_with_issues"] = products_with_issues.count()
