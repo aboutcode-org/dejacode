@@ -55,7 +55,8 @@
     </div>
   {% endif %}
 
-  <div class="row row-cols-1 row-cols-lg-3 sm-gutter">
+
+<div class="row row-cols-1 row-cols-lg-3 sm-gutter">
     {# Compliance #}
     <div class="col">
       <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
@@ -67,10 +68,10 @@
     {# Requests #}
     {% if request_assigned_to_me or request_followed_by_me %}
       <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Assigned to me' header_icon='fa-user-check' header_icon_color='text-primary' filter_name='assignee' card_accent='border-primary' %}
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Assigned to me' header_icon='fa-user-check' filter_name='assignee' %}
       </div>
       <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' header_icon_color='text-purple' filter_name='following' card_accent='border-purple' %}
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' filter_name='following' %}
       </div>
     {% endif %}
   </div>

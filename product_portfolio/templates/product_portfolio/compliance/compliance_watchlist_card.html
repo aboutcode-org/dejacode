@@ -1,7 +1,10 @@
 <div class="card mb-4 shadow-sm">
-  <h2 class="card-header fw-bold px-2 h6">
-    Compliance watchlist
-    <i class="fa-solid fa-shield-halved float-end"></i>
+  <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
+    <span>
+      <i class="fa-solid fa-shield-halved text-warning me-1"></i>
+      Compliance watchlist
+    </span>
+    <span class="badge text-bg-warning">{{ total_products_with_issues }}</span>
   </h2>
   <div class="card-body p-2">
     {% for product in compliance_qs %}
