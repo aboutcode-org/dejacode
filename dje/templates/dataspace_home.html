@@ -75,20 +75,30 @@
       </div>
     {% endif %}
 
+
     {# Documentation and support links #}
-    <div class="col">
+    <div class="col-12">
       <div class="card">
-        <div class="card-body pb-1">
-          {% for header, urls in sections.items %}
-            <h2 class="h5">{{ header }}:</h2>
-            <ul class="ps-4">
+        <div class="card-body py-2 px-3">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            {% for header, urls in sections.items %}
+              {% if not forloop.first %}
+                <span class="mx-2 text-muted">|</span>
+              {% endif %}
+              <span class="fw-semibold text-body-secondary small text-uppercase me-1">
+                {{ header }}
+              </span>
               {% for value, url in urls.items %}
-                <li><a target="_blank" href="{{ url }}" rel="noreferrer">{{ value }}</a></li>
+                {% if not forloop.first %}
+                  <span class="text-muted small mx-1">|</span>
+                {% endif %}
+                <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
               {% endfor %}
-            </ul>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 {% endblock %}

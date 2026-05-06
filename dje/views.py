@@ -704,7 +704,6 @@ def home_view(request):
         "Documentation": "https://dejacode.readthedocs.io/en/latest/",
         "Tutorials": f"{rtd_url}/tutorial-1.html",
         "API documentation": reverse("api-docs:docs-index"),
-        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
     }
 
     support_urls = {
