@@ -1,10 +1,12 @@
 <div class="card flex-fill shadow-sm">
   <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
     <span>
-      <i class="fa-solid fa-shield-halved text-danger-emphasis me-1"></i>
+      <i class="fa-solid fa-shield-halved me-1"></i>
       Compliance watchlist
     </span>
-    <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</span>
+    {% if total_products_with_issues %}
+      <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</span>
+    {% endif %}
   </h2>
   <div class="card-body p-2">
     {% for product in compliance_qs %}
@@ -46,9 +48,20 @@
         </div>
       </div>
       {% if not forloop.last %}<hr class="my-2">{% endif %}
+    {% empty %}
+      <div class="text-center py-4">
+        <i class="fa-solid fa-circle-check text-success fs-3"></i>
+        <div class="mt-2 text-body-secondary">All products are compliant</div>
+      </div>
     {% endfor %}
   </div>
   <div class="card-footer text-center p-2 smaller">
-    <a href="{% url 'product_portfolio:compliance_dashboard' %}">View all {{ total_products_with_issues }} products with issues</a>
+    <a href="{% url 'product_portfolio:compliance_dashboard' %}">
+      {% if total_products_with_issues %}
+        View all {{ total_products_with_issues }} products with issues
+      {% else %}
+        View compliance dashboard
+      {% endif %}
+    </a>
   </div>
 </div>
