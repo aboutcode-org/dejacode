@@ -55,7 +55,7 @@
     </div>
   {% endif %}
 
-  <div class="row row-cols-3 sm-gutter">
+  <div class="row row-cols-1 row-cols-lg-3 sm-gutter">
     {# Compliance #}
     <div class="col">
       <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
@@ -64,39 +64,35 @@
         </div>
       </div>
     </div>
-
     {# Requests #}
     {% if request_assigned_to_me or request_followed_by_me %}
       <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Requests assigned to me' filter_name='assignee' %}
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Assigned to me' header_icon='fa-user-check' header_icon_color='text-primary' filter_name='assignee' card_accent='border-primary' %}
       </div>
       <div class="col">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Requests I am following' filter_name='following' %}
+        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' header_icon_color='text-purple' filter_name='following' card_accent='border-purple' %}
       </div>
     {% endif %}
+  </div>
 
-
-    {# Documentation and support links #}
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body py-2 px-3">
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            {% for header, urls in sections.items %}
-              {% if not forloop.first %}
-                <span class="mx-2 text-muted">|</span>
-              {% endif %}
-              <span class="fw-semibold text-body-secondary small text-uppercase me-1">
-                {{ header }}
-              </span>
-              {% for value, url in urls.items %}
-                {% if not forloop.first %}
-                  <span class="text-muted small mx-1">|</span>
-                {% endif %}
-                <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
-              {% endfor %}
-            {% endfor %}
-          </div>
-        </div>
+  {# Documentation and support links #}
+  <div class="card mt-3">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        {% for header, urls in sections.items %}
+          {% if not forloop.first %}
+            <span class="mx-2 text-muted">|</span>
+          {% endif %}
+          <span class="fw-semibold text-body-secondary small text-uppercase me-1">
+            {{ header }}
+          </span>
+          {% for value, url in urls.items %}
+            {% if not forloop.first %}
+              <span class="text-muted small mx-1">|</span>
+            {% endif %}
+            <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+          {% endfor %}
+        {% endfor %}
       </div>
     </div>
 
