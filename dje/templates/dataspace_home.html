@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <div class="row row-cols-1 row-cols-lg-3 g-3 sm-gutter">
+  <div class="row row-cols-1 row-cols-lg-3 g-3 sm-gutter mb-3">
     {# Compliance #}
     <div class="col d-flex">
       <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
@@ -65,7 +65,7 @@
 
   {# Custom reporting cards #}
   {% if cards %}
-    <div class="row row-cols-1 row-cols-lg-3 g-3 mb-3">
+    <div class="row row-cols-1 row-cols-lg-3 g-3">
       {% for card in cards %}
         <div class="col d-flex">
           <div class="card flex-fill shadow-sm">
