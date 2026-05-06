@@ -701,8 +701,8 @@ def home_view(request):
     rtd_url = "https://dejacode.readthedocs.io/en/latest"
 
     documentation_urls = {
-        "Documentation": "https://dejacode.readthedocs.io/en/latest/",
         "Tutorials": f"{rtd_url}/tutorial-1.html",
+        "How-to": f"{rtd_url}/howto-1.html",
         "API documentation": reverse("api-docs:docs-index"),
     }
 
