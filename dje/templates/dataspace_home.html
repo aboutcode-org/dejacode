@@ -6,9 +6,6 @@
 {% block page_title %}DejaCode for {{ user.dataspace }}{% endblock %}
 
 {% block content %}
-  <h1 class="display-6 p-3 text-center">
-    DejaCode for <strong>{{ user.dataspace }}</strong>
-  </h1>
 
   {# Announcements #}
   <div class="alert alert-success" role="alert">
@@ -21,24 +18,27 @@
     </strong>
   </div>
 
-  {# Documentation and support links #}
-  <div class="card my-3">
+  {# Dataspace name and links #}
+  <div class="card mt-1 mb-3">
     <div class="card-body py-2 px-3">
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        {% for header, urls in sections.items %}
-          {% if not forloop.first %}
-            <span class="mx-2 text-muted">|</span>
-          {% endif %}
-          <span class="fw-semibold text-body-secondary small text-uppercase me-1">
-            {{ header }}
+      <div class="d-flex flex-wrap align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <span class="h5 mb-0 fw-bold">
+            {{ user.dataspace }}
           </span>
-          {% for value, url in urls.items %}
-            {% if not forloop.first %}
-              <span class="text-muted small mx-1">|</span>
-            {% endif %}
-            <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+          <div class="vr align-self-stretch my-1"></div>
+          <span class="text-body-secondary small">Dashboard</span>
+        </div>
+        <div class="d-flex flex-wrap align-items-baseline gap-1">
+          {% for header, urls in sections.items %}
+            {% for value, url in urls.items %}
+              {% if not forloop.parentloop.first or not forloop.first %}
+                <span class="text-muted small mx-1">|</span>
+              {% endif %}
+              <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+            {% endfor %}
           {% endfor %}
-        {% endfor %}
+        </div>
       </div>
     </div>
   </div>
