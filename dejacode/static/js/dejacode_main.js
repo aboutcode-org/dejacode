@@ -206,6 +206,19 @@ function setupThemeSwitcher() {
   });
 }
 
+function setupPlatformHints() {
+  const isMac = navigator.userAgentData
+    ? navigator.userAgentData.platform === 'macOS'
+    : /Mac/.test(navigator.platform);
+
+  if (!isMac) return;
+
+  const searchSubmitKey = document.getElementById('search-submit-key');
+  if (searchSubmitKey) {
+    searchSubmitKey.textContent = 'Return';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -242,4 +255,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHTMX();
   setupSearchModal();
   setupThemeSwitcher();
+  setupPlatformHints();
 });
