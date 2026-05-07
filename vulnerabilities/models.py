@@ -98,6 +98,24 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "For example, 'VCID-2024-0001'."
         ),
     )
+    # avid = models.CharField(
+    #     max_length=500,
+    #     blank=False,
+    #     null=False,
+    #     help_text=_(
+    #         "Unique ID for the datasource used for this advisory ."
+    #         "e.g.: pysec_importer_v2/PYSEC-2020-2233"
+    #     ),
+    # )
+    # advisory_id = models.CharField(
+    #     max_length=500,
+    #     blank=False,
+    #     null=False,
+    #     help_text=_(
+    #         "An advisory is a unique vulnerability identifier in some database, "
+    #         "such as PYSEC-2020-2233"
+    #     ),
+    # )
     resource_url = models.URLField(
         _("Resource URL"),
         max_length=1024,
@@ -191,6 +209,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["vulnerability_id"]),
+            # models.Index(fields=["exploitability"]),
+            # models.Index(fields=["weighted_severity"]),
+            # models.Index(fields=["risk_score"]),
             models.Index(fields=["risk_level"]),
         ]
 
