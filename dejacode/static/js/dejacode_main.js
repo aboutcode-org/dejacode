@@ -219,6 +219,26 @@ function setupPlatformHints() {
   }
 }
 
+function setupDismissibleAlerts() {
+  // Hide announcements dismissed by the user via localStorage.
+  // The stored value is the announcement text itself, so when the
+  // admin updates the message, it automatically reappears for everyone.
+
+  const alert = document.getElementById('announcement-alert');
+  if (!alert) return;
+
+  const text = alert.textContent.trim();
+  if (localStorage.getItem('dismissed_announcement') === text) {
+    alert.remove();
+    return;
+  }
+
+  alert.classList.remove('d-none');
+  alert.addEventListener('closed.bs.alert', () => {
+    localStorage.setItem('dismissed_announcement', text);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -256,4 +276,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSearchModal();
   setupThemeSwitcher();
   setupPlatformHints();
+  setupDismissibleAlerts();
 });
