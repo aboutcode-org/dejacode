@@ -1,9 +1,11 @@
 {% load humanize %}
-
-<div class="card mb-4 shadow-sm">
-  <h2 class="card-header fw-bold px-2 h6">
-    {{ header_title }}
-    <span class="badge text-bg-request float-end">R</span>
+<div class="card flex-fill shadow-sm">
+  <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
+    <span>
+      <i class="fas {{ header_icon }} text-request me-1"></i>
+      {{ header_title }}
+    </span>
+    <span class="badge text-bg-request">{{ request_qs.count }}</span>
   </h2>
 
   <div class="card-body p-2">
@@ -16,7 +18,7 @@
           <div class="small text-muted-darker">
             {% if req.last_modified_by %}
               <div>
-                Last edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                Edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
               </div>
             {% else %}
               <div>
@@ -47,13 +49,12 @@
   <div class="card-footer text-center p-2 smaller">
     {% if request_qs %}
       {% if filter_name == 'following' %}
-        <a href="{% url 'workflow:request_list' %}?following=yes">
-          {% else %}
-            <a href="{% url 'workflow:request_list' %}?{{ filter_name }}={{ request.user.username }}">
-          {% endif %}
-          View all {{ request_qs.count }} requests</a>
+        <a href="{% url 'workflow:request_list' %}?following=yes">View all {{ request_qs.count }} requests</a>
       {% else %}
-        <a href="{% url 'workflow:request_list' %}">View all requests</a>
+        <a href="{% url 'workflow:request_list' %}?{{ filter_name }}={{ request.user.username }}">View all {{ request_qs.count }} requests</a>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'workflow:request_list' %}">View all requests</a>
     {% endif %}
   </div>
 

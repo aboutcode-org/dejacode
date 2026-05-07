@@ -701,10 +701,9 @@ def home_view(request):
     rtd_url = "https://dejacode.readthedocs.io/en/latest"
 
     documentation_urls = {
-        "Documentation": "https://dejacode.readthedocs.io/en/latest/",
         "Tutorials": f"{rtd_url}/tutorial-1.html",
+        "How-to": f"{rtd_url}/howto-1.html",
         "API documentation": reverse("api-docs:docs-index"),
-        "How-To videos": "https://www.youtube.com/playlist?list=PLCq_LXeUqhkQj0u7M26fSHt1ebFhNCpCv",
     }
 
     support_urls = {
@@ -1886,6 +1885,7 @@ class GlobalSearchListView(AcceptAnonymousMixin, TemplateView):
             )
 
         include_purldb_conditions = [
+            user.is_authenticated,
             user_dataspace.enable_purldb_access,
             PurlDB(user_dataspace).is_available(),
         ]

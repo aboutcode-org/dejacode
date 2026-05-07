@@ -25,8 +25,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Case
-from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Exists
 from django.db.models import F
@@ -35,8 +33,6 @@ from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models import Sum
-from django.db.models import Value
-from django.db.models import When
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import FileResponse
@@ -2949,6 +2945,16 @@ class ExportComplianceMixin:
         return response
 
 
+def get_viewable_products(user):
+    """Return active, unlocked products the user can view."""
+    return Product.objects.get_queryset(
+        user=user,
+        perms="view_product",
+        include_inactive=False,
+        exclude_locked=True,
+    )
+
+
 class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, DataspacedFilterView):
     """Compliance control center: overview of all products."""
 
@@ -2973,36 +2979,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
     }
 
     def get_queryset(self):
-        base_qs = Product.objects.get_queryset(
-            user=self.request.user,
-            perms="view_product",
-            include_inactive=False,
-            exclude_locked=True,
-        )
-
-        return (
-            base_qs.with_risk_threshold()
-            .with_vulnerability_counts()
-            .with_license_compliance_counts()
-            .annotate(
-                package_count=Count("productpackages", distinct=True),
-                max_risk_level=Case(
-                    When(max_risk_score__gte=8.0, then=Value("critical")),
-                    When(max_risk_score__gte=6.0, then=Value("high")),
-                    When(max_risk_score__gte=3.0, then=Value("medium")),
-                    When(max_risk_score__gte=0.1, then=Value("low")),
-                    default=Value(""),
-                    output_field=CharField(max_length=8),
-                ),
-            )
-            .order_by(
-                F("max_risk_score").desc(nulls_last=True),
-                "-license_error_count",
-                "-license_warning_count",
-                "name",
-                "-version",
-            )
-        )
+        return get_viewable_products(self.request.user).with_compliance_data().with_max_risk_level()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -3010,12 +2987,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         products = self.object_list
         total_products = products.count()
 
-        products_with_issues = products.filter(
-            Q(license_error_count__gt=0)
-            | Q(license_warning_count__gt=0)
-            | Q(critical_count__gt=0)
-            | Q(high_count__gt=0)
-        ).count()
+        products_with_issues = products.with_compliance_issues().count()
 
         products_with_license_issues = products.filter(
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
@@ -3047,6 +3019,26 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             }
         )
 
+        return context
+
+
+class ComplianceWatchlistCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TemplateView,
+):
+    """HTMX partial: top products with compliance issues for the home dashboard."""
+
+    template_name = "product_portfolio/compliance/compliance_watchlist_card.html"
+    limit = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        products_with_issues = (
+            get_viewable_products(self.request.user).with_compliance_data().with_compliance_issues()
+        )
+        context["compliance_qs"] = products_with_issues[: self.limit]
+        context["total_products_with_issues"] = products_with_issues.count()
         return context
 
 

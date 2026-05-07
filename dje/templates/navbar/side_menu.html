@@ -98,17 +98,17 @@
               {% trans "Integrations" %}
             </span>
           </li>
-          {% if user.dataspace.enable_package_scanning %}
-            <li class="nav-item">
-              <a href="{{ scan_list_url }}" class="nav-link text-body d-flex align-items-center {% if scan_list_url in request.path %}active{% endif %}">
-                <i class="fas fa-barcode fa-fw me-2"></i>{% trans "Scans" %}
-              </a>
-            </li>
-          {% endif %}
           {% if user.dataspace.enable_vulnerablecodedb_access %}
             <li class="nav-item">
               <a href="{{ vulnerability_list_url }}" class="nav-link text-body d-flex align-items-center {% if vulnerability_list_url in request.path %}active{% endif %}">
                 <i class="fas fa-bug fa-fw me-2"></i>{% trans "Vulnerabilities" %}
+              </a>
+            </li>
+          {% endif %}
+          {% if user.dataspace.enable_package_scanning %}
+            <li class="nav-item">
+              <a href="{{ scan_list_url }}" class="nav-link text-body d-flex align-items-center {% if scan_list_url in request.path %}active{% endif %}">
+                <i class="fas fa-barcode fa-fw me-2"></i>{% trans "Scans" %}
               </a>
             </li>
           {% endif %}

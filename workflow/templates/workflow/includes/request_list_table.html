@@ -80,7 +80,7 @@
                         {{ req.requester.username }}
                       {% endif %}
                       {% if req.last_modified_by %}
-                        &#8226; Last edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                        &#8226; Edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
                       {% endif %}
                     </div>
                     {% if not exclude_product_context and req.product_context %}

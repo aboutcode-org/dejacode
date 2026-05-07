@@ -546,6 +546,9 @@ table.purldb-table .column-license_expression {
   color: white;
   vertical-align: middle;
 }
+.text-request {
+  color: var(--bs-djc-request-bg);
+}
 
 /* -- Requests form -- */
 #workflow-request-form fieldset.right-side label {

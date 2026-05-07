@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import resolve_url
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 
 from dje.copier import copy_object
@@ -136,6 +137,7 @@ class LicenseListViewTestCase(TestCase):
             dataspace=self.nexb_dataspace,
         )
 
+    @override_settings(ANONYMOUS_USERS_DATASPACE=None)
     def test_license_library_list_view_access(self):
         license_list_url = resolve_url("license_library:license_list")
 

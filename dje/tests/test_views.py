@@ -64,7 +64,7 @@ class DJEViewsTestCase(TestCase):
         self.assertFalse(self.super_user.request_as_assignee.exists())
         self.assertFalse(self.super_user.request_as_requester.exists())
         self.assertContains(response, "Welcome to DejaCode!")
-        self.assertContains(response, "Documentation:")
+        self.assertContains(response, "Documentation")
 
         self.dataspace1.home_page_announcements = "Custom announcements"
         self.dataspace1.save()
@@ -89,8 +89,8 @@ class DJEViewsTestCase(TestCase):
         self.assertTrue(self.super_user.request_as_requester.exists())
 
         response = self.client.get(home_url)
-        self.assertContains(response, "Requests assigned to me")
-        self.assertContains(response, "Requests I am following")
+        self.assertContains(response, "Assigned to me")
+        self.assertContains(response, "Following")
         request_list_url = reverse("workflow:request_list")
         expected = f'<a href="{request_list_url}?following=yes">View all 1 requests</a>'
         self.assertContains(response, expected, html=True)
@@ -114,7 +114,7 @@ class DJEViewsTestCase(TestCase):
 
         response = self.client.get(home_url)
         self.assertContains(
-            response, '<div class="h6 card-header fw-bold px-2">Card1</div>', html=True
+            response, ' <h2 class="card-header fw-bold px-2 h6">Card1</h2>', html=True
         )
         self.assertContains(
             response,
@@ -122,8 +122,7 @@ class DJEViewsTestCase(TestCase):
             html=True,
         )
         changelist_link = (
-            f'<a href="/admin/organization/owner/?reporting_query={query.id}"'
-            f' class="card-link smaller">'
+            f'<a href="/admin/organization/owner/?reporting_query={query.id}">'
             f"  View all the objects in changelist"
             f"</a>"
         )
