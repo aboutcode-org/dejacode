@@ -48,7 +48,7 @@ class VulnerableCode(BaseService):
     ):
         """Get list of vulnerabilities providing a package `purl`."""
         return self.get_vulnerabilities(
-            url=f"{self.api_url}packages/",
+            url=f"{self.api_url}packages",
             field_name="purl",
             field_value=get_plain_purl(purl),
             timeout=timeout,
@@ -57,22 +57,21 @@ class VulnerableCode(BaseService):
     def bulk_search_by_purl(
         self,
         purls,
-        purl_only,
+        details=True,
         timeout=None,
     ):
         """Bulk search of vulnerabilities using the provided list of `purls`."""
-        url = f"{self.api_url}packages/bulk_search"
+        url = f"{self.api_url}packages"
 
         data = {
             "purls": purls,
-            "purl_only": purl_only,
-            "plain_purl": True,
+            "details": details,
         }
 
         logger.debug(f"VulnerableCode: url={url} purls_count={len(purls)}")
         return self.request_post(url=url, json=data, timeout=timeout)
 
-    def get_vulnerable_purls(self, packages, purl_only=True, timeout=10):
+    def get_vulnerable_purls(self, packages, details=False, timeout=10):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
         was found in the VulnerableCodeDB for the given list of `packages`.
@@ -83,11 +82,11 @@ class VulnerableCode(BaseService):
             return []
 
         vulnerable_purls = self.bulk_search_by_purl(
-            plain_purls,
-            purl_only=purl_only,
+            purls=plain_purls,
+            details=details,
             timeout=timeout,
         )
-        return vulnerable_purls or []
+        return vulnerable_purls.get("results") or []
 
     def get_package_url_available_types(self):
         # Replace by fetching the endpoint once available.
