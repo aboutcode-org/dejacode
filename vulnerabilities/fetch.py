@@ -14,6 +14,8 @@ from django.core.management.base import CommandError
 from django.urls import reverse
 from django.utils import timezone
 
+from packageurl import PackageURL
+
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -84,20 +86,21 @@ def fetch_for_packages(
             log_func(f"Progress: {intcomma(progress_count)}/{intcomma(object_count)}")
 
         batch_affected_packages = []
-        vc_entries = vulnerablecode.get_vulnerable_purls(batch, purl_only=False, timeout=timeout)
+        vc_entries = vulnerablecode.get_vulnerable_purls(batch, details=True, timeout=timeout)
         for vc_entry in vc_entries:
             affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
             if not affected_by_vulnerabilities:
                 continue
 
+            purl = PackageURL.from_string(vc_entry.get("purl"))
             affected_packages = queryset.filter(
-                type=vc_entry.get("type"),
-                namespace=vc_entry.get("namespace") or "",
-                name=vc_entry.get("name"),
-                version=vc_entry.get("version") or "",
+                type=purl.type,
+                namespace=purl.namespace,
+                name=purl.name,
+                version=purl.version,
             )
             if not affected_packages:
-                raise CommandError("Could not find package!")
+                raise CommandError("Could not find packages!")
 
             # Store all packages of that batch to then trigger the update_weighted_risk_score
             batch_affected_packages.extend(affected_packages)
@@ -119,6 +122,9 @@ def fetch_for_packages(
 def create_or_update_vulnerability(
     vulnerability_data, dataspace, affected_packages, update, results
 ):
+    # Adapt to the previous `vulnerability_id` based system.
+    vulnerability_data["vulnerability_id"] = vulnerability_data["advisory_id"]
+
     vulnerability_id = vulnerability_data["vulnerability_id"]
     vulnerability_qs = Vulnerability.objects.scope(dataspace)
     vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
