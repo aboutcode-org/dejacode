@@ -7,65 +7,67 @@
 
 {% block content %}
 
-  {# Announcements #}
-  <div class="alert alert-success" role="alert">
-    <strong>
-      {% if user.dataspace.home_page_announcements %}
-        {{ user.dataspace.home_page_announcements|urlize_target_blank|linebreaksbr }}
-      {% else %}
-        Welcome to DejaCode!
-      {% endif %}
-    </strong>
-  </div>
+  {% block announcements %}
+    <div class="alert alert-success" role="alert">
+      <strong>
+        {% if user.dataspace.home_page_announcements %}
+          {{ user.dataspace.home_page_announcements|urlize_target_blank|linebreaksbr }}
+        {% else %}
+          Welcome to DejaCode!
+        {% endif %}
+      </strong>
+    </div>
+  {% endblock announcements %}
 
-  {# Dataspace name and links #}
-  <div class="card mt-1 mb-3">
-    <div class="card-body py-2 px-3">
-      <div class="d-flex flex-wrap align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-3">
-          <span class="h5 mb-0 fw-bold">
-            {{ user.dataspace }}
-          </span>
-          <div class="vr align-self-stretch my-1"></div>
-          <span class="text-body-secondary small">Dashboard</span>
-        </div>
-        <div class="d-flex flex-wrap align-items-baseline gap-1">
-          {% for header, urls in sections.items %}
-            {% for value, url in urls.items %}
-              {% if not forloop.parentloop.first or not forloop.first %}
-                <span class="text-muted small mx-1">|</span>
-              {% endif %}
-              <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+  {% block dataspace_header %}
+    <div class="card mt-1 mb-3">
+      <div class="card-body py-2 px-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <span class="h5 mb-0 fw-bold">
+              {{ user.dataspace }}
+            </span>
+            <div class="vr align-self-stretch my-1"></div>
+            <span class="text-body-secondary small">Dashboard</span>
+          </div>
+          <div class="d-flex flex-wrap align-items-baseline gap-1">
+            {% for header, urls in sections.items %}
+              {% for value, url in urls.items %}
+                {% if not forloop.parentloop.first or not forloop.first %}
+                  <span class="text-muted small mx-1">|</span>
+                {% endif %}
+                <a href="{{ url }}" target="_blank" rel="noreferrer" class="small text-decoration-none">{{ value }}</a>
+              {% endfor %}
             {% endfor %}
-          {% endfor %}
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  {% endblock dataspace_header %}
 
   <div class="row row-cols-1 row-cols-lg-3 g-3 sm-gutter mb-3">
-    {# Compliance #}
-    <div class="col d-flex">
-      <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
-        <div class="h6 ms-4">
-          <i class="fas fa-spinner fa-spin"></i>
+    {% block compliance_card %}
+      <div class="col d-flex">
+        <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
+          <div class="h6 ms-4">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
         </div>
       </div>
-    </div>
-    {# Requests #}
-    {% if request_assigned_to_me or request_followed_by_me %}
-      <div class="col d-flex">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Assigned to me' header_icon='fa-user-check' filter_name='assignee' %}
-      </div>
-      <div class="col d-flex">
-        {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' filter_name='following' %}
-      </div>
-    {% endif %}
-  </div>
+    {% endblock compliance_card %}
 
-  {# Custom reporting cards #}
-  {% if cards %}
-    <div class="row row-cols-1 row-cols-lg-3 g-3">
+    {% block request_cards %}
+      {% if request_assigned_to_me or request_followed_by_me %}
+        <div class="col d-flex">
+          {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_assigned_to_me header_title='Assigned to me' header_icon='fa-user-check' filter_name='assignee' %}
+        </div>
+        <div class="col d-flex">
+          {% include 'workflow/includes/request_home_dashboard.html' with request_qs=request_followed_by_me header_title='Following' header_icon='fa-eye' filter_name='following' %}
+        </div>
+      {% endif %}
+    {% endblock request_cards %}
+
+    {% block custom_reporting_cards %}
       {% for card in cards %}
         <div class="col d-flex">
           <div class="card flex-fill shadow-sm">
@@ -95,6 +97,7 @@
           </div>
         </div>
       {% endfor %}
-    </div>
-  {% endif %}
+    {% endblock custom_reporting_cards %}
+
+  </div>
 {% endblock %}
