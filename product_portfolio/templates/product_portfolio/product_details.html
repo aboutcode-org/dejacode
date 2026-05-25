@@ -346,7 +346,9 @@
   {% if purldb_enabled %}
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('check-package-versions').addEventListener('click', function (event) {
+        const checkPackageVersions = document.getElementById('check-package-versions');
+        if (!checkPackageVersions) return;
+        checkPackageVersions.addEventListener('click', function (event) {
           event.preventDefault();
           let checkPackageLink = this;
           checkPackageLink.classList.add("disabled");
@@ -446,7 +448,9 @@
     </script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        document.querySelector('#improve_from_purldb').addEventListener('click', function() {
+        const improveFromPurldb = document.querySelector('#improve_from_purldb');
+        if (!improveFromPurldb) return;
+        improveFromPurldb.addEventListener('click', function() {
           NEXB.displayOverlay("Fetching data from PurlDB...");
         })
       });
