@@ -98,6 +98,7 @@ class LicenseFilterSet(DataspacedFilterSet):
             "license_profile",
             "usage_policy",
             "in_spdx_list",
+            "usage_policy__compliance_alert",
         ]
 
     def __init__(self, *args, **kwargs):

@@ -137,17 +137,17 @@
             </td>
             <td class="text-end">
               {% if product.license_error_count %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">
+                <a href="{{ product_url }}license_summary/?usage_policy__compliance_alert=warning" class="badge bg-danger-subtle text-danger-emphasis">
                   {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
-                </span>
+                </a>
               {% endif %}
               {% if product.license_warning_count %}
-                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">
+                <a href="{{ product_url }}license_summary/?usage_policy__compliance_alert=error" class="badge bg-warning-subtle text-warning-emphasis ms-1">
                   {{ product.license_warning_count }} {% trans "warning" %}{{ product.license_warning_count|pluralize }}
-                </span>
+                </a>
               {% endif %}
               {% if not product.license_error_count and not product.license_warning_count %}
-                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+                <a href="{{ product_url }}license_summary/" class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</a>
               {% endif %}
             </td>
             <td class="text-end">
@@ -170,16 +170,16 @@
                 </span>
               {% endif %}
               {% if product.critical_count %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=critical#vulnerabilities" class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</a>
               {% endif %}
               {% if product.high_count %}
-                <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=high#vulnerabilities" class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</a>
               {% endif %}
               {% if product.medium_count %}
-                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=medium#vulnerabilities" class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</a>
               {% endif %}
               {% if product.low_count %}
-                <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=low#vulnerabilities" class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</a>
               {% endif %}
               {% if not product.vulnerability_count %}
                 <span class="text-body-tertiary small">{% trans "None" %}</span>
