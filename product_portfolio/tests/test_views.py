@@ -1161,6 +1161,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "This product version is marked as read-only, preventing any modifications "
             "to its inventory."
         )
+        expected4 = "csrf_header.js"
 
         locked_status = make_product_status(self.dataspace, is_locked=True)
         self.product1.update(configuration_status=locked_status)
@@ -1168,6 +1169,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected1, html=True)
         self.assertContains(response, expected2, html=True)
         self.assertContains(response, expected3, html=True)
+        self.assertContains(response, expected4, html=True)
 
     def test_product_portfolio_list_view_secured_queryset(self):
         self.client.login(username=self.basic_user.username, password="secret")
