@@ -455,6 +455,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, modal_id)
         self.assertContains(response, modal_js)
+        self.assertContains(response, "csrf_header.js")
+
+        # Ensure the CSRF script is present even if product is locked
+        locked_status = make_product_status(self.dataspace)
+        self.product1.update(configuration_status=locked_status)
+        response = self.client.get(url)
+        self.assertContains(response, "csrf_header.js")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
