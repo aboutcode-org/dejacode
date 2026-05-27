@@ -2,10 +2,8 @@
 {% load naturaltime_short from dje_tags %}
 {% load as_icon from dje_tags %}
 
-{% spaceless %}
-<div
-  {% if has_projects_in_progress %} hx-get="{{ tab_view_url }}" hx-trigger="load delay:10s" hx-swap="outerHTML"{% endif %}
->
+{% block imports %}
+<div {% if has_projects_in_progress %} hx-get="{{ tab_view_url }}" hx-trigger="load delay:10s" hx-swap="outerHTML"{% endif %}>
   {% if has_projects_in_progress %}
     <div class="alert alert-primary" role="alert">
       <i class="fas fa-spinner fa-spin"></i>
@@ -13,67 +11,86 @@
       completion of the import process.
     </div>
   {% endif %}
+  
+  <div class="border rounded-3 p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="fs-5 fw-medium mb-0">
+        Imports
+        {% if scancode_projects %}<span class="text-body-tertiary fw-normal ms-1">{{ scancode_projects|length }}</span>{% endif %}
+      </h3>
+      {% if has_projects_in_progress %}
+        <span class="badge bg-primary-subtle text-primary-emphasis">
+          <i class="fas fa-spinner fa-spin me-1"></i>In progress
+        </span>
+      {% endif %}
+    </div>
 
-  <table class="table table-bordered table-md text-break table-fixed-layout">
-    <thead>
-      <tr>
-        <th>{% trans 'Import type' %}</th>
-        <th style="width:140px;">{% trans 'Status' %}</th>
-        <th>{% trans 'Input' %}</th>
-        <th colspan="2">{% trans 'Log' %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for scancode_project in scancode_projects %}
-        <tr class="{% cycle 'odd' '' %}" data-uuid="{{ scancode_project.uuid }}">
-          <td>
-            {{ scancode_project.get_type_display }}
-            {% if scancode_project.update_existing_packages %}
-              <div class="smaller text-muted-darker">
-                + Update exising packages
-              </div>
-            {% endif %}
-            <div class="smaller text-muted-darker">
-              <span title="{{ scancode_project.created_date }}">
-                {{ scancode_project.created_date|naturaltime_short }}
-              </span>
-              by {{ scancode_project.created_by }}
-            </div>
-          </td>
-          <td>
-            {% if scancode_project.project_uuid %}
-              <a href="#" role="button" class="ms-1 float-end" data-bs-toggle="modal" data-bs-target="#scancode-project-status-modal" data-fetch-status-url="{% url 'product_portfolio:scancodeio_project_status' scancode_project.uuid %}">
-                <i class="fas fa-info-circle"></i>
-              </a>
-            {% endif %}
-            <strong>
-              {{ scancode_project.get_status_display|title }}
-              {% if scancode_project.has_errors %}
-                <span class="float-start"> with errors</span>
-              {% endif %}
-            </strong>
-            {% include 'component_catalog/includes/scan_status.html' with status=scancode_project.status has_errors=scancode_project.has_errors only %}
-          </td>
-          <td>
-            {% if scancode_project.input_file %}
-              File: <a href="{% url 'product_portfolio:scancodeio_project_download_input' scancode_project.uuid %}" target="_blank">{{ scancode_project.input_file_filename }}</a>
-            {% elif scancode_project.project_uuid %}
-              Project: {{ scancode_project.project_uuid }}
-            {% endif %}
-          </td>
-          <td colspan="2">
-            {{ scancode_project.import_log|join:"<br>" }}
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    {% if scancode_projects %}
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead>
+            <tr>
+              <th class="fw-medium">Type</th>
+              <th class="fw-medium" style="width: 200px;">Status</th>
+              <th class="fw-medium">Input</th>
+              <th class="fw-medium">Log</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scancode_project in scancode_projects %}
+              <tr data-uuid="{{ scancode_project.uuid }}">
+                <td>
+                  <div>{{ scancode_project.get_type_display }}</div>
+                  {% if scancode_project.update_existing_packages %}
+                    <div class="text-body-tertiary fs-xs">+ Update existing packages</div>
+                  {% endif %}
+                  <div class="text-body-tertiary fs-xs">
+                    <span title="{{ scancode_project.created_date }}">{{ scancode_project.created_date|naturaltime_short }}</span>
+                    by {{ scancode_project.created_by }}
+                  </div>
+                </td>
+                <td class="pe-4">
+                  {% if scancode_project.project_uuid %}
+                    <a href="#" role="button" class="ms-1 float-end" data-bs-toggle="modal" data-bs-target="#scancode-project-status-modal" data-fetch-status-url="{% url 'product_portfolio:scancodeio_project_status' scancode_project.uuid %}">
+                      <i class="fas fa-info-circle"></i>
+                    </a>
+                  {% endif %}
+                  <div>
+                    {{ scancode_project.get_status_display|title }}
+                    {% if scancode_project.has_errors %}
+                      <span class="float-start"> with errors</span>
+                    {% endif %}
+                  </div>
+                  {% include 'component_catalog/includes/scan_status.html' with status=scancode_project.status has_errors=scancode_project.has_errors only %}
+                </td>
+                <td class="small">
+                  {% if scancode_project.input_file %}
+                    File: <a href="{% url 'product_portfolio:scancodeio_project_download_input' scancode_project.uuid %}" target="_blank">{{ scancode_project.input_file_filename }}</a>
+                  {% elif scancode_project.project_uuid %}
+                    Project: {{ scancode_project.project_uuid }}
+                  {% endif %}
+                </td>
+                <td class="small text-body-secondary">
+                  {{ scancode_project.import_log|join:"<br>" }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-body-tertiary small">
+        No imports yet
+      </div>
+    {% endif %}
+  </div>
 </div>
+{% endblock imports %}
 
-{# History section #}
+{% block history %}
 <div class="border rounded-3 p-3 mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fs-6 fw-medium mb-0">History</h3>
+    <h3 class="fs-5 fw-medium mb-0">History</h3>
   </div>
 
   <dl class="row mb-3 small">
@@ -110,4 +127,4 @@
     </div>
   {% endif %}
 </div>
-{% endspaceless %}
+{% endblock history %}
