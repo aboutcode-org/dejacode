@@ -313,20 +313,11 @@ class ProductDetailsView(
                 "packages",
             ],
         },
-        "license": {
+        "terms": {
             "fields": [
                 "license_expression",
                 "licenses",
-            ],
-        },
-        "notice": {
-            "fields": [
                 "notice_text",
-            ],
-        },
-        "owner": {
-            "fields": [
-                "owner",
             ],
         },
         "dependencies": {
@@ -432,9 +423,14 @@ class ProductDetailsView(
 
         return {"fields": self.get_tab_fields(tab_fields)}
 
-    def tab_notice(self):
+    def tab_terms(self):
+        tab_data = self.tab_license()
+
         if self.object.notice_text:
-            return {"fields": self.get_tab_fields([TabField("notice_text")])}
+            notice_field = self.get_tab_fields([TabField("notice_text")])[0]
+            tab_data["fields"].append(notice_field)
+
+        return tab_data
 
     def tab_hierarchy(self):
         template = "product_portfolio/tabs/tab_hierarchy.html"
