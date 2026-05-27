@@ -2865,6 +2865,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         filterset_qs = response.context["filterset"].qs
         self.assertEqual(0, len(filterset_qs))
 
+    # HERE test tab now
     def test_product_portfolio_product_license_summary_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(

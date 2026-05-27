@@ -588,7 +588,11 @@ class ProductDetailsView(
         if not dependencies_count:
             return
 
-        label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
+        label = (
+            f'Dependencies <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{dependencies_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -639,9 +643,9 @@ class ProductDetailsView(
                 "tooltip": "No vulnerabilities found in this Product",
             }
 
-        badge_class = "text-bg-secondary"
+        badge_class = "bg-secondary-subtle text-secondary-emphasisy"
         if vulnerability_count > 0:
-            badge_class = "badge-vulnerability"
+            badge_class = "bg-danger-subtle text-danger-emphasis"
 
         label = (
             f"Vulnerabilities"
@@ -672,7 +676,11 @@ class ProductDetailsView(
         if not codebaseresources_count:
             return
 
-        label = f'Codebase <span class="badge text-bg-primary">{codebaseresources_count}</span>'
+        label = (
+            f'Codebase <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{codebaseresources_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -698,7 +706,11 @@ class ProductDetailsView(
         if not scancodeprojects_count:
             return
 
-        label = f'Imports <span class="badge text-bg-primary">{scancodeprojects_count}</span>'
+        label = (
+            f'Imports <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{scancodeprojects_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request

@@ -43,7 +43,6 @@ from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
-from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -132,7 +131,6 @@ urlpatterns = [
     *product_path("import_from_scan", import_from_scan_view),
     *product_path("manage_components", ManageComponentGridView.as_view()),
     *product_path("manage_packages", ManagePackageGridView.as_view()),
-    *product_path("license_summary", license_summary_view),
     *product_path("check_package_version", check_package_version_ajax_view),
     *product_path("load_sboms", LoadSBOMsView.as_view()),
     *product_path("import_manifests", ImportManifestsView.as_view()),

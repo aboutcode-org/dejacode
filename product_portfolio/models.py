@@ -431,9 +431,6 @@ class Product(
     def get_manage_packages_url(self):
         return self.get_url("manage_packages")
 
-    def get_license_summary_url(self):
-        return self.get_url("license_summary")
-
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
 
