@@ -1,4 +1,5 @@
 {% load i18n %}
+{% url product.get_absolute_url as product_url %}
 <div class="row g-4 mb-4">
   {# License panel #}
   <div class="col-lg-6">
@@ -43,9 +44,9 @@
           {% if license_issues_count == 0 %}
             <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
           {% elif license_error_count > 0 %}
-            <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</span>
+            <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</a>
           {% else %}
-            <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</span>
+            <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=warning#licenses" class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</a>
           {% endif %}
         </div>
       </div>
@@ -76,9 +77,9 @@
               </td>
               <td class="text-end">
                 {% if license.compliance_alert == "error" %}
-                  <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</span>
+                  <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-danger-subtle text-danger-emphasis">{% trans "Error" %}</a>
                 {% elif license.compliance_alert == "warning" %}
-                  <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</span>
+                  <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=warning#licenses" class="badge bg-warning-subtle text-warning-emphasis">{% trans "Warning" %}</a>
                 {% else %}
                   <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
                 {% endif %}
