@@ -43,10 +43,13 @@
     // Draw if the hierarchy tab is active
     if (isTabActive(tabId)) jsPlumbHierarchy.setSuspendDrawing(false, true);
 
-    document.querySelector('button[data-bs-target="#tab_hierarchy"]').addEventListener('shown.bs.tab', function (e) {
-      // Second argument instructs jsPlumb to perform a full repaint.
-      jsPlumbHierarchy.setSuspendDrawing(false, true);
-    });
+    const hierarchyTab = document.querySelector('button[data-bs-target="#tab_hierarchy"]');
+    if (hierarchyTab) {
+      hierarchyTab.addEventListener('shown.bs.tab', function (e) {
+        // Second argument instructs jsPlumb to perform a full repaint.
+        jsPlumbHierarchy.setSuspendDrawing(false, true);
+      });
+    }
 
     // Repaint on resizing the browser window if the related tab is active
     window.addEventListener('resize', function(){

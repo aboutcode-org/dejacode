@@ -1332,7 +1332,7 @@ class ProductTabActivityView(
     BaseProductViewMixin,
     TabContentView,
 ):
-    template_name = "product_portfolio/tabs/tab_imports.html"
+    template_name = "product_portfolio/tabs/tab_activity.html"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
