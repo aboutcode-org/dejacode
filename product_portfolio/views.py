@@ -2322,31 +2322,59 @@ class ManagePackageGridView(BaseProductManageGridView):
 class ProductTabLicensesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
+    PaginationMixin,
+    TableHeaderMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_licenses.html"
+    paginate_by = 50
+    table_model = License
+    filterset_class = LicenseFilterSet
+    query_dict_page_param = "licenses-page"
     tab_id = "licenses"
+    table_headers = (
+        Header("name", _("License"), help_text="License details"),
+        Header("usage_policy", _("Usage policy"), filter="usage_policy"),
+        Header("package", _("Items"), help_text="Items under this license."),
+    )
 
     def get_context_data(self, **kwargs):
+        product = self.object
+        self.filterset = self.filterset_class(
+            self.request.GET,
+            dataspace=product.dataspace,
+            prefix=self.tab_id,
+            anchor=f"#{self.tab_id}",
+        )
+
         context = super().get_context_data(**kwargs)
 
-        product = self.object
-        filterset = LicenseFilterSet(
-            self.request.GET,
-            request=self.request,
-            dataspace=product.dataspace,
-            prefix="licenses",
-            anchor="#licenses",
-        )
-        license_index = self.get_license_index(product=product, queryset=filterset.qs)
+        filtered_queryset = self.filterset.qs
+        license_index = self.get_license_index(product=product, queryset=filtered_queryset)
+
+        paginator = Paginator(filtered_queryset, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
 
         context.update(
             {
                 "product": product,
-                "filterset": filterset,
                 "license_index": license_index,
+                "filterset": self.filterset,
+                "page_obj": page_obj,
+                "total_count": filtered_queryset.count(),
+                "search_query": self.request.GET.get("licenses-q", ""),
             }
         )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
 
         return context
 
@@ -2379,76 +2407,6 @@ class ProductTabLicensesView(
 
         sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
         return dict(sorted_index)
-
-
-@login_required
-def license_summary_view(request, dataspace, name, version=""):
-    user = request.user
-
-    guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
-
-    filterset = LicenseFilterSet(
-        data=request.GET or None,
-        request=request,
-        dataspace=product.dataspace,
-    )
-
-    product_components = product.components.all()
-    product_packages = product.packages.all()
-
-    components_hierarchy = set(product_components)
-    for component in product_components:
-        components_hierarchy.update(component.get_descendants(set_direct_parent=True))
-
-    packages_hierarchy = set(product_packages)
-    for component in components_hierarchy:
-        component_packages = []
-        for package in component.packages.all():
-            package.direct_parent = component
-            component_packages.append(package)
-        packages_hierarchy.update(component_packages)
-
-    all_licenses = set()
-    license_index = defaultdict(list)
-
-    for item in list(components_hierarchy) + list(packages_hierarchy):
-        licenses = item.licenses.all()
-        all_licenses.update(licenses)
-        for license in licenses:
-            if license in filterset.qs:
-                license_index[license].append(item)
-
-    sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
-
-    if request.GET.get("export"):
-        response = HttpResponse(content_type="text/csv")
-        prefix = str(product).replace(" ", "_")
-        response["Content-Disposition"] = f'attachment; filename="{prefix}_license_summary.csv"'
-
-        fieldnames = ["License", "Usage policy", "Items"]
-        writer = csv.writer(response)
-        writer.writerow(fieldnames)
-
-        for license, items in sorted_index:
-            row = [
-                f"{license.name} ({license.key})",
-                license.usage_policy,
-                ", ".join([repr(item) for item in items]),
-            ]
-            writer.writerow(row)
-
-        return response
-
-    return render(
-        request,
-        "product_portfolio/license_summary.html",
-        {
-            "product": product,
-            "license_index": dict(sorted_index),
-            "filterset": filterset,
-        },
-    )
 
 
 @login_required

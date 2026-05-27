@@ -59,6 +59,7 @@ class LicenseFilterSet(DataspacedFilterSet):
             "category",
             "license_profile",
             "owner",
+            "usage_policy",
         ],
         empty_label="Relevance",
     )
