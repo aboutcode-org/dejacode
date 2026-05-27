@@ -1368,6 +1368,14 @@ class ProductTabImportsView(
             }
         )
 
+        # History
+        history_entries = (
+            History.objects.get_for_object(self.object)
+            .select_related("user")
+            .order_by("-action_time")
+        )
+        context_data["history_entries"] = history_entries
+
         return context_data
 
     @staticmethod
