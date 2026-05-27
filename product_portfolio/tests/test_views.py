@@ -3313,7 +3313,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "uuid": project_uuid,
         }
         response = self.client.post(url, data=form_data, follow=True)
-        self.assertRedirects(response, f"{self.product1.get_absolute_url()}#imports")
+        self.assertRedirects(response, f"{self.product1.get_absolute_url()}#activity")
         project = ScanCodeProject.objects.get(project_uuid=project_uuid)
         self.assertEqual(self.product1, project.product)
         self.assertEqual(ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO, project.type)

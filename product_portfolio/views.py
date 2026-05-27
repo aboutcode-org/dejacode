@@ -325,9 +325,7 @@ class ProductDetailsView(
                 "dependencies",
             ],
         },
-        "activity": {},
-        "imports": {},
-        "history": {
+        "activity": {
             "fields": [
                 "created_date",
                 "created_by",
@@ -694,33 +692,20 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
-    def tab_activity(self, exclude_product_context=False):
-        return super().tab_activity(exclude_product_context=True)
-
-    def tab_imports(self):
-        scancodeprojects_count = self.object.scancodeprojects.count()
-        # if not scancodeprojects_count:
-        #     return
-
-        label = (
-            f'Imports <span class="badge bg-primary-subtle text-primary-emphasis">'
-            f"{scancodeprojects_count}"
-            f"</span>"
-        )
+    def tab_activity(self):
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
-        tab_view_url = self.object.get_url("tab_imports")
+        tab_view_url = self.object.get_url("tab_activity")
         if full_query_string := self.request.META["QUERY_STRING"]:
             tab_view_url += f"?{full_query_string}"
 
         tab_context = {
             "tab_view_url": tab_view_url,
-            "tab_object_name": "imports",
         }
 
         return {
-            "label": mark_safe(label),
+            "label": "Activity",
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -1342,7 +1327,7 @@ class ProductTabVulnerabilitiesView(
         return context_data
 
 
-class ProductTabImportsView(
+class ProductTabActivityView(
     LoginRequiredMixin,
     BaseProductViewMixin,
     TabContentView,
@@ -1368,7 +1353,7 @@ class ProductTabImportsView(
 
         context_data.update(
             {
-                "tab_view_url": self.object.get_url("tab_imports"),
+                "tab_view_url": self.object.get_url("tab_activity"),
                 # Imports
                 "scancode_projects": scancode_projects,
                 "has_projects_in_progress": bool(submitted_projects),
@@ -2118,7 +2103,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 messages.success(request, mark_safe(msg))
             if warnings:
                 messages.warning(request, mark_safe("<br>".join(warnings)))
-            return redirect(f"{product.get_absolute_url()}#imports")
+            return redirect(f"{product.get_absolute_url()}#activity")
     else:
         form = form_class(request.user)
 
@@ -2506,7 +2491,7 @@ class BaseProductImportFormView(
         return context
 
     def get_success_url(self):
-        return f"{self.object.get_absolute_url()}#imports"
+        return f"{self.object.get_absolute_url()}#activity"
 
     def form_valid(self, form):
         self.object = self.get_object()
@@ -2653,7 +2638,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
             )
         )
         messages.success(request, "Improve Packages from PurlDB in progress...")
-    return redirect(f"{product.get_absolute_url()}#imports")
+    return redirect(f"{product.get_absolute_url()}#activity")
 
 
 @login_required
