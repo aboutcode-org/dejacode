@@ -137,17 +137,17 @@
             </td>
             <td class="text-end">
               {% if product.license_error_count %}
-                <a href="{{ product_url }}license_summary/?usage_policy__compliance_alert=warning" class="badge bg-danger-subtle text-danger-emphasis">
+                <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=warning#licenses" class="badge bg-danger-subtle text-danger-emphasis">
                   {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
                 </a>
               {% endif %}
               {% if product.license_warning_count %}
-                <a href="{{ product_url }}license_summary/?usage_policy__compliance_alert=error" class="badge bg-warning-subtle text-warning-emphasis ms-1">
+                <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-warning-subtle text-warning-emphasis ms-1">
                   {{ product.license_warning_count }} {% trans "warning" %}{{ product.license_warning_count|pluralize }}
                 </a>
               {% endif %}
               {% if not product.license_error_count and not product.license_warning_count %}
-                <a href="{{ product_url }}license_summary/" class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</a>
+                <a href="{{ product_url }}#licenses" class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</a>
               {% endif %}
             </td>
             <td class="text-end">

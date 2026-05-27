@@ -290,6 +290,13 @@ class ProductDetailsView(
                 "packages",
             ],
         },
+        "licenses": {
+            "fields": [
+                "license_expression",
+                "licenses",
+            ],
+        },
+        "vulnerabilities": {},
         "codebase": {
             "fields": [
                 "path",
@@ -303,11 +310,7 @@ class ProductDetailsView(
         "hierarchy": {
             "fields": [
                 "components",
-            ],
-        },
-        "notice": {
-            "fields": [
-                "notice_text",
+                "packages",
             ],
         },
         "license": {
@@ -316,12 +319,16 @@ class ProductDetailsView(
                 "licenses",
             ],
         },
+        "notice": {
+            "fields": [
+                "notice_text",
+            ],
+        },
         "owner": {
             "fields": [
                 "owner",
             ],
         },
-        "vulnerabilities": {},
         "dependencies": {
             "fields": [
                 "dependencies",
@@ -396,6 +403,10 @@ class ProductDetailsView(
             prefix="inventory",
             anchor="#inventory",
         )
+
+        productcomponents_count = self.object.productcomponents.count()
+        productpackages_count = self.object.productpackages.count()
+        self.inventory_count = productcomponents_count + productpackages_count
 
         return super().get_tabsets()
 
@@ -525,14 +536,36 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
-    def tab_inventory(self):
-        productcomponents_count = self.object.productcomponents.count()
-        productpackages_count = self.object.productpackages.count()
-        inventory_count = productcomponents_count + productpackages_count
-        if not inventory_count:
+    def tab_licenses(self):
+        if not self.inventory_count:
             return
 
-        label = f'Inventory <span class="badge text-bg-primary">{inventory_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_licenses")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "licenses",
+        }
+
+        return {
+            "label": "Licenses",
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def tab_inventory(self):
+        if not self.inventory_count:
+            return
+
+        label = (
+            f'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{self.inventory_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -2272,6 +2305,68 @@ class ManagePackageGridView(BaseProductManageGridView):
         return self.object.productpackages.select_related(
             "package__dataspace",
         )
+
+
+class ProductTabLicensesView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_licenses.html"
+    tab_id = "licenses"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        product = self.object
+        filterset = LicenseFilterSet(
+            self.request.GET,
+            request=self.request,
+            dataspace=product.dataspace,
+            prefix="licenses",
+            anchor="#licenses",
+        )
+        license_index = self.get_license_index(product=product, queryset=filterset.qs)
+
+        context.update(
+            {
+                "product": product,
+                "filterset": filterset,
+                "license_index": license_index,
+            }
+        )
+
+        return context
+
+    @staticmethod
+    def get_license_index(product, queryset):
+        product_components = product.components.all()
+        product_packages = product.packages.all()
+
+        components_hierarchy = set(product_components)
+        for component in product_components:
+            components_hierarchy.update(component.get_descendants(set_direct_parent=True))
+
+        packages_hierarchy = set(product_packages)
+        for component in components_hierarchy:
+            component_packages = []
+            for package in component.packages.all():
+                package.direct_parent = component
+                component_packages.append(package)
+            packages_hierarchy.update(component_packages)
+
+        all_licenses = set()
+        license_index = defaultdict(list)
+
+        for item in list(components_hierarchy) + list(packages_hierarchy):
+            licenses = item.licenses.all()
+            all_licenses.update(licenses)
+            for license in licenses:
+                if license in queryset:
+                    license_index[license].append(item)
+
+        sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
+        return dict(sorted_index)
 
 
 @login_required

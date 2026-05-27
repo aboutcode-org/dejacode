@@ -31,6 +31,7 @@ from product_portfolio.views import ProductTabComplianceView
 from product_portfolio.views import ProductTabDependenciesView
 from product_portfolio.views import ProductTabImportsView
 from product_portfolio.views import ProductTabInventoryView
+from product_portfolio.views import ProductTabLicensesView
 from product_portfolio.views import ProductTabVulnerabilitiesView
 from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
@@ -137,6 +138,7 @@ urlpatterns = [
     *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
     *product_path("tab_dependencies", ProductTabDependenciesView.as_view()),
+    *product_path("tab_licenses", ProductTabLicensesView.as_view()),
     *product_path("tab_vulnerabilities", ProductTabVulnerabilitiesView.as_view()),
     *product_path("tab_imports", ProductTabImportsView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
