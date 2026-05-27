@@ -699,8 +699,8 @@ class ProductDetailsView(
 
     def tab_imports(self):
         scancodeprojects_count = self.object.scancodeprojects.count()
-        if not scancodeprojects_count:
-            return
+        # if not scancodeprojects_count:
+        #     return
 
         label = (
             f'Imports <span class="badge bg-primary-subtle text-primary-emphasis">'
@@ -1360,21 +1360,24 @@ class ProductTabImportsView(
         for submitted_project in submitted_projects:
             self.synchronize(scancodeio=scancodeio, project=submitted_project)
 
-        context_data.update(
-            {
-                "scancode_projects": scancode_projects,
-                "has_projects_in_progress": bool(submitted_projects),
-                "tab_view_url": self.object.get_url("tab_imports"),
-            }
-        )
-
-        # History
         history_entries = (
             History.objects.get_for_object(self.object)
             .select_related("user")
             .order_by("-action_time")
         )
-        context_data["history_entries"] = history_entries
+
+        context_data.update(
+            {
+                "tab_view_url": self.object.get_url("tab_imports"),
+                # Imports
+                "scancode_projects": scancode_projects,
+                "has_projects_in_progress": bool(submitted_projects),
+                # Requests
+                "requests": self.object.get_requests(self.request.user),
+                # History
+                "history_entries": history_entries,
+            }
+        )
 
         return context_data
 
