@@ -174,7 +174,7 @@
                   </span>
                   {{ child.get_absolute_link }}
                   {% if child.license_expression %}
-                    <code class="key ms-1 white-space-normal">{{ child.license_expression }}</code>
+                    <code class="key ms-1 text-wrap">{{ child.license_expression }}</code>
                   {% endif %}
                 </div>
               {% endfor %}
@@ -192,7 +192,7 @@
                   </span>
                   {{ package.get_absolute_link }}
                   {% if package.license_expression %}
-                    <code class="key ms-1 white-space-normal">{{ package.license_expression }}</code>
+                    <code class="key ms-1 text-wrap">{{ package.license_expression }}</code>
                   {% endif %}
                 </div>
               {% endfor %}
