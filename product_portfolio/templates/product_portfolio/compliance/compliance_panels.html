@@ -89,10 +89,11 @@
         </tbody>
       </table>
       {% if remaining_license_count > 0 %}
-        <div class=" mt-2 pt-2">
-          <small class="text-body-tertiary">
-            + {{ remaining_license_count }} {% trans "other license" %}{{ remaining_license_count|pluralize }}{% if license_issues_count == 0 %}, {% trans "all within policy" %}{% endif %}
-          </small>
+        <div class="mt-2">
+          <a href="#" class="text-decoration-none small" onclick="event.preventDefault(); new bootstrap.Tab(document.querySelector('#tab_licenses-tab')).show(); window.scrollTo({ top: 0, behavior: 'smooth' });">
+            View all {{ remaining_license_count }} {% trans "other license" %}{{ remaining_license_count|pluralize }}{% if license_issues_count == 0 %}, {% trans "all within policy" %}{% endif %}
+            <i class="fas fa-arrow-right ms-1"></i>
+          </a>
         </div>
       {% endif %}
     </div>
