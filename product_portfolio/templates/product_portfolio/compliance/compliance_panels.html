@@ -206,7 +206,7 @@
       {# View all link #}
       {% if vulnerabilities|length < vulnerability_count %}
         <div class="mt-2">
-          <a href="#vulnerabilities" class="text-decoration-none small" onclick="new bootstrap.Tab(document.querySelector('#tab_vulnerabilities-tab')).show()">
+          <a href="{{ product_url }}?vulnerabilities-bypass_risk_threshold=Yes#vulnerabilities" class="text-decoration-none small">
             {% trans "View all" %} {{ vulnerability_count }} {% trans "vulnerabilities" %}
             <i class="fas fa-arrow-right ms-1"></i>
           </a>
