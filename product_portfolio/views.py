@@ -3015,7 +3015,7 @@ def get_viewable_products(user):
 class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, DataspacedFilterView):
     """Compliance control center: overview of all products."""
 
-    template_name = "product_portfolio/compliance_dashboard.html"
+    template_name = "product_portfolio/compliance/compliance_dashboard.html"
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
