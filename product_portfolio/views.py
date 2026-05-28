@@ -33,6 +33,7 @@ from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models import Sum
+from django.db.models import prefetch_related_objects
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import FileResponse
@@ -2332,21 +2333,41 @@ class ProductTabLicensesView(
 
     def get_context_data(self, **kwargs):
         product = self.object
+        items_by_license = self.get_license_index(product=product)
+
+        license_qs = (
+            License.objects.filter(id__in=items_by_license.keys())
+            .select_related("category", "usage_policy")
+            .only(
+                "name",
+                "short_name",
+                "key",
+                "dataspace",
+                "category",
+                "category__label",
+                "usage_policy",
+                "usage_policy__label",
+                "usage_policy__icon",
+                "usage_policy__color_code",
+                "usage_policy__compliance_alert",
+            )
+        )
+
         self.filterset = self.filterset_class(
             self.request.GET,
+            queryset=license_qs,
             dataspace=product.dataspace,
             prefix=self.tab_id,
             anchor=f"#{self.tab_id}",
         )
 
         context = super().get_context_data(**kwargs)
-
         filtered_queryset = self.filterset.qs
-        license_index = self.get_license_index(product=product, queryset=filtered_queryset)
-
         paginator = Paginator(filtered_queryset, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
+
+        license_index = {license: items_by_license.get(license.id, []) for license in page_obj}
 
         context.update(
             {
@@ -2371,7 +2392,8 @@ class ProductTabLicensesView(
         return context
 
     @staticmethod
-    def get_license_index(product, queryset):
+    def get_license_index(product):
+        """Map each product license id to the items that reference it."""
         product_components = product.components.all()
         product_packages = product.packages.all()
 
@@ -2379,26 +2401,23 @@ class ProductTabLicensesView(
         for component in product_components:
             components_hierarchy.update(component.get_descendants(set_direct_parent=True))
 
+        components = list(components_hierarchy)
+        prefetch_related_objects(components, "licenses", "packages__licenses")
+
         packages_hierarchy = set(product_packages)
-        for component in components_hierarchy:
-            component_packages = []
+        for component in components:
             for package in component.packages.all():
                 package.direct_parent = component
-                component_packages.append(package)
-            packages_hierarchy.update(component_packages)
+                packages_hierarchy.add(package)
 
-        all_licenses = set()
-        license_index = defaultdict(list)
+        prefetch_related_objects(list(product_packages), "licenses")
 
-        for item in list(components_hierarchy) + list(packages_hierarchy):
-            licenses = item.licenses.all()
-            all_licenses.update(licenses)
-            for license in licenses:
-                if license in queryset:
-                    license_index[license].append(item)
+        items_by_license = defaultdict(list)
+        for item in components + list(packages_hierarchy):
+            for license in item.licenses.all():
+                items_by_license[license.id].append(item)
 
-        sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
-        return dict(sorted_index)
+        return dict(items_by_license)
 
 
 @login_required
