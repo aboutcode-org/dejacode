@@ -119,6 +119,11 @@ class ProductFilterSet(DataspacedFilterSet):
         field_name="packages__affected_by_vulnerabilities__vulnerability_id",
         label=_("Affected by"),
     )
+    productpackage_licenses = django_filters.CharFilter(
+        label=_("Package license"),
+        field_name="productpackages__licenses__key",
+        distinct=True,
+    )
 
     class Meta:
         model = Product

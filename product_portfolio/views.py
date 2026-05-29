@@ -3118,6 +3118,54 @@ class ComplianceWatchlistCardView(
         return context
 
 
+class ComplianceLicensesCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TemplateView,
+):
+    """HTMX partial: top licenses causing compliance issues across viewable products."""
+    template_name = "product_portfolio/compliance/compliance_licenses_card.html"
+    limit = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        viewable_products = get_viewable_products(self.request.user)
+
+        licenses_with_issues = (
+            License.objects.scope(self.request.user.dataspace)
+            .filter(usage_policy__compliance_alert__in=["error", "warning"])
+            .annotate(
+                product_count=Count(
+                    "productpackage__product",
+                    filter=Q(productpackage__product__in=viewable_products),
+                    distinct=True,
+                ),
+            )
+            .filter(product_count__gt=0)
+            .select_related("usage_policy", "category")
+            .order_by("-product_count", "name")
+        )
+
+        context["licenses_qs"] = licenses_with_issues[: self.limit]
+        context["total_licenses_with_issues"] = licenses_with_issues.count()
+        return context
+
+
+class ComplianceVulnerabilitiesCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TemplateView,
+):
+    """HTMX partial: """
+
+    template_name = "product_portfolio/compliance/compliance_vulnerabilities_card.html"
+    limit = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        return context
+
 class ProductLicenseComplianceExportView(
     LoginRequiredMixin,
     ExportComplianceMixin,
