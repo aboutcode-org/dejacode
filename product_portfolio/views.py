@@ -2350,7 +2350,7 @@ class ProductTabLicensesView(
                 "usage_policy__icon",
                 "usage_policy__color_code",
                 "usage_policy__compliance_alert",
-            )
+            ).order_by("usage_policy__compliance_alert", "name")
         )
 
         self.filterset = self.filterset_class(

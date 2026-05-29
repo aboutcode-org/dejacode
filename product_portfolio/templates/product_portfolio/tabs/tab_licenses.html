@@ -4,7 +4,7 @@
   {% include 'includes/object_list_table_header.html' with filter=filterset %}
   <tbody>
     {% for license, items in license_index.items %}
-      <tr class="{% if 'error' in license.usage_policy.compliance_alert %}table-danger{% elif 'warning' in license.usage_policy.compliance_alert %}table-warning{% endif %}">
+      <tr class="{% if 'error' in license.usage_policy.compliance_alert %}row-alert-danger{% elif 'warning' in license.usage_policy.compliance_alert %}row-alert-warning{% endif %}">
         <td>
           <strong>
             <a href="{{ license.details_url }}" target="_blank">{{ license.name }}</a>
