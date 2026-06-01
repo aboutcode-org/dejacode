@@ -1,3 +1,4 @@
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
 <div class="card flex-fill shadow-sm">
   <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
     <span>
@@ -5,7 +6,7 @@
       Compliance watchlist
     </span>
     {% if total_products_with_issues %}
-      <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</span>
+      <a href="{{ compliance_dashboard_url }}" class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</a>
     {% endif %}
   </h2>
   <div class="card-body p-2">
@@ -58,7 +59,7 @@
     {% endfor %}
   </div>
   <div class="card-footer text-center p-2 smaller">
-    <a href="{% url 'product_portfolio:compliance_dashboard' %}">
+    <a href="{{ compliance_dashboard_url }}">
       {% if total_products_with_issues %}
         View all {{ total_products_with_issues }} products with issues
       {% else %}

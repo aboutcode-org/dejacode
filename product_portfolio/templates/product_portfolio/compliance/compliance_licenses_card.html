@@ -1,3 +1,4 @@
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
 <div class="card flex-fill shadow-sm">
   <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
     <span>
@@ -20,10 +21,10 @@
           {% endif %}
         </div>
         {% if license.category %}
-          <div class="small text-body-secondary">{{ license.category }}</div>
+          <div class="badge text-bg-light border">{{ license.category }}</div>
         {% endif %}
         <div class="small">
-          <a href="{% url 'product_portfolio:compliance_dashboard' %}?productpackage_licenses={{ license.key }}" class="text-body-tertiary">
+          <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="text-body-tertiary">
             {{ license.product_count }} product{{ license.product_count|pluralize }}
           </a>
         </div>
@@ -36,9 +37,11 @@
       </div>
     {% endfor %}
   </div>
-  <div class="card-footer text-center p-2 smaller">
-    <a href="{% url 'product_portfolio:compliance_dashboard' %}">
-      View compliance dashboard
-    </a>
-  </div>
+  {% if total_licenses_with_issues %}
+    <div class="card-footer text-center p-2 smaller">
+      <a href="{{ compliance_dashboard_url }}?license_compliance_issues=true">
+         View all products with license issues
+      </a>
+    </div>
+  {% endif %}
 </div>

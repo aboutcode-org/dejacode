@@ -41,6 +41,26 @@ from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 
 
+class HasComplianceIssueFilter(django_filters.BooleanFilter):
+    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label", _("Compliance issues"))
+        kwargs.setdefault("field_name", "compliance_alert")
+        super().__init__(*args, **kwargs)
+
+    def filter(self, qs, value):
+        if value is None:
+            return qs
+        lookup = {f"{self.field_name}__in": ["warning", "error"]}
+        if value:
+            qs = qs.filter(**lookup)
+        else:
+            qs = qs.exclude(**lookup)
+
+        return qs.distinct() if self.distinct else qs
+
+
 class ProductFilterSet(DataspacedFilterSet):
     q = MatchOrderedSearchFilter(
         label=_("Search"),
@@ -124,6 +144,10 @@ class ProductFilterSet(DataspacedFilterSet):
         field_name="productpackages__licenses__key",
         distinct=True,
     )
+    license_compliance_issues = HasComplianceIssueFilter(
+        field_name="productpackages__licenses__usage_policy__compliance_alert",
+        distinct=True,
+    )
 
     class Meta:
         model = Product
@@ -134,26 +158,6 @@ class ProductFilterSet(DataspacedFilterSet):
             "configuration_status",
             "keywords",
         ]
-
-
-class HasComplianceIssueFilter(django_filters.BooleanFilter):
-    """Filter objects that have a compliance alert (warning or error) on their usage policy."""
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label", _("Compliance issues"))
-        kwargs.setdefault("field_name", "compliance_alert")
-        super().__init__(*args, **kwargs)
-
-    def filter(self, qs, value):
-        if value is None:
-            return qs
-        lookup = {f"{self.field_name}__in": ["warning", "error"]}
-        if value:
-            qs = qs.filter(**lookup)
-        else:
-            qs = qs.exclude(**lookup)
-
-        return qs.distinct() if self.distinct else qs
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):

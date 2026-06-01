@@ -64,9 +64,15 @@
     <div class="col-6 col-md-3">
       <div class="bg-body-secondary rounded-3 p-3">
         <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
-        <div class="fs-4 fw-medium lh-sm {% if products_with_license_issues %}text-danger{% else %}text-success{% endif %}">
-          {{ products_with_license_issues }}
-        </div>
+        {% if products_with_license_issues %}
+          <a href="?license_compliance_issues=true" class="fs-4 fw-medium lh-sm text-danger">
+            {{ products_with_license_issues }}
+          </a>
+        {% else %}
+          <div class="fs-4 fw-medium lh-sm text-success">
+            {{ products_with_license_issues }}
+          </div>
+        {% endif %}
         <div class="text-body-tertiary fs-xs mt-1">
           {% if products_with_license_issues %}
             {% trans "products with policy violations" %}
