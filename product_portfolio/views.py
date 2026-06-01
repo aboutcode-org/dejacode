@@ -26,7 +26,6 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import Exists
 from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Prefetch
@@ -184,10 +183,6 @@ class ProductListView(
     )
 
     def get_queryset(self):
-        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
-            product_id=OuterRef("pk")
-        )
-
         return (
             self.model.objects.get_queryset(
                 user=self.request.user,
@@ -214,8 +209,8 @@ class ProductListView(
             )
             .annotate(
                 productinventoryitem_count=Count("productinventoryitem", distinct=True),
-                has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
             )
+            .with_has_vulnerable_packages()
             .order_by(
                 "name",
                 "version",
@@ -2350,7 +2345,8 @@ class ProductTabLicensesView(
                 "usage_policy__icon",
                 "usage_policy__color_code",
                 "usage_policy__compliance_alert",
-            ).order_by("usage_policy__compliance_alert", "name")
+            )
+            .order_by("usage_policy__compliance_alert", "name")
         )
 
         self.filterset = self.filterset_class(
@@ -3055,7 +3051,12 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
     }
 
     def get_queryset(self):
-        return get_viewable_products(self.request.user).with_compliance_data().with_max_risk_level()
+        return (
+            get_viewable_products(self.request.user)
+            .with_compliance_data()
+            .with_max_risk_level()
+            .with_has_vulnerable_packages()
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -3124,6 +3125,7 @@ class ComplianceLicensesCardView(
     TemplateView,
 ):
     """HTMX partial: top licenses causing compliance issues across viewable products."""
+
     template_name = "product_portfolio/compliance/compliance_licenses_card.html"
     limit = 5
 
@@ -3156,15 +3158,36 @@ class ComplianceVulnerabilitiesCardView(
     BaseProductViewMixin,
     TemplateView,
 ):
-    """HTMX partial: """
+    """HTMX partial: top vulnerabilities affecting viewable products."""
 
     template_name = "product_portfolio/compliance/compliance_vulnerabilities_card.html"
     limit = 5
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        viewable_products = get_viewable_products(self.request.user)
 
+        vulnerabilities = (
+            Vulnerability.objects.scope(self.request.user.dataspace)
+            .filter(
+                affected_packages__productpackages__product__in=viewable_products,
+                risk_level__in=["critical", "high"],
+            )
+            .annotate(
+                product_count=Count(
+                    "affected_packages__productpackages__product",
+                    filter=Q(affected_packages__productpackages__product__in=viewable_products),
+                    distinct=True,
+                ),
+            )
+            .filter(product_count__gt=0)
+            .order_by("-risk_score", "-product_count", "vulnerability_id")
+        )
+
+        context["vulnerabilities_qs"] = vulnerabilities[: self.limit]
+        context["total_vulnerabilities_with_issues"] = vulnerabilities.count()
         return context
+
 
 class ProductLicenseComplianceExportView(
     LoginRequiredMixin,

@@ -10,9 +10,9 @@ from django.urls import path
 
 from product_portfolio.views import AttributionView
 from product_portfolio.views import ComplianceDashboardView
-from product_portfolio.views import ComplianceWatchlistCardView
 from product_portfolio.views import ComplianceLicensesCardView
 from product_portfolio.views import ComplianceVulnerabilitiesCardView
+from product_portfolio.views import ComplianceWatchlistCardView
 from product_portfolio.views import ImportManifestsView
 from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView

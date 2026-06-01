@@ -18,6 +18,7 @@ from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import DecimalField
+from django.db.models import Exists
 from django.db.models import F
 from django.db.models import FloatField
 from django.db.models import Max
@@ -229,6 +230,14 @@ class ProductQuerySet(DataspacedQuerySet):
             | Q(license_warning_count__gt=0)
             | Q(critical_count__gt=0)
             | Q(high_count__gt=0)
+        )
+
+    def with_has_vulnerable_packages(self):
+        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
+            product_id=OuterRef("pk")
+        )
+        return self.annotate(
+            has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
         )
 
 
