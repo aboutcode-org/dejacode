@@ -15,18 +15,28 @@
         <div class="d-flex justify-content-between align-items-start">
           <a class="fw-semibold" href="{{ license.get_absolute_url }}">{{ license.name }}</a>
           {% if 'error' in license.usage_policy.compliance_alert %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-danger-subtle text-danger-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% elif 'warning' in license.usage_policy.compliance_alert %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-warning-subtle text-warning-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% else %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-secondary-subtle text-secondary-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% endif %}
+        </div>
+        <div class="mt-1">
+          {% if 'error' in license.usage_policy.compliance_alert %}
             <span class="badge bg-danger-subtle text-danger-emphasis">{{ license.usage_policy.label }}</span>
           {% elif 'warning' in license.usage_policy.compliance_alert %}
             <span class="badge bg-warning-subtle text-warning-emphasis">{{ license.usage_policy.label }}</span>
           {% endif %}
-        </div>
-        {% if license.category %}
-          <div class="badge text-bg-light border">{{ license.category }}</div>
-        {% endif %}
-        <div class="small">
-          <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="text-body-tertiary">
-            {{ license.product_count }} product{{ license.product_count|pluralize }}
-          </a>
+          {% if license.category %}
+            <span class="badge text-bg-light border">{{ license.category }}</span>
+          {% endif %}
         </div>
       </div>
       {% if not forloop.last %}<hr class="my-2">{% endif %}
@@ -40,7 +50,7 @@
   {% if total_licenses_with_issues %}
     <div class="card-footer text-center p-2 smaller">
       <a href="{{ compliance_dashboard_url }}?license_compliance_issues=true">
-         View all products with license issues
+        View all products with license issues
       </a>
     </div>
   {% endif %}
