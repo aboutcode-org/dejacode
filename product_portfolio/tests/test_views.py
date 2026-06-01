@@ -136,7 +136,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(29):
+        with self.assertNumQueries(27):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -147,7 +147,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected2)
         self.assertIn("Inventory", response.context["tabsets"])
         self.assertEqual(
-            'Inventory <span class="badge text-bg-primary">1</span>',
+            'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">1</span>',
             response.context["tabsets"]["Inventory"]["label"],
         )
 
@@ -162,13 +162,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(27):
+        with self.assertNumQueries(25):
             response = self.client.get(url)
         self.assertContains(response, expected)
 
         self.assertIn("Inventory", response.context["tabsets"])
         self.assertEqual(
-            'Inventory <span class="badge text-bg-primary">1</span>',
+            'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">1</span>',
             response.context["tabsets"]["Inventory"]["label"],
         )
 
@@ -483,7 +483,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         make_product_package(self.product1, package=package1)
         response = self.client.get(url)
-        expected = 'Vulnerabilities<span class="badge badge-vulnerability'
+        expected = 'Vulnerabilities<span class="badge'
         self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
@@ -837,7 +837,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             is_active=True,
             content_type=product_ct,
         )
-        request_product = Request.objects.create(
+        product_request = Request.objects.create(
             title="Title",
             request_template=request_template_product,
             requester=self.super_user,
@@ -879,16 +879,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             f'?content_object_id={self.product1.id}">',
         )
 
-        # Activity tab
-        self.assertContains(response, 'id="tab_activity"')
-        self.assertContains(
-            response,
-            f'<a href="{request_product.get_absolute_url()}">'
-            f"{request_product} {request_product.title}</a>",
-        )
-        self.assertContains(response, "Open")
-        self.assertContains(response, request_template_product.name)
-
         # Request R icon link in Inventory tab
         expected = (
             f'<a href="{self.component1.get_absolute_url()}#activity" '
@@ -896,7 +886,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
 
-    def test_product_portfolio_detail_view_license_tab(self):
+        # Activity tab
+        self.assertContains(response, 'id="tab_activity"')
+        url = self.product1.get_url("tab_activity")
+        response = self.client.get(url)
+        self.assertContains(response, product_request.get_absolute_url())
+        self.assertContains(response, f"{product_request} {product_request.title}")
+        self.assertContains(response, "Open")
+        self.assertContains(response, request_template_product.name)
+
+    def test_product_portfolio_detail_view_terms_tab(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_absolute_url()
 
@@ -925,7 +924,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         l2_str = f"{l2.short_name} ({l2.key})"
         response = self.client.get(url)
 
-        self.assertContains(response, 'id="tab_license"')
+        self.assertContains(response, 'id="tab_terms"')
 
         def no_whitespace(s):
             return "".join(force_str(s).split())
@@ -2865,8 +2864,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         filterset_qs = response.context["filterset"].qs
         self.assertEqual(0, len(filterset_qs))
 
-    # HERE test tab now
-    def test_product_portfolio_product_license_summary_view(self):
+    def test_product_portfolio_product_tab_license_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1", name="L1", short_name="L1", owner=owner1, dataspace=self.dataspace
@@ -2885,8 +2883,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         self.client.login(username=self.super_user.username, password="secret")
-        license_summary_url = self.product1.get_license_summary_url()
-        response = self.client.get(license_summary_url)
+        url = self.product1.get_url("tab_licenses")
+        response = self.client.get(url)
 
         expected = {license1: [self.component1, self.package1]}
         self.assertEqual(expected, response.context["license_index"])
@@ -2894,13 +2892,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, str(license1.key))
         self.assertContains(response, str(self.package1))
         self.assertContains(response, str(self.component1))
-
-        response = self.client.get(license_summary_url + "?export=csv")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual("text/csv", response["Content-Type"])
-        self.assertEqual("89", response["Content-Length"])
-        expected = 'attachment; filename="Product1_With_Space_1.0_license_summary.csv"'
-        self.assertEqual(expected, response["Content-Disposition"])
 
     def test_product_portfolio_product_export_spdx_view(self):
         self.client.login(username=self.super_user.username, password="secret")
