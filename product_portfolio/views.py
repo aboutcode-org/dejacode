@@ -2337,6 +2337,7 @@ class ProductTabLicensesView(
                 "name",
                 "short_name",
                 "key",
+                "spdx_license_key",
                 "dataspace",
                 "category",
                 "category__label",
@@ -2371,7 +2372,7 @@ class ProductTabLicensesView(
                 "license_index": license_index,
                 "filterset": self.filterset,
                 "page_obj": page_obj,
-                "total_count": filtered_queryset.count(),
+                "total_count": paginator.count,
                 "search_query": self.request.GET.get("licenses-q", ""),
             }
         )
