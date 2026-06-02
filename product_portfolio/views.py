@@ -3062,8 +3062,6 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
-        total_products = products.count()
-
         products_with_issues = products.with_compliance_issues().count()
 
         products_with_license_issues = products.filter(
@@ -3084,7 +3082,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
 
         context.update(
             {
-                "total_products": total_products,
+                "total_products": context["paginator"].count,
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
                 "products_with_critical_or_high": products_with_critical_or_high,
