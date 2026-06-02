@@ -959,6 +959,7 @@ class ProductRelationshipMixin(
         blank=True,
         max_digits=3,
         decimal_places=1,
+        db_index=True,
         help_text=_(
             "Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. "
             "Calculated as the weighted severity times exploitability (capped at 10), "
