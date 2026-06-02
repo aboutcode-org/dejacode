@@ -145,9 +145,9 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("Package license"),
         method="filter_productpackage_licenses",
     )
-    license_compliance_issues = HasComplianceIssueFilter(
-        field_name="productpackages__licenses__usage_policy__compliance_alert",
-        distinct=True,
+    license_compliance_issues = django_filters.BooleanFilter(
+        label=_("License issues"),
+        method="filter_license_compliance_issues",
     )
 
     class Meta:
@@ -173,6 +173,21 @@ class ProductFilterSet(DataspacedFilterSet):
             licenses__key=value,
         )
         return queryset.filter(Exists(license_match))
+
+    def filter_license_compliance_issues(self, queryset, name, value):
+        """
+        Use an Exists subquery instead of a join to avoid row multiplication and
+        the global DISTINCT that made this filter slow.
+        """
+        if value is None:
+            return queryset
+
+        has_alert = ProductPackage.objects.filter(
+            product_id=OuterRef("pk"),
+            licenses__usage_policy__compliance_alert__in=["warning", "error"],
+        )
+        condition = Exists(has_alert)
+        return queryset.filter(condition if value else ~condition)
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
