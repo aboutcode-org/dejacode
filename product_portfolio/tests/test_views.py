@@ -185,30 +185,22 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(response.context["has_delete_productpackage"])
         self.assertContains(response, 'data-can-delete="yes"')
 
-    def test_product_portfolio_detail_view_tab_imports(self):
+    def test_product_portfolio_detail_view_tab_activity(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_absolute_url()
-        expected = 'id="tab_imports"'
-
-        response = self.client.get(url)
-        self.assertNotContains(response, expected)
-
-        ScanCodeProject.objects.create(
-            product=self.product1,
-            dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-        )
-
+        expected = 'id="tab_activity"'
         response = self.client.get(url)
         self.assertContains(response, expected)
-        self.assertIn("Imports", response.context["tabsets"])
+        self.assertIn("Activity", response.context["tabsets"])
 
-    def test_product_portfolio_detail_view_tab_imports_view(self):
+    def test_product_portfolio_detail_view_tab_activit_view(self):
         self.client.login(username="nexb_user", password="secret")
-        url = self.product1.get_url("tab_imports")
+        url = self.product1.get_url("tab_activity")
 
         response = self.client.get(url)
-        self.assertContains(response, "<tbody></tbody>", html=True)
+        self.assertContains(response, "No imports yet")
+        self.assertContains(response, "No requests yet")
+        self.assertContains(response, "No changes yet")
 
         project = ScanCodeProject.objects.create(
             product=self.product1,
@@ -2864,7 +2856,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         filterset_qs = response.context["filterset"].qs
         self.assertEqual(0, len(filterset_qs))
 
-    def test_product_portfolio_product_tab_license_view(self):
+    def test_product_portfolio_product_tab_licenses_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1", name="L1", short_name="L1", owner=owner1, dataspace=self.dataspace
