@@ -8,6 +8,8 @@
 
 from django import forms
 from django.contrib import admin
+from django.db.models import Exists
+from django.db.models import OuterRef
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -141,8 +143,7 @@ class ProductFilterSet(DataspacedFilterSet):
     )
     productpackage_licenses = django_filters.CharFilter(
         label=_("Package license"),
-        field_name="productpackages__licenses__key",
-        distinct=True,
+        method="filter_productpackage_licenses",
     )
     license_compliance_issues = HasComplianceIssueFilter(
         field_name="productpackages__licenses__usage_policy__compliance_alert",
@@ -158,6 +159,20 @@ class ProductFilterSet(DataspacedFilterSet):
             "configuration_status",
             "keywords",
         ]
+
+    def filter_productpackage_licenses(self, queryset, name, value):
+        """
+        Use an Exists subquery instead of a join to avoid row multiplication and
+        the global DISTINCT that made this filter slow.
+        """
+        if not value:
+            return queryset
+
+        license_match = ProductPackage.objects.filter(
+            product_id=OuterRef("pk"),
+            licenses__key=value,
+        )
+        return queryset.filter(Exists(license_match))
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
