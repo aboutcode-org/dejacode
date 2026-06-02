@@ -191,6 +191,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["vulnerability_id"]),
+            models.Index(fields=["exploitability"]),
+            models.Index(fields=["weighted_severity"]),
+            models.Index(fields=["risk_score"]),
             models.Index(fields=["risk_level"]),
         ]
 

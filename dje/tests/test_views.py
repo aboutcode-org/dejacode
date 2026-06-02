@@ -118,7 +118,7 @@ class DJEViewsTestCase(TestCase):
         )
         self.assertContains(
             response,
-            '<li><a href="/owners/Dataspace/Organization/">Organization</a></li>',
+            '<a href="/owners/Dataspace/Organization/">Organization</a>',
             html=True,
         )
         changelist_link = (

@@ -26,13 +26,13 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import Exists
 from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models import Sum
+from django.db.models import prefetch_related_objects
 from django.db.models.functions import Lower
 from django.forms import modelformset_factory
 from django.http import FileResponse
@@ -183,10 +183,6 @@ class ProductListView(
     )
 
     def get_queryset(self):
-        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
-            product_id=OuterRef("pk")
-        )
-
         return (
             self.model.objects.get_queryset(
                 user=self.request.user,
@@ -213,8 +209,8 @@ class ProductListView(
             )
             .annotate(
                 productinventoryitem_count=Count("productinventoryitem", distinct=True),
-                has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
             )
+            .with_has_vulnerable_packages()
             .order_by(
                 "name",
                 "version",
@@ -290,6 +286,13 @@ class ProductDetailsView(
                 "packages",
             ],
         },
+        "licenses": {
+            "fields": [
+                "license_expression",
+                "licenses",
+            ],
+        },
+        "vulnerabilities": {},
         "codebase": {
             "fields": [
                 "path",
@@ -303,33 +306,22 @@ class ProductDetailsView(
         "hierarchy": {
             "fields": [
                 "components",
+                "packages",
             ],
         },
-        "notice": {
-            "fields": [
-                "notice_text",
-            ],
-        },
-        "license": {
+        "terms": {
             "fields": [
                 "license_expression",
                 "licenses",
+                "notice_text",
             ],
         },
-        "owner": {
-            "fields": [
-                "owner",
-            ],
-        },
-        "vulnerabilities": {},
         "dependencies": {
             "fields": [
                 "dependencies",
             ],
         },
-        "activity": {},
-        "imports": {},
-        "history": {
+        "activity": {
             "fields": [
                 "created_date",
                 "created_by",
@@ -397,6 +389,10 @@ class ProductDetailsView(
             anchor="#inventory",
         )
 
+        productcomponents_count = self.object.productcomponents.count()
+        productpackages_count = self.object.productpackages.count()
+        self.inventory_count = productcomponents_count + productpackages_count
+
         return super().get_tabsets()
 
     def tab_essentials(self):
@@ -421,9 +417,14 @@ class ProductDetailsView(
 
         return {"fields": self.get_tab_fields(tab_fields)}
 
-    def tab_notice(self):
+    def tab_terms(self):
+        tab_data = self.tab_license()
+
         if self.object.notice_text:
-            return {"fields": self.get_tab_fields([TabField("notice_text")])}
+            notice_field = self.get_tab_fields([TabField("notice_text")])[0]
+            tab_data["fields"].append(notice_field)
+
+        return tab_data
 
     def tab_hierarchy(self):
         template = "product_portfolio/tabs/tab_hierarchy.html"
@@ -525,14 +526,36 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
-    def tab_inventory(self):
-        productcomponents_count = self.object.productcomponents.count()
-        productpackages_count = self.object.productpackages.count()
-        inventory_count = productcomponents_count + productpackages_count
-        if not inventory_count:
+    def tab_licenses(self):
+        if not self.inventory_count:
             return
 
-        label = f'Inventory <span class="badge text-bg-primary">{inventory_count}</span>'
+        template = "tabs/tab_async_loader.html"
+
+        # Pass the current request query context to the async request
+        tab_view_url = self.object.get_url("tab_licenses")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "licenses",
+        }
+
+        return {
+            "label": "Licenses",
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def tab_inventory(self):
+        if not self.inventory_count:
+            return
+
+        label = (
+            f'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{self.inventory_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -555,7 +578,11 @@ class ProductDetailsView(
         if not dependencies_count:
             return
 
-        label = f'Dependencies <span class="badge text-bg-primary">{dependencies_count}</span>'
+        label = (
+            f'Dependencies <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{dependencies_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -606,9 +633,9 @@ class ProductDetailsView(
                 "tooltip": "No vulnerabilities found in this Product",
             }
 
-        badge_class = "text-bg-secondary"
+        badge_class = "bg-secondary-subtle text-secondary-emphasisy"
         if vulnerability_count > 0:
-            badge_class = "badge-vulnerability"
+            badge_class = "bg-danger-subtle text-danger-emphasis"
 
         label = (
             f"Vulnerabilities"
@@ -639,7 +666,11 @@ class ProductDetailsView(
         if not codebaseresources_count:
             return
 
-        label = f'Codebase <span class="badge text-bg-primary">{codebaseresources_count}</span>'
+        label = (
+            f'Codebase <span class="badge bg-primary-subtle text-primary-emphasis">'
+            f"{codebaseresources_count}"
+            f"</span>"
+        )
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
@@ -657,29 +688,20 @@ class ProductDetailsView(
             "fields": [(None, tab_context, None, template)],
         }
 
-    def tab_activity(self, exclude_product_context=False):
-        return super().tab_activity(exclude_product_context=True)
-
-    def tab_imports(self):
-        scancodeprojects_count = self.object.scancodeprojects.count()
-        if not scancodeprojects_count:
-            return
-
-        label = f'Imports <span class="badge text-bg-primary">{scancodeprojects_count}</span>'
+    def tab_activity(self):
         template = "tabs/tab_async_loader.html"
 
         # Pass the current request query context to the async request
-        tab_view_url = self.object.get_url("tab_imports")
+        tab_view_url = self.object.get_url("tab_activity")
         if full_query_string := self.request.META["QUERY_STRING"]:
             tab_view_url += f"?{full_query_string}"
 
         tab_context = {
             "tab_view_url": tab_view_url,
-            "tab_object_name": "imports",
         }
 
         return {
-            "label": mark_safe(label),
+            "label": "Activity",
             "fields": [(None, tab_context, None, template)],
         }
 
@@ -1301,12 +1323,12 @@ class ProductTabVulnerabilitiesView(
         return context_data
 
 
-class ProductTabImportsView(
+class ProductTabActivityView(
     LoginRequiredMixin,
     BaseProductViewMixin,
     TabContentView,
 ):
-    template_name = "product_portfolio/tabs/tab_imports.html"
+    template_name = "product_portfolio/tabs/tab_activity.html"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
@@ -1319,11 +1341,22 @@ class ProductTabImportsView(
         for submitted_project in submitted_projects:
             self.synchronize(scancodeio=scancodeio, project=submitted_project)
 
+        history_entries = (
+            History.objects.get_for_object(self.object)
+            .select_related("user")
+            .order_by("-action_time")
+        )
+
         context_data.update(
             {
+                "tab_view_url": self.object.get_url("tab_activity"),
+                # Imports
                 "scancode_projects": scancode_projects,
                 "has_projects_in_progress": bool(submitted_projects),
-                "tab_view_url": self.object.get_url("tab_imports"),
+                # Requests
+                "requests": self.object.get_requests(self.request.user),
+                # History
+                "history_entries": history_entries,
             }
         )
 
@@ -2066,7 +2099,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 messages.success(request, mark_safe(msg))
             if warnings:
                 messages.warning(request, mark_safe("<br>".join(warnings)))
-            return redirect(f"{product.get_absolute_url()}#imports")
+            return redirect(f"{product.get_absolute_url()}#activity")
     else:
         form = form_class(request.user)
 
@@ -2274,74 +2307,114 @@ class ManagePackageGridView(BaseProductManageGridView):
         )
 
 
-@login_required
-def license_summary_view(request, dataspace, name, version=""):
-    user = request.user
-
-    guarded_qs = Product.objects.get_queryset(user)
-    product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
-
-    filterset = LicenseFilterSet(
-        data=request.GET or None,
-        request=request,
-        dataspace=product.dataspace,
+class ProductTabLicensesView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    PaginationMixin,
+    TableHeaderMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_licenses.html"
+    paginate_by = 50
+    table_model = License
+    filterset_class = LicenseFilterSet
+    query_dict_page_param = "licenses-page"
+    tab_id = "licenses"
+    table_headers = (
+        Header("name", _("License"), help_text="License details"),
+        Header("usage_policy", _("Usage policy"), filter="usage_policy"),
+        Header("package", _("Items"), help_text="Items under this license."),
     )
 
-    product_components = product.components.all()
-    product_packages = product.packages.all()
+    def get_context_data(self, **kwargs):
+        product = self.object
+        items_by_license = self.get_license_index(product=product)
 
-    components_hierarchy = set(product_components)
-    for component in product_components:
-        components_hierarchy.update(component.get_descendants(set_direct_parent=True))
+        license_qs = (
+            License.objects.filter(id__in=items_by_license.keys())
+            .select_related("category", "usage_policy")
+            .only(
+                "name",
+                "short_name",
+                "key",
+                "spdx_license_key",
+                "dataspace",
+                "category",
+                "category__label",
+                "usage_policy",
+                "usage_policy__label",
+                "usage_policy__icon",
+                "usage_policy__color_code",
+                "usage_policy__compliance_alert",
+            )
+            .order_by("usage_policy__compliance_alert", "name")
+        )
 
-    packages_hierarchy = set(product_packages)
-    for component in components_hierarchy:
-        component_packages = []
-        for package in component.packages.all():
-            package.direct_parent = component
-            component_packages.append(package)
-        packages_hierarchy.update(component_packages)
+        self.filterset = self.filterset_class(
+            self.request.GET,
+            queryset=license_qs,
+            dataspace=product.dataspace,
+            prefix=self.tab_id,
+            anchor=f"#{self.tab_id}",
+        )
 
-    all_licenses = set()
-    license_index = defaultdict(list)
+        context = super().get_context_data(**kwargs)
+        filtered_queryset = self.filterset.qs
+        paginator = Paginator(filtered_queryset, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
 
-    for item in list(components_hierarchy) + list(packages_hierarchy):
-        licenses = item.licenses.all()
-        all_licenses.update(licenses)
-        for license in licenses:
-            if license in filterset.qs:
-                license_index[license].append(item)
+        license_index = {license: items_by_license.get(license.id, []) for license in page_obj}
 
-    sorted_index = sorted(license_index.items(), key=lambda item: item[0].name)
+        context.update(
+            {
+                "product": product,
+                "license_index": license_index,
+                "filterset": self.filterset,
+                "page_obj": page_obj,
+                "total_count": paginator.count,
+                "search_query": self.request.GET.get("licenses-q", ""),
+            }
+        )
 
-    if request.GET.get("export"):
-        response = HttpResponse(content_type="text/csv")
-        prefix = str(product).replace(" ", "_")
-        response["Content-Disposition"] = f'attachment; filename="{prefix}_license_summary.csv"'
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
 
-        fieldnames = ["License", "Usage policy", "Items"]
-        writer = csv.writer(response)
-        writer.writerow(fieldnames)
+        return context
 
-        for license, items in sorted_index:
-            row = [
-                f"{license.name} ({license.key})",
-                license.usage_policy,
-                ", ".join([repr(item) for item in items]),
-            ]
-            writer.writerow(row)
+    @staticmethod
+    def get_license_index(product):
+        """Map each product license id to the items that reference it."""
+        product_components = product.components.all()
+        product_packages = product.packages.all()
 
-        return response
+        components_hierarchy = set(product_components)
+        for component in product_components:
+            components_hierarchy.update(component.get_descendants(set_direct_parent=True))
 
-    return render(
-        request,
-        "product_portfolio/license_summary.html",
-        {
-            "product": product,
-            "license_index": dict(sorted_index),
-            "filterset": filterset,
-        },
-    )
+        components = list(components_hierarchy)
+        prefetch_related_objects(components, "licenses", "packages__licenses")
+
+        packages_hierarchy = set(product_packages)
+        for component in components:
+            for package in component.packages.all():
+                package.direct_parent = component
+                packages_hierarchy.add(package)
+
+        prefetch_related_objects(list(product_packages), "licenses")
+
+        items_by_license = defaultdict(list)
+        for item in components + list(packages_hierarchy):
+            for license in item.licenses.all():
+                items_by_license[license.id].append(item)
+
+        return dict(items_by_license)
 
 
 @login_required
@@ -2434,7 +2507,7 @@ class BaseProductImportFormView(
         return context
 
     def get_success_url(self):
-        return f"{self.object.get_absolute_url()}#imports"
+        return f"{self.object.get_absolute_url()}#activity"
 
     def form_valid(self, form):
         self.object = self.get_object()
@@ -2581,7 +2654,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
             )
         )
         messages.success(request, "Improve Packages from PurlDB in progress...")
-    return redirect(f"{product.get_absolute_url()}#imports")
+    return redirect(f"{product.get_absolute_url()}#activity")
 
 
 @login_required
@@ -2958,7 +3031,7 @@ def get_viewable_products(user):
 class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, DataspacedFilterView):
     """Compliance control center: overview of all products."""
 
-    template_name = "product_portfolio/compliance_dashboard.html"
+    template_name = "product_portfolio/compliance/compliance_dashboard.html"
     model = Product
     filterset_class = ProductFilterSet
     paginate_by = settings.DEJACODE_PAGINATE_BY.get("compliance", 50)
@@ -2979,14 +3052,17 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
     }
 
     def get_queryset(self):
-        return get_viewable_products(self.request.user).with_compliance_data().with_max_risk_level()
+        return (
+            get_viewable_products(self.request.user)
+            .with_compliance_data()
+            .with_max_risk_level()
+            .with_has_vulnerable_packages()
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
-        total_products = products.count()
-
         products_with_issues = products.with_compliance_issues().count()
 
         products_with_license_issues = products.filter(
@@ -3007,7 +3083,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
 
         context.update(
             {
-                "total_products": total_products,
+                "total_products": context["paginator"].count,
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
                 "products_with_critical_or_high": products_with_critical_or_high,
@@ -3039,6 +3115,76 @@ class ComplianceWatchlistCardView(
         )
         context["compliance_qs"] = products_with_issues[: self.limit]
         context["total_products_with_issues"] = products_with_issues.count()
+        return context
+
+
+class ComplianceLicensesCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TemplateView,
+):
+    """HTMX partial: top licenses causing compliance issues across viewable products."""
+
+    template_name = "product_portfolio/compliance/compliance_licenses_card.html"
+    limit = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        viewable_products = get_viewable_products(self.request.user)
+
+        licenses_with_issues = (
+            License.objects.scope(self.request.user.dataspace)
+            .filter(usage_policy__compliance_alert__in=["error", "warning"])
+            .annotate(
+                product_count=Count(
+                    "productpackage__product",
+                    filter=Q(productpackage__product__in=viewable_products),
+                    distinct=True,
+                ),
+            )
+            .filter(product_count__gt=0)
+            .select_related("usage_policy", "category")
+            .order_by("-product_count", "name")
+        )
+
+        context["licenses_qs"] = licenses_with_issues[: self.limit]
+        context["total_licenses_with_issues"] = licenses_with_issues.count()
+        return context
+
+
+class ComplianceVulnerabilitiesCardView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    TemplateView,
+):
+    """HTMX partial: top vulnerabilities affecting viewable products."""
+
+    template_name = "product_portfolio/compliance/compliance_vulnerabilities_card.html"
+    limit = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        viewable_products = get_viewable_products(self.request.user)
+
+        vulnerabilities = (
+            Vulnerability.objects.scope(self.request.user.dataspace)
+            .filter(
+                affected_packages__productpackages__product__in=viewable_products,
+                risk_level__in=["critical", "high"],
+            )
+            .annotate(
+                product_count=Count(
+                    "affected_packages__productpackages__product",
+                    filter=Q(affected_packages__productpackages__product__in=viewable_products),
+                    distinct=True,
+                ),
+            )
+            .filter(product_count__gt=0)
+            .order_by("-risk_score", "-product_count", "vulnerability_id")
+        )
+
+        context["vulnerabilities_qs"] = vulnerabilities[: self.limit]
+        context["total_vulnerabilities_with_issues"] = vulnerabilities.count()
         return context
 
 

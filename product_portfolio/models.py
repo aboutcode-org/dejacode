@@ -18,6 +18,7 @@ from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import DecimalField
+from django.db.models import Exists
 from django.db.models import F
 from django.db.models import FloatField
 from django.db.models import Max
@@ -231,6 +232,14 @@ class ProductQuerySet(DataspacedQuerySet):
             | Q(high_count__gt=0)
         )
 
+    def with_has_vulnerable_packages(self):
+        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
+            product_id=OuterRef("pk")
+        )
+        return self.annotate(
+            has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
+        )
+
 
 class ProductSecuredManager(DataspacedManager):
     """
@@ -430,9 +439,6 @@ class Product(
 
     def get_manage_packages_url(self):
         return self.get_url("manage_packages")
-
-    def get_license_summary_url(self):
-        return self.get_url("license_summary")
 
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
@@ -953,6 +959,7 @@ class ProductRelationshipMixin(
         blank=True,
         max_digits=3,
         decimal_places=1,
+        db_index=True,
         help_text=_(
             "Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. "
             "Calculated as the weighted severity times exploitability (capped at 10), "

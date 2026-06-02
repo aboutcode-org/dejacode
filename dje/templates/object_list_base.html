@@ -96,30 +96,6 @@
             $('.h-link').tooltip({placement: 'bottom', title: 'Hierarchy view', container: 'body'});
             $('.r-link').tooltip({placement: 'bottom', title: 'Request view', container: 'body'});
 
-            /* Left and Right keys navigation */
-            {% if is_paginated %}
-              document.addEventListener("keydown", function(e) {
-                // Do not trigger the navigation if an <input> or <textarea> currently has the focus
-                var anyInputHasFocus = function() {
-                  return document.querySelector("input:focus, textarea:focus") !== null;
-                };
-
-                {% if page_obj.has_previous %}
-                  if (e.keyCode === 37 && !anyInputHasFocus()) {
-                    e.preventDefault();
-                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?{{ previous_url }}");
-                  }
-                {% endif %}
-
-                {% if page_obj.has_next %}
-                  if (e.keyCode === 39 && !anyInputHasFocus()) {
-                    e.preventDefault();
-                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?{{ next_url }}");
-                  }
-                {% endif %}
-              });
-            {% endif %}
-
             $('select.bootstrap-select-filter')
               .selectpicker()
               .on('changed.bs.select', function (event) {

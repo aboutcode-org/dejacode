@@ -1,0 +1,65 @@
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
+<div class="card flex-fill shadow-sm">
+  <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
+    <span>
+      <i class="fa-solid fa-bug me-1"></i>
+      Vulnerability issues
+    </span>
+    {% if total_vulnerabilities_with_issues %}
+      <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_vulnerabilities_with_issues }}</span>
+    {% endif %}
+  </h2>
+  <div class="card-body p-2">
+    {% for vulnerability in vulnerabilities_qs %}
+      <div>
+        <div class="d-flex justify-content-between align-items-start">
+          {% if vulnerability.resource_url %}
+            <a class="fw-semibold" href="{{ vulnerability.resource_url }}" target="_blank">
+              {{ vulnerability.vulnerability_id }}
+              <i class="fa-solid fa-up-right-from-square mini"></i>
+            </a>
+          {% else %}
+            {{ vulnerability.vulnerability_id }}
+          {% endif %}
+          {% if vulnerability.risk_level == 'critical' %}
+            <a href="{{ compliance_dashboard_url }}?affected_by={{ vulnerability.vulnerability_id }}" class="badge bg-danger-subtle text-danger-emphasis">
+              {{ vulnerability.product_count }} product{{ vulnerability.product_count|pluralize }}
+            </a>
+          {% else %}
+            <a href="{{ compliance_dashboard_url }}?affected_by={{ vulnerability.vulnerability_id }}" class="badge bg-warning-orange-subtle text-warning-orange">
+              {{ vulnerability.product_count }} product{{ vulnerability.product_count|pluralize }}
+            </a>
+          {% endif %}
+        </div>
+        <div class="mt-1">
+          {% if vulnerability.risk_level == 'critical' %}
+            <span class="badge bg-danger-subtle text-danger-emphasis">Critical</span>
+          {% elif vulnerability.risk_level == 'high' %}
+            <span class="badge bg-warning-subtle text-warning-emphasis">High</span>
+          {% endif %}
+          {% if vulnerability.risk_score %}
+            <span class="badge bg-body-tertiary text-body-secondary border">Risk {{ vulnerability.risk_score }}</span>
+          {% endif %}
+        </div>
+        {% if vulnerability.summary %}
+          <div class="small text-body-secondary text-truncate mt-1" title="{{ vulnerability.summary }}">
+            {{ vulnerability.summary }}
+          </div>
+        {% endif %}
+      </div>
+      {% if not forloop.last %}<hr class="my-2">{% endif %}
+    {% empty %}
+      <div class="text-center py-4">
+        <i class="fa-solid fa-circle-check text-success fs-3"></i>
+        <div class="mt-2 text-body-secondary">No high-risk vulnerabilities</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if total_vulnerabilities_with_issues %}
+    <div class="card-footer text-center p-2 smaller">
+      <a href="{{ compliance_dashboard_url }}?is_vulnerable=yes">
+        View all products with vulnerabilities
+      </a>
+    </div>
+  {% endif %}
+</div>

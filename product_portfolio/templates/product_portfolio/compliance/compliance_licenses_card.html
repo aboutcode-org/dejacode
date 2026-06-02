@@ -1,0 +1,57 @@
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
+<div class="card flex-fill shadow-sm">
+  <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
+    <span>
+      <i class="fa-solid fa-scale-balanced me-1"></i>
+      License issues
+    </span>
+    {% if total_licenses_with_issues %}
+      <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_licenses_with_issues }}</span>
+    {% endif %}
+  </h2>
+  <div class="card-body p-2">
+    {% for license in licenses_qs %}
+      <div>
+        <div class="d-flex justify-content-between align-items-start">
+          <a class="fw-semibold" href="{{ license.get_absolute_url }}">{{ license.name }}</a>
+          {% if 'error' in license.usage_policy.compliance_alert %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-danger-subtle text-danger-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% elif 'warning' in license.usage_policy.compliance_alert %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-warning-subtle text-warning-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% else %}
+            <a href="{{ compliance_dashboard_url }}?productpackage_licenses={{ license.key }}" class="badge bg-secondary-subtle text-secondary-emphasis">
+              {{ license.product_count }} product{{ license.product_count|pluralize }}
+            </a>
+          {% endif %}
+        </div>
+        <div class="mt-1">
+          {% if 'error' in license.usage_policy.compliance_alert %}
+            <span class="badge bg-danger-subtle text-danger-emphasis">{{ license.usage_policy.label }}</span>
+          {% elif 'warning' in license.usage_policy.compliance_alert %}
+            <span class="badge bg-warning-subtle text-warning-emphasis">{{ license.usage_policy.label }}</span>
+          {% endif %}
+          {% if license.category %}
+            <span class="badge bg-body-tertiary text-body-secondary border">{{ license.category }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if not forloop.last %}<hr class="my-2">{% endif %}
+    {% empty %}
+      <div class="text-center py-4">
+        <i class="fa-solid fa-circle-check text-success fs-3"></i>
+        <div class="mt-2 text-body-secondary">No license issues</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if total_licenses_with_issues %}
+    <div class="card-footer text-center p-2 smaller">
+      <a href="{{ compliance_dashboard_url }}?license_compliance_issues=true">
+        View all products with license issues
+      </a>
+    </div>
+  {% endif %}
+</div>

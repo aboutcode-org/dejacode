@@ -11,6 +11,11 @@
     <span class="text-body-secondary">
       {{ total_products }} {% trans "active product" %}{{ total_products|pluralize }}
     </span>
+    {% if filter.is_active %}
+      <div class="mt-1">
+        {% include 'includes/filters_breadcrumbs.html' with filterset=filter only %}
+      </div>
+    {% endif %}
     <div class="dropdown ms-auto">
       <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
         <i class="fas fa-download me-1"></i>{% trans "Export" %}
@@ -64,9 +69,15 @@
     <div class="col-6 col-md-3">
       <div class="bg-body-secondary rounded-3 p-3">
         <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
-        <div class="fs-4 fw-medium lh-sm {% if products_with_license_issues %}text-danger{% else %}text-success{% endif %}">
-          {{ products_with_license_issues }}
-        </div>
+        {% if products_with_license_issues %}
+          <a href="?license_compliance_issues=true" class="fs-4 fw-medium lh-sm text-danger">
+            {{ products_with_license_issues }}
+          </a>
+        {% else %}
+          <div class="fs-4 fw-medium lh-sm text-success">
+            {{ products_with_license_issues }}
+          </div>
+        {% endif %}
         <div class="text-body-tertiary fs-xs mt-1">
           {% if products_with_license_issues %}
             {% trans "products with policy violations" %}
@@ -137,17 +148,17 @@
             </td>
             <td class="text-end">
               {% if product.license_error_count %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">
+                <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-danger-subtle text-danger-emphasis">
                   {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
-                </span>
+                </a>
               {% endif %}
               {% if product.license_warning_count %}
-                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">
+                <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=warning#licenses" class="badge bg-warning-subtle text-warning-emphasis ms-1">
                   {{ product.license_warning_count }} {% trans "warning" %}{{ product.license_warning_count|pluralize }}
-                </span>
+                </a>
               {% endif %}
               {% if not product.license_error_count and not product.license_warning_count %}
-                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+                <a href="{{ product_url }}#licenses" class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</a>
               {% endif %}
             </td>
             <td class="text-end">
@@ -170,16 +181,16 @@
                 </span>
               {% endif %}
               {% if product.critical_count %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=critical#vulnerabilities" class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} {% trans "critical" %}</a>
               {% endif %}
               {% if product.high_count %}
-                <span class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=high#vulnerabilities" class="badge bg-warning-orange-subtle text-warning-orange ms-1">{{ product.high_count }} {% trans "high" %}</a>
               {% endif %}
               {% if product.medium_count %}
-                <span class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=medium#vulnerabilities" class="badge bg-warning-subtle text-warning-emphasis ms-1">{{ product.medium_count }} {% trans "medium" %}</a>
               {% endif %}
               {% if product.low_count %}
-                <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</span>
+                <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=low#vulnerabilities" class="badge bg-info-subtle text-info-emphasis ms-1">{{ product.low_count }} {% trans "low" %}</a>
               {% endif %}
               {% if not product.vulnerability_count %}
                 <span class="text-body-tertiary small">{% trans "None" %}</span>
@@ -201,6 +212,9 @@
   {% if is_paginated %}
     <div class="d-flex justify-content-center">
       {% include 'pagination/object_list_pagination.html' %}
+    </div>
+    <div class="text-center">
+      <strong>Tip:</strong> You can use <kbd>&larr;</kbd> and <kbd>&rarr;</kbd> keys to navigate.
     </div>
   {% endif %}
 {% endblock %}

@@ -1,0 +1,21 @@
+<div
+    {% if has_projects_in_progress %} hx-get="{{ tab_view_url }}" hx-trigger="load delay:10s" hx-swap="outerHTML"{% endif %}
+>
+
+  {% block summary_cards %}
+    {% include 'product_portfolio/tabs/tab_activity_summary.html' %}
+  {% endblock %}
+
+  {% block imports %}
+    {% include 'product_portfolio/tabs/tab_activity_imports.html' %}
+  {% endblock %}
+
+  {% block requests %}
+    {% include 'product_portfolio/tabs/tab_activity_requests.html' %}
+  {% endblock %}
+
+  {% block history %}
+    {% include 'product_portfolio/tabs/tab_activity_history.html' %}
+  {% endblock %}
+
+</div>

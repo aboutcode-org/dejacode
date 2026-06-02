@@ -29,7 +29,6 @@
               <i class="fas fa-plus-circle"></i> {% trans 'Add custom Component' %}
             </button>
           {% endif %}
-          <a class="dropdown-item" href="{{ object.get_license_summary_url }}"><i class="fa fa-book"></i> {% trans 'License summary' %}</a>
           {% if purldb_enabled %}
             <a class="dropdown-item" href="#" id="check-package-versions"><i class="fas fa-arrow-alt-circle-up"></i> {% trans 'Check for new Package versions' %}</a>
           {% endif %}
@@ -143,7 +142,7 @@
   {% if has_edit_productpackage or has_edit_productcomponent %}
     {% include 'product_portfolio/modals/edit_productpackage_modal.html' %}
   {% endif %}
-  {% if tabsets.Imports %}
+  {% if tabsets.Activity %}
     {% include 'product_portfolio/modals/scancode_project_status_modal.html' %}
   {% endif %}
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}

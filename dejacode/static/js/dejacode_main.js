@@ -239,6 +239,43 @@ function setupDismissibleAlerts() {
   });
 }
 
+function setupScrollToTargets() {
+  // Scroll to an in-page section when an element with data-scroll-to is clicked.
+  // The offset accounts for the sticky header via the body's padding-top.
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-scroll-to]');
+    if (!trigger) return;
+    const target = document.getElementById(trigger.dataset.scrollTo);
+    if (!target) return;
+    const offset = parseFloat(getComputedStyle(document.body).paddingTop) || 0;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+}
+
+function setupPaginationKeys() {
+  // Arrow key navigation for the page's own pagination. Pagination living inside
+  // a .tab-content is excluded: arrow keys there belong to the tab's own logic.
+  // Disabled links render as <span> (no href), so querying <a> skips them.
+  const isPageLevel = (link) => link && !link.closest('.tab-content');
+  const previousLink = [...document.querySelectorAll('a.page-link[aria-label="Previous"]')].find(isPageLevel);
+  const nextLink = [...document.querySelectorAll('a.page-link[aria-label="Next"]')].find(isPageLevel);
+  if (!previousLink && !nextLink) return;
+
+  const anyInputHasFocus = () => document.querySelector('input:focus, textarea:focus') !== null;
+
+  document.addEventListener('keydown', (event) => {
+    if (anyInputHasFocus()) return;
+    if (event.key === 'ArrowLeft' && previousLink) {
+      event.preventDefault();
+      window.location.href = previousLink.href;
+    } else if (event.key === 'ArrowRight' && nextLink) {
+      event.preventDefault();
+      window.location.href = nextLink.href;
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -277,4 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupThemeSwitcher();
   setupPlatformHints();
   setupDismissibleAlerts();
+  setupScrollToTargets();
+  setupPaginationKeys();
 });
