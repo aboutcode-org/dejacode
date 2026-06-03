@@ -48,13 +48,13 @@ dev: virtualenv
 	uv sync --frozen --extra dev
 
 outdated:
-	@echo "-> Audit the project's dependencies for known vulnerabilities"
-	uv audit
 	@echo "-> Check for outdated packages (with 7 days cooldown)"
 	uv pip list --outdated \
 		--no-config \
 		--index-url https://pypi.org/simple \
 		--exclude-newer "7 days"
+	@echo "-> Audit the project's dependencies for known vulnerabilities"
+	uv audit
 
 upgrade:
 	@if [ -z "$(PACKAGE)" ]; then \
