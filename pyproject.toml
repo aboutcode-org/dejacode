@@ -141,10 +141,6 @@ dependencies = [
     "cyclonedx-python-lib==11.6.0",
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
-    # Git
-    "gitpython==3.1.50",
-    "gitdb==4.0.12",
-    "smmap==5.0.3",
     # CSAF
     "pydantic==2.12.5",
     "pydantic-core==2.41.5",
