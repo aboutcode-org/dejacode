@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-05-27T06:48:59.018229Z"
+exclude-newer = "2026-05-27T07:06:32.816217Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -341,7 +341,7 @@ requires-dist = [
     { name = "et-xmlfile", specifier = "==2.0.0" },
     { name = "fakeredis", specifier = "==2.35.1" },
     { name = "gitdb", specifier = "==4.0.12" },
-    { name = "gitpython", specifier = "==3.1.49" },
+    { name = "gitpython", specifier = "==3.1.50" },
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "idna", specifier = "==3.18" },
     { name = "inflection", specifier = "==0.5.1" },
@@ -369,7 +369,7 @@ requires-dist = [
     { name = "pyasn1-modules", specifier = "==0.4.2" },
     { name = "pydantic", specifier = "==2.12.5" },
     { name = "pydantic-core", specifier = "==2.41.5" },
-    { name = "pyjwt", specifier = "==2.12.1" },
+    { name = "pyjwt", specifier = "==2.13.0" },
     { name = "pypng", specifier = "==0.20220715.0" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-ldap", specifier = "==3.4.5" },
@@ -383,11 +383,11 @@ requires-dist = [
     { name = "requests", specifier = "==2.34.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "rpds-py", specifier = "==0.30.0" },
-    { name = "rq", specifier = "==2.8.0" },
+    { name = "rq", specifier = "==2.9.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.0" },
     { name = "saneyaml", specifier = "==0.6.1" },
     { name = "semantic-version", specifier = "==2.10.0" },
-    { name = "setuptools", specifier = "==82.0.0" },
+    { name = "setuptools", specifier = "==82.0.1" },
     { name = "setuptools-rust", specifier = "==1.12.0" },
     { name = "setuptools-scm", specifier = "==9.2.2" },
     { name = "six", specifier = "==1.17.0" },
@@ -403,7 +403,7 @@ requires-dist = [
     { name = "webencodings", specifier = "==0.5.1" },
     { name = "wheel", specifier = "==0.47.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
-    { name = "zipp", specifier = "==3.23.0" },
+    { name = "zipp", specifier = "==4.1.0" },
 ]
 provides-extras = ["dev"]
 
@@ -636,13 +636,13 @@ wheels = [
 
 [[package]]
 name = "gitpython"
-version = "3.1.49"
+version = "3.1.50"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "gitdb", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "gitpython-3.1.49-py3-none-any.whl" },
+    { path = "gitpython-3.1.50-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -913,10 +913,10 @@ wheels = [
 
 [[package]]
 name = "pyjwt"
-version = "2.12.1"
+version = "2.13.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pyjwt-2.12.1-py3-none-any.whl" },
+    { path = "pyjwt-2.13.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1051,7 +1051,7 @@ wheels = [
 
 [[package]]
 name = "rq"
-version = "2.8.0"
+version = "2.9.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "click", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -1059,7 +1059,7 @@ dependencies = [
     { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "rq-2.8.0-py3-none-any.whl" },
+    { path = "rq-2.9.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1093,10 +1093,10 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "82.0.0"
+version = "82.0.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "setuptools-82.0.0-py3-none-any.whl" },
+    { path = "setuptools-82.0.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1235,8 +1235,8 @@ wheels = [
 
 [[package]]
 name = "zipp"
-version = "3.23.0"
+version = "4.1.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "zipp-3.23.0-py3-none-any.whl" },
+    { path = "zipp-4.1.0-py3-none-any.whl" },
 ]
