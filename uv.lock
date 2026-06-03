@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-27T11:37:45.819719Z"
+exclude-newer = "2026-05-27T06:48:59.018229Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -95,10 +95,10 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.4.22"
+version = "2026.5.20"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "certifi-2026.4.22-py3-none-any.whl" },
+    { path = "certifi-2026.5.20-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -311,7 +311,7 @@ requires-dist = [
     { name = "bleach", specifier = "==6.3.0" },
     { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
-    { name = "certifi", specifier = "==2026.4.22" },
+    { name = "certifi", specifier = "==2026.5.20" },
     { name = "charset-normalizer", specifier = "==3.4.7" },
     { name = "clamd", specifier = "==1.0.2" },
     { name = "click", specifier = "==8.3.3" },
@@ -321,7 +321,7 @@ requires-dist = [
     { name = "cyclonedx-python-lib", specifier = "==11.6.0" },
     { name = "cython", specifier = "==3.2.4" },
     { name = "defusedxml", specifier = "==0.7.1" },
-    { name = "django", specifier = "==6.0.4" },
+    { name = "django", specifier = "==6.0.5" },
     { name = "django-altcha", specifier = "==0.10.0" },
     { name = "django-auth-ldap", specifier = "==5.3.0" },
     { name = "django-axes", specifier = "==8.3.1" },
@@ -342,8 +342,8 @@ requires-dist = [
     { name = "fakeredis", specifier = "==2.35.1" },
     { name = "gitdb", specifier = "==4.0.12" },
     { name = "gitpython", specifier = "==3.1.49" },
-    { name = "gunicorn", specifier = "==25.3.0" },
-    { name = "idna", specifier = "==3.11" },
+    { name = "gunicorn", specifier = "==26.0.0" },
+    { name = "idna", specifier = "==3.18" },
     { name = "inflection", specifier = "==0.5.1" },
     { name = "jinja2", specifier = "==3.1.6" },
     { name = "jsonfield", specifier = "==3.2.0" },
@@ -362,7 +362,7 @@ requires-dist = [
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.2" },
-    { name = "pip", specifier = "==26.1" },
+    { name = "pip", specifier = "==26.1.2" },
     { name = "psycopg", specifier = "==3.3.4" },
     { name = "py-serializable", specifier = "==2.1.0" },
     { name = "pyasn1", specifier = "==0.6.3" },
@@ -380,7 +380,7 @@ requires-dist = [
     { name = "qrcode", specifier = "==8.2" },
     { name = "redis", specifier = "==7.4.0" },
     { name = "referencing", specifier = "==0.37.0" },
-    { name = "requests", specifier = "==2.33.0" },
+    { name = "requests", specifier = "==2.34.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "rpds-py", specifier = "==0.30.0" },
     { name = "rq", specifier = "==2.8.0" },
@@ -399,7 +399,7 @@ requires-dist = [
     { name = "typing-extensions", specifier = "==4.15.0" },
     { name = "typing-inspection", specifier = "==0.4.2" },
     { name = "uritemplate", specifier = "==4.2.0" },
-    { name = "urllib3", specifier = "==2.6.3" },
+    { name = "urllib3", specifier = "==2.7.0" },
     { name = "webencodings", specifier = "==0.5.1" },
     { name = "wheel", specifier = "==0.47.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
@@ -409,14 +409,14 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "django"
-version = "6.0.4"
+version = "6.0.5"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "asgiref", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "django-6.0.4-py3-none-any.whl" },
+    { path = "django-6.0.5-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -647,21 +647,21 @@ wheels = [
 
 [[package]]
 name = "gunicorn"
-version = "25.3.0"
+version = "26.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "gunicorn-25.3.0-py3-none-any.whl" },
+    { path = "gunicorn-26.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "idna"
-version = "3.11"
+version = "3.18"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "idna-3.11-py3-none-any.whl" },
+    { path = "idna-3.18-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -840,10 +840,10 @@ wheels = [
 
 [[package]]
 name = "pip"
-version = "26.1"
+version = "26.1.2"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pip-26.1-py3-none-any.whl" },
+    { path = "pip-26.1.2-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1015,7 +1015,7 @@ wheels = [
 
 [[package]]
 name = "requests"
-version = "2.33.0"
+version = "2.34.2"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "certifi", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -1024,7 +1024,7 @@ dependencies = [
     { name = "urllib3", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "requests-2.33.0-py3-none-any.whl" },
+    { path = "requests-2.34.2-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1200,10 +1200,10 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.6.3"
+version = "2.7.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "urllib3-2.6.3-py3-none-any.whl" },
+    { path = "urllib3-2.7.0-py3-none-any.whl" },
 ]
 
 [[package]]
