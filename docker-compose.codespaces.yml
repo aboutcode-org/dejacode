@@ -1,0 +1,38 @@
+name: dejacode
+services:
+  db:
+    image: docker.io/library/postgres:16.13
+    env_file:
+      - docker.env
+    volumes:
+      - ./data/postgresql:/docker-entrypoint-initdb.d/
+    shm_size: "1gb"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: docker.io/library/redis:8.6-alpine
+    command: redis-server --appendonly yes
+
+  web:
+    image: ghcr.io/aboutcode-org/dejacode:latest
+    command: sh -c "
+        ./manage.py migrate --check || ./manage.py migrate;
+        ./manage.py runserver --insecure --skip-checks 0.0.0.0:8000"
+    env_file:
+      - docker.env
+    environment:
+      SECRET_KEY: "insecure-demo-key"
+      ALLOWED_HOSTS: "*"
+      DEJACODE_ASYNC: "False"
+      CLAMD_ENABLED: "False"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
