@@ -2,10 +2,13 @@
   "name": "dejacode-demo",
   "dockerComposeFile": "../docker-compose.codespaces.yml",
   "service": "web",
-  "workspaceFolder": "/opt/dejacode",
+  "workspaceFolder": "/workspaces/dejacode",
   "overrideCommand": false,
   "forwardPorts": [8000],
   "portsAttributes": {
-    "8000": { "label": "DejaCode", "onAutoForward": "openPreview" }
+    "8000": {
+      "label": "DejaCode",
+      "onAutoForward": "openBrowser"
+    }
   }
 }
