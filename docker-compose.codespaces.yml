@@ -27,6 +27,7 @@ services:
     environment:
       SECRET_KEY: "insecure-demo-key"
       ALLOWED_HOSTS: "*"
+      CSRF_TRUSTED_ORIGINS: "https://*.app.github.dev"
       DEJACODE_ASYNC: "False"
       CLAMD_ENABLED: "False"
     ports:

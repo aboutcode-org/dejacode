@@ -2,7 +2,7 @@
   "name": "dejacode-demo",
   "dockerComposeFile": "../docker-compose.codespaces.yml",
   "service": "web",
-  "workspaceFolder": "/workspaces/dejacode",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
   "forwardPorts": [8000],
   "portsAttributes": {
