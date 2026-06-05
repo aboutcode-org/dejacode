@@ -6,7 +6,12 @@ DejaCode provides an enterprise-level application to automate open source licens
 compliance and ensure software supply chain integrity, powered by `ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
 the industry-leading code scanner.
 
-`Demo <https://codespaces.new/aboutcode-org/dejacode>`_
+Demo DejaCode in GitHub Codespaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: https://github.com/codespaces/badge.svg
+   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdevcontainer.json&quickstart=true
+   :alt: Open in GitHub Codespaces
 
 Why Use DejaCode?
 =================

@@ -4,11 +4,21 @@
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "chat.disableAIFeatures": true,
+        "workbench.startupEditor": "none",
+        "workbench.tips.enabled": false,
+        "git.openRepositoryInParentFolders": "never"
+      }
+    }
+  },
   "forwardPorts": [8000],
   "portsAttributes": {
     "8000": {
       "label": "DejaCode",
-      "onAutoForward": "openBrowser"
+      "onAutoForward": "openPreview"
     }
   }
 }
