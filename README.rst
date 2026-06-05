@@ -6,13 +6,6 @@ DejaCode provides an enterprise-level application to automate open source licens
 compliance and ensure software supply chain integrity, powered by `ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
 the industry-leading code scanner.
 
-Demo DejaCode in GitHub Codespaces
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. image:: https://github.com/codespaces/badge.svg
-   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdevcontainer.json&quickstart=true
-   :alt: Open in GitHub Codespaces
-
 Why Use DejaCode?
 =================
 
@@ -20,6 +13,28 @@ DejaCode is your system of record as a single source of truth with quality data 
 licenses, vulnerabilities, and package provenance and metadata, enabling you to ensure 
 FOSS compliance with enterprise-grade features and integrations for DevOps and 
 software systems.
+
+Try DejaCode in GitHub Codespaces
+=================================
+
+You can try DejaCode instantly in your browser, without installing anything,
+using GitHub Codespaces. Click the badge below to launch a ready-to-use demo
+instance: the application starts automatically, with a demo account already
+created for you.
+
+.. image:: https://github.com/codespaces/badge.svg
+   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdevcontainer.json&quickstart=true
+   :alt: Open in GitHub Codespaces
+
+Once you click the badge, confirm the creation of the Codespace.
+Wait for the environment to finish starting: a notification will offer to open it
+in your browser.
+You can also open it at any time from the Ports tab by clicking the globe icon next
+to port 8000.
+
+Log in with the demo credentials shown on the login page. This demo instance is
+ephemeral and meant for evaluation only: data is not preserved, and the instance
+shuts down after a period of inactivity.
 
 Getting Started
 ===============
