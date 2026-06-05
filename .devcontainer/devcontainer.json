@@ -4,6 +4,7 @@
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
+  "postAttachCommand": "printf '\\n\\n  DejaCode:  https://%s-8000.%s\\n\\n' \"$CODESPACE_NAME\" \"$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN\"",
   "customizations": {
     "codespaces": {
       "openFiles": []
@@ -19,7 +20,7 @@
   "portsAttributes": {
     "8000": {
       "label": "DejaCode",
-      "onAutoForward": "openBrowser"
+      "onAutoForward": "notify"
     }
   }
 }

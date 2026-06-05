@@ -28,7 +28,7 @@ services:
       SECRET_KEY: "insecure-demo-key"
       DEJACODE_DEBUG: "True"
       ALLOWED_HOSTS: "*"
-      CSRF_TRUSTED_ORIGINS: "https://*.app.github.dev"
+      CSRF_TRUSTED_ORIGINS: "https://*.app.github.dev,http://localhost:8000"
       DEJACODE_ASYNC: "False"
       CLAMD_ENABLED: "False"
     ports:
