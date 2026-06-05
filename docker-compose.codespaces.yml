@@ -34,8 +34,8 @@ services:
       CLAMD_ENABLED: "False"
       DJANGO_SUPERUSER_USERNAME: "demo"
       DJANGO_SUPERUSER_EMAIL: "demo@example.com"
-      DJANGO_SUPERUSER_PASSWORD: "demo-pass"
-      LOGIN_FORM_ALERT: "Username: ${DJANGO_SUPERUSER_USERNAME} / Password: ${DJANGO_SUPERUSER_PASSWORD}"
+      DJANGO_SUPERUSER_PASSWORD: "demo"
+      LOGIN_FORM_ALERT: "Username: demo / Password: demo"
     ports:
       - "8000:8000"
     depends_on:
