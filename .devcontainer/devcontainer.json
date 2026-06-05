@@ -5,12 +5,13 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
   "customizations": {
+    "codespaces": {
+      "openFiles": []
+    },
     "vscode": {
       "settings": {
         "chat.disableAIFeatures": true,
-        "workbench.startupEditor": "none",
-        "workbench.tips.enabled": false,
-        "git.openRepositoryInParentFolders": "never"
+        "workbench.startupEditor": "none"
       }
     }
   },
@@ -18,7 +19,7 @@
   "portsAttributes": {
     "8000": {
       "label": "DejaCode",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openBrowser"
     }
   }
 }

@@ -26,7 +26,7 @@ services:
       - docker.env
     environment:
       SECRET_KEY: "insecure-demo-key"
-      DEBUG: "True"
+      DEJACODE_DEBUG: "True"
       ALLOWED_HOSTS: "*"
       CSRF_TRUSTED_ORIGINS: "https://*.app.github.dev"
       DEJACODE_ASYNC: "False"
