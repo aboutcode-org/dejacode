@@ -202,8 +202,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool("SECURE_CONTENT_TYPE_NOSNIFF", default=Tr
 SECURE_CROSS_ORIGIN_OPENER_POLICY = env.str(
     "SECURE_CROSS_ORIGIN_OPENER_POLICY", default="same-origin"
 )
+X_FRAME_OPTIONS = env.str("X_FRAME_OPTIONS", default="DENY")
 
-X_FRAME_OPTIONS = "DENY"
 # Note: The CSRF_COOKIE_HTTPONLY cannot be activated yet without breaking all
 # the AJAX (POST, PUT, etc..) requests, like the annotation system for example.
 # It will be required to configure the following:
