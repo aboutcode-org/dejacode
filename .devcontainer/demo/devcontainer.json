@@ -1,9 +1,16 @@
 {
-  "name": "dejacode-demo",
-  "dockerComposeFile": "../docker-compose.codespaces.yml",
+  "name": "DejaCode Demo (Codespaces only)",
+  "dockerComposeFile": "../../docker-compose.demo.yml",
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "DejaCode",
+      "onAutoForward": "notify"
+    }
+  },
   "customizations": {
     "codespaces": {
       "openFiles": []
@@ -15,13 +22,6 @@
         "workbench.tips.enabled": false,
         "git.openRepositoryInParentFolders": "never"
       }
-    }
-  },
-  "forwardPorts": [8000],
-  "portsAttributes": {
-    "8000": {
-      "label": "DejaCode",
-      "onAutoForward": "notify"
     }
   }
 }

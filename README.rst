@@ -23,7 +23,7 @@ instance: the application starts automatically, with a demo account already
 created for you.
 
 .. image:: https://github.com/codespaces/badge.svg
-   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdevcontainer.json&quickstart=true
+   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdemo%2Fdevcontainer.json&quickstart=true
    :alt: Open in GitHub Codespaces
 
 Once you click the badge, confirm the creation of the Codespace.
