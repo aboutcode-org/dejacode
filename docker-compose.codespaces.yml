@@ -20,8 +20,9 @@ services:
   web:
     image: ghcr.io/aboutcode-org/dejacode:latest
     command: sh -c "
-        ./manage.py migrate --check || ./manage.py migrate;
-        ./manage.py runserver --insecure --skip-checks 0.0.0.0:8000"
+      ./manage.py migrate &&
+      (./manage.py createsuperuser --noinput || true) &&
+      ./manage.py runserver --insecure --skip-checks 0.0.0.0:8000"
     env_file:
       - docker.env
     environment:
@@ -31,6 +32,10 @@ services:
       CSRF_TRUSTED_ORIGINS: "https://*.app.github.dev,http://localhost:8000"
       DEJACODE_ASYNC: "False"
       CLAMD_ENABLED: "False"
+      DJANGO_SUPERUSER_USERNAME: "demo"
+      DJANGO_SUPERUSER_EMAIL: "demo@example.com"
+      DJANGO_SUPERUSER_PASSWORD: "demo-pass"
+      LOGIN_FORM_ALERT: "Username: ${DJANGO_SUPERUSER_USERNAME} / Password: ${DJANGO_SUPERUSER_PASSWORD}"
     ports:
       - "8000:8000"
     depends_on:
