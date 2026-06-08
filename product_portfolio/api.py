@@ -243,6 +243,11 @@ class LoadSBOMsFormSerializer(serializers.Serializer):
         default=False,
         help_text=LoadSBOMsForm.base_fields["scan_all_packages"].help_text,
     )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=LoadSBOMsForm.base_fields["create_dependencies"].help_text,
+    )
 
 
 class ImportManifestsFormSerializer(serializers.Serializer):
@@ -268,6 +273,11 @@ class ImportManifestsFormSerializer(serializers.Serializer):
         default=False,
         help_text=ImportManifestsForm.base_fields["scan_all_packages"].help_text,
     )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportManifestsForm.base_fields["create_dependencies"].help_text,
+    )
 
 
 class ImportFromScanSerializer(serializers.Serializer):
@@ -280,6 +290,11 @@ class ImportFromScanSerializer(serializers.Serializer):
         required=False,
         default=False,
         help_text=ImportFromScanForm.base_fields["create_codebase_resources"].help_text,
+    )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportFromScanForm.base_fields["create_dependencies"].help_text,
     )
     stop_on_error = serializers.BooleanField(
         required=False,
@@ -299,6 +314,11 @@ class PullProjectDataSerializer(serializers.Serializer):
         required=False,
         default=False,
         help_text=PullProjectDataForm.base_fields["update_existing_packages"].help_text,
+    )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=PullProjectDataForm.base_fields["create_dependencies"].help_text,
     )
 
 

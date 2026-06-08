@@ -14,7 +14,7 @@ import warnings
 from contextlib import suppress
 from pathlib import Path
 
-VERSION = "5.7.1"
+VERSION = "5.8.0"
 
 PROJECT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = PROJECT_DIR.parent

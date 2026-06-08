@@ -1712,6 +1712,14 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     infer_download_urls = models.BooleanField(
         default=False,
     )
+    import_options = models.JSONField(
+        blank=True,
+        default=dict,
+        help_text=_(
+            "A dictionary of options used to configure the import process. "
+            "New options can be added here without requiring a database migration."
+        ),
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -1773,6 +1781,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             update_existing=self.update_existing_packages,
             scan_all_packages=self.scan_all_packages,
             infer_download_urls=self.infer_download_urls,
+            create_dependencies=self.import_options.get("create_dependencies", False),
         )
         created, existing, errors = importer.save()
 

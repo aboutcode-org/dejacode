@@ -16,6 +16,7 @@ include
 .settings
 TAGS
 .idea
+.vscode
 Include
 Lib
 .env
