@@ -22,7 +22,7 @@ using GitHub Codespaces. The badge below launches a ready-to-use demo instance:
 the application starts automatically, with a demo account already created for you.
 
 .. image:: https://github.com/codespaces/badge.svg
-   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=dejacode-demo&devcontainer_path=.devcontainer%2Fdemo%2Fdevcontainer.json&quickstart=true
+   :target: https://github.com/codespaces/new/aboutcode-org/dejacode?ref=main&devcontainer_path=.devcontainer%2Fdemo%2Fdevcontainer.json&quickstart=true
    :alt: Open in GitHub Codespaces
 
 #. **Click** the badge above and **confirm** the creation of the Codespace.
@@ -32,7 +32,7 @@ the application starts automatically, with a demo account already created for yo
    from the **Ports** tab by clicking the globe icon next to port ``8000``.
 #. **Log in** with the demo credentials shown on the login page.
 
-.. note::
+**Note:**
    This demo instance is **ephemeral** and meant for evaluation only. Data is not
    preserved, and the instance shuts down after a period of inactivity.
 
