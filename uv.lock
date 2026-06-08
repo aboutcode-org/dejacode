@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-01T14:41:03.211132Z"
+exclude-newer = "2026-06-01T14:48:33.14439Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -336,7 +336,7 @@ requires-dist = [
     { name = "djangorestframework", specifier = "==3.16.1" },
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
-    { name = "fakeredis", specifier = "==2.35.1" },
+    { name = "fakeredis", specifier = "==2.36.0" },
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "idna", specifier = "==3.18" },
     { name = "inflection", specifier = "==0.5.1" },
@@ -345,7 +345,7 @@ requires-dist = [
     { name = "jsonschema", specifier = "==4.26.0" },
     { name = "jsonschema-specifications", specifier = "==2025.9.1" },
     { name = "license-expression", specifier = "==30.4.4" },
-    { name = "lxml", specifier = "==6.1.0" },
+    { name = "lxml", specifier = "==6.1.1" },
     { name = "markdown", specifier = "==3.10.2" },
     { name = "markupsafe", specifier = "==3.0.3" },
     { name = "maturin", specifier = "==1.11.5" },
@@ -607,14 +607,14 @@ wheels = [
 
 [[package]]
 name = "fakeredis"
-version = "2.35.1"
+version = "2.36.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "redis", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "fakeredis-2.35.1-py3-none-any.whl" },
+    { path = "fakeredis-2.36.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -704,11 +704,11 @@ wheels = [
 
 [[package]]
 name = "lxml"
-version = "6.1.0"
+version = "6.1.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "lxml-6.1.0-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "lxml-6.1.0-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "lxml-6.1.1-cp314-cp314-macosx_10_15_universal2.whl" },
+    { path = "lxml-6.1.1-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]

@@ -78,7 +78,7 @@ dependencies = [
     "rq==2.9.0",
     "croniter==6.2.2",
     "django-rq==3.2.2",
-    "fakeredis==2.35.1",
+    "fakeredis==2.36.0",
     # Libs
     "certifi==2026.5.20",
     "urllib3==2.7.0",
@@ -153,7 +153,7 @@ dependencies = [
     "msgspec==0.20.0",
     # OpenDocument Format
     "odfdo==3.22.0",
-    "lxml==6.1.0",
+    "lxml==6.1.1",
 ]
 
 [project.optional-dependencies]
