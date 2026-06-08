@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
 import tempfile
 import uuid
 from pathlib import Path
@@ -908,6 +909,36 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual(expected, warnings)
         self.assertEqual({"Packages": 1, "Product Packages": 1}, created_counts)
 
+    def test_product_portfolio_product_import_from_scan_create_dependencies(self):
+        scan_input_location = self.testfiles_path / "import_from_scan_with_dependencies.json"
+
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(
+            self.product1, self.super_user, upload_file, create_dependencies=False
+        )
+        importer.save()
+        package = self.product1.packages.get()
+        self.assertEqual([], package.dependencies)
+
+        package.productpackages.all().delete()
+        package.delete()
+
+        upload_file = wrap_as_temp_uploaded_file(scan_input_location)
+        importer = ImportFromScan(
+            self.product1, self.super_user, upload_file, create_dependencies=True
+        )
+        importer.save()
+        package = self.product1.packages.get()
+        expected_dependency = {
+            "purl": "pkg:npm/lodash@4.17.21",
+            "scope": "runtime",
+            "is_runtime": True,
+            "is_optional": False,
+            "is_pinned": True,
+            "for_package_uid": "pkg:npm/test-package@1?uuid=9779a0ea-ef30-4a05-b4db-0a0ba3b3507c",
+        }
+        self.assertEqual([expected_dependency], json.loads(package.dependencies))
+
     def test_product_portfolio_product_import_from_scan_view_base(self):
         self.client.login(username=self.super_user.username, password="secret")
         scan_input_location = self.testfiles_path / "import_from_scan.json"
@@ -1012,6 +1043,7 @@ class ProductImportFromScanTestCase(TestCase):
             project_uuid=uuid.uuid4(),
             product=self.product1,
             infer_download_urls=True,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         created_package_package_url = created.get("package")[0]
@@ -1041,6 +1073,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
@@ -1059,6 +1092,56 @@ class ProductImportFromScanTestCase(TestCase):
             )
             importer.save()
             mock_fetch.assert_called()
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scancodeio_create_dependencies(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        purl = "pkg:maven/abc/abc@1.0"
+        mock_fetch_packages.return_value = [
+            {
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "purl": purl,
+            }
+        ]
+        dependency_uid = "pkg:pypi/requests@2.0?uuid=test-dep"
+        mock_fetch_dependencies.return_value = [
+            {
+                "purl": "pkg:pypi/requests@2.0",
+                "dependency_uid": dependency_uid,
+                "for_package_uid": None,
+                "resolved_to_package_uid": None,
+                "scope": "install",
+                "is_runtime": True,
+                "is_optional": False,
+                "is_pinned": False,
+                "is_direct": True,
+                "datasource_id": "pypi_setup_cfg",
+                "affected_by_vulnerabilities": [],
+            }
+        ]
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+            create_dependencies=False,
+        )
+        importer.save()
+        self.assertEqual(0, self.product1.dependencies.count())
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+            create_dependencies=True,
+        )
+        importer.save()
+        self.assertEqual(1, self.product1.dependencies.count())
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
@@ -1206,6 +1289,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         expected = {
@@ -1223,6 +1307,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
@@ -1244,6 +1329,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
