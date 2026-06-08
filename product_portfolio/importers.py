@@ -383,13 +383,20 @@ class CodebaseResourceImporter(BaseImporter):
 
 class ImportFromScan:
     def __init__(
-        self, product, user, upload_file, create_codebase_resources=True, stop_on_error=False
+        self,
+        product,
+        user,
+        upload_file,
+        create_codebase_resources=True,
+        create_dependencies=False,
+        stop_on_error=False,
     ):
         self.product = product
         self.dataspace = product.dataspace
         self.user = user
         self.upload_file = upload_file
         self.create_codebase_resources = create_codebase_resources
+        self.create_dependencies = create_dependencies
         self.stop_on_error = stop_on_error
 
         self.data = {}
@@ -475,17 +482,21 @@ class ImportFromScan:
                 '"packages" is empty in the uploaded json file.'
             )
 
-        dependencies = self.data.get("dependencies", [])
         dependencies_by_package_uid = defaultdict(list)
-        for dependency in dependencies:
-            for_package_uid = dependency.get("for_package_uid")
-            dependencies_by_package_uid[for_package_uid].append(dependency)
+        if self.create_dependencies:
+            dependencies = self.data.get("dependencies", [])
+            for dependency in dependencies:
+                for_package_uid = dependency.get("for_package_uid")
+                dependencies_by_package_uid[for_package_uid].append(dependency)
 
         for package_data in packages:
             package_uid = package_data.get("package_uid")
-            package_dependencies = package_data.get("dependencies", [])
-            if not package_dependencies:
-                package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
+            if self.create_dependencies:
+                package_dependencies = package_data.get("dependencies", [])
+                if not package_dependencies:
+                    package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
+            else:
+                package_data.pop("dependencies", None)
 
             prepared = PackageImporter.prepare_package(package_data, path="/")
             if not prepared:
@@ -658,6 +669,7 @@ class ImportPackageFromScanCodeIO:
         update_existing=False,
         scan_all_packages=False,
         infer_download_urls=False,
+        create_dependencies=False,
     ):
         self.licensing = Licensing()
         self.created = defaultdict(list)
@@ -672,6 +684,7 @@ class ImportPackageFromScanCodeIO:
         self.update_existing = update_existing
         self.scan_all_packages = scan_all_packages
         self.infer_download_urls = infer_download_urls
+        self.create_dependencies = create_dependencies
 
         scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
@@ -681,7 +694,8 @@ class ImportPackageFromScanCodeIO:
 
     def save(self):
         self.import_packages()
-        self.import_dependencies()
+        if self.create_dependencies:
+            self.import_dependencies()
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
