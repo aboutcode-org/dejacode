@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-01T14:48:33.14439Z"
+exclude-newer = "2026-06-01T14:55:56.000049Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -191,7 +191,7 @@ wheels = [
 
 [[package]]
 name = "dejacode"
-version = "5.7.1"
+version = "5.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "aboutcode-toolkit", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
