@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "5.7.1"
+version = "5.8.0"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.14,<3.15"
@@ -36,7 +36,7 @@ dependencies = [
     "packaging==26.2",
     "pip==26.1.2",
     # Django
-    "django==6.0.5",
+    "django==6.0.6",
     "asgiref==3.11.1",
     "typing_extensions==4.15.0",
     "sqlparse==0.5.5",
@@ -69,7 +69,7 @@ dependencies = [
     # Database
     "psycopg==3.3.4",
     # Cache
-    "redis==7.4.0",
+    "redis==8.0.0",
     # Antivirus
     "clamd==1.0.2",
     # Testing
@@ -78,7 +78,7 @@ dependencies = [
     "rq==2.9.0",
     "croniter==6.2.2",
     "django-rq==3.2.2",
-    "fakeredis==2.35.1",
+    "fakeredis==2.36.0",
     # Libs
     "certifi==2026.5.20",
     "urllib3==2.7.0",
@@ -153,13 +153,13 @@ dependencies = [
     "msgspec==0.20.0",
     # OpenDocument Format
     "odfdo==3.22.0",
-    "lxml==6.1.0",
+    "lxml==6.1.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     # Linter and Validation
-    "ruff==0.15.0",
+    "ruff==0.15.14",
     # Parallel testing
     "tblib==3.2.2"
 ]
