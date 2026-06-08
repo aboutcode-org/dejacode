@@ -498,7 +498,9 @@ class ImportFromScan:
 
         for package_data in packages:
             package_uid = package_data.get("package_uid")
-            self._handle_package_dependencies(package_data, package_uid, dependencies_by_package_uid)
+            self._handle_package_dependencies(
+                package_data, package_uid, dependencies_by_package_uid
+            )
 
             prepared = PackageImporter.prepare_package(package_data, path="/")
             if not prepared:
