@@ -472,6 +472,13 @@ class ImportFromScan:
             options_str = " ".join(missing_options)
             raise ValidationError(f"The Scan run is missing those required options: {options_str}")
 
+    def _handle_package_dependencies(self, package_data, package_uid, dependencies_by_package_uid):
+        if self.create_dependencies:
+            if not package_data.get("dependencies"):
+                package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
+        else:
+            package_data.pop("dependencies", None)
+
     def import_packages(self):
         product_packages_count = 0
         packages_count = 0
@@ -491,12 +498,7 @@ class ImportFromScan:
 
         for package_data in packages:
             package_uid = package_data.get("package_uid")
-            if self.create_dependencies:
-                package_dependencies = package_data.get("dependencies", [])
-                if not package_dependencies:
-                    package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
-            else:
-                package_data.pop("dependencies", None)
+            self._handle_package_dependencies(package_data, package_uid, dependencies_by_package_uid)
 
             prepared = PackageImporter.prepare_package(package_data, path="/")
             if not prepared:
