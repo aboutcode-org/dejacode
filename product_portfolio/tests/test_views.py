@@ -3214,6 +3214,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             dataspace=self.product1.dataspace,
             type=ScanCodeProject.ProjectType.LOAD_SBOMS,
             created_by=self.super_user,
+            import_options={"create_dependencies": True},
         )
 
         view_name = "product_portfolio:import_packages_from_scancodeio"

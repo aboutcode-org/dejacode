@@ -1043,6 +1043,7 @@ class ProductImportFromScanTestCase(TestCase):
             project_uuid=uuid.uuid4(),
             product=self.product1,
             infer_download_urls=True,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         created_package_package_url = created.get("package")[0]
@@ -1072,6 +1073,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
@@ -1287,6 +1289,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         expected = {
@@ -1304,6 +1307,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
@@ -1325,6 +1329,7 @@ class ProductImportFromScanTestCase(TestCase):
             user=self.super_user,
             project_uuid=uuid.uuid4(),
             product=self.product1,
+            create_dependencies=True,
         )
         created, existing, errors = importer.save()
         self.assertEqual({}, created)
