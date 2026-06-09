@@ -18,11 +18,14 @@ run:
 	@echo "-> Run the Docker compose services in dev mode (hot reload on code changes)"
 	${COMPOSE} up
 
+superuser:
+	${MANAGE} createsuperuser
+
 ########################################################################################
 
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
-MANAGE=${VENV_LOCATION}/bin/python manage.py
+#MANAGE=${VENV_LOCATION}/bin/python manage.py
 # Do not depend on Python to generate the SECRET_KEY
 GET_SECRET_KEY=`head -c50 /dev/urandom | base64 | head -c50`
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
@@ -208,7 +211,4 @@ psql:
 log:
 	${DOCKER_COMPOSE} logs --tail="100" ${SERVICE}
 
-createsuperuser:
-	${DOCKER_EXEC} web ./manage.py createsuperuser
-
-.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log createsuperuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log superuser
