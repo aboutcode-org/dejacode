@@ -110,7 +110,7 @@ To completely remove DejaCode and all its data::
 .. _run_with_docker_build:
 
 Run with Docker — build from source
-=====================================
+===================================
 
 This method builds the Docker image locally from the DejaCode source repository.
 It is the recommended approach for enterprise deployments.

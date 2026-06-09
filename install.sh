@@ -92,7 +92,7 @@ docker compose up -d
 # ── Wait for web to respond ───────────────────────────────────────────────────
 info "Waiting for DejaCode to be ready"
 RETRIES=40
-until curl -fsS --max-time 5 http://localhost/ -o /dev/null 2>&1; do
+until curl -fsS --max-time 5 http://localhost/ -o /dev/null 2>/dev/null; do
     RETRIES=$((RETRIES - 1))
     [ $RETRIES -eq 0 ] && die "Timed out waiting for DejaCode to start. Run: dejacode logs"
     echo -n "."
