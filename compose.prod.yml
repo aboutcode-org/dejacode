@@ -1,0 +1,27 @@
+name: dejacode
+
+x-description: "Production overrides — external config bind mounts for prod/staging deployments"
+
+services:
+  web:
+    build: .
+    image: dejacode:prod
+    volumes:
+      - /etc/dejacode/:/etc/dejacode/
+
+  worker:
+    build: .
+    image: dejacode:prod
+    volumes:
+      - /etc/dejacode/:/etc/dejacode/
+
+  scheduler:
+    build: .
+    image: dejacode:prod
+    volumes:
+      - /etc/dejacode/:/etc/dejacode/
+
+  nginx:
+    configs: []
+    volumes:
+      - ./etc/nginx/conf.d/:/etc/nginx/conf.d/
