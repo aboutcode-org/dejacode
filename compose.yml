@@ -1,0 +1,135 @@
+name: dejacode
+
+x-description: "Full DejaCode stack: all services, pre-built image, no checkout required"
+
+services:
+  db:
+    image: docker.io/library/postgres:16.13
+    env_file:
+      - docker.env
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+      - ./data/postgresql:/docker-entrypoint-initdb.d/
+    shm_size: "1gb"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: docker.io/library/redis:8.6-alpine
+    # Enable redis data persistence using the "Append Only File" with the
+    # default policy of fsync every second. See https://redis.io/topics/persistence
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  web:
+    image: ghcr.io/aboutcode-org/dejacode:latest
+    command: sh -c "
+        ./manage.py migrate &&
+        ./manage.py collectstatic --no-input --verbosity 0 --clear &&
+        gunicorn dejacode.wsgi:application --bind :8000 --timeout 600 \
+          --workers 4 --worker-tmp-dir /dev/shm"
+    env_file:
+      - docker.env
+    expose:
+      - 8000
+    volumes:
+      - .env:/opt/dejacode/.env
+      - static:/var/dejacode/static
+      - media:/var/dejacode/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      clamav:
+        condition: service_started
+
+  worker:
+    image: ghcr.io/aboutcode-org/dejacode:latest
+    # Ensure that potential db migrations run first by waiting until "web" is up
+    command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
+      ./manage.py rqworker-pool --num-workers 2 --verbosity 1"
+    env_file:
+      - docker.env
+    volumes:
+      - .env:/opt/dejacode/.env
+      # The media volume is required to access uploaded files from the worker
+      - media:/var/dejacode/media
+    depends_on:
+      - redis
+      - db
+      - web
+
+  scheduler:
+    image: ghcr.io/aboutcode-org/dejacode:latest
+    command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs"
+    env_file:
+      - docker.env
+    volumes:
+      - .env:/opt/dejacode/.env
+    depends_on:
+      - redis
+      - db
+      - web
+
+  nginx:
+    image: docker.io/library/nginx:1.29-alpine
+    ports:
+      - "${NGINX_PUBLISHED_HTTP_PORT:-80}:80"
+      - "${NGINX_PUBLISHED_HTTPS_PORT:-443}:443"
+    volumes:
+      - static:/var/dejacode/static/
+      - webroot:/var/www/html/
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+    restart: always
+
+  clamav:
+    image: docker.io/clamav/clamav:1.5_base
+    volumes:
+      - clamav_data:/var/lib/clamav
+      - media:/var/dejacode/media
+    restart: always
+
+volumes:
+  db_data:
+  redis_data:
+  clamav_data:
+  static:
+  media:
+  webroot:
+
+configs:
+  nginx_conf:
+    content: |
+      upstream gunicorn_app {
+          server web:8000;
+      }
+      server {
+          listen 80;
+          http2 on;
+          server_tokens off;
+          gzip on;
+          gzip_comp_level 6;
+          gzip_types text/css text/javascript application/javascript image/svg+xml;
+          location / {
+              proxy_pass http://gunicorn_app;
+              proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+              proxy_set_header Host $$http_host;
+              proxy_redirect off;
+              client_max_body_size 1G;
+              proxy_read_timeout 600s;
+          }
+          location /static/ {
+              alias /var/dejacode/static/;
+          }
+      }
