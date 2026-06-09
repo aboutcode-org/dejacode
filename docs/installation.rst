@@ -54,11 +54,11 @@ This script will:
     ``DEJACODE_HOME=/path/to/dir bash install.sh``
 
 3. Create an application user
-------------------------------
+-----------------------------
 
 ::
 
-    dejacode createsuperuser
+    dejacode exec web ./manage.py createsuperuser
 
 Follow the prompt instructions, providing the required information:
 
@@ -67,7 +67,7 @@ Follow the prompt instructions, providing the required information:
 - **Strong Password**: Create a password following security guidelines.
 
 4. Access the application
---------------------------
+-------------------------
 
 .. admonition:: Congratulations!
    :class: tip
@@ -81,6 +81,31 @@ Follow the prompt instructions, providing the required information:
 .. note::
     The pre-built image always corresponds to the most recent release and is tagged
     ``latest``.
+
+.. _dejacode_command:
+
+Managing your installation
+--------------------------
+
+The ``dejacode`` command is a thin wrapper around ``docker compose``. All standard
+``docker compose`` subcommands work directly::
+
+    dejacode up -d          # start all services in the background
+    dejacode down           # stop and remove containers
+    dejacode restart        # restart all services
+    dejacode ps             # show service status
+    dejacode logs -f        # follow all logs
+    dejacode logs -f web    # follow logs for a specific service
+    dejacode pull           # pull the latest image
+    dejacode exec web ./manage.py createsuperuser
+
+To update DejaCode to the latest release::
+
+    dejacode pull && dejacode up -d
+
+To completely remove DejaCode and all its data::
+
+    dejacode uninstall
 
 .. _run_with_docker_build:
 

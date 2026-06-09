@@ -43,9 +43,26 @@ printf 'SECRET_KEY=%s\nALLOWED_HOSTS=localhost\nCSRF_TRUSTED_ORIGINS=http://loca
 # ── Install wrapper command ───────────────────────────────────────────────────
 info "Installing dejacode command to $WRAPPER"
 mkdir -p "$BIN_DIR"
-curl -sSL "$REPO/bin/dejacode" -o "$WRAPPER"
-# Hardcode install dir into the wrapper
-sed -i.bak "s|^INSTALL_DIR=.*|INSTALL_DIR=\"$INSTALL_DIR\"|" "$WRAPPER" && rm "$WRAPPER.bak"
+cat > "$WRAPPER" << EOF
+#!/usr/bin/env bash
+set -euo pipefail
+INSTALL_DIR="$INSTALL_DIR"
+
+case "\${1:-}" in
+    uninstall)
+        printf "This will permanently delete all DejaCode data. Type 'yes' to confirm: "
+        read -r CONFIRM
+        [ "\$CONFIRM" = "yes" ] || { echo "Aborted."; exit 1; }
+        docker compose --project-directory "\$INSTALL_DIR" down -v --remove-orphans 2>/dev/null || true
+        rm -rf "\$INSTALL_DIR"
+        rm -f "\$0"
+        echo "DejaCode has been uninstalled."
+        ;;
+    *)
+        cd "\$INSTALL_DIR" && exec docker compose "\$@"
+        ;;
+esac
+EOF
 chmod +x "$WRAPPER"
 
 # ── Add ~/.local/bin to PATH if needed ───────────────────────────────────────
