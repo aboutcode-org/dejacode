@@ -8,28 +8,96 @@ Welcome to the **DejaCode** installation guide! This guide explains how to insta
 DejaCode on various platforms. Please follow the instructions carefully for a smooth
 installation experience.
 
-The **recommended DejaCode installation** method is to :ref:`run_with_docker`, which
-is the easiest and ensures all features work with minimal configuration.
-This installation works on all operating systems.
+There are three ways to run DejaCode:
 
-Alternatively, if you prefer, you can install DejaCode locally as a development server
-with some limitations.
-In this case, you may refer to the :ref:`local_development_installation` section for
-more details.
+- :ref:`run_with_docker` — **simplest option**, no repository checkout or build step
+  required. Uses the pre-built Docker image published on GitHub.
+- :ref:`run_with_docker_build` — build and run from source using Docker.
+  Recommended for enterprise deployments.
+- :ref:`local_development_installation` — for contributors to DejaCode itself.
 
 .. _run_with_docker:
 
 Run with Docker
 ===============
 
+This is the simplest way to get DejaCode running. You only need **Docker** —
+no repository checkout, no build step required.
+
+1. Get Docker
+-------------
+
+Download and **install Docker** on your platform:
+|get_docker_link|.
+
+.. |get_docker_link| raw:: html
+
+   <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
+
+2. Run the installer
+--------------------
+
+Run the one-liner installer::
+
+    curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/install.sh | bash
+
+This script will:
+
+- Create ``~/.dejacode/`` as the installation directory
+- Download ``compose.yml``, ``docker.env``, and the database seed data
+- Generate ``.env`` with a secure secret key
+- Install the ``dejacode`` command in ``~/.local/bin/``
+- Start all services and wait until the application is ready
+
+.. note::
+    Override the default installation directory with:
+    ``DEJACODE_HOME=/path/to/dir bash install.sh``
+
+3. Create an application user
+------------------------------
+
+::
+
+    dejacode createsuperuser
+
+Follow the prompt instructions, providing the required information:
+
+- **Username**: Choose a unique username.
+- **Email Address**: Provide a valid email address.
+- **Strong Password**: Create a password following security guidelines.
+
+4. Access the application
+--------------------------
+
+.. admonition:: Congratulations!
+   :class: tip
+
+   Open a web browser and visit |localhost_link| to **access the web UI**.
+
+   You can sign-in with the credentials you created above.
+
+   You can move onto the Tutorials section starting with the :ref:`user_tutorial_1`.
+
+.. note::
+    The pre-built image always corresponds to the most recent release and is tagged
+    ``latest``.
+
+.. _run_with_docker_build:
+
+Run with Docker — build from source
+=====================================
+
+This method builds the Docker image locally from the DejaCode source repository.
+It is the recommended approach for enterprise deployments.
+
 1. Get Docker
 -------------
 
 Start by downloading and **installing Docker on your platform**.
 Refer to Docker's documentation for the best installation path for your system:
-|get_docker_link|.
+|get_docker_link2|.
 
-.. |get_docker_link| raw:: html
+.. |get_docker_link2| raw:: html
 
    <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
 

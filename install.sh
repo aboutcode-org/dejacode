@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REPO="https://raw.githubusercontent.com/aboutcode-org/dejacode/compose-files"
-INSTALL_DIR="${DEJACODE_HOME:-$HOME/dejacode}"
+INSTALL_DIR="${DEJACODE_HOME:-$HOME/.dejacode}"
 BIN_DIR="$HOME/.local/bin"
 WRAPPER="$BIN_DIR/dejacode"
 
@@ -37,9 +37,8 @@ curl -sSL "$REPO/docker.env" -o docker.env
 # ── Generate .env with a secure secret key ────────────────────────────────────
 info "Generating .env"
 SECRET_KEY=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*(-_=+)' < /dev/urandom | head -c 50)
-cat > .env <<EOF
-SECRET_KEY=$SECRET_KEY
-EOF
+printf 'SECRET_KEY=%s\nALLOWED_HOSTS=localhost\nCSRF_TRUSTED_ORIGINS=http://localhost\n' \
+    "$SECRET_KEY" > .env
 
 # ── Install wrapper command ───────────────────────────────────────────────────
 info "Installing dejacode command to $WRAPPER"
