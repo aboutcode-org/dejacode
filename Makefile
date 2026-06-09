@@ -6,6 +6,20 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+########################################################################################
+# Docker dev commands
+########################################################################################
+
+IMAGE_NAME=dejacode:dev
+COMPOSE=docker compose -f compose.dev.yml
+MANAGE=${COMPOSE} exec web ./manage.py
+
+run:
+	@echo "-> Run the Docker compose services in dev mode (hot reload on code changes)"
+	${COMPOSE} up
+
+########################################################################################
+
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
 MANAGE=${VENV_LOCATION}/bin/python manage.py
@@ -161,8 +175,8 @@ postgresdb_clean:
 	@${SUDO_POSTGRES} dropdb ${DB_NAME} || true
 	@${SUDO_POSTGRES} dropuser '${DB_USERNAME}' || true
 
-run:
-	DJANGO_RUNSERVER_HIDE_WARNING=true ${MANAGE} runserver 8000 --insecure
+# run:
+# 	DJANGO_RUNSERVER_HIDE_WARNING=true ${MANAGE} runserver 8000 --insecure
 
 worker:
 	${MANAGE} rqworker
