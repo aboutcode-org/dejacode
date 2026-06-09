@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # DejaCode installer — no root required, works on macOS and Linux.
 # Usage: curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/compose-files/install.sh | bash
-set -euo pipefail
+set -eu
 
 REPO="https://raw.githubusercontent.com/aboutcode-org/dejacode/compose-files"
 INSTALL_DIR="${DEJACODE_HOME:-$HOME/.dejacode}"
@@ -36,33 +36,37 @@ curl -sSL "$REPO/docker.env" -o docker.env
 
 # ── Generate .env with a secure secret key ────────────────────────────────────
 info "Generating .env"
-SECRET_KEY=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*(-_=+)' < /dev/urandom | head -c 50)
+# Read enough bytes from urandom so tr has enough after filtering, then cut to 50 chars.
+# Avoids SIGPIPE/pipefail issues by not reading from an infinite stream.
+SECRET_KEY=$(dd if=/dev/urandom bs=512 count=1 2>/dev/null \
+    | LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*(-_=+)' \
+    | cut -c1-50)
 printf 'SECRET_KEY=%s\nALLOWED_HOSTS=localhost\nCSRF_TRUSTED_ORIGINS=http://localhost\n' \
     "$SECRET_KEY" > .env
 
 # ── Install wrapper command ───────────────────────────────────────────────────
 info "Installing dejacode command to $WRAPPER"
 mkdir -p "$BIN_DIR"
-cat > "$WRAPPER" << EOF
-#!/usr/bin/env bash
-set -euo pipefail
-INSTALL_DIR="$INSTALL_DIR"
-
-case "\${1:-}" in
-    uninstall)
-        printf "This will permanently delete all DejaCode data. Type 'yes' to confirm: "
-        read -r CONFIRM
-        [ "\$CONFIRM" = "yes" ] || { echo "Aborted."; exit 1; }
-        docker compose --project-directory "\$INSTALL_DIR" down -v --remove-orphans 2>/dev/null || true
-        rm -rf "\$INSTALL_DIR"
-        rm -f "\$0"
-        echo "DejaCode has been uninstalled."
-        ;;
-    *)
-        cd "\$INSTALL_DIR" && exec docker compose "\$@"
-        ;;
-esac
-EOF
+# Write the wrapper using printf to avoid heredoc stdin conflicts when piped via curl | bash.
+printf '%s\n' \
+    '#!/usr/bin/env bash' \
+    'set -eu' \
+    "INSTALL_DIR=\"$INSTALL_DIR\"" \
+    'case "${1:-}" in' \
+    '    uninstall)' \
+    '        printf "This will permanently delete all DejaCode data. Type '\''yes'\'' to confirm: "' \
+    '        read -r CONFIRM' \
+    '        [ "$CONFIRM" = "yes" ] || { echo "Aborted."; exit 1; }' \
+    '        docker compose --project-directory "$INSTALL_DIR" down -v --remove-orphans 2>/dev/null || true' \
+    '        rm -rf "$INSTALL_DIR"' \
+    '        rm -f "$0"' \
+    '        echo "DejaCode has been uninstalled."' \
+    '        ;;' \
+    '    *)' \
+    '        cd "$INSTALL_DIR" && exec docker compose "$@"' \
+    '        ;;' \
+    'esac' \
+    > "$WRAPPER"
 chmod +x "$WRAPPER"
 
 # ── Add ~/.local/bin to PATH if needed ───────────────────────────────────────
@@ -99,8 +103,8 @@ echo ""
 # ── Done ──────────────────────────────────────────────────────────────────────
 success "DejaCode is running at ${BOLD}http://localhost${NC}"
 echo ""
-echo "  Create your admin user:  dejacode createsuperuser"
-echo "  Stop:                    dejacode stop"
-echo "  Logs:                    dejacode logs"
+echo "  Create your admin user:  dejacode exec web ./manage.py createsuperuser"
+echo "  Stop:                    dejacode down"
+echo "  Logs:                    dejacode logs -f"
 echo ""
 echo "  Reload your shell or run: source ~/.zshrc (or ~/.bashrc)"
