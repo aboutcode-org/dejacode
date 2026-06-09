@@ -31,14 +31,15 @@ curl -sSL "$REPO/compose.yml" -o compose.yml
 info "Downloading database seed data"
 curl -sSL "$REPO/data/postgresql/initdb.sql.gz" -o data/postgresql/initdb.sql.gz
 
-info "Downloading environment template"
-curl -sSL "$REPO/.env.run" -o .env.run
+info "Downloading docker.env"
+curl -sSL "$REPO/docker.env" -o docker.env
 
-# ── Generate docker.env with a secure secret key ──────────────────────────────
-info "Generating secret key"
+# ── Generate .env with a secure secret key ────────────────────────────────────
+info "Generating .env"
 SECRET_KEY=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^&*(-_=+)' < /dev/urandom | head -c 50)
-sed "s|^SECRET_KEY=.*|SECRET_KEY=$SECRET_KEY|" .env.run > docker.env
-rm .env.run
+cat > .env <<EOF
+SECRET_KEY=$SECRET_KEY
+EOF
 
 # ── Install wrapper command ───────────────────────────────────────────────────
 info "Installing dejacode command to $WRAPPER"
