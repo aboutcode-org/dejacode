@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # DejaCode installer — no root required, works on macOS and Linux.
-# Usage: curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/compose-files/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/install.sh | bash
 set -eu
 
-REPO="https://raw.githubusercontent.com/aboutcode-org/dejacode/compose-files"
+REPO="https://raw.githubusercontent.com/aboutcode-org/dejacode/main"
 INSTALL_DIR="${DEJACODE_HOME:-$HOME/.dejacode}"
 BIN_DIR="$HOME/.local/bin"
 WRAPPER="$BIN_DIR/dejacode"
