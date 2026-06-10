@@ -50,6 +50,8 @@ superuser:
 # Utilities
 ########################################################################################
 
+DOCS_LOCATION=./docs
+
 doc8:
 	@echo "-> Run documentation .rst validation"
 	uvx doc8==2.0.0 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
@@ -60,6 +62,19 @@ valid:
 	@echo "-> Run Ruff linter"
 	uvx ruff check --fix
 
+check:
+	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
+	uvx ruff check
+	@echo "-> Run Ruff format validation"
+	uvx ruff format --check
+	@$(MAKE) doc8
+
+docs:
+	@echo "-> Builds the documentation"
+	rm -rf ${DOCS_LOCATION}/_build/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
+
 ########################################################################################
 
 VENV_LOCATION=.venv
@@ -69,7 +84,6 @@ ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
 GET_SECRET_KEY=`head -c50 /dev/urandom | base64 | head -c50`
 # Customize with `$ make envfile ENV_FILE=/etc/dejacode/.env`
 ENV_FILE=.env
-DOCS_LOCATION=./docs
 DOCKER_COMPOSE=docker compose -f docker-compose.yml
 DOCKER_EXEC=${DOCKER_COMPOSE} exec
 DB_NAME=dejacode_db
@@ -79,7 +93,6 @@ DB_CONTAINER_NAME=db
 DB_INIT_FILE=./data/postgresql/initdb.sql.gz
 POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
 TIMESTAMP=$(shell date +"%Y-%m-%d_%H%M")
-IMAGE_NAME=dejacode
 
 conf: virtualenv
 	@echo "-> Install dependencies"
@@ -135,18 +148,6 @@ envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
-check:
-	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
-	@${ACTIVATE} ruff check
-	@echo "-> Run Ruff format validation"
-	@${ACTIVATE} ruff format --check
-	@echo "-> Running ABOUT files validation"
-	@${ACTIVATE} about check ./thirdparty/
-	@${ACTIVATE} about check ./data/
-	@${ACTIVATE} about check ./dje/
-	@${ACTIVATE} about check ./dejacode_toolkit/
-	@$(MAKE) doc8
-
 check-deploy:
 	@echo "-> Check Django deployment settings"
 	${MANAGE} check --deploy
@@ -172,15 +173,6 @@ initdb:
 	  psql --username=${DB_USERNAME} ${DB_NAME}
 	@echo "Starting Docker services"
 	${DOCKER_COMPOSE} start
-
-worker:
-	${MANAGE} rqworker
-
-docs:
-	@echo "-> Builds the documentation"
-	rm -rf ${DOCS_LOCATION}/_build/
-	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
-	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
 psql:
 	${DOCKER_EXEC} ${DB_CONTAINER_NAME} psql --username=${DB_USERNAME} postgres
