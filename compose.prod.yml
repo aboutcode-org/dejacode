@@ -5,15 +5,12 @@ x-description: "Production overrides — build from source, external nginx confi
 services:
   web:
     build: .
-    image: dejacode:prod
 
   worker:
     build: .
-    image: dejacode:prod
 
   scheduler:
     build: .
-    image: dejacode:prod
 
   nginx:
     configs: []
