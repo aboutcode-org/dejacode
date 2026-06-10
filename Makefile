@@ -13,13 +13,52 @@
 IMAGE_NAME=dejacode:dev
 COMPOSE=docker compose -f compose.dev.yml
 MANAGE=${COMPOSE} exec web ./manage.py
+EXEC=${COMPOSE} exec
 
 run:
 	@echo "-> Run the Docker compose services in dev mode (hot reload on code changes)"
 	${COMPOSE} up
 
+bash:
+	# Open a bash session in the running web container
+	${COMPOSE} exec web bash
+
+shell:
+	# Open a bash session in a standalone container (no stack required)
+	docker run -it $(IMAGE_NAME) bash
+
+test:
+	@echo "-> Run the test suite"
+	${MANAGE} test --noinput --parallel auto
+
+migrations:
+	@echo "-> Creates new database migrations"
+	${MANAGE} makemigrations
+
+migrate:
+	@echo "-> Apply database migrations"
+	${MANAGE} migrate
+
+build:
+	@echo "-> Build the dev Docker images"
+	${COMPOSE} build
+
 superuser:
 	${MANAGE} createsuperuser
+
+########################################################################################
+# Utilities
+########################################################################################
+
+doc8:
+	@echo "-> Run documentation .rst validation"
+	uvx doc8==2.0.0 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
+
+valid:
+	@echo "-> Run Ruff format"
+	uvx ruff format
+	@echo "-> Run Ruff linter"
+	uvx ruff check --fix
 
 ########################################################################################
 
@@ -41,18 +80,6 @@ DB_INIT_FILE=./data/postgresql/initdb.sql.gz
 POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
 TIMESTAMP=$(shell date +"%Y-%m-%d_%H%M")
 IMAGE_NAME=dejacode
-
-# Use sudo for postgres, only on Linux
-UNAME := $(shell uname)
-ifeq ($(UNAME), Linux)
-	SUDO_POSTGRES=sudo -u postgres
-else
-	SUDO_POSTGRES=
-endif
-
-virtualenv:
-	@echo "-> Bootstrap the virtualenv with uv"
-	uv venv --allow-existing ${VENV_LOCATION}
 
 conf: virtualenv
 	@echo "-> Install dependencies"
@@ -108,16 +135,6 @@ envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
 
-doc8:
-	@echo "-> Run documentation .rst validation"
-	uvx doc8==2.0.0 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
-
-valid:
-	@echo "-> Run Ruff format"
-	@${ACTIVATE} ruff format
-	@echo "-> Run Ruff linter"
-	@${ACTIVATE} ruff check --fix
-
 check:
 	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
 	@${ACTIVATE} ruff check
@@ -156,53 +173,14 @@ initdb:
 	@echo "Starting Docker services"
 	${DOCKER_COMPOSE} start
 
-migrate:
-	@echo "-> Apply database migrations"
-	${MANAGE} migrate
-
-postgresdb:
-	@echo "-> Configure PostgreSQL database"
-	@echo "-> Create database user ${DB_NAME}"
-	@${SUDO_POSTGRES} createuser --no-createrole --no-superuser --login --inherit --createdb '${DB_USERNAME}' || true
-	@${SUDO_POSTGRES} psql -c "alter user ${DB_USERNAME} with encrypted password '${DB_PASSWORD}';" || true
-	@echo "-> Drop ${DB_NAME} database if exists"
-	@${SUDO_POSTGRES} dropdb ${DB_NAME} || true
-	@echo "-> Create ${DB_NAME} database: createdb --owner=${DB_USERNAME} ${POSTGRES_INITDB_ARGS} ${DB_NAME}"
-	@${SUDO_POSTGRES} createdb --owner=${DB_USERNAME} ${POSTGRES_INITDB_ARGS} ${DB_NAME}
-	@gunzip < ${DB_INIT_FILE} | psql --username=${DB_USERNAME} ${DB_NAME}
-	@echo "-> Apply database migrations"
-	${MANAGE} migrate
-
-postgresdb_clean:
-	@echo "-> Drop PostgreSQL user and database"
-	@${SUDO_POSTGRES} dropdb ${DB_NAME} || true
-	@${SUDO_POSTGRES} dropuser '${DB_USERNAME}' || true
-
-# run:
-# 	DJANGO_RUNSERVER_HIDE_WARNING=true ${MANAGE} runserver 8000 --insecure
-
 worker:
 	${MANAGE} rqworker
-
-test:
-	@echo "-> Run the test suite"
-	${MANAGE} test --noinput --parallel auto
 
 docs:
 	@echo "-> Builds the documentation"
 	rm -rf ${DOCS_LOCATION}/_build/
 	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
 	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
-
-build:
-	@echo "-> Build the Docker image"
-	docker build -t $(IMAGE_NAME) .
-
-bash:
-	docker run -it $(IMAGE_NAME) bash
-
-shell:
-	${DOCKER_EXEC} web ./manage.py shell
 
 psql:
 	${DOCKER_EXEC} ${DB_CONTAINER_NAME} psql --username=${DB_USERNAME} postgres

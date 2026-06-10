@@ -218,6 +218,10 @@ Clone and configure
 
     git clone https://github.com/aboutcode-org/dejacode.git && cd dejacode
 
+#. Create an environment file::
+
+    make envfile_dev
+
 Run the app
 -----------
 
