@@ -122,12 +122,9 @@ def fetch_for_packages(
 def create_or_update_vulnerability(
     vulnerability_data, dataspace, affected_packages, update, results
 ):
-    # Adapt to the previous `vulnerability_id` based system.
-    vulnerability_data["vulnerability_id"] = vulnerability_data["advisory_id"]
-
-    vulnerability_id = vulnerability_data["vulnerability_id"]
+    advisory_uid = vulnerability_data["advisory_uid"]
     vulnerability_qs = Vulnerability.objects.scope(dataspace)
-    vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+    vulnerability = vulnerability_qs.get_or_none(advisory_uid=advisory_uid)
 
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(

@@ -21,38 +21,23 @@ class VulnerableCode(BaseService):
     api_key_field_name = "vulnerablecode_api_key"
     api_version = "v3"
 
-    def get_vulnerabilities(
-        self,
-        url,
-        field_name,
-        field_value,
-        timeout=None,
-    ):
-        """Get list of vulnerabilities."""
-        cached_results = cache.get(field_value)
-        if cached_results:
-            return cached_results
-
-        payload = {field_name: field_value}
-
-        response = self.request_get(url=url, params=payload, timeout=timeout)
-        if response and response.get("count"):
-            results = response["results"]
-            cache.set(field_value, results)
-            return results
-
     def get_vulnerabilities_by_purl(
         self,
         purl,
         timeout=None,
     ):
         """Get list of vulnerabilities providing a package `purl`."""
-        return self.get_vulnerabilities(
-            url=f"{self.api_url}packages",
-            field_name="purl",
-            field_value=get_plain_purl(purl),
-            timeout=timeout,
-        )
+        plain_purl = get_plain_purl(purl)
+
+        cached_results = cache.get(plain_purl)
+        if cached_results:
+            return cached_results
+
+        response = self.bulk_search_by_purl(purls=[plain_purl], timeout=timeout)
+        if response and response.get("count"):
+            results = response["results"]
+            cache.set(plain_purl, results)
+            return results
 
     def bulk_search_by_purl(
         self,
