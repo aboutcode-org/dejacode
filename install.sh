@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DejaCode installer — no root required, works on macOS and Linux.
+# DejaCode installer: no root required, works on macOS and Linux.
 # Usage: curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/install.sh | bash
 set -eu
 

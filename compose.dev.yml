@@ -1,6 +1,6 @@
 name: dejacode-dev
 
-x-description: "Development stack — source mounted, runserver with auto-reload"
+x-description: "Development stack: source mounted, runserver with auto-reload"
 
 services:
   db:

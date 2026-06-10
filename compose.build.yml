@@ -1,6 +1,6 @@
 name: dejacode
 
-x-description: "Build override — builds the app image from source instead of using the pre-built image"
+x-description: "Build override: builds the app image from source instead of using the pre-built image"
 
 services:
   web:
