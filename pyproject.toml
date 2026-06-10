@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "5.7.1"
+version = "5.8.0"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.14,<3.15"
@@ -31,25 +31,25 @@ classifiers = [
 ]
 dependencies = [
     # Base configuration tools
-    "setuptools==82.0.0",
-    "wheel==0.46.3",
-    "packaging==26.0",
-    "pip==26.0.1",
+    "setuptools==82.0.1",
+    "wheel==0.47.0",
+    "packaging==26.2",
+    "pip==26.1.2",
     # Django
-    "Django==6.0.4",
+    "django==6.0.6",
     "asgiref==3.11.1",
     "typing_extensions==4.15.0",
     "sqlparse==0.5.5",
     # Django apps
     "django-crispy-forms==2.6",
     "crispy_bootstrap5==2026.3",
-    "django-grappelli==4.0.3",
+    "django-grappelli==5.0.0",
     "django-filter==25.2",
-    "django-registration==3.4",
+    "django-registration==5.2.1",
     "confusable_homoglyphs==3.3.1",
-    "django-guardian==3.3.0",
+    "django-guardian==3.3.1",
     "django-environ==0.13.0",
-    "django-debug-toolbar==6.2.0",
+    "django-debug-toolbar==6.3.0",
     # CAPTCHA
     "altcha==1.0.0",
     "django_altcha==0.10.0",
@@ -59,7 +59,7 @@ dependencies = [
     "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
-    "pytz==2025.2",
+    "pytz==2026.2",
     # Track failed login attempts
     "django-axes==8.3.1",
     # Multi-factor authentication
@@ -67,32 +67,32 @@ dependencies = [
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.3.3",
+    "psycopg==3.3.4",
     # Cache
-    "redis==7.3.0",
+    "redis==8.0.0",
     # Antivirus
     "clamd==1.0.2",
     # Testing
     "model_bakery==1.23.3",
     # Task queue
-    "rq==2.7.0",
+    "rq==2.9.0",
     "croniter==6.2.2",
     "django-rq==3.2.2",
-    "fakeredis==2.34.1",
+    "fakeredis==2.36.0",
     # Libs
-    "certifi==2026.2.25",
-    "urllib3==2.6.3",
+    "certifi==2026.5.20",
+    "urllib3==2.7.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
-    "PyJWT==2.12.1",
+    "pyjwt==2.13.0",
     "natsort==8.4.0",
     "six==1.17.0",
-    "requests==2.33.0",
-    "idna==3.11",
-    "charset-normalizer==3.4.4",
+    "requests==2.34.2",
+    "idna==3.18",
+    "charset-normalizer==3.4.7",
     "PyYAML==6.0.3",
     "cython==3.2.4",
-    "zipp==3.23.0",
+    "zipp==4.1.0",
     "XlsxWriter==3.2.9",
     # Markdown
     "markdown==3.10.2",
@@ -121,7 +121,7 @@ dependencies = [
     "swapper==1.4.0",
     # AboutCode Toolkit
     "aboutcode_toolkit==11.1.1",
-    "click==8.3.1",
+    "click==8.3.3",
     "Jinja2==3.1.6",
     "MarkupSafe==3.0.3",
     "saneyaml==0.6.1",
@@ -130,7 +130,7 @@ dependencies = [
     # PackageURL
     "packageurl-python==0.17.6",
     # Gunicorn
-    "gunicorn==25.1.0",
+    "gunicorn==26.0.0",
     # SPDX validation
     "jsonschema==4.26.0",
     "jsonschema-specifications==2025.9.1",
@@ -141,10 +141,6 @@ dependencies = [
     "cyclonedx-python-lib==11.6.0",
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
-    # Git
-    "GitPython==3.1.46",
-    "gitdb==4.0.12",
-    "smmap==5.0.2",
     # CSAF
     "pydantic==2.12.5",
     "pydantic-core==2.41.5",
@@ -157,20 +153,15 @@ dependencies = [
     "msgspec==0.20.0",
     # OpenDocument Format
     "odfdo==3.22.0",
-    "lxml==6.0.2",
+    "lxml==6.1.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     # Linter and Validation
-    "ruff==0.15.0",
+    "ruff==0.15.14",
     # Parallel testing
     "tblib==3.2.2"
-]
-docs = [
-    "Sphinx",
-    "furo",
-    "doc8",
 ]
 
 [project.urls]
@@ -185,6 +176,21 @@ dejacode = "dejacode:command_line"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.uv]
+# Disable PyPI and any remote index, only use local sources
+no-index = true
+# Look for wheels in this local directory only
+find-links = ["./thirdparty/dist"]
+# Copy files instead of hardlinking, works across all filesystems
+link-mode = "copy"
+# Ignore package versions published in the last 7 days for safety
+exclude-newer = "7 days"
+# Only resolve for Linux and macOS
+environments = [
+    "sys_platform == 'linux'",
+    "sys_platform == 'darwin'",
+]
 
 [tool.ruff]
 line-length = 100

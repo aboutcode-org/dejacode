@@ -1,0 +1,65 @@
+{% spaceless %}
+{% include 'tabs/pagination.html' with search_verbose_name="licenses" %}
+<table class="table table-bordered table-md text-break">
+  {% include 'includes/object_list_table_header.html' with filter=filterset %}
+  <tbody>
+    {% for license, items in license_index.items %}
+      <tr class="{% if 'error' in license.usage_policy.compliance_alert %}row-alert-danger{% elif 'warning' in license.usage_policy.compliance_alert %}row-alert-warning{% endif %}">
+        <td>
+          <strong>
+            <a href="{{ license.details_url }}" target="_blank">{{ license.name }}</a>
+          </strong>
+          <div class="mt-1">
+            <span data-bs-toggle="tooltip" title="License Key">
+              <i class="fas fa-key fa-sm cursor-help"></i>
+            </span>
+            <code class="key bg-light-subtle text-light-emphasis ms-1">{{ license.key }}</code>
+          </div>
+          <div class="mt-1">
+            <small class="fw-bold cursor-help" data-bs-toggle="tooltip" title="SPDX Short Identifier">SPDX</small>
+            <code class="key bg-light-subtle text-light-emphasis ms-1">{{ license.spdx_license_key }}</code>
+          </div>
+          <div class="mt-1">
+            <span class="badge text-bg-light border">{{ license.category }}</span>
+          </div>
+        </td>
+        <td>
+          {% if license.usage_policy %}
+            {{ license.get_usage_policy_display_with_icon }}
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge text-bg-light border float-end">{{ items|length }} item{{ items|length|pluralize }}</span>
+          {% for item in items %}
+            <div class="mb-2">
+              <span data-bs-toggle="tooltip" title="Parent: {% if item.direct_parent %}{{ item.direct_parent }}{% else %}{{ product }}{% endif %}">
+                <i class="fas fa-sitemap cursor-help me-2"></i>
+              </span>
+              <span>
+                {% include 'includes/object_icon.html' with object=item only %}
+              </span>
+              <a href="{{ item.get_absolute_url }}" class="ms-1" target="_blank">{{ item }}</a>
+              {% if item.license_expression != license.key %}
+                <div>
+                  <code class="ms-4 key bg-light-subtle text-light-emphasis text-wrap">{{ item.license_expression }}</code>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="100">
+          No results.
+          {% if filterset.is_active %}
+            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+              Clear search and filters
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endspaceless %}

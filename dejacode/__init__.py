@@ -7,14 +7,14 @@
 #
 
 import os
+import shutil
+import subprocess
 import sys
 import warnings
 from contextlib import suppress
 from pathlib import Path
 
-import git
-
-VERSION = "5.7.1"
+VERSION = "5.8.0"
 
 PROJECT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = PROJECT_DIR.parent
@@ -33,13 +33,48 @@ def get_version(version):
     return version
 
 
+def run_command_safely(command_args):
+    """
+    Execute an external command and return its stdout.
+
+    Runs without a shell (shell=False) to prevent injection vulnerabilities.
+
+    Usage notes:
+    - Provide the command as a list of arguments.
+    - Use full executable paths to avoid ambiguity.
+    - Use the "--option=value" form, or split it as two list entries
+      ["--option", "value"], but never join an option and its value in a
+      single entry ("--option value").
+    - Sanitize and validate any user input before passing it in.
+
+    Raise a SubprocessError if the exit code is non-zero.
+    """
+    completed_process = subprocess.run(  # noqa: S603
+        command_args,
+        capture_output=True,
+        text=True,
+    )
+    if completed_process.returncode:
+        error_msg = (
+            f'Error while executing cmd="{completed_process.args}": '
+            f'"{completed_process.stderr.strip()}"'
+        )
+        raise subprocess.SubprocessError(error_msg)
+    return completed_process.stdout
+
+
 def get_git_describe_from_local_checkout():
     """
     Return the git describe tag from the local checkout.
     This will only provide a result when the codebase is a git clone.
     """
-    with suppress(git.GitError):
-        return git.Repo(".").git.describe(tags=True, always=True)
+    git_executable = shutil.which("git")
+    if not git_executable:
+        return
+
+    with suppress(subprocess.SubprocessError):
+        git_describe = run_command_safely([git_executable, "describe", "--tags", "--always"])
+        return git_describe.strip()
 
 
 def get_git_describe_from_version_file(version_file_location=ROOT_DIR / ".VERSION"):
@@ -54,15 +89,6 @@ def get_git_describe_from_version_file(version_file_location=ROOT_DIR / ".VERSIO
 
     if version and version.startswith("v"):
         return version
-
-
-def extract_short_commit(git_describe):
-    """
-    Extract the short commit hash from a Git describe string while removing
-    any leading "g" character if present.
-    """
-    short_commit = git_describe.split("-")[-1]
-    return short_commit.lstrip("g")
 
 
 __version__ = get_version(VERSION)

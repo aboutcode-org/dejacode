@@ -1,0 +1,76 @@
+{% load humanize i18n %}
+{% load naturaltime_short from dje_tags %}
+
+<div class="border rounded-3 p-3 mb-4" id="activity-requests">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fs-5 fw-medium mb-0">
+      Requests
+      {% if requests %}<span class="text-body-tertiary fw-normal ms-1">{{ requests|length }}</span>{% endif %}
+    </h3>
+  </div>
+
+  {% if requests %}
+    <div class="list-group list-group-flush">
+      {% for req in requests %}
+        <div class="list-group-item px-0 py-2">
+          {% if not req.is_private or req.requester == user or user.is_staff %}
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <div class="flex-grow-1">
+                <div>
+                  <a href="{{ req.get_absolute_url }}" class="fs-6 fw-semibold text-decoration-none">
+                    #{{ req.id }} {{ req.title }}
+                  </a>
+                </div>
+                <div class="text-body-secondary">{{ req.request_template.name }}</div>
+                <div class="text-body-tertiary fs-xs mt-1">
+                  {% if req.is_private %}<i class="fas fa-lock me-1"></i>{% endif %}
+                  Created <span title="{{ req.created_date }}">{{ req.created_date|naturaltime }}</span> by {{ req.requester.username }}
+                  {% if req.last_modified_by %}
+                    &middot; Edited <span title="{{ req.last_modified_date }}">{{ req.last_modified_date|naturaltime }}</span> by {{ req.last_modified_by.username }}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="text-end small flex-shrink-0">
+                <a href="{{ req.get_absolute_url }}#attachments" class="text-decoration-none" title="{% if req.attachments_count %}View{% else %}Add{% endif %} attachments">
+                  {% if req.attachments_count %}
+                    <i class="fas fa-file"></i> {{ req.attachments_count }}
+                  {% else %}
+                    + <i class="far fa-file"></i>
+                  {% endif %}
+                </a>
+                <a href="{{ req.get_absolute_url }}#comments" class="ms-2 text-decoration-none" title="{% if req.comments_count %}View{% else %}Add{% endif %} comments">
+                  {% if req.comments_count %}
+                    <i class="fas fa-comments"></i> {{ req.comments_count }}
+                  {% else %}
+                    + <i class="far fa-comments"></i>
+                  {% endif %}
+                </a>
+                {% if req.priority %}
+                  <div class="mb-1">
+                    <span class="badge" {% if req.priority.color_code %}style="background-color: {{ req.priority.color_code }}; color: white;"{% endif %}>{{ req.priority }}</span>
+                  </div>
+                {% endif %}
+                <div class="fw-medium">
+                  {% include 'workflow/includes/request_status_icon.html' %}
+                  {{ req.get_status_display }}
+                </div>
+                {% if req.assignee %}
+                  <div class="text-body-tertiary fs-xs">Assigned to {{ req.assignee.username }}</div>
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+            <div class="text-body-secondary">
+              <strong>#{{ req.id }}</strong> <i class="fas fa-lock"></i>
+              <span class="ms-2 small">{{ req.request_template.name }}</span>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-body-tertiary small">
+      No requests yet
+    </div>
+  {% endif %}
+</div>

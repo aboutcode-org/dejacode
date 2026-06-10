@@ -34,7 +34,7 @@
                 </span>
               {% endif %}
               {% if dependency.resolved_to_package.declared_dependencies_count %}
-                <a class="btn badge text-bg-primary rounded-pill ms-1"
+                <a class="btn badge bg-primary-subtle text-primary-emphasis rounded-pill ms-1"
                    href="{{ product.get_absolute_url }}?dependencies-for_package__uuid={{ dependency.resolved_to_package.uuid }}#dependencies" class="ms-1" data-bs-toggle="tooltip" title="Dependencies" aria-label="Dependencies">
                   {{ dependency.resolved_to_package.declared_dependencies_count }}<i class="fa-solid fa-share-nodes ms-1"></i>
                 </a>

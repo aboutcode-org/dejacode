@@ -1,6 +1,23 @@
 Release notes
 =============
 
+### Version 5.8.0
+
+* feat: [five-c] Compliance dashboard export/report by @tdruez in https://github.com/aboutcode-org/dejacode/pull/522
+* feat: [five-c] Compliance extended report set by @tdruez in https://github.com/aboutcode-org/dejacode/pull/523
+* feat: [five-c] User experience (UX) enhancements by @tdruez in https://github.com/aboutcode-org/dejacode/pull/524
+* feat: [five-c] Compliance dashboards improved by @tdruez in https://github.com/aboutcode-org/dejacode/pull/532
+* feat: [five-c] Compliance dashboards extended by @tdruez in https://github.com/aboutcode-org/dejacode/pull/537
+* fix: REQUESTS_TIMEOUT by converting to int by @rogu-beta in https://github.com/aboutcode-org/dejacode/pull/526
+* feat: replace pip install by uv and lock file by @tdruez in https://github.com/aboutcode-org/dejacode/pull/529
+* chore: upgrade multiple dependencies by @tdruez in https://github.com/aboutcode-org/dejacode/pull/530
+* chore: upgrade django-registration to latest version by @tdruez in https://github.com/aboutcode-org/dejacode/pull/531
+* chore: upgrade dependencies by @tdruez in https://github.com/aboutcode-org/dejacode/pull/538
+* chore: remove the dependency on gitpython by @tdruez in https://github.com/aboutcode-org/dejacode/pull/539
+* feat: add create_dependencies option to all import forms by @tdruez in https://github.com/aboutcode-org/dejacode/pull/540
+* chore: update seed data and add instructions by @tdruez in https://github.com/aboutcode-org/dejacode/pull/541
+* feat: add a set_key method on AbstractAPIToken by @tdruez in https://github.com/aboutcode-org/dejacode/pull/521
+
 ### Version 5.7.1
 
 - feat: Product compliance tab

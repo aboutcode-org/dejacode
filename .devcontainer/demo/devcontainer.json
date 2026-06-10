@@ -1,0 +1,27 @@
+{
+  "name": "DejaCode Demo (Codespaces only)",
+  "dockerComposeFile": "../../compose.demo.yml",
+  "service": "web",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "overrideCommand": false,
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "DejaCode",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": []
+    },
+    "vscode": {
+      "settings": {
+        "chat.disableAIFeatures": true,
+        "workbench.startupEditor": "none",
+        "workbench.tips.enabled": false,
+        "git.openRepositoryInParentFolders": "never"
+      }
+    }
+  }
+}

@@ -15,8 +15,10 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Case
+from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import DecimalField
+from django.db.models import Exists
 from django.db.models import F
 from django.db.models import FloatField
 from django.db.models import Max
@@ -146,6 +148,18 @@ class ProductQuerySet(DataspacedQuerySet):
             ),
         )
 
+    def with_max_risk_level(self):
+        return self.annotate(
+            max_risk_level=Case(
+                When(max_risk_score__gte=8.0, then=Value("critical")),
+                When(max_risk_score__gte=6.0, then=Value("high")),
+                When(max_risk_score__gte=3.0, then=Value("medium")),
+                When(max_risk_score__gte=0.1, then=Value("low")),
+                default=Value(""),
+                output_field=CharField(max_length=8),
+            ),
+        )
+
     def with_vulnerability_counts(self):
         threshold_filter = Q(
             productpackages__package__affected_by_vulnerabilities__risk_score__gte=F(
@@ -191,6 +205,39 @@ class ProductQuerySet(DataspacedQuerySet):
                 filter=Q(productpackages__licenses__usage_policy__compliance_alert="error"),
                 distinct=True,
             ),
+        )
+
+    def with_compliance_data(self):
+        """Apply all compliance annotations and severity-based ordering."""
+        return (
+            self.with_risk_threshold()
+            .with_vulnerability_counts()
+            .with_license_compliance_counts()
+            .annotate(package_count=Count("productpackages", distinct=True))
+            .order_by(
+                F("max_risk_score").desc(nulls_last=True),
+                "-license_error_count",
+                "-license_warning_count",
+                "name",
+                "-version",
+            )
+        )
+
+    def with_compliance_issues(self):
+        """Filter to products that have license or critical/high vulnerability issues."""
+        return self.filter(
+            Q(license_error_count__gt=0)
+            | Q(license_warning_count__gt=0)
+            | Q(critical_count__gt=0)
+            | Q(high_count__gt=0)
+        )
+
+    def with_has_vulnerable_packages(self):
+        vulnerable_productpackage_qs = ProductPackage.objects.vulnerable().filter(
+            product_id=OuterRef("pk")
+        )
+        return self.annotate(
+            has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
         )
 
 
@@ -392,9 +439,6 @@ class Product(
 
     def get_manage_packages_url(self):
         return self.get_url("manage_packages")
-
-    def get_license_summary_url(self):
-        return self.get_url("license_summary")
 
     def get_check_package_version_url(self):
         return self.get_url("check_package_version")
@@ -915,6 +959,7 @@ class ProductRelationshipMixin(
         blank=True,
         max_digits=3,
         decimal_places=1,
+        db_index=True,
         help_text=_(
             "Risk score (0.0 to 10.0), where higher values indicate greater vulnerability. "
             "Calculated as the weighted severity times exploitability (capped at 10), "
@@ -1667,6 +1712,14 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     infer_download_urls = models.BooleanField(
         default=False,
     )
+    import_options = models.JSONField(
+        blank=True,
+        default=dict,
+        help_text=_(
+            "A dictionary of options used to configure the import process. "
+            "New options can be added here without requiring a database migration."
+        ),
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -1728,6 +1781,7 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             update_existing=self.update_existing_packages,
             scan_all_packages=self.scan_all_packages,
             infer_download_urls=self.infer_download_urls,
+            create_dependencies=self.import_options.get("create_dependencies", False),
         )
         created, existing, errors = importer.save()
 

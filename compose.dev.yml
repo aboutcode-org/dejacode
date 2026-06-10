@@ -1,0 +1,58 @@
+name: dejacode-dev
+
+x-description: "Development stack: source mounted, runserver with auto-reload"
+
+services:
+  db:
+    image: docker.io/library/postgres:16.13
+    env_file:
+      - docker.env
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+      - ./data/postgresql:/docker-entrypoint-initdb.d/
+    shm_size: "1gb"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+
+  web:
+    build: .
+    image: dejacode:dev
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PASSWORD=dejacode
+      - DEJACODE_DEBUG=True
+      - DEJACODE_ASYNC=False
+      - CLAMD_ENABLED=False
+    # Skip migrate when the DB schema is already up to date (faster reload)
+    command: sh -c "
+      ./manage.py migrate --check || ./manage.py migrate;
+      DJANGO_RUNSERVER_HIDE_WARNING=true ./manage.py runserver --skip-checks 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./component_catalog:/opt/dejacode/component_catalog
+      - ./dejacode:/opt/dejacode/dejacode
+      - ./dejacode_toolkit:/opt/dejacode/dejacode_toolkit
+      - ./dje:/opt/dejacode/dje
+      - ./license_library:/opt/dejacode/license_library
+      - ./notification:/opt/dejacode/notification
+      - ./organisation:/opt/dejacode/organisation
+      - ./policy:/opt/dejacode/policy
+      - ./product_portfolio:/opt/dejacode/product_portfolio
+      - ./purldb:/opt/dejacode/purldb
+      - ./reporting:/opt/dejacode/reporting
+      - ./vulnerabilities:/opt/dejacode/vulnerabilities
+      - ./workflow:/opt/dejacode/workflow
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

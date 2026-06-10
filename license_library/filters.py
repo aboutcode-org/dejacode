@@ -59,6 +59,7 @@ class LicenseFilterSet(DataspacedFilterSet):
             "category",
             "license_profile",
             "owner",
+            "usage_policy",
         ],
         empty_label="Relevance",
     )
@@ -98,6 +99,7 @@ class LicenseFilterSet(DataspacedFilterSet):
             "license_profile",
             "usage_policy",
             "in_spdx_list",
+            "usage_policy__compliance_alert",
         ]
 
     def __init__(self, *args, **kwargs):
