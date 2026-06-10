@@ -45,7 +45,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
         self.assertEqual(1, len(affected_by_vulnerabilities))
-        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["vulnerability_id"])
+        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["advisory_uid"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -83,7 +83,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
-        vulnerabilities_data.append({"vulnerability_id": "VCID-0002", "risk_score": 5.0})
+        vulnerabilities_data.append({"advisory_uid": "VCID-0002", "risk_score": 5.0})
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         product1 = make_product(self.dataspace, inventory=[package1])
@@ -198,36 +198,52 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
-        vulnerability_data = {
-            "vulnerability_id": "VCID-q4q6-yfng-aaag",
-            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
-            "aliases": ["CVE-2024-27351", "GHSA-vm8q-m57g-pff3", "PYSEC-2024-47"],
-            "references": [
-                {
-                    "reference_url": "https://access.redhat.com/hydra/rest/"
-                    "securitydata/cve/CVE-2024-27351.json",
-                    "reference_id": "",
-                    "scores": [
-                        {
-                            "value": "7.5",
-                            "scoring_system": "cvssv3",
-                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                        }
-                    ],
-                },
-            ],
-            "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-q4q6-yfng-aaag",
-        }
+        vulnerability_data = (
+            {
+                "purl": "pkg:npm/%40isaacs/brace-expansion@5.0.0",
+                "affected_by_vulnerabilities": [
+                    {
+                        "advisory_id": "GHSA-7h2j-956f-4vf2",
+                        "advisory_uid": "github_osv/GHSA-7h2j-956f-4vf2",
+                        "aliases": ["CVE-2026-25547"],
+                        "summary": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
+                        "weighted_severity": 7.8,
+                        "exploitability": 0.5,
+                        "risk_score": 3.9,
+                        "fixed_by_packages": ["pkg:npm/%40isaacs/brace-expansion@5.0.1"],
+                        "ssvc_trees": [
+                            {
+                                "vector": "SSVCv2/.../M:M/D:T/2026-02-05T14:24:50Z/",
+                                "options": [
+                                    {"Exploitation": "none"},
+                                    {"Automatable": "yes"},
+                                    {"Technical Impact": "partial"},
+                                    {"Mission Prevalence": "minimal"},
+                                    {"Public Well-being Impact": "material"},
+                                    {"Mission & Well-being": "medium"},
+                                ],
+                                "decision": "Track",
+                                "source_url": "https://github.com/.../CVE-2026-25547.json",
+                            }
+                        ],
+                        "resource_url": "http://vulnerablecode.io/.../GHSA-7h2j-956f-4vf2",
+                    }
+                ],
+                "fixing_vulnerabilities": [],
+                "next_non_vulnerable_version": "5.0.1",
+                "latest_non_vulnerable_version": "5.0.1",
+                "risk_score": 3.9,
+            },
+        )
 
         vulnerability1 = Vulnerability.create_from_data(
             dataspace=self.dataspace,
             data=vulnerability_data,
             affecting=package1,
         )
-        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["advisory_uid"], vulnerability1.advisory_uid)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
-        self.assertEqual(vulnerability_data["references"], vulnerability1.references)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
 
@@ -244,7 +260,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
 
-        vulnerability_data["vulnerability_id"] = vulnerability_data["id"]
+        vulnerability_data["advisory_uid"] = vulnerability_data["id"]
         vulnerability2 = Vulnerability.get_or_create_from_data(
             dataspace=self.dataspace,
             data=vulnerability_data,

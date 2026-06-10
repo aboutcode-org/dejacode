@@ -13,8 +13,8 @@ from vulnerabilities.models import VulnerabilityAnalysis
 
 def make_vulnerability(dataspace, affecting=None, **data):
     """Create a vulnerability for test purposes."""
-    if "vulnerability_id" not in data:
-        data["vulnerability_id"] = f"VCID-0000-{make_string(4)}"
+    if "advisory_uid" not in data:
+        data["advisory_uid"] = f"VCID-0000-{make_string(4)}"
 
     vulnerability = Vulnerability.objects.create(
         dataspace=dataspace,

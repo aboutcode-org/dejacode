@@ -328,9 +328,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"""
         <span data-bs-toggle="modal"
               data-bs-target="#vulnerability-analysis-modal"
-              data-vulnerability-id="{vulnerability1.vcid}"
+              data-vulnerability-id="{vulnerability1.vulnerability_id}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vcid}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vulnerability_id}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -375,15 +375,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertContains(response, vulnerability1.vulnerability_id)
+        self.assertContains(response, vulnerability2.vulnerability_id)
         self.assertContains(response, "2 results")
         self.assertNotContains(response, "A risk threshold filter at")
 
         product1.update(vulnerabilities_risk_threshold=3.0)
         response = self.client.get(url)
-        self.assertNotContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertNotContains(response, vulnerability1.vulnerability_id)
+        self.assertContains(response, vulnerability2.vulnerability_id)
         self.assertContains(response, "1 results")
         self.assertContains(response, 'A risk threshold filter at "3.0" is currently applied.')
 
@@ -4153,7 +4153,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         data = json.loads(response.content)
         self.assertEqual(1, len(data))
-        self.assertEqual(vulnerability.vulnerability_id, data[0]["vulnerability_id"])
+        self.assertEqual(vulnerability.advisory_uid, data[0]["advisory_uid"])
         # Aliases stay a real list in JSON, not a comma-joined string.
         self.assertEqual(
             ["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
@@ -4215,8 +4215,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(".yaml", response["Content-Disposition"])
 
         content = response.content.decode()
-        self.assertIn(vulnerability.vulnerability_id, content)
-        self.assertIn("vulnerability_id", content)
+        self.assertIn(vulnerability.advisory_uid, content)
+        self.assertIn("advisory_uid", content)
 
     def test_product_portfolio_product_security_compliance_export_view_respects_permissions(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -4239,5 +4239,5 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url + "?export=json")
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        vulnerability_ids = [entry["vulnerability_id"] for entry in data]
-        self.assertIn(vulnerability.vulnerability_id, vulnerability_ids)
+        vulnerability_ids = [entry["advisory_uid"] for entry in data]
+        self.assertIn(vulnerability.advisory_uid, vulnerability_ids)

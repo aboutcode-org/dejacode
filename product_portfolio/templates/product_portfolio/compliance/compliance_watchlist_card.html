@@ -44,7 +44,7 @@
               <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=low#vulnerabilities" class="badge bg-info-subtle text-info-emphasis{% if product.critical_count or product.high_count or product.medium_count %} ms-1{% endif %}">{{ product.low_count }} low</a>
             {% endif %}
             {% if not product.critical_count and not product.high_count and not product.medium_count and not product.low_count %}
-              <span class="text-body-tertiary">None</span>
+              <span class="text-body-tertiary small">None</span>
             {% endif %}
           </div>
         </div>

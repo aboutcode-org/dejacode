@@ -1351,7 +1351,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("9.0", results[0]["risk_score"])
         self.assertEqual(
             vulnerability1.vulnerability_id,
-            results[0]["affected_by_vulnerabilities"][0]["vulnerability_id"],
+            results[0]["affected_by_vulnerabilities"][0]["advisory_uid"],
         )
 
         data = {"affected_by": vulnerability1.vulnerability_id}

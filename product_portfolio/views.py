@@ -1208,7 +1208,7 @@ class ProductTabVulnerabilitiesView(
         Header("affected_packages", _("Package"), help_text="Affected product packages"),
         Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
         Header(
-            "vulnerability_id",
+            "advisory_uid",
             _("Vulnerabilities"),
             help_text="Vulnerabilities affecting the product package",
         ),
@@ -3180,7 +3180,7 @@ class ComplianceVulnerabilitiesCardView(
                 ),
             )
             .filter(product_count__gt=0)
-            .order_by("-risk_score", "-product_count", "vulnerability_id")
+            .order_by("-risk_score", "-product_count", "advisory_id")
         )
 
         context["vulnerabilities_qs"] = vulnerabilities[: self.limit]
@@ -3232,7 +3232,7 @@ class ProductSecurityComplianceExportView(
 
     export_filename = "security_compliance"
     export_fields = {
-        "vulnerability_id": "Vulnerability ID",
+        "advisory_uid": "Vulnerability ID",
         "aliases": "Aliases",
         "summary": "Summary",
         "risk_level": "Risk level",
