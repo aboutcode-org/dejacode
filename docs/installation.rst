@@ -12,9 +12,9 @@ There are three ways to run DejaCode:
 
 - :ref:`run_with_docker` — **simplest option**, no repository checkout or build step
   required. Uses the pre-built Docker image published on GitHub.
-- :ref:`run_with_docker_build` — build and run from source using Docker.
-  Recommended for enterprise deployments.
-- :ref:`local_development_installation` — for contributors to DejaCode itself.
+- :ref:`enterprise_deployment` — same pre-built image with custom nginx, domain
+  configuration, and hardware recommendations for production servers.
+- :ref:`local_development_installation` — Docker-based setup for contributors.
 
 .. _run_with_docker:
 
@@ -78,6 +78,10 @@ Follow the prompt instructions, providing the required information:
 
    You can move onto the Tutorials section starting with the :ref:`user_tutorial_1`.
 
+.. |localhost_link| raw:: html
+
+   <a href="http://localhost/" target="_blank" class="external">http://localhost/</a>
+
 .. note::
     The pre-built image always corresponds to the most recent release and is tagged
     ``latest``.
@@ -107,143 +111,95 @@ To completely remove DejaCode and all its data::
 
     dejacode uninstall
 
-.. _run_with_docker_build:
+.. _enterprise_deployment:
 
-Run with Docker — build from source
-===================================
-
-This method builds the Docker image locally from the DejaCode source repository.
-It is the recommended approach for enterprise deployments.
-
-1. Get Docker
--------------
-
-Start by downloading and **installing Docker on your platform**.
-Refer to Docker's documentation for the best installation path for your system:
-|get_docker_link2|.
-
-.. |get_docker_link2| raw:: html
-
-   <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
-
-2. Build the image
-------------------
-
-DejaCode comes with the necessary ``Dockerfile`` and ``docker-compose.yml`` files to
-create the Docker images and to manage the services (database, cache, webserver).
-
-.. warning:: For **Windows** users, before cloning the repository, ensure that your git
-    ``autocrlf`` configuration is set to ``false``::
-
-        git config --global core.autocrlf false
-
-Clone the DejaCode repository
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Open your terminal and clone the `DejaCode repo <https://github.com/aboutcode-org/dejacode>`_
-with the following command::
-
-    git clone --depth=1 https://github.com/aboutcode-org/dejacode.git
-
-Build the Docker image
-^^^^^^^^^^^^^^^^^^^^^^
-
-Create an **environment file**, and **build the Docker image** with::
-
-    cd dejacode && make envfile
-    docker compose build
-
-3. Run the app
---------------
-
-To **run the DejaCode images as containers**, use the following command::
-
-    docker compose up -d
-
-4. Create an application user
------------------------------
-
-To create a superuser for the application, use the following command::
-
-    make createsuperuser
-
-Follow the prompt instructions, providing the required information:
-
-- **Username**: Choose a unique username.
-- **Email Address**: Provide a valid email address.
-- **Strong Password**: Create a password following security guidelines.
-
-Use these credentials to access the application.
-
-.. admonition:: Congratulations!
-   :class: tip
-
-   Congratulations, you are now ready to use DejaCode.
-
-   Open a web browser and visit |localhost_link| to **access the web UI**.
-
-   You can sign-in with your user credentials generated above.
-
-   You can move onto the Tutorials section starting with the :ref:`user_tutorial_1`.
-
-.. |localhost_link| raw:: html
-
-   <a href="http://localhost/" target="_blank" class="external">http://localhost/</a>
-
-.. important::
-    DejaCode will utilize all available CPUs according to your Docker configuration,
-    ensuring faster processing.
-
-    **Make sure to allocate enough memory to support each CPU process.**
-
-    A good rule of thumb is to allocate **1 GB of memory per CPU**.
-    For example, with Docker configured for 8 CPUs, allocate a minimum of 8 GB of
-    memory.
-
-5. Dataspace setup and AboutCode integrations
----------------------------------------------
-
-Upon the initialization of the DejaCode application, the ``nexB`` reference
-:ref:`dataspace` is created with a **default set of data**, including license and
-organization libraries.
-
-Additionally, **AboutCode integrations are pre-configured** to connect to
-**public instances** of the following AboutCode applications:
-
-- **ScanCode.io**: Facilitates package scanning.
-  Refer to :ref:`dejacode_dataspace_scancodeio`.
-- **PurlDB**: Provides access to a database of scanned packages.
-  Refer to :ref:`dejacode_dataspace_purldb`.
-- **VulnerableCodeDB**: Enables access to a database containing information on package
-  vulnerabilities.
-  Refer to :ref:`dejacode_dataspace_vulnerablecode`.
-
-.. warning::
-    In the scenario of **deploying DejaCode as an enterprise service** within your
-    organization, it is **strongly recommended to review these configurations**.
-    Consideration should be given to **running your own instances** of these
-    applications  to ensure that **sensitive or private data** is not inadvertently
-    submitted to public services. This strategic approach helps to safeguard
-    organizational data and privacy during package scanning and vulnerability
-    assessments.
-
-Hardware requirements
+Enterprise deployment
 =====================
 
-The minimum hardware/system requirements for running DejaCode as an enterprise
-server are:
+Enterprise deployments use the same pre-built image as the standard install,
+with additional configuration for your domain, a custom nginx setup, and
+dedicated server hardware.
+
+1. Install
+----------
+
+Follow the :ref:`run_with_docker` steps. Once the stack is running, continue
+below to adapt it for production.
+
+2. Configure your domain
+------------------------
+
+Edit ``~/.dejacode/.env`` and update the following settings to match your
+server's hostname or IP::
+
+    ALLOWED_HOSTS=dejacode.example.com
+    CSRF_TRUSTED_ORIGINS=https://dejacode.example.com
+
+Restart the stack to apply::
+
+    dejacode restart
+
+3. Configure nginx
+------------------
+
+The default nginx configuration embedded in ``compose.yml`` is suitable for
+local use. For production, replace it with your own configuration file.
+
+Create a ``compose.override.yml`` in your installation directory
+(``~/.dejacode/``) with the following content:
+
+.. code-block:: yaml
+
+    services:
+      nginx:
+        configs: []
+        volumes:
+          - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+Then create ``~/.dejacode/nginx.conf`` with your production nginx configuration
+(TLS termination, custom headers, upstream settings, etc.) and restart::
+
+    dejacode down && dejacode up -d
+
+.. note::
+    Docker Compose automatically picks up ``compose.override.yml`` when present
+    in the same directory as ``compose.yml``.
+
+4. AboutCode integrations
+--------------------------
+
+Upon initialization, the ``nexB`` reference :ref:`dataspace` is created with a
+default set of data, including license and organization libraries.
+
+**AboutCode integrations are pre-configured** to connect to public instances of:
+
+- **ScanCode.io** — package scanning. See :ref:`dejacode_dataspace_scancodeio`.
+- **PurlDB** — database of scanned packages. See :ref:`dejacode_dataspace_purldb`.
+- **VulnerableCode** — package vulnerability data. See :ref:`dejacode_dataspace_vulnerablecode`.
+
+.. warning::
+    For enterprise deployments it is **strongly recommended to run your own
+    instances** of these services to ensure that sensitive or private data is
+    not submitted to public endpoints.
+
+Hardware requirements
+---------------------
 
 +-----------+------------------------------------------------------------------+
 | Item      | Minimum                                                          |
 +===========+==================================================================+
-| Processor | Modern X86 64 bit Multi Core, with at least **4 physical cores** |
+| OS        | **Ubuntu 24.04 LTS 64-bit** server                               |
++-----------+------------------------------------------------------------------+
+| Processor | Modern x86-64 multi-core, at least **4 physical cores**          |
 +-----------+------------------------------------------------------------------+
 | Memory    | **64 GB** or more (ECC preferred)                                |
 +-----------+------------------------------------------------------------------+
-| Disk      | 2 * 500GB SDD in RAID mirror setup (enterprise disk preferred)   |
+| Disk      | 2 x 500 GB SSD in RAID mirror (enterprise disk preferred)        |
 +-----------+------------------------------------------------------------------+
-| OS        | **Ubuntu 22.04 LTS 64-bit** server clean installation            |
-+-----------+------------------------------------------------------------------+
+
+.. important::
+    DejaCode uses all available CPUs for worker processes.
+    Allocate at least **1 GB of memory per CPU core**.
 
 .. _local_development_installation:
 
@@ -251,85 +207,48 @@ Local development installation
 ==============================
 
 .. note::
-    This section is designed for those interested in actively contributing to the
-    development and enhancement of DejaCode. After setting up DejaCode, please refer
-    to our Contributing chapter for comprehensive instructions on submitting
-    code changes.
+    This section is for contributors to DejaCode. The development environment
+    runs entirely in Docker — no local Python or PostgreSQL installation required.
+    Please refer to the Contributing guide for instructions on submitting changes.
 
-Supported Platforms
+Clone and configure
 -------------------
 
-**DejaCode** has been tested and is supported on the following operating systems:
-
-#. **Debian-based** Linux distributions. It is reported to work well Fedora.
-#. **macOS** 10.14 and up
-
-.. warning::
-     On **Windows** DejaCode can **only** be :ref:`run_with_docker`.
-
-Pre-installation Checklist
---------------------------
-
-Before you install DejaCode, make sure you have the following prerequisites:
-
-#. **Python: versions 3.14** found at https://www.python.org/downloads/
-#. **Git**: most recent release available at https://git-scm.com/
-#. **PostgreSQL**: release 16 or later found at https://www.postgresql.org/ or
-   https://postgresapp.com/ on macOS
-#. **ldap** development libraries to build python-ldap on Linux.
-   For instance on Debian::
-
-    apt-get install -y libldap2-dev libsasl2-dev slapd ldap-utils
-
-.. _system_dependencies:
-
-Clone and Configure
--------------------
-
-#. Clone the `DejaCode GitHub repository <https://github.com/aboutcode-org/dejacode>`_::
+#. Clone the `DejaCode repository <https://github.com/aboutcode-org/dejacode>`_::
 
     git clone https://github.com/aboutcode-org/dejacode.git && cd dejacode
 
-#. Install the dependencies::
+Run the app
+-----------
 
-    make dev
+Build the development image and start all services::
 
-#. Create an environment file::
+    make run
 
-    make envfile_dev
+The application is available at http://localhost:8000/.
+Source code changes are reflected immediately without restarting the container.
 
-Database
---------
+.. note::
+    ``make run`` is a shortcut for ``docker compose -f compose.dev.yml up``.
+    All standard ``docker compose`` subcommands are available directly::
 
-**PostgreSQL** is the preferred database backend.
-To set up the database user, database, and table, run::
+        docker compose -f compose.dev.yml logs -f
+        docker compose -f compose.dev.yml exec web ./manage.py shell
+        docker compose -f compose.dev.yml down
 
-    make postgresdb
+Create an application user
+--------------------------
 
-To entirely delete the database user, database, and tables, run::
+::
 
-    make postgresdb_clean
-
+    make superuser
 
 Tests
 -----
 
-You can validate your DejaCode installation by running the test suite::
+::
 
     make test
 
-Run the App
------------
-
-Start the local web server using::
-
-    make run
-
-Then, open your web browser and visit http://localhost:8000/ to access the web
-application.
-
 .. warning::
-    This setup is **not suitable for deployments** and is
-    **only supported for local development**.
-    It is highly recommended to use the :ref:`run_with_docker` setup to ensure the
-    availability of all the features.
+    This setup is **not suitable for deployments** and is **only supported for local development**.
