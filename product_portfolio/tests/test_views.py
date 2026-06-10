@@ -4153,7 +4153,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         data = json.loads(response.content)
         self.assertEqual(1, len(data))
-        self.assertEqual(vulnerability.vulnerability_id, data[0]["vulnerability_id"])
+        self.assertEqual(vulnerability.advisory_uid, data[0]["advisory_uid"])
         # Aliases stay a real list in JSON, not a comma-joined string.
         self.assertEqual(
             ["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
@@ -4215,8 +4215,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(".yaml", response["Content-Disposition"])
 
         content = response.content.decode()
-        self.assertIn(vulnerability.vulnerability_id, content)
-        self.assertIn("vulnerability_id", content)
+        self.assertIn(vulnerability.advisory_uid, content)
+        self.assertIn("advisory_uid", content)
 
     def test_product_portfolio_product_security_compliance_export_view_respects_permissions(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -4239,5 +4239,5 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url + "?export=json")
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        vulnerability_ids = [entry["vulnerability_id"] for entry in data]
-        self.assertIn(vulnerability.vulnerability_id, vulnerability_ids)
+        vulnerability_ids = [entry["advisory_uid"] for entry in data]
+        self.assertIn(vulnerability.advisory_uid, vulnerability_ids)

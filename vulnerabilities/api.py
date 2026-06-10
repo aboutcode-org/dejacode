@@ -107,7 +107,7 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
     lookup_field = "uuid"
     filterset_class = VulnerabilityFilterSet
     extra_permissions = (TabPermission,)
-    search_fields = ("vulnerability_id", "aliases")
+    search_fields = ("advisory_uid", "aliases")
     ordering_fields = (
         "exploitability",
         "weighted_severity",
@@ -132,7 +132,7 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
 
 
 class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSerializer):
-    vulnerability_id = serializers.ReadOnlyField(source="vulnerability.vulnerability_id")
+    advisory_uid = serializers.ReadOnlyField(source="vulnerability.advisory_uid")
 
     class Meta:
         model = VulnerabilityAnalysis
@@ -141,7 +141,7 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "uuid",
             "product_package",
             "vulnerability",
-            "vulnerability_id",
+            "advisory_uid",
             "state",
             "justification",
             "responses",

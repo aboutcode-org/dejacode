@@ -25,7 +25,7 @@ class VulnerabilityListView(
     template_name = "vulnerabilities/vulnerability_list.html"
     template_list_table = "vulnerabilities/tables/vulnerability_list_table.html"
     table_headers = (
-        Header("vulnerability_id", _("Vulnerability"), filter="last_modified_date"),
+        Header("advisory_uid", _("Vulnerability"), filter="last_modified_date"),
         Header("summary", _("Summary")),
         Header("exploitability", _("Exploitability"), filter="exploitability"),
         Header("weighted_severity", _("Severity"), filter="weighted_severity"),
@@ -41,7 +41,8 @@ class VulnerabilityListView(
             .get_queryset()
             .only(
                 "uuid",
-                "vulnerability_id",
+                "advisory_uid",
+                "advisory_id",
                 "resource_url",
                 "aliases",
                 "summary",

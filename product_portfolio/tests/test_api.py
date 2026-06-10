@@ -1157,7 +1157,7 @@ class ProductRelatedAPITestCase(TestCase):
 
         response = self.client.get(self.pp1_detail_url)
         response_analysis = response.data["vulnerability_analyses"][0]
-        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(vulnerability1.advisory_uid, response_analysis["advisory_uid"])
         self.assertEqual(analysis1.state, response_analysis["state"])
         self.assertEqual(analysis1.justification, response_analysis["justification"])
 
@@ -1189,7 +1189,7 @@ class ProductRelatedAPITestCase(TestCase):
 
         response = self.client.get(self.product1_detail_url)
         response_analysis = response.data["vulnerability_analyses"][0]
-        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(vulnerability1.advisory_uid, response_analysis["advisory_uid"])
         self.assertEqual(analysis1.state, response_analysis["state"])
         self.assertEqual(analysis1.justification, response_analysis["justification"])
 

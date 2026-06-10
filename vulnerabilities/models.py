@@ -234,12 +234,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
         # Support for CycloneDX data structure
         data = data.copy()
-        vulnerability_id = data.get("vulnerability_id") or data.pop("id", None)
-        if not vulnerability_id:
+        advisory_uid = data.get("advisory_uid") or data.pop("id", None)
+        if not advisory_uid:
             return
-        data["vulnerability_id"] = vulnerability_id
 
-        vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+        vulnerability = vulnerability_qs.get_or_none(advisory_uid=advisory_uid)
         if not vulnerability:
             vulnerability = cls.create_from_data(
                 dataspace=dataspace,

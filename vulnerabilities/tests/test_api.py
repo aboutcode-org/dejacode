@@ -63,11 +63,11 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
 
         # Ordered by risk_score
         expected = [
-            self.vulnerability3.vulnerability_id,
-            self.vulnerability2.vulnerability_id,
-            self.vulnerability1.vulnerability_id,
+            self.vulnerability3.advisory_uid,
+            self.vulnerability2.advisory_uid,
+            self.vulnerability1.advisory_uid,
         ]
-        self.assertEqual(expected, [entry["vulnerability_id"] for entry in results])
+        self.assertEqual(expected, [entry["advisory_uid"] for entry in results])
 
         self.assertEqual(str(self.package1), results[2]["affected_packages"][0]["display_name"])
         self.assertEqual(str(self.product1), results[2]["affected_products"][0]["display_name"])
@@ -75,12 +75,12 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
     def test_api_vulnerabilities_list_endpoint_search(self):
         self.client.login(username="super_user", password="secret")
 
-        data = {"search": self.vulnerability1.vulnerability_id}
+        data = {"search": self.vulnerability1.advisory_uid}
         response = self.client.get(self.vulnerabilities_list_url, data)
         self.assertEqual(1, response.data["count"])
-        self.assertContains(response, self.vulnerability1.vulnerability_id)
-        self.assertNotContains(response, self.vulnerability2.vulnerability_id)
-        self.assertNotContains(response, self.vulnerability3.vulnerability_id)
+        self.assertContains(response, self.vulnerability1.advisory_uid)
+        self.assertNotContains(response, self.vulnerability2.advisory_uid)
+        self.assertNotContains(response, self.vulnerability3.advisory_uid)
 
     def test_api_vulnerabilities_list_endpoint_filters(self):
         self.client.login(username="super_user", password="secret")
@@ -101,7 +101,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, detail_url)
         self.assertIn(detail_url, response.data["api_url"])
-        self.assertEqual(self.vulnerability1.vulnerability_id, response.data["vulnerability_id"])
+        self.assertEqual(self.vulnerability1.advisory_uid, response.data["advisory_uid"])
         self.assertEqual(str(self.vulnerability1.uuid), response.data["uuid"])
         self.assertEqual("0.0", response.data["risk_score"])
         self.assertEqual(1, len(response.data["affected_packages"]))
@@ -150,7 +150,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
 
         self.assertContains(response, detail_url)
         self.assertIn(detail_url, response.data["api_url"])
-        self.assertEqual(self.vulnerability1.vulnerability_id, response.data["vulnerability_id"])
+        self.assertEqual(self.vulnerability1.advisory_uid, response.data["advisory_uid"])
         self.assertEqual(str(analysis1.uuid), response.data["uuid"])
         self.assertTrue(response.data["is_reachable"])
 
@@ -185,7 +185,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertIn(product_package1_detail_url, response.data["product_package"])
         self.assertIn(vulnerability1_detail_url, response.data["vulnerability"])
-        self.assertEqual(self.vulnerability1.vulnerability_id, response.data["vulnerability_id"])
+        self.assertEqual(self.vulnerability1.advisory_uid, response.data["advisory_uid"])
         self.assertEqual("resolved", response.data["state"])
         self.assertEqual("code_not_present", response.data["justification"])
         self.assertEqual("detail", response.data["detail"])

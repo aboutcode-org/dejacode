@@ -45,7 +45,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
         self.assertEqual(1, len(affected_by_vulnerabilities))
-        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["vulnerability_id"])
+        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["advisory_uid"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -83,7 +83,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
-        vulnerabilities_data.append({"vulnerability_id": "VCID-0002", "risk_score": 5.0})
+        vulnerabilities_data.append({"advisory_uid": "VCID-0002", "risk_score": 5.0})
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         product1 = make_product(self.dataspace, inventory=[package1])
@@ -241,7 +241,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
             data=vulnerability_data,
             affecting=package1,
         )
-        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["advisory_uid"], vulnerability1.advisory_uid)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
@@ -260,7 +260,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
 
-        vulnerability_data["vulnerability_id"] = vulnerability_data["id"]
+        vulnerability_data["advisory_uid"] = vulnerability_data["id"]
         vulnerability2 = Vulnerability.get_or_create_from_data(
             dataspace=self.dataspace,
             data=vulnerability_data,
