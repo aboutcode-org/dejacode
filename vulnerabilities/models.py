@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import decimal
 import logging
 
 from django.contrib.postgres.fields import ArrayField
@@ -78,6 +77,8 @@ class VulnerabilityQuerySet(DataspacedQuerySet):
         return self.filter(last_modified_date__gte=today)
 
 
+# AdvisoryV2
+# https://github.com/aboutcode-org/vulnerablecode/blob/api-integration-dejacode/vulnerabilities/models.py#L3126
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
@@ -90,32 +91,19 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     automatically on object addition or during schedule tasks.
     """
 
-    # The first set of fields are storing data as fetched from VulnerableCode
-    vulnerability_id = models.CharField(
-        max_length=20,
+    advisory_uid = models.CharField(
+        max_length=250,
         help_text=_(
-            "A unique identifier for the vulnerability, prefixed with 'VCID-'. "
-            "For example, 'VCID-2024-0001'."
+            "Unique ID for the datasource used for this advisory ."
+            "e.g.: pysec_importer_v2/PYSEC-2020-2233"
         ),
     )
-    # avid = models.CharField(
-    #     max_length=500,
-    #     blank=False,
-    #     null=False,
-    #     help_text=_(
-    #         "Unique ID for the datasource used for this advisory ."
-    #         "e.g.: pysec_importer_v2/PYSEC-2020-2233"
-    #     ),
-    # )
-    # advisory_id = models.CharField(
-    #     max_length=500,
-    #     blank=False,
-    #     null=False,
-    #     help_text=_(
-    #         "An advisory is a unique vulnerability identifier in some database, "
-    #         "such as PYSEC-2020-2233"
-    #     ),
-    # )
+    advisory_id = models.CharField(
+        max_length=200,
+        help_text=_(
+            "An advisory is a vulnerability identifier in some database, such as PYSEC-2020-2233"
+        ),
+    )
     resource_url = models.URLField(
         _("Resource URL"),
         max_length=1024,
@@ -131,13 +119,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         help_text=_(
             "A list of aliases for this vulnerability, such as CVE identifiers "
             "(e.g., 'CVE-2017-1000136')."
-        ),
-    )
-    references = JSONListField(
-        blank=True,
-        help_text=_(
-            "A list of references for this vulnerability. Each reference includes a "
-            "URL, an optional reference ID, scores, and the URL for further details. "
         ),
     )
     fixed_packages = JSONListField(
@@ -206,20 +187,21 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     class Meta:
         verbose_name_plural = "Vulnerabilities"
-        unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
+        unique_together = (("dataspace", "advisory_uid"), ("dataspace", "uuid"))
         indexes = [
-            models.Index(fields=["vulnerability_id"]),
+            models.Index(fields=["advisory_id"]),
             models.Index(fields=["exploitability"]),
             models.Index(fields=["weighted_severity"]),
             models.Index(fields=["risk_score"]),
+            models.Index(fields=["risk_level"]),
         ]
 
     def __str__(self):
         return self.vulnerability_id
 
     @property
-    def vcid(self):
-        return self.vulnerability_id
+    def vulnerability_id(self):
+        return self.advisory_id
 
     @property
     def cve(self):
@@ -280,51 +262,51 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             url=self.resource_url,
         )
 
-        references = []
-        ratings = []
-        for reference in self.references:
-            reference_source = cdx_vulnerability.VulnerabilitySource(
-                url=reference.get("reference_url"),
-            )
-            references.append(
-                cdx_vulnerability.VulnerabilityReference(
-                    id=reference.get("reference_id"),
-                    source=reference_source,
-                )
-            )
+        # references = []
+        # ratings = []
+        # for reference in self.references:
+        #     reference_source = cdx_vulnerability.VulnerabilitySource(
+        #         url=reference.get("reference_url"),
+        #     )
+        #     references.append(
+        #         cdx_vulnerability.VulnerabilityReference(
+        #             id=reference.get("reference_id"),
+        #             source=reference_source,
+        #         )
+        #     )
 
-            for score_entry in reference.get("scores", []):
-                # CycloneDX only support a float value for the score field,
-                # where on the VulnerableCode data it can be either a score float value
-                # or a severity string value.
-                score_value = score_entry.get("value")
-                try:
-                    score = decimal.Decimal(score_value)
-                    severity = None
-                except decimal.DecimalException:
-                    score = None
-                    severity = getattr(
-                        cdx_vulnerability.VulnerabilitySeverity,
-                        score_value.upper(),
-                        None,
-                    )
+        #     for score_entry in reference.get("scores", []):
+        #         # CycloneDX only support a float value for the score field,
+        #         # where on the VulnerableCode data it can be either a score float value
+        #         # or a severity string value.
+        #         score_value = score_entry.get("value")
+        #         try:
+        #             score = decimal.Decimal(score_value)
+        #             severity = None
+        #         except decimal.DecimalException:
+        #             score = None
+        #             severity = getattr(
+        #                 cdx_vulnerability.VulnerabilitySeverity,
+        #                 score_value.upper(),
+        #                 None,
+        #             )
 
-                ratings.append(
-                    cdx_vulnerability.VulnerabilityRating(
-                        source=reference_source,
-                        score=score,
-                        severity=severity,
-                        vector=score_entry.get("scoring_elements"),
-                    )
-                )
+        #         ratings.append(
+        #             cdx_vulnerability.VulnerabilityRating(
+        #                 source=reference_source,
+        #                 score=score,
+        #                 severity=severity,
+        #                 vector=score_entry.get("scoring_elements"),
+        #             )
+        #         )
 
         return cdx_vulnerability.Vulnerability(
             id=self.vulnerability_id,
             source=source,
             description=self.summary,
             affects=affects,
-            references=sorted(references),
-            ratings=ratings,
+            # references=sorted(references),
+            # ratings=ratings,
             analysis=analysis,
         )
 

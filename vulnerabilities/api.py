@@ -36,14 +36,16 @@ class VulnerabilitySerializer(DataspacedSerializer):
         fields = (
             "api_url",
             "uuid",
-            "vulnerability_id",
+            "advisory_uid",
+            "advisory_id",
             "resource_url",
             "summary",
             "aliases",
-            "references",
             "exploitability",
             "weighted_severity",
             "risk_score",
+            "risk_level",
+            "fixed_packages",
             "affected_packages",
             "affected_products",
         )

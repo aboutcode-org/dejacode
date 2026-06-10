@@ -328,9 +328,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"""
         <span data-bs-toggle="modal"
               data-bs-target="#vulnerability-analysis-modal"
-              data-vulnerability-id="{vulnerability1.vcid}"
+              data-vulnerability-id="{vulnerability1.vulnerability_id}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vcid}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vulnerability_id}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -375,15 +375,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertContains(response, vulnerability1.vulnerability_id)
+        self.assertContains(response, vulnerability2.vulnerability_id)
         self.assertContains(response, "2 results")
         self.assertNotContains(response, "A risk threshold filter at")
 
         product1.update(vulnerabilities_risk_threshold=3.0)
         response = self.client.get(url)
-        self.assertNotContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertNotContains(response, vulnerability1.vulnerability_id)
+        self.assertContains(response, vulnerability2.vulnerability_id)
         self.assertContains(response, "1 results")
         self.assertContains(response, 'A risk threshold filter at "3.0" is currently applied.')
 
