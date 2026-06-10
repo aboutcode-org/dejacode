@@ -34,6 +34,10 @@ curl -sSL "$REPO/data/postgresql/initdb.sql.gz" -o data/postgresql/initdb.sql.gz
 info "Downloading docker.env"
 curl -sSL "$REPO/docker.env" -o docker.env
 
+info "Downloading nginx configuration"
+mkdir -p etc/nginx/conf.d
+curl -sSL "$REPO/etc/nginx/conf.d/default.conf" -o etc/nginx/conf.d/default.conf
+
 # ── Generate .env with a secure secret key ────────────────────────────────────
 info "Generating .env"
 # Read enough bytes from urandom so tr has enough after filtering, then cut to 50 chars.

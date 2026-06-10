@@ -12,8 +12,8 @@ There are three ways to run DejaCode:
 
 - :ref:`run_with_docker` — **simplest option**, no repository checkout or build step
   required. Uses the pre-built Docker image published on GitHub.
-- :ref:`enterprise_deployment` — same pre-built image with custom nginx, domain
-  configuration, and hardware recommendations for production servers.
+- :ref:`enterprise_deployment` — same pre-built image with custom nginx configuration,
+  domain settings, and hardware recommendations for production servers.
 - :ref:`local_development_installation` — Docker-based setup for contributors.
 
 .. _run_with_docker:
@@ -44,7 +44,7 @@ Run the one-liner installer::
 This script will:
 
 - Create ``~/.dejacode/`` as the installation directory
-- Download ``compose.yml``, ``docker.env``, and the database seed data
+- Download ``compose.yml``, ``docker.env``, the nginx configuration, and the database seed data
 - Generate ``.env`` with a secure secret key
 - Install the ``dejacode`` command in ``~/.local/bin/``
 - Start all services and wait until the application is ready
@@ -145,25 +145,12 @@ Restart the stack to apply::
 The default nginx configuration embedded in ``compose.yml`` is suitable for
 local use. For production, replace it with your own configuration file.
 
-Create a ``compose.override.yml`` in your installation directory
-(``~/.dejacode/``) with the following content:
-
-.. code-block:: yaml
-
-    services:
-      nginx:
-        configs: []
-        volumes:
-          - ./nginx.conf:/etc/nginx/conf.d/default.conf
-
-Then create ``~/.dejacode/nginx.conf`` with your production nginx configuration
-(TLS termination, custom headers, upstream settings, etc.) and restart::
+The installer downloads a default nginx configuration to
+``~/.dejacode/etc/nginx/conf.d/default.conf``. Replace it with your own
+configuration (TLS termination, custom headers, upstream settings, etc.)
+and restart::
 
     dejacode down && dejacode up -d
-
-.. note::
-    Docker Compose automatically picks up ``compose.override.yml`` when present
-    in the same directory as ``compose.yml``.
 
 4. AboutCode integrations
 --------------------------
