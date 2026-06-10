@@ -1,4 +1,7 @@
 name: dejacode
+
+x-description: "Full DejaCode stack: all services, pre-built image, no checkout required"
+
 services:
   db:
     image: docker.io/library/postgres:16.13
@@ -10,7 +13,7 @@ services:
     shm_size: "1gb"
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +28,7 @@ services:
     restart: always
 
   web:
-    build: .
+    image: ghcr.io/aboutcode-org/dejacode:latest
     command: sh -c "
         ./manage.py migrate &&
         ./manage.py collectstatic --no-input --verbosity 0 --clear &&
@@ -37,7 +40,6 @@ services:
       - 8000
     volumes:
       - .env:/opt/dejacode/.env
-      - /etc/dejacode/:/etc/dejacode/
       - static:/var/dejacode/static
       - media:/var/dejacode/media
     depends_on:
@@ -49,7 +51,7 @@ services:
         condition: service_started
 
   worker:
-    build: .
+    image: ghcr.io/aboutcode-org/dejacode:latest
     # Ensure that potential db migrations run first by waiting until "web" is up
     command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
       ./manage.py rqworker-pool --num-workers 2 --verbosity 1"
@@ -57,7 +59,6 @@ services:
       - docker.env
     volumes:
       - .env:/opt/dejacode/.env
-      - /etc/dejacode/:/etc/dejacode/
       # The media volume is required to access uploaded files from the worker
       - media:/var/dejacode/media
     depends_on:
@@ -66,13 +67,12 @@ services:
       - web
 
   scheduler:
-    build: .
+    image: ghcr.io/aboutcode-org/dejacode:latest
     command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs"
     env_file:
       - docker.env
     volumes:
       - .env:/opt/dejacode/.env
-      - /etc/dejacode/:/etc/dejacode/
     depends_on:
       - redis
       - db

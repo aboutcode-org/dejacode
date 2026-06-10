@@ -1,6 +1,6 @@
 {
   "name": "DejaCode Demo (Codespaces only)",
-  "dockerComposeFile": "../../docker-compose.demo.yml",
+  "dockerComposeFile": "../../compose.demo.yml",
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,

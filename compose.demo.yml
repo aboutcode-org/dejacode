@@ -1,4 +1,7 @@
-name: dejacode
+name: dejacode-demo
+
+x-description: "Minimal demo stack: web + db only, auto-created superuser, Codespaces-ready"
+
 services:
   db:
     image: docker.io/library/postgres:16.13
@@ -7,8 +10,9 @@ services:
     volumes:
       - ./data/postgresql:/docker-entrypoint-initdb.d/
     shm_size: "1gb"
+    restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5

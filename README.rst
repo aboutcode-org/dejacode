@@ -3,7 +3,8 @@ DejaCode
 ========
 
 DejaCode provides an enterprise-level application to automate open source license 
-compliance and ensure software supply chain integrity, powered by `ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
+compliance and ensure software supply chain integrity, powered by 
+`ScanCode <https://github.com/aboutcode-org/scancode-toolkit>`_,
 the industry-leading code scanner.
 
 Why Use DejaCode?
