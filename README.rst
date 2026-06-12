@@ -98,8 +98,8 @@ You can learn more about these options by contacting nexB at
 https://www.nexb.com/contact-us/
 
 
-.. |ci-tests| image:: https://github.com/aboutcode-org/dejacode/actions/workflows/run-unit-tests.yml/badge.svg?branch=main
-    :target: https://github.com/aboutcode-org/dejacode/actions/workflows/run-unit-tests.yml
+.. |ci-tests| image:: https://github.com/aboutcode-org/dejacode/actions/workflows/run-unit-tests-docker.yml/badge.svg?branch=main
+    :target: https://github.com/aboutcode-org/dejacode/actions/workflows/run-unit-tests-docker.yml
     :alt: CI Tests Status
 
 .. |docs-rtd| image:: https://readthedocs.org/projects/dejacode/badge/?version=latest
