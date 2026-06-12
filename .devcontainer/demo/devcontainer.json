@@ -16,11 +16,54 @@
       "openFiles": []
     },
     "vscode": {
+      "extensions": [],
       "settings": {
         "chat.disableAIFeatures": true,
-        "workbench.startupEditor": "none",
+        "telemetry.telemetryLevel": "off",
         "workbench.tips.enabled": false,
-        "git.openRepositoryInParentFolders": "never"
+        "workbench.startupEditor": "none",
+        "workbench.editor.enablePreview": false,
+        "security.workspace.trust.enabled": false,
+        "extensions.autoCheckUpdates": false,
+        "extensions.ignoreRecommendations": true,
+        "git.enabled": false,
+        "git.autorefresh": false,
+        "git.decorations.enabled": false,
+        "scm.diffDecorations": "none",
+        "editor.minimap.enabled": false,
+        "editor.quickSuggestions": {
+          "other": "off",
+          "comments": "off",
+          "strings": "off"
+        },
+        "editor.suggestOnTriggerCharacters": false,
+        "editor.wordBasedSuggestions": "off",
+        "editor.parameterHints.enabled": false,
+        "editor.codeLens": false,
+        "editor.lightbulb.enabled": "off",
+        "editor.inlayHints.enabled": "off",
+        "editor.occurrencesHighlight": "off",
+        "editor.selectionHighlight": false,
+        "editor.renderLineHighlight": "none",
+        "editor.renderWhitespace": "none",
+        "editor.formatOnSave": false,
+        "editor.accessibilitySupport": "off",
+        "breadcrumbs.enabled": false,
+        "files.watcherExclude": {
+          "**/.git/**": true,
+          "**/data/**": true,
+          "**/static/**": true,
+          "**/media/**": true,
+          "**/thirdparty/**": true,
+          "**/*.dist": true
+        },
+        "search.exclude": {
+          "**/.git": true,
+          "**/data": true,
+          "**/static": true,
+          "**/media": true,
+          "**/thirdparty": true
+        }
       }
     }
   }
