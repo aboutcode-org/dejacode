@@ -4,6 +4,9 @@
   "service": "web",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "overrideCommand": false,
+  "hostRequirements": {
+    "cpus": 4
+  },
   "forwardPorts": [8000],
   "portsAttributes": {
     "8000": {
