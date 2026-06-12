@@ -52,6 +52,8 @@
         "editor.formatOnSave": false,
         "editor.accessibilitySupport": "off",
         "breadcrumbs.enabled": false,
+        "terminal.integrated.enablePersistentSessions": false,
+        "terminal.integrated.gpuAcceleration": "off",
         "files.watcherExclude": {
           "**/.git/**": true,
           "**/data/**": true,
