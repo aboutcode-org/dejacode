@@ -78,7 +78,6 @@ class VulnerabilityQuerySet(DataspacedQuerySet):
 
 
 # AdvisoryV2
-# https://github.com/aboutcode-org/vulnerablecode/blob/api-integration-dejacode/vulnerabilities/models.py#L3126
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
