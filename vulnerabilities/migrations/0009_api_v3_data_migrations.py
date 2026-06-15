@@ -25,6 +25,12 @@ def migrate_and_purge_vulnerabilities(apps, schema_editor):
     Vulnerability.objects.exclude(id__in=linked_ids).delete()
 
 
+def purge_vulnerabilities(apps, schema_editor):
+    """Purge all vulnerabilities on reverse, data cannot be recovered."""
+    Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
+    Vulnerability.objects.all().delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -32,5 +38,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(migrate_and_purge_vulnerabilities, migrations.RunPython.noop),
+        migrations.RunPython(migrate_and_purge_vulnerabilities, purge_vulnerabilities),
     ]
