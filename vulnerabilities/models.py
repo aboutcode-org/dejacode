@@ -130,6 +130,10 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         output_field=models.IntegerField(),
         db_persist=True,
     )
+    ssvc_trees = JSONListField(
+        blank=True,
+        help_text=_("A list of SSVC decision trees for this vulnerability."),
+    )
     EXPLOITABILITY_CHOICES = [
         (0.5, _("No exploits known")),
         (1.0, _("Potential exploits")),

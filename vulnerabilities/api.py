@@ -46,6 +46,7 @@ class VulnerabilitySerializer(DataspacedSerializer):
             "risk_score",
             "risk_level",
             "fixed_packages",
+            "ssvc_trees",
             "affected_packages",
             "affected_products",
         )
