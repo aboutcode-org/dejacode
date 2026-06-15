@@ -249,7 +249,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
     def test_vulnerability_model_get_or_create_from_data(self):
         vulnerability_data = {
-            "id": "VCID-q4q6-yfng-aaag",
+            "id": "ID-q4q6-yfng-aaag",
             "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
         }
 
@@ -257,10 +257,11 @@ class VulnerabilitiesModelsTestCase(TestCase):
             dataspace=self.dataspace,
             data=vulnerability_data,
         )
+        self.assertEqual(vulnerability_data["id"], vulnerability1.advisory_uid)
         self.assertEqual(vulnerability_data["id"], vulnerability1.advisory_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
 
-        vulnerability_data["advisory_uid"] = vulnerability_data["id"]
+        vulnerability_data["advisory_uid"] = vulnerability1.advisory_uid
         vulnerability2 = Vulnerability.get_or_create_from_data(
             dataspace=self.dataspace,
             data=vulnerability_data,

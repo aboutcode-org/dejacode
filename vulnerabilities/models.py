@@ -232,9 +232,14 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         """Get or create a Vulnerability from provided ``data``."""
         vulnerability_qs = Vulnerability.objects.scope(dataspace)
 
-        # Support for CycloneDX data structure
         data = data.copy()
-        advisory_uid = data.get("advisory_uid") or data.pop("id", None)
+        # CycloneDX uses "id" where we expect advisory_id and advisory_uid.
+        if "id" in data:
+            cyclonedx_id = data.pop("id")
+            data.setdefault("advisory_id", cyclonedx_id)
+            data.setdefault("advisory_uid", cyclonedx_id)
+
+        advisory_uid = data.get("advisory_uid")
         if not advisory_uid:
             return
 

@@ -17,7 +17,7 @@ def make_vulnerability(dataspace, affecting=None, **data):
         data["advisory_id"] = f"ID-0000-{make_string(4)}"
 
     if "advisory_uid" not in data:
-        data["advisory_uid"] = f'importer/{data["advisory_id"]}'
+        data["advisory_uid"] = f"importer/{data['advisory_id']}"
 
     vulnerability = Vulnerability.objects.create(
         dataspace=dataspace,
