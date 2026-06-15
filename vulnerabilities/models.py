@@ -267,51 +267,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             url=self.resource_url,
         )
 
-        # references = []
-        # ratings = []
-        # for reference in self.references:
-        #     reference_source = cdx_vulnerability.VulnerabilitySource(
-        #         url=reference.get("reference_url"),
-        #     )
-        #     references.append(
-        #         cdx_vulnerability.VulnerabilityReference(
-        #             id=reference.get("reference_id"),
-        #             source=reference_source,
-        #         )
-        #     )
-
-        #     for score_entry in reference.get("scores", []):
-        #         # CycloneDX only support a float value for the score field,
-        #         # where on the VulnerableCode data it can be either a score float value
-        #         # or a severity string value.
-        #         score_value = score_entry.get("value")
-        #         try:
-        #             score = decimal.Decimal(score_value)
-        #             severity = None
-        #         except decimal.DecimalException:
-        #             score = None
-        #             severity = getattr(
-        #                 cdx_vulnerability.VulnerabilitySeverity,
-        #                 score_value.upper(),
-        #                 None,
-        #             )
-
-        #         ratings.append(
-        #             cdx_vulnerability.VulnerabilityRating(
-        #                 source=reference_source,
-        #                 score=score,
-        #                 severity=severity,
-        #                 vector=score_entry.get("scoring_elements"),
-        #             )
-        #         )
-
         return cdx_vulnerability.Vulnerability(
             id=self.advisory_id,
             source=source,
             description=self.summary,
             affects=affects,
-            # references=sorted(references),
-            # ratings=ratings,
             analysis=analysis,
         )
 
