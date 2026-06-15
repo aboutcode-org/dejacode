@@ -95,7 +95,7 @@ def fetch_for_packages(
             purl = PackageURL.from_string(vc_entry.get("purl"))
             affected_packages = queryset.filter(
                 type=purl.type,
-                namespace=purl.namespace,
+                namespace=purl.namespace or "",
                 name=purl.name,
                 version=purl.version,
             )

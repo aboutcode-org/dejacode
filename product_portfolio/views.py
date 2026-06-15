@@ -3232,7 +3232,7 @@ class ProductSecurityComplianceExportView(
 
     export_filename = "security_compliance"
     export_fields = {
-        "advisory_uid": "Vulnerability ID",
+        "advisory_id": "Vulnerability ID",
         "aliases": "Aliases",
         "summary": "Summary",
         "risk_level": "Risk level",

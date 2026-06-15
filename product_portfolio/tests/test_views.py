@@ -330,7 +330,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-bs-target="#vulnerability-analysis-modal"
               data-vulnerability-id="{vulnerability1.advisory_id}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_id}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_uid}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -3384,7 +3384,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = reverse(
             "product_portfolio:vulnerability_analysis_form",
-            args=[pp1.uuid, vulnerability1.advisory_id],
+            args=[pp1.uuid, vulnerability1.advisory_uid],
         )
 
         response = self.client.get(url)

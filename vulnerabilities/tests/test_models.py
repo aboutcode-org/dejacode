@@ -36,16 +36,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.super_user = create_superuser("super_user", self.dataspace)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
-    def test_vulnerability_mixin_get_entry_for_package(self, mock_request_get):
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerability_mixin_get_entry_for_package(self, mock_bulk_search):
         vulnerablecode = VulnerableCode(self.dataspace)
         package1 = make_package(self.dataspace, package_url="pkg:composer/guzzlehttp/psr7@1.9.0")
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
-        mock_request_get.return_value = json.loads(response_file.read_text())
+        mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
-        self.assertEqual(1, len(affected_by_vulnerabilities))
-        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["advisory_uid"])
+        self.assertEqual(2, len(affected_by_vulnerabilities))
+        self.assertEqual("pypa/idna/PYSEC-2024-60", affected_by_vulnerabilities[0]["advisory_uid"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -62,22 +62,24 @@ class VulnerabilitiesModelsTestCase(TestCase):
         package1.get_entry_from_vulnerablecode()
         mock_get_entry_for_package.assert_called_once()
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_vulnerability_mixin_fetch_vulnerabilities(self, mock_is_configured, mock_request_get):
+    def test_vulnerability_mixin_fetch_vulnerabilities(self, mock_is_configured, mock_bulk_search):
         mock_is_configured.return_value = True
         self.dataspace.enable_vulnerablecodedb_access = True
         self.dataspace.save()
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
-        mock_request_get.return_value = json.loads(response_file.read_text())
+        mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         package1.fetch_vulnerabilities()
 
-        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.advisory_id)
+        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
+        self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
 
     def test_vulnerability_mixin_create_vulnerabilities(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
@@ -89,9 +91,9 @@ class VulnerabilitiesModelsTestCase(TestCase):
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual("8.4", str(package1.risk_score))
-        self.assertEqual("8.4", str(product1.productpackages.get().weighted_risk_score))
+        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual("5.0", str(package1.risk_score))
+        self.assertEqual("5.0", str(product1.productpackages.get().weighted_risk_score))
 
     def test_vulnerability_mixin_update_risk_score(self):
         package1 = make_package(self.dataspace)
@@ -198,43 +200,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
-        vulnerability_data = (
-            {
-                "purl": "pkg:npm/%40isaacs/brace-expansion@5.0.0",
-                "affected_by_vulnerabilities": [
-                    {
-                        "advisory_id": "GHSA-7h2j-956f-4vf2",
-                        "advisory_uid": "github_osv/GHSA-7h2j-956f-4vf2",
-                        "aliases": ["CVE-2026-25547"],
-                        "summary": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
-                        "weighted_severity": 7.8,
-                        "exploitability": 0.5,
-                        "risk_score": 3.9,
-                        "fixed_by_packages": ["pkg:npm/%40isaacs/brace-expansion@5.0.1"],
-                        "ssvc_trees": [
-                            {
-                                "vector": "SSVCv2/.../M:M/D:T/2026-02-05T14:24:50Z/",
-                                "options": [
-                                    {"Exploitation": "none"},
-                                    {"Automatable": "yes"},
-                                    {"Technical Impact": "partial"},
-                                    {"Mission Prevalence": "minimal"},
-                                    {"Public Well-being Impact": "material"},
-                                    {"Mission & Well-being": "medium"},
-                                ],
-                                "decision": "Track",
-                                "source_url": "https://github.com/.../CVE-2026-25547.json",
-                            }
-                        ],
-                        "resource_url": "http://vulnerablecode.io/.../GHSA-7h2j-956f-4vf2",
-                    }
-                ],
-                "fixing_vulnerabilities": [],
-                "next_non_vulnerable_version": "5.0.1",
-                "latest_non_vulnerable_version": "5.0.1",
-                "risk_score": 3.9,
-            },
-        )
+        vulnerability_data = {
+            "advisory_id": "GHSA-7h2j-956f-4vf2",
+            "advisory_uid": "github_osv/GHSA-7h2j-956f-4vf2",
+            "aliases": ["CVE-2026-25547"],
+            "summary": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
+            "weighted_severity": 7.8,
+            "exploitability": 0.5,
+            "risk_score": 3.9,
+            "resource_url": "http://vulnerablecode.io/.../GHSA-7h2j-956f-4vf2",
+        }
 
         vulnerability1 = Vulnerability.create_from_data(
             dataspace=self.dataspace,

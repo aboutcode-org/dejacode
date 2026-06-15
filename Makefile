@@ -30,6 +30,7 @@ shell:
 # make test              - full suite
 # make test k=<pattern>  - filter by name, e.g. make test k=test_name
 test:
+	${EXEC} web pip install --find-links=thirdparty/dist/ --no-index --no-cache-dir '.[dev]'
 	${MANAGE} test --noinput --parallel auto $(if $(k),-k $(k),)
 
 migrations:

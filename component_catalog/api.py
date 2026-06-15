@@ -631,6 +631,7 @@ class PackageSerializer(
         many=True,
         fields=[
             "advisory_uid",
+            "advisory_id",
             "api_url",
             "uuid",
         ],

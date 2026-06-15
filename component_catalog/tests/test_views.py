@@ -3056,34 +3056,34 @@ class PackageUserViewsTestCase(TestCase):
         with mock.patch(
             "dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl"
         ) as bulk_search:
-            bulk_search.return_value = []
+            bulk_search.return_value = {"count": 0, "results": []}
             vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[self.package1])
             self.assertEqual([], vulnerable_purls)
 
-            bulk_search.return_value = ["pkg:pypi/django@2.1"]
+            bulk_search.return_value = {"count": 1, "results": ["pkg:pypi/django@2.1"]}
             vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[self.package1])
             self.assertEqual(["pkg:pypi/django@2.1"], vulnerable_purls)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
-    def test_vulnerablecode_get_vulnerabilities_cache(self, mock_request_get):
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerablecode_get_vulnerabilities_cache(self, mock_bulk_search):
         vulnerablecode = VulnerableCode(self.dataspace)
 
         self.package1.set_package_url("pkg:pypi/django@2.1")
         self.package1.save()
 
-        mock_request_get.return_value = {
+        mock_bulk_search.return_value = {
             "count": 1,
             "results": True,
         }
 
         results = vulnerablecode.get_vulnerabilities_by_purl(self.package1.package_url)
-        self.assertEqual(1, mock_request_get.call_count)
+        self.assertEqual(1, mock_bulk_search.call_count)
         self.assertTrue(results)
 
         results = vulnerablecode.get_vulnerabilities_by_purl(self.package1.package_url)
-        # request.get was only called once since the results are returned from the cached
+        # bulk_search_by_purl was only called once since the results are returned from the cache
         # on the second call of `get_vulnerabilities_by_purl`.
-        self.assertEqual(1, mock_request_get.call_count)
+        self.assertEqual(1, mock_bulk_search.call_count)
         self.assertTrue(results)
 
     def test_send_scan_notification(self):

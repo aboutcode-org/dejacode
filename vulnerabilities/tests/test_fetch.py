@@ -81,40 +81,44 @@ class VulnerabilitiesFetchTestCase(TestCase):
         queryset = Package.objects.scope(self.dataspace)
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
-        mock_bulk_search_by_purl.return_value = response_json["results"]
+        mock_bulk_search_by_purl.return_value = response_json
 
         results = fetch_for_packages(
             queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
-        self.assertEqual(results, {"created": 1, "updated": 0})
+        self.assertEqual(results, {"created": 2, "updated": 0})
 
         self.assertEqual("Progress: 1/1", buffer.getvalue())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.advisory_id)
-        self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
-        self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
-        self.assertEqual(Decimal("8.4"), vulnerability.risk_score)
+        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
+        self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
+        self.assertEqual(Decimal("0.5"), vulnerability.exploitability)
+        self.assertEqual(Decimal("6.8"), vulnerability.weighted_severity)
+        self.assertEqual(Decimal("3.4"), vulnerability.risk_score)
         package1.refresh_from_db()
         pp1.refresh_from_db()
-        self.assertEqual(Decimal("8.4"), package1.risk_score)
-        self.assertEqual(Decimal("8.4"), pp1.weighted_risk_score)
+        self.assertEqual(Decimal("3.4"), package1.risk_score)
+        self.assertEqual(Decimal("3.4"), pp1.weighted_risk_score)
 
         # Update
         purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
         pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
-        mock_bulk_search_by_purl.return_value = response_json["results"]
+        mock_bulk_search_by_purl.return_value = response_json
         results = fetch_for_packages(
             queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
         self.assertEqual(results, {"created": 0, "updated": 1})
-        vulnerability = package1.affected_by_vulnerabilities.get()
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
         self.assertEqual(Decimal("10.0"), vulnerability.risk_score)
         package1.refresh_from_db()
         pp1.refresh_from_db()
-        self.assertEqual(Decimal("8.4"), package1.risk_score)
-        self.assertEqual(Decimal("4.2"), pp1.weighted_risk_score)
+        self.assertEqual(Decimal("3.4"), package1.risk_score)
+        self.assertEqual(Decimal("1.7"), pp1.weighted_risk_score)
 
     @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
     def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):

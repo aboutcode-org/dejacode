@@ -7,8 +7,8 @@
   "statements": [
     {
       "vulnerability": {
-        "name": "VCID-0001",
-        "@id": "https://public.vulnerablecode.io/vulnerabilities/VCID-0001",
+        "name": "ID-0001",
+        "@id": "https://public.vulnerablecode.io/vulnerabilities/ID-0001",
         "description": "",
         "aliases": [
           "CVE-1984-1010"
@@ -27,8 +27,8 @@
     },
     {
       "vulnerability": {
-        "name": "VCID-0002",
-        "@id": "https://public.vulnerablecode.io/vulnerabilities/VCID-0002",
+        "name": "ID-0002",
+        "@id": "https://public.vulnerablecode.io/vulnerabilities/ID-0002",
         "description": "",
         "aliases": []
       },
@@ -45,7 +45,7 @@
     },
     {
       "vulnerability": {
-        "name": "VCID-0003",
+        "name": "ID-0003",
         "@id": "",
         "description": "",
         "aliases": []

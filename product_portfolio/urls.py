@@ -117,7 +117,7 @@ urlpatterns = [
         name="edit_productrelation_ajax",
     ),
     path(
-        "vulnerability_analysis/<uuid:productpackage_uuid>/<str:advisory_uid>/",
+        "vulnerability_analysis/<uuid:productpackage_uuid>/<path:advisory_uid>/",
         vulnerability_analysis_form_view,
         name="vulnerability_analysis_form",
     ),
