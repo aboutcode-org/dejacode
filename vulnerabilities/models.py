@@ -204,10 +204,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         return self.advisory_id
 
     @property
-    def vulnerability_id(self):
-        return self.advisory_id
-
-    @property
     def cve(self):
         for alias in self.aliases:
             if alias.startswith("CVE-"):

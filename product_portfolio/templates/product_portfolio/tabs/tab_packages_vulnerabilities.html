@@ -102,7 +102,7 @@
             <td class="p-1">
               <span data-bs-toggle="modal"
                     data-bs-target="#vulnerability-analysis-modal"
-                    data-vulnerability-id="{{ vulnerability.advisory_id }}"
+                    data-advisory-uid="{{ vulnerability.advisory_uid }}"
                     data-package-identifier="{{ product_package.package.identifier }}"
                     data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product_package.uuid vulnerability.advisory_uid %}"
               >

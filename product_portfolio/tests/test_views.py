@@ -328,7 +328,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"""
         <span data-bs-toggle="modal"
               data-bs-target="#vulnerability-analysis-modal"
-              data-vulnerability-id="{vulnerability1.advisory_id}"
+              data-advisory-uid="{vulnerability1.advisory_uid}"
               data-package-identifier="{p1}"
               data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_uid}/"
         >
