@@ -77,7 +77,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.advisory_id)
 
     def test_vulnerability_mixin_create_vulnerabilities(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
@@ -257,7 +257,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
             dataspace=self.dataspace,
             data=vulnerability_data,
         )
-        self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["id"], vulnerability1.advisory_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
 
         vulnerability_data["advisory_uid"] = vulnerability_data["id"]

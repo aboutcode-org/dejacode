@@ -297,7 +297,7 @@ def get_csaf_product_tree(product):
 
 
 def get_csaf_vulnerability_ids(vulnerability):
-    ids = [csaf.Id(system_name="VulnerableCode", text=vulnerability.vulnerability_id)]
+    ids = [csaf.Id(system_name="VulnerableCode", text=vulnerability.advisory_id)]
 
     for alias in vulnerability.aliases:
         prefix = alias.split("-")[0]
@@ -399,7 +399,7 @@ def get_openvex_timestamp():
 
 def get_openvex_vulnerability(vulnerability):
     return openvex.Vulnerability(
-        name=vulnerability.vulnerability_id,
+        name=vulnerability.advisory_id,
         field_id=vulnerability.resource_url,
         description=vulnerability.summary,
         aliases=vulnerability.aliases,

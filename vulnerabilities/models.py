@@ -197,7 +197,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         ]
 
     def __str__(self):
-        return self.vulnerability_id
+        return self.advisory_id
 
     @property
     def vulnerability_id(self):
@@ -300,7 +300,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         #         )
 
         return cdx_vulnerability.Vulnerability(
-            id=self.vulnerability_id,
+            id=self.advisory_id,
             source=source,
             description=self.summary,
             affects=affects,

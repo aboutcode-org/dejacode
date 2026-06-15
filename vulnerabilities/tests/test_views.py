@@ -57,20 +57,20 @@ class VulnerabilityViewsTestCase(TestCase):
         response = self.client.get(reverse("component_catalog:package_list"))
         self.assertNotContains(response, vulnerability_list_url)
 
-    def test_vulnerability_list_view_vulnerability_id_link(self):
+    def test_vulnerability_list_view_advisory_id_link(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
 
-        expected = f"<strong>{self.vulnerability1.vulnerability_id}</strong>"
+        expected = f"<strong>{self.vulnerability1.advisory_id}</strong>"
         self.assertContains(response, expected, html=True)
 
         self.vulnerability1.resource_url = (
-            f"https://url/vulnerabilities/{self.vulnerability1.vulnerability_id}"
+            f"https://url/vulnerabilities/{self.vulnerability1.advisory_id}"
         )
         self.vulnerability1.save()
         expected = f"""
         <a href="{self.vulnerability1.resource_url}" target="_blank">
-           {self.vulnerability1.vulnerability_id}
+           {self.vulnerability1.advisory_id}
            <i class="fa-solid fa-up-right-from-square mini"></i>
         </a>
         """

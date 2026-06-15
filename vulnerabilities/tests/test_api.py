@@ -88,9 +88,9 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         data = {"risk_score": "critical"}
         response = self.client.get(self.vulnerabilities_list_url, data)
         self.assertEqual(1, response.data["count"])
-        self.assertNotContains(response, self.vulnerability1.vulnerability_id)
-        self.assertNotContains(response, self.vulnerability2.vulnerability_id)
-        self.assertContains(response, self.vulnerability3.vulnerability_id)
+        self.assertNotContains(response, self.vulnerability1.advisory_id)
+        self.assertNotContains(response, self.vulnerability2.advisory_id)
+        self.assertContains(response, self.vulnerability3.advisory_id)
 
     def test_api_vulnerabilities_detail_endpoint(self):
         detail_url = reverse("api_v2:vulnerability-detail", args=[self.vulnerability1.uuid])
@@ -126,14 +126,14 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         data = {"is_reachable": "yes"}
         response = self.client.get(self.analysis_list_url, data)
         self.assertEqual(1, response.data["count"])
-        self.assertContains(response, self.vulnerability1.vulnerability_id)
-        self.assertNotContains(response, self.vulnerability2.vulnerability_id)
+        self.assertContains(response, self.vulnerability1.advisory_id)
+        self.assertNotContains(response, self.vulnerability2.advisory_id)
 
         data = {"is_reachable": "no"}
         response = self.client.get(self.analysis_list_url, data)
         self.assertEqual(0, response.data["count"])
-        self.assertNotContains(response, self.vulnerability1.vulnerability_id)
-        self.assertNotContains(response, self.vulnerability2.vulnerability_id)
+        self.assertNotContains(response, self.vulnerability1.advisory_id)
+        self.assertNotContains(response, self.vulnerability2.advisory_id)
 
     def test_api_vulnerability_analysis_detail_endpoint(self):
         self.client.login(username="super_user", password="secret")

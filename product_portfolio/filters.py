@@ -138,7 +138,7 @@ class ProductFilterSet(DataspacedFilterSet):
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
-        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
+        field_name="packages__affected_by_vulnerabilities__advisory_id",
         label=_("Affected by"),
     )
     productpackage_licenses = django_filters.CharFilter(

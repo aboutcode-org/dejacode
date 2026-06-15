@@ -328,9 +328,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"""
         <span data-bs-toggle="modal"
               data-bs-target="#vulnerability-analysis-modal"
-              data-vulnerability-id="{vulnerability1.vulnerability_id}"
+              data-vulnerability-id="{vulnerability1.advisory_id}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vulnerability_id}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_id}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -375,15 +375,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, vulnerability1.vulnerability_id)
-        self.assertContains(response, vulnerability2.vulnerability_id)
+        self.assertContains(response, vulnerability1.advisory_id)
+        self.assertContains(response, vulnerability2.advisory_id)
         self.assertContains(response, "2 results")
         self.assertNotContains(response, "A risk threshold filter at")
 
         product1.update(vulnerabilities_risk_threshold=3.0)
         response = self.client.get(url)
-        self.assertNotContains(response, vulnerability1.vulnerability_id)
-        self.assertContains(response, vulnerability2.vulnerability_id)
+        self.assertNotContains(response, vulnerability1.advisory_id)
+        self.assertContains(response, vulnerability2.advisory_id)
         self.assertContains(response, "1 results")
         self.assertContains(response, 'A risk threshold filter at "3.0" is currently applied.')
 
@@ -3130,7 +3130,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(export_cyclonedx_url, data={"content": "vex"})
         response_str = str(response.getvalue())
         self.assertIn("vulnerabilities", response_str)
-        self.assertIn(vulnerability1.vulnerability_id, response_str)
+        self.assertIn(vulnerability1.advisory_id, response_str)
 
     def test_product_portfolio_product_export_openvex_view(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -3384,7 +3384,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = reverse(
             "product_portfolio:vulnerability_analysis_form",
-            args=[pp1.uuid, vulnerability1.vulnerability_id],
+            args=[pp1.uuid, vulnerability1.advisory_id],
         )
 
         response = self.client.get(url)
@@ -4129,7 +4129,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "Reference URL"
         )
         self.assertIn(expected_header, content)
-        self.assertIn(vulnerability.vulnerability_id, content)
+        self.assertIn(vulnerability.advisory_id, content)
         # Aliases must be flattened to a comma-joined string, not a Python list repr.
         self.assertIn('"CVE-2024-42005, GHSA-pv4p-cwwg-4rph, PYSEC-2024-70"', content)
         self.assertNotIn("['CVE-2024-42005'", content)
@@ -4239,5 +4239,5 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url + "?export=json")
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        vulnerability_ids = [entry["advisory_uid"] for entry in data]
-        self.assertIn(vulnerability.advisory_uid, vulnerability_ids)
+        advisory_ids = [entry["advisory_id"] for entry in data]
+        self.assertIn(vulnerability.advisory_id, advisory_ids)

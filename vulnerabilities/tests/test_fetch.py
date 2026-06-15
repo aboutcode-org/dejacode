@@ -91,7 +91,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual("Progress: 1/1", buffer.getvalue())
         self.assertEqual(1, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.advisory_id)
         self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
         self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
         self.assertEqual(Decimal("8.4"), vulnerability.risk_score)

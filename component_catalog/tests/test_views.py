@@ -1054,7 +1054,7 @@ class ComponentUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        self.assertContains(response, vulnerability1.vulnerability_id)
+        self.assertContains(response, vulnerability1.advisory_id)
 
     def test_component_catalog_component_create_ajax_view(self):
         component_create_ajax_url = reverse("component_catalog:component_add_ajax")
@@ -3020,7 +3020,7 @@ class PackageUserViewsTestCase(TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        self.assertContains(response, self.vulnerability1.vulnerability_id)
+        self.assertContains(response, self.vulnerability1.advisory_id)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])

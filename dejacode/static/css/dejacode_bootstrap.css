@@ -395,7 +395,7 @@ table.packages-table .column-primary_language {
 }
 
 /* -- Vulnerability List -- */
-table.vulnerabilities-table .column-vulnerability_id {
+table.vulnerabilities-table .column-advisory_id {
   width: 220px;
 }
 table.vulnerabilities-table .column-aliases {
@@ -413,7 +413,7 @@ table.vulnerabilities-table .column-summary {
 }
 
 /* -- Vulnerability tab -- */
-#tab_vulnerabilities .column-vulnerability_id {
+#tab_vulnerabilities .column-advisory_id {
   width: 230px;
 }
 #tab_vulnerabilities .column-affected_packages {

@@ -2658,7 +2658,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
 
 
 @login_required
-def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability_id):
+def vulnerability_analysis_form_view(request, productpackage_uuid, advisory_uid):
     user = request.user
     dataspace = user.dataspace
     form_class = VulnerabilityAnalysisForm
@@ -2670,7 +2670,7 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, vulnerability
     vulnerability_analysis_qs = VulnerabilityAnalysis.objects.scope(dataspace)
 
     product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
-    vulnerability = get_object_or_404(vulnerability_qs, vulnerability_id=vulnerability_id)
+    vulnerability = get_object_or_404(vulnerability_qs, advisory_uid=advisory_uid)
 
     # Fetch the existing Analysis values for each affected products
     product_analysis = vulnerability_analysis_qs.filter(

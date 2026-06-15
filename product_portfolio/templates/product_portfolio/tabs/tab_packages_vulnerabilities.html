@@ -44,11 +44,11 @@
               <strong>
                 {% if vulnerability.resource_url %}
                   <a href="{{ vulnerability.resource_url }}" target="_blank">
-                    {{ vulnerability.vulnerability_id }}
+                    {{ vulnerability.advisory_id }}
                     <i class="fa-solid fa-up-right-from-square mini"></i>
                   </a>
                 {% else %}
-                  {{ vulnerability.vulnerability_id }}
+                  {{ vulnerability.advisory_id }}
                 {% endif %}
                 {% if vulnerability.summary %}
                   <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
@@ -102,9 +102,9 @@
             <td class="p-1">
               <span data-bs-toggle="modal"
                     data-bs-target="#vulnerability-analysis-modal"
-                    data-vulnerability-id="{{ vulnerability.vulnerability_id }}"
+                    data-vulnerability-id="{{ vulnerability.advisory_id }}"
                     data-package-identifier="{{ product_package.package.identifier }}"
-                    data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product_package.uuid vulnerability.vulnerability_id %}"
+                    data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product_package.uuid vulnerability.advisory_uid %}"
               >
                 <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
                   <i class="far fa-edit fa-sm"></i>

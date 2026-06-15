@@ -119,7 +119,7 @@ class ComponentFilterSet(DataspacedFilterSet):
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
-        field_name="affected_by_vulnerabilities__vulnerability_id",
+        field_name="affected_by_vulnerabilities__advisory_id",
         label=_("Affected by"),
     )
 
@@ -267,7 +267,7 @@ class PackageFilterSet(DataspacedFilterSet):
         widget=DropDownRightWidget(link_content='<i class="fas fa-bug"></i>'),
     )
     affected_by = django_filters.CharFilter(
-        field_name="affected_by_vulnerabilities__vulnerability_id",
+        field_name="affected_by_vulnerabilities__advisory_id",
         label=_("Affected by"),
     )
     affected_by_last_modified_date = django_filters.DateRangeFilter(
