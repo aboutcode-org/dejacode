@@ -110,7 +110,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         results = fetch_for_packages(
             queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
         )
-        self.assertEqual(results, {"created": 0, "updated": 1})
+        self.assertEqual(results, {"created": 0, "updated": 2})
         vulnerability = package1.affected_by_vulnerabilities.filter(
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()

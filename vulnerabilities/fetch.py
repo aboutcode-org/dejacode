@@ -101,35 +101,10 @@ def fetch_for_packages(
             )
 
         for vc_entry in vc_entries:
-            affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
-            if not affected_by_vulnerabilities:
-                continue
-
-            purl = PackageURL.from_string(vc_entry.get("purl"))
-            affected_packages = queryset.filter(
-                type=purl.type,
-                namespace=purl.namespace or "",
-                name=purl.name,
-                version=purl.version,
+            affected_packages = process_vc_entry(
+                vc_entry, queryset, dataspace, update, batch_results, log_func, verbosity
             )
-            if not affected_packages:
-                raise CommandError("Could not find packages!")
-
-            if log_func and verbosity >= 2:
-                vuln_count = len(affected_by_vulnerabilities)
-                label = "advisory" if vuln_count == 1 else "advisories"
-                log_func(f"  {purl}: {vuln_count} {label}")
-
-            # Store all packages of that batch to then trigger the update_weighted_risk_score
             batch_affected_packages.extend(affected_packages)
-
-            for vulnerability_data in affected_by_vulnerabilities:
-                create_or_update_vulnerability(
-                    vulnerability_data, dataspace, affected_packages, update, batch_results
-                )
-
-            if package_risk_score := vc_entry.get("risk_score"):
-                affected_packages.update(risk_score=package_risk_score)
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
@@ -148,6 +123,44 @@ def fetch_for_packages(
             )
 
     return results
+
+
+def process_vc_entry(vc_entry, queryset, dataspace, update, results, log_func=None, verbosity=1):
+    """
+    Process a single VulnerableCode purl entry: find the matching packages in ``queryset``,
+    create or update each linked vulnerability, and apply the API-provided risk score.
+
+    Returns the queryset of affected packages, or an empty list if the entry has no
+    vulnerabilities. The ``results`` dict is updated in-place.
+    """
+    affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
+    if not affected_by_vulnerabilities:
+        return []
+
+    purl = PackageURL.from_string(vc_entry.get("purl"))
+    affected_packages = queryset.filter(
+        type=purl.type,
+        namespace=purl.namespace or "",
+        name=purl.name,
+        version=purl.version,
+    )
+    if not affected_packages:
+        raise CommandError("Could not find packages!")
+
+    if log_func and verbosity >= 2:
+        vuln_count = len(affected_by_vulnerabilities)
+        label = "advisory" if vuln_count == 1 else "advisories"
+        log_func(f"  {purl}: {vuln_count} {label}")
+
+    for vulnerability_data in affected_by_vulnerabilities:
+        create_or_update_vulnerability(
+            vulnerability_data, dataspace, affected_packages, update, results
+        )
+
+    if package_risk_score := vc_entry.get("risk_score"):
+        affected_packages.update(risk_score=package_risk_score)
+
+    return affected_packages
 
 
 def create_or_update_vulnerability(
