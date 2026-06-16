@@ -10,7 +10,6 @@ from timeit import default_timer as timer
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.core.management.base import CommandError
 from django.urls import reverse
 from django.utils import timezone
 
@@ -188,24 +187,11 @@ def process_vc_entry(
     verbosity=1,
 ):
     """
-    Process a single VulnerableCode purl entry: find the matching packages in ``queryset``,
-    create or update each linked vulnerability, and apply the API-provided risk score.
+    Process a single VulnerableCode purl entry: find matching packages, create or update
+    linked vulnerabilities, and apply the API-provided risk score.
 
-    ``vulnerability_cache`` is a dict mapping advisory_uid to Vulnerability instances,
-    pre-fetched by the caller in a single batch query. Newly created vulnerabilities are
-    added to the cache so subsequent entries in the same batch reuse them without a DB hit.
-
-    M2M links between packages and vulnerabilities are created in batch via
-    ``batch_add_affected`` (1 SELECT + 1 bulk INSERT) instead of one ``get_or_create``
-    per pair.
-
-    Risk score is applied in a single UPDATE query, bypassing ``Package.save()`` and the
-    ``handle_assigned_licenses`` overhead it carries. The API-provided purl-level
-    ``risk_score`` is used directly when present; otherwise the MAX of the linked
-    vulnerability risk scores is computed in the same query.
-
-    Returns the affected packages as a list (already evaluated), or an empty list if the
-    entry has no vulnerabilities. The ``results`` dict is updated in-place.
+    Returns the affected packages as a list, or an empty list if the entry has no
+    vulnerabilities. The ``results`` dict is updated in-place.
     """
     affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
     if not affected_by_vulnerabilities:
@@ -222,7 +208,9 @@ def process_vc_entry(
     )
     affected_packages = list(packages_qs)
     if not affected_packages:
-        raise CommandError("Could not find packages!")
+        if log_func:
+            log_func(f"  Warning: no packages found for {purl}, skipping.")
+        return []
 
     if log_func and verbosity >= 2:
         advisory_count = len(affected_by_vulnerabilities)
@@ -237,8 +225,8 @@ def process_vc_entry(
             dataspace,
             update,
             results,
+            created_advisory_uids,
             vulnerability=vulnerability_cache.get(advisory_uid),
-            created_advisory_uids=created_advisory_uids,
         )
         vulnerability_cache[advisory_uid] = vulnerability
         vulnerabilities.append(vulnerability)
@@ -254,19 +242,9 @@ def process_vc_entry(
 
 
 def create_or_update_vulnerability(
-    vulnerability_data, dataspace, update, results, vulnerability=None, created_advisory_uids=None
+    vulnerability_data, dataspace, update, results, created_advisory_uids, vulnerability=None
 ):
-    """
-    Create or update a Vulnerability from ``vulnerability_data``.
-
-    ``vulnerability`` is the already-resolved instance (looked up from the caller's
-    ``vulnerability_cache``), or ``None`` if not yet created. M2M linking is handled
-    by the caller via ``batch_add_affected``.
-
-    ``created_advisory_uids`` is a run-wide set of advisory_uids created during this fetch.
-    Vulnerabilities in this set are skipped for updates to avoid spurious re-updates when the
-    same advisory appears in multiple packages across different batches.
-    """
+    """Create or update a Vulnerability from ``vulnerability_data``."""
     advisory_uid = vulnerability_data["advisory_uid"]
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
@@ -274,9 +252,8 @@ def create_or_update_vulnerability(
             data=vulnerability_data,
         )
         results["created"] += 1
-        if created_advisory_uids is not None:
-            created_advisory_uids.add(advisory_uid)
-    elif update and advisory_uid not in (created_advisory_uids or ()):
+        created_advisory_uids.add(advisory_uid)
+    elif update and advisory_uid not in created_advisory_uids:
         updated_fields = vulnerability.update_from_data(
             user=None,
             data=vulnerability_data,

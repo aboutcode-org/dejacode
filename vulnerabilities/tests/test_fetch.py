@@ -148,9 +148,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         }
         mock_bulk_search_by_purl.side_effect = [response_36, response_37]
 
-        results = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, update=True
-        )
+        results = fetch_for_packages(queryset, self.dataspace, batch_size=1, update=True)
         # 2 vulnerabilities created from response_36; the shared one is NOT re-updated
         # when encountered in response_37's batch, because created_advisory_uids guards it.
         self.assertEqual(results, {"created": 2, "updated": 0})
