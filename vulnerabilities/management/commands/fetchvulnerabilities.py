@@ -21,7 +21,7 @@ class Command(DataspacedCommand):
         parser.add_argument(
             "--batch-size",
             type=int,
-            default=50,
+            default=100,
             help="Specifies the number of objects per requests to the VulnerableCode service",
         )
         parser.add_argument(
