@@ -83,9 +83,15 @@ class VulnerabilitiesFetchTestCase(TestCase):
         response_json = json.loads(response_file.read_text())
         mock_bulk_search_by_purl.return_value = response_json
 
-        results = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
-        )
+        # Create: 2 count (fetch_for_packages + chunked_queryset) + 1 batch SELECT +
+        #         1 batch vuln lookup + 1 purl filter +
+        #         2×(1 INSERT vuln + 2 M2M get_or_create) +
+        #         4 update_risk_score (SELECT MAX + UPDATE + 2 handle_assigned_licenses) +
+        #         1 purl risk_score UPDATE + 1 update_weighted_risk_score
+        with self.assertNumQueries(18):
+            results = fetch_for_packages(
+                queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+            )
         self.assertEqual(results, {"created": 2, "updated": 0})
 
         self.assertEqual("Progress: 1/1", buffer.getvalue())
@@ -102,14 +108,18 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(Decimal("3.4"), package1.risk_score)
         self.assertEqual(Decimal("3.4"), pp1.weighted_risk_score)
 
-        # Update
+        # Update: 2 count + 1 batch SELECT + 1 batch vuln lookup + 1 purl filter +
+        #         2×(1 UPDATE vuln + 1 M2M get_or_create SELECT) +
+        #         4 update_risk_score (SELECT MAX + UPDATE + 2 handle_assigned_licenses) +
+        #         1 purl risk_score UPDATE + 1 update_weighted_risk_score
         purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
         pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
         mock_bulk_search_by_purl.return_value = response_json
-        results = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
-        )
+        with self.assertNumQueries(15):
+            results = fetch_for_packages(
+                queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+            )
         self.assertEqual(results, {"created": 0, "updated": 2})
         vulnerability = package1.affected_by_vulnerabilities.filter(
             advisory_uid="pypa/idna/PYSEC-2024-60"

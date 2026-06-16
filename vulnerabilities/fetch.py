@@ -100,9 +100,29 @@ def fetch_for_packages(
                 f"  API call: {humanize_time(api_elapsed)} ({len(vc_entries)} vulnerable purls)"
             )
 
+        # One SELECT for all advisory_uids in this batch instead of one per vulnerability.
+        all_advisory_uids = [
+            vulnerability_data["advisory_uid"]
+            for vc_entry in vc_entries
+            for vulnerability_data in (vc_entry.get("affected_by_vulnerabilities") or [])
+        ]
+        vulnerability_cache = {
+            vulnerability.advisory_uid: vulnerability
+            for vulnerability in Vulnerability.objects.scope(dataspace).filter(
+                advisory_uid__in=all_advisory_uids
+            )
+        }
+
         for vc_entry in vc_entries:
             affected_packages = process_vc_entry(
-                vc_entry, queryset, dataspace, update, batch_results, log_func, verbosity
+                vc_entry,
+                queryset,
+                dataspace,
+                update,
+                batch_results,
+                vulnerability_cache,
+                log_func,
+                verbosity,
             )
             batch_affected_packages.extend(affected_packages)
 
@@ -125,50 +145,80 @@ def fetch_for_packages(
     return results
 
 
-def process_vc_entry(vc_entry, queryset, dataspace, update, results, log_func=None, verbosity=1):
+def process_vc_entry(
+    vc_entry, queryset, dataspace, update, results, vulnerability_cache, log_func=None, verbosity=1
+):
     """
     Process a single VulnerableCode purl entry: find the matching packages in ``queryset``,
     create or update each linked vulnerability, and apply the API-provided risk score.
 
-    Returns the queryset of affected packages, or an empty list if the entry has no
-    vulnerabilities. The ``results`` dict is updated in-place.
+    ``vulnerability_cache`` is a dict mapping advisory_uid to Vulnerability instances,
+    pre-fetched by the caller in a single batch query. Newly created vulnerabilities are
+    added to the cache so subsequent entries in the same batch reuse them without a DB hit.
+
+    Risk score updates on packages are deferred: ``update_risk_score`` is called once per
+    affected package after all vulnerabilities for this entry are processed, then the
+    API-provided purl-level ``risk_score`` overwrites the computed value if present.
+
+    Returns the affected packages as a list (already evaluated), or an empty list if the
+    entry has no vulnerabilities. The ``results`` dict is updated in-place.
     """
     affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
     if not affected_by_vulnerabilities:
         return []
 
     purl = PackageURL.from_string(vc_entry.get("purl"))
-    affected_packages = queryset.filter(
+    # Evaluate to a list immediately: packages_qs.update() below clears the QS cache,
+    # which would cause a re-SELECT when the caller iterates the return value.
+    packages_qs = queryset.filter(
         type=purl.type,
         namespace=purl.namespace or "",
         name=purl.name,
         version=purl.version,
     )
+    affected_packages = list(packages_qs)
     if not affected_packages:
         raise CommandError("Could not find packages!")
 
     if log_func and verbosity >= 2:
-        vuln_count = len(affected_by_vulnerabilities)
-        label = "advisory" if vuln_count == 1 else "advisories"
-        log_func(f"  {purl}: {vuln_count} {label}")
+        advisory_count = len(affected_by_vulnerabilities)
+        label = "advisory" if advisory_count == 1 else "advisories"
+        log_func(f"  {purl}: {advisory_count} {label}")
 
     for vulnerability_data in affected_by_vulnerabilities:
-        create_or_update_vulnerability(
-            vulnerability_data, dataspace, affected_packages, update, results
+        advisory_uid = vulnerability_data["advisory_uid"]
+        vulnerability = create_or_update_vulnerability(
+            vulnerability_data,
+            dataspace,
+            affected_packages,
+            update,
+            results,
+            vulnerability=vulnerability_cache.get(advisory_uid),
         )
+        vulnerability_cache[advisory_uid] = vulnerability
+
+    # Call update_risk_score once per package after all vulnerabilities are linked,
+    # then let the API-provided purl-level risk_score overwrite the computed value.
+    for package in affected_packages:
+        package.update_risk_score()
 
     if package_risk_score := vc_entry.get("risk_score"):
-        affected_packages.update(risk_score=package_risk_score)
+        packages_qs.update(risk_score=package_risk_score)
 
     return affected_packages
 
 
 def create_or_update_vulnerability(
-    vulnerability_data, dataspace, affected_packages, update, results
+    vulnerability_data, dataspace, affected_packages, update, results, vulnerability=None
 ):
-    advisory_uid = vulnerability_data["advisory_uid"]
-    vulnerability = Vulnerability.objects.scope(dataspace).get_or_none(advisory_uid=advisory_uid)
+    """
+    Create or update a Vulnerability from ``vulnerability_data`` and link it to
+    ``affected_packages``.
 
+    ``vulnerability`` is the already-resolved instance (looked up from the caller's
+    ``vulnerability_cache``), or ``None`` if not yet created. Risk score updates on
+    ``affected_packages`` are deferred to the caller via ``update_score=False``.
+    """
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
             dataspace=dataspace,
@@ -184,7 +234,7 @@ def create_or_update_vulnerability(
         if updated_fields:
             results["updated"] += 1
 
-    vulnerability.add_affected(affected_packages, update_score=True)
+    vulnerability.add_affected(affected_packages, update_score=False)
     return vulnerability
 
 
