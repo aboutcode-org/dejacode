@@ -48,14 +48,17 @@ class Command(DataspacedCommand):
         if not vulnerablecode.is_configured():
             raise CommandError("VulnerableCode is not configured.")
 
-        fetch.fetch_from_vulnerablecode(
-            self.dataspace,
-            batch_size=batch_size,
-            update=True,
-            timeout=timeout,
-            log_func=self.stdout.write,
-            verbosity=options["verbosity"],
-        )
+        try:
+            fetch.fetch_from_vulnerablecode(
+                self.dataspace,
+                batch_size=batch_size,
+                update=True,
+                timeout=timeout,
+                log_func=self.stdout.write,
+                verbosity=options["verbosity"],
+            )
+        except ValueError as error:
+            raise CommandError(error) from error
 
         if not options["no_notification"]:
             fetch.notify_vulnerability_data_update(self.dataspace)

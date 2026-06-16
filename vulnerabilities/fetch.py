@@ -36,6 +36,9 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
         return
 
     available_types = vulnerablecode.get_package_url_available_types()
+    if not available_types:
+        raise ValueError("VulnerableCode did not return any supported package types.")
+
     package_qs = (
         Package.objects.scope(dataspace)
         .has_package_url()

@@ -35,14 +35,16 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
     @mock.patch("vulnerabilities.fetch.fetch_for_packages")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_package_url_available_types")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_vulnerabilities_fetch_from_vulnerablecode(
-        self, mock_is_configured, mock_fetch_for_packages
+        self, mock_is_configured, mock_get_available_types, mock_fetch_for_packages
     ):
         buffer = io.StringIO()
         make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
+        mock_get_available_types.return_value = ["pypi"]
         mock_fetch_for_packages.return_value = {"created": 2, "updated": 0}
         fetch_from_vulnerablecode(
             self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write

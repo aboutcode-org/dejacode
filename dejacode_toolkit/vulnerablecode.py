@@ -74,32 +74,11 @@ class VulnerableCode(BaseService):
         return (vulnerable_purls or {}).get("results") or []
 
     def get_package_url_available_types(self):
-        # Replace by fetching the endpoint once available.
-        # https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
-        return [
-            "alpine",
-            "alpm",
-            "apache",
-            "cargo",
-            "composer",
-            "conan",
-            "deb",
-            "gem",
-            "generic",
-            "github",
-            "golang",
-            "hex",
-            "mattermost",
-            "maven",
-            "mozilla",
-            "nginx",
-            "npm",
-            "nuget",
-            "openssl",
-            "pypi",
-            "rpm",
-            "ruby",
-        ]
+        """Return the list of supported package types from the VulnerableCode API."""
+        response = self.request_get(f"{self.api_url}package-types")
+        if isinstance(response, list):
+            return response
+        return []
 
 
 def get_plain_purl(purl_str):
