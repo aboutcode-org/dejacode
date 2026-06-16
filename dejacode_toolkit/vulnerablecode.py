@@ -71,7 +71,7 @@ class VulnerableCode(BaseService):
             details=details,
             timeout=timeout,
         )
-        return vulnerable_purls.get("results") or []
+        return (vulnerable_purls or {}).get("results") or []
 
     def get_package_url_available_types(self):
         # Replace by fetching the endpoint once available.

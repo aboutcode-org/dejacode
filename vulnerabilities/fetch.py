@@ -18,6 +18,7 @@ from packageurl import PackageURL
 
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
+from component_catalog.models import PackageAffectedByVulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
@@ -145,6 +146,33 @@ def fetch_for_packages(
     return results
 
 
+def batch_add_affected(affected_packages, vulnerabilities):
+    """
+    Link all ``vulnerabilities`` to all ``affected_packages`` using two queries:
+    one SELECT to find existing relationships, one bulk INSERT for the missing ones.
+
+    Replaces N*M individual ``get_or_create`` calls from ``add_affected_by``.
+    """
+    existing_pairs = set(
+        PackageAffectedByVulnerability.objects.filter(
+            package__in=affected_packages,
+            vulnerability__in=vulnerabilities,
+        ).values_list("package_id", "vulnerability_id")
+    )
+    to_create = [
+        PackageAffectedByVulnerability(
+            package=package,
+            vulnerability=vulnerability,
+            dataspace_id=package.dataspace_id,
+        )
+        for package in affected_packages
+        for vulnerability in vulnerabilities
+        if (package.pk, vulnerability.pk) not in existing_pairs
+    ]
+    if to_create:
+        PackageAffectedByVulnerability.objects.bulk_create(to_create, ignore_conflicts=True)
+
+
 def process_vc_entry(
     vc_entry, queryset, dataspace, update, results, vulnerability_cache, log_func=None, verbosity=1
 ):
@@ -156,9 +184,14 @@ def process_vc_entry(
     pre-fetched by the caller in a single batch query. Newly created vulnerabilities are
     added to the cache so subsequent entries in the same batch reuse them without a DB hit.
 
-    Risk score updates on packages are deferred: ``update_risk_score`` is called once per
-    affected package after all vulnerabilities for this entry are processed, then the
-    API-provided purl-level ``risk_score`` overwrites the computed value if present.
+    M2M links between packages and vulnerabilities are created in batch via
+    ``batch_add_affected`` (1 SELECT + 1 bulk INSERT) instead of one ``get_or_create``
+    per pair.
+
+    Risk score is applied in a single UPDATE query, bypassing ``Package.save()`` and the
+    ``handle_assigned_licenses`` overhead it carries. The API-provided purl-level
+    ``risk_score`` is used directly when present; otherwise the MAX of the linked
+    vulnerability risk scores is computed in the same query.
 
     Returns the affected packages as a list (already evaluated), or an empty list if the
     entry has no vulnerabilities. The ``results`` dict is updated in-place.
@@ -185,23 +218,23 @@ def process_vc_entry(
         label = "advisory" if advisory_count == 1 else "advisories"
         log_func(f"  {purl}: {advisory_count} {label}")
 
+    vulnerabilities = []
     for vulnerability_data in affected_by_vulnerabilities:
         advisory_uid = vulnerability_data["advisory_uid"]
         vulnerability = create_or_update_vulnerability(
             vulnerability_data,
             dataspace,
-            affected_packages,
             update,
             results,
             vulnerability=vulnerability_cache.get(advisory_uid),
         )
         vulnerability_cache[advisory_uid] = vulnerability
+        vulnerabilities.append(vulnerability)
 
-    # Call update_risk_score once per package after all vulnerabilities are linked,
-    # then let the API-provided purl-level risk_score overwrite the computed value.
-    for package in affected_packages:
-        package.update_risk_score()
+    # Link packages to vulnerabilities: 1 SELECT + 1 bulk INSERT instead of N*M get_or_create.
+    batch_add_affected(affected_packages, vulnerabilities)
 
+    # Update risk_score without triggering Package.save() (which carries handle_assigned_licenses).
     if package_risk_score := vc_entry.get("risk_score"):
         packages_qs.update(risk_score=package_risk_score)
 
@@ -209,15 +242,14 @@ def process_vc_entry(
 
 
 def create_or_update_vulnerability(
-    vulnerability_data, dataspace, affected_packages, update, results, vulnerability=None
+    vulnerability_data, dataspace, update, results, vulnerability=None
 ):
     """
-    Create or update a Vulnerability from ``vulnerability_data`` and link it to
-    ``affected_packages``.
+    Create or update a Vulnerability from ``vulnerability_data``.
 
     ``vulnerability`` is the already-resolved instance (looked up from the caller's
-    ``vulnerability_cache``), or ``None`` if not yet created. Risk score updates on
-    ``affected_packages`` are deferred to the caller via ``update_score=False``.
+    ``vulnerability_cache``), or ``None`` if not yet created. M2M linking is handled
+    by the caller via ``batch_add_affected``.
     """
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
@@ -234,7 +266,6 @@ def create_or_update_vulnerability(
         if updated_fields:
             results["updated"] += 1
 
-    vulnerability.add_affected(affected_packages, update_score=False)
     return vulnerability
 
 
