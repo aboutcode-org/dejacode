@@ -54,6 +54,7 @@ class Command(DataspacedCommand):
             update=True,
             timeout=timeout,
             log_func=self.stdout.write,
+            verbosity=options["verbosity"],
         )
 
         if not options["no_notification"]:

@@ -26,10 +26,14 @@ from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
 
-def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=None):
+def fetch_from_vulnerablecode(
+    dataspace, batch_size, update, timeout, log_func=None, verbosity=1
+):
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
     if not vulnerablecode.is_configured():
+        if log_func:
+            log_func("VulnerableCode is not configured.")
         return
 
     available_types = vulnerablecode.get_package_url_available_types()
@@ -51,6 +55,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
         update=update,
         timeout=timeout,
         log_func=log_func,
+        verbosity=verbosity,
     )
 
     run_time = timer() - start_time
@@ -66,7 +71,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
 
 
 def fetch_for_packages(
-    queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None
+    queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None, verbosity=1
 ):
     from product_portfolio.models import ProductPackage
 
@@ -79,14 +84,21 @@ def fetch_for_packages(
     vulnerablecode = VulnerableCode(dataspace)
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
+        batch_start = timer()
+        progress_count = min(index * batch_size, object_count)
         if log_func:
-            progress_count = index * batch_size
-            if progress_count > object_count:
-                progress_count = object_count
             log_func(f"Progress: {intcomma(progress_count)}/{intcomma(object_count)}")
 
         batch_affected_packages = []
+        batch_results = {"created": 0, "updated": 0}
+
+        api_start = timer()
         vc_entries = vulnerablecode.get_vulnerable_purls(batch, details=True, timeout=timeout)
+        api_elapsed = timer() - api_start
+
+        if log_func and verbosity >= 2:
+            log_func(f"  API call: {humanize_time(api_elapsed)} ({len(vc_entries)} vulnerable purls)")
+
         for vc_entry in vc_entries:
             affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
             if not affected_by_vulnerabilities:
@@ -102,12 +114,17 @@ def fetch_for_packages(
             if not affected_packages:
                 raise CommandError("Could not find packages!")
 
+            if log_func and verbosity >= 2:
+                vuln_count = len(affected_by_vulnerabilities)
+                label = "advisory" if vuln_count == 1 else "advisories"
+                log_func(f"  {purl}: {vuln_count} {label}")
+
             # Store all packages of that batch to then trigger the update_weighted_risk_score
             batch_affected_packages.extend(affected_packages)
 
             for vulnerability_data in affected_by_vulnerabilities:
                 create_or_update_vulnerability(
-                    vulnerability_data, dataspace, affected_packages, update, results
+                    vulnerability_data, dataspace, affected_packages, update, batch_results
                 )
 
             if package_risk_score := vc_entry.get("risk_score"):
@@ -115,6 +132,19 @@ def fetch_for_packages(
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
+
+        results["created"] += batch_results["created"]
+        results["updated"] += batch_results["updated"]
+
+        if log_func and verbosity >= 2:
+            batch_elapsed = timer() - batch_start
+            db_elapsed = batch_elapsed - api_elapsed
+            log_func(
+                f"  Batch done: {batch_results['created']} created, "
+                f"{batch_results['updated']} updated "
+                f"(API: {humanize_time(api_elapsed)}, processing: {humanize_time(db_elapsed)}, "
+                f"total: {humanize_time(batch_elapsed)})"
+            )
 
     return results
 
