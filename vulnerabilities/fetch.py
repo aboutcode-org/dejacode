@@ -26,9 +26,8 @@ from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
 
-def fetch_from_vulnerablecode(
-    dataspace, batch_size, update, timeout, log_func=None, verbosity=1
-):
+def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=None, verbosity=1):
+    """Fetch vulnerability data from VulnerableCode for all eligible packages in ``dataspace``."""
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
     if not vulnerablecode.is_configured():
@@ -97,7 +96,9 @@ def fetch_for_packages(
         api_elapsed = timer() - api_start
 
         if log_func and verbosity >= 2:
-            log_func(f"  API call: {humanize_time(api_elapsed)} ({len(vc_entries)} vulnerable purls)")
+            log_func(
+                f"  API call: {humanize_time(api_elapsed)} ({len(vc_entries)} vulnerable purls)"
+            )
 
         for vc_entry in vc_entries:
             affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
@@ -153,8 +154,7 @@ def create_or_update_vulnerability(
     vulnerability_data, dataspace, affected_packages, update, results
 ):
     advisory_uid = vulnerability_data["advisory_uid"]
-    vulnerability_qs = Vulnerability.objects.scope(dataspace)
-    vulnerability = vulnerability_qs.get_or_none(advisory_uid=advisory_uid)
+    vulnerability = Vulnerability.objects.scope(dataspace).get_or_none(advisory_uid=advisory_uid)
 
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
@@ -171,7 +171,7 @@ def create_or_update_vulnerability(
         if updated_fields:
             results["updated"] += 1
 
-    vulnerability.add_affected(affected_packages)
+    vulnerability.add_affected(affected_packages, update_score=True)
     return vulnerability
 
 

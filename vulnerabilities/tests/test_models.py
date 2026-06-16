@@ -153,6 +153,14 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(package1, vulnerability3.affected_packages.get())
         self.assertEqual(3, package1.affected_by_vulnerabilities.count())
 
+        # update_score=False must not trigger risk score recalculation
+        package2 = make_package(self.dataspace)
+        vulnerability4 = make_vulnerability(self.dataspace, risk_score=9.9)
+        package2.add_affected_by(vulnerability4, update_score=False)
+        package2.refresh_from_db()
+        self.assertIsNone(package2.risk_score)
+        self.assertEqual(1, package2.affected_by_vulnerabilities.count())
+
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
@@ -209,6 +217,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
             "exploitability": 0.5,
             "risk_score": 3.9,
             "resource_url": "http://vulnerablecode.io/.../GHSA-7h2j-956f-4vf2",
+            "ssvc_trees": [{"id": "tree1", "value": "Attend"}],
         }
 
         vulnerability1 = Vulnerability.create_from_data(
@@ -220,6 +229,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
+        self.assertEqual(vulnerability_data["ssvc_trees"], vulnerability1.ssvc_trees)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
 
     def test_vulnerability_model_get_or_create_from_data(self):

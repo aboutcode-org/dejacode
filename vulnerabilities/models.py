@@ -209,13 +209,13 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             if alias.startswith("CVE-"):
                 return alias
 
-    def add_affected(self, instances):
+    def add_affected(self, instances, update_score=True):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
         if not isinstance(instances, (list, tuple, models.QuerySet)):
             instances = [instances]
 
         for instance in instances:
-            instance.add_affected_by(vulnerability=self)
+            instance.add_affected_by(vulnerability=self, update_score=update_score)
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
@@ -435,11 +435,12 @@ class AffectedByVulnerabilityMixin(models.Model):
         self.save(update_fields=["risk_score"])
         return self.risk_score
 
-    def add_affected_by(self, vulnerability):
+    def add_affected_by(self, vulnerability, update_score=True):
         """Add ``vulnerability`` as affecting this instance."""
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(vulnerability, through_defaults=through_defaults)
-        self.update_risk_score()
+        if update_score:
+            self.update_risk_score()
 
     def get_entry_for_package(self, vulnerablecode):
         if not self.package_url:
