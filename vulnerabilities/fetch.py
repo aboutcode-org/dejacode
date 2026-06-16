@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import logging
 from timeit import default_timer as timer
 
 from django.contrib.contenttypes.models import ContentType
@@ -19,14 +20,19 @@ from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
 from component_catalog.models import PackageAffectedByVulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
+logger = logging.getLogger("dje")
 
-def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=None, verbosity=1):
+
+def fetch_from_vulnerablecode(
+    dataspace, batch_size, update, timeout, log_func=None, err_func=None, verbosity=1
+):
     """Fetch vulnerability data from VulnerableCode for all eligible packages in ``dataspace``."""
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
@@ -57,6 +63,7 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
         update=update,
         timeout=timeout,
         log_func=log_func,
+        err_func=err_func,
         verbosity=verbosity,
     )
 
@@ -73,7 +80,14 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
 
 
 def fetch_for_packages(
-    queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None, verbosity=1
+    queryset,
+    dataspace,
+    batch_size=50,
+    update=True,
+    timeout=None,
+    log_func=None,
+    err_func=None,
+    verbosity=1,
 ):
     from product_portfolio.models import ProductPackage
 
@@ -99,6 +113,21 @@ def fetch_for_packages(
         api_start = timer()
         vc_entries = vulnerablecode.get_vulnerable_purls(batch, details=True, timeout=timeout)
         api_elapsed = timer() - api_start
+
+        if vc_entries is None:
+            failed_purls = get_plain_purls(batch)
+            error_msg = (
+                f"VulnerableCode API call failed for batch {index} "
+                f"({len(failed_purls)} purls, "
+                f"progress: {intcomma(progress_count)}/{intcomma(object_count)}). "
+                f"Purls: {' '.join(failed_purls)}"
+            )
+            logger.error(error_msg)
+            if err_func:
+                err_func(error_msg)
+            elif log_func:
+                log_func(f"  API call failed for batch {index} - skipping.")
+            continue
 
         if log_func and verbosity >= 2:
             log_func(

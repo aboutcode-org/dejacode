@@ -14,7 +14,11 @@ from vulnerabilities import fetch
 
 
 class Command(DataspacedCommand):
-    help = "Fetch vulnerabilities for the provided Dataspace"
+    help = (
+        "Fetch vulnerabilities for the provided Dataspace. "
+        "Progress is written to stdout; API errors (timeouts, network failures) go to stderr. "
+        "To capture errors separately: ./manage.py fetchvulnerabilities 2>errors.log"
+    )
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
@@ -55,6 +59,7 @@ class Command(DataspacedCommand):
                 update=True,
                 timeout=timeout,
                 log_func=self.stdout.write,
+                err_func=self.stderr.write,
                 verbosity=options["verbosity"],
             )
         except ValueError as error:

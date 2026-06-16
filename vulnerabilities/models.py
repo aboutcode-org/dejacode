@@ -77,12 +77,11 @@ class VulnerabilityQuerySet(DataspacedQuerySet):
         return self.filter(last_modified_date__gte=today)
 
 
-# AdvisoryV2
 class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
 
-    Adapted from the VulnerableCode models at
+    Adapted from the VulnerableCode AdvisoryV2 model at
     https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py
 
     Note that this model implements the HistoryDateFieldsMixin but not the

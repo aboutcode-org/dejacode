@@ -60,6 +60,7 @@ class VulnerableCode(BaseService):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
         was found in the VulnerableCodeDB for the given list of `packages`.
+        Returns None when the API call fails (e.g. timeout or network error).
         """
         plain_purls = get_plain_purls(packages)
 
@@ -71,7 +72,9 @@ class VulnerableCode(BaseService):
             details=details,
             timeout=timeout,
         )
-        return (vulnerable_purls or {}).get("results") or []
+        if vulnerable_purls is None:
+            return None
+        return vulnerable_purls.get("results") or []
 
     def get_package_url_available_types(self):
         """Return the list of supported package types from the VulnerableCode API."""
