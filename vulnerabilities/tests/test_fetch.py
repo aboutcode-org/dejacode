@@ -121,6 +121,40 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(Decimal("3.4"), package1.risk_score)
         self.assertEqual(Decimal("1.7"), pp1.weighted_risk_score)
 
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerabilities_fetch_for_packages_cross_batch_no_spurious_update(
+        self, mock_bulk_search_by_purl
+    ):
+        # Two packages affected by the same advisory_uid, processed in separate batches.
+        # The vulnerability must be created once and never "updated" within the same run.
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        queryset = Package.objects.scope(self.dataspace)
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        response_36 = json.loads(response_file.read_text())
+        # Minimal response for idna@3.7: same advisory_uid as idna@3.6's first vulnerability.
+        shared_vuln = response_36["results"][0]["affected_by_vulnerabilities"][0]
+        response_37 = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "purl": "pkg:pypi/idna@3.7",
+                    "affected_by_vulnerabilities": [shared_vuln],
+                    "risk_score": 3.4,
+                }
+            ],
+        }
+        mock_bulk_search_by_purl.side_effect = [response_36, response_37]
+
+        results = fetch_for_packages(
+            queryset, self.dataspace, batch_size=1, update=True
+        )
+        # 2 vulnerabilities created from response_36; the shared one is NOT re-updated
+        # when encountered in response_37's batch, because created_advisory_uids guards it.
+        self.assertEqual(results, {"created": 2, "updated": 0})
+
     @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
     def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):
         notify_vulnerability_data_update(self.dataspace)

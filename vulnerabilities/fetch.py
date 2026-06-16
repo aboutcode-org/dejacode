@@ -82,6 +82,8 @@ def fetch_for_packages(
         return results
 
     vulnerablecode = VulnerableCode(dataspace)
+    # Tracks advisory_uids created during this run to avoid re-updating them in later batches.
+    created_advisory_uids = set()
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
         batch_start = timer()
@@ -122,6 +124,7 @@ def fetch_for_packages(
                 update,
                 batch_results,
                 vulnerability_cache,
+                created_advisory_uids,
                 log_func,
                 verbosity,
             )
@@ -174,7 +177,15 @@ def batch_add_affected(affected_packages, vulnerabilities):
 
 
 def process_vc_entry(
-    vc_entry, queryset, dataspace, update, results, vulnerability_cache, log_func=None, verbosity=1
+    vc_entry,
+    queryset,
+    dataspace,
+    update,
+    results,
+    vulnerability_cache,
+    created_advisory_uids,
+    log_func=None,
+    verbosity=1,
 ):
     """
     Process a single VulnerableCode purl entry: find the matching packages in ``queryset``,
@@ -227,6 +238,7 @@ def process_vc_entry(
             update,
             results,
             vulnerability=vulnerability_cache.get(advisory_uid),
+            created_advisory_uids=created_advisory_uids,
         )
         vulnerability_cache[advisory_uid] = vulnerability
         vulnerabilities.append(vulnerability)
@@ -242,7 +254,7 @@ def process_vc_entry(
 
 
 def create_or_update_vulnerability(
-    vulnerability_data, dataspace, update, results, vulnerability=None
+    vulnerability_data, dataspace, update, results, vulnerability=None, created_advisory_uids=None
 ):
     """
     Create or update a Vulnerability from ``vulnerability_data``.
@@ -250,14 +262,21 @@ def create_or_update_vulnerability(
     ``vulnerability`` is the already-resolved instance (looked up from the caller's
     ``vulnerability_cache``), or ``None`` if not yet created. M2M linking is handled
     by the caller via ``batch_add_affected``.
+
+    ``created_advisory_uids`` is a run-wide set of advisory_uids created during this fetch.
+    Vulnerabilities in this set are skipped for updates to avoid spurious re-updates when the
+    same advisory appears in multiple packages across different batches.
     """
+    advisory_uid = vulnerability_data["advisory_uid"]
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
             dataspace=dataspace,
             data=vulnerability_data,
         )
         results["created"] += 1
-    elif update:
+        if created_advisory_uids is not None:
+            created_advisory_uids.add(advisory_uid)
+    elif update and advisory_uid not in (created_advisory_uids or ()):
         updated_fields = vulnerability.update_from_data(
             user=None,
             data=vulnerability_data,
