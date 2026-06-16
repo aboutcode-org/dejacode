@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
 import logging
 from timeit import default_timer as timer
 
@@ -116,11 +117,11 @@ def fetch_for_packages(
 
         if vc_entries is None:
             failed_purls = get_plain_purls(batch)
+            payload = json.dumps({"purls": failed_purls, "details": True}, indent=4)
             error_msg = (
                 f"VulnerableCode API call failed for batch {index} "
                 f"({len(failed_purls)} purls, "
-                f"progress: {intcomma(progress_count)}/{intcomma(object_count)}). "
-                f"Purls: {' '.join(failed_purls)}"
+                f"progress: {intcomma(progress_count)}/{intcomma(object_count)}).\n{payload}"
             )
             logger.error(error_msg)
             if err_func:
