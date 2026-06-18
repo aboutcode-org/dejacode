@@ -54,6 +54,14 @@ from product_portfolio.models import ScanCodeProject
 logger = logging.getLogger(__name__)
 
 
+@contextmanager
+def log_elapsed(label):
+    """Context manager that logs the elapsed time of the wrapped block."""
+    start = time.perf_counter()
+    yield
+    logger.info(f"{label}: {time.perf_counter() - start:.1f}s")
+
+
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
     def clean_product(self):
         queryset = Product.objects.get_queryset(self.user)
@@ -701,35 +709,30 @@ class ImportPackageFromScanCodeIO:
 
         scancodeio = ScanCodeIO(self.dataspace)
 
-        step_start = time.perf_counter()
-        self.packages = scancodeio.fetch_project_packages(self.project_uuid)
-        logger.info(f"fetch_project_packages: {time.perf_counter() - step_start:.1f}s")
+        with log_elapsed("fetch_project_packages"):
+            self.packages = scancodeio.fetch_project_packages(self.project_uuid)
 
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")
 
         if self.create_dependencies:
-            step_start = time.perf_counter()
-            self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
-            logger.info(f"fetch_project_dependencies: {time.perf_counter() - step_start:.1f}s")
+            with log_elapsed("fetch_project_dependencies"):
+                self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
-        step_start = time.perf_counter()
-        self.import_packages()
-        logger.info(f"import_packages: {time.perf_counter() - step_start:.1f}s")
+        with log_elapsed("import_packages"):
+            self.import_packages()
 
         if self.create_dependencies:
-            step_start = time.perf_counter()
-            self.import_dependencies()
-            logger.info(f"import_dependencies: {time.perf_counter() - step_start:.1f}s")
+            with log_elapsed("import_dependencies"):
+                self.import_dependencies()
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
             logger.info("scan_all_packages: scheduled")
 
         if self.user.dataspace.enable_vulnerablecodedb_access:
-            step_start = time.perf_counter()
-            self.product.fetch_vulnerabilities()
-            logger.info(f"fetch_vulnerabilities: {time.perf_counter() - step_start:.1f}s")
+            with log_elapsed("fetch_vulnerabilities"):
+                self.product.fetch_vulnerabilities()
 
         logger.info(f"save total: {time.perf_counter() - save_start:.1f}s")
 
