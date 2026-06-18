@@ -7,6 +7,8 @@
 #
 
 import json
+import logging
+import time
 from collections import defaultdict
 from contextlib import suppress
 
@@ -47,6 +49,8 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+
+logger = logging.getLogger(__name__)
 
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
@@ -708,16 +712,27 @@ class ImportPackageFromScanCodeIO:
             self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
     def save(self):
+        save_start = time.perf_counter()
+
+        step_start = time.perf_counter()
         self.import_packages()
+        logger.info(f"import_packages: {time.perf_counter() - step_start:.1f}s")
 
         if self.create_dependencies:
+            step_start = time.perf_counter()
             self.import_dependencies()
+            logger.info(f"import_dependencies: {time.perf_counter() - step_start:.1f}s")
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
+            logger.info("scan_all_packages: scheduled")
 
         if self.user.dataspace.enable_vulnerablecodedb_access:
+            step_start = time.perf_counter()
             self.product.fetch_vulnerabilities()
+            logger.info(f"fetch_vulnerabilities: {time.perf_counter() - step_start:.1f}s")
+
+        logger.info(f"save total: {time.perf_counter() - save_start:.1f}s")
 
         return dict(self.created), dict(self.existing), dict(self.errors)
 
