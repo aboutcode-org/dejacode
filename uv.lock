@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-01T14:55:56.000049Z"
+exclude-newer = "2026-06-11T12:57:13.821757Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -282,6 +282,7 @@ dependencies = [
     { name = "sortedcontainers", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "sqlparse", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "swapper", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "tblib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "typing-inspection", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "uritemplate", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -295,7 +296,6 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "ruff", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
-    { name = "tblib", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.metadata]
@@ -389,7 +389,7 @@ requires-dist = [
     { name = "sortedcontainers", specifier = "==2.4.0" },
     { name = "sqlparse", specifier = "==0.5.5" },
     { name = "swapper", specifier = "==1.4.0" },
-    { name = "tblib", marker = "extra == 'dev'", specifier = "==3.2.2" },
+    { name = "tblib", specifier = "==3.2.2" },
     { name = "typing-extensions", specifier = "==4.15.0" },
     { name = "typing-inspection", specifier = "==0.4.2" },
     { name = "uritemplate", specifier = "==4.2.0" },
