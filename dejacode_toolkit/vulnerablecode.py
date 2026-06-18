@@ -9,6 +9,7 @@
 from django.core.cache import caches
 
 from dejacode_toolkit import BaseService
+from dejacode_toolkit import get_settings
 from dejacode_toolkit import logger
 
 cache = caches["vulnerabilities"]
@@ -19,6 +20,12 @@ class VulnerableCode(BaseService):
     settings_prefix = "VULNERABLECODE"
     url_field_name = "vulnerablecode_url"
     api_key_field_name = "vulnerablecode_api_key"
+    user_agent = get_settings("VULNERABLECODE_USER_AGENT", default="VCIO_API_AGENT")
+
+    def get_session(self):
+        session = super().get_session()
+        session.headers.update({"User-Agent": self.user_agent})
+        return session
 
     def get_vulnerabilities(
         self,
