@@ -22,5 +22,10 @@ jobs:
       - name: Generate the .env file and the SECRET_KEY
         run: make envfile
 
+      - name: Build Docker image
+        run: docker compose -f compose.yml -f compose.build.yml build
+
       - name: Run tests
-        run: docker compose run web python ./manage.py test --verbosity=2 --noinput --parallel auto
+        run: |
+          docker compose -f compose.yml -f compose.build.yml run web \
+            python ./manage.py test --verbosity=2 --noinput --parallel auto
