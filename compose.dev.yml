@@ -22,8 +22,6 @@ services:
   web:
     build: .
     image: dejacode:dev
-    env_file:
-      - .env
     environment:
       - DATABASE_HOST=db
       - DATABASE_PASSWORD=dejacode
@@ -37,6 +35,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./.env:/opt/dejacode/.env
       - ./component_catalog:/opt/dejacode/component_catalog
       - ./dejacode:/opt/dejacode/dejacode
       - ./dejacode_toolkit:/opt/dejacode/dejacode_toolkit

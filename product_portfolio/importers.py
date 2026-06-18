@@ -693,11 +693,21 @@ class ImportPackageFromScanCodeIO:
         scancodeio = ScanCodeIO(user.dataspace)
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
         self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
+
         if not self.packages and not self.dependencies:
             raise Exception("Packages could not be fetched from ScanCode.io")
 
+        dataspace = product.dataspace
+        self.default_review_status = ProductRelationStatus.objects.get_default_on_addition_qs(
+            dataspace
+        ).first()
+        self.default_purpose = ProductItemPurpose.objects.get_default_on_addition_qs(
+            dataspace
+        ).first()
+
     def save(self):
         self.import_packages()
+
         if self.create_dependencies:
             self.import_dependencies()
 
@@ -780,8 +790,11 @@ class ImportPackageFromScanCodeIO:
                 "license_expression": package.license_expression,
                 "notes": "Imported from ScanCode.io",
                 "created_by": self.user,
+                "review_status": self.default_review_status,
+                "purpose": self.default_purpose,
             },
         )
+
         package_uid = package_data.get("package_uid") or package.uuid
         self.package_uid_mapping[package_uid] = package
 
@@ -846,7 +859,7 @@ class ImportPackageFromScanCodeIO:
             return package
 
         # 2. If the package data does not include a download_url value:
-        # Attemp to find an existing package using purl-only match.
+        # Attempt to find an existing package using purl-only match.
         if not package_data.get("download_url"):
             purl_lookups = {field: package_data.get(field, "") for field in PACKAGE_URL_FIELDS}
             same_purl_packages = package_qs.filter(**purl_lookups)
