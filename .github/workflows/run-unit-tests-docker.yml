@@ -28,4 +28,4 @@ jobs:
       - name: Run tests
         run: |
           docker compose -f compose.yml -f compose.build.yml run web \
-            python ./manage.py test --verbosity=2 --noinput --parallel auto
+            python ./manage.py test --verbosity=2 --noinput --parallel 4
