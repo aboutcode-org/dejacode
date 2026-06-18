@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-11T12:57:13.821757Z"
+exclude-newer = "2026-06-11T13:07:42.745317Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -68,13 +68,13 @@ wheels = [
 
 [[package]]
 name = "bleach"
-version = "6.3.0"
+version = "6.4.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "webencodings", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "bleach-6.3.0-py3-none-any.whl" },
+    { path = "bleach-6.4.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -305,7 +305,7 @@ requires-dist = [
     { name = "annotated-types", specifier = "==0.7.0" },
     { name = "asgiref", specifier = "==3.11.1" },
     { name = "attrs", specifier = "==25.4.0" },
-    { name = "bleach", specifier = "==6.3.0" },
+    { name = "bleach", specifier = "==6.4.0" },
     { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
     { name = "certifi", specifier = "==2026.5.20" },

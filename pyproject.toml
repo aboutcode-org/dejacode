@@ -98,7 +98,7 @@ dependencies = [
     "XlsxWriter==3.2.9",
     # Markdown
     "markdown==3.10.2",
-    "bleach==6.3.0",
+    "bleach==6.4.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.5.1",
     # Authentication
