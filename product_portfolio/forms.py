@@ -9,6 +9,7 @@
 import json
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import BaseModelFormSet
@@ -557,7 +558,7 @@ class ImportFromScanForm(forms.Form):
     create_dependencies = forms.BooleanField(
         label=_("Create Dependencies"),
         required=False,
-        initial=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
         help_text=_(
             "When checked, dependency relationships between packages discovered in the "
             "import will be created on the Product."
@@ -664,7 +665,7 @@ class BaseProductImportFormView(forms.Form):
     create_dependencies = forms.BooleanField(
         label=_("Create Dependencies"),
         required=False,
-        initial=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
         help_text=_(
             "When checked, dependency relationships between packages discovered in the "
             "import will be created on the Product."
@@ -1002,7 +1003,7 @@ class PullProjectDataForm(forms.Form):
     create_dependencies = forms.BooleanField(
         label=_("Create Dependencies"),
         required=False,
-        initial=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
         help_text=_(
             "When checked, dependency relationships between packages discovered in the "
             "import will be created on the Product."
