@@ -10,6 +10,7 @@ import json
 import logging
 import time
 from collections import defaultdict
+from contextlib import contextmanager
 from contextlib import suppress
 
 from django import forms
@@ -687,6 +688,7 @@ class ImportPackageFromScanCodeIO:
         self.package_uid_mapping = {}
 
         self.user = user
+        self.dataspace = product.dataspace
         self.project_uuid = project_uuid
         self.product = product
         self.update_existing = update_existing
@@ -694,25 +696,22 @@ class ImportPackageFromScanCodeIO:
         self.infer_download_urls = infer_download_urls
         self.create_dependencies = create_dependencies
 
-        # Pre-fetch once to avoid repeated DB lookups in DefaultOnAdditionMixin.save().
-        dataspace = product.dataspace
-        self.default_review_status = ProductRelationStatus.objects.get_default_on_addition_qs(
-            dataspace
-        ).first()
-        self.default_purpose = ProductItemPurpose.objects.get_default_on_addition_qs(
-            dataspace
-        ).first()
+    def save(self):
+        save_start = time.perf_counter()
 
-        scancodeio = ScanCodeIO(user.dataspace)
+        scancodeio = ScanCodeIO(self.dataspace)
+
+        step_start = time.perf_counter()
         self.packages = scancodeio.fetch_project_packages(self.project_uuid)
+        logger.info(f"fetch_project_packages: {time.perf_counter() - step_start:.1f}s")
+
         if not self.packages:
             raise Exception("Packages could not be fetched from ScanCode.io")
 
         if self.create_dependencies:
+            step_start = time.perf_counter()
             self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
-
-    def save(self):
-        save_start = time.perf_counter()
+            logger.info(f"fetch_project_dependencies: {time.perf_counter() - step_start:.1f}s")
 
         step_start = time.perf_counter()
         self.import_packages()
@@ -737,6 +736,14 @@ class ImportPackageFromScanCodeIO:
         return dict(self.created), dict(self.existing), dict(self.errors)
 
     def import_packages(self):
+        # Pre-fetch once to avoid repeated DB lookups in DefaultOnAdditionMixin.save().
+        self.default_review_status = ProductRelationStatus.objects.get_default_on_addition_qs(
+            self.dataspace
+        ).first()
+        self.default_purpose = ProductItemPurpose.objects.get_default_on_addition_qs(
+            self.dataspace
+        ).first()
+
         for package_data in self.packages:
             self.import_package(package_data)
 
