@@ -804,8 +804,9 @@ class ImportPackageFromScanCodeIO:
         if not package:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
-            except ValidationError as errors:
-                self.errors["package"].append(str(errors))
+            except ValidationError as error:
+                logger.error(f"Failed to create package: {error}\n{package_data}")
+                self.errors["package"].append(str(error))
                 return
             self.created["package"].append(str(package))
 
