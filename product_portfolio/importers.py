@@ -690,13 +690,7 @@ class ImportPackageFromScanCodeIO:
         self.infer_download_urls = infer_download_urls
         self.create_dependencies = create_dependencies
 
-        scancodeio = ScanCodeIO(user.dataspace)
-        self.packages = scancodeio.fetch_project_packages(self.project_uuid)
-        self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
-
-        if not self.packages and not self.dependencies:
-            raise Exception("Packages could not be fetched from ScanCode.io")
-
+        # Pre-fetch once to avoid repeated DB lookups in DefaultOnAdditionMixin.save().
         dataspace = product.dataspace
         self.default_review_status = ProductRelationStatus.objects.get_default_on_addition_qs(
             dataspace
@@ -704,6 +698,14 @@ class ImportPackageFromScanCodeIO:
         self.default_purpose = ProductItemPurpose.objects.get_default_on_addition_qs(
             dataspace
         ).first()
+
+        scancodeio = ScanCodeIO(user.dataspace)
+        self.packages = scancodeio.fetch_project_packages(self.project_uuid)
+        if not self.packages:
+            raise Exception("Packages could not be fetched from ScanCode.io")
+
+        if self.create_dependencies:
+            self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
     def save(self):
         self.import_packages()
