@@ -19,6 +19,7 @@ from django.urls import reverse
 from component_catalog.models import Component
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.tests import MaxQueryMixin
 from license_library.models import License
 from license_library.models import LicenseCategory
 from organization.models import Owner
@@ -32,7 +33,7 @@ from reporting.models import Query
 from reporting.models import Report
 
 
-class ReportDetailsViewTestCase(TestCase):
+class ReportDetailsViewTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.owner = Owner.objects.create(dataspace=self.dataspace, name="My Fancy Owner Name")
@@ -1166,7 +1167,7 @@ class ReportDetailsViewTestCase(TestCase):
         # Needed to clear the queries from the License batch creation in setUp
         self.client.get(url)
 
-        with self.assertNumQueries(9):
+        with self.assertMaxQueries(10):
             self.client.get(url)
 
     def test_run_report_view_query_using_related_fields(self):

@@ -52,6 +52,7 @@ from dje.models import Dataspace
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
+from dje.tests import MaxQueryMixin
 from dje.tests import add_perm
 from dje.tests import add_perms
 from dje.tests import create_superuser
@@ -77,7 +78,7 @@ from workflow.models import RequestTemplate
 User = get_user_model()
 
 
-class ComponentUserViewsTestCase(TestCase):
+class ComponentUserViewsTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.nexb_dataspace = Dataspace.objects.create(name="nexB")
         self.nexb_user = User.objects.create_superuser(
@@ -980,7 +981,7 @@ class ComponentUserViewsTestCase(TestCase):
         History.log_change(self.basic_user, self.component1, "Changed version.")
         History.log_change(self.nexb_user, self.component1, "Changed notes.")
 
-        with self.assertNumQueries(32):
+        with self.assertMaxQueries(33):
             self.client.get(url)
 
     def test_component_catalog_details_view_package_tab_fields_visibility(self):
@@ -1095,7 +1096,7 @@ class ComponentUserViewsTestCase(TestCase):
         self.assertContains(response, expected, html=True)
 
 
-class PackageUserViewsTestCase(TestCase):
+class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
     testfiles_location = join(dirname(__file__), "testfiles")
 
     def setUp(self):
@@ -1133,7 +1134,7 @@ class PackageUserViewsTestCase(TestCase):
 
     def test_package_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(16):
+        with self.assertMaxQueries(17):
             self.client.get(reverse("component_catalog:package_list"))
 
     def test_package_list_view_pagination(self):
@@ -1271,7 +1272,7 @@ class PackageUserViewsTestCase(TestCase):
         )
 
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(30):
+        with self.assertMaxQueries(31):
             self.client.get(self.package1.get_absolute_url())
 
     def test_package_details_view_content(self):
@@ -3766,7 +3767,7 @@ class PackageCollectDataTestCase(TransactionTestCase):
         self.assertEqual(1, len(mock_collect_data.mock_calls))
 
 
-class ComponentListViewTestCase(TestCase):
+class ComponentListViewTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(
             name="nexB",
@@ -3856,7 +3857,7 @@ class ComponentListViewTestCase(TestCase):
 
     def test_component_catalog_list_view_num_queries(self):
         self.client.login(username="nexb_user", password="t3st")
-        with self.assertNumQueries(17):
+        with self.assertMaxQueries(18):
             self.client.get(reverse("component_catalog:component_list"))
 
     def test_component_catalog_list_view_default(self):

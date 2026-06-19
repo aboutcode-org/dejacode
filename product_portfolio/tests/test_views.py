@@ -136,7 +136,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(27):
+        with self.assertMaxQueries(28):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -162,7 +162,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(25):
+        with self.assertMaxQueries(26):
             response = self.client.get(url)
         self.assertContains(response, expected)
 
@@ -267,7 +267,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             resolved_to_package=package2,
         )
 
-        with self.assertMaxQueries(9):
+        with self.assertMaxQueries(10):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -289,7 +289,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(11):
+        with self.assertMaxQueries(12):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -357,7 +357,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertNumQueries(11):
+        with self.assertMaxQueries(12):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):

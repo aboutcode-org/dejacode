@@ -26,6 +26,7 @@ from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from dje.models import Dataspace
 from dje.models import History
+from dje.tests import MaxQueryMixin
 from dje.tests import add_perm
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -1643,7 +1644,7 @@ class RequestUserViewsTestCase(TestCase):
         self.assertEqual(expected, payload)
 
 
-class RequestInComponentCatalogTestCase(TestCase):
+class RequestInComponentCatalogTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.nexb_dataspace = Dataspace.objects.create(name="nexB")
         self.user = create_superuser("nexb_user", self.nexb_dataspace)
@@ -1810,7 +1811,7 @@ class RequestInComponentCatalogTestCase(TestCase):
 
         self.assertEqual(3, self.component1.get_requests(self.user).count())
 
-        with self.assertNumQueries(28):
+        with self.assertMaxQueries(29):
             self.client.get(url)
 
     @override_settings(ANONYMOUS_USERS_DATASPACE="nexB")

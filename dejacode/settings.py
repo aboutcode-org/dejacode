@@ -586,6 +586,11 @@ LOGGING = {
             "propagate": False,
             "level": DEJACODE_LOG_LEVEL,
         },
+        "product_portfolio": {
+            "handlers": ["null"] if IS_TESTS else ["console"],
+            "propagate": False,
+            "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
+        },
     },
 }
 
@@ -718,6 +723,8 @@ URLIZE_ASSUME_HTTPS = env.bool("DEJACODE_URLIZE_ASSUME_HTTPS", default=True)
 # Default to 5 seconds.
 DEJACODE_INTEGRATION_REQUESTS_TIMEOUT = env.int("DEJACODE_INTEGRATION_REQUESTS_TIMEOUT", default=5)
 VULNERABLECODE_USER_AGENT = env.str("VULNERABLECODE_USER_AGENT", default="VCIO_API_AGENT")
+CREATE_DEPENDENCIES_DEFAULT = env.bool("CREATE_DEPENDENCIES_DEFAULT", default=True)
+
 
 if IS_TESTS:
     # Silent the django-axes logging during tests

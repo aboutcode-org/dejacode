@@ -49,7 +49,7 @@ superuser:
 	${MANAGE} createsuperuser
 
 ########################################################################################
-# Utilities
+# Linters / docs
 ########################################################################################
 
 DOCS_LOCATION=./docs
@@ -77,6 +77,52 @@ docs:
 	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
 	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
+########################################################################################
+# Utilities
+########################################################################################
+
+outdated:
+	@echo "-> Check for outdated packages (with 7 days cooldown)"
+	uv sync --frozen --quiet
+	uv pip list --outdated \
+		--no-config \
+		--index-url https://pypi.org/simple \
+		--exclude-newer "7 days"
+	@echo "-> Audit the project's dependencies for known vulnerabilities"
+	uv audit
+
+upgrade:
+	@if [ -z "$(PACKAGE)" ]; then \
+		echo "Usage: make upgrade PACKAGE=django==x.x.x"; \
+		exit 1; \
+	fi
+	@echo "-> Download $(PACKAGE) wheels for Linux x86_64"
+	uvx pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform manylinux_2_28_x86_64 \
+		--platform manylinux_2_17_x86_64 \
+		--python-version 3.14 \
+		--dest ./thirdparty/dist/
+	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
+	uvx pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform macosx_11_0_arm64 \
+		--python-version 3.14 \
+		--dest ./thirdparty/dist/
+	@echo "-> Update pyproject.toml and uv.lock"
+	uvx uv add $(PACKAGE)
+
+lock:
+	@echo "-> Regenerate uv.lock from local wheels"
+	uv lock
+
+clean:
+	@echo "-> Clean the Python env"
+	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
+	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
+
+########################################################################################
+# Local venv commands (legacy)
 ########################################################################################
 
 VENV_LOCATION=.venv
@@ -106,40 +152,6 @@ dev: virtualenv
 	@echo "-> Configure and install development dependencies"
 	uv sync --frozen --extra dev
 
-outdated:
-	@echo "-> Check for outdated packages (with 7 days cooldown)"
-	uv pip list --outdated \
-		--no-config \
-		--index-url https://pypi.org/simple \
-		--exclude-newer "7 days"
-	@echo "-> Audit the project's dependencies for known vulnerabilities"
-	uv audit
-
-upgrade:
-	@if [ -z "$(PACKAGE)" ]; then \
-		echo "Usage: make upgrade PACKAGE=django==x.x.x"; \
-		exit 1; \
-	fi
-	@echo "-> Download $(PACKAGE) wheels for Linux x86_64"
-	pip download $(PACKAGE) \
-		--only-binary=:all: \
-		--platform manylinux_2_28_x86_64 \
-		--platform manylinux_2_17_x86_64 \
-		--python-version 3.14 \
-		--dest ./thirdparty/dist/
-	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
-	pip download $(PACKAGE) \
-		--only-binary=:all: \
-		--platform macosx_11_0_arm64 \
-		--python-version 3.14 \
-		--dest ./thirdparty/dist/
-	@echo "-> Update pyproject.toml and uv.lock"
-	uv add $(PACKAGE)
-
-lock:
-	@echo "-> Regenerate uv.lock from local wheels"
-	uv lock
-
 envfile:
 	@echo "-> Create the .env file and generate a secret key"
 	@if test -f ${ENV_FILE}; then echo "${ENV_FILE} file exists already"; exit 1; fi
@@ -149,15 +161,6 @@ envfile:
 envfile_dev: envfile
 	@echo "-> Update the .env file for development"
 	@echo DATABASE_PASSWORD=\"dejacode\" >> ${ENV_FILE}
-
-check-deploy:
-	@echo "-> Check Django deployment settings"
-	${MANAGE} check --deploy
-
-clean:
-	@echo "-> Clean the Python env"
-	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
-	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 initdb:
 	@echo "-> Stop Docker services that access the database"
@@ -183,4 +186,4 @@ psql:
 log:
 	${DOCKER_COMPOSE} logs --tail="100" ${SERVICE}
 
-.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid check-deploy clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log superuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log superuser

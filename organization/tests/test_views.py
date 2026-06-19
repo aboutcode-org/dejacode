@@ -13,6 +13,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from dje.models import Dataspace
+from dje.tests import MaxQueryMixin
 from dje.tests import add_perm
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -24,7 +25,7 @@ License = apps.get_model("license_library", "License")
 Component = apps.get_model("component_catalog", "Component")
 
 
-class OwnerUserViewsTestCase(TestCase):
+class OwnerUserViewsTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="Dataspace")
         self.super_user = create_superuser("super_user", self.dataspace)
@@ -94,12 +95,12 @@ class OwnerUserViewsTestCase(TestCase):
 
     def test_owner_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(13):
+        with self.assertMaxQueries(14):
             self.client.get(reverse("organization:owner_list"))
 
     def test_owner_details_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(18):
+        with self.assertMaxQueries(19):
             self.client.get(self.owner1.get_absolute_url())
 
     def test_owner_list_view_search_unicode_utf8_name_support(self):

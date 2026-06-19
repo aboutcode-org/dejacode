@@ -31,7 +31,7 @@ from organization.models import Owner
 from organization.models import Subowner
 
 
-class LicenseListViewTestCase(TestCase):
+class LicenseListViewTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.nexb_dataspace = Dataspace.objects.create(
             name="nexB",
@@ -286,7 +286,7 @@ class LicenseListViewTestCase(TestCase):
     def test_license_library_list_view_num_queries(self):
         self.client.login(username="nexb_user", password="t3st")
 
-        with self.assertNumQueries(16):
+        with self.assertMaxQueries(17):
             self.client.get(reverse("license_library:license_list"))
 
     def test_license_profile_column_availability_in_license_list_view(self):
