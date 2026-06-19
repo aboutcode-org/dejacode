@@ -196,8 +196,8 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         field_name="packages__affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="packages__affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
 
     class Meta:
@@ -751,8 +751,8 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         field_name="package__affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="package__affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="package__affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
 
     class Meta:

@@ -725,6 +725,7 @@ DEJACODE_INTEGRATION_REQUESTS_TIMEOUT = env.int("DEJACODE_INTEGRATION_REQUESTS_T
 VULNERABLECODE_USER_AGENT = env.str("VULNERABLECODE_USER_AGENT", default="VCIO_API_AGENT")
 CREATE_DEPENDENCIES_DEFAULT = env.bool("CREATE_DEPENDENCIES_DEFAULT", default=True)
 
+
 if IS_TESTS:
     # Silent the django-axes logging during tests
     LOGGING["loggers"].update({"axes": {"handlers": ["null"]}})

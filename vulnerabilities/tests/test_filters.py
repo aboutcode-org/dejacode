@@ -24,7 +24,7 @@ class VulnerabilityFilterSetTestCase(TestCase):
         self.vulnerability4 = make_vulnerability(self.dataspace, risk_score=None)
 
     def test_vulnerability_filterset_search(self):
-        data = {"q": self.vulnerability1.vulnerability_id}
+        data = {"q": self.vulnerability1.advisory_id}
         filterset = VulnerabilityFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [self.vulnerability1])
 

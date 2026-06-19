@@ -1157,7 +1157,7 @@ class ProductRelatedAPITestCase(TestCase):
 
         response = self.client.get(self.pp1_detail_url)
         response_analysis = response.data["vulnerability_analyses"][0]
-        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(vulnerability1.advisory_uid, response_analysis["advisory_uid"])
         self.assertEqual(analysis1.state, response_analysis["state"])
         self.assertEqual(analysis1.justification, response_analysis["justification"])
 
@@ -1171,12 +1171,12 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.pp1_detail_url)
 
-        data = {"affected_by": vulnerability1.vulnerability_id}
+        data = {"affected_by": vulnerability1.advisory_id}
         response = self.client.get(self.productpackage_list_url, data)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.pp1_detail_url)
 
-        data = {"affected_by": vulnerability2.vulnerability_id}
+        data = {"affected_by": vulnerability2.advisory_id}
         response = self.client.get(self.productpackage_list_url, data)
         self.assertEqual(0, response.data["count"])
         self.assertNotContains(response, self.pp1_detail_url)
@@ -1189,7 +1189,7 @@ class ProductRelatedAPITestCase(TestCase):
 
         response = self.client.get(self.product1_detail_url)
         response_analysis = response.data["vulnerability_analyses"][0]
-        self.assertEqual(vulnerability1.vulnerability_id, response_analysis["vulnerability_id"])
+        self.assertEqual(vulnerability1.advisory_uid, response_analysis["advisory_uid"])
         self.assertEqual(analysis1.state, response_analysis["state"])
         self.assertEqual(analysis1.justification, response_analysis["justification"])
 
@@ -1205,13 +1205,13 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertContains(response, self.product1_detail_url)
         self.assertNotContains(response, self.product2_detail_url)
 
-        data = {"affected_by": vulnerability1.vulnerability_id}
+        data = {"affected_by": vulnerability1.advisory_id}
         response = self.client.get(self.product_list_url, data)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.product1_detail_url)
         self.assertNotContains(response, self.product2_detail_url)
 
-        data = {"affected_by": vulnerability2.vulnerability_id}
+        data = {"affected_by": vulnerability2.advisory_id}
         response = self.client.get(self.product_list_url, data)
         self.assertEqual(0, response.data["count"])
         self.assertNotContains(response, self.product1_detail_url)

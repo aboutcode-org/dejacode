@@ -27,9 +27,10 @@ shell:
 	# Open a bash session in a standalone container (no stack required)
 	docker run -it $(IMAGE_NAME) bash
 
+# make test              - full suite
+# make test k=<pattern>  - filter by name, e.g. make test k=test_name
 test:
-	@echo "-> Run the test suite"
-	${MANAGE} test --noinput --parallel auto
+	${MANAGE} test --noinput --parallel auto $(if $(k),-k $(k),)
 
 migrations:
 	@echo "-> Creates new database migrations"

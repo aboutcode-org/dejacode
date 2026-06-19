@@ -1381,7 +1381,7 @@ class ProductImportFromScanTestCase(TestCase):
         created, existing, errors = importer.save()
         created_package = self.product1.packages.get()
         vulnerability = created_package.affected_by_vulnerabilities.get()
-        self.assertEqual(vulnerability_data["id"], vulnerability.vulnerability_id)
+        self.assertEqual(vulnerability_data["id"], vulnerability.advisory_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability.summary)
 
         analysis = vulnerability.vulnerability_analyses.get()

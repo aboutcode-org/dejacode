@@ -14,14 +14,18 @@ from vulnerabilities import fetch
 
 
 class Command(DataspacedCommand):
-    help = "Fetch vulnerabilities for the provided Dataspace"
+    help = (
+        "Fetch vulnerabilities for the provided Dataspace. "
+        "Progress is written to stdout; API errors (timeouts, network failures) go to stderr. "
+        "To capture errors separately: ./manage.py fetchvulnerabilities 2>errors.log"
+    )
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         parser.add_argument(
             "--batch-size",
             type=int,
-            default=50,
+            default=100,
             help="Specifies the number of objects per requests to the VulnerableCode service",
         )
         parser.add_argument(
@@ -48,13 +52,18 @@ class Command(DataspacedCommand):
         if not vulnerablecode.is_configured():
             raise CommandError("VulnerableCode is not configured.")
 
-        fetch.fetch_from_vulnerablecode(
-            self.dataspace,
-            batch_size=batch_size,
-            update=True,
-            timeout=timeout,
-            log_func=self.stdout.write,
-        )
+        try:
+            fetch.fetch_from_vulnerablecode(
+                self.dataspace,
+                batch_size=batch_size,
+                update=True,
+                timeout=timeout,
+                log_func=self.stdout.write,
+                err_func=self.stderr.write,
+                verbosity=options["verbosity"],
+            )
+        except ValueError as error:
+            raise CommandError(error) from error
 
         if not options["no_notification"]:
             fetch.notify_vulnerability_data_update(self.dataspace)

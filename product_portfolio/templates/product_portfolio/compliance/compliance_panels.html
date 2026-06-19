@@ -192,7 +192,7 @@
             {% endif %}
           </span>
           <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
-            {{ vulnerability.vulnerability_id }}
+            {{ vulnerability.advisory_id }}
           </a>
           <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>
         </div>

@@ -53,7 +53,7 @@
       "ids": [
         {
           "system_name": "VulnerableCode",
-          "text": "VCID-0001"
+          "text": "ID-0001"
         },
         {
           "system_name": "Common Vulnerabilities and Exposures",
@@ -85,7 +85,7 @@
       "ids": [
         {
           "system_name": "VulnerableCode",
-          "text": "VCID-0002"
+          "text": "ID-0002"
         }
       ],
       "notes": [
@@ -113,7 +113,7 @@
       "ids": [
         {
           "system_name": "VulnerableCode",
-          "text": "VCID-0003"
+          "text": "ID-0003"
         }
       ],
       "notes": [

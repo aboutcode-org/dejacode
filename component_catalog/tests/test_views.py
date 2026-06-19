@@ -1055,7 +1055,7 @@ class ComponentUserViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        self.assertContains(response, vulnerability1.vcid)
+        self.assertContains(response, vulnerability1.advisory_id)
 
     def test_component_catalog_component_create_ajax_view(self):
         component_create_ajax_url = reverse("component_catalog:component_add_ajax")
@@ -3021,7 +3021,7 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
-        self.assertContains(response, self.vulnerability1.vcid)
+        self.assertContains(response, self.vulnerability1.advisory_id)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])
@@ -3057,65 +3057,34 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         with mock.patch(
             "dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl"
         ) as bulk_search:
-            bulk_search.return_value = []
+            bulk_search.return_value = {"count": 0, "results": []}
             vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[self.package1])
             self.assertEqual([], vulnerable_purls)
 
-            bulk_search.return_value = ["pkg:pypi/django@2.1"]
+            bulk_search.return_value = {"count": 1, "results": ["pkg:pypi/django@2.1"]}
             vulnerable_purls = vulnerablecode.get_vulnerable_purls(packages=[self.package1])
             self.assertEqual(["pkg:pypi/django@2.1"], vulnerable_purls)
 
-    def test_vulnerablecode_get_vulnerable_cpes(self):
-        vulnerablecode = VulnerableCode(self.dataspace)
-        vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=[])
-        self.assertEqual([], vulnerable_cpes)
-
-        components = [self.component1, self.component2]
-        vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=components)
-        self.assertEqual([], vulnerable_cpes)
-
-        self.component1.cpe = "cpe:2.3:a:djangoproject:django:0.95:*:*:*:*:*:*:*"
-        self.component1.save()
-
-        with mock.patch(
-            "dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_cpes"
-        ) as bulk_search:
-            bulk_search.return_value = [
-                {
-                    "vulnerability_id": "VCID-188m-1bke-aaae",
-                    "summary": "The administrative interface in django.contrib.admin ",
-                    "references": [
-                        {"reference_id": ""},
-                    ],
-                }
-            ]
-            vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=components)
-            self.assertEqual([], vulnerable_cpes)
-
-            bulk_search.return_value[0]["references"] = [{"reference_id": self.component1.cpe}]
-            vulnerable_cpes = vulnerablecode.get_vulnerable_cpes(components=components)
-            self.assertEqual([self.component1.cpe], vulnerable_cpes)
-
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
-    def test_vulnerablecode_get_vulnerabilities_cache(self, mock_request_get):
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerablecode_get_vulnerabilities_cache(self, mock_bulk_search):
         vulnerablecode = VulnerableCode(self.dataspace)
 
         self.package1.set_package_url("pkg:pypi/django@2.1")
         self.package1.save()
 
-        mock_request_get.return_value = {
+        mock_bulk_search.return_value = {
             "count": 1,
             "results": True,
         }
 
         results = vulnerablecode.get_vulnerabilities_by_purl(self.package1.package_url)
-        self.assertEqual(1, mock_request_get.call_count)
+        self.assertEqual(1, mock_bulk_search.call_count)
         self.assertTrue(results)
 
         results = vulnerablecode.get_vulnerabilities_by_purl(self.package1.package_url)
-        # request.get was only called once since the results are returned from the cached
+        # bulk_search_by_purl was only called once since the results are returned from the cache
         # on the second call of `get_vulnerabilities_by_purl`.
-        self.assertEqual(1, mock_request_get.call_count)
+        self.assertEqual(1, mock_bulk_search.call_count)
         self.assertTrue(results)
 
     def test_send_scan_notification(self):

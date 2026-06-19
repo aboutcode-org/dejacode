@@ -75,7 +75,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
     ]
     q = SearchFilter(
         label=_("Search"),
-        search_fields=["vulnerability_id", "aliases"],
+        search_fields=["advisory_uid", "aliases"],
     )
     sort = NullsLastOrderingFilter(
         label=_("Sort"),

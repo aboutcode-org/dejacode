@@ -36,16 +36,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.super_user = create_superuser("super_user", self.dataspace)
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
-    def test_vulnerability_mixin_get_entry_for_package(self, mock_request_get):
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerability_mixin_get_entry_for_package(self, mock_bulk_search):
         vulnerablecode = VulnerableCode(self.dataspace)
         package1 = make_package(self.dataspace, package_url="pkg:composer/guzzlehttp/psr7@1.9.0")
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
-        mock_request_get.return_value = json.loads(response_file.read_text())
+        mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
-        self.assertEqual(1, len(affected_by_vulnerabilities))
-        self.assertEqual("VCID-j3au-usaz-aaag", affected_by_vulnerabilities[0]["vulnerability_id"])
+        self.assertEqual(2, len(affected_by_vulnerabilities))
+        self.assertEqual("pypa/idna/PYSEC-2024-60", affected_by_vulnerabilities[0]["advisory_uid"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -62,36 +62,38 @@ class VulnerabilitiesModelsTestCase(TestCase):
         package1.get_entry_from_vulnerablecode()
         mock_get_entry_for_package.assert_called_once()
 
-    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.request_get")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
-    def test_vulnerability_mixin_fetch_vulnerabilities(self, mock_is_configured, mock_request_get):
+    def test_vulnerability_mixin_fetch_vulnerabilities(self, mock_is_configured, mock_bulk_search):
         mock_is_configured.return_value = True
         self.dataspace.enable_vulnerablecodedb_access = True
         self.dataspace.save()
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
-        mock_request_get.return_value = json.loads(response_file.read_text())
+        mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         package1.fetch_vulnerabilities()
 
-        self.assertEqual(1, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
+        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
+        self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
 
     def test_vulnerability_mixin_create_vulnerabilities(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
         vulnerabilities_data = response_json["results"][0]["affected_by_vulnerabilities"]
-        vulnerabilities_data.append({"vulnerability_id": "VCID-0002", "risk_score": 5.0})
+        vulnerabilities_data.append({"advisory_uid": "VCID-0002", "risk_score": 5.0})
 
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual("8.4", str(package1.risk_score))
-        self.assertEqual("8.4", str(product1.productpackages.get().weighted_risk_score))
+        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual("5.0", str(package1.risk_score))
+        self.assertEqual("5.0", str(product1.productpackages.get().weighted_risk_score))
 
     def test_vulnerability_mixin_update_risk_score(self):
         package1 = make_package(self.dataspace)
@@ -151,6 +153,14 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertEqual(package1, vulnerability3.affected_packages.get())
         self.assertEqual(3, package1.affected_by_vulnerabilities.count())
 
+        # update_score=False must not trigger risk score recalculation
+        package2 = make_package(self.dataspace)
+        vulnerability4 = make_vulnerability(self.dataspace, risk_score=9.9)
+        package2.add_affected_by(vulnerability4, update_score=False)
+        package2.refresh_from_db()
+        self.assertIsNone(package2.risk_score)
+        self.assertEqual(1, package2.affected_by_vulnerabilities.count())
+
     def test_vulnerability_model_affected_packages_m2m(self):
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(dataspace=self.dataspace, affecting=package1)
@@ -199,24 +209,15 @@ class VulnerabilitiesModelsTestCase(TestCase):
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
         vulnerability_data = {
-            "vulnerability_id": "VCID-q4q6-yfng-aaag",
-            "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
-            "aliases": ["CVE-2024-27351", "GHSA-vm8q-m57g-pff3", "PYSEC-2024-47"],
-            "references": [
-                {
-                    "reference_url": "https://access.redhat.com/hydra/rest/"
-                    "securitydata/cve/CVE-2024-27351.json",
-                    "reference_id": "",
-                    "scores": [
-                        {
-                            "value": "7.5",
-                            "scoring_system": "cvssv3",
-                            "scoring_elements": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                        }
-                    ],
-                },
-            ],
-            "resource_url": "http://public.vulnerablecode.io/vulnerabilities/VCID-q4q6-yfng-aaag",
+            "advisory_id": "GHSA-7h2j-956f-4vf2",
+            "advisory_uid": "github_osv/GHSA-7h2j-956f-4vf2",
+            "aliases": ["CVE-2026-25547"],
+            "summary": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
+            "weighted_severity": 7.8,
+            "exploitability": 0.5,
+            "risk_score": 3.9,
+            "resource_url": "http://vulnerablecode.io/.../GHSA-7h2j-956f-4vf2",
+            "ssvc_trees": [{"id": "tree1", "value": "Attend"}],
         }
 
         vulnerability1 = Vulnerability.create_from_data(
@@ -224,16 +225,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
             data=vulnerability_data,
             affecting=package1,
         )
-        self.assertEqual(vulnerability_data["vulnerability_id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["advisory_uid"], vulnerability1.advisory_uid)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
         self.assertEqual(vulnerability_data["aliases"], vulnerability1.aliases)
-        self.assertEqual(vulnerability_data["references"], vulnerability1.references)
         self.assertEqual(vulnerability_data["resource_url"], vulnerability1.resource_url)
+        self.assertEqual(vulnerability_data["ssvc_trees"], vulnerability1.ssvc_trees)
         self.assertQuerySetEqual(vulnerability1.affected_packages.all(), [package1])
 
     def test_vulnerability_model_get_or_create_from_data(self):
         vulnerability_data = {
-            "id": "VCID-q4q6-yfng-aaag",
+            "id": "ID-q4q6-yfng-aaag",
             "summary": "In Django 3.2 before 3.2.25, 4.2 before 4.2.11, and 5.0.",
         }
 
@@ -241,10 +242,11 @@ class VulnerabilitiesModelsTestCase(TestCase):
             dataspace=self.dataspace,
             data=vulnerability_data,
         )
-        self.assertEqual(vulnerability_data["id"], vulnerability1.vulnerability_id)
+        self.assertEqual(vulnerability_data["id"], vulnerability1.advisory_uid)
+        self.assertEqual(vulnerability_data["id"], vulnerability1.advisory_id)
         self.assertEqual(vulnerability_data["summary"], vulnerability1.summary)
 
-        vulnerability_data["vulnerability_id"] = vulnerability_data["id"]
+        vulnerability_data["advisory_uid"] = vulnerability1.advisory_uid
         vulnerability2 = Vulnerability.get_or_create_from_data(
             dataspace=self.dataspace,
             data=vulnerability_data,

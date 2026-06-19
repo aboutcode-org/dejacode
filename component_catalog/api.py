@@ -436,8 +436,8 @@ class ComponentFilterSet(DataspacedAPIFilterSet):
         field_name="affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
 
     class Meta:
@@ -630,7 +630,8 @@ class PackageSerializer(
         read_only=True,
         many=True,
         fields=[
-            "vulnerability_id",
+            "advisory_uid",
+            "advisory_id",
             "api_url",
             "uuid",
         ],
@@ -809,8 +810,8 @@ class PackageAPIFilterSet(DataspacedAPIFilterSet):
         field_name="affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
     risk_score = ScoreRangeFilter(score_ranges=RISK_SCORE_RANGES)
 
