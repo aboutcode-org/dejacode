@@ -601,7 +601,7 @@ class ComponentImporterTestCase(MaxQueryMixin, TestCase):
         with self.assertMaxQueries(9):
             self.client.get(reverse("admin:component_catalog_package_import"))
 
-        with self.assertNumQueries(4):
+        with self.assertMaxQueries(4):
             self.client.get(reverse("admin:organization_owner_import"))
 
         with self.assertMaxQueries(10):

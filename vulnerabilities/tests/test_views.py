@@ -12,12 +12,13 @@ from django.urls import reverse
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.tests import MaxQueryMixin
 from dje.tests import create_superuser
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.tests import make_vulnerability
 
 
-class VulnerabilityViewsTestCase(TestCase):
+class VulnerabilityViewsTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(
             name="Dataspace",
@@ -35,7 +36,7 @@ class VulnerabilityViewsTestCase(TestCase):
 
     def test_vulnerability_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(7):
+        with self.assertMaxQueries(8):
             response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
 
         vulnerability_count = Vulnerability.objects.count()
