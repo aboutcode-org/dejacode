@@ -1,6 +1,11 @@
 Release notes
 =============
 
+### Version 5.8.1
+
+* fix: improve performances and logging for SCIO importer (#546)
+* feat: modernize Docker Compose setup and simplify installation docs (#544)
+
 ### Version 5.8.0
 
 * feat: [five-c] Compliance dashboard export/report by @tdruez in https://github.com/aboutcode-org/dejacode/pull/522
