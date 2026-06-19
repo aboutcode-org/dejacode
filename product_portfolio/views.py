@@ -3242,6 +3242,7 @@ class ProductSecurityComplianceExportView(
         "affected_package_count": "Affected packages",
         "fixed_packages_count": "Fixed packages",
         "resource_url": "Reference URL",
+        "advisory_uid": "Advisory UID",
     }
 
     def get(self, request, *args, **kwargs):
