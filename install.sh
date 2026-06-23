@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # DejaCode installer: no root required, works on macOS and Linux.
 # Usage: curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/install.sh | bash
+# Build from source: curl -sSL .../install.sh | bash -s -- --from-source
 set -eu
 
+FROM_SOURCE=false
+[ "${1:-}" = "--from-source" ] && FROM_SOURCE=true
+
 REPO="https://raw.githubusercontent.com/aboutcode-org/dejacode/main"
+GIT_REPO="https://github.com/aboutcode-org/dejacode.git"
 INSTALL_DIR="${DEJACODE_HOME:-$HOME/.dejacode}"
 BIN_DIR="$HOME/.local/bin"
 WRAPPER="$BIN_DIR/dejacode"
+COMPOSE_FILES="-f compose.yml"
+$FROM_SOURCE && COMPOSE_FILES="-f compose.yml -f compose.build.yml"
 
 # ── Output helpers ────────────────────────────────────────────────────────────
 BOLD='\033[1m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; RED='\033[0;31m'; NC='\033[0m'
@@ -18,25 +25,49 @@ die()     { echo -e "${RED}✗${NC} $1" >&2; exit 1; }
 command -v docker &>/dev/null || die "Docker is required. See https://docs.docker.com/get-docker/"
 docker info &>/dev/null       || die "Docker daemon is not running. Please start Docker first."
 command -v curl &>/dev/null   || die "curl is required."
+$FROM_SOURCE && { command -v git &>/dev/null || die "git is required for --from-source."; }
+
+# ── Guard: existing installation ─────────────────────────────────────────────
+if [ -f "$INSTALL_DIR/.env" ]; then
+    die "An existing DejaCode installation was found at $INSTALL_DIR.
+  To reinstall (e.g. switch to --from-source), run these steps manually:
+    dejacode down
+    mv \"$INSTALL_DIR\" \"${INSTALL_DIR}.bak\"
+    DEJACODE_HOME=\"$INSTALL_DIR\" curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/install.sh | bash -s -- --from-source
+    cp \"${INSTALL_DIR}.bak/.env\" \"$INSTALL_DIR/.env\"
+    dejacode restart
+  Your original installation is preserved at ${INSTALL_DIR}.bak for rollback."
+fi
 
 # ── Installation directory ────────────────────────────────────────────────────
 info "Installing DejaCode in ${BOLD}$INSTALL_DIR${NC}"
-mkdir -p "$INSTALL_DIR/data/postgresql"
+cd "$(dirname "$INSTALL_DIR")"
+
+if $FROM_SOURCE; then
+    # ── Clone repository (shallow) ────────────────────────────────────────────
+    info "Cloning DejaCode source (latest main)"
+    git clone --depth 1 "$GIT_REPO" "$INSTALL_DIR"
+    mkdir -p "$INSTALL_DIR/data/postgresql"
+else
+    # ── Download files ────────────────────────────────────────────────────────
+    mkdir -p "$INSTALL_DIR/data/postgresql"
+    cd "$INSTALL_DIR"
+
+    info "Downloading compose.yml"
+    curl -sSL "$REPO/compose.yml" -o compose.yml
+
+    info "Downloading database seed data"
+    curl -sSL "$REPO/data/postgresql/initdb.sql.gz" -o data/postgresql/initdb.sql.gz
+
+    info "Downloading docker.env"
+    curl -sSL "$REPO/docker.env" -o docker.env
+
+    info "Downloading nginx configuration"
+    mkdir -p etc/nginx/conf.d
+    curl -sSL "$REPO/etc/nginx/conf.d/default.conf" -o etc/nginx/conf.d/default.conf
+fi
+
 cd "$INSTALL_DIR"
-
-# ── Download files ────────────────────────────────────────────────────────────
-info "Downloading compose.yml"
-curl -sSL "$REPO/compose.yml" -o compose.yml
-
-info "Downloading database seed data"
-curl -sSL "$REPO/data/postgresql/initdb.sql.gz" -o data/postgresql/initdb.sql.gz
-
-info "Downloading docker.env"
-curl -sSL "$REPO/docker.env" -o docker.env
-
-info "Downloading nginx configuration"
-mkdir -p etc/nginx/conf.d
-curl -sSL "$REPO/etc/nginx/conf.d/default.conf" -o etc/nginx/conf.d/default.conf
 
 # ── Generate .env with a secure secret key ────────────────────────────────────
 info "Generating .env"
@@ -67,7 +98,7 @@ printf '%s\n' \
     '        echo "DejaCode has been uninstalled."' \
     '        ;;' \
     '    *)' \
-    '        cd "$INSTALL_DIR" && exec docker compose "$@"' \
+    "        cd \"\$INSTALL_DIR\" && exec docker compose $COMPOSE_FILES \"\$@\"" \
     '        ;;' \
     'esac' \
     > "$WRAPPER"
@@ -91,7 +122,8 @@ fi
 
 # ── Start services ────────────────────────────────────────────────────────────
 info "Starting DejaCode"
-docker compose up -d
+# shellcheck disable=SC2086
+docker compose $COMPOSE_FILES up --build -d
 
 # ── Wait for web to respond ───────────────────────────────────────────────────
 info "Waiting for DejaCode to be ready"
