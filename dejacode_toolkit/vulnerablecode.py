@@ -8,6 +8,9 @@
 
 from django.core.cache import caches
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 from dejacode_toolkit import BaseService
 from dejacode_toolkit import get_settings
 from dejacode_toolkit import logger
@@ -24,8 +27,18 @@ class VulnerableCode(BaseService):
     user_agent = get_settings("VULNERABLECODE_USER_AGENT", default="VCIO_API_AGENT")
 
     def get_session(self):
+        """Add the required User-Agent header and automatic 429 retry with Retry-After support."""
         session = super().get_session()
         session.headers.update({"User-Agent": self.user_agent})
+        retry = Retry(
+            total=3,
+            status_forcelist=[429],
+            allowed_methods={"GET", "POST"},
+            respect_retry_after_header=True,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
         return session
 
     def get_vulnerabilities_by_purl(
