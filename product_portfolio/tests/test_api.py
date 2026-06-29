@@ -589,6 +589,11 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
     def test_api_product_endpoint_manage_permissions_action(self):
         url = reverse("api_v2:product-manage-permissions", args=[self.product1.uuid])
 
+        # Unauthenticated access is rejected with 403
+        self.client.logout()
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
         # User without view_product gets 404 (object not in secured queryset)
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
@@ -606,38 +611,55 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         # base_user has view_product at this point
         self.assertEqual(1, len(response.data))
         self.assertEqual(self.base_user.username, response.data[0]["username"])
+        self.assertEqual(self.dataspace.name, response.data[0]["dataspace"])
         self.assertIn("view_product", response.data[0]["object_permissions"])
 
-        # Superuser can POST to assign permissions
-        data = {"user": self.admin_user.username, "permissions": ["view_product"]}
+        # Superuser can POST to assign multiple permissions at once
+        data = {
+            "user": self.admin_user.username,
+            "permissions": ["view_product", "change_product"],
+        }
         response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual({"status": "permissions assigned"}, response.data)
         self.assertIn("view_product", get_perms(self.admin_user, self.product1))
+        self.assertIn("change_product", get_perms(self.admin_user, self.product1))
 
         # Superuser can DELETE to remove permissions
-        data = {"user": self.admin_user.username, "permissions": ["view_product"]}
+        data = {"user": self.admin_user.username, "permissions": ["view_product", "change_product"]}
         response = self.client.delete(url, data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual({"status": "permissions removed"}, response.data)
         self.assertNotIn("view_product", get_perms(self.admin_user, self.product1))
+        self.assertNotIn("change_product", get_perms(self.admin_user, self.product1))
 
-        # Product creator (created_by) can manage permissions
+        # Product creator (created_by) can GET, POST, and DELETE
         self.product1.created_by = self.admin_user
         self.product1.save()
         assign_perm("view_product", self.admin_user, self.product1)
         self.client.login(username=self.admin_user.username, password="secret")
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
         data = {"user": self.base_user.username, "permissions": ["change_product"]}
         response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertIn("change_product", get_perms(self.base_user, self.product1))
 
-        # Invalid permission codename returns 400
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertNotIn("change_product", get_perms(self.base_user, self.product1))
+
+        # Invalid permission codename on POST returns 400
         self.client.login(username=self.super_user.username, password="secret")
         data = {"user": self.base_user.username, "permissions": ["nonexistent_perm"]}
         response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
+        # DELETE with unknown codename is a no-op (guardian remove_perm is idempotent)
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         # Missing required fields returns 400
         response = self.client.post(url, {}, format="json")

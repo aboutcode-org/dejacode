@@ -92,7 +92,7 @@ class ObjectPermissionsMixin:
         methods=["get", "post", "delete"],
         url_path="permissions",
         serializer_class=ObjectPermissionSerializer,
-        permission_classes=[CanManageObjectPermissions],
+        permission_classes=[permissions.IsAuthenticated, CanManageObjectPermissions],
     )
     def manage_permissions(self, request, *args, **kwargs):
         """
@@ -139,7 +139,7 @@ class ObjectPermissionsMixin:
                 try:
                     remove_perm(perm, user, obj)
                 except ObjectDoesNotExist:
-                    errors.append(f"Cannot assign permission '{perm}' due to an internal error.")
+                    errors.append(f"Cannot remove permission '{perm}' due to an internal error.")
 
             if errors:
                 return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
