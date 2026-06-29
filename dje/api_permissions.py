@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -28,37 +27,22 @@ class CanManageObjectPermissions(permissions.BasePermission):
     """
     Allows managing object-level permissions if the user is:
     - a superuser, or
-    - the object's owner (configurable via ``owner_field`` on the View), or
-    - has a special manage permission (global or object-level).
+    - the object's owner (configurable via ``owner_field`` on the View).
     """
 
     owner_field = "created_by"
-    manage_permission_codename = "manage_object_permissions"
 
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user.is_authenticated:
             return False
 
-        # 1. Superusers always allowed
         if user.is_superuser:
             return True
 
-        # 2. Check if user matches object's owner field
-        # The field can be overridden on the ViewSet (e.g., owner_field = "owner")
         owner_field = getattr(view, "owner_field", self.owner_field)
         owner = getattr(obj, owner_field, None)
-        if owner == user:
-            return True
-
-        # 3. Check for specific manage permission (global or object-level)
-        app_label = obj._meta.app_label
-        codename = getattr(view, "manage_permission_codename", self.manage_permission_codename)
-        perm_name = f"{app_label}.{codename}"
-        if user.has_perm(perm_name) or user.has_perm(perm_name, obj):
-            return True
-
-        return False
+        return owner == user
 
 
 class ObjectPermissionSerializer(serializers.Serializer):
@@ -100,9 +84,9 @@ class ObjectPermissionsMixin:
     Mixin that adds a `/permissions/` endpoint for any object-level ViewSet.
     Supports GET (list), POST (assign), and DELETE (remove) operations.
 
-    GET /api/{model}/{uuid}/permissions/ → list all users and perms
-    POST /api/{model}/{uuid}/permissions/ → assign perms to a user
-    DELETE /api/{model}/{uuid}/permissions/ → remove perms from a user
+    GET /api/{model}/{uuid}/permissions/ list all users and perms
+    POST /api/{model}/{uuid}/permissions/ assign perms to a user
+    DELETE /api/{model}/{uuid}/permissions/ remove perms from a user
     """
 
     @action(
