@@ -587,6 +587,8 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual("Spec version 10.10 not supported", response.data)
 
     def test_api_product_endpoint_manage_permissions_action(self):
+        from django.contrib.auth.models import Group
+
         url = reverse("api_v2:product-manage-permissions", args=[self.product1.uuid])
 
         # Unauthenticated access is rejected with 403
@@ -604,17 +606,20 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Superuser can GET the permissions list
+        # Superuser GET: response has "users" and "groups" keys
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertIn("users", response.data)
+        self.assertIn("groups", response.data)
         # base_user has view_product at this point
-        self.assertEqual(1, len(response.data))
-        self.assertEqual(self.base_user.username, response.data[0]["username"])
-        self.assertEqual(self.dataspace.name, response.data[0]["dataspace"])
-        self.assertIn("view_product", response.data[0]["object_permissions"])
+        self.assertEqual(1, len(response.data["users"]))
+        self.assertEqual(self.base_user.username, response.data["users"][0]["username"])
+        self.assertEqual(self.dataspace.name, response.data["users"][0]["dataspace"])
+        self.assertIn("view_product", response.data["users"][0]["object_permissions"])
+        self.assertEqual([], response.data["groups"])
 
-        # Superuser can POST to assign multiple permissions at once
+        # Superuser can POST to assign multiple permissions to a user at once
         data = {
             "user": self.admin_user.username,
             "permissions": ["view_product", "change_product"],
@@ -625,13 +630,35 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertIn("view_product", get_perms(self.admin_user, self.product1))
         self.assertIn("change_product", get_perms(self.admin_user, self.product1))
 
-        # Superuser can DELETE to remove permissions
+        # Superuser can DELETE to remove user permissions
         data = {"user": self.admin_user.username, "permissions": ["view_product", "change_product"]}
         response = self.client.delete(url, data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual({"status": "permissions removed"}, response.data)
         self.assertNotIn("view_product", get_perms(self.admin_user, self.product1))
         self.assertNotIn("change_product", get_perms(self.admin_user, self.product1))
+
+        # Superuser can POST to assign permissions to a group
+        team = Group.objects.create(name="backend-team")
+        data = {"group": team.name, "permissions": ["view_product", "change_product"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"status": "permissions assigned"}, response.data)
+        self.assertIn("view_product", get_perms(team, self.product1))
+        self.assertIn("change_product", get_perms(team, self.product1))
+
+        # GET lists the group with its permissions
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data["groups"]))
+        self.assertEqual(team.name, response.data["groups"][0]["name"])
+        self.assertIn("view_product", response.data["groups"][0]["object_permissions"])
+
+        # Superuser can DELETE to remove group permissions
+        data = {"group": team.name, "permissions": ["view_product", "change_product"]}
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertNotIn("view_product", get_perms(team, self.product1))
 
         # Product creator (created_by) can GET, POST, and DELETE
         self.product1.created_by = self.admin_user
@@ -661,8 +688,18 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.delete(url, data, content_type="application/json")
         self.assertEqual(status.HTTP_200_OK, response.status_code)
 
-        # Missing required fields returns 400
-        response = self.client.post(url, {}, format="json")
+        # Neither user nor group returns 400
+        response = self.client.post(url, {"permissions": ["view_product"]}, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
+        # Both user and group returns 400
+        data = {
+            "user": self.base_user.username,
+            "group": team.name,
+            "permissions": ["view_product"],
+        }
+        response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
 

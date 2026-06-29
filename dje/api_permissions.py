@@ -8,11 +8,11 @@
 
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 
 from guardian.shortcuts import assign_perm
-from guardian.shortcuts import get_perms
-from guardian.shortcuts import get_user_perms
+from guardian.shortcuts import get_groups_with_perms
 from guardian.shortcuts import get_users_with_perms
 from guardian.shortcuts import remove_perm
 from rest_framework import permissions
@@ -50,41 +50,50 @@ class CanManageObjectPermissions(permissions.BasePermission):
 
 class ObjectPermissionSerializer(serializers.Serializer):
     """
-    Generic serializer for representing or updating object-level permissions.
-    Accepts:
-      - user: username
-      - permissions: list of permission codenames
+    Validates POST/DELETE input for the manage_permissions action.
+    Exactly one of ``user`` or ``group`` must be provided alongside ``permissions``.
     """
 
-    user = DataspacedSlugRelatedField(queryset=User.objects.all(), slug_field="username")
+    user = DataspacedSlugRelatedField(
+        queryset=User.objects.all(),
+        slug_field="username",
+        required=False,
+        allow_null=True,
+        default=None,
+    )
+    group = serializers.SlugRelatedField(
+        queryset=Group.objects.all(),
+        slug_field="name",
+        required=False,
+        allow_null=True,
+        default=None,
+    )
     permissions = serializers.ListField(child=serializers.CharField(), allow_empty=False)
 
     class Meta:
-        fields = (
-            "user",
-            "permissions",
-        )
+        fields = ("user", "group", "permissions")
 
-    def to_representation(self, instance):
-        """Make sure to provide the target object in context via `context["object"]`."""
-        obj = self.context.get("object")
-        user = instance
-        return {
-            "dataspace": user.dataspace.name,
-            "username": user.get_username(),
-            "object_permissions": get_user_perms(user, obj),
-            "model_permissions": get_perms(user, obj),
-        }
+    def validate(self, data):
+        has_user = data.get("user") is not None
+        has_group = data.get("group") is not None
+        if not has_user and not has_group:
+            raise serializers.ValidationError("Either 'user' or 'group' must be provided.")
+        if has_user and has_group:
+            raise serializers.ValidationError(
+                "Only one of 'user' or 'group' can be provided, not both."
+            )
+        return data
 
 
 class ObjectPermissionsMixin:
     """
-    Mixin that adds a `/permissions/` endpoint for any object-level ViewSet.
-    Supports GET (list), POST (assign), and DELETE (remove) operations.
+    Mixin that adds a ``/permissions/`` endpoint for any object-level ViewSet.
+    Supports GET (list), POST (assign), and DELETE (remove) operations for
+    both individual users and groups.
 
-    GET /api/{model}/{uuid}/permissions/ list all users and perms
-    POST /api/{model}/{uuid}/permissions/ assign perms to a user
-    DELETE /api/{model}/{uuid}/permissions/ remove perms from a user
+    GET /api/{model}/{uuid}/permissions/
+    POST /api/{model}/{uuid}/permissions/
+    DELETE /api/{model}/{uuid}/permissions/
     """
 
     @action(
@@ -98,33 +107,48 @@ class ObjectPermissionsMixin:
         """
         Manage object-level permissions for this object.
 
-        - GET: List users and their permissions.
-        - POST: Assign permissions to a user. Provide `user` and `permissions` list.
-        - DELETE: Remove permissions from a user. Provide `user` and `permissions` list.
+        - GET: List users and groups with their permissions.
+        - POST: Assign permissions. Provide ``user`` or ``group`` and ``permissions`` list.
+        - DELETE: Remove permissions. Provide ``user`` or ``group`` and ``permissions`` list.
         """
         obj = self.get_object()
         serializer_context = {**self.get_serializer_context(), "object": obj}
 
         if request.method == "GET":
             users_with_perms = get_users_with_perms(obj, attach_perms=True)
-            serializer = self.get_serializer(
-                users_with_perms.keys(), many=True, context=serializer_context
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            groups_with_perms = get_groups_with_perms(obj, attach_perms=True)
+            data = {
+                "users": [
+                    {
+                        "dataspace": user.dataspace.name,
+                        "username": user.get_username(),
+                        "object_permissions": list(perms),
+                    }
+                    for user, perms in users_with_perms.items()
+                ],
+                "groups": [
+                    {
+                        "name": group.name,
+                        "object_permissions": list(perms),
+                    }
+                    for group, perms in groups_with_perms.items()
+                ],
+            }
+            return Response(data, status=status.HTTP_200_OK)
 
         # POST or DELETE
         serializer = self.get_serializer(data=request.data, context=serializer_context)
         if not serializer.is_valid():
             return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = serializer.validated_data["user"]
+        target = serializer.validated_data["user"] or serializer.validated_data["group"]
         perms = serializer.validated_data["permissions"]
 
         if request.method == "POST":
             errors = []
             for perm in perms:
                 try:
-                    assign_perm(perm, user, obj)
+                    assign_perm(perm, target, obj)
                 except ObjectDoesNotExist:
                     errors.append(f"Cannot assign permission '{perm}' due to an internal error.")
 
@@ -137,7 +161,7 @@ class ObjectPermissionsMixin:
             errors = []
             for perm in perms:
                 try:
-                    remove_perm(perm, user, obj)
+                    remove_perm(perm, target, obj)
                 except ObjectDoesNotExist:
                     errors.append(f"Cannot remove permission '{perm}' due to an internal error.")
 
