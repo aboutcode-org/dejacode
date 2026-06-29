@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -19,6 +20,8 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from dje.api import DataspacedSlugRelatedField
 
 User = get_user_model()
 
@@ -49,16 +52,11 @@ class ObjectPermissionSerializer(serializers.Serializer):
     """
     Generic serializer for representing or updating object-level permissions.
     Accepts:
-      - user: user ID
+      - user: username
       - permissions: list of permission codenames
     """
 
-    # TODO: Scope by dataspace, see DataspacedSlugRelatedField
-    user = serializers.SlugRelatedField(
-        queryset=User.objects.all(),
-        slug_field="username",
-    )
-    # user = DataspacedSlugRelatedField(slug_field="username")
+    user = DataspacedSlugRelatedField(queryset=User.objects.all(), slug_field="username")
     permissions = serializers.ListField(child=serializers.CharField(), allow_empty=False)
 
     class Meta:
@@ -101,12 +99,11 @@ class ObjectPermissionsMixin:
         Manage object-level permissions for this object.
 
         - GET: List users and their permissions.
-        - POST: Assign permissions to a user. Provide `user` ID and `permissions` list.
-        - DELETE: Remove permissions from a user. Provide `user` ID and `permissions`
-          list.
+        - POST: Assign permissions to a user. Provide `user` and `permissions` list.
+        - DELETE: Remove permissions from a user. Provide `user` and `permissions` list.
         """
         obj = self.get_object()
-        serializer_context = {"object": obj}
+        serializer_context = {**self.get_serializer_context(), "object": obj}
 
         if request.method == "GET":
             users_with_perms = get_users_with_perms(obj, attach_perms=True)
@@ -128,8 +125,8 @@ class ObjectPermissionsMixin:
             for perm in perms:
                 try:
                     assign_perm(perm, user, obj)
-                except ObjectDoesNotExist as e:
-                    errors.append(f"Cannot assign permission '{perm}': {str(e)}")
+                except ObjectDoesNotExist:
+                    errors.append(f"Cannot assign permission '{perm}' due to an internal error.")
 
             if errors:
                 return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -141,8 +138,8 @@ class ObjectPermissionsMixin:
             for perm in perms:
                 try:
                     remove_perm(perm, user, obj)
-                except ObjectDoesNotExist as e:
-                    errors.append(f"Cannot remove permission '{perm}': {str(e)}")
+                except ObjectDoesNotExist:
+                    errors.append(f"Cannot assign permission '{perm}' due to an internal error.")
 
             if errors:
                 return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)

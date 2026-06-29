@@ -650,6 +650,13 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
 
+        # User from another dataspace is rejected (dataspace scoping)
+        other_dataspace_user = create_user("other_ds_user", self.alternate_dataspace)
+        data = {"user": other_dataspace_user.username, "permissions": ["view_product"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
 
 class ProductRelatedAPITestCase(TestCase):
     def setUp(self):
