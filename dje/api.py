@@ -411,18 +411,19 @@ class DataspacedRelatedFieldMixin:
 
         # Support for `many=True`
         serializer_field = self.parent if isinstance(self.parent, ManyRelatedField) else self
-
-        model_class = serializer_field.parent.Meta.model
-        field_name = serializer_field.source
-        field = model_class._meta.get_field(field_name)
         user = self.context["request"].user
 
-        if not queryset:
-            manager = field.related_model.objects
-            if is_secured(manager):
-                queryset = manager.get_queryset(user=user)
-            else:
-                queryset = manager.all()
+        if not queryset or self.scope_content_type:
+            model_class = serializer_field.parent.Meta.model
+            field_name = serializer_field.source
+            field = model_class._meta.get_field(field_name)
+
+            if not queryset:
+                manager = field.related_model.objects
+                if is_secured(manager):
+                    queryset = manager.get_queryset(user=user)
+                else:
+                    queryset = manager.all()
 
         queryset = queryset.scope(user.dataspace)
 

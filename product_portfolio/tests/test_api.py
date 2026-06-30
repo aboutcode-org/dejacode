@@ -586,6 +586,136 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual("Spec version 10.10 not supported", response.data)
 
+    def test_api_product_endpoint_manage_permissions_action(self):
+        from django.contrib.auth.models import Group
+
+        url = reverse("api_v2:product-manage-permissions", args=[self.product1.uuid])
+
+        # Unauthenticated access is rejected with 403
+        self.client.logout()
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # User without view_product gets 404 (object not in secured queryset)
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        # User with view_product but not owner gets 403
+        assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Superuser GET: response has "users" and "groups" keys
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertIn("users", response.data)
+        self.assertIn("groups", response.data)
+        # base_user has view_product at this point
+        self.assertEqual(1, len(response.data["users"]))
+        self.assertEqual(self.base_user.username, response.data["users"][0]["username"])
+        self.assertEqual(self.dataspace.name, response.data["users"][0]["dataspace"])
+        self.assertIn("view_product", response.data["users"][0]["object_permissions"])
+        self.assertEqual([], response.data["groups"])
+
+        # Superuser can POST to assign multiple permissions to a user at once
+        data = {
+            "user": self.admin_user.username,
+            "permissions": ["view_product", "change_product"],
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"status": "permissions assigned"}, response.data)
+        self.assertIn("view_product", get_perms(self.admin_user, self.product1))
+        self.assertIn("change_product", get_perms(self.admin_user, self.product1))
+
+        # Superuser can DELETE to remove user permissions
+        data = {"user": self.admin_user.username, "permissions": ["view_product", "change_product"]}
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"status": "permissions removed"}, response.data)
+        self.assertNotIn("view_product", get_perms(self.admin_user, self.product1))
+        self.assertNotIn("change_product", get_perms(self.admin_user, self.product1))
+
+        # Superuser can POST to assign permissions to a group
+        team = Group.objects.create(name="backend-team")
+        data = {"group": team.name, "permissions": ["view_product", "change_product"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"status": "permissions assigned"}, response.data)
+        self.assertIn("view_product", get_perms(team, self.product1))
+        self.assertIn("change_product", get_perms(team, self.product1))
+
+        # GET lists the group with its permissions
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data["groups"]))
+        self.assertEqual(team.name, response.data["groups"][0]["name"])
+        self.assertIn("view_product", response.data["groups"][0]["object_permissions"])
+
+        # Superuser can DELETE to remove group permissions
+        data = {"group": team.name, "permissions": ["view_product", "change_product"]}
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertNotIn("view_product", get_perms(team, self.product1))
+
+        # Product creator (created_by) can GET, POST, and DELETE
+        self.product1.created_by = self.admin_user
+        self.product1.save()
+        assign_perm("view_product", self.admin_user, self.product1)
+        self.client.login(username=self.admin_user.username, password="secret")
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+        data = {"user": self.base_user.username, "permissions": ["change_product"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertIn("change_product", get_perms(self.base_user, self.product1))
+
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertNotIn("change_product", get_perms(self.base_user, self.product1))
+
+        # Invalid permission codename on POST returns 400
+        self.client.login(username=self.super_user.username, password="secret")
+        data = {"user": self.base_user.username, "permissions": ["nonexistent_perm"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+        # DELETE with unknown codename is a no-op (guardian remove_perm is idempotent)
+        response = self.client.delete(url, data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+        # Neither user nor group returns 400
+        response = self.client.post(url, {"permissions": ["view_product"]}, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
+        # Both user and group returns 400
+        data = {
+            "user": self.base_user.username,
+            "group": team.name,
+            "permissions": ["view_product"],
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
+        # Empty permissions list returns 400
+        data = {"user": self.base_user.username, "permissions": []}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
+        # User from another dataspace is rejected (dataspace scoping)
+        other_dataspace_user = create_user("other_ds_user", self.alternate_dataspace)
+        data = {"user": other_dataspace_user.username, "permissions": ["view_product"]}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("errors", response.data)
+
 
 class ProductRelatedAPITestCase(TestCase):
     def setUp(self):
