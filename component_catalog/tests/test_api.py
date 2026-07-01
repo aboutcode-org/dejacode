@@ -1350,17 +1350,17 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         results = response.data["results"]
         self.assertEqual("9.0", results[0]["risk_score"])
         self.assertEqual(
-            vulnerability1.vulnerability_id,
-            results[0]["affected_by_vulnerabilities"][0]["vulnerability_id"],
+            vulnerability1.advisory_id,
+            results[0]["affected_by_vulnerabilities"][0]["advisory_id"],
         )
 
-        data = {"affected_by": vulnerability1.vulnerability_id}
+        data = {"affected_by": vulnerability1.advisory_id}
         response = self.client.get(self.package_list_url, data)
         self.assertEqual(1, response.data["count"])
         self.assertContains(response, self.package1_detail_url)
         self.assertNotContains(response, self.package2_detail_url)
 
-        data = {"affected_by": vulnerability2.vulnerability_id}
+        data = {"affected_by": vulnerability2.advisory_id}
         response = self.client.get(self.package_list_url, data)
         self.assertEqual(0, response.data["count"])
         self.assertNotContains(response, self.package1_detail_url)

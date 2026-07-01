@@ -12,12 +12,13 @@ from django.urls import reverse
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.tests import MaxQueryMixin
 from dje.tests import create_superuser
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.tests import make_vulnerability
 
 
-class VulnerabilityViewsTestCase(TestCase):
+class VulnerabilityViewsTestCase(MaxQueryMixin, TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(
             name="Dataspace",
@@ -35,7 +36,7 @@ class VulnerabilityViewsTestCase(TestCase):
 
     def test_vulnerability_list_view_num_queries(self):
         self.client.login(username=self.super_user.username, password="secret")
-        with self.assertNumQueries(7):
+        with self.assertMaxQueries(8):
             response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
 
         vulnerability_count = Vulnerability.objects.count()
@@ -57,20 +58,20 @@ class VulnerabilityViewsTestCase(TestCase):
         response = self.client.get(reverse("component_catalog:package_list"))
         self.assertNotContains(response, vulnerability_list_url)
 
-    def test_vulnerability_list_view_vulnerability_id_link(self):
+    def test_vulnerability_list_view_advisory_id_link(self):
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
 
-        expected = f"<strong>{self.vulnerability1.vulnerability_id}</strong>"
+        expected = f"<strong>{self.vulnerability1.advisory_id}</strong>"
         self.assertContains(response, expected, html=True)
 
         self.vulnerability1.resource_url = (
-            f"https://url/vulnerabilities/{self.vulnerability1.vulnerability_id}"
+            f"https://url/vulnerabilities/{self.vulnerability1.advisory_id}"
         )
         self.vulnerability1.save()
         expected = f"""
         <a href="{self.vulnerability1.resource_url}" target="_blank">
-           {self.vulnerability1.vulnerability_id}
+           {self.vulnerability1.advisory_id}
            <i class="fa-solid fa-up-right-from-square mini"></i>
         </a>
         """

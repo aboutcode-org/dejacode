@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import decimal
 import logging
 
 from django.contrib.postgres.fields import ArrayField
@@ -82,7 +81,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     """
     A software vulnerability with a unique identifier and alternate aliases.
 
-    Adapted from the VulnerableCode models at
+    Adapted from the VulnerableCode AdvisoryV2 model at
     https://github.com/nexB/vulnerablecode/blob/main/vulnerabilities/models.py
 
     Note that this model implements the HistoryDateFieldsMixin but not the
@@ -90,12 +89,17 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
     automatically on object addition or during schedule tasks.
     """
 
-    # The first set of fields are storing data as fetched from VulnerableCode
-    vulnerability_id = models.CharField(
-        max_length=20,
+    advisory_uid = models.CharField(
+        max_length=250,
         help_text=_(
-            "A unique identifier for the vulnerability, prefixed with 'VCID-'. "
-            "For example, 'VCID-2024-0001'."
+            "Unique ID for the datasource used for this advisory ."
+            "e.g.: pysec_importer_v2/PYSEC-2020-2233"
+        ),
+    )
+    advisory_id = models.CharField(
+        max_length=200,
+        help_text=_(
+            "An advisory is a vulnerability identifier in some database, such as PYSEC-2020-2233"
         ),
     )
     resource_url = models.URLField(
@@ -115,13 +119,6 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "(e.g., 'CVE-2017-1000136')."
         ),
     )
-    references = JSONListField(
-        blank=True,
-        help_text=_(
-            "A list of references for this vulnerability. Each reference includes a "
-            "URL, an optional reference ID, scores, and the URL for further details. "
-        ),
-    )
     fixed_packages = JSONListField(
         blank=True,
         help_text=_("A list of packages that are not affected by this vulnerability."),
@@ -130,6 +127,10 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
+    )
+    ssvc_trees = JSONListField(
+        blank=True,
+        help_text=_("A list of SSVC decision trees for this vulnerability."),
     )
     EXPLOITABILITY_CHOICES = [
         (0.5, _("No exploits known")),
@@ -188,18 +189,18 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     class Meta:
         verbose_name_plural = "Vulnerabilities"
-        unique_together = (("dataspace", "vulnerability_id"), ("dataspace", "uuid"))
+        unique_together = (("dataspace", "advisory_uid"), ("dataspace", "uuid"))
         indexes = [
-            models.Index(fields=["vulnerability_id"]),
+            models.Index(fields=["advisory_uid"]),
+            models.Index(fields=["advisory_id"]),
+            models.Index(fields=["exploitability"]),
+            models.Index(fields=["weighted_severity"]),
+            models.Index(fields=["risk_score"]),
             models.Index(fields=["risk_level"]),
         ]
 
     def __str__(self):
-        return self.vulnerability_id
-
-    @property
-    def vcid(self):
-        return self.vulnerability_id
+        return self.advisory_id
 
     @property
     def cve(self):
@@ -207,13 +208,13 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             if alias.startswith("CVE-"):
                 return alias
 
-    def add_affected(self, instances):
+    def add_affected(self, instances, update_score=True):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
         if not isinstance(instances, (list, tuple, models.QuerySet)):
             instances = [instances]
 
         for instance in instances:
-            instance.add_affected_by(vulnerability=self)
+            instance.add_affected_by(vulnerability=self, update_score=update_score)
 
     @classmethod
     def create_from_data(cls, dataspace, data, validate=False, affecting=None):
@@ -230,14 +231,18 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         """Get or create a Vulnerability from provided ``data``."""
         vulnerability_qs = Vulnerability.objects.scope(dataspace)
 
-        # Support for CycloneDX data structure
         data = data.copy()
-        vulnerability_id = data.get("vulnerability_id") or data.pop("id", None)
-        if not vulnerability_id:
-            return
-        data["vulnerability_id"] = vulnerability_id
+        # CycloneDX uses "id" where we expect advisory_id and advisory_uid.
+        if "id" in data:
+            cyclonedx_id = data.pop("id")
+            data.setdefault("advisory_id", cyclonedx_id)
+            data.setdefault("advisory_uid", cyclonedx_id)
 
-        vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+        advisory_uid = data.get("advisory_uid")
+        if not advisory_uid:
+            return
+
+        vulnerability = vulnerability_qs.get_or_none(advisory_uid=advisory_uid)
         if not vulnerability:
             vulnerability = cls.create_from_data(
                 dataspace=dataspace,
@@ -260,51 +265,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             url=self.resource_url,
         )
 
-        references = []
-        ratings = []
-        for reference in self.references:
-            reference_source = cdx_vulnerability.VulnerabilitySource(
-                url=reference.get("reference_url"),
-            )
-            references.append(
-                cdx_vulnerability.VulnerabilityReference(
-                    id=reference.get("reference_id"),
-                    source=reference_source,
-                )
-            )
-
-            for score_entry in reference.get("scores", []):
-                # CycloneDX only support a float value for the score field,
-                # where on the VulnerableCode data it can be either a score float value
-                # or a severity string value.
-                score_value = score_entry.get("value")
-                try:
-                    score = decimal.Decimal(score_value)
-                    severity = None
-                except decimal.DecimalException:
-                    score = None
-                    severity = getattr(
-                        cdx_vulnerability.VulnerabilitySeverity,
-                        score_value.upper(),
-                        None,
-                    )
-
-                ratings.append(
-                    cdx_vulnerability.VulnerabilityRating(
-                        source=reference_source,
-                        score=score,
-                        severity=severity,
-                        vector=score_entry.get("scoring_elements"),
-                    )
-                )
-
         return cdx_vulnerability.Vulnerability(
-            id=self.vulnerability_id,
+            id=self.advisory_id,
             source=source,
             description=self.summary,
             affects=affects,
-            references=sorted(references),
-            ratings=ratings,
             analysis=analysis,
         )
 
@@ -469,11 +434,12 @@ class AffectedByVulnerabilityMixin(models.Model):
         self.save(update_fields=["risk_score"])
         return self.risk_score
 
-    def add_affected_by(self, vulnerability):
+    def add_affected_by(self, vulnerability, update_score=True):
         """Add ``vulnerability`` as affecting this instance."""
         through_defaults = {"dataspace_id": self.dataspace_id}
         self.affected_by_vulnerabilities.add(vulnerability, through_defaults=through_defaults)
-        self.update_risk_score()
+        if update_score:
+            self.update_risk_score()
 
     def get_entry_for_package(self, vulnerablecode):
         if not self.package_url:
@@ -488,16 +454,7 @@ class AffectedByVulnerabilityMixin(models.Model):
             affected_by_vulnerabilities = vulnerable_packages[0].get("affected_by_vulnerabilities")
             return affected_by_vulnerabilities
 
-    def get_entry_for_component(self, vulnerablecode):
-        if not self.cpe:
-            return
-
-        # Support for Component is paused as the CPES endpoint do not work properly.
-        # https://github.com/aboutcode-org/vulnerablecode/issues/1557
-        # vulnerabilities = vulnerablecode.get_vulnerabilities_by_cpe(self.cpe, timeout=10)
-
     def get_entry_from_vulnerablecode(self):
-        from component_catalog.models import Component
         from component_catalog.models import Package
         from dejacode_toolkit.vulnerablecode import VulnerableCode
 
@@ -513,8 +470,6 @@ class AffectedByVulnerabilityMixin(models.Model):
         if not is_vulnerablecode_enabled:
             return
 
-        if isinstance(self, Component):
-            return self.get_entry_for_component(vulnerablecode)
         elif isinstance(self, Package):
             return self.get_entry_for_package(vulnerablecode)
 

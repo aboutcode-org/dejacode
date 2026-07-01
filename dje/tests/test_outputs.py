@@ -52,18 +52,18 @@ class OutputsTestCase(TestCase):
         make_product_package(self.product1, package3)
         vulnerability1 = make_vulnerability(
             self.dataspace,
-            vulnerability_id="VCID-0001",
-            resource_url="https://public.vulnerablecode.io/vulnerabilities/VCID-0001",
+            advisory_id="ID-0001",
+            resource_url="https://public.vulnerablecode.io/vulnerabilities/ID-0001",
             aliases=["CVE-1984-1010"],
             affecting=[package1],
         )
         vulnerability2 = make_vulnerability(
             self.dataspace,
-            vulnerability_id="VCID-0002",
-            resource_url="https://public.vulnerablecode.io/vulnerabilities/VCID-0002",
+            advisory_id="ID-0002",
+            resource_url="https://public.vulnerablecode.io/vulnerabilities/ID-0002",
             affecting=[package2],
         )
-        make_vulnerability(self.dataspace, vulnerability_id="VCID-0003", affecting=[package3])
+        make_vulnerability(self.dataspace, advisory_id="ID-0003", affecting=[package3])
 
         make_vulnerability_analysis(
             product_package1,
@@ -166,7 +166,7 @@ class OutputsTestCase(TestCase):
         )
         self.assertIsInstance(bom, cyclonedx_bom.Bom)
         self.assertEqual(4, len(bom.vulnerabilities))
-        self.assertEqual(vulnerability1.vulnerability_id, bom.vulnerabilities[0].id)
+        self.assertEqual(vulnerability1.advisory_id, bom.vulnerabilities[0].id)
         self.assertIsNone(bom.vulnerabilities[0].analysis)
 
         analysis1 = make_vulnerability_analysis(product_package1, vulnerability1)

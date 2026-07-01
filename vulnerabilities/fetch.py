@@ -6,31 +6,46 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
+import logging
 from timeit import default_timer as timer
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.core.management.base import CommandError
 from django.urls import reverse
 from django.utils import timezone
 
+from packageurl import PackageURL
+
 from component_catalog.models import PACKAGE_URL_FIELDS
 from component_catalog.models import Package
+from component_catalog.models import PackageAffectedByVulnerability
 from dejacode_toolkit.vulnerablecode import VulnerableCode
+from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
 from notification.models import find_and_fire_hook
 from vulnerabilities.models import Vulnerability
 
+logger = logging.getLogger("dje")
 
-def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=None):
+
+def fetch_from_vulnerablecode(
+    dataspace, batch_size, update, timeout, log_func=None, err_func=None, verbosity=1
+):
+    """Fetch vulnerability data from VulnerableCode for all eligible packages in ``dataspace``."""
     start_time = timer()
     vulnerablecode = VulnerableCode(dataspace)
     if not vulnerablecode.is_configured():
+        if log_func:
+            log_func("VulnerableCode is not configured.")
         return
 
     available_types = vulnerablecode.get_package_url_available_types()
+    if not available_types:
+        raise ValueError("VulnerableCode did not return any supported package types.")
+
     package_qs = (
         Package.objects.scope(dataspace)
         .has_package_url()
@@ -49,6 +64,8 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
         update=update,
         timeout=timeout,
         log_func=log_func,
+        err_func=err_func,
+        verbosity=verbosity,
     )
 
     run_time = timer() - start_time
@@ -64,7 +81,14 @@ def fetch_from_vulnerablecode(dataspace, batch_size, update, timeout, log_func=N
 
 
 def fetch_for_packages(
-    queryset, dataspace, batch_size=50, update=True, timeout=None, log_func=None
+    queryset,
+    dataspace,
+    batch_size=50,
+    update=True,
+    timeout=None,
+    log_func=None,
+    err_func=None,
+    verbosity=1,
 ):
     from product_portfolio.models import ProductPackage
 
@@ -75,61 +99,194 @@ def fetch_for_packages(
         return results
 
     vulnerablecode = VulnerableCode(dataspace)
+    # Tracks advisory_uids created during this run to avoid re-updating them in later batches.
+    created_advisory_uids = set()
 
     for index, batch in enumerate(chunked_queryset(queryset, batch_size), start=1):
+        batch_start = timer()
+        progress_count = min(index * batch_size, object_count)
         if log_func:
-            progress_count = index * batch_size
-            if progress_count > object_count:
-                progress_count = object_count
             log_func(f"Progress: {intcomma(progress_count)}/{intcomma(object_count)}")
 
         batch_affected_packages = []
-        vc_entries = vulnerablecode.get_vulnerable_purls(batch, purl_only=False, timeout=timeout)
-        for vc_entry in vc_entries:
-            affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
-            if not affected_by_vulnerabilities:
-                continue
+        batch_results = {"created": 0, "updated": 0}
 
-            affected_packages = queryset.filter(
-                type=vc_entry.get("type"),
-                namespace=vc_entry.get("namespace") or "",
-                name=vc_entry.get("name"),
-                version=vc_entry.get("version") or "",
+        api_start = timer()
+        vc_entries = vulnerablecode.get_vulnerable_purls(batch, details=True, timeout=timeout)
+        api_elapsed = timer() - api_start
+
+        if vc_entries is None:
+            failed_purls = get_plain_purls(batch)
+            payload = json.dumps({"purls": failed_purls, "details": True}, indent=4)
+            error_msg = (
+                f"VulnerableCode API call failed for batch {index} "
+                f"({len(failed_purls)} purls, "
+                f"progress: {intcomma(progress_count)}/{intcomma(object_count)}).\n{payload}"
             )
-            if not affected_packages:
-                raise CommandError("Could not find package!")
+            logger.error(error_msg)
+            if err_func:
+                err_func(error_msg)
+            elif log_func:
+                log_func(f"  API call failed for batch {index} - skipping.")
+            continue
 
-            # Store all packages of that batch to then trigger the update_weighted_risk_score
+        if log_func and verbosity >= 2:
+            log_func(
+                f"  API call: {humanize_time(api_elapsed)} ({len(vc_entries)} vulnerable purls)"
+            )
+
+        # One SELECT for all advisory_uids in this batch instead of one per vulnerability.
+        all_advisory_uids = [
+            vulnerability_data["advisory_uid"]
+            for vc_entry in vc_entries
+            for vulnerability_data in (vc_entry.get("affected_by_vulnerabilities") or [])
+        ]
+        vulnerability_cache = {
+            vulnerability.advisory_uid: vulnerability
+            for vulnerability in Vulnerability.objects.scope(dataspace).filter(
+                advisory_uid__in=all_advisory_uids
+            )
+        }
+
+        for vc_entry in vc_entries:
+            affected_packages = process_vc_entry(
+                vc_entry,
+                queryset,
+                dataspace,
+                update,
+                batch_results,
+                vulnerability_cache,
+                created_advisory_uids,
+                log_func,
+                verbosity,
+            )
             batch_affected_packages.extend(affected_packages)
-
-            for vulnerability_data in affected_by_vulnerabilities:
-                create_or_update_vulnerability(
-                    vulnerability_data, dataspace, affected_packages, update, results
-                )
-
-            if package_risk_score := vc_entry.get("risk_score"):
-                affected_packages.update(risk_score=package_risk_score)
 
         product_package_qs = ProductPackage.objects.filter(package__in=batch_affected_packages)
         product_package_qs.update_weighted_risk_score()
 
+        results["created"] += batch_results["created"]
+        results["updated"] += batch_results["updated"]
+
+        if log_func and verbosity >= 2:
+            batch_elapsed = timer() - batch_start
+            db_elapsed = batch_elapsed - api_elapsed
+            log_func(
+                f"  Batch done: {batch_results['created']} created, "
+                f"{batch_results['updated']} updated "
+                f"(API: {humanize_time(api_elapsed)}, processing: {humanize_time(db_elapsed)}, "
+                f"total: {humanize_time(batch_elapsed)})"
+            )
+
     return results
 
 
-def create_or_update_vulnerability(
-    vulnerability_data, dataspace, affected_packages, update, results
-):
-    vulnerability_id = vulnerability_data["vulnerability_id"]
-    vulnerability_qs = Vulnerability.objects.scope(dataspace)
-    vulnerability = vulnerability_qs.get_or_none(vulnerability_id=vulnerability_id)
+def batch_add_affected(affected_packages, vulnerabilities):
+    """
+    Link all ``vulnerabilities`` to all ``affected_packages`` using two queries:
+    one SELECT to find existing relationships, one bulk INSERT for the missing ones.
 
+    Replaces N*M individual ``get_or_create`` calls from ``add_affected_by``.
+    """
+    existing_pairs = set(
+        PackageAffectedByVulnerability.objects.filter(
+            package__in=affected_packages,
+            vulnerability__in=vulnerabilities,
+        ).values_list("package_id", "vulnerability_id")
+    )
+    to_create = [
+        PackageAffectedByVulnerability(
+            package=package,
+            vulnerability=vulnerability,
+            dataspace_id=package.dataspace_id,
+        )
+        for package in affected_packages
+        for vulnerability in vulnerabilities
+        if (package.pk, vulnerability.pk) not in existing_pairs
+    ]
+    if to_create:
+        PackageAffectedByVulnerability.objects.bulk_create(to_create, ignore_conflicts=True)
+
+
+def process_vc_entry(
+    vc_entry,
+    queryset,
+    dataspace,
+    update,
+    results,
+    vulnerability_cache,
+    created_advisory_uids,
+    log_func=None,
+    verbosity=1,
+):
+    """
+    Process a single VulnerableCode purl entry: find matching packages, create or update
+    linked vulnerabilities, and apply the API-provided risk score.
+
+    Returns the affected packages as a list, or an empty list if the entry has no
+    vulnerabilities. The ``results`` dict is updated in-place.
+    """
+    affected_by_vulnerabilities = vc_entry.get("affected_by_vulnerabilities")
+    if not affected_by_vulnerabilities:
+        return []
+
+    purl = PackageURL.from_string(vc_entry.get("purl"))
+    # Evaluate to a list immediately: packages_qs.update() below clears the QS cache,
+    # which would cause a re-SELECT when the caller iterates the return value.
+    packages_qs = queryset.filter(
+        type=purl.type,
+        namespace=purl.namespace or "",
+        name=purl.name,
+        version=purl.version,
+    )
+    affected_packages = list(packages_qs)
+    if not affected_packages:
+        if log_func:
+            log_func(f"  Warning: no packages found for {purl}, skipping.")
+        return []
+
+    if log_func and verbosity >= 2:
+        advisory_count = len(affected_by_vulnerabilities)
+        label = "advisory" if advisory_count == 1 else "advisories"
+        log_func(f"  {purl}: {advisory_count} {label}")
+
+    vulnerabilities = []
+    for vulnerability_data in affected_by_vulnerabilities:
+        advisory_uid = vulnerability_data["advisory_uid"]
+        vulnerability = create_or_update_vulnerability(
+            vulnerability_data,
+            dataspace,
+            update,
+            results,
+            created_advisory_uids,
+            vulnerability=vulnerability_cache.get(advisory_uid),
+        )
+        vulnerability_cache[advisory_uid] = vulnerability
+        vulnerabilities.append(vulnerability)
+
+    # Link packages to vulnerabilities: 1 SELECT + 1 bulk INSERT instead of N*M get_or_create.
+    batch_add_affected(affected_packages, vulnerabilities)
+
+    # Update risk_score without triggering Package.save() (which carries handle_assigned_licenses).
+    if package_risk_score := vc_entry.get("risk_score"):
+        packages_qs.update(risk_score=package_risk_score)
+
+    return affected_packages
+
+
+def create_or_update_vulnerability(
+    vulnerability_data, dataspace, update, results, created_advisory_uids, vulnerability=None
+):
+    """Create or update a Vulnerability from ``vulnerability_data``."""
+    advisory_uid = vulnerability_data["advisory_uid"]
     if not vulnerability:
         vulnerability = Vulnerability.create_from_data(
             dataspace=dataspace,
             data=vulnerability_data,
         )
         results["created"] += 1
-    elif update:
+        created_advisory_uids.add(advisory_uid)
+    elif update and advisory_uid not in created_advisory_uids:
         updated_fields = vulnerability.update_from_data(
             user=None,
             data=vulnerability_data,
@@ -138,7 +295,6 @@ def create_or_update_vulnerability(
         if updated_fields:
             results["updated"] += 1
 
-    vulnerability.add_affected(affected_packages)
     return vulnerability
 
 

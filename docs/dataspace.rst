@@ -221,7 +221,7 @@ There are several options grouped in sections such as:
 These are initially set to the recommended default settings when you install.
 
 To complete your initial "Usage Policies" configuration, make sure that the
-**Show usage policy in license library view** option is checked.
+**Show usage policy in user views** option is checked.
 
 If you make any changes, be sure to save them by clicking the **Save**
 button at the bottom of the form.

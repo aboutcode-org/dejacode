@@ -77,14 +77,6 @@ class DejaCodePermissionTestCase(TestCase):
 
     def test_permissions_get_all_tabsets(self):
         expected = {
-            "owner": [
-                "essentials",
-                "licenses",
-                "components",
-                "hierarchy",
-                "external_references",
-                "history",
-            ],
             "component": [
                 "essentials",
                 "notice",
@@ -135,15 +127,20 @@ class DejaCodePermissionTestCase(TestCase):
                 "essentials",
                 "compliance",
                 "inventory",
+                "licenses",
+                "vulnerabilities",
                 "codebase",
                 "hierarchy",
-                "notice",
-                "license",
-                "owner",
-                "vulnerabilities",
+                "terms",
                 "dependencies",
                 "activity",
-                "imports",
+            ],
+            "owner": [
+                "essentials",
+                "licenses",
+                "components",
+                "hierarchy",
+                "external_references",
                 "history",
             ],
         }

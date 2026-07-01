@@ -1,0 +1,75 @@
+{
+  "name": "DejaCode Demo (Codespaces only)",
+  "dockerComposeFile": "../../compose.demo.yml",
+  "service": "web",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "overrideCommand": false,
+  "hostRequirements": {
+    "cpus": 4
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "DejaCode",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": []
+    },
+    "vscode": {
+      "extensions": [],
+      "settings": {
+        "chat.disableAIFeatures": true,
+        "telemetry.telemetryLevel": "off",
+        "workbench.tips.enabled": false,
+        "workbench.startupEditor": "none",
+        "workbench.editor.enablePreview": false,
+        "security.workspace.trust.enabled": false,
+        "extensions.autoCheckUpdates": false,
+        "extensions.ignoreRecommendations": true,
+        "git.enabled": false,
+        "git.autorefresh": false,
+        "git.decorations.enabled": false,
+        "scm.diffDecorations": "none",
+        "editor.minimap.enabled": false,
+        "editor.quickSuggestions": {
+          "other": "off",
+          "comments": "off",
+          "strings": "off"
+        },
+        "editor.suggestOnTriggerCharacters": false,
+        "editor.wordBasedSuggestions": "off",
+        "editor.parameterHints.enabled": false,
+        "editor.codeLens": false,
+        "editor.lightbulb.enabled": "off",
+        "editor.inlayHints.enabled": "off",
+        "editor.occurrencesHighlight": "off",
+        "editor.selectionHighlight": false,
+        "editor.renderLineHighlight": "none",
+        "editor.renderWhitespace": "none",
+        "editor.formatOnSave": false,
+        "editor.accessibilitySupport": "off",
+        "breadcrumbs.enabled": false,
+        "terminal.integrated.enablePersistentSessions": false,
+        "terminal.integrated.gpuAcceleration": "off",
+        "files.watcherExclude": {
+          "**/.git/**": true,
+          "**/data/**": true,
+          "**/static/**": true,
+          "**/media/**": true,
+          "**/thirdparty/**": true,
+          "**/*.dist": true
+        },
+        "search.exclude": {
+          "**/.git": true,
+          "**/data": true,
+          "**/static": true,
+          "**/media": true,
+          "**/thirdparty": true
+        }
+      }
+    }
+  }
+}

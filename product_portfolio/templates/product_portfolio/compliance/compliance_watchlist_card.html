@@ -1,3 +1,4 @@
+{% url 'product_portfolio:compliance_dashboard' as compliance_dashboard_url %}
 <div class="card flex-fill shadow-sm">
   <h2 class="card-header fw-bold px-2 h6 d-flex justify-content-between align-items-center">
     <span>
@@ -5,49 +6,51 @@
       Compliance watchlist
     </span>
     {% if total_products_with_issues %}
-      <span class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</span>
+      <a href="{{ compliance_dashboard_url }}" class="badge bg-danger-subtle text-danger-emphasis">{{ total_products_with_issues }}</a>
     {% endif %}
   </h2>
   <div class="card-body p-2">
     {% for product in compliance_qs %}
+    {% with product_url=product.get_absolute_url %}
       <div>
         <a class="fw-semibold" href="{{ product.get_absolute_url }}#compliance">{{ product }}</a>
-        <div class="row g-0 small">
+        <div class="row g-0">
           <div class="col-4 text-body-secondary">License</div>
           <div class="col-8">
             {% if product.license_error_count %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.license_error_count }} error{{ product.license_error_count|pluralize }}</span>
+              <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-danger-subtle text-danger-emphasis">{{ product.license_error_count }} error{{ product.license_error_count|pluralize }}</a>
             {% endif %}
             {% if product.license_warning_count %}
-              <span class="badge bg-warning-subtle text-warning-emphasis{% if product.license_error_count %} ms-1{% endif %}">{{ product.license_warning_count }} warning{{ product.license_warning_count|pluralize }}</span>
+              <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=warning#licenses" class="badge bg-warning-subtle text-warning-emphasis{% if product.license_error_count %} ms-1{% endif %}">{{ product.license_warning_count }} warning{{ product.license_warning_count|pluralize }}</a>
             {% endif %}
             {% if not product.license_error_count and not product.license_warning_count %}
               <span class="badge bg-success-subtle text-success-emphasis">OK</span>
             {% endif %}
           </div>
         </div>
-        <div class="row g-0 small">
+        <div class="row g-0">
           <div class="col-4 text-body-secondary">Vulnerabilities</div>
           <div class="col-8">
             {% if product.critical_count %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} critical</span>
+              <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=critical#vulnerabilities" class="badge bg-danger-subtle text-danger-emphasis">{{ product.critical_count }} critical</a>
             {% endif %}
             {% if product.high_count %}
-              <span class="badge bg-warning-orange-subtle text-warning-orange{% if product.critical_count %} ms-1{% endif %}">{{ product.high_count }} high</span>
+              <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=high#vulnerabilities" class="badge bg-warning-orange-subtle text-warning-orange{% if product.critical_count %} ms-1{% endif %}">{{ product.high_count }} high</a>
             {% endif %}
             {% if product.medium_count %}
-              <span class="badge bg-warning-subtle text-warning-emphasis{% if product.critical_count or product.high_count %} ms-1{% endif %}">{{ product.medium_count }} medium</span>
+              <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=medium#vulnerabilities" class="badge bg-warning-subtle text-warning-emphasis{% if product.critical_count or product.high_count %} ms-1{% endif %}">{{ product.medium_count }} medium</a>
             {% endif %}
             {% if product.low_count %}
-              <span class="badge bg-info-subtle text-info-emphasis{% if product.critical_count or product.high_count or product.medium_count %} ms-1{% endif %}">{{ product.low_count }} low</span>
+              <a href="{{ product_url }}?vulnerabilities-weighted_risk_score=low#vulnerabilities" class="badge bg-info-subtle text-info-emphasis{% if product.critical_count or product.high_count or product.medium_count %} ms-1{% endif %}">{{ product.low_count }} low</a>
             {% endif %}
             {% if not product.critical_count and not product.high_count and not product.medium_count and not product.low_count %}
-              <span class="text-body-tertiary">None</span>
+              <span class="text-body-tertiary small">None</span>
             {% endif %}
           </div>
         </div>
       </div>
       {% if not forloop.last %}<hr class="my-2">{% endif %}
+    {% endwith %}
     {% empty %}
       <div class="text-center py-4">
         <i class="fa-solid fa-circle-check text-success fs-3"></i>
@@ -56,7 +59,7 @@
     {% endfor %}
   </div>
   <div class="card-footer text-center p-2 smaller">
-    <a href="{% url 'product_portfolio:compliance_dashboard' %}">
+    <a href="{{ compliance_dashboard_url }}">
       {% if total_products_with_issues %}
         View all {{ total_products_with_issues }} products with issues
       {% else %}

@@ -10,6 +10,8 @@ from django.urls import path
 
 from product_portfolio.views import AttributionView
 from product_portfolio.views import ComplianceDashboardView
+from product_portfolio.views import ComplianceLicensesCardView
+from product_portfolio.views import ComplianceVulnerabilitiesCardView
 from product_portfolio.views import ComplianceWatchlistCardView
 from product_portfolio.views import ImportManifestsView
 from product_portfolio.views import LoadSBOMsView
@@ -26,11 +28,12 @@ from product_portfolio.views import ProductLicenseComplianceExportView
 from product_portfolio.views import ProductListView
 from product_portfolio.views import ProductSecurityComplianceExportView
 from product_portfolio.views import ProductSendAboutFilesView
+from product_portfolio.views import ProductTabActivityView
 from product_portfolio.views import ProductTabCodebaseView
 from product_portfolio.views import ProductTabComplianceView
 from product_portfolio.views import ProductTabDependenciesView
-from product_portfolio.views import ProductTabImportsView
 from product_portfolio.views import ProductTabInventoryView
+from product_portfolio.views import ProductTabLicensesView
 from product_portfolio.views import ProductTabVulnerabilitiesView
 from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
@@ -42,7 +45,6 @@ from product_portfolio.views import edit_productrelation_ajax_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
-from product_portfolio.views import license_summary_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -80,6 +82,16 @@ urlpatterns = [
         name="compliance_watchlist_card",
     ),
     path(
+        "compliance_licenses/",
+        ComplianceLicensesCardView.as_view(),
+        name="compliance_licenses_card",
+    ),
+    path(
+        "compliance_vulnerabilities/",
+        ComplianceVulnerabilitiesCardView.as_view(),
+        name="compliance_vulnerabilities_card",
+    ),
+    path(
         "import_packages_from_scancodeio/<str:key>/",
         import_packages_from_scancodeio_view,
         name="import_packages_from_scancodeio",
@@ -105,7 +117,7 @@ urlpatterns = [
         name="edit_productrelation_ajax",
     ),
     path(
-        "vulnerability_analysis/<uuid:productpackage_uuid>/<str:vulnerability_id>/",
+        "vulnerability_analysis/<uuid:productpackage_uuid>/<path:advisory_uid>/",
         vulnerability_analysis_form_view,
         name="vulnerability_analysis_form",
     ),
@@ -131,14 +143,14 @@ urlpatterns = [
     *product_path("import_from_scan", import_from_scan_view),
     *product_path("manage_components", ManageComponentGridView.as_view()),
     *product_path("manage_packages", ManagePackageGridView.as_view()),
-    *product_path("license_summary", license_summary_view),
     *product_path("check_package_version", check_package_version_ajax_view),
     *product_path("load_sboms", LoadSBOMsView.as_view()),
     *product_path("import_manifests", ImportManifestsView.as_view()),
     *product_path("tab_codebase", ProductTabCodebaseView.as_view()),
     *product_path("tab_dependencies", ProductTabDependenciesView.as_view()),
+    *product_path("tab_licenses", ProductTabLicensesView.as_view()),
     *product_path("tab_vulnerabilities", ProductTabVulnerabilitiesView.as_view()),
-    *product_path("tab_imports", ProductTabImportsView.as_view()),
+    *product_path("tab_activity", ProductTabActivityView.as_view()),
     *product_path("tab_inventory", ProductTabInventoryView.as_view()),
     *product_path("tab_compliance", ProductTabComplianceView.as_view()),
     *product_path("pull_project_data", PullProjectDataFromScanCodeIOView.as_view()),

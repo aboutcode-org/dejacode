@@ -136,7 +136,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(29):
+        with self.assertMaxQueries(28):
             response = self.client.get(url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
@@ -147,7 +147,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected2)
         self.assertIn("Inventory", response.context["tabsets"])
         self.assertEqual(
-            'Inventory <span class="badge text-bg-primary">1</span>',
+            'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">1</span>',
             response.context["tabsets"]["Inventory"]["label"],
         )
 
@@ -162,13 +162,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        with self.assertNumQueries(27):
+        with self.assertMaxQueries(26):
             response = self.client.get(url)
         self.assertContains(response, expected)
 
         self.assertIn("Inventory", response.context["tabsets"])
         self.assertEqual(
-            'Inventory <span class="badge text-bg-primary">1</span>',
+            'Inventory <span class="badge bg-primary-subtle text-primary-emphasis">1</span>',
             response.context["tabsets"]["Inventory"]["label"],
         )
 
@@ -185,30 +185,22 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(response.context["has_delete_productpackage"])
         self.assertContains(response, 'data-can-delete="yes"')
 
-    def test_product_portfolio_detail_view_tab_imports(self):
+    def test_product_portfolio_detail_view_tab_activity(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_absolute_url()
-        expected = 'id="tab_imports"'
-
-        response = self.client.get(url)
-        self.assertNotContains(response, expected)
-
-        ScanCodeProject.objects.create(
-            product=self.product1,
-            dataspace=self.product1.dataspace,
-            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
-        )
-
+        expected = 'id="tab_activity"'
         response = self.client.get(url)
         self.assertContains(response, expected)
-        self.assertIn("Imports", response.context["tabsets"])
+        self.assertIn("Activity", response.context["tabsets"])
 
-    def test_product_portfolio_detail_view_tab_imports_view(self):
+    def test_product_portfolio_detail_view_tab_activit_view(self):
         self.client.login(username="nexb_user", password="secret")
-        url = self.product1.get_url("tab_imports")
+        url = self.product1.get_url("tab_activity")
 
         response = self.client.get(url)
-        self.assertContains(response, "<tbody></tbody>", html=True)
+        self.assertContains(response, "No imports yet")
+        self.assertContains(response, "No requests yet")
+        self.assertContains(response, "No changes yet")
 
         project = ScanCodeProject.objects.create(
             product=self.product1,
@@ -275,7 +267,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             resolved_to_package=package2,
         )
 
-        with self.assertMaxQueries(9):
+        with self.assertMaxQueries(10):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -297,7 +289,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(11):
+        with self.assertMaxQueries(12):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -336,9 +328,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"""
         <span data-bs-toggle="modal"
               data-bs-target="#vulnerability-analysis-modal"
-              data-vulnerability-id="{vulnerability1.vcid}"
+              data-advisory-uid="{vulnerability1.advisory_uid}"
               data-package-identifier="{p1}"
-              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.vcid}/"
+              data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_uid}/"
         >
         <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
                 aria-label="Edit">
@@ -365,7 +357,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertNumQueries(11):
+        with self.assertMaxQueries(12):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):
@@ -383,15 +375,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertContains(response, vulnerability1.advisory_id)
+        self.assertContains(response, vulnerability2.advisory_id)
         self.assertContains(response, "2 results")
         self.assertNotContains(response, "A risk threshold filter at")
 
         product1.update(vulnerabilities_risk_threshold=3.0)
         response = self.client.get(url)
-        self.assertNotContains(response, vulnerability1.vcid)
-        self.assertContains(response, vulnerability2.vcid)
+        self.assertNotContains(response, vulnerability1.advisory_id)
+        self.assertContains(response, vulnerability2.advisory_id)
         self.assertContains(response, "1 results")
         self.assertContains(response, 'A risk threshold filter at "3.0" is currently applied.')
 
@@ -455,6 +447,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, modal_id)
         self.assertContains(response, modal_js)
+        self.assertContains(response, "csrf_header.js")
+
+        # Ensure the CSRF script is present even if product is locked
+        locked_status = make_product_status(self.dataspace)
+        self.product1.update(configuration_status=locked_status)
+        response = self.client.get(url)
+        self.assertContains(response, "csrf_header.js")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_tab_vulnerability_label(self, mock_is_configured):
@@ -476,7 +475,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         package1 = make_package(self.dataspace, is_vulnerable=True)
         make_product_package(self.product1, package=package1)
         response = self.client.get(url)
-        expected = 'Vulnerabilities<span class="badge badge-vulnerability'
+        expected = 'Vulnerabilities<span class="badge'
         self.assertContains(response, expected)
 
     def test_product_portfolio_detail_view_object_type_filter_in_inventory_tab(self):
@@ -830,7 +829,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             is_active=True,
             content_type=product_ct,
         )
-        request_product = Request.objects.create(
+        product_request = Request.objects.create(
             title="Title",
             request_template=request_template_product,
             requester=self.super_user,
@@ -872,16 +871,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             f'?content_object_id={self.product1.id}">',
         )
 
-        # Activity tab
-        self.assertContains(response, 'id="tab_activity"')
-        self.assertContains(
-            response,
-            f'<a href="{request_product.get_absolute_url()}">'
-            f"{request_product} {request_product.title}</a>",
-        )
-        self.assertContains(response, "Open")
-        self.assertContains(response, request_template_product.name)
-
         # Request R icon link in Inventory tab
         expected = (
             f'<a href="{self.component1.get_absolute_url()}#activity" '
@@ -889,7 +878,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
 
-    def test_product_portfolio_detail_view_license_tab(self):
+        # Activity tab
+        self.assertContains(response, 'id="tab_activity"')
+        url = self.product1.get_url("tab_activity")
+        response = self.client.get(url)
+        self.assertContains(response, product_request.get_absolute_url())
+        self.assertContains(response, f"{product_request} {product_request.title}")
+        self.assertContains(response, "Open")
+        self.assertContains(response, request_template_product.name)
+
+    def test_product_portfolio_detail_view_terms_tab(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_absolute_url()
 
@@ -918,7 +916,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         l2_str = f"{l2.short_name} ({l2.key})"
         response = self.client.get(url)
 
-        self.assertContains(response, 'id="tab_license"')
+        self.assertContains(response, 'id="tab_terms"')
 
         def no_whitespace(s):
             return "".join(force_str(s).split())
@@ -2858,7 +2856,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         filterset_qs = response.context["filterset"].qs
         self.assertEqual(0, len(filterset_qs))
 
-    def test_product_portfolio_product_license_summary_view(self):
+    def test_product_portfolio_product_tab_licenses_view(self):
         owner1 = Owner.objects.create(name="Owner1", dataspace=self.dataspace)
         license1 = License.objects.create(
             key="l1", name="L1", short_name="L1", owner=owner1, dataspace=self.dataspace
@@ -2877,8 +2875,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
 
         self.client.login(username=self.super_user.username, password="secret")
-        license_summary_url = self.product1.get_license_summary_url()
-        response = self.client.get(license_summary_url)
+        url = self.product1.get_url("tab_licenses")
+        response = self.client.get(url)
 
         expected = {license1: [self.component1, self.package1]}
         self.assertEqual(expected, response.context["license_index"])
@@ -2886,13 +2884,6 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, str(license1.key))
         self.assertContains(response, str(self.package1))
         self.assertContains(response, str(self.component1))
-
-        response = self.client.get(license_summary_url + "?export=csv")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual("text/csv", response["Content-Type"])
-        self.assertEqual("89", response["Content-Length"])
-        expected = 'attachment; filename="Product1_With_Space_1.0_license_summary.csv"'
-        self.assertEqual(expected, response["Content-Disposition"])
 
     def test_product_portfolio_product_export_spdx_view(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -3139,7 +3130,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(export_cyclonedx_url, data={"content": "vex"})
         response_str = str(response.getvalue())
         self.assertIn("vulnerabilities", response_str)
-        self.assertIn(vulnerability1.vulnerability_id, response_str)
+        self.assertIn(vulnerability1.advisory_id, response_str)
 
     def test_product_portfolio_product_export_openvex_view(self):
         self.client.login(username=self.super_user.username, password="secret")
@@ -3223,6 +3214,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             dataspace=self.product1.dataspace,
             type=ScanCodeProject.ProjectType.LOAD_SBOMS,
             created_by=self.super_user,
+            import_options={"create_dependencies": True},
         )
 
         view_name = "product_portfolio:import_packages_from_scancodeio"
@@ -3305,7 +3297,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "uuid": project_uuid,
         }
         response = self.client.post(url, data=form_data, follow=True)
-        self.assertRedirects(response, f"{self.product1.get_absolute_url()}#imports")
+        self.assertRedirects(response, f"{self.product1.get_absolute_url()}#activity")
         project = ScanCodeProject.objects.get(project_uuid=project_uuid)
         self.assertEqual(self.product1, project.product)
         self.assertEqual(ScanCodeProject.ProjectType.PULL_FROM_SCANCODEIO, project.type)
@@ -3392,7 +3384,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         url = reverse(
             "product_portfolio:vulnerability_analysis_form",
-            args=[pp1.uuid, vulnerability1.vulnerability_id],
+            args=[pp1.uuid, vulnerability1.advisory_uid],
         )
 
         response = self.client.get(url)
@@ -4137,7 +4129,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             "Reference URL"
         )
         self.assertIn(expected_header, content)
-        self.assertIn(vulnerability.vulnerability_id, content)
+        self.assertIn(vulnerability.advisory_id, content)
         # Aliases must be flattened to a comma-joined string, not a Python list repr.
         self.assertIn('"CVE-2024-42005, GHSA-pv4p-cwwg-4rph, PYSEC-2024-70"', content)
         self.assertNotIn("['CVE-2024-42005'", content)
@@ -4161,7 +4153,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         data = json.loads(response.content)
         self.assertEqual(1, len(data))
-        self.assertEqual(vulnerability.vulnerability_id, data[0]["vulnerability_id"])
+        self.assertEqual(vulnerability.advisory_uid, data[0]["advisory_uid"])
         # Aliases stay a real list in JSON, not a comma-joined string.
         self.assertEqual(
             ["CVE-2024-42005", "GHSA-pv4p-cwwg-4rph", "PYSEC-2024-70"],
@@ -4223,8 +4215,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertIn(".yaml", response["Content-Disposition"])
 
         content = response.content.decode()
-        self.assertIn(vulnerability.vulnerability_id, content)
-        self.assertIn("vulnerability_id", content)
+        self.assertIn(vulnerability.advisory_uid, content)
+        self.assertIn("advisory_uid", content)
 
     def test_product_portfolio_product_security_compliance_export_view_respects_permissions(self):
         self.client.login(username=self.basic_user.username, password="secret")
@@ -4247,5 +4239,5 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url + "?export=json")
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        vulnerability_ids = [entry["vulnerability_id"] for entry in data]
-        self.assertIn(vulnerability.vulnerability_id, vulnerability_ids)
+        advisory_ids = [entry["advisory_id"] for entry in data]
+        self.assertIn(vulnerability.advisory_id, advisory_ids)

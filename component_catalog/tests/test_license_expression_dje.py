@@ -299,7 +299,7 @@ class LicenseExpressionDjeTestCase(TestCase):
 
     def test_get_dataspace_licensing(self):
         licensing_cache = caches["licensing"]
-        cache_key = str({self.dataspace.name})
+        cache_key = str(self.dataspace.uuid)
         self.assertFalse(licensing_cache.has_key(cache_key))
 
         licensing = get_dataspace_licensing(self.dataspace)

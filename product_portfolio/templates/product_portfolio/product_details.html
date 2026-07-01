@@ -29,7 +29,6 @@
               <i class="fas fa-plus-circle"></i> {% trans 'Add custom Component' %}
             </button>
           {% endif %}
-          <a class="dropdown-item" href="{{ object.get_license_summary_url }}"><i class="fa fa-book"></i> {% trans 'License summary' %}</a>
           {% if purldb_enabled %}
             <a class="dropdown-item" href="#" id="check-package-versions"><i class="fas fa-arrow-alt-circle-up"></i> {% trans 'Check for new Package versions' %}</a>
           {% endif %}
@@ -143,7 +142,7 @@
   {% if has_edit_productpackage or has_edit_productcomponent %}
     {% include 'product_portfolio/modals/edit_productpackage_modal.html' %}
   {% endif %}
-  {% if tabsets.Imports %}
+  {% if tabsets.Activity %}
     {% include 'product_portfolio/modals/scancode_project_status_modal.html' %}
   {% endif %}
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
@@ -173,9 +172,8 @@
 
 {% block javascripts %}
   {{ block.super }}
-  {% if has_edit_productpackage or has_edit_productcomponent %}
-    <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
-  {% endif %}
+  {# Always render the CSRF token: required by the vulnerability analysis form, even on read-only products #}
+  <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
   <script src="{% static 'js/jquery.jsPlumb-1.7.2-min.js' %}" integrity="sha384-ITD4LUuh8ImLrJ5g55OIlG2QoiYVUuXLN9CStlO1e2SQZm0SyGfNkMiwPboMOv8D" crossorigin="anonymous"></script>
   {% include 'product_portfolio/includes/product_hierarchy.js.html' with relations_feature_grouped=tabsets.Hierarchy.fields.0.1.relations_feature_grouped %}
   {% if tabsets.Owner.extra %}
@@ -294,11 +292,11 @@
           let button = $(event.relatedTarget); // Button that triggered the modal
           // Extract info from data-* attributes
           let edit_url = button.data('edit-url');
-          let vulnerability_id = button.data('vulnerability-id');
+          let advisory_uid = button.data('advisory-uid');
           let package_identifier = button.data('package-identifier');
 
           $('#submit-vulnerability-analysis-form').data('edit-url', edit_url);
-          $('#vulnerability-analysis-modal #analysis-vulnerability-id').text(vulnerability_id);
+          $('#vulnerability-analysis-modal #analysis-advisory-uid').text(advisory_uid);
           $('#vulnerability-analysis-modal #analysis-package-identifier').text(package_identifier);
 
           $.ajax({
@@ -346,7 +344,9 @@
   {% if purldb_enabled %}
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('check-package-versions').addEventListener('click', function (event) {
+        const checkPackageVersions = document.getElementById('check-package-versions');
+        if (!checkPackageVersions) return;
+        checkPackageVersions.addEventListener('click', function (event) {
           event.preventDefault();
           let checkPackageLink = this;
           checkPackageLink.classList.add("disabled");
@@ -446,7 +446,9 @@
     </script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        document.querySelector('#improve_from_purldb').addEventListener('click', function() {
+        const improveFromPurldb = document.querySelector('#improve_from_purldb');
+        if (!improveFromPurldb) return;
+        improveFromPurldb.addEventListener('click', function() {
           NEXB.displayOverlay("Fetching data from PurlDB...");
         })
       });

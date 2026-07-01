@@ -141,6 +141,9 @@ table.text-break thead {
   background-color: var(--bs-djc-blue-bg);
   height: 54px;
 }
+.nav {
+  --bs-nav-link-padding-x: 0.75rem;
+}
 .navbar-nav .active>.nav-link,
 .navbar-nav .show>.nav-link
 .navbar-nav .nav-link.active,
@@ -392,7 +395,7 @@ table.packages-table .column-primary_language {
 }
 
 /* -- Vulnerability List -- */
-table.vulnerabilities-table .column-vulnerability_id {
+table.vulnerabilities-table .column-advisory_uid {
   width: 220px;
 }
 table.vulnerabilities-table .column-aliases {
@@ -410,7 +413,7 @@ table.vulnerabilities-table .column-summary {
 }
 
 /* -- Vulnerability tab -- */
-#tab_vulnerabilities .column-vulnerability_id {
+#tab_vulnerabilities .column-advisory_uid {
   width: 230px;
 }
 #tab_vulnerabilities .column-affected_packages {
@@ -468,6 +471,11 @@ table.vulnerabilities-table .column-summary {
 #tab_dependencies .column-is_pinned {
   width: 80px;
   font-size: 0.75rem;
+}
+
+/* -- Licenses tab -- */
+#tab_licenses .column-usage_policy {
+  min-width: 175px;
 }
 
 /* -- Package Details -- */
@@ -700,7 +708,17 @@ td.sub-header {
 .tab-content .table thead tr th {
   font-size: 0.875rem;
 }
-th a.sort i {width: auto;}
+th a.sort i {
+  width: auto;
+}
+tr.row-alert-danger > td:first-child {
+  box-shadow: inset 4px 0 0 var(--bs-danger);
+  padding-left: 1rem;
+}
+tr.row-alert-warning > td:first-child {
+  box-shadow: inset 4px 0 0 var(--bs-warning);
+  padding-left: 1rem;
+}
 
 /* -- Better looks for the popover fake links -- */
 .tag_popover,

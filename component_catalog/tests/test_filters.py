@@ -406,6 +406,6 @@ class PackageFilterSetTestCase(TestCase):
         self.assertIn(package1, filterset.qs)
         self.assertIn(package2, filterset.qs)
 
-        data = {"affected_by": vulnerability1.vulnerability_id}
+        data = {"affected_by": vulnerability1.advisory_id}
         filterset = PackageFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [package1])

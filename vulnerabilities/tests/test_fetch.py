@@ -35,14 +35,16 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
     @mock.patch("vulnerabilities.fetch.fetch_for_packages")
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.get_package_url_available_types")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_vulnerabilities_fetch_from_vulnerablecode(
-        self, mock_is_configured, mock_fetch_for_packages
+        self, mock_is_configured, mock_get_available_types, mock_fetch_for_packages
     ):
         buffer = io.StringIO()
         make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         make_package(self.dataspace, package_url="pkg:pypi/idna@2.0")
         mock_is_configured.return_value = True
+        mock_get_available_types.return_value = ["pypi"]
         mock_fetch_for_packages.return_value = {"created": 2, "updated": 0}
         fetch_from_vulnerablecode(
             self.dataspace, batch_size=1, update=True, timeout=None, log_func=buffer.write
@@ -81,40 +83,77 @@ class VulnerabilitiesFetchTestCase(TestCase):
         queryset = Package.objects.scope(self.dataspace)
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
         response_json = json.loads(response_file.read_text())
-        mock_bulk_search_by_purl.return_value = response_json["results"]
+        mock_bulk_search_by_purl.return_value = response_json
 
-        results = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
-        )
-        self.assertEqual(results, {"created": 1, "updated": 0})
+        with self.assertNumQueries(12):
+            results = fetch_for_packages(
+                queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+            )
+        self.assertEqual(results, {"created": 2, "updated": 0})
 
         self.assertEqual("Progress: 1/1", buffer.getvalue())
-        self.assertEqual(1, package1.affected_by_vulnerabilities.count())
-        vulnerability = package1.affected_by_vulnerabilities.get()
-        self.assertEqual("VCID-j3au-usaz-aaag", vulnerability.vulnerability_id)
-        self.assertEqual(Decimal("2.0"), vulnerability.exploitability)
-        self.assertEqual(Decimal("4.2"), vulnerability.weighted_severity)
-        self.assertEqual(Decimal("8.4"), vulnerability.risk_score)
+        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
+        self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
+        self.assertEqual(Decimal("0.5"), vulnerability.exploitability)
+        self.assertEqual(Decimal("6.8"), vulnerability.weighted_severity)
+        self.assertEqual(Decimal("3.4"), vulnerability.risk_score)
         package1.refresh_from_db()
         pp1.refresh_from_db()
-        self.assertEqual(Decimal("8.4"), package1.risk_score)
-        self.assertEqual(Decimal("8.4"), pp1.weighted_risk_score)
+        self.assertEqual(Decimal("3.4"), package1.risk_score)
+        self.assertEqual(Decimal("3.4"), pp1.weighted_risk_score)
 
-        # Update
         purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
         pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
-        mock_bulk_search_by_purl.return_value = response_json["results"]
-        results = fetch_for_packages(
-            queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
-        )
-        self.assertEqual(results, {"created": 0, "updated": 1})
-        vulnerability = package1.affected_by_vulnerabilities.get()
+        mock_bulk_search_by_purl.return_value = response_json
+        with self.assertNumQueries(10):
+            results = fetch_for_packages(
+                queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
+            )
+        self.assertEqual(results, {"created": 0, "updated": 2})
+        vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2024-60"
+        ).get()
         self.assertEqual(Decimal("10.0"), vulnerability.risk_score)
         package1.refresh_from_db()
         pp1.refresh_from_db()
-        self.assertEqual(Decimal("8.4"), package1.risk_score)
-        self.assertEqual(Decimal("4.2"), pp1.weighted_risk_score)
+        self.assertEqual(Decimal("3.4"), package1.risk_score)
+        self.assertEqual(Decimal("1.7"), pp1.weighted_risk_score)
+
+    @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerabilities_fetch_for_packages_cross_batch_no_spurious_update(
+        self, mock_bulk_search_by_purl
+    ):
+        # Two packages affected by the same advisory_uid, processed in separate batches.
+        # The vulnerability must be created once and never "updated" within the same run.
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        queryset = Package.objects.scope(self.dataspace)
+        response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
+        response_36 = json.loads(response_file.read_text())
+        # Minimal response for idna@3.7: same advisory_uid as idna@3.6's first vulnerability.
+        shared_vuln = response_36["results"][0]["affected_by_vulnerabilities"][0]
+        response_37 = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "purl": "pkg:pypi/idna@3.7",
+                    "affected_by_vulnerabilities": [shared_vuln],
+                    "risk_score": 3.4,
+                }
+            ],
+        }
+        mock_bulk_search_by_purl.side_effect = [response_36, response_37]
+
+        results = fetch_for_packages(queryset, self.dataspace, batch_size=1, update=True)
+        # 2 vulnerabilities created from response_36; the shared one is NOT re-updated
+        # when encountered in response_37's batch, because created_advisory_uids guards it.
+        self.assertEqual(results, {"created": 2, "updated": 0})
 
     @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
     def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):

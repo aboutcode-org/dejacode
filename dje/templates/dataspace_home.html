@@ -47,7 +47,7 @@
   {% endblock dataspace_header %}
 
   <div class="row row-cols-1 row-cols-lg-3 g-3 sm-gutter mb-3">
-    {% block compliance_card %}
+    {% block compliance_watchlist_card %}
       <div class="col d-flex">
         <div hx-get="{% url 'product_portfolio:compliance_watchlist_card' %}" hx-trigger="load" hx-swap="outerHTML">
           <div class="h6">
@@ -55,7 +55,27 @@
           </div>
         </div>
       </div>
-    {% endblock compliance_card %}
+    {% endblock compliance_watchlist_card %}
+
+    {% block compliance_licenses_card %}
+      <div class="col d-flex">
+        <div hx-get="{% url 'product_portfolio:compliance_licenses_card' %}" hx-trigger="load" hx-swap="outerHTML">
+          <div class="h6">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+        </div>
+      </div>
+    {% endblock compliance_licenses_card %}
+
+    {% block compliance_vulnerabilities_card %}
+      <div class="col d-flex">
+        <div hx-get="{% url 'product_portfolio:compliance_vulnerabilities_card' %}" hx-trigger="load" hx-swap="outerHTML">
+          <div class="h6">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+        </div>
+      </div>
+    {% endblock compliance_vulnerabilities_card %}
 
     {% block request_cards %}
       {% if request_assigned_to_me or request_followed_by_me %}
@@ -78,7 +98,7 @@
                 {% if forloop.first %}
                   <ul class="mb-1 ps-3">
                 {% endif %}
-                <li>{{ obj }}</li>
+                <li class="mb-1">{{ obj }}</li>
                 {% if forloop.last %}
                   </ul>
                 {% endif %}

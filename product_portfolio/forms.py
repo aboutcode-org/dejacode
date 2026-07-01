@@ -9,6 +9,7 @@
 import json
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.forms import BaseModelFormSet
@@ -554,6 +555,15 @@ class ImportFromScanForm(forms.Form):
             "imported Packages."
         ),
     )
+    create_dependencies = forms.BooleanField(
+        label=_("Create Dependencies"),
+        required=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
+        help_text=_(
+            "When checked, dependency relationships between packages discovered in the "
+            "import will be created on the Product."
+        ),
+    )
     stop_on_error = forms.BooleanField(
         label=_("Stop and cancel import on data validation error"),
         required=False,
@@ -580,6 +590,7 @@ class ImportFromScanForm(forms.Form):
                 None,
                 "upload_file",
                 "create_codebase_resources",
+                "create_dependencies",
                 "stop_on_error",
                 StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
             ),
@@ -595,6 +606,7 @@ class ImportFromScanForm(forms.Form):
             self.user,
             upload_file=self.cleaned_data.get("upload_file"),
             create_codebase_resources=self.cleaned_data.get("create_codebase_resources"),
+            create_dependencies=self.cleaned_data.get("create_dependencies"),
             stop_on_error=self.cleaned_data.get("stop_on_error"),
         )
 
@@ -650,6 +662,15 @@ class BaseProductImportFormView(forms.Form):
             "from the Package URL (purl). A download URL is required for package scanning."
         ),
     )
+    create_dependencies = forms.BooleanField(
+        label=_("Create Dependencies"),
+        required=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
+        help_text=_(
+            "When checked, dependency relationships between packages discovered in the "
+            "import will be created on the Product."
+        ),
+    )
 
     @property
     def helper(self):
@@ -664,6 +685,7 @@ class BaseProductImportFormView(forms.Form):
                 "infer_download_urls",
                 "update_existing_packages",
                 "scan_all_packages",
+                "create_dependencies",
                 StrictSubmit("submit", _("Import"), css_class="btn-success col-2"),
             ),
         )
@@ -678,6 +700,9 @@ class BaseProductImportFormView(forms.Form):
             update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=self.cleaned_data.get("scan_all_packages"),
             infer_download_urls=self.cleaned_data.get("infer_download_urls"),
+            import_options={
+                "create_dependencies": self.cleaned_data.get("create_dependencies", False),
+            },
             created_by=user,
         )
 
@@ -975,6 +1000,15 @@ class PullProjectDataForm(forms.Form):
             "without any modification."
         ),
     )
+    create_dependencies = forms.BooleanField(
+        label=_("Create Dependencies"),
+        required=False,
+        initial=settings.CREATE_DEPENDENCIES_DEFAULT,
+        help_text=_(
+            "When checked, dependency relationships between packages discovered in the "
+            "import will be created on the Product."
+        ),
+    )
 
     @property
     def helper(self):
@@ -1007,6 +1041,9 @@ class PullProjectDataForm(forms.Form):
             project_uuid=project_data.get("uuid"),
             update_existing_packages=self.cleaned_data.get("update_existing_packages"),
             scan_all_packages=False,
+            import_options={
+                "create_dependencies": self.cleaned_data.get("create_dependencies", False),
+            },
             status=ScanCodeProject.Status.SUBMITTED,
             created_by=user,
         )

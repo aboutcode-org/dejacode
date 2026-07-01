@@ -8,7 +8,11 @@
 
 from django.core.cache import caches
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 from dejacode_toolkit import BaseService
+from dejacode_toolkit import get_settings
 from dejacode_toolkit import logger
 
 cache = caches["vulnerabilities"]
@@ -19,26 +23,23 @@ class VulnerableCode(BaseService):
     settings_prefix = "VULNERABLECODE"
     url_field_name = "vulnerablecode_url"
     api_key_field_name = "vulnerablecode_api_key"
+    api_version = "v3"
+    user_agent = get_settings("VULNERABLECODE_USER_AGENT", default="VCIO_API_AGENT")
 
-    def get_vulnerabilities(
-        self,
-        url,
-        field_name,
-        field_value,
-        timeout=None,
-    ):
-        """Get list of vulnerabilities."""
-        cached_results = cache.get(field_value)
-        if cached_results:
-            return cached_results
-
-        payload = {field_name: field_value}
-
-        response = self.request_get(url=url, params=payload, timeout=timeout)
-        if response and response.get("count"):
-            results = response["results"]
-            cache.set(field_value, results)
-            return results
+    def get_session(self):
+        """Add the required User-Agent header and automatic 429 retry with Retry-After support."""
+        session = super().get_session()
+        session.headers.update({"User-Agent": self.user_agent})
+        retry = Retry(
+            total=3,
+            status_forcelist=[429],
+            allowed_methods={"GET", "POST"},
+            respect_retry_after_header=True,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        return session
 
     def get_vulnerabilities_by_purl(
         self,
@@ -46,63 +47,40 @@ class VulnerableCode(BaseService):
         timeout=None,
     ):
         """Get list of vulnerabilities providing a package `purl`."""
-        return self.get_vulnerabilities(
-            url=f"{self.api_url}packages/",
-            field_name="purl",
-            field_value=get_plain_purl(purl),
-            timeout=timeout,
-        )
+        plain_purl = get_plain_purl(purl)
 
-    def get_vulnerabilities_by_cpe(
-        self,
-        cpe,
-        timeout=None,
-    ):
-        """Get list of vulnerabilities providing a package or component `cpe`."""
-        return self.get_vulnerabilities(
-            url=f"{self.api_url}cpes/",
-            field_name="cpe",
-            field_value=cpe,
-            timeout=timeout,
-        )
+        cached_results = cache.get(plain_purl)
+        if cached_results:
+            return cached_results
+
+        response = self.bulk_search_by_purl(purls=[plain_purl], timeout=timeout)
+        if response and response.get("count"):
+            results = response["results"]
+            cache.set(plain_purl, results)
+            return results
 
     def bulk_search_by_purl(
         self,
         purls,
-        purl_only,
+        details=True,
         timeout=None,
     ):
         """Bulk search of vulnerabilities using the provided list of `purls`."""
-        url = f"{self.api_url}packages/bulk_search"
+        url = f"{self.api_url}packages"
 
         data = {
             "purls": purls,
-            "purl_only": purl_only,
-            "plain_purl": True,
+            "details": details,
         }
 
         logger.debug(f"VulnerableCode: url={url} purls_count={len(purls)}")
         return self.request_post(url=url, json=data, timeout=timeout)
 
-    def bulk_search_by_cpes(
-        self,
-        cpes,
-        timeout=None,
-    ):
-        """Bulk search of vulnerabilities using the provided list of `cpes`."""
-        url = f"{self.api_url}cpes/bulk_search"
-
-        data = {
-            "cpes": cpes,
-        }
-
-        logger.debug(f"VulnerableCode: url={url} cpes_count={len(cpes)}")
-        return self.request_post(url, json=data, timeout=timeout)
-
-    def get_vulnerable_purls(self, packages, purl_only=True, timeout=10):
+    def get_vulnerable_purls(self, packages, details=False, timeout=10):
         """
         Return a list of PURLs for which at least one `affected_by_vulnerabilities`
         was found in the VulnerableCodeDB for the given list of `packages`.
+        Returns None when the API call fails (e.g. timeout or network error).
         """
         plain_purls = get_plain_purls(packages)
 
@@ -110,62 +88,20 @@ class VulnerableCode(BaseService):
             return []
 
         vulnerable_purls = self.bulk_search_by_purl(
-            plain_purls,
-            purl_only=purl_only,
+            purls=plain_purls,
+            details=details,
             timeout=timeout,
         )
-        return vulnerable_purls or []
-
-    def get_vulnerable_cpes(self, components):
-        """
-        Return a list of vulnerable CPEs found in the VulnerableCodeDB for the given
-        list of `components`.
-        """
-        cpes = [component.cpe for component in components if component.cpe]
-
-        if not cpes:
-            return []
-
-        search_results = self.bulk_search_by_cpes(cpes)
-        if not search_results:
-            return []
-
-        vulnerable_cpes = [
-            reference.get("reference_id")
-            for entry in search_results
-            for reference in entry.get("references")
-            if reference.get("reference_id").startswith("cpe")
-        ]
-
-        return list(set(vulnerable_cpes))
+        if vulnerable_purls is None:
+            return None
+        return vulnerable_purls.get("results") or []
 
     def get_package_url_available_types(self):
-        # Replace by fetching the endpoint once available.
-        # https://github.com/aboutcode-org/vulnerablecode/issues/1561#issuecomment-2298764730
-        return [
-            "alpine",
-            "alpm",
-            "apache",
-            "cargo",
-            "composer",
-            "conan",
-            "deb",
-            "gem",
-            "generic",
-            "github",
-            "golang",
-            "hex",
-            "mattermost",
-            "maven",
-            "mozilla",
-            "nginx",
-            "npm",
-            "nuget",
-            "openssl",
-            "pypi",
-            "rpm",
-            "ruby",
-        ]
+        """Return the list of supported package types from the VulnerableCode API."""
+        response = self.request_get(f"{self.api_url}package-types")
+        if isinstance(response, list):
+            return response
+        return []
 
 
 def get_plain_purl(purl_str):

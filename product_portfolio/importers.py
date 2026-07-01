@@ -7,7 +7,10 @@
 #
 
 import json
+import logging
+import time
 from collections import defaultdict
+from contextlib import contextmanager
 from contextlib import suppress
 
 from django import forms
@@ -47,6 +50,16 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+
+logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def log_elapsed(label):
+    """Context manager that logs the elapsed time of the wrapped block."""
+    start = time.perf_counter()
+    yield
+    logger.info(f"{label}: {time.perf_counter() - start:.1f}s")
 
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
@@ -383,13 +396,20 @@ class CodebaseResourceImporter(BaseImporter):
 
 class ImportFromScan:
     def __init__(
-        self, product, user, upload_file, create_codebase_resources=True, stop_on_error=False
+        self,
+        product,
+        user,
+        upload_file,
+        create_codebase_resources=True,
+        create_dependencies=False,
+        stop_on_error=False,
     ):
         self.product = product
         self.dataspace = product.dataspace
         self.user = user
         self.upload_file = upload_file
         self.create_codebase_resources = create_codebase_resources
+        self.create_dependencies = create_dependencies
         self.stop_on_error = stop_on_error
 
         self.data = {}
@@ -465,6 +485,13 @@ class ImportFromScan:
             options_str = " ".join(missing_options)
             raise ValidationError(f"The Scan run is missing those required options: {options_str}")
 
+    def _handle_package_dependencies(self, package_data, package_uid, dependencies_by_package_uid):
+        if self.create_dependencies:
+            if not package_data.get("dependencies"):
+                package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
+        else:
+            package_data.pop("dependencies", None)
+
     def import_packages(self):
         product_packages_count = 0
         packages_count = 0
@@ -475,17 +502,18 @@ class ImportFromScan:
                 '"packages" is empty in the uploaded json file.'
             )
 
-        dependencies = self.data.get("dependencies", [])
         dependencies_by_package_uid = defaultdict(list)
-        for dependency in dependencies:
-            for_package_uid = dependency.get("for_package_uid")
-            dependencies_by_package_uid[for_package_uid].append(dependency)
+        if self.create_dependencies:
+            dependencies = self.data.get("dependencies", [])
+            for dependency in dependencies:
+                for_package_uid = dependency.get("for_package_uid")
+                dependencies_by_package_uid[for_package_uid].append(dependency)
 
         for package_data in packages:
             package_uid = package_data.get("package_uid")
-            package_dependencies = package_data.get("dependencies", [])
-            if not package_dependencies:
-                package_data["dependencies"] = dependencies_by_package_uid.get(package_uid, [])
+            self._handle_package_dependencies(
+                package_data, package_uid, dependencies_by_package_uid
+            )
 
             prepared = PackageImporter.prepare_package(package_data, path="/")
             if not prepared:
@@ -658,6 +686,7 @@ class ImportPackageFromScanCodeIO:
         update_existing=False,
         scan_all_packages=False,
         infer_download_urls=False,
+        create_dependencies=False,
     ):
         self.licensing = Licensing()
         self.created = defaultdict(list)
@@ -667,31 +696,57 @@ class ImportPackageFromScanCodeIO:
         self.package_uid_mapping = {}
 
         self.user = user
+        self.dataspace = product.dataspace
         self.project_uuid = project_uuid
         self.product = product
         self.update_existing = update_existing
         self.scan_all_packages = scan_all_packages
         self.infer_download_urls = infer_download_urls
-
-        scancodeio = ScanCodeIO(user.dataspace)
-        self.packages = scancodeio.fetch_project_packages(self.project_uuid)
-        self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
-        if not self.packages and not self.dependencies:
-            raise Exception("Packages could not be fetched from ScanCode.io")
+        self.create_dependencies = create_dependencies
 
     def save(self):
-        self.import_packages()
-        self.import_dependencies()
+        save_start = time.perf_counter()
+
+        scancodeio = ScanCodeIO(self.dataspace)
+
+        with log_elapsed("fetch_project_packages"):
+            self.packages = scancodeio.fetch_project_packages(self.project_uuid)
+
+        if not self.packages:
+            raise Exception("Packages could not be fetched from ScanCode.io")
+
+        if self.create_dependencies:
+            with log_elapsed("fetch_project_dependencies"):
+                self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
+
+        with log_elapsed("import_packages"):
+            self.import_packages()
+
+        if self.create_dependencies:
+            with log_elapsed("import_dependencies"):
+                self.import_dependencies()
 
         if self.scan_all_packages:
             transaction.on_commit(lambda: self.product.scan_all_packages_task(self.user))
+            logger.info("scan_all_packages: scheduled")
 
         if self.user.dataspace.enable_vulnerablecodedb_access:
-            self.product.fetch_vulnerabilities()
+            with log_elapsed("fetch_vulnerabilities"):
+                self.product.fetch_vulnerabilities()
+
+        logger.info(f"save total: {time.perf_counter() - save_start:.1f}s")
 
         return dict(self.created), dict(self.existing), dict(self.errors)
 
     def import_packages(self):
+        # Pre-fetch once to avoid repeated DB lookups in DefaultOnAdditionMixin.save().
+        self.default_review_status = ProductRelationStatus.objects.get_default_on_addition_qs(
+            self.dataspace
+        ).first()
+        self.default_purpose = ProductItemPurpose.objects.get_default_on_addition_qs(
+            self.dataspace
+        ).first()
+
         for package_data in self.packages:
             self.import_package(package_data)
 
@@ -749,8 +804,9 @@ class ImportPackageFromScanCodeIO:
         if not package:
             try:
                 package = Package.create_from_data(self.user, package_data, validate=True)
-            except ValidationError as errors:
-                self.errors["package"].append(str(errors))
+            except ValidationError as error:
+                logger.error(f"Failed to create package: {error}\n{package_data}")
+                self.errors["package"].append(str(error))
                 return
             self.created["package"].append(str(package))
 
@@ -762,8 +818,11 @@ class ImportPackageFromScanCodeIO:
                 "license_expression": package.license_expression,
                 "notes": "Imported from ScanCode.io",
                 "created_by": self.user,
+                "review_status": self.default_review_status,
+                "purpose": self.default_purpose,
             },
         )
+
         package_uid = package_data.get("package_uid") or package.uuid
         self.package_uid_mapping[package_uid] = package
 
@@ -828,7 +887,7 @@ class ImportPackageFromScanCodeIO:
             return package
 
         # 2. If the package data does not include a download_url value:
-        # Attemp to find an existing package using purl-only match.
+        # Attempt to find an existing package using purl-only match.
         if not package_data.get("download_url"):
             purl_lookups = {field: package_data.get(field, "") for field in PACKAGE_URL_FIELDS}
             same_purl_packages = package_qs.filter(**purl_lookups)

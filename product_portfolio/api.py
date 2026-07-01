@@ -31,6 +31,7 @@ from dje.api import DataspacedSlugRelatedField
 from dje.api import NameVersionHyperlinkedRelatedField
 from dje.api import ProductRelatedViewSet
 from dje.api import SPDXDocumentActionMixin
+from dje.api_permissions import ObjectPermissionsMixin
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleCharFilter
 from dje.filters import MultipleUUIDFilter
@@ -196,8 +197,8 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         field_name="packages__affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="packages__affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="packages__affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
 
     class Meta:
@@ -243,6 +244,11 @@ class LoadSBOMsFormSerializer(serializers.Serializer):
         default=False,
         help_text=LoadSBOMsForm.base_fields["scan_all_packages"].help_text,
     )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=LoadSBOMsForm.base_fields["create_dependencies"].help_text,
+    )
 
 
 class ImportManifestsFormSerializer(serializers.Serializer):
@@ -268,6 +274,11 @@ class ImportManifestsFormSerializer(serializers.Serializer):
         default=False,
         help_text=ImportManifestsForm.base_fields["scan_all_packages"].help_text,
     )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportManifestsForm.base_fields["create_dependencies"].help_text,
+    )
 
 
 class ImportFromScanSerializer(serializers.Serializer):
@@ -280,6 +291,11 @@ class ImportFromScanSerializer(serializers.Serializer):
         required=False,
         default=False,
         help_text=ImportFromScanForm.base_fields["create_codebase_resources"].help_text,
+    )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=ImportFromScanForm.base_fields["create_dependencies"].help_text,
     )
     stop_on_error = serializers.BooleanField(
         required=False,
@@ -299,6 +315,11 @@ class PullProjectDataSerializer(serializers.Serializer):
         required=False,
         default=False,
         help_text=PullProjectDataForm.base_fields["update_existing_packages"].help_text,
+    )
+    create_dependencies = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=PullProjectDataForm.base_fields["create_dependencies"].help_text,
     )
 
 
@@ -323,6 +344,7 @@ class ScanCodeProjectSerializer(DataspacedSerializer):
 
 
 class ProductViewSet(
+    ObjectPermissionsMixin,
     SendAboutFilesMixin,
     AboutCodeFilesActionMixin,
     SPDXDocumentActionMixin,
@@ -731,8 +753,8 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         field_name="package__affected_by_vulnerabilities",
     )
     affected_by = django_filters.CharFilter(
-        field_name="package__affected_by_vulnerabilities__vulnerability_id",
-        label="Affected by (vulnerability_id)",
+        field_name="package__affected_by_vulnerabilities__advisory_id",
+        label="Affected by (advisory_id)",
     )
 
     class Meta:

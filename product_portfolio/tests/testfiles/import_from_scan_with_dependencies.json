@@ -1,0 +1,37 @@
+{
+  "headers": [
+    {
+      "tool_name": "scancode-toolkit",
+      "tool_version": "32.0.0",
+      "options": {
+        "--copyright": true,
+        "--info": true,
+        "--license": true,
+        "--package": true
+      }
+    }
+  ],
+  "packages": [
+    {
+      "type": "npm",
+      "name": "test-package",
+      "version": "1",
+      "purl": "pkg:npm/test-package@1",
+      "package_uid": "pkg:npm/test-package@1?uuid=9779a0ea-ef30-4a05-b4db-0a0ba3b3507c",
+      "download_url": "https://registry.npmjs.org/test-package/-/test-package-1.tgz",
+      "copyright": "Copyright",
+      "declared_license_expression": "apache-2.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "purl": "pkg:npm/lodash@4.17.21",
+      "scope": "runtime",
+      "is_runtime": true,
+      "is_optional": false,
+      "is_pinned": true,
+      "for_package_uid": "pkg:npm/test-package@1?uuid=9779a0ea-ef30-4a05-b4db-0a0ba3b3507c"
+    }
+  ],
+  "files": []
+}

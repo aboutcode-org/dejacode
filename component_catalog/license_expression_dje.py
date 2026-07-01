@@ -59,7 +59,7 @@ def get_dataspace_licensing(dataspace, license_keys=None):
         # Bypass cache if license_keys is provided
         return fetch_licensing_for_dataspace(dataspace, license_keys)
 
-    cache_key = str({dataspace.name})
+    cache_key = str(dataspace.uuid)
     # First look in the cache for an existing Licensing for this Dataspace
     licensing = licensing_cache.get(cache_key)
 
