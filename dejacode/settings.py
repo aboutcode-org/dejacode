@@ -18,6 +18,8 @@ import ldap
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
 
+from dejacode_toolkit.ldap import build_user_search
+
 # The home directory of the dejacode user that owns the installation.
 PROJECT_DIR = environ.Path(__file__) - 1
 ROOT_DIR = PROJECT_DIR - 1
@@ -775,7 +777,37 @@ AUTH_LDAP_USER_DN = env.str("AUTH_LDAP_USER_DN", default="")
 # AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 AUTH_LDAP_USER_FILTERSTR = env.str("AUTH_LDAP_USER_FILTERSTR", default="")
 
-AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_DN, ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_FILTERSTR)
+# Optional: Define multiple LDAP user searches using a JSON list.
+# When provided, this setting overrides AUTH_LDAP_USER_DN and AUTH_LDAP_USER_FILTERSTR.
+#
+# Example:
+# AUTH_LDAP_USER_SEARCHES = """
+#     [
+#         {
+#             "base": "ou=users,dc=example,dc=com",
+#             "filter": "(uid=%(user)s)"
+#         },
+#         {
+#             "base": "ou=otherusers,dc=example,dc=com",
+#             "filter": "(uid=%(user)s)"
+#         }
+#     ]
+#     """
+#
+# Hint: use as a single line string within docker env
+#
+# Each entry must define:
+# - "base":   The base DN to search
+# - "filter": The LDAP filter (must include %(user)s)
+#
+# All searches are combined using LDAPSearchUnion.
+AUTH_LDAP_USER_SEARCHES = env.str("AUTH_LDAP_USER_SEARCHES", default="")
+
+AUTH_LDAP_USER_SEARCH = build_user_search(
+    AUTH_LDAP_USER_SEARCHES,
+    AUTH_LDAP_USER_DN,
+    AUTH_LDAP_USER_FILTERSTR,
+)
 
 # When AUTH_LDAP_AUTOCREATE_USER is True (default), a new DejaCode user will be
 # created in the database with the minimum permission (a read-only user).
