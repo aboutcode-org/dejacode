@@ -12,7 +12,7 @@ from django.test import SimpleTestCase
 from django_auth_ldap.config import LDAPSearch
 from django_auth_ldap.config import LDAPSearchUnion
 
-from dejacode.ldap_config import build_user_search
+from dejacode_toolkit.ldap import build_user_search
 
 
 class BuildUserSearchTestCase(SimpleTestCase):
@@ -51,16 +51,12 @@ class BuildUserSearchTestCase(SimpleTestCase):
 
     def test_build_user_search_missing_base_raises(self):
         raw = '[{"filter": "(uid=%(user)s)"}]'
-        with self.assertRaisesMessage(
-            ImproperlyConfigured, "[0] must define 'base' and 'filter'"
-        ):
+        with self.assertRaisesMessage(ImproperlyConfigured, "[0] must define 'base' and 'filter'"):
             build_user_search(raw, "", "")
 
     def test_build_user_search_missing_filter_raises(self):
         raw = '[{"base": "ou=a,dc=example,dc=com"}]'
-        with self.assertRaisesMessage(
-            ImproperlyConfigured, "[0] must define 'base' and 'filter'"
-        ):
+        with self.assertRaisesMessage(ImproperlyConfigured, "[0] must define 'base' and 'filter'"):
             build_user_search(raw, "", "")
 
     def test_build_user_search_error_index_points_to_bad_entry(self):
@@ -68,7 +64,5 @@ class BuildUserSearchTestCase(SimpleTestCase):
             '[{"base": "ou=a,dc=example,dc=com", "filter": "(uid=%(user)s)"},'
             ' {"base": "ou=b,dc=example,dc=com"}]'
         )
-        with self.assertRaisesMessage(
-            ImproperlyConfigured, "[1] must define 'base' and 'filter'"
-        ):
+        with self.assertRaisesMessage(ImproperlyConfigured, "[1] must define 'base' and 'filter'"):
             build_user_search(raw, "", "")

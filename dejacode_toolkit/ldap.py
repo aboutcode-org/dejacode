@@ -8,14 +8,16 @@
 
 import json
 
-import ldap
 from django.core.exceptions import ImproperlyConfigured
+
+import ldap
 from django_auth_ldap.config import LDAPSearch
 from django_auth_ldap.config import LDAPSearchUnion
 
 
 def build_user_search(user_searches, user_dn, user_filterstr):
-    """Return the ``AUTH_LDAP_USER_SEARCH`` object.
+    """
+    Return the ``AUTH_LDAP_USER_SEARCH`` object.
 
     When ``user_searches`` (a raw JSON string) is provided, parse and validate
     it and return an ``LDAPSearchUnion``. Otherwise, fall back to a single
@@ -27,9 +29,7 @@ def build_user_search(user_searches, user_dn, user_filterstr):
     try:
         definitions = json.loads(user_searches)
     except json.JSONDecodeError as e:
-        raise ImproperlyConfigured(
-            f"Invalid JSON in AUTH_LDAP_USER_SEARCHES: {e}"
-        ) from e
+        raise ImproperlyConfigured(f"Invalid JSON in AUTH_LDAP_USER_SEARCHES: {e}") from e
 
     if not isinstance(definitions, list):
         raise ImproperlyConfigured("AUTH_LDAP_USER_SEARCHES must be a JSON list")
@@ -40,9 +40,7 @@ def build_user_search(user_searches, user_dn, user_filterstr):
     searches = []
     for index, entry in enumerate(definitions):
         if not isinstance(entry, dict):
-            raise ImproperlyConfigured(
-                f"AUTH_LDAP_USER_SEARCHES[{index}] must be a JSON object"
-            )
+            raise ImproperlyConfigured(f"AUTH_LDAP_USER_SEARCHES[{index}] must be a JSON object")
 
         base_dn = entry.get("base")
         filterstr = entry.get("filter")

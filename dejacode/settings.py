@@ -17,6 +17,7 @@ import environ
 import ldap
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
+
 from dejacode_toolkit.ldap import build_user_search
 
 # The home directory of the dejacode user that owns the installation.
