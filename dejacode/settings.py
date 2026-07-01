@@ -17,6 +17,7 @@ import environ
 import ldap
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
+from dejacode_toolkit.ldap import build_user_search
 
 # The home directory of the dejacode user that owns the installation.
 PROJECT_DIR = environ.Path(__file__) - 1
@@ -769,7 +770,7 @@ AUTH_LDAP_USER_FILTERSTR = env.str("AUTH_LDAP_USER_FILTERSTR", default="")
 
 # Optional: Define multiple LDAP user searches using a JSON list.
 # When provided, this setting overrides AUTH_LDAP_USER_DN and AUTH_LDAP_USER_FILTERSTR.
-# 
+#
 # Example:
 # AUTH_LDAP_USER_SEARCHES = """
 #     [
@@ -793,46 +794,11 @@ AUTH_LDAP_USER_FILTERSTR = env.str("AUTH_LDAP_USER_FILTERSTR", default="")
 # All searches are combined using LDAPSearchUnion.
 AUTH_LDAP_USER_SEARCHES = env.str("AUTH_LDAP_USER_SEARCHES", default="")
 
-if AUTH_LDAP_USER_SEARCHES:
-    import json
-    from django_auth_ldap.config import LDAPSearchUnion
-
-    try:
-        ldap_search_definitions = json.loads(AUTH_LDAP_USER_SEARCHES)
-    except json.JSONDecodeError as e:
-        raise ValueError("Invalid JSON in AUTH_LDAP_USER_SEARCHES") from e
-
-    if not isinstance(ldap_search_definitions, list):
-        raise ValueError("AUTH_LDAP_USER_SEARCHES must be a JSON list")
-
-    ldap_searches = []
-    for search_definition in ldap_search_definitions:
-        if not isinstance(search_definition, dict):
-            raise ValueError("Each entry must be an object")
-
-        base_dn = search_definition.get("base")
-        filterstr = search_definition.get("filter")
-
-        if not base_dn or not filterstr:
-            raise ValueError("Each LDAP search entry must define 'base' and 'filter'")
-
-        ldap_searches.append(
-            LDAPSearch(base_dn, ldap.SCOPE_SUBTREE, filterstr)
-        )
-
-    if not ldap_searches:
-        raise ValueError("AUTH_LDAP_USER_SEARCHES cannot be empty")
-
-    # Always use LDAPSearchUnion, even for a single search entry.
-    AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(*ldap_searches)
-
-else:
-    # Fallback to single LDAP search configuration.
-    AUTH_LDAP_USER_SEARCH = LDAPSearch(
-        AUTH_LDAP_USER_DN,
-        ldap.SCOPE_SUBTREE,
-        AUTH_LDAP_USER_FILTERSTR,
-    )
+AUTH_LDAP_USER_SEARCH = build_user_search(
+    AUTH_LDAP_USER_SEARCHES,
+    AUTH_LDAP_USER_DN,
+    AUTH_LDAP_USER_FILTERSTR,
+)
 
 # When AUTH_LDAP_AUTOCREATE_USER is True (default), a new DejaCode user will be
 # created in the database with the minimum permission (a read-only user).
