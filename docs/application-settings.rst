@@ -383,8 +383,8 @@ It must return exactly one result for authentication to succeed.
     AUTH_LDAP_USER_DN="ou=users,dc=example,dc=com"
     AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 
-USER_SEARCHES
--------------
+AUTH_LDAP_USER_SEARCHES
+-----------------------
 
 To search across multiple LDAP locations, use
 ``AUTH_LDAP_USER_SEARCHES``.
