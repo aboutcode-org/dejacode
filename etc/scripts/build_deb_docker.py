@@ -59,9 +59,7 @@ def build_deb_with_docker():
     dependencies = project.get("dependencies", [])
 
     filtered_dependencies = [
-        dep
-        for dep in dependencies
-        if "django_notifications_patched" not in dep
+        dep for dep in dependencies if "django_notifications_patched" not in dep
     ]
 
     docker_cmd = [

@@ -59,9 +59,7 @@ def build_rpm_with_docker():
     dependencies = project["dependencies"]
 
     filtered_dependencies = [
-        dep
-        for dep in dependencies
-        if "django-notifications-patched" not in dep
+        dep for dep in dependencies if "django-notifications-patched" not in dep
     ]
 
     # Create a requirements.txt content for installation

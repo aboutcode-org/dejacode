@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-11T13:07:42.745317Z"
+exclude-newer = "2026-06-26T14:02:46.162492Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -191,7 +191,7 @@ wheels = [
 
 [[package]]
 name = "dejacode"
-version = "5.8.0"
+version = "5.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "aboutcode-toolkit", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -225,7 +225,6 @@ dependencies = [
     { name = "django-notifications-patched", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "django-otp", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "django-registration", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
-    { name = "django-rest-hooks", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "django-rq", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "djangorestframework", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "drf-yasg", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
@@ -331,7 +330,6 @@ requires-dist = [
     { name = "django-notifications-patched", specifier = "==2.0.0" },
     { name = "django-otp", specifier = "==1.7.0" },
     { name = "django-registration", specifier = "==5.2.1" },
-    { name = "django-rest-hooks", specifier = "==1.6.1" },
     { name = "django-rq", specifier = "==3.2.2" },
     { name = "djangorestframework", specifier = "==3.16.1" },
     { name = "drf-yasg", specifier = "==1.21.15" },
@@ -542,18 +540,6 @@ dependencies = [
 ]
 wheels = [
     { path = "django_registration-5.2.1-py3-none-any.whl" },
-]
-
-[[package]]
-name = "django-rest-hooks"
-version = "1.6.1"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
-    { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
-]
-wheels = [
-    { path = "django_rest_hooks-1.6.1-py2.py3-none-any.whl" },
 ]
 
 [[package]]

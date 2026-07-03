@@ -155,7 +155,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         # when encountered in response_37's batch, because created_advisory_uids guards it.
         self.assertEqual(results, {"created": 2, "updated": 0})
 
-    @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
+    @mock.patch("vulnerabilities.fetch.fire_webhooks")
     def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):
         notify_vulnerability_data_update(self.dataspace)
         mock_fire_hook.assert_not_called()

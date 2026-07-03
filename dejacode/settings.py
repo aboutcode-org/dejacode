@@ -327,7 +327,6 @@ PREREQ_APPS = [
     "crispy_bootstrap5",
     "guardian",
     "django_filters",
-    "rest_hooks",
     "notifications",
     "axes",
     "django_otp",
@@ -663,18 +662,14 @@ ACCOUNT_ACTIVATION_DAYS = 10
 # django-altcha
 ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
 
-# https://github.com/zapier/django-rest-hooks
-HOOK_FINDER = "notification.models.find_and_fire_hook"
-HOOK_EVENTS = {
-    # 'any.event.name': 'App.Model.Action' (created/updated/deleted)
-    # If you want a Hook to be triggered for all users, add '+' to built-in Hooks.
-    "request.added": "workflow.Request.created+",
-    "request.updated": "workflow.Request.updated+",
-    "request_comment.added": "workflow.RequestComment.created+",
-    "user.added_or_updated": None,
-    "user.locked_out": None,
-    "vulnerability.data_update": None,
-}
+WEBHOOK_EVENTS = [
+    "request.added",
+    "request.updated",
+    "request_comment.added",
+    "user.added_or_updated",
+    "user.locked_out",
+    "vulnerability.data_update",
+]
 # Provide context variables to WebhookSubscription extra_headers template values.
 HOOK_ENV = env.dict("HOOK_ENV", default={})
 

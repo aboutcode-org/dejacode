@@ -441,6 +441,7 @@ class LoginAttemptsTrackingTestCase(TestCase):
 
     @mock.patch("requests.post")
     def test_notification_on_unsuccessful_login_attempts(self, method_mock):
+        method_mock.return_value = None
         user = create_user(username="real_user", dataspace=self.dataspace)
         extra_payload = {"username": "DejaCode Webhook"}
         WebhookSubscription.objects.create(

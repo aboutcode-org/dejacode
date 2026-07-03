@@ -115,8 +115,6 @@ dependencies = [
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",
-    # Webhooks
-    "django-rest-hooks==1.6.1",
     # django-notifications
     "django_notifications_patched==2.0.0",
     "jsonfield==3.2.0",

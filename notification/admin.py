@@ -9,7 +9,6 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
 
 from dje.admin import DataspacedAdmin
 from dje.admin import ProhibitDataspaceLookupMixin
@@ -17,13 +16,9 @@ from dje.admin import dejacode_site
 from dje.forms import DataspacedAdminForm
 from notification.models import WebhookSubscription
 
-HOOK_EVENTS = settings.HOOK_EVENTS
-if HOOK_EVENTS is None:
-    raise ImproperlyConfigured("settings.HOOK_EVENTS is not defined")
-
 
 class WebhookSubscriptionForm(DataspacedAdminForm):
-    EVENTS = [(event, event) for event in HOOK_EVENTS.keys()]
+    EVENTS = [(event, event) for event in settings.WEBHOOK_EVENTS]
 
     class Meta:
         model = WebhookSubscription

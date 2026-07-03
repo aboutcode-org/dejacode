@@ -90,7 +90,7 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
     def get_payload(self, instance):
         payload = instance.serialize_hook(hook=self)
         if self.extra_payload:
-            payload.update(self.extra_payload)
+            payload["data"].update(self.extra_payload)
         return payload
 
     def create_delivery(self, payload, instance):
@@ -125,18 +125,18 @@ class WebhookDelivery(DataspacedModel, AbstractWebhookDelivery):
         unique_together = [("dataspace", "uuid")]
 
 
-
-def find_and_fire_hook(
+def fire_webhooks(
     event_name,
     instance,
-    user_override=None,
     dataspace=None,
     payload_override=None,
 ):
     """
-    Fire active Webhook instances found in the `dataspace` for the `event_name`.
+    Enqueue async delivery for each active WebhookSubscription in `dataspace` matching `event_name`.
     If `dataspace` is not provided, uses the Dataspace of the `instance`.
     """
+    from notification.tasks import deliver_webhook_task
+
     if not dataspace and instance:
         dataspace = instance.dataspace
     if not dataspace:
@@ -150,4 +150,11 @@ def find_and_fire_hook(
     webhooks = WebhookSubscription.objects.scope(dataspace).filter(**filters)
 
     for webhook in webhooks:
-        webhook.deliver(instance, payload_override=payload_override)
+        task_kwargs = {"webhook_subscription_pk": webhook.pk}
+        if payload_override is not None:
+            task_kwargs["payload_override"] = payload_override
+        if instance is not None:
+            task_kwargs["instance_app_label"] = instance._meta.app_label
+            task_kwargs["instance_model_name"] = instance._meta.model_name
+            task_kwargs["instance_pk"] = instance.pk
+        deliver_webhook_task.delay(**task_kwargs)
