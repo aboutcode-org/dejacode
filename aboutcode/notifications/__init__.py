@@ -6,8 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from aboutcode.notification.models import AbstractWebhookSubscription
-from aboutcode.notification.models import AbstractWebhookDelivery
+from aboutcode.notifications.models import AbstractWebhookDelivery
+from aboutcode.notifications.models import AbstractWebhookSubscription
 
 __version__ = "0.1.0"
 

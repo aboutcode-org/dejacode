@@ -37,9 +37,7 @@ class AbstractWebhookSubscription(models.Model):
     )
     is_active = models.BooleanField(
         default=True,
-        help_text=_(
-            "Indicates whether the Webhook is currently active and should be triggered."
-        ),
+        help_text=_("Indicates whether the Webhook is currently active and should be triggered."),
     )
     created_date = models.DateTimeField(
         auto_now_add=True,
@@ -61,7 +59,11 @@ class AbstractWebhookSubscription(models.Model):
     def create_delivery(self, payload, context):
         raise NotImplementedError
 
-    def deliver(self, context, timeout=10):
+    def get_headers(self):
+        """Return the HTTP headers to include in the Webhook request."""
+        return {"Content-Type": "application/json"}
+
+    def deliver(self, context, timeout=10, payload_override=None):
         """Deliver this Webhook by sending a POST request to the target_url."""
         logger.info(f"Delivering Webhook {self.uuid}")
 
@@ -69,13 +71,16 @@ class AbstractWebhookSubscription(models.Model):
             logger.info(f"Webhook {self.uuid} is not active.")
             return False
 
-        parsed = urlparse(self.target_url)
-        if parsed.hostname == "hooks.slack.com" and (
-            slack_payload := self.get_slack_payload(context)
-        ):
-            payload = slack_payload
+        if payload_override:
+            payload = payload_override
         else:
-            payload = self.get_payload(context)
+            parsed = urlparse(self.target_url)
+            if parsed.hostname == "hooks.slack.com" and (
+                slack_payload := self.get_slack_payload(context)
+            ):
+                payload = slack_payload
+            else:
+                payload = self.get_payload(context)
 
         delivery = self.create_delivery(payload, context)
 
@@ -83,7 +88,7 @@ class AbstractWebhookSubscription(models.Model):
             response = requests.post(
                 url=self.target_url,
                 data=json.dumps(payload, cls=DjangoJSONEncoder),
-                headers={"Content-Type": "application/json"},
+                headers=self.get_headers(),
                 timeout=timeout,
             )
         except requests.exceptions.RequestException as exception:
@@ -112,8 +117,7 @@ class AbstractWebhookDelivery(models.Model):
         max_length=1024,
         blank=False,
         help_text=_(
-            "Stores a copy of the Webhook target URL in case the subscription object "
-            "is deleted."
+            "Stores a copy of the Webhook target URL in case the subscription object is deleted."
         ),
     )
     sent_date = models.DateTimeField(

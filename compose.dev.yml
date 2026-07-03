@@ -36,6 +36,7 @@ services:
       - "8000:8000"
     volumes:
       - ./.env:/opt/dejacode/.env
+      - ./aboutcode:/opt/dejacode/aboutcode
       - ./component_catalog:/opt/dejacode/component_catalog
       - ./dejacode:/opt/dejacode/dejacode
       - ./dejacode_toolkit:/opt/dejacode/dejacode_toolkit

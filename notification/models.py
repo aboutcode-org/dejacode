@@ -15,13 +15,10 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_hooks.models import AbstractHook
 
+from aboutcode.notifications import AbstractWebhookDelivery
+from aboutcode.notifications import AbstractWebhookSubscription
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
-from dje.models import HistoryFieldsMixin
-
-from aboutcode.notification import AbstractWebhookSubscription
-from aboutcode.notification import AbstractWebhookDelivery
-
 
 logger = logging.getLogger("dje")
 
@@ -61,8 +58,36 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
     def __str__(self):
         return f"{self.event} => {self.target_url}"
 
+    def dict(self):
+        return {"uuid": str(self.uuid), "event": self.event, "target": self.target_url}
+
+    def get_extra_headers(self):
+        """Inject `hook_env` context in headers template values."""
+        if hook_env := settings.HOOK_ENV:
+            hook_env_context = template.Context(hook_env)
+            return {
+                key: self.render_template(value, hook_env_context)
+                for key, value in self.extra_headers.items()
+            }
+        return self.extra_headers
+
+    @staticmethod
+    def render_template(value, hook_env_context):
+        if "{{" in value and "}}" in value:
+            return template.Template(value).render(hook_env_context)
+        return value
+
+    def get_headers(self):
+        headers = {"Content-Type": "application/json"}
+        if self.extra_headers:
+            headers.update(self.get_extra_headers())
+        return headers
+
     def get_payload(self, instance):
-        return instance.serialize_hook(hook=self)
+        payload = instance.serialize_hook(hook=self)
+        if self.extra_payload:
+            payload.update(self.extra_payload)
+        return payload
 
     def create_delivery(self, payload, instance):
         return WebhookDelivery(
@@ -158,7 +183,7 @@ def find_and_fire_hook(
         "is_active": True,
     }
 
-    hooks = Webhook.objects.scope(dataspace).filter(**filters)
+    webhooks = WebhookSubscription.objects.scope(dataspace).filter(**filters)
 
-    for hook in hooks:
-        hook.deliver_hook(instance, payload_override)
+    for webhook in webhooks:
+        webhook.deliver(instance, payload_override=payload_override)

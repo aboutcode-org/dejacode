@@ -19,6 +19,14 @@ run:
 	@echo "-> Run the Docker compose services in dev mode (hot reload on code changes)"
 	${COMPOSE} up
 
+start:
+	@echo "-> Start the Docker compose services in background"
+	${COMPOSE} up -d
+
+# make logs TAIL=100 SERVICE=db
+logs:
+	${COMPOSE} logs -f --tail=${TAIL:-50} ${SERVICE}
+
 bash:
 	# Open a bash session in the running web container
 	${COMPOSE} exec web bash
@@ -181,8 +189,4 @@ initdb:
 psql:
 	${DOCKER_EXEC} ${DB_CONTAINER_NAME} psql --username=${DB_USERNAME} postgres
 
-# $ make log SERVICE=db
-log:
-	${DOCKER_COMPOSE} logs --tail="100" ${SERVICE}
-
-.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell log superuser
+.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell logs start superuser

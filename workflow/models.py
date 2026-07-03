@@ -589,7 +589,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         return users
 
     def serialize_hook(self, hook):
-        if "hooks.slack.com" in hook.target:
+        if "hooks.slack.com" in hook.target_url:
             return request_slack_payload(self, created="added" in hook.event)
 
         from workflow.api import RequestSerializer
@@ -789,7 +789,7 @@ class RequestComment(AbstractRequestEvent):
         return mark_safe(html)
 
     def serialize_hook(self, hook):
-        if "hooks.slack.com" in hook.target:
+        if "hooks.slack.com" in hook.target_url:
             return request_comment_slack_payload(self)
 
         from workflow.api import RequestCommentSerializer
