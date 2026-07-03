@@ -61,7 +61,7 @@ def build_rpm_with_docker():
     filtered_dependencies = [
         dep
         for dep in dependencies
-        if "django-rest-hooks" not in dep and "django-notifications-patched" not in dep
+        if "django-notifications-patched" not in dep
     ]
 
     # Create a requirements.txt content for installation
@@ -189,8 +189,6 @@ cd %{{_sourcedir}}
 dnf install -y postgresql-devel
 
 # Install non-PyPI dependencies
-/tmp/venv_build/bin/python -m pip install \\
-    https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl
 /tmp/venv_build/bin/python -m pip install \\
     https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz
 

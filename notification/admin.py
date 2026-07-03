@@ -15,20 +15,20 @@ from dje.admin import DataspacedAdmin
 from dje.admin import ProhibitDataspaceLookupMixin
 from dje.admin import dejacode_site
 from dje.forms import DataspacedAdminForm
-from notification.models import Webhook
+from notification.models import WebhookSubscription
 
 HOOK_EVENTS = settings.HOOK_EVENTS
 if HOOK_EVENTS is None:
     raise ImproperlyConfigured("settings.HOOK_EVENTS is not defined")
 
 
-class WebookForm(DataspacedAdminForm):
+class WebhookSubscriptionForm(DataspacedAdminForm):
     EVENTS = [(event, event) for event in HOOK_EVENTS.keys()]
 
     class Meta:
-        model = Webhook
+        model = WebhookSubscription
         fields = [
-            "target",
+            "target_url",
             "event",
             "is_active",
             "extra_payload",
@@ -39,15 +39,11 @@ class WebookForm(DataspacedAdminForm):
         super().__init__(*args, **kwargs)
         self.fields["event"] = forms.ChoiceField(choices=self.EVENTS)
 
-        add = not kwargs.get("instance")
-        if add:
-            self.instance.user = self.request.user
 
-
-@admin.register(Webhook, site=dejacode_site)
-class WebookAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
-    list_display = ("__str__", "event", "target", "is_active", "dataspace")
-    form = WebookForm
+@admin.register(WebhookSubscription, site=dejacode_site)
+class WebhookSubscriptionAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
+    list_display = ("__str__", "event", "target_url", "is_active", "dataspace")
+    form = WebhookSubscriptionForm
     list_filter = ("is_active", "event")
     activity_log = False
     actions = []

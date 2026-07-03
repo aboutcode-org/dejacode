@@ -11,39 +11,38 @@ from django.test.utils import override_settings
 
 from dje.models import Dataspace
 from dje.tests import create_superuser
-from notification.models import Webhook
+from notification.models import WebhookSubscription
 
 
-class NotificationModelsTestCase(TestCase):
+class WebhookSubscriptionModelTestCase(TestCase):
     def setUp(self):
         self.nexb_dataspace = Dataspace.objects.create(name="nexB")
         self.nexb_user = create_superuser("nexb_user", self.nexb_dataspace)
 
-        self.webhook1 = Webhook.objects.create(
+        self.webhook = WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target="http://1.2.3.4/",
-            user=self.nexb_user,
+            target_url="http://1.2.3.4/",
             event="request.added",
         )
 
-    def test_notification_webhook_model_str(self):
-        self.assertEqual("request.added => http://1.2.3.4/", str(self.webhook1))
+    def test_webhook_subscription_str(self):
+        self.assertEqual("request.added => http://1.2.3.4/", str(self.webhook))
 
-    def test_notification_webhook_model_dict(self):
+    def test_webhook_subscription_dict(self):
         expected = {
-            "uuid": str(self.webhook1.uuid),
-            "event": self.webhook1.event,
-            "target": self.webhook1.target,
+            "uuid": str(self.webhook.uuid),
+            "event": self.webhook.event,
+            "target": self.webhook.target_url,
         }
-        self.assertEqual(expected, self.webhook1.dict())
+        self.assertEqual(expected, self.webhook.dict())
 
-    def test_notification_webhook_model_get_extra_headers(self):
-        self.webhook1.extra_headers = {"Header": "{{ENV_VALUE}}"}
-        self.webhook1.save()
+    def test_webhook_subscription_get_extra_headers(self):
+        self.webhook.extra_headers = {"Header": "{{ENV_VALUE}}"}
+        self.webhook.save()
 
         expected = {"Header": "{{ENV_VALUE}}"}
-        self.assertEqual(expected, self.webhook1.get_extra_headers())
+        self.assertEqual(expected, self.webhook.get_extra_headers())
 
         expected = {"Header": "some_value"}
         with override_settings(HOOK_ENV={"ENV_VALUE": "some_value"}):
-            self.assertEqual(expected, self.webhook1.get_extra_headers())
+            self.assertEqual(expected, self.webhook.get_extra_headers())

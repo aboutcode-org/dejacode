@@ -665,7 +665,6 @@ ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
 
 # https://github.com/zapier/django-rest-hooks
 HOOK_FINDER = "notification.models.find_and_fire_hook"
-HOOK_DELIVERER = "notification.tasks.deliver_hook_wrapper"
 HOOK_EVENTS = {
     # 'any.event.name': 'App.Model.Action' (created/updated/deleted)
     # If you want a Hook to be triggered for all users, add '+' to built-in Hooks.
@@ -676,7 +675,7 @@ HOOK_EVENTS = {
     "user.locked_out": None,
     "vulnerability.data_update": None,
 }
-# Provide context variables to the `Webhook` values such as `extra_headers`.
+# Provide context variables to WebhookSubscription extra_headers template values.
 HOOK_ENV = env.dict("HOOK_ENV", default={})
 
 # Django-axes
