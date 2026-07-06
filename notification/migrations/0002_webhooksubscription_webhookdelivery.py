@@ -6,6 +6,25 @@ import uuid
 from django.db import migrations, models
 
 
+def migrate_webhooks_to_subscriptions(apps, schema_editor):
+    Webhook = apps.get_model("notification", "Webhook")
+    WebhookSubscription = apps.get_model("notification", "WebhookSubscription")
+
+    subscriptions = [
+        WebhookSubscription(
+            dataspace=webhook.dataspace,
+            target_url=webhook.target,
+            is_active=webhook.is_active,
+            event=webhook.event,
+            extra_payload=webhook.extra_payload,
+            extra_headers=webhook.extra_headers,
+        )
+        for webhook in Webhook.objects.select_related("dataspace").iterator()
+    ]
+
+    WebhookSubscription.objects.bulk_create(subscriptions)
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("dje", "0015_alter_dataspaceconfiguration_purldb_api_key_and_more"),
@@ -171,5 +190,12 @@ class Migration(migrations.Migration):
                 "unique_together": {("dataspace", "uuid")},
             },
             bases=(dje.models.DataspaceForeignKeyValidationMixin, models.Model),
+        ),
+        migrations.RunPython(
+            migrate_webhooks_to_subscriptions,
+            reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.DeleteModel(
+            name="Webhook",
         ),
     ]
