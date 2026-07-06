@@ -35,7 +35,9 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
     """
 
     event = models.CharField(
+        _("Event"),
         max_length=64,
+        help_text=_("The event type that triggers this Webhook subscription."),
     )
     extra_payload = models.JSONField(
         blank=True,

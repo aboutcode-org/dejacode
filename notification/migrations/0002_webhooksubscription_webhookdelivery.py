@@ -7,53 +7,166 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('dje', '0015_alter_dataspaceconfiguration_purldb_api_key_and_more'),
-        ('notification', '0001_initial'),
+        ("dje", "0015_alter_dataspaceconfiguration_purldb_api_key_and_more"),
+        ("notification", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WebhookSubscription',
+            name="WebhookSubscription",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, verbose_name='UUID')),
-                ('target_url', models.URLField(help_text='The URL to which the POST request will be sent when the Webhook is triggered.', max_length=1024, verbose_name='Target URL')),
-                ('is_active', models.BooleanField(default=True, help_text='Indicates whether the Webhook is currently active and should be triggered.')),
-                ('created_date', models.DateTimeField(auto_now_add=True, help_text='The date and time when the Webhook subscription was created.')),
-                ('event', models.CharField(max_length=64)),
-                ('extra_payload', models.JSONField(blank=True, default=dict, help_text='Extra data as JSON to be included in the payload')),
-                ('extra_headers', models.JSONField(blank=True, default=dict, help_text='Extra headers as JSON to be included in the request')),
-                ('dataspace', models.ForeignKey(editable=False, help_text='A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.', on_delete=django.db.models.deletion.PROTECT, to='dje.dataspace')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False, verbose_name="UUID")),
+                (
+                    "target_url",
+                    models.URLField(
+                        help_text="The URL to which the POST request will be sent when the Webhook is triggered.",
+                        max_length=1024,
+                        verbose_name="Target URL",
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Indicates whether the Webhook is currently active and should be triggered.",
+                    ),
+                ),
+                (
+                    "created_date",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text="The date and time when the Webhook subscription was created.",
+                    ),
+                ),
+                (
+                    "event",
+                    models.CharField(
+                        help_text="The event type that triggers this Webhook subscription.",
+                        max_length=64,
+                        verbose_name="Event",
+                    ),
+                ),
+                (
+                    "extra_payload",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="Extra data as JSON to be included in the payload",
+                    ),
+                ),
+                (
+                    "extra_headers",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="Extra headers as JSON to be included in the request",
+                    ),
+                ),
+                (
+                    "dataspace",
+                    models.ForeignKey(
+                        editable=False,
+                        help_text="A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="dje.dataspace",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_date'],
-                'abstract': False,
-                'unique_together': {('dataspace', 'uuid')},
+                "ordering": ["-created_date"],
+                "abstract": False,
+                "unique_together": {("dataspace", "uuid")},
             },
             bases=(dje.models.DataspaceForeignKeyValidationMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='WebhookDelivery',
+            name="WebhookDelivery",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, verbose_name='UUID')),
-                ('target_url', models.URLField(help_text='Stores a copy of the Webhook target URL in case the subscription object is deleted.', max_length=1024, verbose_name='Target URL')),
-                ('sent_date', models.DateTimeField(auto_now_add=True, help_text='The date and time when the Webhook was sent.')),
-                ('payload', models.JSONField(blank=True, default=dict, help_text='The JSON payload that was sent to the target URL.')),
-                ('response_status_code', models.PositiveIntegerField(blank=True, help_text='The HTTP status code received in response to the Webhook request.', null=True)),
-                ('response_text', models.TextField(blank=True, help_text='The text response received from the target URL.')),
-                ('delivery_error', models.TextField(blank=True, help_text='Any error messages encountered during the Webhook delivery.')),
-                ('dataspace', models.ForeignKey(editable=False, help_text='A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.', on_delete=django.db.models.deletion.PROTECT, to='dje.dataspace')),
-                ('webhook_subscription', models.ForeignKey(blank=True, editable=False, help_text='The Webhook subscription associated with this delivery.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='deliveries', to='notification.webhooksubscription')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False, verbose_name="UUID")),
+                (
+                    "target_url",
+                    models.URLField(
+                        help_text="Stores a copy of the Webhook target URL in case the subscription object is deleted.",
+                        max_length=1024,
+                        verbose_name="Target URL",
+                    ),
+                ),
+                (
+                    "sent_date",
+                    models.DateTimeField(
+                        auto_now_add=True, help_text="The date and time when the Webhook was sent."
+                    ),
+                ),
+                (
+                    "payload",
+                    models.JSONField(
+                        blank=True,
+                        default=dict,
+                        help_text="The JSON payload that was sent to the target URL.",
+                    ),
+                ),
+                (
+                    "response_status_code",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="The HTTP status code received in response to the Webhook request.",
+                        null=True,
+                    ),
+                ),
+                (
+                    "response_text",
+                    models.TextField(
+                        blank=True, help_text="The text response received from the target URL."
+                    ),
+                ),
+                (
+                    "delivery_error",
+                    models.TextField(
+                        blank=True,
+                        help_text="Any error messages encountered during the Webhook delivery.",
+                    ),
+                ),
+                (
+                    "dataspace",
+                    models.ForeignKey(
+                        editable=False,
+                        help_text="A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="dje.dataspace",
+                    ),
+                ),
+                (
+                    "webhook_subscription",
+                    models.ForeignKey(
+                        blank=True,
+                        editable=False,
+                        help_text="The Webhook subscription associated with this delivery.",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="deliveries",
+                        to="notification.webhooksubscription",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'webhook delivery',
-                'verbose_name_plural': 'webhook deliveries',
-                'ordering': ['-sent_date'],
-                'abstract': False,
-                'unique_together': {('dataspace', 'uuid')},
+                "verbose_name": "webhook delivery",
+                "verbose_name_plural": "webhook deliveries",
+                "ordering": ["-sent_date"],
+                "abstract": False,
+                "unique_together": {("dataspace", "uuid")},
             },
             bases=(dje.models.DataspaceForeignKeyValidationMixin, models.Model),
         ),
