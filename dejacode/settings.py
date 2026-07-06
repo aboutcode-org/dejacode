@@ -662,16 +662,10 @@ ACCOUNT_ACTIVATION_DAYS = 10
 # django-altcha
 ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
 
-WEBHOOK_EVENTS = [
-    "request.added",
-    "request.updated",
-    "request_comment.added",
-    "user.added_or_updated",
-    "user.locked_out",
-    "vulnerability.data_update",
-]
 # Provide context variables to WebhookSubscription extra_headers template values.
-HOOK_ENV = env.dict("HOOK_ENV", default={})
+# HOOK_ENV is the legacy name, kept for backward compatibility.
+_legacy_hook_env = env.dict("HOOK_ENV", default={})
+DEJACODE_WEBHOOK_ENV = env.dict("DEJACODE_WEBHOOK_ENV", default=_legacy_hook_env)
 
 # Django-axes
 # Enable or disable Axes plugin functionality

@@ -21,6 +21,15 @@ from dje.models import DataspacedQuerySet
 
 logger = logging.getLogger("dje")
 
+WEBHOOK_EVENTS = [
+    "request.added",
+    "request.updated",
+    "request_comment.added",
+    "user.added_or_updated",
+    "user.locked_out",
+    "vulnerability.data_update",
+]
+
 
 class WebhookSubscriptionQuerySet(WebhookSubscriptionQuerySetMixin, DataspacedQuerySet):
     pass
@@ -59,7 +68,7 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
 
     def get_extra_headers(self):
         """Inject `hook_env` context in headers template values."""
-        if hook_env := settings.HOOK_ENV:
+        if hook_env := settings.DEJACODE_WEBHOOK_ENV:
             hook_env_context = template.Context(hook_env)
             return {
                 key: self.render_template(value, hook_env_context)

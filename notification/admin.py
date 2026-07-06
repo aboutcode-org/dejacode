@@ -7,18 +7,18 @@
 #
 
 from django import forms
-from django.conf import settings
 from django.contrib import admin
 
 from dje.admin import DataspacedAdmin
 from dje.admin import ProhibitDataspaceLookupMixin
 from dje.admin import dejacode_site
 from dje.forms import DataspacedAdminForm
+from notification.models import WEBHOOK_EVENTS
 from notification.models import WebhookSubscription
 
 
 class WebhookSubscriptionForm(DataspacedAdminForm):
-    EVENTS = [(event, event) for event in settings.WEBHOOK_EVENTS]
+    EVENTS = [(event, event) for event in WEBHOOK_EVENTS]
 
     class Meta:
         model = WebhookSubscription

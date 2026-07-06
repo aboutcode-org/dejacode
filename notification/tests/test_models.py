@@ -44,5 +44,5 @@ class WebhookSubscriptionModelTestCase(TestCase):
         self.assertEqual(expected, self.webhook.get_extra_headers())
 
         expected = {"Header": "some_value"}
-        with override_settings(HOOK_ENV={"ENV_VALUE": "some_value"}):
+        with override_settings(DEJACODE_WEBHOOK_ENV={"ENV_VALUE": "some_value"}):
             self.assertEqual(expected, self.webhook.get_extra_headers())
