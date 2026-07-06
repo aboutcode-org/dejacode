@@ -8,7 +8,11 @@
 
 import logging
 
+from django.apps import apps
+
 from django_rq import job
+
+from notification.models import WebhookSubscription
 
 logger = logging.getLogger("dje")
 
@@ -22,10 +26,6 @@ def deliver_webhook_task(
     instance_pk=None,
 ):
     """Deliver a webhook payload to the target URL of the given WebhookSubscription."""
-    from django.apps import apps
-
-    from notification.models import WebhookSubscription
-
     try:
         webhook_subscription = WebhookSubscription.objects.get(pk=webhook_subscription_pk)
     except WebhookSubscription.DoesNotExist:
