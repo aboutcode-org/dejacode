@@ -158,7 +158,7 @@ def fire_webhooks(
     webhooks = WebhookSubscription.objects.scope(dataspace).filter(**filters)
 
     for webhook in webhooks:
-        task_kwargs = {"webhook_subscription_pk": webhook.pk}
+        task_kwargs = {"webhook_subscription_uuid": webhook.uuid}
         if payload_override is not None:
             task_kwargs["payload_override"] = payload_override
         if instance is not None:

@@ -19,7 +19,7 @@ logger = logging.getLogger("dje")
 
 @job
 def deliver_webhook_task(
-    webhook_subscription_pk,
+    webhook_subscription_uuid,
     payload_override=None,
     instance_app_label=None,
     instance_model_name=None,
@@ -27,9 +27,9 @@ def deliver_webhook_task(
 ):
     """Deliver a webhook payload to the target URL of the given WebhookSubscription."""
     try:
-        webhook_subscription = WebhookSubscription.objects.get(pk=webhook_subscription_pk)
+        webhook_subscription = WebhookSubscription.objects.get(uuid=webhook_subscription_uuid)
     except WebhookSubscription.DoesNotExist:
-        logger.error(f"WebhookSubscription pk={webhook_subscription_pk} not found.")
+        logger.error(f"WebhookSubscription uuid={webhook_subscription_uuid} not found.")
         return
 
     instance = None
