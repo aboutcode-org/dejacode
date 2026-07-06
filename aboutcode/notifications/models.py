@@ -19,6 +19,13 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+class WebhookSubscriptionQuerySetMixin:
+    """Mixin for WebhookSubscription querysets. Combine with the project's base QuerySet."""
+
+    def active(self):
+        return self.filter(is_active=True)
+
+
 class AbstractWebhookSubscription(models.Model):
     """
     Abstract base for Webhook subscription models.

@@ -8,7 +8,12 @@
 
 from aboutcode.notifications.models import AbstractWebhookDelivery
 from aboutcode.notifications.models import AbstractWebhookSubscription
+from aboutcode.notifications.models import WebhookSubscriptionQuerySetMixin
 
 __version__ = "0.1.0"
 
-__all__ = ["AbstractWebhookSubscription", "AbstractWebhookDelivery"]
+__all__ = [
+    "AbstractWebhookSubscription",
+    "AbstractWebhookDelivery",
+    "WebhookSubscriptionQuerySetMixin",
+]

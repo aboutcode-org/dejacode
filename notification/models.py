@@ -15,15 +15,15 @@ from django.utils.translation import gettext_lazy as _
 
 from aboutcode.notifications import AbstractWebhookDelivery
 from aboutcode.notifications import AbstractWebhookSubscription
+from aboutcode.notifications import WebhookSubscriptionQuerySetMixin
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 
 logger = logging.getLogger("dje")
 
 
-class WebhookSubscriptionQuerySet(DataspacedQuerySet):
-    def active(self):
-        return self.filter(is_active=True)
+class WebhookSubscriptionQuerySet(WebhookSubscriptionQuerySetMixin, DataspacedQuerySet):
+    pass
 
 
 class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
