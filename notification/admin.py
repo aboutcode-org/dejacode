@@ -7,28 +7,24 @@
 #
 
 from django import forms
-from django.conf import settings
 from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
 
 from dje.admin import DataspacedAdmin
 from dje.admin import ProhibitDataspaceLookupMixin
 from dje.admin import dejacode_site
 from dje.forms import DataspacedAdminForm
-from notification.models import Webhook
-
-HOOK_EVENTS = settings.HOOK_EVENTS
-if HOOK_EVENTS is None:
-    raise ImproperlyConfigured("settings.HOOK_EVENTS is not defined")
+from notification.models import WEBHOOK_EVENTS
+from notification.models import WebhookDelivery
+from notification.models import WebhookSubscription
 
 
-class WebookForm(DataspacedAdminForm):
-    EVENTS = [(event, event) for event in HOOK_EVENTS.keys()]
+class WebhookSubscriptionForm(DataspacedAdminForm):
+    EVENTS = [(event, event) for event in WEBHOOK_EVENTS]
 
     class Meta:
-        model = Webhook
+        model = WebhookSubscription
         fields = [
-            "target",
+            "target_url",
             "event",
             "is_active",
             "extra_payload",
@@ -39,17 +35,32 @@ class WebookForm(DataspacedAdminForm):
         super().__init__(*args, **kwargs)
         self.fields["event"] = forms.ChoiceField(choices=self.EVENTS)
 
-        add = not kwargs.get("instance")
-        if add:
-            self.instance.user = self.request.user
+
+class WebhookDeliveryInline(admin.TabularInline):
+    model = WebhookDelivery
+    fields = ("sent_date", "response_status_code", "delivery_error")
+    readonly_fields = ("sent_date", "response_status_code", "delivery_error")
+    extra = 0
+    can_delete = False
+    show_change_link = False
+    verbose_name_plural = "Last 10 deliveries"
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        latest_pks = qs.order_by("-sent_date").values_list("pk", flat=True)[:10]
+        return qs.filter(pk__in=latest_pks).order_by("-sent_date")
 
 
-@admin.register(Webhook, site=dejacode_site)
-class WebookAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
-    list_display = ("__str__", "event", "target", "is_active", "dataspace")
-    form = WebookForm
+@admin.register(WebhookSubscription, site=dejacode_site)
+class WebhookSubscriptionAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
+    list_display = ("__str__", "event", "target_url", "is_active", "dataspace")
+    form = WebhookSubscriptionForm
     list_filter = ("is_active", "event")
     activity_log = False
     actions = []
     actions_to_remove = ["copy_to", "compare_with"]
     email_notification_on = ()
+    inlines = [WebhookDeliveryInline]

@@ -6,55 +6,41 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import json
+import logging
 
-from django.template.defaultfilters import truncatechars
+from django.apps import apps
 
-import requests
 from django_rq import job
-from rest_framework.utils import encoders
 
-from dje.tasks import logger
+from notification.models import WebhookSubscription
+
+logger = logging.getLogger("dje")
 
 
 @job
-def deliver_hook_task(
-    target, payload, instance_id=None, hook_id=None, extra_headers=None, **kwargs
+def deliver_webhook_task(
+    webhook_subscription_uuid,
+    payload_override=None,
+    instance_app_label=None,
+    instance_model_name=None,
+    instance_pk=None,
 ):
-    """
-    target: the url to receive the payload.
-    payload: a python primitive data structure
-    instance_id: a possibly None "trigger" instance ID
-    hook_id: the ID of defining Hook object
-    extra_headers: Additional headers such as Authentication ones
-    """
-    session = requests.Session()
-
-    session.headers.update({"Content-Type": "application/json"})
-    if extra_headers:
-        session.headers.update(extra_headers)
-
-    logger.info(f"Delivering Webhook hook_id={hook_id} to target={truncatechars(target, 25)}")
+    """Deliver a webhook payload to the target URL of the given WebhookSubscription."""
     try:
-        session.post(url=target, data=payload)
-    except requests.ConnectionError:
+        webhook_subscription = WebhookSubscription.objects.get(uuid=webhook_subscription_uuid)
+    except WebhookSubscription.DoesNotExist:
+        logger.error(f"WebhookSubscription uuid={webhook_subscription_uuid} not found.")
         return
 
+    instance = None
+    if instance_app_label and instance_model_name and instance_pk:
+        try:
+            model_class = apps.get_model(instance_app_label, instance_model_name)
+            instance = model_class.objects.get(pk=instance_pk)
+        except Exception:
+            logger.error(
+                f"Instance {instance_app_label}.{instance_model_name} pk={instance_pk} not found."
+            )
+            return
 
-def deliver_hook_wrapper(target, payload, instance, hook):
-    if hook.extra_payload:
-        payload.update(hook.extra_payload)
-
-    # Using ID's instead of objects for proper serialization
-    kwargs = {
-        "target": target,
-        "payload": json.dumps(payload, cls=encoders.JSONEncoder),
-        "hook_id": hook.id,
-    }
-
-    if instance:
-        kwargs["instance_id"] = instance.id
-    if hook.extra_headers:
-        kwargs["extra_headers"] = hook.get_extra_headers()
-
-    deliver_hook_task.delay(**kwargs)
+    webhook_subscription.deliver(instance, payload_override=payload_override)

@@ -21,7 +21,7 @@ from dje.models import DejacodeUser
 from dje.models import History
 from dje.tasks import send_mail_task
 from dje.tasks import send_mail_to_admins_task
-from notification.models import find_and_fire_hook
+from notification.models import fire_webhooks
 
 ADDITION = History.ADDITION
 CHANGE = History.CHANGE
@@ -228,7 +228,7 @@ def notify_on_user_locked_out(request, username, **kwargs):
     if not reference_dataspace:
         return
 
-    find_and_fire_hook(
+    fire_webhooks(
         "user.locked_out",
         instance=None,
         dataspace=reference_dataspace,
@@ -248,7 +248,7 @@ def notify_on_user_added_or_updated(instance, **kwargs):
     if not reference_dataspace:
         return
 
-    find_and_fire_hook(
+    fire_webhooks(
         "user.added_or_updated",
         instance=instance,
         dataspace=reference_dataspace,

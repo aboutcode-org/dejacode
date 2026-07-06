@@ -59,9 +59,7 @@ def build_deb_with_docker():
     dependencies = project.get("dependencies", [])
 
     filtered_dependencies = [
-        dep
-        for dep in dependencies
-        if "django-rest-hooks" not in dep and "django_notifications_patched" not in dep
+        dep for dep in dependencies if "django_notifications_patched" not in dep
     ]
 
     docker_cmd = [
@@ -98,7 +96,6 @@ def build_deb_with_docker():
             rm -rf build/
 
             # Install non-PyPI dependencies
-            pip install https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl
             pip install https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz
 
             # Install dependencies directly

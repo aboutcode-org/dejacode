@@ -25,7 +25,7 @@ from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.models import DejacodeUser
 from dje.utils import chunked_queryset
 from dje.utils import humanize_time
-from notification.models import find_and_fire_hook
+from notification.models import fire_webhooks
 from vulnerabilities.models import Vulnerability
 
 logger = logging.getLogger("dje")
@@ -319,7 +319,7 @@ def notify_vulnerability_data_update(dataspace):
 
     # 1. Webhooks (simple message)
     message = f"{vulnerability_count} vulnerabilities affecting {package_count} packages"
-    find_and_fire_hook(
+    fire_webhooks(
         "vulnerability.data_update",
         instance=None,
         dataspace=dataspace,
