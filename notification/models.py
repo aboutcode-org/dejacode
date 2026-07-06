@@ -52,8 +52,9 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
 
     objects = WebhookSubscriptionQuerySet.as_manager()
 
-    class Meta(AbstractWebhookSubscription.Meta):
+    class Meta:
         unique_together = ("dataspace", "uuid")
+        ordering = ["-created_date"]
 
     def __str__(self):
         return f"{self.event} => {self.target_url}"
@@ -125,6 +126,7 @@ class WebhookDelivery(DataspacedModel, AbstractWebhookDelivery):
 
     class Meta(AbstractWebhookDelivery.Meta):
         unique_together = [("dataspace", "uuid")]
+        ordering = ["-sent_date"]
 
 
 def fire_webhooks(

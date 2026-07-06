@@ -47,7 +47,6 @@ class AbstractWebhookSubscription(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ["-created_date"]
 
     def get_payload(self, context):
         raise NotImplementedError
@@ -148,7 +147,6 @@ class AbstractWebhookDelivery(models.Model):
         abstract = True
         verbose_name = _("webhook delivery")
         verbose_name_plural = _("webhook deliveries")
-        ordering = ["-sent_date"]
 
     def __str__(self):
         return f"Webhook uuid={self.uuid} posted at {self.sent_date}"
