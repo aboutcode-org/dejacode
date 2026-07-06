@@ -34,11 +34,6 @@ class WebhookSubscription(DataspacedModel, AbstractWebhookSubscription):
     target URL and the specific events that trigger the Webhook.
     """
 
-    event = models.CharField(
-        _("Event"),
-        max_length=64,
-        help_text=_("The event type that triggers this Webhook subscription."),
-    )
     extra_payload = models.JSONField(
         blank=True,
         default=dict,

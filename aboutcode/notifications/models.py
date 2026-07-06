@@ -46,6 +46,13 @@ class AbstractWebhookSubscription(models.Model):
         default=True,
         help_text=_("Indicates whether the Webhook is currently active and should be triggered."),
     )
+    event = models.CharField(
+        _("Event"),
+        max_length=64,
+        null=True,
+        blank=True,
+        help_text=_("The event type that triggers this Webhook subscription."),
+    )
     created_date = models.DateTimeField(
         auto_now_add=True,
         editable=False,

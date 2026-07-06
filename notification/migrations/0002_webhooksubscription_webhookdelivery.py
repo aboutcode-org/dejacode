@@ -48,8 +48,10 @@ class Migration(migrations.Migration):
                 (
                     "event",
                     models.CharField(
+                        blank=True,
                         help_text="The event type that triggers this Webhook subscription.",
                         max_length=64,
+                        null=True,
                         verbose_name="Event",
                     ),
                 ),
