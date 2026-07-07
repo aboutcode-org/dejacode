@@ -56,6 +56,7 @@ from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
+from policy.models import AbstractPolicyViolation
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import AffectedByVulnerabilityRelationship
@@ -1901,3 +1902,34 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
                     "The 'for_package' cannot be the same as 'resolved_to_package'."
                 )
         super().save(*args, **kwargs)
+
+
+class ProductPolicyViolationQuerySet(ProductSecuredQuerySet):
+    def unresolved(self):
+        return self.filter(resolved=False)
+
+
+class ProductPolicyViolation(DataspacedModel, AbstractPolicyViolation):
+    """Concrete policy violation scoped to a product."""
+
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="policy_violations",
+        help_text=_("The product in the context of which this violation was detected."),
+    )
+    policy_rule = models.ForeignKey(
+        to="policy.PolicyRule",
+        on_delete=models.CASCADE,
+        related_name="product_violations",
+        help_text=_("The policy rule that triggered this violation."),
+    )
+
+    objects = DataspacedManager.from_queryset(ProductPolicyViolationQuerySet)()
+
+    class Meta:
+        unique_together = (("dataspace", "uuid"), ("policy_rule", "product"))
+        ordering = ["-detected_date"]
+
+    def __str__(self):
+        return f"{self.policy_rule} / {self.product}: {self.violation_count} violation(s)"
