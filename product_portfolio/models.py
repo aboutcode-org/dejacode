@@ -140,6 +140,9 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
 
 
 class ProductQuerySet(DataspacedQuerySet):
+    def exclude_locked(self):
+        return self.exclude(configuration_status__is_locked=True)
+
     def with_risk_threshold(self):
         return self.annotate(
             risk_threshold=Coalesce(
@@ -287,7 +290,7 @@ class ProductSecuredManager(DataspacedManager):
         ).scope(user.dataspace)
 
         if exclude_locked:
-            queryset = queryset.exclude(configuration_status__is_locked=True)
+            queryset = queryset.exclude_locked()
 
         if include_inactive:
             return queryset

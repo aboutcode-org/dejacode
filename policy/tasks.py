@@ -15,7 +15,7 @@ from policy.engine import evaluate_rules
 
 @job
 def evaluate_product_rules_task(product_uuid):
-    """Evaluate all active PolicyRules for the given product UUID."""
+    """Evaluate all active PolicyRules for the given product."""
     Product = apps.get_model("product_portfolio", "product")
 
     try:
@@ -27,9 +27,13 @@ def evaluate_product_rules_task(product_uuid):
 
 
 @job
-def evaluate_all_products_rules_task():
-    """Enqueue evaluate_product_rules_task for every product."""
+def evaluate_all_products_rules_task(include_locked=False):
+    """Enqueue evaluate_product_rules_task for every product, skipping locked ones by default."""
     Product = apps.get_model("product_portfolio", "product")
 
-    for product in Product.objects.select_related("dataspace").all():
+    products = Product.objects.select_related("dataspace")
+    if not include_locked:
+        products = products.exclude_locked()
+
+    for product in products:
         evaluate_product_rules_task.delay(product_uuid=product.uuid)
