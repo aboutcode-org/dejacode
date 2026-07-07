@@ -50,13 +50,13 @@ def evaluate_rule(policy_rule, product):
         return None
 
 
-def evaluate_rules(dataspace, product):
+def evaluate_rules(product):
     """
     Evaluate all active PolicyRules for the given product.
     Returns the list of active ProductPolicyViolation instances.
     """
     violations = []
-    for policy_rule in PolicyRule.objects.scope(dataspace).active():
+    for policy_rule in PolicyRule.objects.scope(product.dataspace).active():
         violation = evaluate_rule(policy_rule, product)
         if violation:
             violations.append(violation)
