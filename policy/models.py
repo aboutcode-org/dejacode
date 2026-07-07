@@ -244,3 +244,70 @@ class AssociatedPolicy(DataspacedModel):
         if self.from_policy.content_type == self.to_policy.content_type:
             raise AssertionError
         super().save(*args, **kwargs)
+
+
+class PolicyRuleQuerySet(DataspacedQuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+
+class PolicyRule(DataspacedModel):
+    name = models.CharField(
+        max_length=100,
+        help_text=_("Descriptive name for this policy rule."),
+    )
+    rule_type = models.CharField(
+        max_length=50,
+        help_text=_("The type of evaluation performed by this rule."),
+    )
+    threshold = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Minimum number of violations required to trigger this rule (0 means any)."),
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text=_("Only active rules are evaluated."),
+    )
+    event_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("Notification event to fire when violations are detected."),
+    )
+
+    objects = PolicyRuleQuerySet.as_manager()
+
+    class Meta:
+        unique_together = (("dataspace", "uuid"), ("dataspace", "name"))
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class AbstractPolicyViolation(models.Model):
+    """Shared fields for all concrete policy violation models. No DB table."""
+
+    violation_count = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Number of objects currently violating the rule."),
+    )
+    detected_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("The date and time when this violation was first detected."),
+    )
+    last_checked = models.DateTimeField(
+        auto_now=True,
+        help_text=_("The date and time of the last evaluation."),
+    )
+    resolved = models.BooleanField(
+        default=False,
+        help_text=_("Indicates whether this violation has been resolved."),
+    )
+    resolved_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("The date and time when this violation was resolved."),
+    )
+
+    class Meta:
+        abstract = True
