@@ -23,8 +23,10 @@ from dje.admin import DataspacedFKMixin
 from dje.admin import dejacode_site
 from dje.list_display import AsColored
 from policy.forms import AssociatedPolicyForm
+from policy.forms import PolicyRuleForm
 from policy.forms import UsagePolicyForm
 from policy.models import AssociatedPolicy
+from policy.models import PolicyRule
 from policy.models import UsagePolicy
 
 License = apps.get_model("license_library", "license")
@@ -159,3 +161,28 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
         response["Content-Disposition"] = 'attachment; filename="license_policies.yml"'
 
         return response
+
+
+@admin.register(PolicyRule, site=dejacode_site)
+class PolicyRuleAdmin(DataspacedAdmin):
+    form = PolicyRuleForm
+    list_display = ("name", "rule_type", "threshold", "is_active", "event_name", "get_dataspace")
+    list_filter = DataspacedAdmin.list_filter + ("rule_type", "is_active")
+    activity_log = False
+    actions = []
+    actions_to_remove = ["copy_to", "compare_with"]
+    email_notification_on = ()
+
+    short_description = (
+        "You can define Policy Rules that automatically detect compliance violations "
+        "across your products and trigger notifications."
+    )
+
+    long_description = linebreaksbr(
+        "A Policy Rule defines a type of automated check to run against your products. "
+        "When the number of detected issues exceeds the configured threshold, a "
+        "ProductPolicyViolation is recorded and an optional notification event is fired.\n"
+        "Set the rule type to match a registered evaluation handler, configure the "
+        "threshold (0 means any violation triggers the rule), and provide an event name "
+        "to send a webhook notification when violations are detected or resolved."
+    )
