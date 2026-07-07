@@ -28,6 +28,7 @@ from policy.forms import UsagePolicyForm
 from policy.models import AssociatedPolicy
 from policy.models import PolicyRule
 from policy.models import UsagePolicy
+from policy.rules import RULE_REGISTRY
 
 License = apps.get_model("license_library", "license")
 
@@ -168,6 +169,7 @@ class PolicyRuleAdmin(DataspacedAdmin):
     form = PolicyRuleForm
     list_display = ("name", "rule_type", "threshold", "is_active", "event_name", "get_dataspace")
     list_filter = DataspacedAdmin.list_filter + ("rule_type", "is_active")
+    readonly_fields = DataspacedAdmin.readonly_fields + ("parameters_schema_hint",)
     activity_log = False
     actions = []
     actions_to_remove = ["copy_to", "compare_with"]
@@ -186,3 +188,12 @@ class PolicyRuleAdmin(DataspacedAdmin):
         "threshold (0 means any violation triggers the rule), and provide an event name "
         "to send a webhook notification when violations are detected or resolved."
     )
+
+    def parameters_schema_hint(self, obj):
+        handler = RULE_REGISTRY.get(obj.rule_type)
+        if not handler or not handler.parameters_schema:
+            return "No parameters supported for this rule type."
+        lines = [f"{key}: {desc}" for key, desc in handler.parameters_schema.items()]
+        return mark_safe("<br>".join(lines))
+
+    parameters_schema_hint.short_description = "Supported parameters"

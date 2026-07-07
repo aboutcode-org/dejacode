@@ -24,6 +24,7 @@ class Migration(migrations.Migration):
                 ('threshold', models.PositiveIntegerField(default=0, help_text='Minimum number of violations required to trigger this rule (0 means any).')),
                 ('is_active', models.BooleanField(default=True, help_text='Only active rules are evaluated.')),
                 ('event_name', models.CharField(blank=True, help_text='Notification event to fire when violations are detected.', max_length=100)),
+                ('parameters', models.JSONField(blank=True, default=dict, help_text='Optional rule-specific parameters as a JSON object. Supported keys depend on the chosen rule type.')),
                 ('dataspace', models.ForeignKey(editable=False, help_text='A Dataspace is an independent, exclusive set of DejaCode data, which can be either nexB master reference data or installation-specific data.', on_delete=django.db.models.deletion.PROTECT, to='dje.dataspace')),
             ],
             options={

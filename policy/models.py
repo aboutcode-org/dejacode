@@ -273,6 +273,14 @@ class PolicyRule(DataspacedModel):
         blank=True,
         help_text=_("Notification event to fire when violations are detected."),
     )
+    parameters = models.JSONField(
+        blank=True,
+        default=dict,
+        help_text=_(
+            "Optional rule-specific parameters as a JSON object. "
+            "Supported keys depend on the chosen rule type."
+        ),
+    )
 
     objects = PolicyRuleQuerySet.as_manager()
 
