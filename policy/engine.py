@@ -8,7 +8,7 @@
 
 from django.utils import timezone
 
-from notification.models import fire_webhooks
+from policy.events import fire_event
 from policy.models import PolicyRule
 from policy.rules import RULE_REGISTRY
 from product_portfolio.models import ProductPolicyViolation
@@ -65,11 +65,10 @@ def evaluate_rules(product):
 
 
 def fire_violation_event(policy_rule, product, violation_count):
-    fire_webhooks(
+    fire_event(
         policy_rule.event_name,
-        instance=None,
         dataspace=policy_rule.dataspace,
-        payload_override={
+        payload={
             "rule": policy_rule.name,
             "rule_type": policy_rule.rule_type,
             "violation_count": violation_count,
@@ -79,11 +78,10 @@ def fire_violation_event(policy_rule, product, violation_count):
 
 
 def fire_resolution_event(policy_rule, product):
-    fire_webhooks(
+    fire_event(
         policy_rule.event_name,
-        instance=None,
         dataspace=policy_rule.dataspace,
-        payload_override={
+        payload={
             "rule": policy_rule.name,
             "status": "resolved",
             "product": str(product),

@@ -185,8 +185,9 @@ class PolicyRuleAdmin(DataspacedAdmin):
         "When the number of detected issues exceeds the configured threshold, a "
         "ProductPolicyViolation is recorded and an optional notification event is fired.\n"
         "Set the rule type to match a registered evaluation handler, configure the "
-        "threshold (0 means any violation triggers the rule), and provide an event name "
-        "to send a webhook notification when violations are detected or resolved."
+        "threshold (0 means any violation triggers the rule), and select a notification "
+        "event to dispatch alerts across all registered channels when violations are "
+        "detected or resolved."
     )
 
     def parameters_schema_hint(self, obj):
