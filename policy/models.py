@@ -20,6 +20,7 @@ from dje.models import DataspacedManager
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import colored_icon_mixin_factory
+from policy.rules import RULE_REGISTRY
 
 ColoredIconMixin = colored_icon_mixin_factory(
     verbose_name="usage policy",
@@ -285,6 +286,16 @@ class PolicyRule(DataspacedModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def rule_label(self):
+        handler = RULE_REGISTRY.get(self.rule_type)
+        return handler.label if handler else self.rule_type
+
+    @property
+    def rule_description(self):
+        handler = RULE_REGISTRY.get(self.rule_type)
+        return handler.description if handler else ""
 
 
 class AbstractPolicyViolation(models.Model):

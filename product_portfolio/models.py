@@ -24,6 +24,7 @@ from django.db.models import FloatField
 from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Q
+from django.db.models import Subquery
 from django.db.models import Value
 from django.db.models import When
 from django.db.models.functions import Coalesce
@@ -244,6 +245,15 @@ class ProductQuerySet(DataspacedQuerySet):
             has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
         )
 
+    def with_policy_violation_count(self):
+        subquery = ProductPolicyViolation.objects.filter(
+            product=OuterRef("pk"),
+            resolved=False,
+        ).values("product").annotate(violation_count=models.Count("id")).values("violation_count")
+        return self.annotate(
+            policy_violation_count=Subquery(subquery, output_field=models.IntegerField()),
+        )
+
 
 class ProductSecuredManager(DataspacedManager):
     """
@@ -425,6 +435,10 @@ class Product(
 
         if self.has_changed("configuration_status_id"):
             self.actions_on_status_change()
+
+        from policy.tasks import evaluate_product_rules_task
+
+        evaluate_product_rules_task.delay(product_uuid=self.uuid)
 
     def get_attribution_url(self):
         return self.get_url("attribution")

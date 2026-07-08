@@ -130,6 +130,7 @@
           <th class="fw-medium text-end">{% trans "License compliance" %}</th>
           <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
           <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
+          <th class="fw-medium text-end">{% trans "Policy violations" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -196,11 +197,18 @@
                 <span class="text-body-tertiary small">{% trans "None" %}</span>
               {% endif %}
             </td>
+            <td class="text-end">
+              {% if product.policy_violation_count %}
+                <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.policy_violation_count }}</span>
+              {% else %}
+                <span class="text-body-tertiary small">{% trans "None" %}</span>
+              {% endif %}
+            </td>
           </tr>
         {% endwith %}
         {% empty %}
           <tr>
-            <td colspan="5" class="text-center text-body-tertiary py-4">
+            <td colspan="6" class="text-center text-body-tertiary py-4">
               {% trans "No active products" %}
             </td>
           </tr>

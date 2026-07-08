@@ -2772,6 +2772,7 @@ class ProductTabComplianceView(
                 **self.get_package_compliance_context(productpackages),
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
+                **self.get_policy_compliance_context(product),
             }
         )
 
@@ -2840,6 +2841,17 @@ class ProductTabComplianceView(
             "license_distribution": license_distribution[:distribution_limit],
             "license_distribution_limit": distribution_limit,
             "remaining_license_count": max(0, len(license_distribution) - distribution_limit),
+        }
+
+    @staticmethod
+    @staticmethod
+    def get_policy_compliance_context(product):
+        policy_violations = (
+            product.policy_violations.filter(resolved=False).select_related("policy_rule")
+        )
+        return {
+            "policy_violations": policy_violations,
+            "policy_violation_count": policy_violations.count(),
         }
 
     @staticmethod
@@ -3057,6 +3069,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             .with_compliance_data()
             .with_max_risk_level()
             .with_has_vulnerable_packages()
+            .with_policy_violation_count()
         )
 
     def get_context_data(self, **kwargs):

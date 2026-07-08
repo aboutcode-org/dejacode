@@ -384,7 +384,7 @@ class ProductAdmin(
         ProductPackageInline,
     ]
     form = ProductAdminForm
-    actions = []
+    actions = ["evaluate_policy_rules"]
     actions_to_remove = ["copy_to", "compare_with", "delete_selected"]
     navigation_buttons = True
     activity_log = False
@@ -394,6 +394,16 @@ class ProductAdmin(
     email_notification_on = []  # Turned off for security reasons
     awesomplete_data = {"primary_language": PROGRAMMING_LANGUAGES}
     readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
+
+    def evaluate_policy_rules(self, request, queryset):
+        from policy.tasks import evaluate_product_rules_task
+
+        count = queryset.count()
+        for product in queryset:
+            evaluate_product_rules_task.delay(product_uuid=product.uuid)
+        self.message_user(request, f"Policy rules evaluation enqueued for {count} product(s).")
+
+    evaluate_policy_rules.short_description = _("Evaluate policy rules")
 
     def get_feature_datalist(self, obj):
         if obj.pk:
