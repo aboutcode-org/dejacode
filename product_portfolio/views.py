@@ -3075,14 +3075,20 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
-        products_with_issues = products.with_compliance_issues().count()
+        products_with_issues = products.filter(
+            Q(license_error_count__gt=0)
+            | Q(license_warning_count__gt=0)
+            | Q(critical_count__gt=0)
+            | Q(high_count__gt=0)
+            | Q(policy_violation_count__gt=0)
+        ).count()
 
         products_with_license_issues = products.filter(
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
         ).count()
 
-        products_with_critical_or_high = products.filter(
-            Q(critical_count__gt=0) | Q(high_count__gt=0)
+        products_with_policy_violations = products.filter(
+            policy_violation_count__gt=0
         ).count()
 
         totals = products.aggregate(
@@ -3098,7 +3104,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
                 "total_products": context["paginator"].count,
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
-                "products_with_critical_or_high": products_with_critical_or_high,
+                "products_with_policy_violations": products_with_policy_violations,
                 "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
                 "total_critical": totals["total_critical"] or 0,
                 "total_high": totals["total_high"] or 0,

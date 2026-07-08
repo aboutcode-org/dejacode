@@ -36,6 +36,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
@@ -149,6 +150,10 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("License issues"),
         method="filter_license_compliance_issues",
     )
+    policy_violations = django_filters.BooleanFilter(
+        label=_("Policy violations"),
+        method="filter_policy_violations",
+    )
 
     class Meta:
         model = Product
@@ -187,6 +192,16 @@ class ProductFilterSet(DataspacedFilterSet):
             licenses__usage_policy__compliance_alert__in=["warning", "error"],
         )
         condition = Exists(has_alert)
+        return queryset.filter(condition if value else ~condition)
+
+    def filter_policy_violations(self, queryset, name, value):
+        if value is None:
+            return queryset
+        has_violation = ProductPolicyViolation.objects.filter(
+            product_id=OuterRef("pk"),
+            resolved=False,
+        )
+        condition = Exists(has_violation)
         return queryset.filter(condition if value else ~condition)
 
 

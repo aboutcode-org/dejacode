@@ -68,7 +68,7 @@
     </div>
     <div class="col-6 col-md-3">
       <div class="bg-body-secondary rounded-3 p-3">
-        <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
+        <div class="small text-body-secondary mb-1">{% trans "License compliance" %}</div>
         {% if products_with_license_issues %}
           <a href="?license_compliance_issues=true" class="fs-4 fw-medium lh-sm text-danger">
             {{ products_with_license_issues }}
@@ -80,24 +80,9 @@
         {% endif %}
         <div class="text-body-tertiary fs-xs mt-1">
           {% if products_with_license_issues %}
-            {% trans "products with policy violations" %}
+            {% trans "products with license compliance alerts" %}
           {% else %}
             {% trans "All products within policy" %}
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="bg-body-secondary rounded-3 p-3">
-        <div class="small text-body-secondary mb-1">{% trans "Security issues" %}</div>
-        <div class="fs-4 fw-medium lh-sm {% if products_with_critical_or_high %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
-          {{ products_with_critical_or_high }}
-        </div>
-        <div class="text-body-tertiary fs-xs mt-1">
-          {% if products_with_critical_or_high %}
-            {% trans "products with critical/high vulnerabilities" %}
-          {% else %}
-            {% trans "No critical or high vulnerabilities" %}
           {% endif %}
         </div>
       </div>
@@ -115,6 +100,27 @@
             {% trans "across all products" %}
           {% else %}
             {% trans "No known vulnerabilities" %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "Policy violations" %}</div>
+        {% if products_with_policy_violations %}
+          <a href="?policy_violations=true" class="fs-4 fw-medium lh-sm text-danger">
+            {{ products_with_policy_violations }}
+          </a>
+        {% else %}
+          <div class="fs-4 fw-medium lh-sm text-success">
+            {{ products_with_policy_violations }}
+          </div>
+        {% endif %}
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if products_with_policy_violations %}
+            {% trans "products with active rule violations" %}
+          {% else %}
+            {% trans "No active policy violations" %}
           {% endif %}
         </div>
       </div>
