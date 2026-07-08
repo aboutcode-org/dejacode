@@ -167,7 +167,7 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
 @admin.register(PolicyRule, site=dejacode_site)
 class PolicyRuleAdmin(DataspacedAdmin):
     form = PolicyRuleForm
-    list_display = ("name", "rule_type", "threshold", "is_active", "event_name", "get_dataspace")
+    list_display = ("name", "rule_type", "threshold", "is_active", "get_dataspace")
     list_filter = DataspacedAdmin.list_filter + ("rule_type", "is_active")
     readonly_fields = DataspacedAdmin.readonly_fields + ("parameters_schema_hint",)
     activity_log = False
@@ -183,11 +183,9 @@ class PolicyRuleAdmin(DataspacedAdmin):
     long_description = linebreaksbr(
         "A Policy Rule defines a type of automated check to run against your products. "
         "When the number of detected issues exceeds the configured threshold, a "
-        "ProductPolicyViolation is recorded and an optional notification event is fired.\n"
-        "Set the rule type to match a registered evaluation handler, configure the "
-        "threshold (0 means any violation triggers the rule), and select a notification "
-        "event to dispatch alerts across all registered channels when violations are "
-        "detected or resolved."
+        "ProductPolicyViolation is recorded.\n"
+        "Set the rule type to match a registered evaluation handler and configure the "
+        "threshold (0 means any violation triggers the rule). "
     )
 
     def parameters_schema_hint(self, obj):

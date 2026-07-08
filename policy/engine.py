@@ -8,7 +8,6 @@
 
 from django.utils import timezone
 
-from policy.events import fire_event
 from policy.models import PolicyRule
 from policy.rules import RULE_REGISTRY
 from product_portfolio.models import ProductPolicyViolation
@@ -17,13 +16,12 @@ from product_portfolio.models import ProductPolicyViolation
 def evaluate_rule(policy_rule, product):
     """
     Evaluate a single PolicyRule against a product, create or update the
-    ProductPolicyViolation record, and fire the notification event on new violations
-    or resolutions.
+    ProductPolicyViolation record.
     Returns the ProductPolicyViolation instance, or None if no violation exists.
     """
     rule_handler = RULE_REGISTRY.get(policy_rule.rule_type)
     if not rule_handler:
-        return None
+        return
 
     violation_count = rule_handler.count_violations(policy_rule, product)
 
@@ -37,17 +35,13 @@ def evaluate_rule(policy_rule, product):
         if not created:
             violation.violation_count = violation_count
             violation.save()
-        if created and policy_rule.event_name:
-            fire_violation_event(policy_rule, product, violation_count)
         return violation
     else:
-        resolved_count = ProductPolicyViolation.objects.filter(**lookup).update(
+        ProductPolicyViolation.objects.filter(**lookup).update(
             resolved=True,
             resolved_date=timezone.now(),
         )
-        if resolved_count and policy_rule.event_name:
-            fire_resolution_event(policy_rule, product)
-        return None
+        return
 
 
 def evaluate_rules(product):
@@ -62,28 +56,3 @@ def evaluate_rules(product):
             violations.append(violation)
 
     return violations
-
-
-def fire_violation_event(policy_rule, product, violation_count):
-    fire_event(
-        policy_rule.event_name,
-        dataspace=policy_rule.dataspace,
-        payload={
-            "rule": policy_rule.name,
-            "rule_type": policy_rule.rule_type,
-            "violation_count": violation_count,
-            "product": str(product),
-        },
-    )
-
-
-def fire_resolution_event(policy_rule, product):
-    fire_event(
-        policy_rule.event_name,
-        dataspace=policy_rule.dataspace,
-        payload={
-            "rule": policy_rule.name,
-            "status": "resolved",
-            "product": str(product),
-        },
-    )

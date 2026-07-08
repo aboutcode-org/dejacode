@@ -8,11 +8,9 @@
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import BLANK_CHOICE_DASH
 
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
-from policy.events import POLICY_EVENTS
 from policy.models import PolicyRule
 from policy.rules import RULE_REGISTRY
 
@@ -108,18 +106,9 @@ class PolicyRuleForm(DataspacedAdminForm):
         self.fields["rule_type"].widget = forms.Select(
             choices=[(key, handler.label) for key, handler in RULE_REGISTRY.items()]
         )
-        self.fields["event_name"].widget = forms.Select(
-            choices=BLANK_CHOICE_DASH + list(POLICY_EVENTS.items())
-        )
 
     def clean_rule_type(self):
         value = self.cleaned_data["rule_type"]
         if value not in RULE_REGISTRY:
             raise forms.ValidationError(f"Unknown rule type: {value}")
-        return value
-
-    def clean_event_name(self):
-        value = self.cleaned_data.get("event_name")
-        if value and value not in POLICY_EVENTS:
-            raise forms.ValidationError(f"Unknown event: {value}")
         return value

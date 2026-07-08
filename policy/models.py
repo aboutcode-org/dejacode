@@ -268,11 +268,6 @@ class PolicyRule(DataspacedModel):
         default=True,
         help_text=_("Only active rules are evaluated."),
     )
-    event_name = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text=_("Notification event to fire when violations are detected."),
-    )
     parameters = models.JSONField(
         blank=True,
         default=dict,
