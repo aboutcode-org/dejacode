@@ -128,7 +128,6 @@
           <th class="fw-medium">{% trans "Product" %}</th>
           <th class="fw-medium text-end">{% trans "Packages" %}</th>
           <th class="fw-medium text-end">{% trans "License compliance" %}</th>
-          <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
           <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
           <th class="fw-medium text-end">{% trans "Policy violations" %}</th>
         </tr>
@@ -163,19 +162,6 @@
               {% endif %}
             </td>
             <td class="text-end">
-              {% if product.max_risk_level == "critical" %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
-              {% elif product.max_risk_level == "high" %}
-                <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
-              {% elif product.max_risk_level == "medium" %}
-                <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
-              {% elif product.max_risk_level == "low" %}
-                <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
-              {% else %}
-                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
-              {% endif %}
-            </td>
-            <td class="text-end">
               {% if product.risk_threshold and product.vulnerability_count %}
                 <span class="text-body-tertiary fs-xs" data-bs-toggle="tooltip" title="{% trans 'Risk threshold' %}">
                   &ge; {{ product.risk_threshold }}
@@ -199,7 +185,9 @@
             </td>
             <td class="text-end">
               {% if product.policy_violation_count %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">{{ product.policy_violation_count }}</span>
+                <a href="{{ product_url }}#compliance" class="badge bg-danger-subtle text-danger-emphasis text-decoration-none">
+                  {{ product.policy_violation_count }} {% trans "rule" %}{{ product.policy_violation_count|pluralize }} {% trans "triggered" %}
+                </a>
               {% else %}
                 <span class="text-body-tertiary small">{% trans "None" %}</span>
               {% endif %}
@@ -208,7 +196,7 @@
         {% endwith %}
         {% empty %}
           <tr>
-            <td colspan="6" class="text-center text-body-tertiary py-4">
+            <td colspan="5" class="text-center text-body-tertiary py-4">
               {% trans "No active products" %}
             </td>
           </tr>

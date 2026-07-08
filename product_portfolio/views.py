@@ -3054,20 +3054,19 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         "package_count": "Packages",
         "license_error_count": "License errors",
         "license_warning_count": "License warnings",
-        "max_risk_level": "Max risk level",
         "risk_threshold": "Risk threshold",
         "critical_count": "Critical",
         "high_count": "High",
         "medium_count": "Medium",
         "low_count": "Low",
         "vulnerability_count": "Total vulnerabilities",
+        "policy_violation_count": "Policy violations",
     }
 
     def get_queryset(self):
         return (
             get_viewable_products(self.request.user)
             .with_compliance_data()
-            .with_max_risk_level()
             .with_has_vulnerable_packages()
             .with_policy_violation_count()
         )
