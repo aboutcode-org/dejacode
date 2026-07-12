@@ -663,15 +663,35 @@ def is_purl_fragment(string):
 
 
 def get_plain_purl(purl_str):
-    """Remove the qualifiers and subpath from the `purl_str```."""
+    """
+    Remove the qualifiers and subpath from the ``purl_str``.
+
+    The comparison is normalised through ``PackageURL.from_string`` so that
+    percent-encoded variants of the same PURL are treated as equal
+    (e.g. ``@v1.0.0%2Bincompatible`` and ``@v1.0.0+incompatible``).
+
+    Falls back to a simple ``split("?")`` strip when the string is not a
+    valid PURL (so callers never get an unexpected exception).
+    """
     if not purl_str:
         return ""
-    return purl_str.split("?")[0]
+    try:
+        purl = PackageURL.from_string(str(purl_str))
+        # Re-serialise without qualifiers or subpath for a canonical plain PURL.
+        return purl.to_string().split("?")[0].split("#")[0]
+    except ValueError:
+        return str(purl_str).split("?")[0]
 
 
 def plain_purls_equal(purl1, purl2):
-    """Check if two PURLs are equal, ignoring qualifiers and subpath."""
+    """Check if two PURLs are equal, ignoring qualifiers and subpath.
+
+    Percent-encoding differences (e.g. ``+`` vs ``%2B``) are normalised
+    before the comparison so semantically identical PURLs are always
+    considered equal.
+    """
     return get_plain_purl(purl1) == get_plain_purl(purl2)
+
 
 
 def remove_empty_values(input_dict):

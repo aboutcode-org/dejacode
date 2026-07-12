@@ -2546,7 +2546,6 @@ class PackageTabPurlDBView(AcceptAnonymousMixin, TabContentView):
 
         purldb_entries = self.object.get_purldb_entries(
             user=self.request.user,
-            max_request_call=1,
             timeout=5,
         )
         if not purldb_entries:

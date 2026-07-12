@@ -2628,7 +2628,7 @@ class ComponentCatalogModelsTestCase(TestCase):
 
         mock_find_packages.return_value = [purldb_entry1, purldb_entry2, purldb_entry3]
         purldb_entries = package1.get_purldb_entries(user=self.user)
-        # The purldb_entry2 is excluded as the PURL differs
+        # The purldb_entry3 is excluded as its plain PURL differs (no version)
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
@@ -2644,6 +2644,42 @@ class ComponentCatalogModelsTestCase(TestCase):
         mock_find_packages.return_value = [purldb_entry1, purldb_entry2]
         purldb_entries = package1.get_purldb_entries(user=self.user)
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries_fallback_to_purl(self, mock_find_packages):
+        """
+        Test that get_purldb_entries falls through to PURL lookup when an earlier
+        strategy (e.g. download_url) returns no results.
+
+        This covers the Go package mapping bug (issue #462): packages imported from an
+        SBOM may have an inferred download_url that PurlDB does not recognise, while
+        their PURL *is* indexed in PurlDB.  Without the fallback the PurlDB tab was
+        showing "No entries found" even though "Improve Packages from PurlDB" worked
+        (because that code path does not limit the number of requests).
+        """
+        go_purl = "pkg:golang/github.com/gin-gonic/gin@v1.9.0"
+        inferred_download_url = (
+            "https://proxy.golang.org/github.com/gin-gonic/gin/@v/v1.9.0.zip"
+        )
+        package1 = make_package(
+            self.dataspace,
+            package_url=go_purl,
+            download_url=inferred_download_url,
+        )
+        purldb_entry = {
+            "purl": go_purl,
+            "type": "golang",
+            "namespace": "github.com/gin-gonic",
+            "name": "gin",
+            "version": "v1.9.0",
+        }
+
+        # Simulate: download_url lookup fails (None), PURL lookup succeeds.
+        mock_find_packages.side_effect = [None, [purldb_entry]]
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+        self.assertEqual([purldb_entry], purldb_entries)
+        # Ensure both payloads were tried (download_url first, then purl).
+        self.assertEqual(2, mock_find_packages.call_count)
 
     @mock.patch("component_catalog.models.Package.get_purldb_entries")
     def test_package_model_update_from_purldb(self, mock_get_purldb_entries):
