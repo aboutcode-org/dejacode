@@ -84,7 +84,9 @@
       {% else %}
         <div class="fs-4 fw-medium lh-sm text-danger">{{ policy_violation_count }}</div>
         <div class="text-body-tertiary fs-xs mt-1">
-          {{ policy_violation_count }} {% trans "rule" %}{{ policy_violation_count|pluralize }} {% trans "triggered" %}
+          <a href="#policy-violations" class="text-body-tertiary text-decoration-none">
+            {{ policy_violation_count }} {% trans "rule" %}{{ policy_violation_count|pluralize }} {% trans "triggered" %}
+          </a>
         </div>
       {% endif %}
     </div>
