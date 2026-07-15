@@ -441,9 +441,9 @@ class Product(
         if self.has_changed("configuration_status_id"):
             self.actions_on_status_change()
 
-        from policy.tasks import evaluate_product_rules_task
+        from policy.engine import evaluate_rules
 
-        evaluate_product_rules_task.delay(product_uuid=self.uuid)
+        evaluate_rules(product=self)
 
     def get_attribution_url(self):
         return self.get_url("attribution")

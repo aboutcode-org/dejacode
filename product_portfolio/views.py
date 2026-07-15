@@ -422,7 +422,10 @@ class ProductDetailsView(
 
         if self.object.notice_text:
             notice_field = self.get_tab_fields([TabField("notice_text")])[0]
-            tab_data["fields"].append(notice_field)
+            if tab_data is None:
+                tab_data = {"fields": [notice_field]}
+            else:
+                tab_data["fields"].append(notice_field)
 
         return tab_data
 
