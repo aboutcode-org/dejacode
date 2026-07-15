@@ -176,32 +176,42 @@
       {% endif %}
 
       {# Vulnerability list #}
-      {% for vulnerability in vulnerabilities %}
-        <div class="d-flex align-items-center border-bottom gap-3 py-2">
-          <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
-            {% if vulnerability.risk_level == "critical" %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
-            {% elif vulnerability.risk_level == "high" %}
-              <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
-            {% elif vulnerability.risk_level == "medium" %}
-              <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
-            {% elif vulnerability.risk_level == "low" %}
-              <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
-            {% else %}
-              <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
-            {% endif %}
-          </span>
-          <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
-            {{ vulnerability.advisory_id }}
-          </a>
-          <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>
-        </div>
-      {% empty %}
-        <div class="text-center text-body-tertiary py-4">
-          <i class="fas fa-shield-check fa-2x mb-2 d-block"></i>
-          {% trans "No known vulnerabilities" %}
-        </div>
-      {% endfor %}
+      <table class="table table-sm align-middle mb-0">
+        <tbody>
+        {% for vulnerability in vulnerabilities %}
+          <tr>
+            <td class="ps-0 text-nowrap w-auto">
+              <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
+                {% if vulnerability.risk_level == "critical" %}
+                  <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
+                {% elif vulnerability.risk_level == "high" %}
+                  <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
+                {% elif vulnerability.risk_level == "medium" %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
+                {% elif vulnerability.risk_level == "low" %}
+                  <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
+                {% endif %}
+              </span>
+            </td>
+            <td class="text-nowrap w-auto">
+              <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none">
+                {{ vulnerability.advisory_id }}
+              </a>
+            </td>
+            <td class="small d-none d-md-table-cell">{{ vulnerability.summary|truncatechars:70 }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-body-tertiary py-4">
+              <i class="fas fa-shield-check fa-2x mb-2 d-block"></i>
+              {% trans "No known vulnerabilities" %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
 
       {# View all link #}
       {% if vulnerabilities|length < vulnerability_count %}
