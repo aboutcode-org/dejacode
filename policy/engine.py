@@ -67,6 +67,11 @@ def evaluate_rules(product):
     for rule_type in RULE_REGISTRY:
         config = get_effective_config(rule_type, product.dataspace)
         if not config["is_active"]:
+            # Explicitly resolve open violations so disabling a rule clears its history
+            # rather than leaving stale unresolved records.
+            ProductPolicyViolation.objects.filter(
+                rule_type=rule_type, product=product, resolved=False,
+            ).update(resolved=True, resolved_date=timezone.now())
             continue
 
         violation = evaluate_rule(rule_type, product, config["threshold"], config["parameters"])
