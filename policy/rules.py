@@ -38,7 +38,7 @@ class PackageBaseRule(BaseRule):
         count = Package.objects.filter(
             productpackages__product=product,
             **self.package_filter,
-        ).count()
+        ).distinct().count()
 
         return count if count > threshold else 0
 
@@ -62,6 +62,26 @@ class UsagePolicyWarningRule(PackageBaseRule):
         "Detects packages assigned a usage policy with a compliance alert level of 'warning'."
     )
     package_filter = {"usage_policy__compliance_alert": "warning"}
+
+
+class LicensePolicyErrorRule(PackageBaseRule):
+    rule_type = "license_policy_error"
+    label = "License Policy Error"
+    description = (
+        "Detects packages whose licenses are assigned a usage policy"
+        " with a compliance alert level of 'error'."
+    )
+    package_filter = {"licenses__usage_policy__compliance_alert": "error"}
+
+
+class LicensePolicyWarningRule(PackageBaseRule):
+    rule_type = "license_policy_warning"
+    label = "License Policy Warning"
+    description = (
+        "Detects packages whose licenses are assigned a usage policy"
+        " with a compliance alert level of 'warning'."
+    )
+    package_filter = {"licenses__usage_policy__compliance_alert": "warning"}
 
 
 class LicenseCoverageGapRule(PackageBaseRule):
@@ -103,6 +123,8 @@ class VulnerabilityDetectedRule(BaseRule):
 RULE_REGISTRY = {
     UsagePolicyErrorRule.rule_type: UsagePolicyErrorRule(),
     UsagePolicyWarningRule.rule_type: UsagePolicyWarningRule(),
+    LicensePolicyErrorRule.rule_type: LicensePolicyErrorRule(),
+    LicensePolicyWarningRule.rule_type: LicensePolicyWarningRule(),
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
     VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
 }
