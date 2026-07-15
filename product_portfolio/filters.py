@@ -31,6 +31,7 @@ from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
 from license_library.models import License
+from policy.rules import RULE_REGISTRY
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
@@ -407,6 +408,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         field_name="package__usage_policy__compliance_alert",
         distinct=True,
     )
+    policy_rule = django_filters.CharFilter(method="filter_by_policy_rule")
 
     class Meta:
         model = ProductPackage
@@ -421,6 +423,13 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_reachable",
             "exploitability",
         ]
+
+    def filter_by_policy_rule(self, queryset, name, value):
+        """Filter packages that triggered the given policy rule type."""
+        handler = RULE_REGISTRY.get(value)
+        if not handler:
+            return queryset
+        return queryset.filter(**handler.get_package_filter())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

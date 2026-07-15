@@ -250,7 +250,12 @@
             <tr>
               <td>{{ violation.rule_label }}</td>
               <td class="text-body-secondary small">{{ violation.rule_description }}</td>
-              <td>{{ violation.violation_count }}</td>
+              <td>
+                <a href="{{ product_url }}?inventory-policy_rule={{ violation.rule_type }}#inventory"
+                   class="text-decoration-none">
+                  {{ violation.violation_count }}
+                </a>
+              </td>
               <td class="text-body-tertiary small">{{ violation.detected_date|date:"N j, Y" }}</td>
             </tr>
             {% endfor %}

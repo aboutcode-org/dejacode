@@ -22,6 +22,10 @@ class BaseRule:
         """Count objects violating the rule for the given product."""
         raise NotImplementedError
 
+    def get_package_filter(self):
+        """Return queryset filter kwargs for ProductPackage to identify violating packages."""
+        return {}
+
 
 class PackageBaseRule(BaseRule):
     """Base for rules that count packages matching a fixed filter within a product."""
@@ -37,6 +41,9 @@ class PackageBaseRule(BaseRule):
         ).count()
 
         return count if count > threshold else 0
+
+    def get_package_filter(self):
+        return {f"package__{key}": value for key, value in self.package_filter.items()}
 
 
 class LicensePolicyErrorRule(PackageBaseRule):
@@ -73,6 +80,9 @@ class VulnerabilityDetectedRule(BaseRule):
     parameters_schema = {
         "min_risk_score": "Minimum risk score (0.0-10.0). Default: any vulnerability.",
     }
+
+    def get_package_filter(self):
+        return {"package__risk_score__isnull": False}
 
     def count_violations(self, product, threshold, parameters):
         Package = apps.get_model("component_catalog", "package")
