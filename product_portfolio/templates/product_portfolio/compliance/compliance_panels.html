@@ -238,11 +238,8 @@
           <tbody>
             {% for violation in policy_violations %}
             <tr>
-              <td>
-                <div>{{ violation.policy_rule.name }}</div>
-                <div class="text-body-secondary small">{{ violation.policy_rule.rule_label }}</div>
-              </td>
-              <td class="text-body-secondary small">{{ violation.policy_rule.rule_description }}</td>
+              <td>{{ violation.rule_label }}</td>
+              <td class="text-body-secondary small">{{ violation.rule_description }}</td>
               <td>{{ violation.violation_count }}</td>
               <td class="text-body-tertiary small">{{ violation.detected_date|date:"N j, Y" }}</td>
             </tr>

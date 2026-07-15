@@ -20,7 +20,6 @@ from dje.models import DataspacedManager
 from dje.models import DataspacedModel
 from dje.models import DataspacedQuerySet
 from dje.models import colored_icon_mixin_factory
-from policy.rules import RULE_REGISTRY
 
 ColoredIconMixin = colored_icon_mixin_factory(
     verbose_name="usage policy",
@@ -245,57 +244,6 @@ class AssociatedPolicy(DataspacedModel):
         if self.from_policy.content_type == self.to_policy.content_type:
             raise AssertionError
         super().save(*args, **kwargs)
-
-
-class PolicyRuleQuerySet(DataspacedQuerySet):
-    def active(self):
-        return self.filter(is_active=True)
-
-
-class PolicyRule(DataspacedModel):
-    name = models.CharField(
-        max_length=100,
-        help_text=_("Descriptive name for this policy rule."),
-    )
-    rule_type = models.CharField(
-        max_length=50,
-        help_text=_("The type of evaluation performed by this rule."),
-    )
-    threshold = models.PositiveIntegerField(
-        default=0,
-        help_text=_("Minimum number of violations required to trigger this rule (0 means any)."),
-    )
-    is_active = models.BooleanField(
-        default=True,
-        help_text=_("Only active rules are evaluated."),
-    )
-    parameters = models.JSONField(
-        blank=True,
-        default=dict,
-        help_text=_(
-            "Optional rule-specific parameters as a JSON object. "
-            "Supported keys depend on the chosen rule type."
-        ),
-    )
-
-    objects = PolicyRuleQuerySet.as_manager()
-
-    class Meta:
-        unique_together = (("dataspace", "uuid"), ("dataspace", "name"))
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def rule_label(self):
-        handler = RULE_REGISTRY.get(self.rule_type)
-        return handler.label if handler else self.rule_type
-
-    @property
-    def rule_description(self):
-        handler = RULE_REGISTRY.get(self.rule_type)
-        return handler.description if handler else ""
 
 
 class AbstractPolicyViolation(models.Model):

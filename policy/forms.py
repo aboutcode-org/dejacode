@@ -11,8 +11,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from dje.forms import ColorCodeFormMixin
 from dje.forms import DataspacedAdminForm
-from policy.models import PolicyRule
-from policy.rules import RULE_REGISTRY
 
 
 class UsagePolicyForm(ColorCodeFormMixin, DataspacedAdminForm):
@@ -94,21 +92,3 @@ class AssociatedPolicyForm(DataspacedAdminForm):
             self.add_error("to_policy", msg)
 
         return cleaned_data
-
-
-class PolicyRuleForm(DataspacedAdminForm):
-    class Meta:
-        model = PolicyRule
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["rule_type"].widget = forms.Select(
-            choices=[(key, handler.label) for key, handler in RULE_REGISTRY.items()]
-        )
-
-    def clean_rule_type(self):
-        value = self.cleaned_data["rule_type"]
-        if value not in RULE_REGISTRY:
-            raise forms.ValidationError(f"Unknown rule type: {value}")
-        return value

@@ -2844,10 +2844,9 @@ class ProductTabComplianceView(
         }
 
     @staticmethod
-    @staticmethod
     def get_policy_compliance_context(product):
-        policy_violations = (
-            product.policy_violations.filter(resolved=False).select_related("policy_rule")
+        policy_violations = product.policy_violations.filter(resolved=False).select_related(
+            "policy_rule"
         )
         return {
             "policy_violations": policy_violations,
@@ -3087,9 +3086,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
         ).count()
 
-        products_with_policy_violations = products.filter(
-            policy_violation_count__gt=0
-        ).count()
+        products_with_policy_violations = products.filter(policy_violation_count__gt=0).count()
 
         totals = products.aggregate(
             total_vulnerabilities=Sum("vulnerability_count"),

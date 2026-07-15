@@ -1141,7 +1141,11 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
         ),
     ]
     # Do not include the Dataspace related FKs on addition as the Dataspace does not exist yet
-    fieldsets = [("", {"fields": ("homepage_layout",)})] + add_fieldsets
+    policy_rules_fieldset = (
+        "Policy Rules",
+        {"fields": ("policy_rules_config",)},
+    )
+    fieldsets = [("", {"fields": ("homepage_layout",)})] + add_fieldsets + [policy_rules_fieldset]
     can_delete = False
 
     def get_fieldsets(self, request, obj=None):

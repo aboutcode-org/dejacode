@@ -8,34 +8,47 @@
 
 from django.utils import timezone
 
-from policy.models import PolicyRule
 from policy.rules import RULE_REGISTRY
 from product_portfolio.models import ProductPolicyViolation
 
 
-def evaluate_rule(policy_rule, product):
+def get_effective_config(rule_type, dataspace):
     """
-    Evaluate a single PolicyRule against a product, create or update the
-    ProductPolicyViolation record.
-    Returns the ProductPolicyViolation instance, or None if no violation exists.
+    Resolve threshold, parameters, and is_active for a rule type in a given dataspace.
+
+    Reads the dataspace-level override from DataspaceConfiguration.policy_rules_config,
+    falling back to the code defaults defined on the rule handler.
     """
-    rule_handler = RULE_REGISTRY.get(policy_rule.rule_type)
-    if not rule_handler:
-        return
+    handler = RULE_REGISTRY[rule_type]
+    try:
+        rule_config = dataspace.configuration.policy_rules_config.get(rule_type, {})
+    except AttributeError:
+        rule_config = {}
 
-    violation_count = rule_handler.count_violations(policy_rule, product)
+    return {
+        "is_active": rule_config.get("is_active", True),
+        "threshold": rule_config.get("threshold", handler.default_threshold),
+        "parameters": rule_config.get("parameters", {}),
+    }
 
-    lookup = {"policy_rule": policy_rule, "product": product, "resolved": False}
+
+def evaluate_rule(rule_type, product, threshold, parameters):
+    """Evaluate a single rule against a product and record the violation if triggered."""
+    handler = RULE_REGISTRY[rule_type]
+    violation_count = handler.count_violations(product, threshold, parameters)
+
+    lookup = {"rule_type": rule_type, "product": product, "resolved": False}
 
     if violation_count > 0:
         violation, created = ProductPolicyViolation.objects.get_or_create(
             **lookup,
-            defaults={"dataspace": policy_rule.dataspace, "violation_count": violation_count},
+            defaults={"dataspace": product.dataspace, "violation_count": violation_count},
         )
         if not created:
             violation.violation_count = violation_count
             violation.save()
         return violation
+
     else:
         ProductPolicyViolation.objects.filter(**lookup).update(
             resolved=True,
@@ -46,12 +59,17 @@ def evaluate_rule(policy_rule, product):
 
 def evaluate_rules(product):
     """
-    Evaluate all active PolicyRules for the given product.
+    Evaluate all rules in RULE_REGISTRY for the given product.
+
     Returns the list of active ProductPolicyViolation instances.
     """
     violations = []
-    for policy_rule in PolicyRule.objects.scope(product.dataspace).active():
-        violation = evaluate_rule(policy_rule, product)
+    for rule_type in RULE_REGISTRY:
+        config = get_effective_config(rule_type, product.dataspace)
+        if not config["is_active"]:
+            continue
+
+        violation = evaluate_rule(rule_type, product, config["threshold"], config["parameters"])
         if violation:
             violations.append(violation)
 

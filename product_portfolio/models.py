@@ -246,10 +246,15 @@ class ProductQuerySet(DataspacedQuerySet):
         )
 
     def with_policy_violation_count(self):
-        subquery = ProductPolicyViolation.objects.filter(
-            product=OuterRef("pk"),
-            resolved=False,
-        ).values("product").annotate(violation_count=models.Count("id")).values("violation_count")
+        subquery = (
+            ProductPolicyViolation.objects.filter(
+                product=OuterRef("pk"),
+                resolved=False,
+            )
+            .values("product")
+            .annotate(violation_count=models.Count("id"))
+            .values("violation_count")
+        )
         return self.annotate(
             policy_violation_count=Subquery(subquery, output_field=models.IntegerField()),
         )
@@ -1935,18 +1940,30 @@ class ProductPolicyViolation(DataspacedModel, AbstractPolicyViolation):
         related_name="policy_violations",
         help_text=_("The product in the context of which this violation was detected."),
     )
-    policy_rule = models.ForeignKey(
-        to="policy.PolicyRule",
-        on_delete=models.CASCADE,
-        related_name="product_violations",
-        help_text=_("The policy rule that triggered this violation."),
+    rule_type = models.CharField(
+        max_length=50,
+        help_text=_("The rule type from the rule registry that triggered this violation."),
     )
 
     objects = DataspacedManager.from_queryset(ProductPolicyViolationQuerySet)()
 
     class Meta:
-        unique_together = (("dataspace", "uuid"), ("policy_rule", "product"))
+        unique_together = (("dataspace", "uuid"), ("rule_type", "product"))
         ordering = ["-detected_date"]
 
     def __str__(self):
-        return f"{self.policy_rule} / {self.product}: {self.violation_count} violation(s)"
+        return f"{self.rule_type} / {self.product}: {self.violation_count} violation(s)"
+
+    @property
+    def rule_label(self):
+        from policy.rules import RULE_REGISTRY
+
+        handler = RULE_REGISTRY.get(self.rule_type)
+        return handler.label if handler else self.rule_type
+
+    @property
+    def rule_description(self):
+        from policy.rules import RULE_REGISTRY
+
+        handler = RULE_REGISTRY.get(self.rule_type)
+        return handler.description if handler else ""

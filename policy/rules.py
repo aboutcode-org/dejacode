@@ -17,7 +17,7 @@ class BaseRule:
     description = None
     parameters_schema = {}
 
-    def count_violations(self, policy_rule, product):
+    def count_violations(self, product, threshold, parameters):
         """Count objects violating the rule for the given product."""
         raise NotImplementedError
 
@@ -27,7 +27,7 @@ class PackageBaseRule(BaseRule):
 
     package_filter = {}
 
-    def count_violations(self, policy_rule, product):
+    def count_violations(self, product, threshold, parameters):
         Package = apps.get_model("component_catalog", "package")
 
         count = Package.objects.filter(
@@ -35,7 +35,7 @@ class PackageBaseRule(BaseRule):
             **self.package_filter,
         ).count()
 
-        return count if count > policy_rule.threshold else 0
+        return count if count > threshold else 0
 
 
 class LicensePolicyErrorRule(PackageBaseRule):
@@ -73,7 +73,7 @@ class VulnerabilityDetectedRule(BaseRule):
         "min_risk_score": "Minimum risk score (0.0-10.0). Default: any vulnerability.",
     }
 
-    def count_violations(self, policy_rule, product):
+    def count_violations(self, product, threshold, parameters):
         Package = apps.get_model("component_catalog", "package")
 
         packages = Package.objects.filter(
@@ -81,12 +81,12 @@ class VulnerabilityDetectedRule(BaseRule):
             risk_score__isnull=False,
         )
 
-        min_risk_score = policy_rule.parameters.get("min_risk_score")
+        min_risk_score = parameters.get("min_risk_score")
         if min_risk_score is not None:
             packages = packages.filter(risk_score__gte=min_risk_score)
 
         count = packages.count()
-        return count if count > policy_rule.threshold else 0
+        return count if count > threshold else 0
 
 
 RULE_REGISTRY = {
