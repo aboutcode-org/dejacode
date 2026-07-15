@@ -64,3 +64,8 @@ class WebhookSubscriptionAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
     actions_to_remove = ["copy_to", "compare_with"]
     email_notification_on = ()
     inlines = [WebhookDeliveryInline]
+
+    def get_inlines(self, request, obj=None):
+        if obj is None:
+            return []
+        return super().get_inlines(request, obj)
