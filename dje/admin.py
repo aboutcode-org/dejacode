@@ -1245,14 +1245,16 @@ class PolicyRulesConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             fields = [f"rule_{rule_type}_disabled", f"rule_{rule_type}_threshold"]
             for param_name in handler.parameters_schema:
                 fields.append(f"rule_{rule_type}_param_{param_name}")
-            rule_fieldsets.append((
-                handler.label,
-                {
-                    "fields": fields,
-                    "description": handler.description,
-                    "classes": ("grp-collapse grp-open",),
-                },
-            ))
+            rule_fieldsets.append(
+                (
+                    handler.label,
+                    {
+                        "fields": fields,
+                        "description": handler.description,
+                        "classes": ("grp-collapse grp-open",),
+                    },
+                )
+            )
         return rule_fieldsets
 
     def get_formset(self, request, obj=None, **kwargs):

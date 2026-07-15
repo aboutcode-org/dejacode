@@ -70,7 +70,9 @@ def evaluate_rules(product):
             # Explicitly resolve open violations so disabling a rule clears its history
             # rather than leaving stale unresolved records.
             ProductPolicyViolation.objects.filter(
-                rule_type=rule_type, product=product, resolved=False,
+                rule_type=rule_type,
+                product=product,
+                resolved=False,
             ).update(resolved=True, resolved_date=timezone.now())
             continue
 

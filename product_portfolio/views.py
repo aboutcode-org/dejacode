@@ -2845,9 +2845,7 @@ class ProductTabComplianceView(
 
     @staticmethod
     def get_policy_compliance_context(product):
-        policy_violations = product.policy_violations.filter(resolved=False).select_related(
-            "policy_rule"
-        )
+        policy_violations = product.policy_violations.filter(resolved=False)
         return {
             "policy_violations": policy_violations,
             "policy_violation_count": policy_violations.count(),
