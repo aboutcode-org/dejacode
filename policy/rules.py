@@ -46,18 +46,18 @@ class PackageBaseRule(BaseRule):
         return {f"package__{key}": value for key, value in self.package_filter.items()}
 
 
-class LicensePolicyErrorRule(PackageBaseRule):
-    rule_type = "license_policy_error"
-    label = "License Policy Error"
+class UsagePolicyErrorRule(PackageBaseRule):
+    rule_type = "usage_policy_error"
+    label = "Usage Policy Error"
     description = (
         "Detects packages assigned a usage policy with a compliance alert level of 'error'."
     )
     package_filter = {"usage_policy__compliance_alert": "error"}
 
 
-class LicensePolicyWarningRule(PackageBaseRule):
-    rule_type = "license_policy_warning"
-    label = "License Policy Warning"
+class UsagePolicyWarningRule(PackageBaseRule):
+    rule_type = "usage_policy_warning"
+    label = "Usage Policy Warning"
     description = (
         "Detects packages assigned a usage policy with a compliance alert level of 'warning'."
     )
@@ -101,8 +101,8 @@ class VulnerabilityDetectedRule(BaseRule):
 
 
 RULE_REGISTRY = {
-    LicensePolicyErrorRule.rule_type: LicensePolicyErrorRule(),
-    LicensePolicyWarningRule.rule_type: LicensePolicyWarningRule(),
+    UsagePolicyErrorRule.rule_type: UsagePolicyErrorRule(),
+    UsagePolicyWarningRule.rule_type: UsagePolicyWarningRule(),
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
     VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
 }
