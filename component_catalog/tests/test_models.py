@@ -2632,6 +2632,37 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries_max_request_call_purl_fallback(
+        self, mock_find_packages
+    ):
+        """
+        A Package without hashes, whose `download_url` does not match anything in
+        PurlDB, should still be matched on its `purl` even when `max_request_call`
+        limits the number of PurlDB requests. See #462.
+        """
+        purl1 = "pkg:golang/github.com/pkg/errors@0.9.1"
+        package1 = make_package(
+            self.dataspace,
+            package_url=purl1,
+            download_url="https://example.com/inferred/download/url",
+        )
+        purldb_entry1 = {
+            "purl": purl1,
+            "type": "golang",
+            "name": "errors",
+            "version": "0.9.1",
+        }
+
+        def find_packages_side_effect(payload, timeout=None):
+            if payload.get("purl") == purl1:
+                return [purldb_entry1]
+            return None
+
+        mock_find_packages.side_effect = find_packages_side_effect
+        purldb_entries = package1.get_purldb_entries(user=self.user, max_request_call=1)
+        self.assertEqual([purldb_entry1], purldb_entries)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries_plain_purls_equal(self, mock_find_packages):
         purl1 = "pkg:maven/core/jackson-core@2.18.3?type=jar"
         purl2 = "pkg:maven/core/jackson-core@2.18.3?classifier=sources&type=jar"
