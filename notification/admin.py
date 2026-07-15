@@ -66,6 +66,7 @@ class WebhookSubscriptionAdmin(ProhibitDataspaceLookupMixin, DataspacedAdmin):
     inlines = [WebhookDeliveryInline]
 
     def get_inlines(self, request, obj=None):
+        """Exclude delivery history on the add form as no deliveries exist yet."""
         if obj is None:
             return []
         return super().get_inlines(request, obj)

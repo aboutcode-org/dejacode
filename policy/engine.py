@@ -33,7 +33,11 @@ def get_effective_config(rule_type, dataspace):
 
 
 def evaluate_rule(rule_type, product, threshold, parameters):
-    """Evaluate a single rule against a product and record the violation if triggered."""
+    """
+    Evaluate a single rule against a product and record the violation if triggered.
+
+    Returns a 3-tuple: (violation_or_none, created, resolved_count).
+    """
     handler = RULE_REGISTRY[rule_type]
     violation_count = handler.count_violations(product, threshold, parameters)
 
@@ -47,37 +51,44 @@ def evaluate_rule(rule_type, product, threshold, parameters):
         if not created:
             violation.violation_count = violation_count
             violation.save()
-        return violation
+        return violation, created, 0
 
-    else:
-        ProductPolicyViolation.objects.filter(**lookup).update(
-            resolved=True,
-            resolved_date=timezone.now(),
-        )
-        return
+    resolved_count = ProductPolicyViolation.objects.filter(**lookup).update(
+        resolved=True,
+        resolved_date=timezone.now(),
+    )
+    return None, False, resolved_count
 
 
 def evaluate_rules(product):
     """
     Evaluate all rules in RULE_REGISTRY for the given product.
 
-    Returns the list of active ProductPolicyViolation instances.
+    Returns a 2-tuple: (new_violations, resolved_count).
+    new_violations is a list of newly created ProductPolicyViolation instances.
+    resolved_count is the total number of violations resolved during this run.
     """
-    violations = []
+    new_violations = []
+    resolved_count = 0
+
     for rule_type in RULE_REGISTRY:
         config = get_effective_config(rule_type, product.dataspace)
         if not config["is_active"]:
             # Explicitly resolve open violations so disabling a rule clears its history
             # rather than leaving stale unresolved records.
-            ProductPolicyViolation.objects.filter(
+            rows = ProductPolicyViolation.objects.filter(
                 rule_type=rule_type,
                 product=product,
                 resolved=False,
             ).update(resolved=True, resolved_date=timezone.now())
+            resolved_count += rows
             continue
 
-        violation = evaluate_rule(rule_type, product, config["threshold"], config["parameters"])
-        if violation:
-            violations.append(violation)
+        violation, created, resolved = evaluate_rule(
+            rule_type, product, config["threshold"], config["parameters"]
+        )
+        if created:
+            new_violations.append(violation)
+        resolved_count += resolved
 
-    return violations
+    return new_violations, resolved_count

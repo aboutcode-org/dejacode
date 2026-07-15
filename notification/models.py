@@ -28,6 +28,8 @@ WEBHOOK_EVENTS = [
     "user.added_or_updated",
     "user.locked_out",
     "vulnerability.data_update",
+    "policy.violation_detected",
+    "policy.violation_resolved",
 ]
 
 
