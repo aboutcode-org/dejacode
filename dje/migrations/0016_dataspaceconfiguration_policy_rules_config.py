@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dataspaceconfiguration',
             name='policy_rules_config',
-            field=models.JSONField(blank=True, default=dict, help_text='Override default policy rule settings for this dataspace. '),
+            field=models.JSONField(blank=True, default=dict, help_text='Override default policy rule settings for this dataspace.'),
         ),
     ]

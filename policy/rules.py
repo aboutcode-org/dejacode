@@ -15,6 +15,7 @@ class BaseRule:
     rule_type = None
     label = None
     description = None
+    default_threshold = 0
     parameters_schema = {}
 
     def count_violations(self, product, threshold, parameters):

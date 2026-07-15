@@ -617,9 +617,7 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
     policy_rules_config = models.JSONField(
         blank=True,
         default=dict,
-        help_text=_(
-            "Override default policy rule settings for this dataspace. "
-        ),
+        help_text=_("Override default policy rule settings for this dataspace."),
     )
 
     def __str__(self):
