@@ -12,6 +12,7 @@ from django.apps import apps
 
 from django_rq import job
 
+from dje.models import get_unsecured_manager
 from policy.engine import evaluate_rules
 
 logger = logging.getLogger(__name__)
@@ -23,9 +24,9 @@ def evaluate_product_rules_task(product_uuid):
     Product = apps.get_model("product_portfolio", "product")
 
     try:
-        product = Product.objects.select_related("dataspace").get(uuid=product_uuid)
+        product = Product.unsecured_objects.select_related("dataspace").get(uuid=product_uuid)
     except Product.DoesNotExist:
-        logger.warning(f"evaluate_product_rules_task: product {product_uuid} not found, skipping.")
+        logger.error(f"evaluate_product_rules_task: product {product_uuid} not found, skipping.")
         return
 
     logger.info(f"Evaluating policy rules for product {product}")
@@ -38,7 +39,7 @@ def evaluate_all_products_rules_task(include_locked=False):
     """Enqueue evaluate_product_rules_task for every product, skipping locked ones by default."""
     Product = apps.get_model("product_portfolio", "product")
 
-    products = Product.objects.select_related("dataspace")
+    products = Product.unsecured_objects.select_related("dataspace")
     if not include_locked:
         products = products.exclude_locked()
 
