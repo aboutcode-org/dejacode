@@ -54,7 +54,7 @@ dependencies = [
     "tblib==3.2.2",
     # CAPTCHA
     "altcha==1.0.0",
-    "django_altcha==0.10.0",
+    "django-altcha==1.0.0",
     # REST API
     "djangorestframework==3.16.1",
     # API documentation

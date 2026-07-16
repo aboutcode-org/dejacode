@@ -11,7 +11,7 @@ supported-markers = [
 ]
 
 [options]
-exclude-newer = "2026-06-26T14:02:46.162492Z"
+exclude-newer = "2026-07-09T09:25:33.330169Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -318,7 +318,7 @@ requires-dist = [
     { name = "cython", specifier = "==3.2.4" },
     { name = "defusedxml", specifier = "==0.7.1" },
     { name = "django", specifier = "==6.0.6" },
-    { name = "django-altcha", specifier = "==0.10.0" },
+    { name = "django-altcha", specifier = "==1.0.0" },
     { name = "django-auth-ldap", specifier = "==5.3.0" },
     { name = "django-axes", specifier = "==8.3.1" },
     { name = "django-crispy-forms", specifier = "==2.6" },
@@ -413,14 +413,14 @@ wheels = [
 
 [[package]]
 name = "django-altcha"
-version = "0.10.0"
+version = "1.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "altcha", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "django", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
-    { path = "django_altcha-0.10.0-py3-none-any.whl" },
+    { path = "django_altcha-1.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
