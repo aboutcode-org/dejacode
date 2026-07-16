@@ -590,6 +590,10 @@ LOGGING = {
             "propagate": False,
             "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
         },
+        "django_altcha": {
+            "handlers": ["null"] if IS_TESTS else ["console"],
+            "level": "WARNING",
+        },
     },
 }
 
