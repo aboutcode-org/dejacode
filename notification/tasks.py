@@ -12,6 +12,7 @@ from django.apps import apps
 
 from django_rq import job
 
+from dje.models import get_unsecured_manager
 from notification.models import WebhookSubscription
 
 logger = logging.getLogger("dje")
@@ -36,7 +37,7 @@ def deliver_webhook_task(
     if instance_app_label and instance_model_name and instance_pk:
         try:
             model_class = apps.get_model(instance_app_label, instance_model_name)
-            instance = model_class.objects.get(pk=instance_pk)
+            instance = get_unsecured_manager(model_class).get(pk=instance_pk)
         except Exception:
             logger.error(
                 f"Instance {instance_app_label}.{instance_model_name} pk={instance_pk} not found."
