@@ -143,6 +143,7 @@ from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import improve_packages_from_purldb_task
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
+from policy.engine import evaluate_rules
 from policy.engine import get_effective_config
 from policy.rules import RULE_REGISTRY
 from vulnerabilities.forms import VulnerabilityAnalysisForm
@@ -2068,6 +2069,22 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     return redirect(product)
 
 
+@require_POST
+@login_required
+def evaluate_policy_rules_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+
+    evaluate_rules(product)
+
+    return HttpResponse(headers={"HX-Refresh": "true"})
+
+
 @login_required
 def import_from_scan_view(request, dataspace, name, version=""):
     """
@@ -2771,6 +2788,7 @@ class ProductTabComplianceView(
         product = self.object
         productpackages = product.productpackages.all()
         licenses = License.objects.filter(productpackage__in=productpackages)
+        user_perms = guardian_get_perms(self.request.user, product)
 
         context.update(
             {
@@ -2778,6 +2796,7 @@ class ProductTabComplianceView(
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
                 **self.get_policy_compliance_context(product),
+                "has_change_permission": "change_product" in user_perms,
             }
         )
 

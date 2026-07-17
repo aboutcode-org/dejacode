@@ -491,6 +491,9 @@ class Product(
     def get_export_security_compliance_url(self):
         return self.get_url("export_security_compliance")
 
+    def get_evaluate_policy_rules_url(self):
+        return self.get_url("evaluate_policy_rules")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)
