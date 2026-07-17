@@ -43,6 +43,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
@@ -715,6 +716,48 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
+
+
+    def test_api_product_endpoint_policy_violations_action(self):
+        url = reverse("api_v2:product-policy-violations", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
+
+        violation = ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=5,
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data))
+        entry = response.data[0]
+        self.assertEqual("usage_policy_error", entry["rule_type"])
+        self.assertEqual(5, entry["violation_count"])
+        self.assertFalse(entry["resolved"])
+        self.assertIsNone(entry["resolved_date"])
+        self.assertIn("rule_label", entry)
+        self.assertIn("rule_description", entry)
+        self.assertIn("rule_severity", entry)
+        self.assertIn("detected_date", entry)
+
+        violation.resolved = True
+        violation.save()
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
 
 
 class ProductRelatedAPITestCase(TestCase):
