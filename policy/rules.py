@@ -35,10 +35,14 @@ class PackageBaseRule(BaseRule):
     def count_violations(self, product, threshold, parameters):
         Package = apps.get_model("component_catalog", "package")
 
-        count = Package.objects.filter(
-            productpackages__product=product,
-            **self.package_filter,
-        ).distinct().count()
+        count = (
+            Package.objects.filter(
+                productpackages__product=product,
+                **self.package_filter,
+            )
+            .distinct()
+            .count()
+        )
 
         return count if count > threshold else 0
 
