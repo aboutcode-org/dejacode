@@ -15,6 +15,7 @@ class BaseRule:
     rule_type = None
     label = None
     description = None
+    severity = "warning"
     default_threshold = 0
     parameters_schema = {}
 
@@ -53,6 +54,7 @@ class PackageBaseRule(BaseRule):
 class UsagePolicyErrorRule(PackageBaseRule):
     rule_type = "usage_policy_error"
     label = "Usage Policy Error"
+    severity = "error"
     description = (
         "Detects packages assigned a usage policy with a compliance alert level of 'error'."
     )
@@ -71,6 +73,7 @@ class UsagePolicyWarningRule(PackageBaseRule):
 class LicensePolicyErrorRule(PackageBaseRule):
     rule_type = "license_policy_error"
     label = "License Policy Error"
+    severity = "error"
     description = (
         "Detects packages whose licenses are assigned a usage policy"
         " with a compliance alert level of 'error'."
@@ -100,6 +103,7 @@ class LicenseCoverageGapRule(PackageBaseRule):
 class VulnerabilityDetectedRule(BaseRule):
     rule_type = "vulnerability_detected"
     label = "Vulnerability Detected"
+    severity = "error"
     description = "Detects packages with at least one known vulnerability (non-null risk score)."
     parameters_schema = {
         "min_risk_score": "Minimum risk score (0.0-10.0). Default: any vulnerability.",

@@ -58,6 +58,7 @@ from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from policy.models import AbstractPolicyViolation
+from policy.rules import RULE_REGISTRY
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import AffectedByVulnerabilityRelationship
@@ -1956,14 +1957,15 @@ class ProductPolicyViolation(DataspacedModel, AbstractPolicyViolation):
 
     @property
     def rule_label(self):
-        from policy.rules import RULE_REGISTRY
-
         handler = RULE_REGISTRY.get(self.rule_type)
         return handler.label if handler else self.rule_type
 
     @property
     def rule_description(self):
-        from policy.rules import RULE_REGISTRY
-
         handler = RULE_REGISTRY.get(self.rule_type)
         return handler.description if handler else ""
+
+    @property
+    def rule_severity(self):
+        handler = RULE_REGISTRY.get(self.rule_type)
+        return handler.severity if handler else "warning"

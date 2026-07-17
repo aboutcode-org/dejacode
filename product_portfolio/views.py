@@ -143,6 +143,8 @@ from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import improve_packages_from_purldb_task
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
+from policy.engine import get_effective_config
+from policy.rules import RULE_REGISTRY
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
@@ -2849,9 +2851,21 @@ class ProductTabComplianceView(
     @staticmethod
     def get_policy_compliance_context(product):
         policy_violations = product.policy_violations.filter(resolved=False).order_by("rule_type")
+        violated_rule_types = {violation.rule_type for violation in policy_violations}
+        all_rules = [
+            {
+                "label": handler.label,
+                "rule_type": rule_type,
+                "severity": handler.severity,
+                "is_active": get_effective_config(rule_type, product.dataspace)["is_active"],
+                "is_violated": rule_type in violated_rule_types,
+            }
+            for rule_type, handler in RULE_REGISTRY.items()
+        ]
         return {
             "policy_violations": policy_violations,
             "policy_violation_count": policy_violations.count(),
+            "all_rules": all_rules,
         }
 
     @staticmethod
