@@ -37,8 +37,11 @@ def evaluate_product_rules_on_productpackage_delete(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender="component_catalog.Package")
-def evaluate_product_rules_on_package_save(sender, instance, **kwargs):
+def evaluate_product_rules_on_package_save(sender, instance, created, **kwargs):
     """Queue a policy rule evaluation for all products containing this package."""
+    if created:
+        return  # A newly created package has no ProductPackage relations yet.
+
     product_uuids = list(instance.productpackages.values_list("product__uuid", flat=True))
     if product_uuids:
         evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
