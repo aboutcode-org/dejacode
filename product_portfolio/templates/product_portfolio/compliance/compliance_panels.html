@@ -9,11 +9,50 @@
           <div class="d-flex align-items-center gap-2">
             <h3 class="fs-6 fw-medium mb-0">{% trans "Policy violations" %}</h3>
             <button type="button"
-                    id="rules-overview-btn"
                     class="btn btn-link p-0 text-body-tertiary lh-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#active-rules-modal"
                     aria-label="{% trans 'View active rules' %}">
               <i class="fas fa-circle-info small"></i>
             </button>
+          </div>
+
+          <div class="modal fade" id="active-rules-modal" tabindex="-1" aria-labelledby="active-rules-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title fs-6 fw-medium" id="active-rules-modal-label">{% trans "Active rules" %}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+                </div>
+                <div class="modal-body p-0">
+                  {% for rule in all_rules %}
+                    <div class="d-flex align-items-start justify-content-between px-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+                      <div class="me-3">
+                        {% if rule.severity == "error" %}
+                          <span class="badge bg-danger-subtle text-danger-emphasis mb-1">{{ rule.label }}</span>
+                        {% else %}
+                          <span class="badge bg-warning-subtle text-warning-emphasis mb-1">{{ rule.label }}</span>
+                        {% endif %}
+                        <div class="text-body-secondary small">{{ rule.description }}</div>
+                      </div>
+                      <div class="flex-shrink-0">
+                        {% if not rule.is_active %}
+                          <span class="badge text-bg-secondary">{% trans "Disabled" %}</span>
+                        {% elif rule.is_violated %}
+                          {% if rule.severity == "error" %}
+                            <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Triggered" %}</span>
+                          {% else %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Triggered" %}</span>
+                          {% endif %}
+                        {% else %}
+                          <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
           </div>
           <span class="badge bg-danger-subtle text-danger-emphasis">
             {{ policy_violation_count }} {% trans "active" %}
@@ -54,42 +93,6 @@
     </div>
   </div>
 
-  {# Hidden popover content -- not data-bs-toggle so the global init doesn't conflict #}
-  <div id="rules-overview-content" class="d-none">
-    {% for rule in all_rules %}
-      <div class="d-flex align-items-center justify-content-between {% if not forloop.last %}mb-2{% endif %}">
-        <span class="small me-3">{{ rule.label }}</span>
-        {% if not rule.is_active %}
-          <span class="badge text-bg-secondary">{% trans "Disabled" %}</span>
-        {% elif rule.is_violated %}
-          {% if rule.severity == "error" %}
-            <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Triggered" %}</span>
-          {% else %}
-            <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Triggered" %}</span>
-          {% endif %}
-        {% else %}
-          <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
-  <script>
-    (function () {
-      const btn = document.getElementById("rules-overview-btn");
-      const content = document.getElementById("rules-overview-content");
-      const popover = new bootstrap.Popover(btn, {
-        html: true,
-        container: "body",
-        placement: "right",
-        trigger: "click",
-        title: "{% trans 'Active rules' %}",
-        content: content.innerHTML,
-      });
-      document.addEventListener("click", function (event) {
-        if (!btn.contains(event.target)) popover.hide();
-      });
-    })();
-  </script>
 {% endif %}
 
 <div class="row g-4 mb-4">
@@ -262,7 +265,7 @@
           {% else %}
             {{ vulnerability_count }}
             {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }}
-            — {% trans "no risk threshold set" %}
+            - {% trans "no risk threshold set" %}
           {% endif %}
         </p>
       {% endif %}

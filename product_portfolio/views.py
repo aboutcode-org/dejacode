@@ -2855,6 +2855,7 @@ class ProductTabComplianceView(
         all_rules = [
             {
                 "label": handler.label,
+                "description": handler.description,
                 "rule_type": rule_type,
                 "severity": handler.severity,
                 "is_active": get_effective_config(rule_type, product.dataspace)["is_active"],
