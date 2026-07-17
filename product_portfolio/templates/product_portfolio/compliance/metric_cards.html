@@ -2,17 +2,18 @@
 <div class="row g-3 mb-4">
   <div class="col-6 col-md">
     <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Total packages" %}</div>
-      <div class="fs-4 fw-medium lh-sm">{{ total_packages|intcomma }}</div>
-      <div class="text-body-tertiary fs-xs mt-1">
-        {% if package_issues_count == 0 %}
-          {% trans "No policy violations" %}
-        {% else %}
-          <a href="?inventory-compliance_issues=true#inventory">
-            {{ package_issues_count }} {% trans "package policy violation" %}{{ package_issues_count|pluralize }}
+      <div class="small text-body-secondary mb-1">{% trans "Policy violations" %}</div>
+      {% if policy_violation_count == 0 %}
+        <div class="fs-4 fw-medium lh-sm text-success">0</div>
+        <div class="text-body-tertiary fs-xs mt-1">{% trans "No active violations" %}</div>
+      {% else %}
+        <div class="fs-4 fw-medium lh-sm text-danger">{{ policy_violation_count }}</div>
+        <div class="text-body-tertiary fs-xs mt-1">
+          <a href="#policy-violations" class="text-decoration-none">
+            {{ policy_violation_count }} {% trans "rule" %}{{ policy_violation_count|pluralize }} {% trans "triggered" %}
           </a>
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
     </div>
   </div>
   <div class="col-6 col-md">
@@ -63,29 +64,17 @@
       {% elif risk_threshold_number %}
         <div class="fs-4 fw-medium lh-sm text-danger">{{ above_threshold_count }}</div>
         <div class="text-body-tertiary fs-xs mt-1">
-          {% trans "of" %} {{ vulnerability_count }} {% trans "above threshold of" %} {{ risk_threshold_number }}
+          <a href="{{ product_url }}?#vulnerabilities" class="text-decoration-none">
+            {% trans "of" %} {{ vulnerability_count }} {% trans "above threshold of" %} {{ risk_threshold_number }}
+          </a>
         </div>
       {% else %}
         <div class="fs-4 fw-medium lh-sm {% if max_vulnerability_severity == 'critical' %}text-danger{% elif max_vulnerability_severity == 'high' %}text-warning-orange{% elif max_vulnerability_severity == 'medium' %}text-warning{% else %}text-info{% endif %}">
           {{ vulnerability_count }}
         </div>
         <div class="text-body-tertiary fs-xs mt-1">
-          {% if critical_count %}{{ critical_count }} {% trans "critical" %}{% endif %}{% if critical_count and high_count %}, {% endif %}{% if high_count %}{{ high_count }} {% trans "high" %}{% endif %}{% if medium_count and critical_count or medium_count and high_count %}, {% endif %}{% if medium_count %}{{ medium_count }} {% trans "medium" %}{% endif %}{% if low_count and vulnerability_count == low_count %}{{ low_count }} {% trans "low" %}{% endif %}
-        </div>
-      {% endif %}
-    </div>
-  </div>
-  <div class="col-6 col-md">
-    <div class="bg-body-secondary rounded-3 p-3">
-      <div class="small text-body-secondary mb-1">{% trans "Policy violations" %}</div>
-      {% if policy_violation_count == 0 %}
-        <div class="fs-4 fw-medium lh-sm text-success">0</div>
-        <div class="text-body-tertiary fs-xs mt-1">{% trans "No active violations" %}</div>
-      {% else %}
-        <div class="fs-4 fw-medium lh-sm text-danger">{{ policy_violation_count }}</div>
-        <div class="text-body-tertiary fs-xs mt-1">
-          <a href="#policy-violations" class="text-decoration-none">
-            {{ policy_violation_count }} {% trans "rule" %}{{ policy_violation_count|pluralize }} {% trans "triggered" %}
+          <a href="{{ product_url }}?#vulnerabilities" class="text-decoration-none">
+            {% if critical_count %}{{ critical_count }} {% trans "critical" %}{% endif %}{% if critical_count and high_count %}, {% endif %}{% if high_count %}{{ high_count }} {% trans "high" %}{% endif %}{% if medium_count and critical_count or medium_count and high_count %}, {% endif %}{% if medium_count %}{{ medium_count }} {% trans "medium" %}{% endif %}{% if low_count and vulnerability_count == low_count %}{{ low_count }} {% trans "low" %}{% endif %}
           </a>
         </div>
       {% endif %}

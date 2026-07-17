@@ -1,5 +1,46 @@
 {% load i18n %}
 {% url product.get_absolute_url as product_url %}
+
+{% if policy_violations %}
+  <div id="policy-violations" class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="border rounded-3 p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h3 class="fs-6 fw-medium mb-0">{% trans "Policy violations" %}</h3>
+          <span class="badge bg-danger-subtle text-danger-emphasis">
+            {{ policy_violation_count }} {% trans "active" %}
+          </span>
+        </div>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th class="fw-medium">{% trans "Rule" %}</th>
+              <th class="fw-medium">{% trans "Description" %}</th>
+              <th class="fw-medium">{% trans "Objects in violation" %}</th>
+              <th class="fw-medium">{% trans "Detected" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for violation in policy_violations %}
+            <tr>
+              <td>{{ violation.rule_label }}</td>
+              <td class="text-body-secondary small">{{ violation.rule_description }}</td>
+              <td>
+                <a href="{{ product_url }}?inventory-policy_rule={{ violation.rule_type }}#inventory"
+                   class="text-decoration-none">
+                  {{ violation.violation_count }}
+                </a>
+              </td>
+              <td class="text-body-tertiary small">{{ violation.detected_date|date:"N j, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 <div class="row g-4 mb-4">
   {# License panel #}
   <div class="col-lg-6">
@@ -225,43 +266,3 @@
     </div>
   </div>
 </div>
-
-{% if policy_violations %}
-  <div id="policy-violations" class="row g-4 mb-4">
-    <div class="col-12">
-      <div class="border rounded-3 p-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3 class="fs-6 fw-medium mb-0">{% trans "Policy violations" %}</h3>
-          <span class="badge bg-danger-subtle text-danger-emphasis">
-            {{ policy_violation_count }} {% trans "active" %}
-          </span>
-        </div>
-        <table class="table table-sm mb-0">
-          <thead>
-            <tr>
-              <th class="fw-medium">{% trans "Rule" %}</th>
-              <th class="fw-medium">{% trans "Description" %}</th>
-              <th class="fw-medium">{% trans "Objects in violation" %}</th>
-              <th class="fw-medium">{% trans "Detected" %}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for violation in policy_violations %}
-            <tr>
-              <td>{{ violation.rule_label }}</td>
-              <td class="text-body-secondary small">{{ violation.rule_description }}</td>
-              <td>
-                <a href="{{ product_url }}?inventory-policy_rule={{ violation.rule_type }}#inventory"
-                   class="text-decoration-none">
-                  {{ violation.violation_count }}
-                </a>
-              </td>
-              <td class="text-body-tertiary small">{{ violation.detected_date|date:"N j, Y" }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-{% endif %}
