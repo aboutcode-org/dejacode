@@ -442,10 +442,6 @@ class Product(
         if self.has_changed("configuration_status_id"):
             self.actions_on_status_change()
 
-        from policy.engine import evaluate_rules
-
-        evaluate_rules(product=self)
-
     def get_attribution_url(self):
         return self.get_url("attribution")
 

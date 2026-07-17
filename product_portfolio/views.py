@@ -112,6 +112,9 @@ from dje.views_formset import FormSetView
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
+from policy.engine import evaluate_rules
+from policy.engine import get_effective_config
+from policy.rules import RULE_REGISTRY
 from product_portfolio.filters import CodebaseResourceFilterSet
 from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
@@ -143,9 +146,6 @@ from product_portfolio.models import ProductRelationshipMixin
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import improve_packages_from_purldb_task
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
-from policy.engine import evaluate_rules
-from policy.engine import get_effective_config
-from policy.rules import RULE_REGISTRY
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability

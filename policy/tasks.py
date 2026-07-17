@@ -59,12 +59,17 @@ def evaluate_product_rules_task(product_uuid):
 
 
 @job
-def evaluate_all_products_rules_task(include_locked=False):
-    """Evaluate policy rules for every product directly, skipping locked ones by default."""
+def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
+    """
+    Evaluate policy rules for products, skipping locked ones by default.
+    When product_uuids is provided, only those products are evaluated.
+    """
     Product = apps.get_model("product_portfolio", "product")
 
     products = get_unsecured_manager(Product).select_related("dataspace")
-    if not include_locked:
+    if product_uuids is not None:
+        products = products.filter(uuid__in=product_uuids)
+    elif not include_locked:
         products = products.exclude_locked()
 
     count = products.count()
