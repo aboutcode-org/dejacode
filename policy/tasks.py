@@ -45,7 +45,7 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
     """
     Product = apps.get_model("product_portfolio", "product")
 
-    products = get_unsecured_manager(Product).select_related("dataspace")
+    products = get_unsecured_manager(Product).select_related("dataspace__configuration")
     if product_uuids is not None:
         products = products.filter(uuid__in=product_uuids)
     if not include_locked:
