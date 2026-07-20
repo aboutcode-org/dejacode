@@ -56,7 +56,11 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
 
     for product in products:
         logger.info(f"Evaluating policy rules for product {product}")
-        new_violations, resolved_count = evaluate_rules(product)
+        try:
+            new_violations, resolved_count = evaluate_rules(product)
+        except Exception:
+            logger.exception(f"Policy rule evaluation failed for product {product}, skipping.")
+            continue
         logger.info(
             f"Policy rules evaluated for {product}: "
             f"{len(new_violations)} new violation(s), {resolved_count} resolved."
