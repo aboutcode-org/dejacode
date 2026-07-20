@@ -8,8 +8,28 @@
 
 from django.utils import timezone
 
+from notification.models import fire_webhooks
 from policy.rules import RULE_REGISTRY
 from product_portfolio.models import ProductPolicyViolation
+
+
+def fire_policy_webhooks(product, new_violations, resolved_count):
+    """Fire policy webhooks for newly detected or resolved violations."""
+    if new_violations:
+        lines = [
+            f"- {violation.rule_label}: {violation.violation_count} violation(s)"
+            for violation in new_violations
+        ]
+        payload = {
+            "text": (f"[DejaCode] Policy violations detected for {product}\n" + "\n".join(lines))
+        }
+        fire_webhooks("policy.violation_detected", instance=product, payload_override=payload)
+
+    if resolved_count:
+        payload = {
+            "text": (f"[DejaCode] {resolved_count} policy violation(s) resolved for {product}")
+        }
+        fire_webhooks("policy.violation_resolved", instance=product, payload_override=payload)
 
 
 def get_effective_config(rule_type, dataspace):
@@ -95,4 +115,5 @@ def evaluate_rules(product):
             new_violations.append(violation)
         resolved_count += resolved
 
+    fire_policy_webhooks(product, new_violations, resolved_count)
     return new_violations, resolved_count

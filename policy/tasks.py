@@ -13,29 +13,9 @@ from django.apps import apps
 from django_rq import job
 
 from dje.models import get_unsecured_manager
-from notification.models import fire_webhooks
 from policy.engine import evaluate_rules
 
 logger = logging.getLogger(__name__)
-
-
-def fire_policy_webhooks(product, new_violations, resolved_count):
-    """Fire policy webhooks for newly detected or resolved violations."""
-    if new_violations:
-        lines = [
-            f"- {violation.rule_label}: {violation.violation_count} violation(s)"
-            for violation in new_violations
-        ]
-        payload = {
-            "text": (f"[DejaCode] Policy violations detected for {product}\n" + "\n".join(lines))
-        }
-        fire_webhooks("policy.violation_detected", instance=product, payload_override=payload)
-
-    if resolved_count:
-        payload = {
-            "text": (f"[DejaCode] {resolved_count} policy violation(s) resolved for {product}")
-        }
-        fire_webhooks("policy.violation_resolved", instance=product, payload_override=payload)
 
 
 @job
@@ -55,7 +35,6 @@ def evaluate_product_rules_task(product_uuid):
         f"Policy rules evaluated for {product}: "
         f"{len(new_violations)} new violation(s), {resolved_count} resolved."
     )
-    fire_policy_webhooks(product, new_violations, resolved_count)
 
 
 @job
@@ -82,6 +61,5 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
             f"Policy rules evaluated for {product}: "
             f"{len(new_violations)} new violation(s), {resolved_count} resolved."
         )
-        fire_policy_webhooks(product, new_violations, resolved_count)
 
     logger.info(f"Policy rule evaluation complete for {count} product(s).")
