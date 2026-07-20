@@ -41,19 +41,23 @@ def evaluate_rule(rule_type, product, threshold, parameters):
     handler = RULE_REGISTRY[rule_type]
     violation_count = handler.count_violations(product, threshold, parameters)
 
-    lookup = {"rule_type": rule_type, "product": product, "resolved": False}
+    lookup = {"rule_type": rule_type, "product": product}
 
     if violation_count > 0:
-        violation, created = ProductPolicyViolation.objects.get_or_create(
+        # update_or_create on the unique (rule_type, product) pair so that a previously
+        # resolved violation can be re-activated without hitting the unique constraint.
+        violation, created = ProductPolicyViolation.objects.update_or_create(
             **lookup,
-            defaults={"dataspace": product.dataspace, "violation_count": violation_count},
+            defaults={
+                "dataspace": product.dataspace,
+                "violation_count": violation_count,
+                "resolved": False,
+                "resolved_date": None,
+            },
         )
-        if not created:
-            violation.violation_count = violation_count
-            violation.save()
         return violation, created, 0
 
-    resolved_count = ProductPolicyViolation.objects.filter(**lookup).update(
+    resolved_count = ProductPolicyViolation.objects.filter(**lookup, resolved=False).update(
         resolved=True,
         resolved_date=timezone.now(),
     )

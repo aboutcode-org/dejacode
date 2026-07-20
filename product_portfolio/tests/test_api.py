@@ -717,7 +717,6 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
 
-
     def test_api_product_endpoint_policy_violations_action(self):
         url = reverse("api_v2:product-policy-violations", args=[self.product1.uuid])
 
