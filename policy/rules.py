@@ -100,39 +100,10 @@ class LicenseCoverageGapRule(PackageBaseRule):
     package_filter = {"license_expression": ""}
 
 
-class VulnerabilityDetectedRule(BaseRule):
-    rule_type = "vulnerability_detected"
-    label = "Vulnerability Detected"
-    severity = "error"
-    description = "Detects packages with at least one known vulnerability (non-null risk score)."
-    parameters_schema = {
-        "min_risk_score": "Minimum risk score (0.0-10.0). Default: any vulnerability.",
-    }
-
-    def get_package_filter(self):
-        return {"package__risk_score__isnull": False}
-
-    def count_violations(self, product, threshold, parameters):
-        Package = apps.get_model("component_catalog", "package")
-
-        packages = Package.objects.filter(
-            productpackages__product=product,
-            risk_score__isnull=False,
-        )
-
-        min_risk_score = parameters.get("min_risk_score")
-        if min_risk_score is not None:
-            packages = packages.filter(risk_score__gte=min_risk_score)
-
-        count = packages.count()
-        return count if count > threshold else 0
-
-
 RULE_REGISTRY = {
     UsagePolicyErrorRule.rule_type: UsagePolicyErrorRule(),
     UsagePolicyWarningRule.rule_type: UsagePolicyWarningRule(),
     LicensePolicyErrorRule.rule_type: LicensePolicyErrorRule(),
     LicensePolicyWarningRule.rule_type: LicensePolicyWarningRule(),
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
-    VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
 }
