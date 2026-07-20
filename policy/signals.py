@@ -8,10 +8,12 @@
 
 import logging
 
+from django.apps import apps
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from dje.models import get_unsecured_manager
 from policy.tasks import evaluate_all_products_rules_task
 from policy.tasks import evaluate_product_rules_task
 
@@ -43,5 +45,21 @@ def evaluate_product_rules_on_package_save(sender, instance, created, **kwargs):
         return  # A newly created package has no ProductPackage relations yet.
 
     product_uuids = list(instance.productpackages.values_list("product__uuid", flat=True))
+    if product_uuids:
+        evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
+
+
+@receiver(post_save, sender="dje.DataspaceConfiguration")
+def evaluate_products_on_policy_rules_config_save(sender, instance, update_fields, **kwargs):
+    """Queue re-evaluation for all products in the dataspace when policy rules config changes."""
+    if update_fields is not None and "policy_rules_config" not in update_fields:
+        return
+
+    Product = apps.get_model("product_portfolio", "product")
+    product_uuids = list(
+        get_unsecured_manager(Product)
+        .filter(dataspace=instance.dataspace)
+        .values_list("uuid", flat=True)
+    )
     if product_uuids:
         evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
