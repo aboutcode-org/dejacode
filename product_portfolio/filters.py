@@ -201,6 +201,7 @@ class ProductFilterSet(DataspacedFilterSet):
         has_violation = ProductPolicyViolation.objects.filter(
             product_id=OuterRef("pk"),
             resolved=False,
+            rule_type__in=RULE_REGISTRY,
         )
         condition = Exists(has_violation)
         return queryset.filter(condition if value else ~condition)

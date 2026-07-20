@@ -113,7 +113,6 @@ from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from policy.engine import evaluate_rules
-from policy.engine import get_effective_config
 from policy.rules import RULE_REGISTRY
 from product_portfolio.filters import CodebaseResourceFilterSet
 from product_portfolio.filters import DependencyFilterSet
@@ -2870,18 +2869,24 @@ class ProductTabComplianceView(
     @staticmethod
     def get_policy_compliance_context(product):
         policy_violations = list(
-            product.policy_violations.filter(
-                resolved=False, rule_type__in=RULE_REGISTRY
-            ).order_by("rule_type")
+            product.policy_violations.filter(resolved=False, rule_type__in=RULE_REGISTRY).order_by(
+                "rule_type"
+            )
         )
         violated_rule_types = {violation.rule_type for violation in policy_violations}
+
+        try:
+            rules_config = product.dataspace.configuration.policy_rules_config or {}
+        except AttributeError:
+            rules_config = {}
+
         all_rules = [
             {
                 "label": handler.label,
                 "description": handler.description,
                 "rule_type": rule_type,
                 "severity": handler.severity,
-                "is_active": get_effective_config(rule_type, product.dataspace)["is_active"],
+                "is_active": rules_config.get(rule_type, {}).get("is_active", False),
                 "is_violated": rule_type in violated_rule_types,
             }
             for rule_type, handler in RULE_REGISTRY.items()
@@ -3112,13 +3117,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         context = super().get_context_data(**kwargs)
 
         products = self.object_list
-        products_with_issues = products.filter(
-            Q(license_error_count__gt=0)
-            | Q(license_warning_count__gt=0)
-            | Q(critical_count__gt=0)
-            | Q(high_count__gt=0)
-            | Q(policy_violation_count__gt=0)
-        ).count()
+        products_with_issues = products.with_compliance_issues().count()
 
         products_with_license_issues = products.filter(
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)

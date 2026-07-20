@@ -259,7 +259,9 @@ class ProductQuerySet(DataspacedQuerySet):
             .values("violation_count")
         )
         return self.annotate(
-            policy_violation_count=Subquery(subquery, output_field=models.IntegerField()),
+            policy_violation_count=Coalesce(
+                Subquery(subquery, output_field=models.IntegerField()), Value(0)
+            ),
         )
 
 
