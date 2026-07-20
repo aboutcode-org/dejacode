@@ -1051,7 +1051,22 @@ class DataspaceConfigurationForm(forms.ModelForm):
 
     class Meta:
         model = DataspaceConfiguration
-        exclude = ["policy_rules_config"]
+        fields = [
+            "homepage_layout",
+            "scancodeio_url",
+            "scancodeio_api_key",
+            "vulnerablecode_url",
+            "vulnerablecode_api_key",
+            "vulnerabilities_risk_threshold",
+            "purldb_url",
+            "purldb_api_key",
+            "forgejo_token",
+            "github_token",
+            "gitlab_token",
+            "jira_user",
+            "jira_token",
+            "sourcehut_token",
+        ]
 
     hidden_value_fields = [
         "scancodeio_api_key",
