@@ -219,6 +219,7 @@ class ProductQuerySet(DataspacedQuerySet):
             self.with_risk_threshold()
             .with_vulnerability_counts()
             .with_license_compliance_counts()
+            .with_policy_violation_count()
             .annotate(package_count=Count("productpackages", distinct=True))
             .order_by(
                 F("max_risk_score").desc(nulls_last=True),
@@ -230,12 +231,13 @@ class ProductQuerySet(DataspacedQuerySet):
         )
 
     def with_compliance_issues(self):
-        """Filter to products that have license or critical/high vulnerability issues."""
+        """Filter to products that have license, vulnerability, or policy violation issues."""
         return self.filter(
             Q(license_error_count__gt=0)
             | Q(license_warning_count__gt=0)
             | Q(critical_count__gt=0)
             | Q(high_count__gt=0)
+            | Q(policy_violation_count__gt=0)
         )
 
     def with_has_vulnerable_packages(self):

@@ -3106,7 +3106,6 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             get_viewable_products(self.request.user)
             .with_compliance_data()
             .with_has_vulnerable_packages()
-            .with_policy_violation_count()
         )
 
     def get_context_data(self, **kwargs):
