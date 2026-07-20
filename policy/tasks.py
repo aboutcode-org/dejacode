@@ -48,7 +48,7 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
     products = get_unsecured_manager(Product).select_related("dataspace")
     if product_uuids is not None:
         products = products.filter(uuid__in=product_uuids)
-    elif not include_locked:
+    if not include_locked:
         products = products.exclude(configuration_status__is_locked=True)
 
     count = products.count()

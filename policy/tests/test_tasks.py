@@ -127,7 +127,7 @@ class EvaluateAllProductsRulesTaskTestCase(TestCase):
         self.assertNotIn(product_b, evaluated_products)
 
     @patch("policy.tasks.evaluate_rules")
-    def test_evaluate_all_products_uuid_filter_ignores_locked_exclusion(self, mock_evaluate):
+    def test_evaluate_all_products_uuid_filter_still_excludes_locked(self, mock_evaluate):
         mock_evaluate.return_value = ([], 0)
         locked_status = make_product_status(self.dataspace, is_locked=True)
         locked_product = make_product(self.dataspace, configuration_status=locked_status)
@@ -136,4 +136,4 @@ class EvaluateAllProductsRulesTaskTestCase(TestCase):
         evaluate_all_products_rules_task(product_uuids=[locked_product.uuid])
 
         evaluated_products = [c[0][0] for c in mock_evaluate.call_args_list]
-        self.assertIn(locked_product, evaluated_products)
+        self.assertNotIn(locked_product, evaluated_products)
