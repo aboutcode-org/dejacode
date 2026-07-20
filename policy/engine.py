@@ -77,9 +77,11 @@ def evaluate_rule(rule_type, product, threshold, parameters):
         )
         return violation, created, 0
 
+    now = timezone.now()
     resolved_count = ProductPolicyViolation.objects.filter(**lookup, resolved=False).update(
         resolved=True,
-        resolved_date=timezone.now(),
+        resolved_date=now,
+        last_checked=now,
     )
     return None, False, resolved_count
 
