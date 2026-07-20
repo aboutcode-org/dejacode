@@ -46,7 +46,7 @@ def get_effective_config(rule_type, dataspace):
         rule_config = {}
 
     return {
-        "is_active": rule_config.get("is_active", True),
+        "is_active": rule_config.get("is_active", False),
         "threshold": rule_config.get("threshold", handler.default_threshold),
         "parameters": rule_config.get("parameters", {}),
     }

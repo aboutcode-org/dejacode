@@ -178,6 +178,8 @@ class DataspacedModelAdminTestCase(TestCase):
             "update_packages_from_scan": True,
             "configuration-TOTAL_FORMS": 0,
             "configuration-INITIAL_FORMS": 0,
+            "configuration-2-TOTAL_FORMS": 0,
+            "configuration-2-INITIAL_FORMS": 0,
         }
 
         response = self.client.post(url, data)

@@ -1094,10 +1094,10 @@ class PolicyRulesConfigurationForm(forms.ModelForm):
         config = getattr(self.instance, "policy_rules_config", {}) or {}
         for rule_type, handler in RULE_REGISTRY.items():
             rule_config = config.get(rule_type, {})
-            self.fields[f"rule_{rule_type}_disabled"] = forms.BooleanField(
-                label="Disable this rule",
+            self.fields[f"rule_{rule_type}_enabled"] = forms.BooleanField(
+                label="Enable this rule",
                 required=False,
-                initial=not rule_config.get("is_active", True),
+                initial=rule_config.get("is_active", False),
             )
             self.fields[f"rule_{rule_type}_threshold"] = forms.IntegerField(
                 label="Threshold",
@@ -1122,8 +1122,8 @@ class PolicyRulesConfigurationForm(forms.ModelForm):
         policy_rules_config = {}
         for rule_type, handler in RULE_REGISTRY.items():
             rule_config = {}
-            if self.cleaned_data.get(f"rule_{rule_type}_disabled"):
-                rule_config["is_active"] = False
+            if self.cleaned_data.get(f"rule_{rule_type}_enabled"):
+                rule_config["is_active"] = True
             threshold = self.cleaned_data.get(f"rule_{rule_type}_threshold")
             if threshold is not None:
                 rule_config["threshold"] = threshold
@@ -1242,7 +1242,7 @@ class PolicyRulesConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             return []
         rule_fieldsets = []
         for rule_type, handler in RULE_REGISTRY.items():
-            fields = [f"rule_{rule_type}_disabled", f"rule_{rule_type}_threshold"]
+            fields = [f"rule_{rule_type}_enabled", f"rule_{rule_type}_threshold"]
             for param_name in handler.parameters_schema:
                 fields.append(f"rule_{rule_type}_param_{param_name}")
             rule_fieldsets.append(
