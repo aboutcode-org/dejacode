@@ -1954,17 +1954,18 @@ class ProductPolicyViolation(DataspacedModel, AbstractPolicyViolation):
     def __str__(self):
         return f"{self.rule_type} / {self.product}: {self.violation_count} violation(s)"
 
+    @cached_property
+    def rule_handler(self):
+        return RULE_REGISTRY.get(self.rule_type)
+
     @property
     def rule_label(self):
-        handler = RULE_REGISTRY.get(self.rule_type)
-        return handler.label if handler else self.rule_type
+        return self.rule_handler.label if self.rule_handler else self.rule_type
 
     @property
     def rule_description(self):
-        handler = RULE_REGISTRY.get(self.rule_type)
-        return handler.description if handler else ""
+        return self.rule_handler.description if self.rule_handler else ""
 
     @property
     def rule_severity(self):
-        handler = RULE_REGISTRY.get(self.rule_type)
-        return handler.severity if handler else "warning"
+        return self.rule_handler.severity if self.rule_handler else "warning"
