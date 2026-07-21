@@ -252,8 +252,8 @@ class ProductQuerySet(DataspacedQuerySet):
         subquery = (
             ProductPolicyViolation.objects.filter(
                 product=OuterRef("pk"),
-                resolved=False,
             )
+            .unresolved()
             .values("product")
             .annotate(violation_count=models.Count("id"))
             .values("violation_count")

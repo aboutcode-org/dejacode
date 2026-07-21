@@ -437,7 +437,7 @@ class ProductViewSet(
     def policy_violations(self, request, uuid):
         """List active policy violations for this product, with rule details and counts."""
         product = self.get_object()
-        violations = product.policy_violations.filter(resolved=False)
+        violations = product.policy_violations.unresolved()
         serializer = ProductPolicyViolationSerializer(violations, many=True)
         return Response(serializer.data)
 
