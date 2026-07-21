@@ -554,7 +554,7 @@ class EvaluatePolicyRulesActionTestCase(TestCase):
         self.product1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
         self.product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
 
-    @patch("product_portfolio.admin.evaluate_product_rules_task.delay")
+    @patch("product_portfolio.admin.evaluate_all_products_rules_task.delay")
     def test_evaluate_policy_rules_action_queues_task_for_selected_products(self, mock_delay):
         self.client.login(username="nexb_user", password="secret")
         url = reverse("admin:product_portfolio_product_changelist")
@@ -564,7 +564,7 @@ class EvaluatePolicyRulesActionTestCase(TestCase):
         }
         response = self.client.post(url, data, follow=True)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(2, mock_delay.call_count)
-        called_uuids = {call[1]["product_uuid"] for call in mock_delay.call_args_list}
+        mock_delay.assert_called_once()
+        called_uuids = set(mock_delay.call_args[1]["product_uuids"])
         self.assertIn(self.product1.uuid, called_uuids)
         self.assertIn(self.product2.uuid, called_uuids)

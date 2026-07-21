@@ -78,10 +78,14 @@ def evaluate_rule(rule_type, product, threshold, parameters):
         return violation, created, 0
 
     now = timezone.now()
-    resolved_count = ProductPolicyViolation.objects.filter(**lookup, resolved=False).update(
-        resolved=True,
-        resolved_date=now,
-        last_checked=now,
+    resolved_count = (
+        ProductPolicyViolation.objects.filter(**lookup)
+        .unresolved()
+        .update(
+            resolved=True,
+            resolved_date=now,
+            last_checked=now,
+        )
     )
     return None, False, resolved_count
 
@@ -96,17 +100,21 @@ def evaluate_rules(product):
     """
     new_violations = []
     resolved_count = 0
+    now = timezone.now()
 
     for rule_type in RULE_REGISTRY:
         config = get_effective_config(rule_type, product.dataspace)
         if not config["is_active"]:
             # Explicitly resolve open violations so disabling a rule clears its history
             # rather than leaving stale unresolved records.
-            rows = ProductPolicyViolation.objects.filter(
-                rule_type=rule_type,
-                product=product,
-                resolved=False,
-            ).update(resolved=True, resolved_date=timezone.now())
+            rows = (
+                ProductPolicyViolation.objects.filter(
+                    rule_type=rule_type,
+                    product=product,
+                )
+                .unresolved()
+                .update(resolved=True, resolved_date=now, last_checked=now)
+            )
             resolved_count += rows
             continue
 

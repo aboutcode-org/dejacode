@@ -24,7 +24,11 @@ def evaluate_product_rules_task(product_uuid):
     Product = apps.get_model("product_portfolio", "product")
 
     try:
-        product = get_unsecured_manager(Product).get(uuid=product_uuid)
+        product = (
+            get_unsecured_manager(Product)
+            .select_related("dataspace__configuration")
+            .get(uuid=product_uuid)
+        )
     except Product.DoesNotExist:
         logger.error(f"evaluate_product_rules_task: product {product_uuid} not found, skipping.")
         return
@@ -49,7 +53,7 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
     if product_uuids is not None:
         products = products.filter(uuid__in=product_uuids)
     if not include_locked:
-        products = products.exclude(configuration_status__is_locked=True)
+        products = products.exclude_locked()
 
     count = products.count()
     logger.info(f"Starting policy rule evaluation for {count} product(s).")

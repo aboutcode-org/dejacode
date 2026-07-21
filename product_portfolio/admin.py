@@ -46,7 +46,7 @@ from dje.list_display import AsURL
 from dje.permissions import assign_all_object_permissions
 from dje.permissions import get_limited_perms_for_model
 from dje.utils import is_purl_fragment
-from policy.tasks import evaluate_product_rules_task
+from policy.tasks import evaluate_all_products_rules_task
 from product_portfolio.filters import ComponentCompletenessListFilter
 from product_portfolio.forms import ProductAdminForm
 from product_portfolio.forms import ProductComponentAdminForm
@@ -397,10 +397,11 @@ class ProductAdmin(
     readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
 
     def evaluate_policy_rules(self, request, queryset):
-        count = queryset.count()
-        for product in queryset:
-            evaluate_product_rules_task.delay(product_uuid=product.uuid)
-        self.message_user(request, f"Policy rules evaluation enqueued for {count} product(s).")
+        product_uuids = list(queryset.values_list("uuid", flat=True))
+        evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
+        self.message_user(
+            request, f"Policy rules evaluation enqueued for {len(product_uuids)} product(s)."
+        )
 
     evaluate_policy_rules.short_description = _("Evaluate policy rules")
 

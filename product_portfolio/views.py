@@ -2869,9 +2869,9 @@ class ProductTabComplianceView(
     @staticmethod
     def get_policy_compliance_context(product):
         policy_violations = list(
-            product.policy_violations.filter(resolved=False, rule_type__in=RULE_REGISTRY).order_by(
-                "rule_type"
-            )
+            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys())
+            .unresolved()
+            .order_by("rule_type")
         )
         violated_rule_types = {violation.rule_type for violation in policy_violations}
 
