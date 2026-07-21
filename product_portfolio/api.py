@@ -48,6 +48,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
 
@@ -343,6 +344,25 @@ class ScanCodeProjectSerializer(DataspacedSerializer):
         )
 
 
+class ProductPolicyViolationSerializer(serializers.ModelSerializer):
+    rule_label = serializers.ReadOnlyField()
+    rule_description = serializers.ReadOnlyField()
+    rule_severity = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ProductPolicyViolation
+        fields = (
+            "rule_type",
+            "rule_label",
+            "rule_description",
+            "rule_severity",
+            "violation_count",
+            "detected_date",
+            "resolved",
+            "resolved_date",
+        )
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -412,6 +432,14 @@ class ProductViewSet(
         scancode_projects = product.scancodeprojects.all()
         projects_data = ScanCodeProjectSerializer(scancode_projects, many=True).data
         return Response(projects_data)
+
+    @action(detail=True, url_path="policy_violations")
+    def policy_violations(self, request, uuid):
+        """List active policy violations for this product, with rule details and counts."""
+        product = self.get_object()
+        violations = product.policy_violations.unresolved()
+        serializer = ProductPolicyViolationSerializer(violations, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
     def load_sboms(self, request, *args, **kwargs):

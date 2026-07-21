@@ -9,6 +9,7 @@
 import io
 import json
 from unittest import mock
+from unittest.mock import patch
 from urllib.parse import quote
 
 from django.contrib.contenttypes.models import ContentType
@@ -31,6 +32,7 @@ from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import History
 from dje.outputs import get_spdx_extracted_licenses
 from dje.tests import MaxQueryMixin
@@ -50,6 +52,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
@@ -4241,3 +4244,116 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         data = json.loads(response.content)
         advisory_ids = [entry["advisory_id"] for entry in data]
         self.assertIn(vulnerability.advisory_id, advisory_ids)
+
+
+class EvaluatePolicyRulesViewTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.basic_user = create_user("basic_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_get_returns_405(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+
+    def test_post_without_login_redirects(self):
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(302, response.status_code)
+
+    def test_post_without_change_perm_returns_404(self):
+        self.client.login(username="basic_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(404, response.status_code)
+
+    @patch("product_portfolio.views.evaluate_rules")
+    def test_post_with_change_perm_evaluates_and_returns_hx_refresh(self, mock_evaluate):
+        mock_evaluate.return_value = ([], 0)
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("true", response.headers["HX-Refresh"])
+        mock_evaluate.assert_called_once_with(self.product1)
+
+
+class TabCompliancePolicyContextTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_no_violations_context_is_empty(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.context["policy_violations"])
+        self.assertEqual(0, response.context["policy_violation_count"])
+
+    def test_active_violation_appears_in_context(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=3,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["policy_violation_count"])
+        self.assertEqual(1, len(response.context["policy_violations"]))
+
+    def test_stale_rule_type_filtered_from_context(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="removed_rule",
+            violation_count=1,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(0, response.context["policy_violation_count"])
+
+    def test_all_rules_context_reflects_active_status(self):
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace,
+            policy_rules_config={"usage_policy_error": {"is_active": True}},
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        all_rules = {rule["rule_type"]: rule for rule in response.context["all_rules"]}
+        self.assertTrue(all_rules["usage_policy_error"]["is_active"])
+        self.assertFalse(all_rules["license_coverage_gap"]["is_active"])
+
+
+class ComplianceDashboardPolicyViolationsTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_products_with_policy_violations_count(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=2,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["products_with_policy_violations"])
+        self.assertEqual(1, response.context["products_with_issues"])

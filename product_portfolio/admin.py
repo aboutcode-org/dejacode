@@ -46,6 +46,7 @@ from dje.list_display import AsURL
 from dje.permissions import assign_all_object_permissions
 from dje.permissions import get_limited_perms_for_model
 from dje.utils import is_purl_fragment
+from policy.tasks import evaluate_all_products_rules_task
 from product_portfolio.filters import ComponentCompletenessListFilter
 from product_portfolio.forms import ProductAdminForm
 from product_portfolio.forms import ProductComponentAdminForm
@@ -384,7 +385,7 @@ class ProductAdmin(
         ProductPackageInline,
     ]
     form = ProductAdminForm
-    actions = []
+    actions = ["evaluate_policy_rules"]
     actions_to_remove = ["copy_to", "compare_with", "delete_selected"]
     navigation_buttons = True
     activity_log = False
@@ -394,6 +395,15 @@ class ProductAdmin(
     email_notification_on = []  # Turned off for security reasons
     awesomplete_data = {"primary_language": PROGRAMMING_LANGUAGES}
     readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
+
+    def evaluate_policy_rules(self, request, queryset):
+        product_uuids = list(queryset.values_list("uuid", flat=True))
+        evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
+        self.message_user(
+            request, f"Policy rules evaluation enqueued for {len(product_uuids)} product(s)."
+        )
+
+    evaluate_policy_rules.short_description = _("Evaluate policy rules")
 
     def get_feature_datalist(self, obj):
         if obj.pk:

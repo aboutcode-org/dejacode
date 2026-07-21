@@ -31,11 +31,13 @@ from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
 from license_library.models import License
+from policy.rules import RULE_REGISTRY
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
@@ -149,6 +151,10 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("License issues"),
         method="filter_license_compliance_issues",
     )
+    policy_violations = django_filters.BooleanFilter(
+        label=_("Policy violations"),
+        method="filter_policy_violations",
+    )
 
     class Meta:
         model = Product
@@ -187,6 +193,16 @@ class ProductFilterSet(DataspacedFilterSet):
             licenses__usage_policy__compliance_alert__in=["warning", "error"],
         )
         condition = Exists(has_alert)
+        return queryset.filter(condition if value else ~condition)
+
+    def filter_policy_violations(self, queryset, name, value):
+        if value is None:
+            return queryset
+        has_violation = ProductPolicyViolation.objects.filter(
+            product_id=OuterRef("pk"),
+            rule_type__in=RULE_REGISTRY.keys(),
+        ).unresolved()
+        condition = Exists(has_violation)
         return queryset.filter(condition if value else ~condition)
 
 
@@ -392,6 +408,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         field_name="package__usage_policy__compliance_alert",
         distinct=True,
     )
+    policy_rule = django_filters.CharFilter(method="filter_by_policy_rule")
 
     class Meta:
         model = ProductPackage
@@ -406,6 +423,13 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_reachable",
             "exploitability",
         ]
+
+    def filter_by_policy_rule(self, queryset, name, value):
+        """Filter packages that triggered the given policy rule type."""
+        handler = RULE_REGISTRY.get(value)
+        if not handler:
+            return queryset
+        return queryset.filter(**handler.get_package_filter())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

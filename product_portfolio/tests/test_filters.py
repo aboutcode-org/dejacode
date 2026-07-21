@@ -6,15 +6,22 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
+from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
 from license_library.models import License
 from organization.models import Owner
+from policy.models import UsagePolicy
+from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
+from product_portfolio.models import Product
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_package
 
 
 class ProductPackageFilterSetTestCase(TestCase):
@@ -81,3 +88,79 @@ class ProductPackageFilterSetTestCase(TestCase):
         data = {"has_licenses": "no"}
         filterset = ProductPackageFilterSet(dataspace=self.dataspace, data=data)
         self.assertQuerySetEqual(filterset.qs, [self.pp3])
+
+
+class ProductFilterSetPolicyTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product_with = make_product(self.dataspace)
+        self.product_without = make_product(self.dataspace)
+        ProductPolicyViolation.objects.create(
+            product=self.product_with,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=1,
+        )
+
+    def _make_filterset(self, data):
+        return ProductFilterSet(
+            dataspace=self.dataspace,
+            data=data,
+            queryset=Product.unsecured_objects.filter(dataspace=self.dataspace),
+        )
+
+    def test_filter_policy_violations_true_returns_products_with_violations(self):
+        filterset = self._make_filterset({"policy_violations": "true"})
+        self.assertIn(self.product_with, filterset.qs)
+        self.assertNotIn(self.product_without, filterset.qs)
+
+    def test_filter_policy_violations_false_returns_products_without_violations(self):
+        filterset = self._make_filterset({"policy_violations": "false"})
+        self.assertIn(self.product_without, filterset.qs)
+        self.assertNotIn(self.product_with, filterset.qs)
+
+    def test_filter_policy_violations_excludes_stale_rule_types(self):
+        product_stale = make_product(self.dataspace)
+        ProductPolicyViolation.objects.create(
+            product=product_stale,
+            dataspace=self.dataspace,
+            rule_type="removed_rule",
+            violation_count=1,
+        )
+        filterset = self._make_filterset({"policy_violations": "true"})
+        self.assertNotIn(product_stale, filterset.qs)
+
+
+class ProductPackageFilterByRuleTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.owner = Owner.objects.create(name="Owner", dataspace=self.dataspace)
+        self.usage_policy = UsagePolicy.objects.create(
+            label="Error Policy",
+            icon="icon",
+            content_type=ContentType.objects.get_for_model(Package),
+            compliance_alert="error",
+            dataspace=self.dataspace,
+        )
+        self.product = make_product(self.dataspace)
+        self.pp_with_policy = make_product_package(
+            self.product,
+            make_package(self.dataspace, usage_policy=self.usage_policy),
+        )
+        self.pp_without_policy = make_product_package(self.product, make_package(self.dataspace))
+
+    def test_filter_by_policy_rule_filters_matching_packages(self):
+        filterset = ProductPackageFilterSet(
+            dataspace=self.dataspace,
+            data={"policy_rule": "usage_policy_error"},
+        )
+        self.assertIn(self.pp_with_policy, filterset.qs)
+        self.assertNotIn(self.pp_without_policy, filterset.qs)
+
+    def test_filter_by_unknown_rule_returns_all(self):
+        filterset = ProductPackageFilterSet(
+            dataspace=self.dataspace,
+            data={"policy_rule": "nonexistent_rule"},
+        )
+        self.assertIn(self.pp_with_policy, filterset.qs)
+        self.assertIn(self.pp_without_policy, filterset.qs)

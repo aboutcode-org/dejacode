@@ -112,6 +112,8 @@ from dje.views_formset import FormSetView
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
+from policy.engine import evaluate_rules
+from policy.rules import RULE_REGISTRY
 from product_portfolio.filters import CodebaseResourceFilterSet
 from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
@@ -422,7 +424,10 @@ class ProductDetailsView(
 
         if self.object.notice_text:
             notice_field = self.get_tab_fields([TabField("notice_text")])[0]
-            tab_data["fields"].append(notice_field)
+            if tab_data is None:
+                tab_data = {"fields": [notice_field]}
+            else:
+                tab_data["fields"].append(notice_field)
 
         return tab_data
 
@@ -2063,6 +2068,22 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     return redirect(product)
 
 
+@require_POST
+@login_required
+def evaluate_policy_rules_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+
+    evaluate_rules(product)
+
+    return HttpResponse(headers={"HX-Refresh": "true"})
+
+
 @login_required
 def import_from_scan_view(request, dataspace, name, version=""):
     """
@@ -2766,12 +2787,15 @@ class ProductTabComplianceView(
         product = self.object
         productpackages = product.productpackages.all()
         licenses = License.objects.filter(productpackage__in=productpackages)
+        user_perms = guardian_get_perms(self.request.user, product)
 
         context.update(
             {
                 **self.get_package_compliance_context(productpackages),
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
+                **self.get_policy_compliance_context(product),
+                "has_change_permission": "change_product" in user_perms,
             }
         )
 
@@ -2840,6 +2864,37 @@ class ProductTabComplianceView(
             "license_distribution": license_distribution[:distribution_limit],
             "license_distribution_limit": distribution_limit,
             "remaining_license_count": max(0, len(license_distribution) - distribution_limit),
+        }
+
+    @staticmethod
+    def get_policy_compliance_context(product):
+        policy_violations = list(
+            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys())
+            .unresolved()
+            .order_by("rule_type")
+        )
+        violated_rule_types = {violation.rule_type for violation in policy_violations}
+
+        try:
+            rules_config = product.dataspace.configuration.policy_rules_config or {}
+        except AttributeError:
+            rules_config = {}
+
+        all_rules = [
+            {
+                "label": handler.label,
+                "description": handler.description,
+                "rule_type": rule_type,
+                "severity": handler.severity,
+                "is_active": rules_config.get(rule_type, {}).get("is_active", False),
+                "is_violated": rule_type in violated_rule_types,
+            }
+            for rule_type, handler in RULE_REGISTRY.items()
+        ]
+        return {
+            "policy_violations": policy_violations,
+            "policy_violation_count": len(policy_violations),
+            "all_rules": all_rules,
         }
 
     @staticmethod
@@ -3049,6 +3104,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         "medium_count": "Medium",
         "low_count": "Low",
         "vulnerability_count": "Total vulnerabilities",
+        "policy_violation_count": "Policy violations",
     }
 
     def get_queryset(self):
@@ -3069,6 +3125,8 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
         ).count()
 
+        products_with_policy_violations = products.filter(policy_violation_count__gt=0).count()
+
         products_with_critical_or_high = products.filter(
             Q(critical_count__gt=0) | Q(high_count__gt=0)
         ).count()
@@ -3086,6 +3144,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
                 "total_products": context["paginator"].count,
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
+                "products_with_policy_violations": products_with_policy_violations,
                 "products_with_critical_or_high": products_with_critical_or_high,
                 "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
                 "total_critical": totals["total_critical"] or 0,

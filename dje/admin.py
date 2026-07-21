@@ -96,6 +96,7 @@ from dje.views import manage_copy_defaults_view
 from dje.views import manage_tab_permissions_view
 from dje.views import object_compare_view
 from dje.views import object_copy_view
+from policy.rules import RULE_REGISTRY
 
 EXTERNAL_SOURCE_LOOKUP = "external_references__external_source_id"
 
@@ -1046,12 +1047,26 @@ class HiddenValueWidget(AdminTextInputWidget):
 
 
 class DataspaceConfigurationForm(forms.ModelForm):
-    """
-    Configure Dataspace settings.
+    """Configure Dataspace integration settings, with sensitive values hidden in the UI."""
 
-    This form includes fields for various API keys, with sensitive values
-    hidden in the UI using the HiddenValueWidget.
-    """
+    class Meta:
+        model = DataspaceConfiguration
+        fields = [
+            "homepage_layout",
+            "scancodeio_url",
+            "scancodeio_api_key",
+            "vulnerablecode_url",
+            "vulnerablecode_api_key",
+            "vulnerabilities_risk_threshold",
+            "purldb_url",
+            "purldb_api_key",
+            "forgejo_token",
+            "github_token",
+            "gitlab_token",
+            "jira_user",
+            "jira_token",
+            "sourcehut_token",
+        ]
 
     hidden_value_fields = [
         "scancodeio_api_key",
@@ -1076,6 +1091,73 @@ class DataspaceConfigurationForm(forms.ModelForm):
             value = self.cleaned_data.get(field_name)
             if value == HiddenValueWidget.HIDDEN_VALUE:
                 del self.cleaned_data[field_name]
+
+
+class PolicyRulesConfigurationForm(forms.ModelForm):
+    """Form for configuring policy rule overrides stored in policy_rules_config."""
+
+    class Meta:
+        model = DataspaceConfiguration
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_policy_rule_config_fields()
+
+    def add_policy_rule_config_fields(self):
+        """Inject per-rule form fields with initial values from the saved policy_rules_config."""
+        config = getattr(self.instance, "policy_rules_config", {}) or {}
+        for rule_type, handler in RULE_REGISTRY.items():
+            rule_config = config.get(rule_type, {})
+            self.fields[f"rule_{rule_type}_enabled"] = forms.BooleanField(
+                label="Enable this rule",
+                required=False,
+                initial=rule_config.get("is_active", False),
+            )
+            self.fields[f"rule_{rule_type}_threshold"] = forms.IntegerField(
+                label="Threshold",
+                required=False,
+                min_value=0,
+                initial=rule_config.get("threshold"),
+                widget=forms.NumberInput(
+                    attrs={"placeholder": f"Default: {handler.default_threshold}"}
+                ),
+                help_text="Minimum violations to trigger the rule. Leave blank to use the default.",
+            )
+            for param_name, param_desc in handler.parameters_schema.items():
+                self.fields[f"rule_{rule_type}_param_{param_name}"] = forms.FloatField(
+                    label=param_name.replace("_", " ").title(),
+                    required=False,
+                    initial=(rule_config.get("parameters") or {}).get(param_name),
+                    help_text=param_desc,
+                )
+
+    def build_policy_rules_config(self):
+        """Serialize the per-rule form fields back into the policy_rules_config dict."""
+        policy_rules_config = {}
+        for rule_type, handler in RULE_REGISTRY.items():
+            rule_config = {}
+            if self.cleaned_data.get(f"rule_{rule_type}_enabled"):
+                rule_config["is_active"] = True
+            threshold = self.cleaned_data.get(f"rule_{rule_type}_threshold")
+            if threshold is not None:
+                rule_config["threshold"] = threshold
+            parameters = {}
+            for param_name in handler.parameters_schema:
+                param_value = self.cleaned_data.get(f"rule_{rule_type}_param_{param_name}")
+                if param_value is not None:
+                    parameters[param_name] = param_value
+            if parameters:
+                rule_config["parameters"] = parameters
+            if rule_config:
+                policy_rules_config[rule_type] = rule_config
+        return policy_rules_config
+
+    def save(self, commit=True):
+        self.instance.policy_rules_config = self.build_policy_rules_config()
+        if commit:
+            self.instance.save(update_fields=["policy_rules_config"])
+        return self.instance
 
 
 class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
@@ -1142,12 +1224,13 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
     ]
     # Do not include the Dataspace related FKs on addition as the Dataspace does not exist yet
     fieldsets = [("", {"fields": ("homepage_layout",)})] + add_fieldsets
+    inline_classes = ("grp-collapse grp-open",)
     can_delete = False
 
     def get_fieldsets(self, request, obj=None):
         if not obj:
             return self.add_fieldsets
-        return super().get_fieldsets(request, obj)
+        return [("", {"fields": ("homepage_layout",)})] + self.add_fieldsets
 
     def get_readonly_fields(self, request, obj=None):
         """Only a user from the current Dataspace can edit Dataspace related FKs."""
@@ -1158,6 +1241,40 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             readonly_fields += ("homepage_layout",)
 
         return readonly_fields
+
+
+class PolicyRulesConfigurationInline(DataspacedFKMixin, admin.StackedInline):
+    model = DataspaceConfiguration
+    form = PolicyRulesConfigurationForm
+    verbose_name_plural = _("Policy Rules Configuration")
+    verbose_name = _("Policy Rules Configuration")
+    classes = ("grp-collapse grp-open",)
+    inline_classes = ("grp-collapse grp-open",)
+    can_delete = False
+
+    def get_fieldsets(self, request, obj=None):
+        if not obj:
+            return []
+        rule_fieldsets = []
+        for rule_type, handler in RULE_REGISTRY.items():
+            fields = [f"rule_{rule_type}_enabled", f"rule_{rule_type}_threshold"]
+            for param_name in handler.parameters_schema:
+                fields.append(f"rule_{rule_type}_param_{param_name}")
+            rule_fieldsets.append(
+                (
+                    handler.label,
+                    {
+                        "fields": fields,
+                        "description": handler.description,
+                        "classes": ("grp-collapse grp-open",),
+                    },
+                )
+            )
+        return rule_fieldsets
+
+    def get_formset(self, request, obj=None, **kwargs):
+        kwargs["fields"] = []
+        return super().get_formset(request, obj, **kwargs)
 
 
 @admin.register(Dataspace, site=dejacode_site)
@@ -1239,7 +1356,7 @@ class DataspaceAdmin(
         ),
     )
     search_fields = ("name",)
-    inlines = [DataspaceConfigurationInline]
+    inlines = [DataspaceConfigurationInline, PolicyRulesConfigurationInline]
     form = DataspaceAdminForm
     change_form_template = "admin/dje/dataspace/change_form.html"
     change_list_template = "admin/change_list_extended.html"

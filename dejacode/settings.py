@@ -475,7 +475,9 @@ RQ_QUEUES = {
 
 # Cron jobs (scheduler)
 daily_at_3am = "0 3 * * *"
+hourly = "0 * * * *"
 DEJACODE_VULNERABILITIES_CRON = env.str("DEJACODE_VULNERABILITIES_CRON", default=daily_at_3am)
+DEJACODE_POLICY_RULES_CRON = env.str("DEJACODE_POLICY_RULES_CRON", default=hourly)
 
 
 def enable_rq_eager_mode():

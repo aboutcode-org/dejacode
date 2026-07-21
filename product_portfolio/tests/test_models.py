@@ -35,6 +35,7 @@ from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
 from product_portfolio.models import ProductInventoryItem
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductSecuredManager
 from product_portfolio.models import ScanCodeProject
@@ -1327,3 +1328,75 @@ class ProductPortfolioModelsTestCase(TestCase):
         qs = Package.objects.declared_dependencies_count(product=self.product1)
         annotated_package1 = qs.filter(pk=package1.pk)[0]
         self.assertEqual(1, annotated_package1.declared_dependencies_count)
+
+
+class ProductPolicyViolationTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    def _make_violation(self, rule_type="usage_policy_error", **kwargs):
+        return ProductPolicyViolation.objects.create(
+            product=self.product,
+            dataspace=self.dataspace,
+            rule_type=rule_type,
+            violation_count=kwargs.pop("violation_count", 1),
+            **kwargs,
+        )
+
+    def test_rule_label_returns_handler_label_for_known_rule(self):
+        violation = self._make_violation("usage_policy_error")
+        self.assertEqual("Usage Policy Error", violation.rule_label)
+
+    def test_rule_severity_returns_error_for_error_rule(self):
+        violation = self._make_violation("usage_policy_error")
+        self.assertEqual("error", violation.rule_severity)
+
+    def test_rule_severity_returns_warning_for_unknown_rule(self):
+        violation = self._make_violation("nonexistent_rule")
+        self.assertEqual("warning", violation.rule_severity)
+
+    def test_rule_label_falls_back_to_rule_type_for_unknown_rule(self):
+        violation = self._make_violation("nonexistent_rule")
+        self.assertEqual("nonexistent_rule", violation.rule_label)
+
+    def test_rule_description_empty_for_unknown_rule(self):
+        violation = self._make_violation("nonexistent_rule")
+        self.assertEqual("", violation.rule_description)
+
+    def test_with_policy_violation_count_returns_zero_when_no_violations(self):
+        qs = Product.unsecured_objects.filter(pk=self.product.pk).with_policy_violation_count()
+        self.assertEqual(0, qs.get().policy_violation_count)
+
+    def test_with_policy_violation_count_counts_unresolved_violations(self):
+        self._make_violation("usage_policy_error")
+        self._make_violation("license_coverage_gap")
+        self._make_violation("usage_policy_warning", resolved=True)
+        qs = Product.unsecured_objects.filter(pk=self.product.pk).with_policy_violation_count()
+        self.assertEqual(2, qs.get().policy_violation_count)
+
+    def test_with_compliance_issues_includes_product_with_policy_violation(self):
+        self._make_violation("usage_policy_error")
+        qs = (
+            Product.unsecured_objects.filter(pk=self.product.pk)
+            .with_compliance_data()
+            .with_compliance_issues()
+        )
+        self.assertIn(self.product, qs)
+
+    def test_with_compliance_issues_excludes_product_with_no_issues(self):
+        qs = (
+            Product.unsecured_objects.filter(pk=self.product.pk)
+            .with_compliance_data()
+            .with_compliance_issues()
+        )
+        self.assertNotIn(self.product, qs)
+
+    def test_exclude_locked_removes_locked_products(self):
+        locked_status = make_product_status(self.dataspace, is_locked=True)
+        locked_product = make_product(self.dataspace, configuration_status=locked_status)
+        qs = Product.unsecured_objects.filter(
+            pk__in=[self.product.pk, locked_product.pk]
+        ).exclude_locked()
+        self.assertIn(self.product, qs)
+        self.assertNotIn(locked_product, qs)

@@ -7,6 +7,7 @@
 #
 
 import json
+import uuid
 from unittest.mock import patch
 
 from django.conf import settings
@@ -16,11 +17,52 @@ from django.test import TestCase
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from notification.models import WebhookSubscription
+from notification.tasks import deliver_webhook_task
+from product_portfolio.tests import make_product
 from workflow.models import Priority
 from workflow.models import Question
 from workflow.models import Request
 from workflow.models import RequestComment
 from workflow.models import RequestTemplate
+
+
+class DeliverWebhookTaskTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.webhook = WebhookSubscription.objects.create(
+            dataspace=self.dataspace,
+            target_url="http://127.0.0.1:8000/",
+            event="policy.violation_detected",
+        )
+
+    @patch("notification.models.WebhookSubscription.deliver")
+    def test_deliver_webhook_task_resolves_secured_model_instance(self, mock_deliver):
+        product = make_product(self.dataspace)
+        deliver_webhook_task(
+            webhook_subscription_uuid=self.webhook.uuid,
+            payload_override={"text": "test"},
+            instance_app_label="product_portfolio",
+            instance_model_name="product",
+            instance_pk=product.pk,
+        )
+        mock_deliver.assert_called_once()
+        delivered_instance = mock_deliver.call_args[0][0]
+        self.assertEqual(product, delivered_instance)
+
+    def test_deliver_webhook_task_missing_subscription_logs_error(self):
+        with self.assertLogs("dje", level="ERROR") as captured:
+            deliver_webhook_task(webhook_subscription_uuid=uuid.uuid4())
+        self.assertTrue(any("not found" in line for line in captured.output))
+
+    def test_deliver_webhook_task_missing_instance_logs_error(self):
+        with self.assertLogs("dje", level="ERROR") as captured:
+            deliver_webhook_task(
+                webhook_subscription_uuid=self.webhook.uuid,
+                instance_app_label="product_portfolio",
+                instance_model_name="product",
+                instance_pk=99999999,
+            )
+        self.assertTrue(any("not found" in line for line in captured.output))
 
 
 class NotificationTasksTestCase(TestCase):

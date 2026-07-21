@@ -1,5 +1,116 @@
 {% load i18n %}
 {% url product.get_absolute_url as product_url %}
+
+{% if policy_violations %}
+  <div id="policy-violations" class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="border rounded-3 p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <h3 class="fs-6 fw-medium mb-0">{% trans "Policy violations" %}</h3>
+            <button type="button"
+                    class="btn btn-link p-0 text-body-tertiary lh-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#active-rules-modal"
+                    aria-label="{% trans 'View active rules' %}">
+              <i class="fas fa-circle-info small"></i>
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if has_change_permission %}
+              <form hx-post="{{ product.get_evaluate_policy_rules_url }}"
+                    hx-swap="none"
+                    hx-on--before-request="NEXB.displayOverlay('{% trans "Re-evaluating policy rules..." %}')">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-link p-0 text-body-tertiary lh-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{% trans 'Re-evaluate policy rules' %}"
+                        aria-label="{% trans 'Re-evaluate policy rules' %}">
+                  <i class="fas fa-rotate-right small pb-1"></i>
+                </button>
+              </form>
+            {% endif %}
+            <span class="badge bg-danger-subtle text-danger-emphasis">
+              {{ policy_violation_count }} {% trans "active" %}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal fade" id="active-rules-modal" tabindex="-1" aria-labelledby="active-rules-modal-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title fs-6 fw-medium" id="active-rules-modal-label">{% trans "Active rules" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+              </div>
+              <div class="modal-body p-0">
+                {% for rule in all_rules %}
+                  <div class="d-flex align-items-start justify-content-between px-3 py-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="me-3">
+                      {% if rule.severity == "error" %}
+                        <span class="badge bg-danger-subtle text-danger-emphasis mb-1">{{ rule.label }}</span>
+                      {% else %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis mb-1">{{ rule.label }}</span>
+                      {% endif %}
+                      <div class="text-body-secondary small">{{ rule.description }}</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                      {% if not rule.is_active %}
+                        <span class="badge text-bg-secondary">{% trans "Disabled" %}</span>
+                      {% elif rule.is_violated %}
+                        {% if rule.severity == "error" %}
+                          <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Triggered" %}</span>
+                        {% else %}
+                          <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Triggered" %}</span>
+                        {% endif %}
+                      {% else %}
+                        <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th class="fw-medium">{% trans "Rule" %}</th>
+              <th class="fw-medium">{% trans "Description" %}</th>
+              <th class="fw-medium text-end">{% trans "In violation" %}</th>
+              <th class="fw-medium text-end">{% trans "Detected" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for violation in policy_violations %}
+            <tr>
+              <td class="text-nowrap">
+                {% if violation.rule_severity == "error" %}
+                  <span class="badge bg-danger-subtle text-danger-emphasis">{{ violation.rule_label }}</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis">{{ violation.rule_label }}</span>
+                {% endif %}
+              </td>
+              <td class="text-body-secondary small">{{ violation.rule_description }}</td>
+              <td class="text-end">
+                <a href="{{ product_url }}?inventory-policy_rule={{ violation.rule_type }}#inventory"
+                   class="text-decoration-none">
+                  {{ violation.violation_count }}
+                </a>
+              </td>
+              <td class="text-end text-body-tertiary small text-nowrap">{{ violation.detected_date|date:"N j, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
 <div class="row g-4 mb-4">
   {# License panel #}
   <div class="col-lg-6">
@@ -170,38 +281,48 @@
           {% else %}
             {{ vulnerability_count }}
             {% trans "vulnerabilit" %}{{ vulnerability_count|pluralize:"y,ies" }}
-            — {% trans "no risk threshold set" %}
+            - {% trans "no risk threshold set" %}
           {% endif %}
         </p>
       {% endif %}
 
       {# Vulnerability list #}
-      {% for vulnerability in vulnerabilities %}
-        <div class="d-flex align-items-center border-bottom gap-3 py-2">
-          <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
-            {% if vulnerability.risk_level == "critical" %}
-              <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
-            {% elif vulnerability.risk_level == "high" %}
-              <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
-            {% elif vulnerability.risk_level == "medium" %}
-              <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
-            {% elif vulnerability.risk_level == "low" %}
-              <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
-            {% else %}
-              <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
-            {% endif %}
-          </span>
-          <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none" style="min-width: fit-content;">
-            {{ vulnerability.advisory_id }}
-          </a>
-          <span class="flex-grow-1 d-none d-md-inline small">{{ vulnerability.summary|truncatechars:70 }}</span>
-        </div>
-      {% empty %}
-        <div class="text-center text-body-tertiary py-4">
-          <i class="fas fa-shield-check fa-2x mb-2 d-block"></i>
-          {% trans "No known vulnerabilities" %}
-        </div>
-      {% endfor %}
+      <table class="table table-sm align-middle mb-0">
+        <tbody>
+        {% for vulnerability in vulnerabilities %}
+          <tr>
+            <td class="ps-0 text-nowrap w-auto">
+              <span data-bs-toggle="tooltip" title="{{ vulnerability.risk_score }}">
+                {% if vulnerability.risk_level == "critical" %}
+                  <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
+                {% elif vulnerability.risk_level == "high" %}
+                  <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
+                {% elif vulnerability.risk_level == "medium" %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
+                {% elif vulnerability.risk_level == "low" %}
+                  <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">{% trans "Unknown" %}</span>
+                {% endif %}
+              </span>
+            </td>
+            <td class="text-nowrap w-auto">
+              <a href="{{ vulnerability.resource_url }}" target="_blank" class="font-monospace small text-decoration-none">
+                {{ vulnerability.advisory_id }}
+              </a>
+            </td>
+            <td class="small d-none d-md-table-cell">{{ vulnerability.summary|truncatechars:70 }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-body-tertiary py-4">
+              <i class="fas fa-shield-check fa-2x mb-2 d-block"></i>
+              {% trans "No known vulnerabilities" %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
 
       {# View all link #}
       {% if vulnerabilities|length < vulnerability_count %}
