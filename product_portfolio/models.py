@@ -432,7 +432,7 @@ class Product(
     # WARNING: Bypass the security system implemented in ProductSecuredManager.
     # This is to be used only in a few cases where the User scoping is not appropriated.
     # For example: `self.dataspace.product_set(manager='unsecured_objects').count()`
-    unsecured_objects = DataspacedManager()
+    unsecured_objects = DataspacedManager.from_queryset(ProductQuerySet)()
 
     class Meta(BaseProductMixin.Meta):
         permissions = (("view_product", "Can view product"),)

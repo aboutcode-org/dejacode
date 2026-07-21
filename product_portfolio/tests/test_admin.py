@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from unittest.mock import patch
+
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.test import TestCase
 from django.urls import NoReverseMatch
@@ -101,7 +103,11 @@ class ProductPortfolioAdminsTestCase(TestCase):
     def test_product_security_admin_changelist_available_actions(self):
         self.client.login(username=self.user.username, password="secret")
         response = self.client.get(self.product_changelist_url)
-        expected = [("", "---------"), ("mass_update", "Mass update")]
+        expected = [
+            ("", "---------"),
+            ("evaluate_policy_rules", "Evaluate policy rules"),
+            ("mass_update", "Mass update"),
+        ]
         self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
 
         with self.assertRaises(NoReverseMatch):
@@ -539,3 +545,26 @@ class ProductPortfolioAdminsTestCase(TestCase):
         dependency = self.product1.dependencies.get()
         self.assertEqual(self.package1, dependency.for_package)
         self.assertEqual(package2, dependency.resolved_to_package)
+
+
+class EvaluatePolicyRulesActionTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
+        self.product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+
+    @patch("product_portfolio.admin.evaluate_product_rules_task.delay")
+    def test_evaluate_policy_rules_action_queues_task_for_selected_products(self, mock_delay):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("admin:product_portfolio_product_changelist")
+        data = {
+            "action": "evaluate_policy_rules",
+            "_selected_action": [self.product1.pk, self.product2.pk],
+        }
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, mock_delay.call_count)
+        called_uuids = {call[1]["product_uuid"] for call in mock_delay.call_args_list}
+        self.assertIn(self.product1.uuid, called_uuids)
+        self.assertIn(self.product2.uuid, called_uuids)

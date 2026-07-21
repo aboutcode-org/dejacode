@@ -3097,6 +3097,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         "package_count": "Packages",
         "license_error_count": "License errors",
         "license_warning_count": "License warnings",
+        "max_risk_level": "Max risk level",
         "risk_threshold": "Risk threshold",
         "critical_count": "Critical",
         "high_count": "High",
@@ -3110,6 +3111,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         return (
             get_viewable_products(self.request.user)
             .with_compliance_data()
+            .with_max_risk_level()
             .with_has_vulnerable_packages()
         )
 
@@ -3125,6 +3127,10 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
 
         products_with_policy_violations = products.filter(policy_violation_count__gt=0).count()
 
+        products_with_critical_or_high = products.filter(
+            Q(critical_count__gt=0) | Q(high_count__gt=0)
+        ).count()
+
         totals = products.aggregate(
             total_vulnerabilities=Sum("vulnerability_count"),
             total_critical=Sum("critical_count"),
@@ -3139,6 +3145,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
                 "products_with_policy_violations": products_with_policy_violations,
+                "products_with_critical_or_high": products_with_critical_or_high,
                 "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
                 "total_critical": totals["total_critical"] or 0,
                 "total_high": totals["total_high"] or 0,
