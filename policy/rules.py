@@ -8,6 +8,8 @@
 
 
 from django.apps import apps
+from django.db.models import Exists
+from django.db.models import OuterRef
 
 # VulnerabilityAnalysis states that indicate a vulnerability has been triaged and addressed.
 TERMINAL_VULNERABILITY_STATES = ["resolved", "resolved_with_pedigree", "not_affected"]
@@ -132,6 +134,41 @@ class VulnerabilityDetectedRule(BaseRule):
         return count if count > threshold else 0
 
 
+class UnresolvedVulnerabilityCountRule(BaseRule):
+    rule_type = "unresolved_vulnerability_count"
+    label = "Unresolved Vulnerability Count"
+    severity = "warning"
+    description = (
+        "Counts individual package-vulnerability links in the product that have not been "
+        "addressed via a VulnerabilityAnalysis with a terminal state "
+        "(resolved, resolved_with_pedigree, or not_affected)."
+    )
+
+    def count_violations(self, product, threshold, parameters):
+        PackageAffectedByVulnerability = apps.get_model(
+            "component_catalog", "packageaffectedbyvulnerability"
+        )
+        VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
+
+        terminal_analysis = VulnerabilityAnalysis.objects.filter(
+            product=product,
+            state__in=TERMINAL_VULNERABILITY_STATES,
+            package=OuterRef("package"),
+            vulnerability=OuterRef("vulnerability"),
+        )
+
+        count = (
+            PackageAffectedByVulnerability.objects.filter(
+                package__productpackages__product=product,
+            )
+            .annotate(has_terminal_analysis=Exists(terminal_analysis))
+            .filter(has_terminal_analysis=False)
+            .distinct()
+            .count()
+        )
+        return count if count > threshold else 0
+
+
 RULE_REGISTRY = {
     UsagePolicyErrorRule.rule_type: UsagePolicyErrorRule(),
     UsagePolicyWarningRule.rule_type: UsagePolicyWarningRule(),
@@ -139,4 +176,5 @@ RULE_REGISTRY = {
     LicensePolicyWarningRule.rule_type: LicensePolicyWarningRule(),
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
     VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
+    UnresolvedVulnerabilityCountRule.rule_type: UnresolvedVulnerabilityCountRule(),
 }
