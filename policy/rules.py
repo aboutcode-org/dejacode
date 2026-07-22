@@ -6,10 +6,12 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from datetime import timedelta
 
 from django.apps import apps
 from django.db.models import Exists
 from django.db.models import OuterRef
+from django.utils import timezone
 
 # VulnerabilityAnalysis states that indicate a vulnerability has been triaged and addressed.
 TERMINAL_VULNERABILITY_STATES = ["resolved", "resolved_with_pedigree", "not_affected"]
@@ -169,6 +171,58 @@ class UnresolvedVulnerabilityCountRule(BaseRule):
         return count if count > threshold else 0
 
 
+class StaleVulnerabilityRule(BaseRule):
+    rule_type = "stale_vulnerability"
+    label = "Stale Vulnerability"
+    severity = "error"
+    description = (
+        "Detects packages with a high-risk vulnerability that has remained unaddressed "
+        "beyond a configured delay. The delay is measured from the detected_date on the "
+        "package-vulnerability link, i.e. when the vulnerability was first imported for "
+        "that specific package."
+    )
+    parameters_schema = {
+        "max_days": (
+            "Maximum number of days a vulnerability may remain unaddressed before flagging. "
+            "Default: 30."
+        ),
+        "min_risk_score": (
+            "Only consider vulnerabilities with at least this risk score. Default: 8.0."
+        ),
+    }
+
+    def count_violations(self, product, threshold, parameters):
+        PackageAffectedByVulnerability = apps.get_model(
+            "component_catalog", "packageaffectedbyvulnerability"
+        )
+        VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
+
+        max_days = parameters.get("max_days", 30)
+        min_risk_score = parameters.get("min_risk_score", 8.0)
+        cutoff_date = timezone.now() - timedelta(days=max_days)
+
+        terminal_analysis = VulnerabilityAnalysis.objects.filter(
+            product=product,
+            state__in=TERMINAL_VULNERABILITY_STATES,
+            package=OuterRef("package"),
+            vulnerability=OuterRef("vulnerability"),
+        )
+
+        count = (
+            PackageAffectedByVulnerability.objects.filter(
+                package__productpackages__product=product,
+                vulnerability__risk_score__gte=min_risk_score,
+                detected_date__lte=cutoff_date,
+            )
+            .annotate(has_terminal_analysis=Exists(terminal_analysis))
+            .filter(has_terminal_analysis=False)
+            .values("package_id")
+            .distinct()
+            .count()
+        )
+        return count if count > threshold else 0
+
+
 RULE_REGISTRY = {
     UsagePolicyErrorRule.rule_type: UsagePolicyErrorRule(),
     UsagePolicyWarningRule.rule_type: UsagePolicyWarningRule(),
@@ -177,4 +231,5 @@ RULE_REGISTRY = {
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
     VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
     UnresolvedVulnerabilityCountRule.rule_type: UnresolvedVulnerabilityCountRule(),
+    StaleVulnerabilityRule.rule_type: StaleVulnerabilityRule(),
 }
