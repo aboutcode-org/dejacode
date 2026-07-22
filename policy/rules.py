@@ -141,9 +141,7 @@ class UnresolvedVulnerabilityCountRule(BaseRule):
     label = "Unresolved Vulnerability Count"
     severity = "warning"
     description = (
-        "Counts individual package-vulnerability links in the product that have not been "
-        "addressed via a VulnerabilityAnalysis with a terminal state "
-        "(resolved, resolved_with_pedigree, or not_affected)."
+        "Detects packages with known vulnerabilities that have not been triaged or addressed."
     )
 
     def count_violations(self, product, threshold, parameters):
@@ -176,10 +174,8 @@ class StaleVulnerabilityRule(BaseRule):
     label = "Stale Vulnerability"
     severity = "error"
     description = (
-        "Detects packages with a high-risk vulnerability that has remained unaddressed "
-        "beyond a configured delay. The delay is measured from the detected_date on the "
-        "package-vulnerability link, i.e. when the vulnerability was first imported for "
-        "that specific package."
+        "Detects packages with high-risk vulnerabilities that have remained unaddressed "
+        "beyond a configured number of days."
     )
     parameters_schema = {
         "max_days": (
