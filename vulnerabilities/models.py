@@ -393,6 +393,14 @@ class AffectedByVulnerabilityRelationship(DataspacedModel):
         to="vulnerabilities.Vulnerability",
         on_delete=models.CASCADE,
     )
+    detected_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_(
+            "Date and time when this vulnerability was first detected on this object. "
+            "Used to measure how long a vulnerability has remained unaddressed. "
+            "Defaults to the time the record was created."
+        ),
+    )
 
     class Meta:
         abstract = True
