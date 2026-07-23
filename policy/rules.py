@@ -137,8 +137,8 @@ class VulnerabilityDetectedRule(BaseRule):
 
 
 class UnresolvedVulnerabilityRule(BaseRule):
-    rule_type = "unresolved_vulnerability"
-    label = "Unresolved Vulnerability"
+    rule_type = "vulnerability_unresolved"
+    label = "Vulnerability Unresolved"
     severity = "warning"
     description = (
         "Detects packages with known vulnerabilities and no completed vulnerability analysis."
@@ -170,8 +170,8 @@ class UnresolvedVulnerabilityRule(BaseRule):
 
 
 class StaleVulnerabilityRule(BaseRule):
-    rule_type = "stale_vulnerability"
-    label = "Stale Vulnerability"
+    rule_type = "vulnerability_stale"
+    label = "Vulnerability Stale"
     severity = "error"
     description = (
         "Detects packages with high-risk vulnerabilities unaddressed"
