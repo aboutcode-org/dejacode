@@ -70,7 +70,7 @@ class UsagePolicyErrorRule(PackageBaseRule):
     rule_type = "usage_policy_error"
     label = "Usage Policy Error"
     severity = "error"
-    description = "Detects packages assigned a usage policy with a compliance alert level of error."
+    description = "Detects packages assigned a usage policy flagged with an error compliance alert."
     package_filter = {"usage_policy__compliance_alert": "error"}
 
 
@@ -78,7 +78,7 @@ class UsagePolicyWarningRule(PackageBaseRule):
     rule_type = "usage_policy_warning"
     label = "Usage Policy Warning"
     description = (
-        "Detects packages assigned a usage policy with a compliance alert level of warning."
+        "Detects packages assigned a usage policy flagged with a warning compliance alert."
     )
     package_filter = {"usage_policy__compliance_alert": "warning"}
 
@@ -89,7 +89,7 @@ class LicensePolicyErrorRule(PackageBaseRule):
     severity = "error"
     description = (
         "Detects packages whose licenses are assigned a usage policy"
-        " with a compliance alert level of error."
+        " flagged with an error compliance alert."
     )
     package_filter = {"licenses__usage_policy__compliance_alert": "error"}
 
@@ -99,7 +99,7 @@ class LicensePolicyWarningRule(PackageBaseRule):
     label = "License Policy Warning"
     description = (
         "Detects packages whose licenses are assigned a usage policy"
-        " with a compliance alert level of warning."
+        " flagged with a warning compliance alert."
     )
     package_filter = {"licenses__usage_policy__compliance_alert": "warning"}
 
@@ -107,9 +107,7 @@ class LicensePolicyWarningRule(PackageBaseRule):
 class LicenseCoverageGapRule(PackageBaseRule):
     rule_type = "license_coverage_gap"
     label = "License Coverage Gap"
-    description = (
-        "Detects packages with no license expression, indicating a gap in license coverage."
-    )
+    description = "Detects packages with no license expression."
     package_filter = {"license_expression": ""}
 
 
@@ -143,7 +141,7 @@ class UnresolvedVulnerabilityRule(BaseRule):
     label = "Unresolved Vulnerability"
     severity = "warning"
     description = (
-        "Detects packages with known vulnerabilities that have not been triaged or addressed."
+        "Detects packages with known vulnerabilities and no completed vulnerability analysis."
     )
 
     def filter_queryset(self, queryset, parameters=None):
@@ -176,8 +174,8 @@ class StaleVulnerabilityRule(BaseRule):
     label = "Stale Vulnerability"
     severity = "error"
     description = (
-        "Detects packages with high-risk vulnerabilities that have remained unaddressed "
-        "beyond a configured number of days."
+        "Detects packages with high-risk vulnerabilities unaddressed"
+        " for more than the configured number of days."
     )
     parameters_schema = {
         "max_days": (
