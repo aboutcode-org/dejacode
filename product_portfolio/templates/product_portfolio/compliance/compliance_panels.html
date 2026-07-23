@@ -11,8 +11,8 @@
             <button type="button"
                     class="btn btn-link p-0 text-body-tertiary lh-1"
                     data-bs-toggle="modal"
-                    data-bs-target="#active-rules-modal"
-                    aria-label="{% trans 'View active rules' %}">
+                    data-bs-target="#policy-rules-modal"
+                    aria-label="{% trans 'View policy rules' %}">
               <i class="fas fa-circle-info small"></i>
             </button>
           </div>
@@ -32,16 +32,16 @@
               </form>
             {% endif %}
             <span class="badge bg-danger-subtle text-danger-emphasis">
-              {{ policy_violation_count }} {% trans "active" %}
+              {{ policy_violation_count }} {% trans "triggered" %}
             </span>
           </div>
         </div>
 
-        <div class="modal fade" id="active-rules-modal" tabindex="-1" aria-labelledby="active-rules-modal-label" aria-hidden="true">
+        <div class="modal fade" id="policy-rules-modal" tabindex="-1" aria-labelledby="policy-rules-modal-label" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title fs-6 fw-medium" id="active-rules-modal-label">{% trans "Active rules" %}</h5>
+                <h5 class="modal-title fs-6 fw-medium" id="policy-rules-modal-label">{% trans "Policy rules" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
               </div>
               <div class="modal-body p-0">
