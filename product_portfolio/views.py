@@ -2868,10 +2868,14 @@ class ProductTabComplianceView(
 
     @staticmethod
     def get_policy_compliance_context(product):
-        policy_violations = list(
-            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys())
-            .unresolved()
-            .order_by("rule_type")
+        registry_order = list(RULE_REGISTRY)
+
+        def rule_registry_position(violation):
+            return registry_order.index(violation.rule_type)
+
+        policy_violations = sorted(
+            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys()).unresolved(),
+            key=rule_registry_position,
         )
         violated_rule_types = {violation.rule_type for violation in policy_violations}
 
