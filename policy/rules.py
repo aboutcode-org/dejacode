@@ -35,6 +35,13 @@ class BaseRule:
         """Return queryset filter kwargs for ProductPackage to identify violating packages."""
         return {}
 
+    def filter_queryset(self, queryset, parameters=None):
+        """Filter a ProductPackage queryset to packages that violate this rule."""
+        package_filter = self.get_package_filter()
+        if package_filter:
+            return queryset.filter(**package_filter)
+        return queryset
+
 
 class PackageBaseRule(BaseRule):
     """Base for rules that count packages matching a fixed filter within a product."""
@@ -112,27 +119,24 @@ class VulnerabilityDetectedRule(BaseRule):
     rule_type = "vulnerability_detected"
     label = "Vulnerability Detected"
     severity = "error"
-    description = "Detects packages with at least one known vulnerability (non-null risk score)."
+    description = "Detects packages with at least one known vulnerability."
     parameters_schema = {
         "min_risk_score": "Minimum risk score (0.0-10.0). Default: any vulnerability.",
     }
 
-    def get_package_filter(self):
-        return {"package__risk_score__isnull": False}
-
-    def count_violations(self, product, threshold, parameters):
-        Package = apps.get_model("component_catalog", "package")
-
-        packages = Package.objects.filter(
-            productpackages__product=product,
-            risk_score__isnull=False,
-        )
-
+    def filter_queryset(self, queryset, parameters=None):
+        parameters = parameters or {}
         min_risk_score = parameters.get("min_risk_score")
         if min_risk_score is not None:
-            packages = packages.filter(risk_score__gte=min_risk_score)
+            return queryset.filter(
+                package__affected_by_vulnerabilities__risk_score__gte=min_risk_score
+            )
+        return queryset.filter(package__affected_by_vulnerabilities__isnull=False)
 
-        count = packages.count()
+    def count_violations(self, product, threshold, parameters):
+        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+        product_packages = ProductPackage.objects.filter(product=product)
+        count = self.filter_queryset(product_packages, parameters).distinct().count()
         return count if count > threshold else 0
 
 
@@ -144,28 +148,28 @@ class UnresolvedVulnerabilityCountRule(BaseRule):
         "Detects packages with known vulnerabilities that have not been triaged or addressed."
     )
 
-    def count_violations(self, product, threshold, parameters):
+    def filter_queryset(self, queryset, parameters=None):
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
         )
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
 
         terminal_analysis = VulnerabilityAnalysis.objects.filter(
-            product=product,
+            product_package=OuterRef(OuterRef("pk")),
             state__in=TERMINAL_VULNERABILITY_STATES,
-            package=OuterRef("package"),
             vulnerability=OuterRef("vulnerability"),
         )
-
-        count = (
-            PackageAffectedByVulnerability.objects.filter(
-                package__productpackages__product=product,
-            )
-            .annotate(has_terminal_analysis=Exists(terminal_analysis))
-            .filter(has_terminal_analysis=False)
-            .distinct()
-            .count()
+        unresolved_link = (
+            PackageAffectedByVulnerability.objects.filter(package=OuterRef("package"))
+            .annotate(has_terminal=Exists(terminal_analysis))
+            .filter(has_terminal=False)
         )
+        return queryset.filter(Exists(unresolved_link))
+
+    def count_violations(self, product, threshold, parameters):
+        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+        product_packages = ProductPackage.objects.filter(product=product)
+        count = self.filter_queryset(product_packages).distinct().count()
         return count if count > threshold else 0
 
 
@@ -187,35 +191,37 @@ class StaleVulnerabilityRule(BaseRule):
         ),
     }
 
-    def count_violations(self, product, threshold, parameters):
+    def filter_queryset(self, queryset, parameters=None):
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
         )
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
 
+        parameters = parameters or {}
         max_days = parameters.get("max_days", 30)
         min_risk_score = parameters.get("min_risk_score", 8.0)
         cutoff_date = timezone.now() - timedelta(days=max_days)
 
         terminal_analysis = VulnerabilityAnalysis.objects.filter(
-            product=product,
+            product_package=OuterRef(OuterRef("pk")),
             state__in=TERMINAL_VULNERABILITY_STATES,
-            package=OuterRef("package"),
             vulnerability=OuterRef("vulnerability"),
         )
-
-        count = (
+        stale_link = (
             PackageAffectedByVulnerability.objects.filter(
-                package__productpackages__product=product,
+                package=OuterRef("package"),
                 vulnerability__risk_score__gte=min_risk_score,
                 detected_date__lte=cutoff_date,
             )
-            .annotate(has_terminal_analysis=Exists(terminal_analysis))
-            .filter(has_terminal_analysis=False)
-            .values("package_id")
-            .distinct()
-            .count()
+            .annotate(has_terminal=Exists(terminal_analysis))
+            .filter(has_terminal=False)
         )
+        return queryset.filter(Exists(stale_link))
+
+    def count_violations(self, product, threshold, parameters):
+        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+        product_packages = ProductPackage.objects.filter(product=product)
+        count = self.filter_queryset(product_packages, parameters).distinct().count()
         return count if count > threshold else 0
 
 

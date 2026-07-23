@@ -157,7 +157,7 @@ class VulnerabilityDetectedRuleTestCase(TestCase):
 
     def test_counts_packages_with_any_vulnerability(self):
         package = make_package(self.dataspace)
-        make_vulnerability(self.dataspace, affecting=package, risk_score=5.0)
+        make_vulnerability(self.dataspace, affecting=package)
         make_product_package(self.product, package=package)
         make_product_package(self.product, package=make_package(self.dataspace))
         count = VulnerabilityDetectedRule().count_violations(self.product, 0, {})

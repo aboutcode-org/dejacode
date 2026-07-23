@@ -429,7 +429,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         handler = RULE_REGISTRY.get(value)
         if not handler:
             return queryset
-        return queryset.filter(**handler.get_package_filter())
+        return handler.filter_queryset(queryset).distinct()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
