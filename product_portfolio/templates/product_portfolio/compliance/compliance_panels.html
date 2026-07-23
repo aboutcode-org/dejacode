@@ -95,7 +95,7 @@
               </td>
               <td class="text-body-secondary small">{{ violation.rule_description }}</td>
               <td class="text-end">
-                <a href="{{ product_url }}?inventory-policy_rule={{ violation.rule_type }}#inventory"
+                <a href="{{ product_url }}?inventory-object_type=package&amp;inventory-policy_rule={{ violation.rule_type }}#inventory"
                    class="text-decoration-none">
                   {{ violation.violation_count }}
                 </a>

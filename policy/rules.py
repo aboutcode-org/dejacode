@@ -70,9 +70,7 @@ class UsagePolicyErrorRule(PackageBaseRule):
     rule_type = "usage_policy_error"
     label = "Usage Policy Error"
     severity = "error"
-    description = (
-        "Detects packages assigned a usage policy with a compliance alert level of 'error'."
-    )
+    description = "Detects packages assigned a usage policy with a compliance alert level of error."
     package_filter = {"usage_policy__compliance_alert": "error"}
 
 
@@ -80,7 +78,7 @@ class UsagePolicyWarningRule(PackageBaseRule):
     rule_type = "usage_policy_warning"
     label = "Usage Policy Warning"
     description = (
-        "Detects packages assigned a usage policy with a compliance alert level of 'warning'."
+        "Detects packages assigned a usage policy with a compliance alert level of warning."
     )
     package_filter = {"usage_policy__compliance_alert": "warning"}
 
@@ -91,7 +89,7 @@ class LicensePolicyErrorRule(PackageBaseRule):
     severity = "error"
     description = (
         "Detects packages whose licenses are assigned a usage policy"
-        " with a compliance alert level of 'error'."
+        " with a compliance alert level of error."
     )
     package_filter = {"licenses__usage_policy__compliance_alert": "error"}
 
@@ -101,7 +99,7 @@ class LicensePolicyWarningRule(PackageBaseRule):
     label = "License Policy Warning"
     description = (
         "Detects packages whose licenses are assigned a usage policy"
-        " with a compliance alert level of 'warning'."
+        " with a compliance alert level of warning."
     )
     package_filter = {"licenses__usage_policy__compliance_alert": "warning"}
 
