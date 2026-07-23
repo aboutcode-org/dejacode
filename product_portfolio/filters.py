@@ -264,6 +264,19 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         field_name="licenses__usage_policy__compliance_alert",
         distinct=True,
     )
+    policy_rule = django_filters.CharFilter(
+        label=_("Policy rule"),
+        method="filter_by_policy_rule",
+    )
+
+    def filter_by_policy_rule(self, queryset, name, value):
+        """Filter packages that triggered the given policy rule type."""
+        if queryset.model is not ProductPackage:
+            return queryset.none()
+        handler = RULE_REGISTRY.get(value)
+        if not handler:
+            return queryset
+        return handler.filter_queryset(queryset).distinct()
 
     @staticmethod
     def filter_object_type(queryset, name, value):
@@ -408,7 +421,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         field_name="package__usage_policy__compliance_alert",
         distinct=True,
     )
-    policy_rule = django_filters.CharFilter(method="filter_by_policy_rule")
 
     class Meta:
         model = ProductPackage
@@ -423,13 +435,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_reachable",
             "exploitability",
         ]
-
-    def filter_by_policy_rule(self, queryset, name, value):
-        """Filter packages that triggered the given policy rule type."""
-        handler = RULE_REGISTRY.get(value)
-        if not handler:
-            return queryset
-        return handler.filter_queryset(queryset).distinct()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
