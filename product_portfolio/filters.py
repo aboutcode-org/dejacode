@@ -276,7 +276,9 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         handler = RULE_REGISTRY.get(value)
         if not handler:
             return queryset
-        return handler.filter_queryset(queryset).distinct()
+        rules_config = self.dataspace.get_configuration("policy_rules_config") or {}
+        parameters = rules_config.get(value, {}).get("parameters", {})
+        return handler.filter_queryset(queryset, parameters).distinct()
 
     @staticmethod
     def filter_object_type(queryset, name, value):

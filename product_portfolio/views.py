@@ -2879,10 +2879,7 @@ class ProductTabComplianceView(
         )
         violated_rule_types = {violation.rule_type for violation in policy_violations}
 
-        try:
-            rules_config = product.dataspace.configuration.policy_rules_config or {}
-        except AttributeError:
-            rules_config = {}
+        rules_config = product.dataspace.get_configuration("policy_rules_config") or {}
 
         all_rules = [
             {
