@@ -31,9 +31,15 @@
                 </button>
               </form>
             {% endif %}
-            <span class="badge bg-danger-subtle text-danger-emphasis">
-              {{ policy_violation_count }} {% trans "triggered" %}
-            </span>
+            {% if has_error_violation %}
+              <span class="badge bg-danger-subtle text-danger-emphasis">
+                {{ policy_violation_count }} {% trans "triggered" %}
+              </span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning-emphasis">
+                {{ policy_violation_count }} {% trans "triggered" %}
+              </span>
+            {% endif %}
           </div>
         </div>
 

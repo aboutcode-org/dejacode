@@ -2895,9 +2895,13 @@ class ProductTabComplianceView(
             }
             for rule_type, handler in RULE_REGISTRY.items()
         ]
+        has_error_violation = any(
+            violation.rule_severity == "error" for violation in policy_violations
+        )
         return {
             "policy_violations": policy_violations,
             "policy_violation_count": len(policy_violations),
+            "has_error_violation": has_error_violation,
             "all_rules": all_rules,
         }
 
