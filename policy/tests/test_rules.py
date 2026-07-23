@@ -23,7 +23,7 @@ from policy.rules import LicenseCoverageGapRule
 from policy.rules import LicensePolicyErrorRule
 from policy.rules import LicensePolicyWarningRule
 from policy.rules import StaleVulnerabilityRule
-from policy.rules import UnresolvedVulnerabilityCountRule
+from policy.rules import UnresolvedVulnerabilityRule
 from policy.rules import UsagePolicyErrorRule
 from policy.rules import UsagePolicyWarningRule
 from policy.rules import VulnerabilityDetectedRule
@@ -182,7 +182,7 @@ class VulnerabilityDetectedRuleTestCase(TestCase):
         self.assertEqual(1, count)
 
 
-class UnresolvedVulnerabilityCountRuleTestCase(TestCase):
+class UnresolvedVulnerabilityRuleTestCase(TestCase):
     def setUp(self):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.product = make_product(self.dataspace)
@@ -191,7 +191,7 @@ class UnresolvedVulnerabilityCountRuleTestCase(TestCase):
         package = make_package(self.dataspace)
         make_vulnerability(self.dataspace, affecting=package)
         make_product_package(self.product, package=package)
-        count = UnresolvedVulnerabilityCountRule().count_violations(self.product, 0, {})
+        count = UnresolvedVulnerabilityRule().count_violations(self.product, 0, {})
         self.assertEqual(1, count)
 
     def test_does_not_count_links_with_terminal_analysis(self):
@@ -199,7 +199,7 @@ class UnresolvedVulnerabilityCountRuleTestCase(TestCase):
         vulnerability = make_vulnerability(self.dataspace, affecting=package)
         product_package = make_product_package(self.product, package=package)
         make_vulnerability_analysis(product_package, vulnerability, state="resolved")
-        count = UnresolvedVulnerabilityCountRule().count_violations(self.product, 0, {})
+        count = UnresolvedVulnerabilityRule().count_violations(self.product, 0, {})
         self.assertEqual(0, count)
 
 

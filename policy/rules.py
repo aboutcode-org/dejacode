@@ -140,9 +140,9 @@ class VulnerabilityDetectedRule(BaseRule):
         return count if count > threshold else 0
 
 
-class UnresolvedVulnerabilityCountRule(BaseRule):
-    rule_type = "unresolved_vulnerability_count"
-    label = "Unresolved Vulnerability Count"
+class UnresolvedVulnerabilityRule(BaseRule):
+    rule_type = "unresolved_vulnerability"
+    label = "Unresolved Vulnerability"
     severity = "warning"
     description = (
         "Detects packages with known vulnerabilities that have not been triaged or addressed."
@@ -232,6 +232,6 @@ RULE_REGISTRY = {
     LicensePolicyWarningRule.rule_type: LicensePolicyWarningRule(),
     LicenseCoverageGapRule.rule_type: LicenseCoverageGapRule(),
     VulnerabilityDetectedRule.rule_type: VulnerabilityDetectedRule(),
-    UnresolvedVulnerabilityCountRule.rule_type: UnresolvedVulnerabilityCountRule(),
+    UnresolvedVulnerabilityRule.rule_type: UnresolvedVulnerabilityRule(),
     StaleVulnerabilityRule.rule_type: StaleVulnerabilityRule(),
 }
