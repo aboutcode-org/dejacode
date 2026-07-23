@@ -1375,6 +1375,11 @@ class ProductPolicyViolationTestCase(TestCase):
         qs = Product.unsecured_objects.filter(pk=self.product.pk).with_policy_violation_count()
         self.assertEqual(2, qs.get().policy_violation_count)
 
+    def test_with_policy_violation_count_excludes_obsolete_rule_types(self):
+        self._make_violation("obsolete_rule")
+        qs = Product.unsecured_objects.filter(pk=self.product.pk).with_policy_violation_count()
+        self.assertEqual(0, qs.get().policy_violation_count)
+
     def test_with_compliance_issues_includes_product_with_policy_violation(self):
         self._make_violation("usage_policy_error")
         qs = (

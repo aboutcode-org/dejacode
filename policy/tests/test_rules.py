@@ -202,6 +202,22 @@ class UnresolvedVulnerabilityRuleTestCase(TestCase):
         count = UnresolvedVulnerabilityRule().count_violations(self.product, 0, {})
         self.assertEqual(0, count)
 
+    def test_does_not_count_links_with_resolved_with_pedigree_analysis(self):
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package)
+        product_package = make_product_package(self.product, package=package)
+        make_vulnerability_analysis(product_package, vulnerability, state="resolved_with_pedigree")
+        count = UnresolvedVulnerabilityRule().count_violations(self.product, 0, {})
+        self.assertEqual(0, count)
+
+    def test_does_not_count_links_with_not_affected_analysis(self):
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package)
+        product_package = make_product_package(self.product, package=package)
+        make_vulnerability_analysis(product_package, vulnerability, state="not_affected")
+        count = UnresolvedVulnerabilityRule().count_violations(self.product, 0, {})
+        self.assertEqual(0, count)
+
 
 class StaleVulnerabilityRuleTestCase(TestCase):
     def setUp(self):
@@ -236,6 +252,17 @@ class StaleVulnerabilityRuleTestCase(TestCase):
         ).update(detected_date=old_date)
         count = StaleVulnerabilityRule().count_violations(self.product, 0, {})
         self.assertEqual(0, count)
+
+    def test_custom_max_days_triggers_for_links_within_window(self):
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        make_product_package(self.product, package=package)
+        recent_date = timezone.now() - timedelta(days=10)
+        PackageAffectedByVulnerability.objects.filter(
+            package=package, vulnerability=vulnerability
+        ).update(detected_date=recent_date)
+        count = StaleVulnerabilityRule().count_violations(self.product, 0, {"max_days": 5})
+        self.assertEqual(1, count)
 
     def test_does_not_count_stale_links_with_terminal_analysis(self):
         package = make_package(self.dataspace)

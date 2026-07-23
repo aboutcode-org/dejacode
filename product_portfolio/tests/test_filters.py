@@ -10,18 +10,22 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from component_catalog.models import Package
+from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dje.models import Dataspace
 from license_library.models import License
 from organization.models import Owner
 from policy.models import UsagePolicy
+from product_portfolio.filters import ProductComponentFilterSet
 from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
 from product_portfolio.models import Product
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_component
 from product_portfolio.tests import make_product_package
+from vulnerabilities.tests import make_vulnerability
 
 
 class ProductPackageFilterSetTestCase(TestCase):
@@ -164,3 +168,35 @@ class ProductPackageFilterByRuleTestCase(TestCase):
         )
         self.assertIn(self.pp_with_policy, filterset.qs)
         self.assertIn(self.pp_without_policy, filterset.qs)
+
+
+class ProductPackageFilterByRuleDistinctTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    def test_filter_by_vulnerability_rule_returns_distinct_results(self):
+        package = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=package)
+        make_vulnerability(self.dataspace, affecting=package)
+        make_product_package(self.product, package=package)
+        filterset = ProductPackageFilterSet(
+            dataspace=self.dataspace,
+            data={"policy_rule": "vulnerability_detected"},
+        )
+        self.assertEqual(1, filterset.qs.count())
+
+
+class ProductComponentFilterByRuleTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    def test_filter_by_policy_rule_returns_empty_for_components(self):
+        component = make_component(self.dataspace)
+        make_product_component(self.product, component=component)
+        filterset = ProductComponentFilterSet(
+            dataspace=self.dataspace,
+            data={"policy_rule": "usage_policy_error"},
+        )
+        self.assertEqual(0, filterset.qs.count())
