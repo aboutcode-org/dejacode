@@ -15,6 +15,7 @@ In your main `models.py` module:
 ```python
 from aboutcode.api_auth import AbstractAPIToken
 
+
 class APIToken(AbstractAPIToken):
     class Meta:
         verbose_name = "API Token"
@@ -40,9 +41,7 @@ Declare the `APITokenAuthentication` authentication class as one of the
 
 ```python
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "aboutcode.api_auth.APITokenAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("aboutcode.api_auth.APITokenAuthentication",),
 }
 ```
 
@@ -64,9 +63,7 @@ from aboutcode.api_auth.views import BaseRevokeAPIKeyView
 
 class GenerateAPIKeyView(LoginRequiredMixin, BaseGenerateAPIKeyView):
     success_url = reverse_lazy("profile")
-    success_message = (
-        "Copy your API key now, it will not be shown again: <pre>{plain_key}</pre>"
-    )
+    success_message = "Copy your API key now, it will not be shown again: <pre>{plain_key}</pre>"
 
 
 class RevokeAPIKeyView(LoginRequiredMixin, BaseRevokeAPIKeyView):
