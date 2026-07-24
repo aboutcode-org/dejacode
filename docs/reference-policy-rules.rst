@@ -110,3 +110,73 @@ lifecycle follows these states:
 
 Only **active (unresolved)** violations are shown in the compliance tab and returned
 by the REST API.
+
+3. Configuration
+----------------
+
+Policy rules are configured per dataspace using the ``policy_rules_config`` JSON field
+in the **Dataspace Configuration** form, accessible from the Admin interface under
+**Dataspaces > Dataspace configurations**.
+
+Each entry in the JSON object is keyed by the rule type and supports three options:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Key
+     - Description
+   * - ``is_active``
+     - Boolean. Set to ``true`` to enable the rule. Defaults to ``false`` (disabled).
+   * - ``threshold``
+     - Integer. Violations are only recorded when the count strictly exceeds this value.
+       Defaults to ``0``, meaning any violation triggers the rule.
+   * - ``parameters``
+     - Object. Rule-specific parameters (see parameter reference below).
+
+**Example configuration**::
+
+    {
+        "usage_policy_error": {
+            "is_active": true
+        },
+        "license_coverage_gap": {
+            "is_active": true,
+            "threshold": 2
+        },
+        "vulnerability_detected": {
+            "is_active": true,
+            "parameters": {
+                "min_risk_score": 7.0
+            }
+        },
+        "vulnerability_stale": {
+            "is_active": true,
+            "parameters": {
+                "max_days": 14,
+                "min_risk_score": 8.0
+            }
+        }
+    }
+
+.. note::
+    Rules that are omitted from the configuration, or that do not have ``is_active``
+    set to ``true``, are skipped during evaluation and any previously open violations
+    for those rules are automatically resolved.
+
+3.1 Rule Parameters
+^^^^^^^^^^^^^^^^^^^
+
+The following parameters are supported by rules that accept them:
+
+**Vulnerability Detected** (``vulnerability_detected``)
+
+- ``min_risk_score`` (float, 0.0-10.0): only flag packages with at least one
+  vulnerability whose risk score is greater than or equal to this value. When omitted,
+  any vulnerability triggers the rule regardless of score.
+
+**Vulnerability Stale** (``vulnerability_stale``)
+
+- ``max_days`` (integer): maximum number of days a high-risk vulnerability may remain
+  without a completed analysis before the package is flagged. Defaults to ``30``.
+- ``min_risk_score`` (float, 0.0-10.0): only consider vulnerabilities whose risk score
+  is greater than or equal to this value. Defaults to ``8.0``.
