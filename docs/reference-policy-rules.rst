@@ -243,3 +243,25 @@ Two events are available:
 .. seealso::
     :ref:`integrations_webhook` for instructions on configuring webhook endpoints and
     event subscriptions.
+
+7. REST API
+-----------
+
+Active policy violations for a product are accessible via the REST API at::
+
+    GET /api/v2/products/{uuid}/policy_violations/
+
+The response is a list of active (unresolved) violations, each including:
+
+- ``rule_type``: the rule identifier (e.g., ``vulnerability_detected``).
+- ``rule_label``: the human-readable rule name.
+- ``rule_description``: a short description of what the rule detects.
+- ``rule_severity``: ``"error"`` or ``"warning"``.
+- ``violation_count``: the number of packages currently in violation.
+- ``detected_date``: when the violation was first recorded.
+
+Only active (unresolved) violations are returned by this endpoint.
+
+.. seealso::
+    Refer to the **API documentation** from the :guilabel:`Tools` menu for detailed
+    guidance on authentication and available endpoints.
