@@ -2868,17 +2868,18 @@ class ProductTabComplianceView(
 
     @staticmethod
     def get_policy_compliance_context(product):
-        policy_violations = list(
-            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys())
-            .unresolved()
-            .order_by("rule_type")
+        registry_order = list(RULE_REGISTRY)
+
+        def rule_registry_position(violation):
+            return registry_order.index(violation.rule_type)
+
+        policy_violations = sorted(
+            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys()).unresolved(),
+            key=rule_registry_position,
         )
         violated_rule_types = {violation.rule_type for violation in policy_violations}
 
-        try:
-            rules_config = product.dataspace.configuration.policy_rules_config or {}
-        except AttributeError:
-            rules_config = {}
+        rules_config = product.dataspace.get_configuration("policy_rules_config") or {}
 
         all_rules = [
             {
@@ -2891,9 +2892,13 @@ class ProductTabComplianceView(
             }
             for rule_type, handler in RULE_REGISTRY.items()
         ]
+        has_error_violation = any(
+            violation.rule_severity == "error" for violation in policy_violations
+        )
         return {
             "policy_violations": policy_violations,
             "policy_violation_count": len(policy_violations),
+            "has_error_violation": has_error_violation,
             "all_rules": all_rules,
         }
 

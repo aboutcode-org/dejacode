@@ -252,6 +252,7 @@ class ProductQuerySet(DataspacedQuerySet):
         subquery = (
             ProductPolicyViolation.objects.filter(
                 product=OuterRef("pk"),
+                rule_type__in=RULE_REGISTRY.keys(),
             )
             .unresolved()
             .values("product")

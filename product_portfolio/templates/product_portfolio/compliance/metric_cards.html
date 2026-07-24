@@ -7,7 +7,7 @@
         <div class="fs-4 fw-medium lh-sm text-success">0</div>
         <div class="text-body-tertiary fs-xs mt-1">{% trans "No active violations" %}</div>
       {% else %}
-        <div class="fs-4 fw-medium lh-sm text-danger">{{ policy_violation_count }}</div>
+        <div class="fs-4 fw-medium lh-sm {% if has_error_violation %}text-danger{% else %}text-warning{% endif %}">{{ policy_violation_count }}</div>
         <div class="text-body-tertiary fs-xs mt-1">
           <a href="#policy-violations" class="text-decoration-none">
             {{ policy_violation_count }} {% trans "rule" %}{{ policy_violation_count|pluralize }} {% trans "triggered" %}

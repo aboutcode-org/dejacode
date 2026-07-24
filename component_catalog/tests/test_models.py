@@ -36,6 +36,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
+from component_catalog.models import PackageAffectedByVulnerability
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from component_catalog.tests import make_package
@@ -1372,8 +1373,14 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
 
         for model_class, expected in input_data:
-            results = [f.name for f in model_class().get_exclude_candidates_fields()]
+            results = [field.name for field in model_class().get_exclude_candidates_fields()]
             self.assertEqual(sorted(expected), sorted(results))
+
+    def test_package_affected_by_vulnerability_excludes_auto_now_add_fields(self):
+        field_names = [
+            field.name for field in PackageAffectedByVulnerability().get_exclude_candidates_fields()
+        ]
+        self.assertNotIn("detected_date", field_names)
 
     def test_component_create_with_or_and_and_in_license_name_and_key(self):
         or_license = License.objects.create(

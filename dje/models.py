@@ -1143,6 +1143,7 @@ class DataspacedModel(DataspaceForeignKeyValidationMixin, models.Model):
                 field.related_model is Dataspace,
                 isinstance(field, models.AutoField),
                 isinstance(field, models.UUIDField),
+                getattr(field, "auto_now_add", False) or getattr(field, "auto_now", False),
                 not field.null and not field.blank and not field.has_default(),
                 field.name in ALWAYS_EXCLUDE,
             ]
