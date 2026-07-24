@@ -205,3 +205,22 @@ Rules can also be re-evaluated on demand in two ways:
   next to the policy violations panel.
 - From the **Product Administration** form in the Admin interface, using the
   **Evaluate policy rules** bulk action on the product list.
+
+5. Compliance Tab
+-----------------
+
+The **Compliance** tab on each product detail page displays an overview of active
+policy violations. For each triggered rule, the table shows:
+
+- The rule label and severity (color-coded badge).
+- The rule description.
+- The number of packages **in violation**, linked to the product inventory pre-filtered
+  to show only those packages.
+- The **detection date** of the violation.
+
+The badge count in the panel header reflects the total number of triggered rules. Its
+color is red if at least one error-severity rule is triggered, yellow if only
+warning-severity rules are triggered.
+
+Clicking the **info icon** next to the panel title opens a modal listing all configured
+rules with their current status (Triggered, OK, or Disabled).
