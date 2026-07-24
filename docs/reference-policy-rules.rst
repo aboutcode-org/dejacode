@@ -92,3 +92,21 @@ rules and vulnerability-based rules.
   requiring immediate attention.
 - **Warning** rules are highlighted in yellow and indicate a condition that requires
   attention but does not necessarily block a release.
+
+2. Violation Lifecycle
+----------------------
+
+Each policy violation is a record associated with a product and a rule type. Its
+lifecycle follows these states:
+
+- **Detected**: the violation is created the first time a rule evaluation finds the
+  condition triggered. The ``detected_date`` is set at this point and never changes.
+- **Active**: the violation remains active as long as the condition persists across
+  subsequent evaluations.
+- **Resolved**: when a rule evaluation finds the condition is no longer triggered, the
+  violation is marked resolved and a ``resolved_date`` is recorded.
+- **Re-activated**: if the condition recurs after being resolved, the existing violation
+  record is updated in place (the original ``detected_date`` is preserved).
+
+Only **active (unresolved)** violations are shown in the compliance tab and returned
+by the REST API.
