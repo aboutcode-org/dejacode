@@ -224,3 +224,22 @@ warning-severity rules are triggered.
 
 Clicking the **info icon** next to the panel title opens a modal listing all configured
 rules with their current status (Triggered, OK, or Disabled).
+
+6. Webhook Notifications
+------------------------
+
+The policy rules engine fires webhook events when violations change state. These can be
+used to integrate DejaCode compliance alerts into external workflows such as Slack,
+ticketing systems, or CI/CD pipelines.
+
+Two events are available:
+
+- ``policy.violation_detected``: fired when one or more **new** violations are detected
+  during an evaluation run. The payload includes the product name and a summary of
+  triggered rules with their violation counts.
+- ``policy.violation_resolved``: fired when violations are resolved during an evaluation
+  run. The payload includes the product name and the number of violations resolved.
+
+.. seealso::
+    :ref:`integrations_webhook` for instructions on configuring webhook endpoints and
+    event subscriptions.
