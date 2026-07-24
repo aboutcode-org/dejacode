@@ -180,3 +180,28 @@ The following parameters are supported by rules that accept them:
   without a completed analysis before the package is flagged. Defaults to ``30``.
 - ``min_risk_score`` (float, 0.0-10.0): only consider vulnerabilities whose risk score
   is greater than or equal to this value. Defaults to ``8.0``.
+
+4. Evaluation
+-------------
+
+4.1 Automatic Evaluation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rules are re-evaluated automatically in the background (via the task queue) whenever
+any of the following changes occur:
+
+- A **product** is saved.
+- A **package is added to or removed from** a product.
+- A **package** record is updated (for example, a new vulnerability is linked to it).
+- The **Dataspace Configuration** is saved, which triggers re-evaluation of all
+  products in the dataspace.
+
+4.2 Manual Re-evaluation
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Rules can also be re-evaluated on demand in two ways:
+
+- From the **compliance tab** of a product detail page, using the re-evaluate button
+  next to the policy violations panel.
+- From the **Product Administration** form in the Admin interface, using the
+  **Evaluate policy rules** bulk action on the product list.
