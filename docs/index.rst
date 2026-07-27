@@ -23,6 +23,7 @@ Welcome to the very start of your DejaCode journey!
     tutorial-4-vulnerabilities
     tutorial-5-sboms
     tutorial-6-vuln-report
+    tutorial-7-policy-rules
 
 .. toctree::
     :maxdepth: 1
@@ -33,6 +34,7 @@ Welcome to the very start of your DejaCode journey!
     howto-3
     howto-4-product-vulnerability-analysis
     howto-5-product-object-permissions
+    howto-6-policy-rules-configuration
 
 .. toctree::
     :maxdepth: 1

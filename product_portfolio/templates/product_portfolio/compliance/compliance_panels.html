@@ -62,9 +62,7 @@
                       <div class="text-body-secondary small">{{ rule.description }}</div>
                     </div>
                     <div class="flex-shrink-0">
-                      {% if not rule.is_active %}
-                        <span class="badge text-bg-secondary">{% trans "Disabled" %}</span>
-                      {% elif rule.is_violated %}
+                      {% if rule.is_violated %}
                         {% if rule.severity == "error" %}
                           <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Triggered" %}</span>
                         {% else %}

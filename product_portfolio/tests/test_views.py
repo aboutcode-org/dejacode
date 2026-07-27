@@ -4324,7 +4324,7 @@ class TabCompliancePolicyContextTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(0, response.context["policy_violation_count"])
 
-    def test_all_rules_context_reflects_active_status(self):
+    def test_all_rules_context_only_includes_active_rules(self):
         DataspaceConfiguration.objects.create(
             dataspace=self.dataspace,
             policy_rules_config={"usage_policy_error": {"is_active": True}},
@@ -4332,9 +4332,9 @@ class TabCompliancePolicyContextTestCase(TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_compliance")
         response = self.client.get(url)
-        all_rules = {rule["rule_type"]: rule for rule in response.context["all_rules"]}
-        self.assertTrue(all_rules["usage_policy_error"]["is_active"])
-        self.assertFalse(all_rules["license_coverage_gap"]["is_active"])
+        rule_types = [rule["rule_type"] for rule in response.context["all_rules"]]
+        self.assertIn("usage_policy_error", rule_types)
+        self.assertNotIn("license_coverage_gap", rule_types)
 
 
 class ComplianceDashboardPolicyViolationsTestCase(TestCase):
