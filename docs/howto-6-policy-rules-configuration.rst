@@ -22,6 +22,8 @@ thresholds.
 2. Open your Dataspace by clicking on its name.
 3. Scroll down to the **Policy Rules Configuration** section.
 
+.. image:: images/howto-6-policy-rules-configuration/policy-rules-configuration-section.jpg
+
 Each built-in rule is listed with its label, description, threshold, and optional
 parameters.
 
@@ -29,6 +31,9 @@ parameters.
 ----------------
 
 To activate a rule check the :guilabel:`Enable this rule` checkbox.
+
+.. image:: images/howto-6-policy-rules-configuration/enable-rule-checkbox.jpg
+   :width: 150
 
 Click :guilabel:`Save` at the bottom of the Dataspace form. DejaCode will immediately
 schedule a background re-evaluation of all products in the Dataspace.
@@ -69,6 +74,9 @@ For the **Vulnerability Stale** rule, two parameters are available:
 - :guilabel:`Min Risk Score`: only vulnerabilities at or above this score are
   considered. Defaults to 8.0.
 
+.. image:: images/howto-6-policy-rules-configuration/vulnerability-rule-parameters.jpg
+   :width: 300
+
 5. Investigate Violations
 -------------------------
 
@@ -83,13 +91,22 @@ menu) providing an overview of all products with their compliance metrics, inclu
 Use this view to identify at a glance which products have triggered rules and
 prioritize which ones to address first.
 
+.. image:: images/howto-6-policy-rules-configuration/compliance-dashboard-violations-column.jpg
+   :width: 400
+
 **Compliance tab drill-down**
 
 From the :guilabel:`Compliance Dashboard`, click the policy violations count on a
-product row to open its :guilabel:`Compliance` tab directly. 
+product row to open its :guilabel:`Compliance` tab directly.
 The **Policy violations** panel lists each triggered rule with its violation count
-and detection date. Clicking the info icon opens a modal showing the status of all
-configured rules: **Triggered**, **OK**, or **Disabled**.
+and detection date.
+
+.. image:: images/howto-6-policy-rules-configuration/compliance-tab-policy-violations.jpg
+
+.. tip::
+    To see the status of all configured rules, including those that are not triggered,
+    click the info icon next to the panel title. A modal opens showing every rule with
+    its current status: **Triggered**, **OK**, or **Disabled**.
 
 To drill into the affected packages for a specific rule:
 
