@@ -45,3 +45,15 @@ if only warning rules are triggered.
     Click the info icon next to the panel title to open a modal listing all active
     rules with their current status: **Triggered** or **OK**. This gives you a full
     picture of your compliance posture at a glance.
+
+3. Drill Into Affected Packages
+-------------------------------
+
+1. In the **Policy violations** table, click the count in the **In violation** column
+   for the rule you want to investigate.
+
+2. The :guilabel:`Inventory` tab opens pre-filtered to show only the packages that
+   triggered that rule.
+
+3. Review the packages and decide what action to take: update a license expression,
+   assign a usage policy, or triage a vulnerability.
