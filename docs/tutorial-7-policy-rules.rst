@@ -24,3 +24,24 @@ Sign into DejaCode.
 
 3. Click the policy violations count on a product row to open its
    :guilabel:`Compliance` tab directly.
+
+2. Review Policy Violations
+---------------------------
+
+The **Policy violations** panel shows the active violations for the product.
+
+For each triggered rule, the table shows:
+
+- The rule label and severity, color-coded as red (error) or yellow (warning).
+- A short description of what the rule detects.
+- The number of packages **in violation**.
+- The date the violation was first **detected**.
+
+The badge in the panel header shows the total number of triggered rules. Its color
+reflects the highest severity: red if at least one error rule is triggered, yellow
+if only warning rules are triggered.
+
+.. tip::
+    Click the info icon next to the panel title to open a modal listing all active
+    rules with their current status: **Triggered** or **OK**. This gives you a full
+    picture of your compliance posture at a glance.
