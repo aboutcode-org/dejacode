@@ -232,8 +232,8 @@ The badge count in the panel header reflects the total number of triggered rules
 color is red if at least one error-severity rule is triggered, yellow if only
 warning-severity rules are triggered.
 
-Clicking the **info icon** next to the panel title opens a modal listing all configured
-rules with their current status (Triggered, OK, or Disabled).
+Clicking the **info icon** next to the panel title opens a modal listing all active
+rules with their current status: **Triggered** or **OK**.
 
 .. image:: images/reference-policy-rules/compliance-tab-policy-rules.jpg
    :width: 500

@@ -104,9 +104,9 @@ and detection date.
 .. image:: images/howto-6-policy-rules-configuration/compliance-tab-policy-violations.jpg
 
 .. tip::
-    To see the status of all configured rules, including those that are not triggered,
-    click the info icon next to the panel title. A modal opens showing every rule with
-    its current status: **Triggered**, **OK**, or **Disabled**.
+    To see the status of all active rules, including those that are not triggered,
+    click the info icon next to the panel title. A modal opens showing every enabled
+    rule with its current status: **Triggered** or **OK**.
 
 To drill into the affected packages for a specific rule:
 

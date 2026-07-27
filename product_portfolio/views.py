@@ -2887,10 +2887,10 @@ class ProductTabComplianceView(
                 "description": handler.description,
                 "rule_type": rule_type,
                 "severity": handler.severity,
-                "is_active": rules_config.get(rule_type, {}).get("is_active", False),
                 "is_violated": rule_type in violated_rule_types,
             }
             for rule_type, handler in RULE_REGISTRY.items()
+            if rules_config.get(rule_type, {}).get("is_active", False)
         ]
         has_error_violation = any(
             violation.rule_severity == "error" for violation in policy_violations
