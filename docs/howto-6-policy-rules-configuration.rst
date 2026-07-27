@@ -52,3 +52,23 @@ For the **Vulnerability Stale** rule, two parameters are available:
   unaddressed before the package is flagged. Defaults to 30.
 - :guilabel:`Min Risk Score`: only vulnerabilities at or above this score are
   considered. Defaults to 8.0.
+
+4. Set a Threshold
+------------------
+
+By default, a single violation is enough to trigger a rule. The :guilabel:`Threshold`
+field lets you tolerate a certain number of violations before a triggered state is
+recorded. Violations are only recorded when the count strictly exceeds the threshold.
+
+For example, setting a threshold of 2 on the **License Coverage Gap** rule means the
+rule is only triggered when more than 2 packages have no license expression.
+
+This is useful when a small number of violations is acceptable during onboarding or
+remediation phases.
+
+5. Disable a Rule
+-----------------
+
+To disable a rule, uncheck its :guilabel:`Enable this rule` checkbox and save. Any
+currently open violations for that rule are automatically resolved and will no longer
+appear in the compliance tab.
