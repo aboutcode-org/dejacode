@@ -72,3 +72,17 @@ remediation phases.
 To disable a rule, uncheck its :guilabel:`Enable this rule` checkbox and save. Any
 currently open violations for that rule are automatically resolved and will no longer
 appear in the compliance tab.
+
+6. Investigate Violations in the Product Inventory
+---------------------------------------------------
+
+Once rules are active and violations have been detected, you can drill into the
+affected packages directly from the compliance tab.
+
+1. Open a Product and click the :guilabel:`Compliance` tab.
+2. In the **Policy violations** panel, locate the rule you want to investigate.
+3. Click the violation count in the **In violation** column.
+
+The product inventory opens pre-filtered to show only the packages that triggered
+that rule. You can use the inventory's standard filters and sorting to prioritize
+remediation.
