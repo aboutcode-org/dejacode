@@ -36,3 +36,19 @@ schedule a background re-evaluation of all products in the Dataspace.
 .. note::
     Rules that are not enabled are skipped during evaluation and any previously open
     violations for those rules are automatically resolved.
+
+3. Configure Rule Parameters
+-----------------------------
+
+Vulnerability-based rules expose additional parameter fields to narrow their scope.
+
+For the **Vulnerability Detected** rule, you can set a :guilabel:`Min Risk Score` to
+restrict detection to vulnerabilities above a minimum risk score. Leave the field blank
+to flag any vulnerability regardless of score.
+
+For the **Vulnerability Stale** rule, two parameters are available:
+
+- :guilabel:`Max Days`: the maximum number of days a high-risk vulnerability may remain
+  unaddressed before the package is flagged. Defaults to 30.
+- :guilabel:`Min Risk Score`: only vulnerabilities at or above this score are
+  considered. Defaults to 8.0.
