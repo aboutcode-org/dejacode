@@ -116,3 +116,21 @@ To drill into the affected packages for a specific rule:
 The product inventory opens pre-filtered to show only the packages that triggered
 that rule. You can use the inventory's standard filters and sorting to prioritize
 remediation.
+
+6. Set Up Notifications
+-----------------------
+
+DejaCode can notify external systems automatically when policy violations are detected
+or resolved, without requiring manual checks of the compliance tab.
+
+Two webhook events are available:
+
+- ``policy.violation_detected``: fired when one or more new violations are detected
+  during a rule evaluation run.
+- ``policy.violation_resolved``: fired when violations are resolved.
+
+To receive these notifications, configure a webhook in the Admin interface pointing to
+your target endpoint (Slack, ticketing system, CI/CD pipeline, or any HTTP receiver).
+
+.. seealso::
+    :ref:`integrations_webhook` for instructions on creating and configuring webhooks.
