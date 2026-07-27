@@ -57,3 +57,21 @@ if only warning rules are triggered.
 
 3. Review the packages and decide what action to take: update a license expression,
    assign a usage policy, or triage a vulnerability.
+
+4. Resolve a Violation
+----------------------
+
+Violations are resolved automatically when the underlying condition is corrected.
+The following example shows how to resolve a **Vulnerability Unresolved** violation
+by completing a vulnerability analysis.
+
+1. From the filtered inventory, click a package to open its detail page.
+2. Navigate to the :guilabel:`Vulnerabilities` tab.
+3. For each vulnerability, click :guilabel:`Edit analysis` and set the analysis state
+   to a terminal value such as **Resolved** or **Not affected**.
+
+.. seealso::
+    Refer to :ref:`how_to_4` for a detailed guide on vulnerability analysis.
+
+Once all vulnerabilities on a package have a terminal analysis, that package is no
+longer counted as a violation for the **Vulnerability Unresolved** rule.
