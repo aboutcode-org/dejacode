@@ -114,9 +114,12 @@ by the REST API.
 3. Configuration
 ----------------
 
-Policy rules are configured per dataspace using the ``policy_rules_config`` JSON field
-in the **Dataspace Configuration** form, accessible from the Admin interface under
-**Dataspaces > Dataspace configurations**.
+Policy rules are configured per dataspace using the **Dataspace Configuration** form
+in the Admin interface under **Dataspaces > Dataspace configurations**.
+
+.. seealso::
+    For step-by-step instructions on enabling and configuring rules through the Admin
+    UI, refer to :ref:`how_to_6`.
 
 .. image:: images/reference-policy-rules/dataspace-configuration-policy-rules-config.jpg
 

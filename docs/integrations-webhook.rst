@@ -46,6 +46,9 @@ The following events can be configured as webhook triggers.
 - ``policy.violation_resolved`` — One or more policy violations are resolved during
   a rule evaluation run
 
+.. seealso::
+    :ref:`how_to_6` for instructions on enabling policy rules in your Dataspace.
+
 **User events**
 
 - ``user.locked_out`` — A user account is locked out following failed login attempts
