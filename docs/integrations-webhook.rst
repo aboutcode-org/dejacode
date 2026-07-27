@@ -20,16 +20,36 @@ Webhooks can be used to:
 - Push updates to a monitoring or reporting dashboard
 - Synchronize status changes with an external ticketing system
 - Trigger automation in CI/CD pipelines
+- Alert a Slack channel when new policy violations are detected or resolved
+- Notify security teams when new vulnerability data is available
 
 Available events
 ----------------
 
-The following events can be configured as webhook triggers:
+The following events can be configured as webhook triggers.
+
+**Request events**
 
 - ``request.added`` — A new request is created
 - ``request.updated`` — An existing request is modified
 - ``request_comment.added`` — A comment is added to a request
-- ``vulnerability.data_update`` — Vulnerability data is updated
+
+**Vulnerability events**
+
+- ``vulnerability.data_update`` — Vulnerability data is updated (daily refresh or
+  package import)
+
+**Policy events**
+
+- ``policy.violation_detected`` — One or more new policy violations are detected
+  during a rule evaluation run
+- ``policy.violation_resolved`` — One or more policy violations are resolved during
+  a rule evaluation run
+
+**User events**
+
+- ``user.locked_out`` — A user account is locked out following failed login attempts
+- ``user.added_or_updated`` — A user account is created or modified
 
 .. note::
 
@@ -60,15 +80,14 @@ with the event payload.
 Payload structure
 -----------------
 
-The default webhook payload is JSON-formatted and contains at least:
+DejaCode uses two payload formats depending on the event type.
 
-- ``hook`` — The data related to the webhook, like event name, e.g. ``request.created``
-- ``data`` — Object containing event-specific data
+**Structured payload** (request events)
 
-If **extra payload** is defined, it is merged into the JSON body.
-If **extra headers** are defined, they are added to the HTTP request.
+Request events use a structured JSON format containing a ``hook`` object with webhook
+metadata and a ``data`` object with the full serialized resource.
 
-Example payload::
+Example payload for ``request.added``::
 
     {
       "hook": {
@@ -106,6 +125,32 @@ Example payload::
         "dataspace": "Dataspace"
       }
     }
+
+**Text payload** (vulnerability and policy events)
+
+Vulnerability and policy events use a simpler format with a single ``text`` field
+containing a human-readable summary of the event.
+
+Example payload for ``vulnerability.data_update``::
+
+    {
+      "text": "[DejaCode] New vulnerabilities detected!\n42 vulnerabilities affecting 7 packages"
+    }
+
+Example payload for ``policy.violation_detected``::
+
+    {
+      "text": "[DejaCode] Policy violations detected for MyApp 2.0\n- Vulnerability Detected: 3 violation(s)\n- Vulnerability Stale: 1 violation(s)"
+    }
+
+Example payload for ``policy.violation_resolved``::
+
+    {
+      "text": "[DejaCode] 2 policy violation(s) resolved for MyApp 2.0"
+    }
+
+If **extra payload** is defined on the webhook, it is merged into the JSON body.
+If **extra headers** are defined, they are added to the HTTP request.
 
 Security considerations
 -----------------------

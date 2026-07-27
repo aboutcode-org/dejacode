@@ -40,6 +40,7 @@ Welcome to the very start of your DejaCode journey!
 
     reference-data-models
     reference-vulnerability-management
+    reference-policy-rules
     reference-1
     reference-2
     reference-3-cravex
