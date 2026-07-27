@@ -15,19 +15,24 @@ thresholds.
     Refer to :ref:`reference_policy_rules` for a complete description of all available
     rules, configuration options, and violation lifecycle.
 
-Overview
---------
+1. Access the Policy Rules Configuration
+----------------------------------------
 
-Policy rules are configured via the ``policy_rules_config`` JSON field in the
-**Dataspace Configuration** form. Each rule is identified by its rule type and supports
-three options: ``is_active``, ``threshold``, and ``parameters``.
+1. From the DejaCode **Administration dashboard**, navigate to :guilabel:`Dataspaces`.
+2. Open your Dataspace by clicking on its name.
+3. Scroll down to the **Policy Rules Configuration** section.
 
-1. Access the Dataspace Configuration
---------------------------------------
+Each built-in rule is listed as a collapsible fieldset with its label and description.
 
-1. From the DejaCode **Administration dashboard**, navigate to
-   :guilabel:`Dataspaces > Dataspace configurations`.
-2. Open the configuration for your Dataspace.
-3. Locate the **Policy rules config** field.
+2. Enable a Rule
+----------------
 
-The field accepts a JSON object. If it is empty, no rules are active.
+To activate a rule, expand its fieldset and check the :guilabel:`Enable this rule`
+checkbox.
+
+Click :guilabel:`Save` at the bottom of the Dataspace form. DejaCode will immediately
+schedule a background re-evaluation of all products in the Dataspace.
+
+.. note::
+    Rules that are not enabled are skipped during evaluation and any previously open
+    violations for those rules are automatically resolved.
