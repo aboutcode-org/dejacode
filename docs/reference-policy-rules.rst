@@ -118,6 +118,8 @@ Policy rules are configured per dataspace using the ``policy_rules_config`` JSON
 in the **Dataspace Configuration** form, accessible from the Admin interface under
 **Dataspaces > Dataspace configurations**.
 
+.. image:: images/reference-policy-rules/dataspace-configuration-policy-rules-config.jpg
+
 Each entry in the JSON object is keyed by the rule type and supports three options:
 
 .. list-table::
@@ -201,13 +203,18 @@ any of the following changes occur:
 
 Rules can also be re-evaluated on demand in two ways:
 
-- From the **compliance tab** of a product detail page, using the re-evaluate button
-  next to the policy violations panel.
 - From the **Product Administration** form in the Admin interface, using the
   **Evaluate policy rules** bulk action on the product list.
+- From the **compliance tab** of a product detail page, using the re-evaluate button
+  next to the policy violations panel.
+
+  .. image:: images/reference-policy-rules/manual-reevaluation-button.jpg
+     :width: 400
 
 5. Compliance Tab
 -----------------
+
+.. image:: images/reference-policy-rules/compliance-tab-policy-violations.jpg
 
 The **Compliance** tab on each product detail page displays an overview of active
 policy violations. For each triggered rule, the table shows:
@@ -224,6 +231,10 @@ warning-severity rules are triggered.
 
 Clicking the **info icon** next to the panel title opens a modal listing all configured
 rules with their current status (Triggered, OK, or Disabled).
+
+.. image:: images/reference-policy-rules/compliance-tab-policy-rules.jpg
+   :width: 500
+   :align: center
 
 6. Webhook Notifications
 ------------------------
