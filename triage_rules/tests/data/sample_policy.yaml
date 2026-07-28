@@ -1,0 +1,63 @@
+decisions:
+  upgrade-now:
+    action: upgrade
+    timeline_days: 7
+    description: Upgrade affected packages immediately.
+
+  forensics:
+    action: forensics
+    timeline_days: 30
+    description: Perform forensic analysis.
+
+decision_points:
+  matching_package:
+    target: package
+    description: Product includes the watched package filename.
+    query:
+      operator: and
+      filters:
+        - field: filename
+          lookup: exact
+          value: package-match.tar.gz
+
+  critical_vulnerability:
+    target: vulnerability
+    description: Any critical vulnerability in the product.
+    query:
+      operator: and
+      filters:
+        - field: risk_score
+          lookup: gte
+          value: "8.0"
+
+  matching_product:
+    target: product
+    description: Product name matches the policy target.
+    query:
+      operator: and
+      filters:
+        - field: name
+          lookup: exact
+          value: Product Match
+
+rulesets:
+  security-policy:
+    description: Default security triage policy.
+    precedence: 100
+    enabled: true
+    default_decision: forensics
+    rules:
+      - name: Upgrade immediately
+        priority: 10
+        decision: upgrade-now
+        conditions:
+          matching_package: true
+          critical_vulnerability: true
+          matching_product: true
+      - name: Forensics for matching product
+        priority: 1
+        decision: forensics
+        conditions:
+          matching_package: true
+          critical_vulnerability: true
+          matching_product: false

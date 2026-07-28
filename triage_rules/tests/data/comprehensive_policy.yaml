@@ -1,0 +1,158 @@
+decisions:
+  upgrade-immediately:
+    action: upgrade
+    timeline_days: 1
+    description: Upgrade affected packages without delay.
+
+  reachability-analysis:
+    action: reachability
+    timeline_days: 14
+    description: Analyze vulnerability reachability before remediation.
+
+  downgrade-risk:
+    action: downgrade
+    timeline_days: 30
+    description: Accept lower-priority risk for now.
+
+  forensics-review:
+    action: forensics
+    timeline_days: 60
+    description: Perform deeper forensic review.
+
+decision_points:
+  watched_package:
+    target: package
+    description: Product inventory includes the watched package filename.
+    query:
+      operator: and
+      filters:
+        - field: filename
+          lookup: exact
+          value: package-match.tar.gz
+
+  legacy_package_present:
+    target: package
+    description: Product inventory includes a legacy package artifact.
+    query:
+      operator: and
+      filters:
+        - field: filename
+          lookup: icontains
+          value: legacy
+
+  package_with_download_url:
+    target: package
+    description: At least one package has a download URL configured.
+    query:
+      operator: and
+      filters:
+        - field: download_url
+          lookup: icontains
+          value: example.com
+
+  critical_vulnerability:
+    target: vulnerability
+    description: Any vulnerability with critical risk score.
+    query:
+      operator: and
+      filters:
+        - field: risk_score
+          lookup: gte
+          value: "8.0"
+
+  known_exploit_vulnerability:
+    target: vulnerability
+    description: Any vulnerability with known exploits.
+    query:
+      operator: and
+      filters:
+        - field: exploitability
+          lookup: gte
+          value: "2.0"
+
+  low_risk_vulnerability:
+    target: vulnerability
+    description: Any low-risk vulnerability in the product.
+    query:
+      operator: and
+      filters:
+        - field: risk_score
+          lookup: lte
+          value: "3.0"
+
+  direct_product_vulnerability:
+    target: vulnerability
+    description: Vulnerability assigned directly to the product.
+    query:
+      operator: and
+      filters:
+        - field: vulnerability_id
+          lookup: icontains
+          value: DIRECT
+
+  production_product:
+    target: product
+    description: Product is the production application under triage.
+    query:
+      operator: and
+      filters:
+        - field: name
+          lookup: exact
+          value: Product Match
+
+  non_production_product:
+    target: product
+    description: Product is a non-production application.
+    query:
+      operator: and
+      filters:
+        - field: name
+          lookup: exact
+          value: Product Other
+
+rulesets:
+  critical-response:
+    description: High-precedence rules for critical production exposure.
+    precedence: 200
+    enabled: true
+    default_decision: reachability-analysis
+    rules:
+      - name: Upgrade production critical exposure
+        priority: 1
+        decision: upgrade-immediately
+        conditions:
+          watched_package: true
+          package_with_download_url: true
+          critical_vulnerability: true
+          production_product: true
+
+      - name: Reachability for known exploit without critical score
+        priority: 10
+        decision: reachability-analysis
+        conditions:
+          watched_package: true
+          known_exploit_vulnerability: true
+          critical_vulnerability: false
+          production_product: true
+
+  baseline-response:
+    description: Fallback rules for lower-risk or non-production products.
+    precedence: 100
+    enabled: true
+    default_decision: forensics-review
+    rules:
+      - name: Downgrade low-risk non-production exposure
+        priority: 1
+        decision: downgrade-risk
+        conditions:
+          low_risk_vulnerability: true
+          critical_vulnerability: false
+          non_production_product: true
+
+      - name: Forensics when legacy package is present
+        priority: 20
+        decision: forensics-review
+        conditions:
+          legacy_package_present: true
+          production_product: true
+          direct_product_vulnerability: true
