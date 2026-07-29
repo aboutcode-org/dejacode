@@ -85,15 +85,11 @@ def _load_decisions(decisions_data, dataspace):
 
         action = config.get("action")
         if action not in dict(TriageDecision.ACTION_CHOICES):
-            raise PolicyLoadError(
-                f"Decision '{name}' has invalid action '{action}'."
-            )
+            raise PolicyLoadError(f"Decision '{name}' has invalid action '{action}'.")
 
         timeline_days = config.get("timeline_days")
         if timeline_days is None:
-            raise PolicyLoadError(
-                f"Decision '{name}' requires 'timeline_days'."
-            )
+            raise PolicyLoadError(f"Decision '{name}' requires 'timeline_days'.")
 
         decision, _ = TriageDecision.objects.update_or_create(
             name=name,
@@ -253,9 +249,7 @@ def _load_rule(ruleset, rule_config, decisions, decision_points):
 
     rule_name = rule_config.get("name")
     if not rule_name:
-        raise PolicyLoadError(
-            f"Each rule in ruleset '{ruleset.name}' requires 'name'."
-        )
+        raise PolicyLoadError(f"Each rule in ruleset '{ruleset.name}' requires 'name'.")
 
     decision_name = rule_config.get("decision")
     decision = decisions.get(decision_name)
@@ -304,9 +298,7 @@ def _iter_conditions(conditions_data):
                 raise PolicyLoadError(
                     "List-style rule conditions require 'decision_point'."
                 )
-            items.append(
-                (decision_point_name, condition.get("expected"))
-            )
+            items.append((decision_point_name, condition.get("expected")))
         return items
 
     raise PolicyLoadError("Rule conditions must be a mapping or list.")

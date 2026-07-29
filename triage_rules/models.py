@@ -2,6 +2,7 @@ from django.db import models
 
 from reporting.models import Query
 
+
 class DecisionPoint(models.Model):
     """
     A reusable boolean predicate.
@@ -209,6 +210,4 @@ class RuleCondition(models.Model):
         )
 
     def __str__(self):
-        return (
-            f"{self.decision_point.name} = {self.expected}"
-        )
+        return f"{self.decision_point.name} = {self.expected}"

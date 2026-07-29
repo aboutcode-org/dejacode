@@ -768,9 +768,12 @@ class PolicyLoaderTest(BaseTriageRulesTestCase):
         self.assertEqual(9, DecisionPoint.objects.count())
         self.assertEqual(9, Query.objects.filter(dataspace=self.dataspace).count())
         self.assertEqual(9, Filter.objects.filter(dataspace=self.dataspace).count())
-        self.assertEqual(2, Ruleset.objects.filter(
-            name__in=["critical-response", "baseline-response"]
-        ).count())
+        self.assertEqual(
+            2,
+            Ruleset.objects.filter(
+                name__in=["critical-response", "baseline-response"]
+            ).count(),
+        )
         self.assertEqual(4, Rule.objects.count())
         self.assertEqual(14, RuleCondition.objects.count())
 

@@ -9,74 +9,188 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('reporting', '0002_alter_columntemplate_content_type_and_more'),
+        ("reporting", "0002_alter_columntemplate_content_type_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TriageDecision',
+            name="TriageDecision",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('action', models.CharField(choices=[('upgrade', 'Upgrade'), ('downgrade', 'Downgrade'), ('reachability', 'Reachability Analysis'), ('forensics', 'Forensic Analysis')], max_length=30)),
-                ('timeline_days', models.PositiveIntegerField()),
-                ('description', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("upgrade", "Upgrade"),
+                            ("downgrade", "Downgrade"),
+                            ("reachability", "Reachability Analysis"),
+                            ("forensics", "Forensic Analysis"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("timeline_days", models.PositiveIntegerField()),
+                ("description", models.TextField(blank=True)),
             ],
             options={
-                'ordering': ('name',),
+                "ordering": ("name",),
             },
         ),
         migrations.CreateModel(
-            name='DecisionPoint',
+            name="DecisionPoint",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('target', models.CharField(choices=[('package', 'Package'), ('vulnerability', 'Vulnerability'), ('product', 'Product')], max_length=20)),
-                ('enabled', models.BooleanField(default=True)),
-                ('query', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='decision_points', to='reporting.query')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "target",
+                    models.CharField(
+                        choices=[
+                            ("package", "Package"),
+                            ("vulnerability", "Vulnerability"),
+                            ("product", "Product"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("enabled", models.BooleanField(default=True)),
+                (
+                    "query",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="decision_points",
+                        to="reporting.query",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('name',),
+                "ordering": ("name",),
             },
         ),
         migrations.CreateModel(
-            name='Ruleset',
+            name="Ruleset",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('precedence', models.PositiveIntegerField(default=100)),
-                ('enabled', models.BooleanField(default=True)),
-                ('default_decision', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='triage_rules.triagedecision')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True)),
+                ("precedence", models.PositiveIntegerField(default=100)),
+                ("enabled", models.BooleanField(default=True)),
+                (
+                    "default_decision",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to="triage_rules.triagedecision",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('-precedence', 'name'),
+                "ordering": ("-precedence", "name"),
             },
         ),
         migrations.CreateModel(
-            name='Rule',
+            name="Rule",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('priority', models.PositiveIntegerField(default=100, help_text='Lower values are evaluated first.')),
-                ('ruleset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rules', to='triage_rules.ruleset')),
-                ('decision', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='rules', to='triage_rules.triagedecision')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                (
+                    "priority",
+                    models.PositiveIntegerField(
+                        default=100, help_text="Lower values are evaluated first."
+                    ),
+                ),
+                (
+                    "ruleset",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="rules",
+                        to="triage_rules.ruleset",
+                    ),
+                ),
+                (
+                    "decision",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="rules",
+                        to="triage_rules.triagedecision",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('priority', 'id'),
+                "ordering": ("priority", "id"),
             },
         ),
         migrations.CreateModel(
-            name='RuleCondition',
+            name="RuleCondition",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('expected', models.PositiveSmallIntegerField(choices=[(0, 'False'), (1, 'True')])),
-                ('decision_point', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='triage_rules.decisionpoint')),
-                ('rule', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='conditions', to='triage_rules.rule')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "expected",
+                    models.PositiveSmallIntegerField(
+                        choices=[(0, "False"), (1, "True")]
+                    ),
+                ),
+                (
+                    "decision_point",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="triage_rules.decisionpoint",
+                    ),
+                ),
+                (
+                    "rule",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="conditions",
+                        to="triage_rules.rule",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('rule', 'decision_point')},
+                "unique_together": {("rule", "decision_point")},
             },
         ),
     ]

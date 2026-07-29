@@ -16,9 +16,9 @@ decision_points:
     query:
       operator: and
       filters:
-        - field: filename
-          lookup: exact
-          value: package-match.tar.gz
+        - field: risk
+          lookup: gte
+          value: "8.0"
 
   critical_vulnerability:
     target: vulnerability
