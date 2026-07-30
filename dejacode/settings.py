@@ -345,6 +345,7 @@ PROJECT_APPS = [
     "policy",
     "notification",
     "vulnerabilities",
+    "vulnerabilities.triage",
 ]
 
 EXTRA_APPS = env.list("EXTRA_APPS", default=[])
