@@ -23,8 +23,6 @@ class TriageRulesetForm(DataspacedAdminForm):
         self.add_rule_fields()
 
     def add_rule_fields(self):
-        if not self.instance.pk:
-            return
         config = getattr(self.instance, "rules_config", {}) or {}
         for rule_type, handler in RULE_REGISTRY.items():
             rule_config = config.get(rule_type, {})

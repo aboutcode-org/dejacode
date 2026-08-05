@@ -64,8 +64,6 @@ class TriageRulesetAdmin(DataspacedAdmin):
                 {"fields": ["name", "description", "action", "precedence", "enabled"]},
             ),
         ]
-        if not obj:
-            return base_fieldsets
         rule_fieldsets = [
             (
                 handler.label,
