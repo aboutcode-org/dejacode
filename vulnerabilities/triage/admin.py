@@ -19,6 +19,19 @@ from vulnerabilities.triage.rules import RULE_REGISTRY
 
 @admin.register(TriageRuleset, site=dejacode_site)
 class TriageRulesetAdmin(DataspacedAdmin):
+    short_description = (
+        "A Triage Ruleset is a named set of detection rules that, when their conditions"
+        " are met for a product, recommends a specific remediation action."
+    )
+
+    long_description = (
+        "Each ruleset combines one or more rules (such as critical vulnerability detection"
+        " or exploited vulnerability detection) with a single action to recommend"
+        " (upgrade, apply patch, notify, etc.). Multiple rulesets can be assigned to a"
+        " product; when conditions overlap, the ruleset with the highest precedence takes"
+        " effect."
+    )
+
     form = TriageRulesetForm
     list_display = ["name", "get_enabled_rules", "precedence", "enabled", "get_dataspace"]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
@@ -31,6 +44,8 @@ class TriageRulesetAdmin(DataspacedAdmin):
             for rule_type, config in obj.rules_config.items()
             if rule_type in RULE_REGISTRY and config.get("is_active")
         ]
+        if not enabled:
+            return ""
         return mark_safe("<br>".join(escape(label) for label in enabled))
 
     def get_changes_details(self, form):
@@ -39,31 +54,27 @@ class TriageRulesetAdmin(DataspacedAdmin):
         return super().get_changes_details(form)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
-        kwargs["fields"] = ["name", "description", "precedence", "enabled"]
+        kwargs["fields"] = ["name", "description", "action", "precedence", "enabled"]
         return super().get_form(request, obj, change=change, **kwargs)
 
     def get_fieldsets(self, request, obj=None):
         base_fieldsets = [
             (
                 None,
-                {"fields": ["name", "description", "precedence", "enabled"]},
+                {"fields": ["name", "description", "action", "precedence", "enabled"]},
             ),
         ]
         if not obj:
             return base_fieldsets
-        rule_fieldsets = []
-        for rule_type, handler in RULE_REGISTRY.items():
-            fields = [f"rule_{rule_type}_enabled", f"rule_{rule_type}_threshold"]
-            for param_name in handler.parameters_schema:
-                fields.append(f"rule_{rule_type}_param_{param_name}")
-            rule_fieldsets.append(
-                (
-                    handler.label,
-                    {
-                        "fields": fields,
-                        "description": handler.description,
-                        "classes": ("grp-collapse grp-open",),
-                    },
-                )
+        rule_fieldsets = [
+            (
+                handler.label,
+                {
+                    "fields": [f"rule_{rule_type}_enabled"],
+                    "description": handler.description,
+                    "classes": ("grp-collapse grp-open",),
+                },
             )
+            for rule_type, handler in RULE_REGISTRY.items()
+        ]
         return base_fieldsets + rule_fieldsets

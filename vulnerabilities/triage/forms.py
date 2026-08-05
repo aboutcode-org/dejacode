@@ -7,7 +7,6 @@
 #
 
 from django import forms
-from django.utils.translation import gettext_lazy as _
 
 from dje.forms import DataspacedAdminForm
 from vulnerabilities.triage.models import TriageRuleset
@@ -17,7 +16,7 @@ from vulnerabilities.triage.rules import RULE_REGISTRY
 class TriageRulesetForm(DataspacedAdminForm):
     class Meta:
         model = TriageRuleset
-        fields = ["name", "description", "precedence", "enabled"]
+        fields = ["name", "description", "action", "precedence", "enabled"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,44 +33,12 @@ class TriageRulesetForm(DataspacedAdminForm):
                 required=False,
                 initial=rule_config.get("is_active", False),
             )
-            self.fields[f"rule_{rule_type}_threshold"] = forms.IntegerField(
-                label="Threshold",
-                required=False,
-                min_value=0,
-                initial=rule_config.get("threshold"),
-                widget=forms.NumberInput(
-                    attrs={"placeholder": f"Default: {handler.default_threshold}"}
-                ),
-                help_text=_(
-                    "Minimum violations to trigger the rule. Leave blank to use the default."
-                ),
-            )
-            for param_name, param_desc in handler.parameters_schema.items():
-                self.fields[f"rule_{rule_type}_param_{param_name}"] = forms.FloatField(
-                    label=param_name.replace("_", " ").title(),
-                    required=False,
-                    initial=(rule_config.get("parameters") or {}).get(param_name),
-                    help_text=param_desc,
-                )
 
     def build_rules_config(self):
         rules_config = {}
-        for rule_type, handler in RULE_REGISTRY.items():
-            rule_config = {}
+        for rule_type in RULE_REGISTRY:
             if self.cleaned_data.get(f"rule_{rule_type}_enabled"):
-                rule_config["is_active"] = True
-            threshold = self.cleaned_data.get(f"rule_{rule_type}_threshold")
-            if threshold is not None:
-                rule_config["threshold"] = threshold
-            parameters = {}
-            for param_name in handler.parameters_schema:
-                param_value = self.cleaned_data.get(f"rule_{rule_type}_param_{param_name}")
-                if param_value is not None:
-                    parameters[param_name] = param_value
-            if parameters:
-                rule_config["parameters"] = parameters
-            if rule_config:
-                rules_config[rule_type] = rule_config
+                rules_config[rule_type] = {"is_active": True}
         return rules_config
 
     def save(self, commit=True):

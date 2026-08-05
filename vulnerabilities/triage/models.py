@@ -13,6 +13,16 @@ from dje.models import DataspacedModel
 
 
 class TriageRuleset(DataspacedModel):
+    class Action(models.TextChoices):
+        UPGRADE = "upgrade", _("Upgrade Package")
+        APPLY_PATCH = "apply_patch", _("Apply Patch")
+        FORENSIC_ANALYSIS = "forensic_analysis", _("Forensic Analysis")
+        REACHABILITY_ANALYSIS = "reachability_analysis", _("Reachability Analysis")
+        CHANGE_CONFIG = "change_config", _("Change Configuration")
+        REPLACE_PACKAGE = "replace_package", _("Replace Package")
+        NOTIFY = "notify", _("Notify")
+        CREATE_REQUEST = "create_request", _("Create DejaCode Request")
+
     name = models.CharField(
         max_length=100,
         help_text=_("Short name identifying this triage ruleset."),
@@ -20,6 +30,12 @@ class TriageRuleset(DataspacedModel):
     description = models.TextField(
         blank=True,
         help_text=_("Optional description of the purpose or scope of this ruleset."),
+    )
+    action = models.CharField(
+        max_length=50,
+        choices=Action.choices,
+        blank=True,
+        help_text=_("Action recommended when this ruleset's conditions are met."),
     )
     precedence = models.PositiveIntegerField(
         default=100,
@@ -35,10 +51,7 @@ class TriageRuleset(DataspacedModel):
     rules_config = models.JSONField(
         default=dict,
         blank=True,
-        help_text=_(
-            "Active rules for this ruleset, keyed by rule type."
-            " Each entry may include is_active, threshold, and parameters."
-        ),
+        help_text=_("Active rules for this ruleset, keyed by rule type."),
     )
 
     class Meta:
