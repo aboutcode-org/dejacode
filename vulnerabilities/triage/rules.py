@@ -14,13 +14,16 @@ from policy.rules import BaseRule
 class BaseTriageRule(BaseRule):
     """Base class for vulnerability triage rule handlers."""
 
+    def count_violations(self, product):
+        raise NotImplementedError
+
 
 class CriticalVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "critical_vulnerability"
     label = "Critical Vulnerability"
     description = "Packages with at least one critical-severity vulnerability (risk score >= 8.0)."
 
-    def count_violations(self, product, threshold, parameters):
+    def count_violations(self, product):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         return (
             ProductPackage.objects.filter(
@@ -37,7 +40,7 @@ class ExploitedVulnerabilityTriageRule(BaseTriageRule):
     label = "Exploited Vulnerability"
     description = "Packages with vulnerabilities for which known exploits are available."
 
-    def count_violations(self, product, threshold, parameters):
+    def count_violations(self, product):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         # exploitability == 2.0 means known exploits are available
         return (
