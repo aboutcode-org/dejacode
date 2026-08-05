@@ -7,6 +7,8 @@
 #
 
 from django.contrib import admin
+from django.utils.html import escape
+from django.utils.html import mark_safe
 
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
@@ -18,9 +20,23 @@ from vulnerabilities.triage.rules import RULE_REGISTRY
 @admin.register(TriageRuleset, site=dejacode_site)
 class TriageRulesetAdmin(DataspacedAdmin):
     form = TriageRulesetForm
-    list_display = ["name", "precedence", "enabled", "get_dataspace"]
+    list_display = ["name", "get_enabled_rules", "precedence", "enabled", "get_dataspace"]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
     search_fields = ["name"]
+
+    @admin.display(description="Enabled rules")
+    def get_enabled_rules(self, obj):
+        enabled = [
+            RULE_REGISTRY[rule_type].label
+            for rule_type, config in obj.rules_config.items()
+            if rule_type in RULE_REGISTRY and config.get("is_active")
+        ]
+        return mark_safe("<br>".join(escape(label) for label in enabled))
+
+    def get_changes_details(self, form):
+        model_field_names = {field.name for field in TriageRuleset._meta.get_fields()}
+        form.__dict__["changed_data"] = [f for f in form.changed_data if f in model_field_names]
+        return super().get_changes_details(form)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         kwargs["fields"] = ["name", "description", "precedence", "enabled"]
