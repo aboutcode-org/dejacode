@@ -7,8 +7,10 @@
 #
 
 from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
 
 
 class TriageConfig(AppConfig):
     name = "vulnerabilities.triage"
     label = "vulnerabilities_triage"
+    verbose_name = _("Vulnerabilities Triage")
