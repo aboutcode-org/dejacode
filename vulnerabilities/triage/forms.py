@@ -48,29 +48,37 @@ class TriageRulesetForm(DataspacedAdminForm):
         config = getattr(self.instance, "rules_config", {}) or {}
         for rule_type, handler in RULE_REGISTRY.items():
             rule_config = config.get(rule_type, {})
-            self.fields[f"rule_{rule_type}_enabled"] = forms.BooleanField(
+            enable_key = f"rule_{rule_type}_enabled"
+            is_active = rule_config.get("is_active", False)
+            self.fields[enable_key] = forms.BooleanField(
                 label=f"Enable {handler.label}",
                 required=False,
-                initial=rule_config.get("is_active", False),
+                initial=is_active,
             )
+            self.initial[enable_key] = is_active
             for param_name, param_spec in handler.parameters_schema.items():
                 default = param_spec["default"]
                 initial_value = rule_config.get(param_name, default)
                 field = self.build_parameter_field(param_name, param_spec, initial_value)
-                self.fields[f"rule_{rule_type}_{param_name}"] = field
+                param_key = f"rule_{rule_type}_{param_name}"
+                self.fields[param_key] = field
+                self.initial[param_key] = initial_value
 
     def build_rules_config(self):
         rules_config = {}
         for rule_type, handler in RULE_REGISTRY.items():
-            if not self.cleaned_data.get(f"rule_{rule_type}_enabled"):
+            is_active = bool(self.cleaned_data.get(f"rule_{rule_type}_enabled"))
+            if not is_active and not handler.parameters_schema:
                 continue
-            rule_config = {"is_active": True}
+            rule_config = {"is_active": is_active}
             for param_name, param_spec in handler.parameters_schema.items():
+                default = param_spec["default"]
                 value = self.cleaned_data.get(f"rule_{rule_type}_{param_name}")
                 if value is not None:
-                    default = param_spec["default"]
-                    coerced_value = int(value) if isinstance(default, int) else float(value)
-                    rule_config[param_name] = coerced_value
+                    coerced = int(value) if isinstance(default, int) else float(value)
+                    rule_config[param_name] = coerced
+                else:
+                    rule_config[param_name] = default
             rules_config[rule_type] = rule_config
         return rules_config
 
