@@ -35,9 +35,7 @@ class BaseTriageRule(BaseRule):
 class RiskScoreTriageRule(BaseTriageRule):
     rule_type = "risk_score"
     label = "Risk Score"
-    description = (
-        "Packages with at least one vulnerability at or above the configured risk score threshold."
-    )
+    description = "Packages with a vulnerability at or above the configured risk score."
     parameters_schema = {
         "min_risk_score": {
             "default": 8.0,
@@ -63,10 +61,7 @@ class RiskScoreTriageRule(BaseTriageRule):
 class WeightedRiskTriageRule(BaseTriageRule):
     rule_type = "weighted_risk"
     label = "Weighted Risk"
-    description = (
-        "Packages whose weighted risk score (risk adjusted by purpose exposure factor)"
-        " is at or above the configured threshold."
-    )
+    description = "Packages with a weighted risk score at or above the configured threshold."
     parameters_schema = {
         "min_weighted_risk_score": {
             "default": 8.0,
@@ -93,7 +88,7 @@ class WeightedRiskTriageRule(BaseTriageRule):
 class ExploitedVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "exploited_vulnerability"
     label = "Exploited Vulnerability"
-    description = "Packages with vulnerabilities for which known exploits are available."
+    description = "Packages with a vulnerability for which a known exploit is available."
 
     def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
@@ -111,9 +106,7 @@ class ExploitedVulnerabilityTriageRule(BaseTriageRule):
 class ReachableVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "reachable_vulnerability"
     label = "Reachable Vulnerability"
-    description = (
-        "Packages with at least one vulnerability confirmed as reachable in the product context."
-    )
+    description = "Packages with a vulnerability confirmed as reachable in the product context."
 
     def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
@@ -133,7 +126,7 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
 class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "unresolved_vulnerability"
     label = "Unresolved Vulnerability"
-    description = "Packages with known vulnerabilities that have no completed triage analysis."
+    description = "Packages with known vulnerabilities that have no completed analysis."
 
     def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
@@ -163,13 +156,13 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "stale_vulnerability"
     label = "Stale Vulnerability"
     description = (
-        "Packages with vulnerabilities above the configured risk score threshold unaddressed"
-        " beyond the configured number of days."
+        "Packages with vulnerabilities above the configured risk score,"
+        " unaddressed beyond the configured number of days."
     )
     parameters_schema = {
         "min_risk_score": {
             "default": 8.0,
-            "help_text": "Minimum vulnerability risk score to consider (0.0-10.0). Default: 8.0.",
+            "help_text": "Minimum vulnerability risk score (0.0-10.0). Default: 8.0.",
         },
         "max_days": {
             "default": 30,
@@ -216,10 +209,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
 class DevOnlyPackageTriageRule(BaseTriageRule):
     rule_type = "dev_only_vulnerable_package"
     label = "Dev-Only Vulnerable Package"
-    description = (
-        "Packages not deployed in production (is_deployed=False) that are affected"
-        " by vulnerabilities."
-    )
+    description = "Packages not deployed in production that are affected by vulnerabilities."
 
     def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
