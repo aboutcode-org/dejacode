@@ -34,20 +34,27 @@ class TriageRulesetAdmin(DataspacedAdmin):
     )
 
     form = TriageRulesetForm
-    list_display = ["name", "action", "get_enabled_rules", "enabled", "get_dataspace"]
+    list_display = ["name", "action", "precedence", "get_enabled_rules", "enabled", "get_dataspace"]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
     search_fields = ["name"]
 
     @admin.display(description="Enabled rules")
     def get_enabled_rules(self, obj):
-        enabled = [
-            RULE_REGISTRY[rule_type].label
-            for rule_type, config in obj.rules_config.items()
-            if rule_type in RULE_REGISTRY and config.get("is_active")
-        ]
-        if not enabled:
+        lines = []
+        for rule_type, config in obj.rules_config.items():
+            if rule_type not in RULE_REGISTRY or not config.get("is_active"):
+                continue
+            handler = RULE_REGISTRY[rule_type]
+            params = {key: value for key, value in config.items() if key != "is_active"}
+            if params:
+                param_str = ", ".join(f"{key}: {value}" for key, value in params.items())
+                label = f"{handler.label} ({param_str})"
+            else:
+                label = handler.label
+            lines.append(escape(label))
+        if not lines:
             return ""
-        return mark_safe("<br>".join(escape(label) for label in enabled))
+        return mark_safe("<br>".join(lines))
 
     def get_changes_details(self, form):
         model_field_names = {field.name for field in TriageRuleset._meta.get_fields()}
@@ -65,17 +72,21 @@ class TriageRulesetAdmin(DataspacedAdmin):
                 {"fields": ["name", "description", "action", "precedence", "enabled"]},
             ),
         ]
-        rule_fieldsets = [
-            (
-                handler.label,
-                {
-                    "fields": [f"rule_{rule_type}_enabled"],
-                    "description": handler.description,
-                    "classes": ("grp-collapse grp-open",),
-                },
+        rule_fieldsets = []
+        for rule_type, handler in RULE_REGISTRY.items():
+            fields = [f"rule_{rule_type}_enabled"]
+            for param_name in handler.parameters_schema:
+                fields.append(f"rule_{rule_type}_{param_name}")
+            rule_fieldsets.append(
+                (
+                    handler.label,
+                    {
+                        "fields": fields,
+                        "description": handler.description,
+                        "classes": ("grp-collapse grp-open",),
+                    },
+                )
             )
-            for rule_type, handler in RULE_REGISTRY.items()
-        ]
         return base_fieldsets + rule_fieldsets
 
 
