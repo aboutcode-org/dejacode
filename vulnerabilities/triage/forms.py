@@ -22,6 +22,28 @@ class TriageRulesetForm(DataspacedAdminForm):
         super().__init__(*args, **kwargs)
         self.add_rule_fields()
 
+    def build_parameter_field(self, param_name, param_spec, initial_value):
+        label = param_name.replace("_", " ").capitalize()
+        help_text = param_spec["help_text"]
+        default = param_spec["default"]
+        if isinstance(default, int):
+            return forms.IntegerField(
+                label=label,
+                help_text=help_text,
+                required=False,
+                initial=initial_value,
+                min_value=1,
+            )
+        return forms.DecimalField(
+            label=label,
+            help_text=help_text,
+            required=False,
+            initial=initial_value,
+            min_value=0,
+            max_value=10,
+            decimal_places=1,
+        )
+
     def add_rule_fields(self):
         config = getattr(self.instance, "rules_config", {}) or {}
         for rule_type, handler in RULE_REGISTRY.items():
@@ -31,12 +53,25 @@ class TriageRulesetForm(DataspacedAdminForm):
                 required=False,
                 initial=rule_config.get("is_active", False),
             )
+            for param_name, param_spec in handler.parameters_schema.items():
+                default = param_spec["default"]
+                initial_value = rule_config.get(param_name, default)
+                field = self.build_parameter_field(param_name, param_spec, initial_value)
+                self.fields[f"rule_{rule_type}_{param_name}"] = field
 
     def build_rules_config(self):
         rules_config = {}
-        for rule_type in RULE_REGISTRY:
-            if self.cleaned_data.get(f"rule_{rule_type}_enabled"):
-                rules_config[rule_type] = {"is_active": True}
+        for rule_type, handler in RULE_REGISTRY.items():
+            if not self.cleaned_data.get(f"rule_{rule_type}_enabled"):
+                continue
+            rule_config = {"is_active": True}
+            for param_name, param_spec in handler.parameters_schema.items():
+                value = self.cleaned_data.get(f"rule_{rule_type}_{param_name}")
+                if value is not None:
+                    default = param_spec["default"]
+                    coerced_value = int(value) if isinstance(default, int) else float(value)
+                    rule_config[param_name] = coerced_value
+            rules_config[rule_type] = rule_config
         return rules_config
 
     def save(self, commit=True):
