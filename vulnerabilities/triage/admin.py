@@ -34,7 +34,15 @@ class TriageRulesetAdmin(DataspacedAdmin):
     )
 
     form = TriageRulesetForm
-    list_display = ["name", "action", "precedence", "get_enabled_rules", "enabled", "get_dataspace"]
+    list_display = [
+        "name",
+        "action",
+        "precedence",
+        "get_enabled_rules",
+        "enabled",
+        "description",
+        "get_dataspace",
+    ]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
     search_fields = ["name"]
 
