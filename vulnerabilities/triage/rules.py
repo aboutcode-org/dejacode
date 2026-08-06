@@ -28,7 +28,7 @@ class BaseTriageRule(BaseRule):
 
     parameters_schema = {}
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         raise NotImplementedError
 
 
@@ -45,7 +45,7 @@ class RiskScoreTriageRule(BaseTriageRule):
         },
     }
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         min_risk_score = (parameters or {}).get(
             "min_risk_score", self.parameters_schema["min_risk_score"]["default"]
@@ -74,7 +74,7 @@ class WeightedRiskTriageRule(BaseTriageRule):
         },
     }
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         min_weighted_risk_score = (parameters or {}).get(
             "min_weighted_risk_score",
@@ -95,7 +95,7 @@ class ExploitedVulnerabilityTriageRule(BaseTriageRule):
     label = "Exploited Vulnerability"
     description = "Packages with vulnerabilities for which known exploits are available."
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         # exploitability == 2.0 means known exploits are available
         return (
@@ -115,7 +115,7 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
         "Packages with at least one vulnerability confirmed as reachable in the product context."
     )
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
         reachable_analysis = VulnerabilityAnalysis.objects.filter(
@@ -135,7 +135,7 @@ class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
     label = "Unresolved Vulnerability"
     description = "Packages with known vulnerabilities that have no completed triage analysis."
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
@@ -179,7 +179,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         },
     }
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
@@ -221,7 +221,7 @@ class DevOnlyPackageTriageRule(BaseTriageRule):
         " by vulnerabilities."
     )
 
-    def count_violations(self, product, parameters=None):
+    def count_matches(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         return (
             ProductPackage.objects.filter(
