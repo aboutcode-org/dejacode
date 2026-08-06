@@ -9,7 +9,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from dje.models import DataspacedManager
 from dje.models import DataspacedModel
+from dje.models import ProductSecuredQuerySet
 
 
 class TriageRuleset(DataspacedModel):
@@ -86,6 +88,9 @@ class TriageDecision(DataspacedModel):
         default=list,
         help_text=_("List of rule types that detected violations during this evaluation."),
     )
+
+    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
+
     detected_date = models.DateTimeField(
         auto_now_add=True,
         help_text=_("Date and time when this action was first recommended."),

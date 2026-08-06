@@ -19,6 +19,7 @@ from vulnerabilities.triage.models import TriageRuleset
 docker compose -f compose.dev.yml exec web ./manage.py evaluate_triage nexB
 """
 
+
 class Command(BaseCommand):
     help = "Evaluate all enabled triage rulesets against all products in the given dataspace."
 
