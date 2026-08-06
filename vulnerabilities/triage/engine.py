@@ -26,7 +26,8 @@ def evaluate_ruleset(ruleset, product):
         if not handler:
             continue
 
-        if handler.count_violations(product=product) > 0:
+        parameters = {key: value for key, value in config.items() if key != "is_active"}
+        if handler.count_matches(product=product, parameters=parameters) > 0:
             matched_rules.append(rule_type)
 
     if matched_rules:
