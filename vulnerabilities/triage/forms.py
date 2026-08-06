@@ -9,11 +9,17 @@
 from django import forms
 
 from dje.forms import DataspacedAdminForm
+from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
 
 class TriageRulesetForm(DataspacedAdminForm):
+    action = forms.ChoiceField(
+        choices=[("", "---------")] + list(TriageAction.choices),
+        required=False,
+    )
+
     class Meta:
         model = TriageRuleset
         fields = ["name", "description", "action", "precedence", "enabled"]

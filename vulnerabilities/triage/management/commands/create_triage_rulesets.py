@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from dje.models import Dataspace
+from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 
 """
@@ -20,7 +21,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Critical Exploited Vulnerability",
         "description": "Packages with a critical vulnerability and a known active exploit.",
-        "action": TriageRuleset.Action.UPGRADE,
+        "action": TriageAction.UPGRADE,
         "precedence": 400,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
@@ -30,7 +31,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Active Exploit",
         "description": "Packages with a known exploit available, regardless of severity.",
-        "action": TriageRuleset.Action.UPGRADE,
+        "action": TriageAction.UPGRADE,
         "precedence": 300,
         "rules_config": {
             "exploited_vulnerability": {"is_active": True},
@@ -41,7 +42,7 @@ REFERENCE_RULESETS = [
         "description": (
             "Packages with a vulnerability confirmed as reachable in the product context."
         ),
-        "action": TriageRuleset.Action.APPLY_PATCH,
+        "action": TriageAction.APPLY_PATCH,
         "precedence": 250,
         "rules_config": {
             "reachable_vulnerability": {"is_active": True},
@@ -50,7 +51,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Critical Vulnerability",
         "description": "Packages with a critical-severity vulnerability and no known exploit.",
-        "action": TriageRuleset.Action.APPLY_PATCH,
+        "action": TriageAction.APPLY_PATCH,
         "precedence": 200,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
@@ -62,7 +63,7 @@ REFERENCE_RULESETS = [
             "Packages with a critical-severity vulnerability left unaddressed"
             " for more than 30 days."
         ),
-        "action": TriageRuleset.Action.APPLY_PATCH,
+        "action": TriageAction.APPLY_PATCH,
         "precedence": 150,
         "rules_config": {
             "stale_vulnerability": {"is_active": True, "min_risk_score": 8.0, "max_days": 30},
@@ -71,7 +72,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Unresolved Vulnerability",
         "description": "Packages with vulnerabilities that have no completed triage analysis.",
-        "action": TriageRuleset.Action.FORENSIC_ANALYSIS,
+        "action": TriageAction.FORENSIC_ANALYSIS,
         "precedence": 100,
         "rules_config": {
             "unresolved_vulnerability": {"is_active": True},
@@ -80,7 +81,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Dev-Only Vulnerable Package",
         "description": "Packages not deployed in production that are affected by vulnerabilities.",
-        "action": TriageRuleset.Action.NOTIFY,
+        "action": TriageAction.NOTIFY,
         "precedence": 50,
         "rules_config": {
             "dev_only_vulnerable_package": {"is_active": True},

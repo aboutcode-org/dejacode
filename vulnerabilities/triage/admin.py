@@ -13,6 +13,7 @@ from django.utils.html import mark_safe
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from vulnerabilities.triage.forms import TriageRulesetForm
+from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageDecision
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
@@ -36,7 +37,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
     form = TriageRulesetForm
     list_display = [
         "name",
-        "action",
+        "get_action_label",
         "precedence",
         "get_enabled_rules",
         "description",
@@ -45,6 +46,10 @@ class TriageRulesetAdmin(DataspacedAdmin):
     ]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
     search_fields = ["name"]
+
+    @admin.display(description="Action")
+    def get_action_label(self, obj):
+        return dict(TriageAction.choices).get(obj.action, obj.action)
 
     @admin.display(description="Enabled rules")
     def get_enabled_rules(self, obj):
@@ -112,7 +117,7 @@ class TriageDecisionAdmin(DataspacedAdmin):
     list_display = [
         "product",
         "ruleset",
-        "action",
+        "get_action_label",
         "get_matched_rules",
         "detected_date",
         "last_checked",
@@ -123,11 +128,15 @@ class TriageDecisionAdmin(DataspacedAdmin):
     readonly_fields = DataspacedAdmin.readonly_fields + (
         "product",
         "ruleset",
-        "action",
+        "get_action_label",
         "matched_rules",
         "detected_date",
         "last_checked",
     )
+
+    @admin.display(description="Action")
+    def get_action_label(self, obj):
+        return dict(TriageAction.choices).get(obj.action, obj.action)
 
     @admin.display(description="Matched rules")
     def get_matched_rules(self, obj):
