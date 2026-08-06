@@ -18,8 +18,24 @@ docker compose -f compose.dev.yml exec web ./manage.py create_triage_rulesets ne
 
 REFERENCE_RULESETS = [
     {
+        "name": "Critical Exploited Vulnerability",
+        "description": (
+            "Critical-severity vulnerability (risk score >= 8.0) with a known active exploit."
+            " Requires immediate package upgrade."
+        ),
+        "action": TriageRuleset.Action.UPGRADE,
+        "precedence": 400,
+        "rules_config": {
+            "risk_score": {"is_active": True, "min_risk_score": 8.0},
+            "exploited_vulnerability": {"is_active": True},
+        },
+    },
+    {
         "name": "Active Exploit",
-        "description": "Packages with known active exploits require immediate upgrade.",
+        "description": (
+            "Vulnerability with a known active exploit, regardless of severity."
+            " Requires immediate package upgrade."
+        ),
         "action": TriageRuleset.Action.UPGRADE,
         "precedence": 300,
         "rules_config": {
@@ -27,24 +43,63 @@ REFERENCE_RULESETS = [
         },
     },
     {
-        "name": "Critical Vulnerability",
+        "name": "Reachable Vulnerability",
         "description": (
-            "Critical vulnerabilities with no known exploit require forensic analysis."
+            "Vulnerability confirmed as reachable in the product context."
+            " Requires applying a patch."
         ),
-        "action": TriageRuleset.Action.FORENSIC_ANALYSIS,
-        "precedence": 200,
+        "action": TriageRuleset.Action.APPLY_PATCH,
+        "precedence": 250,
         "rules_config": {
-            "critical_vulnerability": {"is_active": True},
+            "reachable_vulnerability": {"is_active": True},
         },
     },
     {
-        "name": "Critical + Exploited",
-        "description": ("Both critical severity and active exploit detected, upgrade immediately."),
-        "action": TriageRuleset.Action.UPGRADE,
-        "precedence": 400,
+        "name": "Critical Vulnerability",
+        "description": (
+            "Critical-severity vulnerability (risk score >= 8.0) with no known exploit."
+            " Requires applying a patch."
+        ),
+        "action": TriageRuleset.Action.APPLY_PATCH,
+        "precedence": 200,
         "rules_config": {
-            "critical_vulnerability": {"is_active": True},
-            "exploited_vulnerability": {"is_active": True},
+            "risk_score": {"is_active": True, "min_risk_score": 8.0},
+        },
+    },
+    {
+        "name": "Stale Vulnerability",
+        "description": (
+            "Critical-severity vulnerability (risk score >= 8.0) unaddressed for more than 30 days."
+            " Requires applying a patch without further delay."
+        ),
+        "action": TriageRuleset.Action.APPLY_PATCH,
+        "precedence": 150,
+        "rules_config": {
+            "stale_vulnerability": {"is_active": True, "min_risk_score": 8.0, "max_days": 30},
+        },
+    },
+    {
+        "name": "Unresolved Vulnerability",
+        "description": (
+            "Packages with known vulnerabilities that have no completed triage analysis."
+            " Requires forensic analysis to determine impact and next steps."
+        ),
+        "action": TriageRuleset.Action.FORENSIC_ANALYSIS,
+        "precedence": 100,
+        "rules_config": {
+            "unresolved_vulnerability": {"is_active": True},
+        },
+    },
+    {
+        "name": "Dev-Only Vulnerable Package",
+        "description": (
+            "Packages not deployed in production that are affected by vulnerabilities."
+            " Lower urgency, notify the team for awareness."
+        ),
+        "action": TriageRuleset.Action.NOTIFY,
+        "precedence": 50,
+        "rules_config": {
+            "dev_only_vulnerable_package": {"is_active": True},
         },
     },
 ]
