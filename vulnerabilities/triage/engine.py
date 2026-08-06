@@ -13,9 +13,11 @@ def evaluate_ruleset(ruleset, product):
     """
     Evaluate a TriageRuleset against a product.
 
-    Iterates all active rules in the ruleset. If any rule detects at least one
-    violation, returns the ruleset's action. Returns None if no rule fires.
+    Iterates all active rules in the ruleset. Returns a dict with the recommended
+    action and the list of rule types that fired, or None if no rule fires.
     """
+    matched_rules = []
+
     for rule_type, config in ruleset.rules_config.items():
         if not config.get("is_active"):
             continue
@@ -25,4 +27,7 @@ def evaluate_ruleset(ruleset, product):
             continue
 
         if handler.count_violations(product=product) > 0:
-            return ruleset.action
+            matched_rules.append(rule_type)
+
+    if matched_rules:
+        return {"action": ruleset.action, "matched_rules": matched_rules}
