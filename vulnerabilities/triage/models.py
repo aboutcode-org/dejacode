@@ -60,3 +60,44 @@ class TriageRuleset(DataspacedModel):
 
     def __str__(self):
         return self.name
+
+
+class TriageDecision(DataspacedModel):
+    """Stores the result of evaluating a TriageRuleset against a product."""
+
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="triage_decisions",
+        help_text=_("The product against which this ruleset was evaluated."),
+    )
+    ruleset = models.ForeignKey(
+        to="vulnerabilities_triage.TriageRuleset",
+        on_delete=models.CASCADE,
+        related_name="triage_decisions",
+        help_text=_("The ruleset that produced this action."),
+    )
+    action = models.CharField(
+        max_length=50,
+        choices=TriageRuleset.Action.choices,
+        help_text=_("Recommended action at the time of evaluation."),
+    )
+    matched_rules = models.JSONField(
+        default=list,
+        help_text=_("List of rule types that detected violations during this evaluation."),
+    )
+    detected_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("Date and time when this action was first recommended."),
+    )
+    last_checked = models.DateTimeField(
+        auto_now=True,
+        help_text=_("Date and time of the last evaluation."),
+    )
+
+    class Meta:
+        unique_together = (("dataspace", "uuid"), ("product", "ruleset"))
+        ordering = ["-detected_date"]
+
+    def __str__(self):
+        return f"{self.ruleset} / {self.product}: {self.action}"
