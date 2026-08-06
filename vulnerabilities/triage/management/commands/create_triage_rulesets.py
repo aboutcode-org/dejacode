@@ -19,10 +19,7 @@ docker compose -f compose.dev.yml exec web ./manage.py create_triage_rulesets ne
 REFERENCE_RULESETS = [
     {
         "name": "Critical Exploited Vulnerability",
-        "description": (
-            "Critical-severity vulnerability (risk score >= 8.0) with a known active exploit."
-            " Requires immediate package upgrade."
-        ),
+        "description": "Packages with a critical vulnerability and a known active exploit.",
         "action": TriageRuleset.Action.UPGRADE,
         "precedence": 400,
         "rules_config": {
@@ -32,10 +29,7 @@ REFERENCE_RULESETS = [
     },
     {
         "name": "Active Exploit",
-        "description": (
-            "Vulnerability with a known active exploit, regardless of severity."
-            " Requires immediate package upgrade."
-        ),
+        "description": "Packages with a known exploit available, regardless of severity.",
         "action": TriageRuleset.Action.UPGRADE,
         "precedence": 300,
         "rules_config": {
@@ -45,8 +39,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Reachable Vulnerability",
         "description": (
-            "Vulnerability confirmed as reachable in the product context."
-            " Requires applying a patch."
+            "Packages with a vulnerability confirmed as reachable in the product context."
         ),
         "action": TriageRuleset.Action.APPLY_PATCH,
         "precedence": 250,
@@ -56,10 +49,7 @@ REFERENCE_RULESETS = [
     },
     {
         "name": "Critical Vulnerability",
-        "description": (
-            "Critical-severity vulnerability (risk score >= 8.0) with no known exploit."
-            " Requires applying a patch."
-        ),
+        "description": "Packages with a critical-severity vulnerability and no known exploit.",
         "action": TriageRuleset.Action.APPLY_PATCH,
         "precedence": 200,
         "rules_config": {
@@ -69,8 +59,8 @@ REFERENCE_RULESETS = [
     {
         "name": "Stale Vulnerability",
         "description": (
-            "Critical-severity vulnerability (risk score >= 8.0) unaddressed for more than 30 days."
-            " Requires applying a patch without further delay."
+            "Packages with a critical-severity vulnerability left unaddressed"
+            " for more than 30 days."
         ),
         "action": TriageRuleset.Action.APPLY_PATCH,
         "precedence": 150,
@@ -80,10 +70,7 @@ REFERENCE_RULESETS = [
     },
     {
         "name": "Unresolved Vulnerability",
-        "description": (
-            "Packages with known vulnerabilities that have no completed triage analysis."
-            " Requires forensic analysis to determine impact and next steps."
-        ),
+        "description": "Packages with vulnerabilities that have no completed triage analysis.",
         "action": TriageRuleset.Action.FORENSIC_ANALYSIS,
         "precedence": 100,
         "rules_config": {
@@ -92,10 +79,7 @@ REFERENCE_RULESETS = [
     },
     {
         "name": "Dev-Only Vulnerable Package",
-        "description": (
-            "Packages not deployed in production that are affected by vulnerabilities."
-            " Lower urgency, notify the team for awareness."
-        ),
+        "description": "Packages not deployed in production that are affected by vulnerabilities.",
         "action": TriageRuleset.Action.NOTIFY,
         "precedence": 50,
         "rules_config": {

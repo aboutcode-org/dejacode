@@ -39,8 +39,8 @@ class TriageRulesetAdmin(DataspacedAdmin):
         "action",
         "precedence",
         "get_enabled_rules",
-        "enabled",
         "description",
+        "enabled",
         "get_dataspace",
     ]
     list_filter = DataspacedAdmin.list_filter + ("enabled",)
