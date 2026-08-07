@@ -8,6 +8,8 @@
 
 from django.apps import apps
 from django.db import models
+from django.db.models import OuterRef
+from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _
 
 from dje.models import DataspacedManager
@@ -83,13 +85,20 @@ class TriageRecordQuerySet(ProductSecuredQuerySet):
         """
         Return one record per product_package: the highest-precedence active ruleset.
 
-        Uses PostgreSQL DISTINCT ON to pick the winning ruleset when multiple rulesets
-        fire for the same package. Chain after a product filter to scope the results.
+        Uses a correlated subquery to find the winning ruleset per package rather than
+        DISTINCT ON, which breaks under Django's COUNT wrapping and select_related JOINs.
         """
-        return (
-            self.filter(ruleset__enabled=True)
-            .order_by("product_package", "-ruleset__precedence")
-            .distinct("product_package")
+        winning_ruleset_id = (
+            self.model.objects.filter(
+                product_package=OuterRef("product_package"),
+                ruleset__enabled=True,
+            )
+            .order_by("-ruleset__precedence")
+            .values("ruleset_id")[:1]
+        )
+        return self.filter(
+            ruleset__enabled=True,
+            ruleset_id=Subquery(winning_ruleset_id),
         )
 
 

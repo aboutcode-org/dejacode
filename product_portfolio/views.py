@@ -150,6 +150,9 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
 
 
 class BaseProductViewMixin:
@@ -295,6 +298,7 @@ class ProductDetailsView(
             ],
         },
         "vulnerabilities": {},
+        "triage": {},
         "codebase": {
             "fields": [
                 "path",
@@ -659,6 +663,34 @@ class ProductDetailsView(
         tab_context = {
             "tab_view_url": tab_view_url,
             "tab_object_name": "vulnerabilities",
+        }
+
+        return {
+            "label": mark_safe(label),
+            "fields": [(None, tab_context, None, template)],
+        }
+
+    def tab_triage(self):
+        product = self.object
+
+        triage_count = (
+            TriageRecord.objects.filter(product_package__product=product).primary_actions().count()
+        )
+
+        badge_class = "bg-primary-subtle text-primary-emphasis"
+        if triage_count > 0:
+            badge_class = "bg-warning-subtle text-warning-emphasis"
+
+        label = f'Triage <span class="badge {badge_class}">{triage_count}</span>'
+
+        tab_view_url = product.get_url("tab_triage")
+        if full_query_string := self.request.META["QUERY_STRING"]:
+            tab_view_url += f"?{full_query_string}"
+
+        template = "tabs/tab_async_loader.html"
+        tab_context = {
+            "tab_view_url": tab_view_url,
+            "tab_object_name": "triage actions",
         }
 
         return {
@@ -1313,6 +1345,65 @@ class ProductTabVulnerabilitiesView(
                 "total_count": base_productpackage_qs.count(),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
+            }
+        )
+
+        if page_obj:
+            previous_url, next_url = self.get_previous_next(page_obj)
+            context_data.update(
+                {
+                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
+                    "next_url": (next_url or "") + f"#{self.tab_id}",
+                }
+            )
+
+        return context_data
+
+
+class ProductTabTriageView(
+    LoginRequiredMixin,
+    BaseProductViewMixin,
+    PaginationMixin,
+    TabContentView,
+):
+    template_name = "product_portfolio/tabs/tab_triage.html"
+    paginate_by = 50
+    query_dict_page_param = "triage-page"
+    tab_id = "triage"
+
+    def get_context_data(self, **kwargs):
+        product = self.object
+
+        action_labels = dict(TriageAction.choices)
+        rule_labels = {
+            rule_type: handler.label for rule_type, handler in TRIAGE_RULE_REGISTRY.items()
+        }
+
+        triage_qs = (
+            TriageRecord.objects.filter(product_package__product=product)
+            .primary_actions()
+            .select_related(
+                "product_package__package",
+                "ruleset",
+            )
+        )
+        total_count = triage_qs.count()
+
+        paginator = Paginator(triage_qs, self.paginate_by)
+        page_number = self.request.GET.get(self.query_dict_page_param)
+        page_obj = paginator.get_page(page_number)
+
+        for record in page_obj.object_list:
+            record.action_label = action_labels.get(record.action, record.action)
+            record.rule_labels = [
+                rule_labels.get(rule_type, rule_type) for rule_type in record.matched_rules
+            ]
+
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "page_obj": page_obj,
+                "total_count": total_count,
             }
         )
 

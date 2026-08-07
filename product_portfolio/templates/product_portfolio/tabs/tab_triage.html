@@ -1,0 +1,58 @@
+{% load i18n %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="text-body-secondary small">
+    {{ total_count }} package{{ total_count|pluralize }} with pending triage action{{ total_count|pluralize }}
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
+  {% endif %}
+</div>
+
+{% if page_obj.object_list %}
+  <table class="table table-bordered table-md text-break">
+    <thead>
+      <tr>
+        <th>{% trans "Package" %}</th>
+        <th>{% trans "Recommended action" %}</th>
+        <th>{% trans "Ruleset" %}</th>
+        <th>{% trans "Rules triggered" %}</th>
+        <th>{% trans "Detected" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in page_obj.object_list %}
+        <tr>
+          <td>
+            <strong>
+              <a href="{{ record.product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">
+                {{ record.product_package.package }}
+              </a>
+            </strong>
+          </td>
+          <td>
+            <span class="badge bg-warning-subtle text-warning-emphasis">
+              {{ record.action_label }}
+            </span>
+          </td>
+          <td class="text-nowrap">{{ record.ruleset.name }}</td>
+          <td>
+            {% for label in record.rule_labels %}
+              <div class="small">{{ label }}</div>
+            {% endfor %}
+          </td>
+          <td class="text-nowrap small text-body-secondary">{{ record.detected_date|date:"Y-m-d" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj.paginator.num_pages > 1 %}
+    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
+  {% endif %}
+{% else %}
+  <div class="text-center py-5">
+    <i class="fa-solid fa-circle-check text-success fs-2"></i>
+    <div class="mt-2 fw-semibold">{% trans "No pending triage actions" %}</div>
+    <div class="text-body-secondary small mt-1">{% trans "All packages are within acceptable risk parameters." %}</div>
+  </div>
+{% endif %}
