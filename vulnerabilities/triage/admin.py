@@ -140,6 +140,12 @@ class TriageRecordAdmin(DataspacedAdmin):
         "detected_date",
         "last_checked",
     )
+    ordering = [
+        "product_package__product__name",
+        "product_package__product__version",
+        "product_package__package__name",
+        "-ruleset__precedence",
+    ]
 
     @admin.display(description="Product", ordering="product_package__product__name")
     def get_product(self, obj):
