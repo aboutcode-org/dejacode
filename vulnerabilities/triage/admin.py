@@ -13,8 +13,8 @@ from django.utils.html import mark_safe
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from vulnerabilities.triage.forms import TriageRulesetForm
+from vulnerabilities.triage.models import ProductPackageTriage
 from vulnerabilities.triage.models import TriageAction
-from vulnerabilities.triage.models import TriageDecision
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
@@ -103,19 +103,22 @@ class TriageRulesetAdmin(DataspacedAdmin):
         return base_fieldsets + rule_fieldsets
 
 
-@admin.register(TriageDecision, site=dejacode_site)
-class TriageDecisionAdmin(DataspacedAdmin):
+@admin.register(ProductPackageTriage, site=dejacode_site)
+class ProductPackageTriageAdmin(DataspacedAdmin):
     short_description = (
-        "A Triage Decision records the result of evaluating a ruleset against a product."
+        "A Package Triage record stores the recommended action for a specific package"
+        " usage within a product, as determined by the evaluation engine."
     )
     long_description = (
-        "Triage Decisions are created automatically by the evaluation engine. Each record"
-        " stores the recommended action, the rules that matched, and the dates of first"
-        " detection and last check. These records are read-only in the admin."
+        "Package Triage records are created and updated automatically when a ruleset is"
+        " evaluated against a product. Each record links a specific package usage to the"
+        " ruleset that triggered it, captures which rules fired, and timestamps the first"
+        " detection and most recent check. These records are read-only in the admin."
     )
 
     list_display = [
-        "product",
+        "get_product",
+        "get_package",
         "ruleset",
         "get_action_label",
         "get_matched_rules",
@@ -124,15 +127,27 @@ class TriageDecisionAdmin(DataspacedAdmin):
         "get_dataspace",
     ]
     list_filter = DataspacedAdmin.list_filter + ("action", "ruleset")
-    search_fields = ["product__name", "ruleset__name"]
+    search_fields = [
+        "product_package__package__name",
+        "product_package__product__name",
+        "ruleset__name",
+    ]
     readonly_fields = DataspacedAdmin.readonly_fields + (
-        "product",
+        "product_package",
         "ruleset",
         "get_action_label",
         "matched_rules",
         "detected_date",
         "last_checked",
     )
+
+    @admin.display(description="Product", ordering="product_package__product__name")
+    def get_product(self, obj):
+        return obj.product_package.product
+
+    @admin.display(description="Package", ordering="product_package__package__name")
+    def get_package(self, obj):
+        return obj.product_package.package
 
     @admin.display(description="Action")
     def get_action_label(self, obj):
@@ -154,8 +169,15 @@ class TriageDecisionAdmin(DataspacedAdmin):
             super()
             .get_queryset(request)
             .product_secured(request.user, "view_product")
-            .select_related("product", "ruleset")
+            .select_related(
+                "product_package__product",
+                "product_package__package",
+                "ruleset",
+            )
         )
 
     def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False

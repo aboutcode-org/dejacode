@@ -6,17 +6,16 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from vulnerabilities.triage.models import ProductPackageTriage
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
 
-def evaluate_ruleset(ruleset, product):
+def collect_matches(ruleset, product):
     """
-    Evaluate a TriageRuleset against a product.
-
-    Iterates all active rules in the ruleset. Returns a dict with the recommended
-    action and the list of rule types that fired, or None if no rule fires.
+    Return a dict mapping each matching ProductPackage PK to the list of rule
+    types that fired for it, for all active rules in the ruleset.
     """
-    matched_rules = []
+    matched_rules_per_package_id = {}
 
     for rule_type, config in ruleset.rules_config.items():
         if not config.get("is_active"):
@@ -27,8 +26,44 @@ def evaluate_ruleset(ruleset, product):
             continue
 
         parameters = {key: value for key, value in config.items() if key != "is_active"}
-        if handler.count_matches(product=product, parameters=parameters) > 0:
-            matched_rules.append(rule_type)
+        matching_package_ids = handler.get_matching_packages(
+            product=product,
+            parameters=parameters,
+        ).values_list("pk", flat=True)
 
-    if matched_rules:
-        return {"action": ruleset.action, "matched_rules": matched_rules}
+        for package_id in matching_package_ids:
+            matched_rules_per_package_id.setdefault(package_id, []).append(rule_type)
+
+    return matched_rules_per_package_id
+
+
+def sync_triage_records(ruleset, product, matched_rules_per_package_id):
+    """
+    Create or update one ProductPackageTriage record per matching package, then
+    delete records for packages that no longer match any rule in the ruleset.
+    """
+    for product_package_id, matched_rules in matched_rules_per_package_id.items():
+        ProductPackageTriage.objects.update_or_create(
+            product_package_id=product_package_id,
+            ruleset=ruleset,
+            defaults={
+                "action": ruleset.action,
+                "matched_rules": matched_rules,
+                "dataspace": ruleset.dataspace,
+            },
+        )
+
+    ProductPackageTriage.objects.filter(
+        ruleset=ruleset,
+        product_package__product=product,
+    ).exclude(product_package_id__in=matched_rules_per_package_id.keys()).delete()
+
+
+def evaluate_ruleset(ruleset, product):
+    """Evaluate a TriageRuleset against a product and persist the results."""
+    matched_rules_per_package_id = collect_matches(ruleset=ruleset, product=product)
+    sync_triage_records(
+        ruleset=ruleset,
+        product=product,
+        matched_rules_per_package_id=matched_rules_per_package_id,
+    )

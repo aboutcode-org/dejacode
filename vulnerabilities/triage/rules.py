@@ -28,7 +28,7 @@ class BaseTriageRule(BaseRule):
 
     parameters_schema = {}
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         raise NotImplementedError
 
 
@@ -43,19 +43,15 @@ class RiskScoreTriageRule(BaseTriageRule):
         },
     }
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         min_risk_score = (parameters or {}).get(
             "min_risk_score", self.parameters_schema["min_risk_score"]["default"]
         )
-        return (
-            ProductPackage.objects.filter(
-                product=product,
-                package__affected_by_vulnerabilities__risk_score__gte=min_risk_score,
-            )
-            .distinct()
-            .count()
-        )
+        return ProductPackage.objects.filter(
+            product=product,
+            package__affected_by_vulnerabilities__risk_score__gte=min_risk_score,
+        ).distinct()
 
 
 class WeightedRiskTriageRule(BaseTriageRule):
@@ -69,20 +65,16 @@ class WeightedRiskTriageRule(BaseTriageRule):
         },
     }
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         min_weighted_risk_score = (parameters or {}).get(
             "min_weighted_risk_score",
             self.parameters_schema["min_weighted_risk_score"]["default"],
         )
-        return (
-            ProductPackage.objects.filter(
-                product=product,
-                weighted_risk_score__gte=min_weighted_risk_score,
-            )
-            .distinct()
-            .count()
-        )
+        return ProductPackage.objects.filter(
+            product=product,
+            weighted_risk_score__gte=min_weighted_risk_score,
+        ).distinct()
 
 
 class ExploitedVulnerabilityTriageRule(BaseTriageRule):
@@ -90,17 +82,13 @@ class ExploitedVulnerabilityTriageRule(BaseTriageRule):
     label = "Exploited Vulnerability"
     description = "Packages with a vulnerability for which a known exploit is available."
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         # exploitability == 2.0 means known exploits are available
-        return (
-            ProductPackage.objects.filter(
-                product=product,
-                package__affected_by_vulnerabilities__exploitability=2.0,
-            )
-            .distinct()
-            .count()
-        )
+        return ProductPackage.objects.filter(
+            product=product,
+            package__affected_by_vulnerabilities__exploitability=2.0,
+        ).distinct()
 
 
 class ReachableVulnerabilityTriageRule(BaseTriageRule):
@@ -108,7 +96,7 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
     label = "Reachable Vulnerability"
     description = "Packages with a vulnerability confirmed as reachable in the product context."
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
         reachable_analysis = VulnerabilityAnalysis.objects.filter(
@@ -119,7 +107,6 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
             ProductPackage.objects.filter(product=product)
             .filter(Exists(reachable_analysis))
             .distinct()
-            .count()
         )
 
 
@@ -128,7 +115,7 @@ class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
     label = "Unresolved Vulnerability"
     description = "Packages with known vulnerabilities that have no completed analysis."
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
@@ -148,7 +135,6 @@ class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
             ProductPackage.objects.filter(product=product)
             .filter(Exists(unresolved_link))
             .distinct()
-            .count()
         )
 
 
@@ -172,7 +158,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         },
     }
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
@@ -198,12 +184,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
             .annotate(has_terminal=Exists(terminal_analysis))
             .filter(has_terminal=False)
         )
-        return (
-            ProductPackage.objects.filter(product=product)
-            .filter(Exists(stale_link))
-            .distinct()
-            .count()
-        )
+        return ProductPackage.objects.filter(product=product).filter(Exists(stale_link)).distinct()
 
 
 class DevOnlyPackageTriageRule(BaseTriageRule):
@@ -211,17 +192,13 @@ class DevOnlyPackageTriageRule(BaseTriageRule):
     label = "Dev-Only Vulnerable Package"
     description = "Packages not deployed in production that are affected by vulnerabilities."
 
-    def count_matches(self, product, parameters=None):
+    def get_matching_packages(self, product, parameters=None):
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
-        return (
-            ProductPackage.objects.filter(
-                product=product,
-                is_deployed=False,
-                package__affected_by_vulnerabilities__isnull=False,
-            )
-            .distinct()
-            .count()
-        )
+        return ProductPackage.objects.filter(
+            product=product,
+            is_deployed=False,
+            package__affected_by_vulnerabilities__isnull=False,
+        ).distinct()
 
 
 RULE_REGISTRY = {

@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.apps import apps
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -64,44 +65,58 @@ class TriageRuleset(DataspacedModel):
         return self.name
 
 
-class TriageDecision(DataspacedModel):
-    """Stores the result of evaluating a TriageRuleset against a product."""
+class ProductPackageTriageQuerySet(ProductSecuredQuerySet):
+    def product_secured(self, user=None, perms="view_product"):
+        """
+        Filter by product object permission through the product_package relation.
 
-    product = models.ForeignKey(
-        to="product_portfolio.Product",
+        The base implementation filters on a direct `product` FK, which does not exist
+        on this model. The product is reached via product_package__product instead.
+        """
+        if not user:
+            return self.none()
+        Product = apps.get_model("product_portfolio", "Product")
+        product_qs = Product.objects.get_queryset(user, perms)
+        return self.filter(product_package__product__in=product_qs)
+
+
+class ProductPackageTriage(DataspacedModel):
+    """Stores the triage recommendation for a specific package usage within a product."""
+
+    product_package = models.ForeignKey(
+        to="product_portfolio.ProductPackage",
         on_delete=models.CASCADE,
-        related_name="triage_decisions",
-        help_text=_("The product against which this ruleset was evaluated."),
+        related_name="triage_records",
+        help_text=_("The specific package usage that triggered this recommendation."),
     )
     ruleset = models.ForeignKey(
         to="vulnerabilities_triage.TriageRuleset",
         on_delete=models.CASCADE,
-        related_name="triage_decisions",
+        related_name="triage_records",
         help_text=_("The ruleset that produced this action."),
     )
     action = models.CharField(
         max_length=50,
-        help_text=_("Recommended action at the time of evaluation."),
+        help_text=_("Recommended action captured at the time of evaluation."),
     )
     matched_rules = models.JSONField(
         default=list,
-        help_text=_("List of rule types that detected violations during this evaluation."),
+        help_text=_("Rules that fired for this package during evaluation."),
     )
-
-    objects = DataspacedManager.from_queryset(ProductSecuredQuerySet)()
-
     detected_date = models.DateTimeField(
         auto_now_add=True,
-        help_text=_("Date and time when this action was first recommended."),
+        help_text=_("Date and time when this recommendation was first generated."),
     )
     last_checked = models.DateTimeField(
         auto_now=True,
         help_text=_("Date and time of the last evaluation."),
     )
 
+    objects = DataspacedManager.from_queryset(ProductPackageTriageQuerySet)()
+
     class Meta:
-        unique_together = (("dataspace", "uuid"), ("product", "ruleset"))
+        unique_together = [("product_package", "ruleset"), ("dataspace", "uuid")]
         ordering = ["-detected_date"]
 
     def __str__(self):
-        return f"{self.ruleset} / {self.product}: {self.action}"
+        return f"{self.product_package} / {self.ruleset}: {self.action}"

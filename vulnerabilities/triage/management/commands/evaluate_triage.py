@@ -12,7 +12,7 @@ from django.core.management.base import CommandError
 
 from dje.models import Dataspace
 from vulnerabilities.triage.engine import evaluate_ruleset
-from vulnerabilities.triage.models import TriageDecision
+from vulnerabilities.triage.models import ProductPackageTriage
 from vulnerabilities.triage.models import TriageRuleset
 
 """
@@ -51,38 +51,14 @@ class Command(BaseCommand):
             self.stdout.write("No products found.")
             return
 
-        created_count = 0
-        updated_count = 0
-        no_match_count = 0
-
         for product in products:
+            self.stdout.write(f"  {product}")
             for ruleset in rulesets:
-                result = evaluate_ruleset(ruleset=ruleset, product=product)
-                if not result:
-                    no_match_count += 1
-                    continue
+                evaluate_ruleset(ruleset=ruleset, product=product)
 
-                _, created = TriageDecision.objects.update_or_create(
-                    dataspace=dataspace,
-                    product=product,
-                    ruleset=ruleset,
-                    defaults={
-                        "action": result["action"],
-                        "matched_rules": result["matched_rules"],
-                    },
-                )
-
-                label = f"{product} -> {ruleset}"
-                if created:
-                    created_count += 1
-                    self.stdout.write(f"  [new]     {label}: {result['action']}")
-                else:
-                    updated_count += 1
-                    self.stdout.write(f"  [updated] {label}: {result['action']}")
-
+        total = ProductPackageTriage.objects.filter(dataspace=dataspace).count()
         self.stdout.write(
             self.style.SUCCESS(
-                f"Done: {created_count} created, {updated_count} updated,"
-                f" {no_match_count} no match."
+                f"Done: {total} package triage record(s) active in dataspace '{dataspace_name}'."
             )
         )
