@@ -14,3 +14,6 @@ class TriageConfig(AppConfig):
     name = "vulnerabilities.triage"
     label = "vulnerabilities_triage"
     verbose_name = _("Vulnerabilities Triage")
+
+    def ready(self):
+        import vulnerabilities.triage.signals  # noqa: F401
