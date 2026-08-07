@@ -79,6 +79,19 @@ class ProductPackageTriageQuerySet(ProductSecuredQuerySet):
         product_qs = Product.objects.get_queryset(user, perms)
         return self.filter(product_package__product__in=product_qs)
 
+    def primary_actions(self):
+        """
+        Return one record per product_package: the highest-precedence active ruleset.
+
+        Uses PostgreSQL DISTINCT ON to pick the winning ruleset when multiple rulesets
+        fire for the same package. Chain after a product filter to scope the results.
+        """
+        return (
+            self.filter(ruleset__enabled=True)
+            .order_by("product_package", "-ruleset__precedence")
+            .distinct("product_package")
+        )
+
 
 class ProductPackageTriage(DataspacedModel):
     """Stores the triage recommendation for a specific package usage within a product."""
