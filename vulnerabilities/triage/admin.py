@@ -13,8 +13,8 @@ from django.utils.html import mark_safe
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from vulnerabilities.triage.forms import TriageRulesetForm
-from vulnerabilities.triage.models import ProductPackageTriage
 from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
@@ -103,8 +103,8 @@ class TriageRulesetAdmin(DataspacedAdmin):
         return base_fieldsets + rule_fieldsets
 
 
-@admin.register(ProductPackageTriage, site=dejacode_site)
-class ProductPackageTriageAdmin(DataspacedAdmin):
+@admin.register(TriageRecord, site=dejacode_site)
+class TriageRecordAdmin(DataspacedAdmin):
     short_description = (
         "A Package Triage record stores the recommended action for a specific package"
         " usage within a product, as determined by the evaluation engine."

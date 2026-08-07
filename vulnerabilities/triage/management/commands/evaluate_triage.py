@@ -12,7 +12,7 @@ from django.core.management.base import CommandError
 
 from dje.models import Dataspace
 from vulnerabilities.triage.engine import evaluate_ruleset
-from vulnerabilities.triage.models import ProductPackageTriage
+from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 
 """
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             for ruleset in rulesets:
                 evaluate_ruleset(ruleset=ruleset, product=product)
 
-        total = ProductPackageTriage.objects.filter(dataspace=dataspace).count()
+        total = TriageRecord.objects.filter(dataspace=dataspace).count()
         self.stdout.write(
             self.style.SUCCESS(
                 f"Done: {total} package triage record(s) active in dataspace '{dataspace_name}'."

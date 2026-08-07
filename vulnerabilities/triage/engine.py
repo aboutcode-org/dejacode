@@ -6,7 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from vulnerabilities.triage.models import ProductPackageTriage
+from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
 
@@ -39,11 +39,11 @@ def collect_matches(ruleset, product):
 
 def sync_triage_records(ruleset, product, matched_rules_per_package_id):
     """
-    Create or update one ProductPackageTriage record per matching package, then
+    Create or update one TriageRecord record per matching package, then
     delete records for packages that no longer match any rule in the ruleset.
     """
     for product_package_id, matched_rules in matched_rules_per_package_id.items():
-        ProductPackageTriage.objects.update_or_create(
+        TriageRecord.objects.update_or_create(
             product_package_id=product_package_id,
             ruleset=ruleset,
             defaults={
@@ -53,7 +53,7 @@ def sync_triage_records(ruleset, product, matched_rules_per_package_id):
             },
         )
 
-    ProductPackageTriage.objects.filter(
+    TriageRecord.objects.filter(
         ruleset=ruleset,
         product_package__product=product,
     ).exclude(product_package_id__in=matched_rules_per_package_id.keys()).delete()

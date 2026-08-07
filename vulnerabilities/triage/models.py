@@ -65,7 +65,7 @@ class TriageRuleset(DataspacedModel):
         return self.name
 
 
-class ProductPackageTriageQuerySet(ProductSecuredQuerySet):
+class TriageRecordQuerySet(ProductSecuredQuerySet):
     def product_secured(self, user=None, perms="view_product"):
         """
         Filter by product object permission through the product_package relation.
@@ -93,7 +93,7 @@ class ProductPackageTriageQuerySet(ProductSecuredQuerySet):
         )
 
 
-class ProductPackageTriage(DataspacedModel):
+class TriageRecord(DataspacedModel):
     """Stores the triage recommendation for a specific package usage within a product."""
 
     product_package = models.ForeignKey(
@@ -125,7 +125,7 @@ class ProductPackageTriage(DataspacedModel):
         help_text=_("Date and time of the last evaluation."),
     )
 
-    objects = DataspacedManager.from_queryset(ProductPackageTriageQuerySet)()
+    objects = DataspacedManager.from_queryset(TriageRecordQuerySet)()
 
     class Meta:
         unique_together = [("product_package", "ruleset"), ("dataspace", "uuid")]
