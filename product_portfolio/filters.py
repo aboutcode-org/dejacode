@@ -43,6 +43,8 @@ from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 
 
 class HasComplianceIssueFilter(django_filters.BooleanFilter):
@@ -584,3 +586,32 @@ class DependencyFilterSet(DataspacedFilterSet):
             "is_pinned",
             "is_direct",
         ]
+
+
+class TriageRecordFilterSet(DataspacedFilterSet):
+    dropdown_fields = ["action"]
+
+    q = SearchFilter(
+        label=_("Search"),
+        search_fields=[
+            "product_package__package__name",
+            "product_package__package__namespace",
+            "product_package__package__version",
+        ],
+    )
+    action = django_filters.ChoiceFilter(
+        label=_("Action"),
+        choices=TriageAction.choices,
+        empty_label=_("All actions"),
+    )
+    sort = DefaultOrderingFilter(
+        label=_("Sort"),
+        fields=[
+            ("product_package__package__name", "package"),
+            ("detected_date", "detected_date"),
+        ],
+    )
+
+    class Meta:
+        model = TriageRecord
+        fields = ["action"]

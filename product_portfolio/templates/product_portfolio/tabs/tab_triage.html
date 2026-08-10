@@ -1,23 +1,9 @@
 {% load i18n %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="text-body-secondary small">
-    {{ total_count }} package{{ total_count|pluralize }} with pending triage action{{ total_count|pluralize }}
-  </div>
-  {% if page_obj.paginator.num_pages > 1 %}
-    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
-  {% endif %}
-</div>
+{% include 'tabs/pagination.html' with search_verbose_name="packages" %}
 
 <table class="table table-bordered table-md text-break">
-    <thead>
-      <tr>
-        <th style="width: 38%">{% trans "Package" %}</th>
-        <th style="width: 22%">{% trans "Recommended action" %}</th>
-        <th>{% trans "Vulnerability exposure" %}</th>
-        <th style="width: 10%" class="text-nowrap">{% trans "Detected" %}</th>
-      </tr>
-    </thead>
+    {% include 'includes/object_list_table_header.html' %}
     <tbody>
       {% for record in page_obj.object_list %}
         <tr>
@@ -87,6 +73,3 @@
       {% endfor %}
     </tbody>
   </table>
-{% if page_obj.paginator.num_pages > 1 %}
-  {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
-{% endif %}

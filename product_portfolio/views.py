@@ -119,6 +119,7 @@ from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
 from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
+from product_portfolio.filters import TriageRecordFilterSet
 from product_portfolio.forms import AttributionConfigurationForm
 from product_portfolio.forms import BaseProductRelationshipInlineFormSet
 from product_portfolio.forms import ComparisonExcludeFieldsForm
@@ -1369,12 +1370,25 @@ class ProductTabTriageView(
     LoginRequiredMixin,
     BaseProductViewMixin,
     PaginationMixin,
+    TableHeaderMixin,
     TabContentView,
 ):
     template_name = "product_portfolio/tabs/tab_triage.html"
     paginate_by = 50
     query_dict_page_param = "triage-page"
     tab_id = "triage"
+    table_model = TriageRecord
+    filterset_class = TriageRecordFilterSet
+    table_headers = (
+        Header("package", _("Package"), help_text=_("Package with a pending triage action")),
+        Header("action", _("Recommended action"), filter="action"),
+        Header(
+            "vulnerability_exposure",
+            _("Vulnerability exposure"),
+            help_text=_("Known vulnerabilities affecting this package"),
+        ),
+        Header("detected_date", _("Detected")),
+    )
 
     def get_context_data(self, **kwargs):
         product = self.object
@@ -1424,7 +1438,17 @@ class ProductTabTriageView(
         )
         total_count = triage_qs.count()
 
-        paginator = Paginator(triage_qs, self.paginate_by)
+        self.filterset = self.filterset_class(
+            self.request.GET,
+            queryset=triage_qs,
+            dataspace=product.dataspace,
+            prefix=self.tab_id,
+            anchor=f"#{self.tab_id}",
+        )
+
+        context_data = super().get_context_data(**kwargs)
+
+        paginator = Paginator(self.filterset.qs, self.paginate_by)
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
@@ -1434,11 +1458,12 @@ class ProductTabTriageView(
             record.action_badge_class = badge_class
             record.action_icon = icon
 
-        context_data = super().get_context_data(**kwargs)
         context_data.update(
             {
+                "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": total_count,
+                "search_query": self.request.GET.get(f"{self.tab_id}-q", ""),
             }
         )
 
