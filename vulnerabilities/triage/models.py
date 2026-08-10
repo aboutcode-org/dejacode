@@ -93,7 +93,7 @@ class TriageRecordQuerySet(ProductSecuredQuerySet):
                 product_package=OuterRef("product_package"),
                 ruleset__enabled=True,
             )
-            .order_by("-ruleset__precedence")
+            .order_by("-ruleset__precedence", "ruleset__name")
             .values("ruleset_id")[:1]
         )
         return self.filter(

@@ -119,7 +119,6 @@ from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
 from product_portfolio.filters import ProductFilterSet
 from product_portfolio.filters import ProductPackageFilterSet
-from product_portfolio.filters import TriageRecordFilterSet
 from product_portfolio.forms import AttributionConfigurationForm
 from product_portfolio.forms import BaseProductRelationshipInlineFormSet
 from product_portfolio.forms import ComparisonExcludeFieldsForm
@@ -153,6 +152,21 @@ from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
+
+TRIAGE_ACTION_STYLES = {
+    "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
+    "apply_patch": ("bg-danger-subtle text-danger-emphasis", "fa-wrench"),
+    "replace_package": ("bg-warning-subtle text-warning-emphasis", "fa-exchange-alt"),
+    "forensic_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-search"),
+    "reachability_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-sitemap"),
+    "change_config": ("bg-info-subtle text-info-emphasis", "fa-cog"),
+    "notify": ("bg-primary-subtle text-primary-emphasis", "fa-bell"),
+    "create_request": ("bg-secondary-subtle text-secondary-emphasis", "fa-file-alt"),
+}
+TRIAGE_ACTION_DEFAULT_STYLE = (
+    "bg-secondary-subtle text-secondary-emphasis",
+    "fa-exclamation-circle",
+)
 
 
 class BaseProductViewMixin:
@@ -298,7 +312,6 @@ class ProductDetailsView(
             ],
         },
         "vulnerabilities": {},
-        "triage": {},
         "codebase": {
             "fields": [
                 "path",
@@ -663,40 +676,6 @@ class ProductDetailsView(
         tab_context = {
             "tab_view_url": tab_view_url,
             "tab_object_name": "vulnerabilities",
-        }
-
-        return {
-            "label": mark_safe(label),
-            "fields": [(None, tab_context, None, template)],
-        }
-
-    def tab_triage(self):
-        product = self.object
-
-        triage_count = (
-            TriageRecord.objects.filter(product_package__product=product).primary_actions().count()
-        )
-
-        if triage_count == 0:
-            label = 'Triage <span class="badge bg-secondary">0</span>'
-            return {
-                "label": mark_safe(label),
-                "fields": [],
-                "disabled": True,
-                "tooltip": "No pending triage actions for this product",
-            }
-
-        badge = f'<span class="badge bg-primary-subtle text-primary-emphasis">{triage_count}</span>'
-        label = f"Triage {badge}"
-
-        tab_view_url = product.get_url("tab_triage")
-        if full_query_string := self.request.META["QUERY_STRING"]:
-            tab_view_url += f"?{full_query_string}"
-
-        template = "tabs/tab_async_loader.html"
-        tab_context = {
-            "tab_view_url": tab_view_url,
-            "tab_object_name": "triage actions",
         }
 
         return {
@@ -1249,7 +1228,12 @@ class ProductTabVulnerabilitiesView(
     filterset_class = ProductPackageFilterSet
     table_headers = (
         Header("affected_packages", _("Package"), help_text="Affected product packages"),
-        Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
+        Header(
+            "triage_action",
+            _("Recommended action"),
+            help_text=_("Action recommended by the triage engine for this package"),
+            filter="triage_action",
+        ),
         Header(
             "advisory_uid",
             _("Vulnerabilities"),
@@ -1298,7 +1282,7 @@ class ProductTabVulnerabilitiesView(
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
         vulnerability_qs = Vulnerability.objects.prefetch_related(
             "vulnerability_analyses"
-        ).order_by("-risk_score")
+        ).order_by(F("risk_score").desc(nulls_last=True))
         package_qs = (
             Package.objects.all()
             .only_rendering_fields()
@@ -1316,7 +1300,7 @@ class ProductTabVulnerabilitiesView(
                 Prefetch("package", package_qs),
             )
             .order_by(
-                "-weighted_risk_score",
+                F("weighted_risk_score").desc(nulls_last=True),
                 "package__name",
             )
         )
@@ -1344,6 +1328,29 @@ class ProductTabVulnerabilitiesView(
                         vulnerability.vulnerability_analysis = analysis
                         continue
 
+        # Attach the winning triage record to each product_package
+        action_labels = dict(TriageAction.choices)
+        triage_by_package = {
+            record.product_package_id: record
+            for record in TriageRecord.objects.filter(
+                product_package__in=page_obj.object_list,
+            )
+            .primary_actions()
+            .select_related("ruleset")
+        }
+        for product_package in page_obj.object_list:
+            triage_record = triage_by_package.get(product_package.id)
+            if triage_record:
+                triage_record.action_label = action_labels.get(
+                    triage_record.action, triage_record.action
+                )
+                badge_class, icon = TRIAGE_ACTION_STYLES.get(
+                    triage_record.action, TRIAGE_ACTION_DEFAULT_STYLE
+                )
+                triage_record.action_badge_class = badge_class
+                triage_record.action_icon = icon
+            product_package.triage_record = triage_record
+
         context_data.update(
             {
                 "filterset": self.filterset,
@@ -1351,119 +1358,6 @@ class ProductTabVulnerabilitiesView(
                 "total_count": base_productpackage_qs.count(),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
-            }
-        )
-
-        if page_obj:
-            previous_url, next_url = self.get_previous_next(page_obj)
-            context_data.update(
-                {
-                    "previous_url": (previous_url or "") + f"#{self.tab_id}",
-                    "next_url": (next_url or "") + f"#{self.tab_id}",
-                }
-            )
-
-        return context_data
-
-
-class ProductTabTriageView(
-    LoginRequiredMixin,
-    BaseProductViewMixin,
-    PaginationMixin,
-    TableHeaderMixin,
-    TabContentView,
-):
-    template_name = "product_portfolio/tabs/tab_triage.html"
-    paginate_by = 50
-    query_dict_page_param = "triage-page"
-    tab_id = "triage"
-    table_model = TriageRecord
-    filterset_class = TriageRecordFilterSet
-    table_headers = (
-        Header("package", _("Package"), help_text=_("Package with a pending triage action")),
-        Header("action", _("Recommended action"), filter="action"),
-        Header(
-            "vulnerability_exposure",
-            _("Vulnerability exposure"),
-            help_text=_("Known vulnerabilities affecting this package"),
-        ),
-        Header("detected_date", _("Detected")),
-    )
-
-    def get_context_data(self, **kwargs):
-        product = self.object
-
-        action_labels = dict(TriageAction.choices)
-        action_styles = {
-            "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
-            "apply_patch": ("bg-danger-subtle text-danger-emphasis", "fa-wrench"),
-            "replace_package": ("bg-warning-subtle text-warning-emphasis", "fa-exchange-alt"),
-            "forensic_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-search"),
-            "reachability_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-sitemap"),
-            "change_config": ("bg-info-subtle text-info-emphasis", "fa-cog"),
-            "notify": ("bg-primary-subtle text-primary-emphasis", "fa-bell"),
-            "create_request": ("bg-secondary-subtle text-secondary-emphasis", "fa-file-alt"),
-        }
-        default_style = ("bg-secondary-subtle text-secondary-emphasis", "fa-exclamation-circle")
-
-        triage_qs = (
-            TriageRecord.objects.filter(product_package__product=product)
-            .primary_actions()
-            .select_related(
-                "product_package__package",
-                "product_package",
-                "ruleset",
-            )
-            .annotate(
-                vulnerability_count=Count(
-                    "product_package__package__affected_by_vulnerabilities",
-                    distinct=True,
-                ),
-                critical_count=Count(
-                    "product_package__package__affected_by_vulnerabilities",
-                    filter=Q(
-                        product_package__package__affected_by_vulnerabilities__risk_level="critical"
-                    ),
-                    distinct=True,
-                ),
-                high_count=Count(
-                    "product_package__package__affected_by_vulnerabilities",
-                    filter=Q(
-                        product_package__package__affected_by_vulnerabilities__risk_level="high"
-                    ),
-                    distinct=True,
-                ),
-            )
-            .order_by(F("product_package__weighted_risk_score").desc(nulls_last=True))
-        )
-        total_count = triage_qs.count()
-
-        self.filterset = self.filterset_class(
-            self.request.GET,
-            queryset=triage_qs,
-            dataspace=product.dataspace,
-            prefix=self.tab_id,
-            anchor=f"#{self.tab_id}",
-        )
-
-        context_data = super().get_context_data(**kwargs)
-
-        paginator = Paginator(self.filterset.qs, self.paginate_by)
-        page_number = self.request.GET.get(self.query_dict_page_param)
-        page_obj = paginator.get_page(page_number)
-
-        for record in page_obj.object_list:
-            record.action_label = action_labels.get(record.action, record.action)
-            badge_class, icon = action_styles.get(record.action, default_style)
-            record.action_badge_class = badge_class
-            record.action_icon = icon
-
-        context_data.update(
-            {
-                "filterset": self.filterset,
-                "page_obj": page_obj,
-                "total_count": total_count,
-                "search_query": self.request.GET.get(f"{self.tab_id}-q", ""),
             }
         )
 

@@ -44,7 +44,6 @@ from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 from vulnerabilities.triage.models import TriageAction
-from vulnerabilities.triage.models import TriageRecord
 
 
 class HasComplianceIssueFilter(django_filters.BooleanFilter):
@@ -368,6 +367,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
+        "triage_action",
         "vulnerability_analyses__state",
         "vulnerability_analyses__justification",
         "responses",
@@ -421,6 +421,12 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("unknown", _("Reachability not known")),
         ),
     )
+    triage_action = django_filters.ChoiceFilter(
+        label=_("Triage action"),
+        choices=TriageAction.choices,
+        empty_label=_("All actions"),
+        method="filter_triage_action",
+    )
     compliance_issues = HasComplianceIssueFilter(
         field_name="package__usage_policy__compliance_alert",
         distinct=True,
@@ -439,6 +445,15 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_reachable",
             "exploitability",
         ]
+
+    @staticmethod
+    def filter_triage_action(queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            triage_records__action=value,
+            triage_records__ruleset__enabled=True,
+        ).distinct()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -586,32 +601,3 @@ class DependencyFilterSet(DataspacedFilterSet):
             "is_pinned",
             "is_direct",
         ]
-
-
-class TriageRecordFilterSet(DataspacedFilterSet):
-    dropdown_fields = ["action"]
-
-    q = SearchFilter(
-        label=_("Search"),
-        search_fields=[
-            "product_package__package__name",
-            "product_package__package__namespace",
-            "product_package__package__version",
-        ],
-    )
-    action = django_filters.ChoiceFilter(
-        label=_("Action"),
-        choices=TriageAction.choices,
-        empty_label=_("All actions"),
-    )
-    sort = DefaultOrderingFilter(
-        label=_("Sort"),
-        fields=[
-            ("product_package__package__name", "package"),
-            ("detected_date", "detected_date"),
-        ],
-    )
-
-    class Meta:
-        model = TriageRecord
-        fields = ["action"]
