@@ -152,7 +152,6 @@ from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
-from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
 
 
 class BaseProductViewMixin:
@@ -1375,17 +1374,47 @@ class ProductTabTriageView(
         product = self.object
 
         action_labels = dict(TriageAction.choices)
-        rule_labels = {
-            rule_type: handler.label for rule_type, handler in TRIAGE_RULE_REGISTRY.items()
+        action_styles = {
+            "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
+            "apply_patch": ("bg-danger-subtle text-danger-emphasis", "fa-wrench"),
+            "replace_package": ("bg-warning-subtle text-warning-emphasis", "fa-exchange-alt"),
+            "forensic_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-search"),
+            "reachability_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-sitemap"),
+            "change_config": ("bg-info-subtle text-info-emphasis", "fa-cog"),
+            "notify": ("bg-primary-subtle text-primary-emphasis", "fa-bell"),
+            "create_request": ("bg-secondary-subtle text-secondary-emphasis", "fa-file-alt"),
         }
+        default_style = ("bg-secondary-subtle text-secondary-emphasis", "fa-exclamation-circle")
 
         triage_qs = (
             TriageRecord.objects.filter(product_package__product=product)
             .primary_actions()
             .select_related(
                 "product_package__package",
+                "product_package",
                 "ruleset",
             )
+            .annotate(
+                vulnerability_count=Count(
+                    "product_package__package__affected_by_vulnerabilities",
+                    distinct=True,
+                ),
+                critical_count=Count(
+                    "product_package__package__affected_by_vulnerabilities",
+                    filter=Q(
+                        product_package__package__affected_by_vulnerabilities__risk_level="critical"
+                    ),
+                    distinct=True,
+                ),
+                high_count=Count(
+                    "product_package__package__affected_by_vulnerabilities",
+                    filter=Q(
+                        product_package__package__affected_by_vulnerabilities__risk_level="high"
+                    ),
+                    distinct=True,
+                ),
+            )
+            .order_by("-product_package__weighted_risk_score")
         )
         total_count = triage_qs.count()
 
@@ -1395,9 +1424,9 @@ class ProductTabTriageView(
 
         for record in page_obj.object_list:
             record.action_label = action_labels.get(record.action, record.action)
-            record.rule_labels = [
-                rule_labels.get(rule_type, rule_type) for rule_type in record.matched_rules
-            ]
+            badge_class, icon = action_styles.get(record.action, default_style)
+            record.action_badge_class = badge_class
+            record.action_icon = icon
 
         context_data = super().get_context_data(**kwargs)
         context_data.update(

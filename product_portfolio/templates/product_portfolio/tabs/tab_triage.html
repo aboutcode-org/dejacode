@@ -10,38 +10,85 @@
 </div>
 
 {% if page_obj.object_list %}
-  <table class="table table-bordered table-md text-break">
-    <thead>
+  <table class="table table-hover">
+    <thead class="table-light">
       <tr>
-        <th>{% trans "Package" %}</th>
-        <th>{% trans "Recommended action" %}</th>
-        <th>{% trans "Ruleset" %}</th>
-        <th>{% trans "Rules triggered" %}</th>
-        <th>{% trans "Detected" %}</th>
+        <th style="width: 38%">{% trans "Package" %}</th>
+        <th style="width: 22%">{% trans "Recommended action" %}</th>
+        <th>{% trans "Vulnerability exposure" %}</th>
+        <th style="width: 10%" class="text-nowrap">{% trans "Detected" %}</th>
       </tr>
     </thead>
     <tbody>
       {% for record in page_obj.object_list %}
-        <tr>
-          <td>
-            <strong>
-              <a href="{{ record.product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">
-                {{ record.product_package.package }}
-              </a>
-            </strong>
+        <tr class="align-top">
+          <td class="py-3">
+            <a class="fw-semibold text-decoration-none"
+               href="{{ record.product_package.package.get_absolute_url }}#vulnerabilities"
+               target="_blank">
+              {{ record.product_package.package }}
+            </a>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {% with score=record.product_package.weighted_risk_score %}
+                {% if score %}
+                  <span class="badge {% if score >= 8.0 %}bg-danger-subtle text-danger-emphasis{% elif score >= 6.0 %}bg-warning-subtle text-warning-emphasis{% elif score >= 3.0 %}bg-info-subtle text-info-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
+                    {% trans "Risk" %} {{ score }}
+                  </span>
+                {% endif %}
+              {% endwith %}
+              {% if record.product_package.is_deployed %}
+                <span class="badge bg-body-tertiary text-body-secondary border">
+                  {% trans "Deployed" %}
+                </span>
+              {% endif %}
+              {% if record.product_package.purpose %}
+                <span class="badge bg-body-tertiary text-body-secondary border">
+                  {{ record.product_package.purpose.label }}
+                </span>
+              {% endif %}
+            </div>
           </td>
-          <td>
-            <span class="badge bg-warning-subtle text-warning-emphasis">
-              {{ record.action_label }}
-            </span>
+          <td class="py-3">
+            <div>
+              <span class="badge {{ record.action_badge_class }} px-2 py-1">
+                <i class="fas {{ record.action_icon }} me-1"></i>{{ record.action_label }}
+              </span>
+            </div>
+            <div class="small text-body-secondary mt-2">
+              <i class="fas fa-layer-group fa-xs me-1"></i>{{ record.ruleset.name }}
+            </div>
           </td>
-          <td class="text-nowrap">{{ record.ruleset.name }}</td>
-          <td>
-            {% for label in record.rule_labels %}
-              <div class="small">{{ label }}</div>
-            {% endfor %}
+          <td class="py-3">
+            <div class="d-flex flex-wrap align-items-center gap-1">
+              {% if record.critical_count %}
+                <span class="badge bg-danger-subtle text-danger-emphasis">
+                  {{ record.critical_count }} {% trans "critical" %}
+                </span>
+              {% endif %}
+              {% if record.high_count %}
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  {{ record.high_count }} {% trans "high" %}
+                </span>
+              {% endif %}
+              {% if record.vulnerability_count and not record.critical_count and not record.high_count %}
+                <span class="badge bg-warning-subtle text-warning-emphasis">
+                  {{ record.vulnerability_count }} {% trans "vulnerabilities" %}
+                </span>
+              {% endif %}
+            </div>
+            {% if record.vulnerability_count %}
+              <div class="mt-2">
+                <a href="{{ record.product_package.package.get_absolute_url }}#vulnerabilities"
+                   target="_blank"
+                   class="small text-body-secondary text-decoration-none">
+                  {{ record.vulnerability_count }} {% trans "total" %} &rarr;
+                </a>
+              </div>
+            {% endif %}
           </td>
-          <td class="text-nowrap small text-body-secondary">{{ record.detected_date|date:"Y-m-d" }}</td>
+          <td class="py-3 small text-body-secondary text-nowrap">
+            {{ record.detected_date|date:"N j, Y" }}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
@@ -53,6 +100,8 @@
   <div class="text-center py-5">
     <i class="fa-solid fa-circle-check text-success fs-2"></i>
     <div class="mt-2 fw-semibold">{% trans "No pending triage actions" %}</div>
-    <div class="text-body-secondary small mt-1">{% trans "All packages are within acceptable risk parameters." %}</div>
+    <div class="text-body-secondary small mt-1">
+      {% trans "All packages are within acceptable risk parameters." %}
+    </div>
   </div>
 {% endif %}
