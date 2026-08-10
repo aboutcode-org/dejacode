@@ -9,8 +9,7 @@
   {% endif %}
 </div>
 
-{% if page_obj.object_list %}
-  <table class="table table-hover">
+<table class="table table-hover">
     <thead class="table-light">
       <tr>
         <th style="width: 38%">{% trans "Package" %}</th>
@@ -93,15 +92,6 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if page_obj.paginator.num_pages > 1 %}
-    {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
-  {% endif %}
-{% else %}
-  <div class="text-center py-5">
-    <i class="fa-solid fa-circle-check text-success fs-2"></i>
-    <div class="mt-2 fw-semibold">{% trans "No pending triage actions" %}</div>
-    <div class="text-body-secondary small mt-1">
-      {% trans "All packages are within acceptable risk parameters." %}
-    </div>
-  </div>
+{% if page_obj.paginator.num_pages > 1 %}
+  {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
 {% endif %}

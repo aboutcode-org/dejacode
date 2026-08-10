@@ -676,11 +676,17 @@ class ProductDetailsView(
             TriageRecord.objects.filter(product_package__product=product).primary_actions().count()
         )
 
-        badge_class = "bg-primary-subtle text-primary-emphasis"
-        if triage_count > 0:
-            badge_class = "bg-warning-subtle text-warning-emphasis"
+        if triage_count == 0:
+            label = 'Triage <span class="badge bg-secondary">0</span>'
+            return {
+                "label": mark_safe(label),
+                "fields": [],
+                "disabled": True,
+                "tooltip": "No pending triage actions for this product",
+            }
 
-        label = f'Triage <span class="badge {badge_class}">{triage_count}</span>'
+        badge = f'<span class="badge bg-primary-subtle text-primary-emphasis">{triage_count}</span>'
+        label = f"Triage {badge}"
 
         tab_view_url = product.get_url("tab_triage")
         if full_query_string := self.request.META["QUERY_STRING"]:
