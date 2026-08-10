@@ -1420,7 +1420,7 @@ class ProductTabTriageView(
                     distinct=True,
                 ),
             )
-            .order_by("-product_package__weighted_risk_score")
+            .order_by(F("product_package__weighted_risk_score").desc(nulls_last=True))
         )
         total_count = triage_qs.count()
 
