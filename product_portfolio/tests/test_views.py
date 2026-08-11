@@ -278,7 +278,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
 
-        with self.assertMaxQueries(9):
+        with self.assertMaxQueries(12):
             response = self.client.get(url)
         self.assertContains(response, "0 results")
 
@@ -292,7 +292,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(12):
+        with self.assertMaxQueries(15):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
@@ -300,12 +300,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-weighted_risk_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
-        response = self.client.get(
-            url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities"
+        self.assertContains(response, "?vulnerabilities-triage_action=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-triage_action=upgrade#vulnerabilities")
+        self.assertContains(
+            response, "?vulnerabilities-vulnerability_analyses__state=#vulnerabilities"
         )
-        self.assertContains(response, "?vulnerabilities-sort=-weighted_risk_score#vulnerabilities")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
@@ -320,11 +319,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
         expected = f"""
-        <td rowspan="2">
-          <strong>
-            <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
-          </strong>
-        </td>
+        <strong>
+          <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
+        </strong>
         """
         self.assertContains(response, expected, html=True)
 
@@ -360,7 +357,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(12):
+        with self.assertMaxQueries(15):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):

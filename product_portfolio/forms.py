@@ -58,6 +58,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from product_portfolio.tasks import scancodeio_submit_project_task
+from vulnerabilities.triage.models import ProductTriageRuleset
 
 
 class NameVersionValidationFormMixin:
@@ -106,6 +107,7 @@ class ProductForm(
         ProductComponent,
         ProductPackage,
         CodebaseResource,
+        ProductTriageRuleset,
     ]
 
     keywords = KeywordsField()

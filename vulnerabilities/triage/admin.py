@@ -100,5 +100,3 @@ class TriageRulesetAdmin(DataspacedAdmin):
                 )
             )
         return base_fieldsets + rule_fieldsets
-
-

@@ -46,6 +46,7 @@ from product_portfolio.views import evaluate_policy_rules_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
+from product_portfolio.views import manage_triage_rulesets_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -131,6 +132,7 @@ urlpatterns = [
     *product_path("vulnerability_analysis_form", vulnerability_analysis_form_view),
     *product_path("scan_all_packages", scan_all_packages_view),
     *product_path("evaluate_policy_rules", evaluate_policy_rules_view),
+    *product_path("manage_triage_rulesets", manage_triage_rulesets_view),
     *product_path("improve_packages_from_purldb", improve_packages_from_purldb_view),
     *product_path("about_files", ProductSendAboutFilesView.as_view()),
     *product_path("export_spdx", ProductExportSPDXDocumentView.as_view()),

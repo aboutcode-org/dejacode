@@ -150,8 +150,11 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
 
 TRIAGE_ACTION_STYLES = {
     "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
@@ -2127,6 +2130,58 @@ def evaluate_policy_rules_view(request, dataspace, name, version=""):
     evaluate_rules(product)
 
     return HttpResponse(headers={"HX-Refresh": "true"})
+
+
+@login_required
+def manage_triage_rulesets_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+    available_rulesets = list(
+        TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True).order_by(
+            "-precedence", "name"
+        )
+    )
+
+    if request.method == "POST":
+        submitted_uuids = set(request.POST.getlist("ruleset_uuids"))
+        current_assignments = {
+            str(ptr.ruleset.uuid): ptr
+            for ptr in ProductTriageRuleset.objects.filter(product=product).select_related(
+                "ruleset"
+            )
+        }
+        for ruleset in available_rulesets:
+            ruleset_uuid = str(ruleset.uuid)
+            if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
+                ProductTriageRuleset.objects.create(
+                    product=product,
+                    ruleset=ruleset,
+                    dataspace=product.dataspace,
+                )
+                evaluate_ruleset(ruleset=ruleset, product=product)
+        for ruleset_uuid, assignment in current_assignments.items():
+            if ruleset_uuid not in submitted_uuids:
+                assignment.delete()
+        return JsonResponse({"success": True})
+
+    assigned_ruleset_ids = set(product.product_triage_rulesets.values_list("ruleset_id", flat=True))
+    action_labels = dict(TriageAction.choices)
+    for ruleset in available_rulesets:
+        ruleset.action_label = action_labels.get(ruleset.action, ruleset.action)
+
+    return render(
+        request,
+        "product_portfolio/modals/manage_triage_rulesets_form.html",
+        {
+            "available_rulesets": available_rulesets,
+            "assigned_ruleset_ids": assigned_ruleset_ids,
+        },
+    )
 
 
 @login_required

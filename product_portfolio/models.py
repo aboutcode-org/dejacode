@@ -495,6 +495,9 @@ class Product(
     def get_evaluate_policy_rules_url(self):
         return self.get_url("evaluate_policy_rules")
 
+    def get_manage_triage_rulesets_url(self):
+        return self.get_url("manage_triage_rulesets")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)
