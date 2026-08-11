@@ -14,7 +14,6 @@ from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from vulnerabilities.triage.forms import TriageRulesetForm
 from vulnerabilities.triage.models import TriageAction
-from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
 
@@ -103,87 +102,3 @@ class TriageRulesetAdmin(DataspacedAdmin):
         return base_fieldsets + rule_fieldsets
 
 
-@admin.register(TriageRecord, site=dejacode_site)
-class TriageRecordAdmin(DataspacedAdmin):
-    short_description = (
-        "A Package Triage record stores the recommended action for a specific package"
-        " usage within a product, as determined by the evaluation engine."
-    )
-    long_description = (
-        "Package Triage records are created and updated automatically when a ruleset is"
-        " evaluated against a product. Each record links a specific package usage to the"
-        " ruleset that triggered it, captures which rules fired, and timestamps the first"
-        " detection and most recent check. These records are read-only in the admin."
-    )
-
-    list_display = [
-        "get_product",
-        "get_package",
-        "ruleset",
-        "get_action_label",
-        "get_matched_rules",
-        "detected_date",
-        "last_checked",
-        "get_dataspace",
-    ]
-    list_filter = DataspacedAdmin.list_filter + ("action", "ruleset")
-    search_fields = [
-        "product_package__package__name",
-        "product_package__product__name",
-        "ruleset__name",
-    ]
-    readonly_fields = DataspacedAdmin.readonly_fields + (
-        "product_package",
-        "ruleset",
-        "get_action_label",
-        "matched_rules",
-        "detected_date",
-        "last_checked",
-    )
-    ordering = [
-        "product_package__product__name",
-        "product_package__product__version",
-        "product_package__package__name",
-        "-ruleset__precedence",
-    ]
-
-    @admin.display(description="Product", ordering="product_package__product__name")
-    def get_product(self, obj):
-        return obj.product_package.product
-
-    @admin.display(description="Package", ordering="product_package__package__name")
-    def get_package(self, obj):
-        return obj.product_package.package
-
-    @admin.display(description="Action")
-    def get_action_label(self, obj):
-        return dict(TriageAction.choices).get(obj.action, obj.action)
-
-    @admin.display(description="Matched rules")
-    def get_matched_rules(self, obj):
-        labels = [
-            RULE_REGISTRY[rule_type].label
-            for rule_type in obj.matched_rules
-            if rule_type in RULE_REGISTRY
-        ]
-        if not labels:
-            return ""
-        return mark_safe("<br>".join(escape(label) for label in labels))
-
-    def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .product_secured(request.user, "view_product")
-            .select_related(
-                "product_package__product",
-                "product_package__package",
-                "ruleset",
-            )
-        )
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
