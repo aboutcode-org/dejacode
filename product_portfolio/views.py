@@ -155,6 +155,7 @@ from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
+from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
 
 TRIAGE_ACTION_STYLES = {
     "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
@@ -2173,6 +2174,22 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
     action_labels = dict(TriageAction.choices)
     for ruleset in available_rulesets:
         ruleset.action_label = action_labels.get(ruleset.action, ruleset.action)
+        action_badge_class, action_icon = TRIAGE_ACTION_STYLES.get(
+            ruleset.action, TRIAGE_ACTION_DEFAULT_STYLE
+        )
+        ruleset.action_badge_class = action_badge_class
+        ruleset.action_icon = action_icon
+        active_rules = []
+        for rule_type, config in ruleset.rules_config.items():
+            if rule_type not in TRIAGE_RULE_REGISTRY or not config.get("is_active"):
+                continue
+            handler = TRIAGE_RULE_REGISTRY[rule_type]
+            params = {key: value for key, value in config.items() if key != "is_active"}
+            params_str = ", ".join(
+                f"{key.replace('_', ' ')}: {value}" for key, value in params.items()
+            )
+            active_rules.append({"label": handler.label, "params_str": params_str})
+        ruleset.active_rules = active_rules
 
     return render(
         request,
