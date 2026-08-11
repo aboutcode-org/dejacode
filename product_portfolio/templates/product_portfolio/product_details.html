@@ -314,6 +314,7 @@
         document.getElementById("submit-triage-rulesets").addEventListener("click", function () {
           const manageUrl = this.dataset.manageUrl;
           const form = document.getElementById("manage-triage-rulesets-form");
+          NEXB.displayOverlay("Evaluating triage rules...");
           fetch(manageUrl, {
             method: "POST",
             headers: { "X-CSRFToken": csrftoken },
@@ -321,7 +322,7 @@
           })
             .then(r => r.json())
             .then(data => { if (data.success) location.reload(); })
-            .catch(() => {});
+            .catch(() => { NEXB.closeOverlay?.(); });
         });
       });
     </script>

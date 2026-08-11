@@ -9,9 +9,9 @@
 from django import forms
 from django.contrib import admin
 from django.db.models import Exists
-from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Q
+from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
@@ -45,6 +45,7 @@ from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 
 
 class HasComplianceIssueFilter(django_filters.BooleanFilter):
@@ -451,11 +452,24 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
     def filter_triage_action(queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(
-            package__affected_by_vulnerabilities__triage_records__action=value,
-            package__affected_by_vulnerabilities__triage_records__ruleset__enabled=True,
-            package__affected_by_vulnerabilities__triage_records__product=F("product"),
-        ).distinct()
+        winning_ruleset_id = (
+            TriageRecord.objects.filter(
+                vulnerability=OuterRef("vulnerability"),
+                product=OuterRef("product"),
+                ruleset__enabled=True,
+                ruleset__product_triage_rulesets__product=OuterRef("product"),
+            )
+            .order_by("-ruleset__precedence")
+            .values("ruleset_id")[:1]
+        )
+        primary_triage = TriageRecord.objects.filter(
+            product=OuterRef("product"),
+            vulnerability__affected_packages__productpackages=OuterRef("pk"),
+            ruleset__enabled=True,
+            ruleset_id=Subquery(winning_ruleset_id),
+            action=value,
+        )
+        return queryset.filter(Exists(primary_triage)).distinct()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

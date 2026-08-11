@@ -33,12 +33,14 @@
                 {% endfor %}
               </span>
             {% endif %}
-            <span class="d-flex align-items-center gap-2 mt-1">
-              <span class="small text-body-secondary">{% trans "Recommended action:" %}</span>
-              <span class="badge {{ ruleset.action_badge_class }} text-nowrap">
-                <i class="fas {{ ruleset.action_icon }} me-1"></i>{{ ruleset.action_label }}
+            {% if ruleset.action %}
+              <span class="d-flex align-items-center gap-2 mt-1">
+                <span class="small text-body-secondary">{% trans "Recommended action:" %}</span>
+                <span class="badge {{ ruleset.action_badge_class }} text-nowrap">
+                  <i class="fas {{ ruleset.action_icon }} me-1"></i>{{ ruleset.action_label }}
+                </span>
               </span>
-            </span>
+            {% endif %}
           </span>
         </label>
       {% endfor %}

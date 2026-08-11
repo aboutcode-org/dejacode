@@ -1282,7 +1282,7 @@ class ProductTabVulnerabilitiesView(
                 for analysis in vulnerability.vulnerability_analyses.all():
                     if analysis.product_package_id == product_package.id:
                         vulnerability.vulnerability_analysis = analysis
-                        continue
+                        break
 
     REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
 
@@ -1316,7 +1316,8 @@ class ProductTabVulnerabilitiesView(
         is_reachable_filter = display_filters.get("is_reachable")
         if is_reachable_filter:
             expected = self.REACHABILITY_FILTER_MAP[is_reachable_filter]
-            if getattr(analysis, "is_reachable", object()) != expected:
+            actual = None if analysis is None else analysis.is_reachable
+            if actual != expected:
                 return False
         return True
 
@@ -2193,6 +2194,7 @@ def evaluate_policy_rules_view(request, dataspace, name, version=""):
     return HttpResponse(headers={"HX-Refresh": "true"})
 
 
+@require_http_methods(["GET", "POST"])
 @login_required
 def manage_triage_rulesets_view(request, dataspace, name, version=""):
     guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
@@ -2232,6 +2234,7 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
 
     assigned_ruleset_ids = set(product.product_triage_rulesets.values_list("ruleset_id", flat=True))
     action_labels = dict(TriageAction.choices)
+
     for ruleset in available_rulesets:
         ruleset.action_label = action_labels.get(ruleset.action, ruleset.action)
         action_badge_class, action_icon = TRIAGE_ACTION_STYLES.get(

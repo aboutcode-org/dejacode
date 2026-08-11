@@ -15,7 +15,7 @@ from vulnerabilities.triage.models import TriageRecord
 
 @receiver(post_save, sender="vulnerabilities_triage.TriageRuleset")
 def delete_triage_records_on_disable(sender, instance, **kwargs):
-    """Delete all package triage records when a ruleset is disabled."""
+    """Delete all triage records when a ruleset is disabled."""
     if not instance.enabled:
         instance.triage_records.all().delete()
 

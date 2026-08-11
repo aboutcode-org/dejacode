@@ -151,6 +151,7 @@ class TriageRecord(DataspacedModel):
     )
     action = models.CharField(
         max_length=50,
+        blank=True,
         help_text=_("Recommended action captured at the time of evaluation."),
     )
     matched_rules = models.JSONField(

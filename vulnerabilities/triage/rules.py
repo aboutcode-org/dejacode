@@ -167,6 +167,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
         )
+        ProductPackage = apps.get_model("product_portfolio", "productpackage")
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
         parameters = parameters or {}
         min_risk_score = parameters.get(
@@ -174,21 +175,27 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         )
         max_days = parameters.get("max_days", self.parameters_schema["max_days"]["default"])
         cutoff_date = timezone.now() - timedelta(days=max_days)
-        terminal_vuln_ids = VulnerabilityAnalysis.objects.filter(
-            product_package__product=product,
-            state__in=TERMINAL_VULNERABILITY_STATES,
-        ).values_list("vulnerability_id", flat=True)
         stale_detection_vuln_ids = PackageAffectedByVulnerability.objects.filter(
             package__productpackages__product=product,
             detected_date__lte=cutoff_date,
         ).values_list("vulnerability_id", flat=True)
+        terminal_analysis = VulnerabilityAnalysis.objects.filter(
+            product_package=OuterRef("pk"),
+            vulnerability=OuterRef(OuterRef("pk")),
+            state__in=TERMINAL_VULNERABILITY_STATES,
+        )
+        unresolved_package = ProductPackage.objects.filter(
+            product=product,
+            package__affected_by_vulnerabilities=OuterRef("pk"),
+        ).filter(~Exists(terminal_analysis))
+
         return (
             Vulnerability.objects.filter(
                 affected_packages__productpackages__product=product,
                 risk_score__gte=min_risk_score,
                 id__in=stale_detection_vuln_ids,
             )
-            .exclude(id__in=terminal_vuln_ids)
+            .filter(Exists(unresolved_package))
             .distinct()
         )
 
