@@ -83,15 +83,19 @@ class TriageRecordQuerySet(ProductSecuredQuerySet):
 
     def primary_actions(self):
         """
-        Return one record per product_package: the highest-precedence active ruleset.
+        Return one record per product_package: the highest-precedence active ruleset
+        that is explicitly assigned to the package's product via ProductTriageRuleset.
 
-        Uses a correlated subquery to find the winning ruleset per package rather than
-        DISTINCT ON, which breaks under Django's COUNT wrapping and select_related JOINs.
+        Uses a correlated subquery rather than DISTINCT ON, which breaks under Django's
+        COUNT wrapping and select_related JOINs.
         """
         winning_ruleset_id = (
             self.model.objects.filter(
                 product_package=OuterRef("product_package"),
                 ruleset__enabled=True,
+                ruleset__product_triage_rulesets__product=OuterRef(
+                    "product_package__product"
+                ),
             )
             .order_by("-ruleset__precedence", "ruleset__name")
             .values("ruleset_id")[:1]
@@ -100,6 +104,30 @@ class TriageRecordQuerySet(ProductSecuredQuerySet):
             ruleset__enabled=True,
             ruleset_id=Subquery(winning_ruleset_id),
         )
+
+
+class ProductTriageRuleset(DataspacedModel):
+    """Activates a TriageRuleset for evaluation against a specific Product."""
+
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="product_triage_rulesets",
+        help_text=_("The product this ruleset is activated for."),
+    )
+    ruleset = models.ForeignKey(
+        to="TriageRuleset",
+        on_delete=models.CASCADE,
+        related_name="product_triage_rulesets",
+        help_text=_("The ruleset to evaluate against this product."),
+    )
+
+    class Meta:
+        unique_together = [("product", "ruleset"), ("dataspace", "uuid")]
+        ordering = ["-ruleset__precedence", "ruleset__name"]
+
+    def __str__(self):
+        return f"{self.product} / {self.ruleset}"
 
 
 class TriageRecord(DataspacedModel):

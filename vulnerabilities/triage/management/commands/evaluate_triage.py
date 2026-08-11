@@ -6,14 +6,13 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from dje.models import Dataspace
 from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageRecord
-from vulnerabilities.triage.models import TriageRuleset
 
 """
 docker compose -f compose.dev.yml exec web ./manage.py evaluate_triage nexB
@@ -34,27 +33,25 @@ class Command(BaseCommand):
         except Dataspace.DoesNotExist:
             raise CommandError(f'Dataspace "{dataspace_name}" does not exist.')
 
-        Product = apps.get_model("product_portfolio", "product")
-        products = Product.unsecured_objects.scope(dataspace)
-        rulesets = TriageRuleset.objects.filter(dataspace=dataspace, enabled=True)
+        assignments = (
+            ProductTriageRuleset.objects.filter(
+                dataspace=dataspace,
+                ruleset__enabled=True,
+            )
+            .select_related("product", "ruleset")
+            .order_by("product__name", "product__version", "-ruleset__precedence")
+        )
 
-        product_count = products.count()
-        ruleset_count = rulesets.count()
+        assignment_count = assignments.count()
+        self.stdout.write(f"Active assignments: {assignment_count}")
 
-        self.stdout.write(f"Products: {product_count}, rulesets: {ruleset_count}")
-
-        if not ruleset_count:
-            self.stdout.write("No enabled rulesets found.")
+        if not assignment_count:
+            self.stdout.write("No active ruleset assignments found.")
             return
 
-        if not product_count:
-            self.stdout.write("No products found.")
-            return
-
-        for product in products:
-            self.stdout.write(f"  {product}")
-            for ruleset in rulesets:
-                evaluate_ruleset(ruleset=ruleset, product=product)
+        for assignment in assignments:
+            self.stdout.write(f"  {assignment.product} / {assignment.ruleset}")
+            evaluate_ruleset(ruleset=assignment.ruleset, product=assignment.product)
 
         total = TriageRecord.objects.filter(dataspace=dataspace).count()
         self.stdout.write(
