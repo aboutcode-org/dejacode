@@ -14,8 +14,9 @@
   {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
   <tbody>
     {% for product_package in page_obj.object_list %}
+      {% if product_package.display_vulnerabilities %}
       <tr>
-        <td rowspan="{{ product_package.package.vulnerability_count }}">
+        <td rowspan="{{ product_package.display_vulnerabilities|length }}">
           <strong>
             <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
           </strong>
@@ -35,7 +36,7 @@
             {% endif %}
           </div>
         </td>
-        {% for vulnerability in product_package.package.affected_by_vulnerabilities.all %}
+        {% for vulnerability in product_package.display_vulnerabilities %}
           {% if not forloop.first %}<tr>{% endif %}
             <td>
               <strong>
@@ -136,6 +137,7 @@
             {% if not forloop.first %}</tr>{% endif %}
           {% endfor %}
         </tr>
+      {% endif %}
     {% empty %}
       <tr>
         <td colspan="10">

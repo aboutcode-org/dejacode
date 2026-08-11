@@ -1239,7 +1239,7 @@ class ProductTabVulnerabilitiesView(
         ),
         Header(
             "triage_action",
-            _("Recommended action"),
+            _("Recommendation"),
             help_text=_("Action recommended by the triage engine for this vulnerability"),
             filter="triage_action",
         ),
@@ -1274,6 +1274,94 @@ class ProductTabVulnerabilitiesView(
             filter="is_reachable",
         ),
     )
+
+    def attach_vulnerability_analyses(self, page_obj):
+        """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
+        for product_package in page_obj.object_list:
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
+                for analysis in vulnerability.vulnerability_analyses.all():
+                    if analysis.product_package_id == product_package.id:
+                        vulnerability.vulnerability_analysis = analysis
+                        continue
+
+    REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
+
+    def get_vulnerability_display_filters(self):
+        """Return the active per-vulnerability filters from the request."""
+        params = self.request.GET
+        prefix = self.tab_id
+        return {
+            "triage_action": params.get(f"{prefix}-triage_action", ""),
+            "state": params.get(f"{prefix}-vulnerability_analyses__state", ""),
+            "justification": params.get(f"{prefix}-vulnerability_analyses__justification", ""),
+            "is_reachable": params.get(f"{prefix}-is_reachable", ""),
+        }
+
+    def vulnerability_passes_display_filters(self, vulnerability, display_filters):
+        """Return True if the vulnerability matches all active display filters."""
+        triage_action = display_filters.get("triage_action")
+        if triage_action:
+            record = getattr(vulnerability, "triage_record", None)
+            if getattr(record, "action", "") != triage_action:
+                return False
+        analysis = getattr(vulnerability, "vulnerability_analysis", None)
+        state = display_filters.get("state")
+        if state:
+            if getattr(analysis, "state", "") != state:
+                return False
+        justification = display_filters.get("justification")
+        if justification:
+            if getattr(analysis, "justification", "") != justification:
+                return False
+        is_reachable_filter = display_filters.get("is_reachable")
+        if is_reachable_filter:
+            expected = self.REACHABILITY_FILTER_MAP[is_reachable_filter]
+            if getattr(analysis, "is_reachable", object()) != expected:
+                return False
+        return True
+
+    def attach_triage_data(self, product, page_obj):
+        """
+        Attach the winning TriageRecord to each vulnerability and build
+        display_vulnerabilities on each product_package, filtered by any
+        active per-vulnerability filters.
+        """
+        vulnerability_ids = {
+            vulnerability.id
+            for product_package in page_obj.object_list
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all()
+        }
+        action_labels = dict(TriageAction.choices)
+        triage_records = list(
+            TriageRecord.objects.filter(
+                product=product,
+                vulnerability_id__in=vulnerability_ids,
+            )
+            .primary_actions()
+            .select_related("ruleset")
+        )
+        for record in triage_records:
+            record.action_label = action_labels.get(record.action, record.action)
+            badge_class, icon = TRIAGE_ACTION_STYLES.get(record.action, TRIAGE_ACTION_DEFAULT_STYLE)
+            record.action_badge_class = badge_class
+            record.action_icon = icon
+
+        triage_by_vulnerability = {record.vulnerability_id: record for record in triage_records}
+        display_filters = self.get_vulnerability_display_filters()
+        has_display_filters = any(display_filters.values())
+
+        for product_package in page_obj.object_list:
+            all_vulnerabilities = list(product_package.package.affected_by_vulnerabilities.all())
+            for vulnerability in all_vulnerabilities:
+                vulnerability.triage_record = triage_by_vulnerability.get(vulnerability.id)
+            if has_display_filters:
+                product_package.display_vulnerabilities = [
+                    vulnerability
+                    for vulnerability in all_vulnerabilities
+                    if self.vulnerability_passes_display_filters(vulnerability, display_filters)
+                ]
+            else:
+                product_package.display_vulnerabilities = all_vulnerabilities
 
     def get_context_data(self, **kwargs):
         product = self.object
@@ -1324,38 +1412,8 @@ class ProductTabVulnerabilitiesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        # Set the proper VulnerabilityAnalysis instance on each vulnerability
-        for product_package in page_obj.object_list:
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
-                for analysis in vulnerability.vulnerability_analyses.all():
-                    if analysis.product_package_id == product_package.id:
-                        vulnerability.vulnerability_analysis = analysis
-                        continue
-
-        # Attach the winning triage record to each vulnerability
-        vulnerability_ids = {
-            vulnerability.id
-            for product_package in page_obj.object_list
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all()
-        }
-        action_labels = dict(TriageAction.choices)
-        triage_records = list(
-            TriageRecord.objects.filter(
-                product=product,
-                vulnerability_id__in=vulnerability_ids,
-            )
-            .primary_actions()
-            .select_related("ruleset")
-        )
-        for record in triage_records:
-            record.action_label = action_labels.get(record.action, record.action)
-            badge_class, icon = TRIAGE_ACTION_STYLES.get(record.action, TRIAGE_ACTION_DEFAULT_STYLE)
-            record.action_badge_class = badge_class
-            record.action_icon = icon
-        triage_by_vulnerability = {record.vulnerability_id: record for record in triage_records}
-        for product_package in page_obj.object_list:
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
-                vulnerability.triage_record = triage_by_vulnerability.get(vulnerability.id)
+        self.attach_vulnerability_analyses(page_obj)
+        self.attach_triage_data(product, page_obj)
 
         context_data.update(
             {
