@@ -60,7 +60,11 @@ class TriageRuleset(DataspacedModel):
     )
 
     class Meta:
-        unique_together = (("dataspace", "name"), ("dataspace", "uuid"))
+        unique_together = (
+            ("dataspace", "name"),
+            ("dataspace", "precedence"),
+            ("dataspace", "uuid"),
+        )
         ordering = ("-precedence", "name")
 
     def __str__(self):
@@ -91,7 +95,7 @@ class TriageRecordQuerySet(ProductSecuredQuerySet):
                 ruleset__enabled=True,
                 ruleset__product_triage_rulesets__product=OuterRef("product"),
             )
-            .order_by("-ruleset__precedence", "ruleset__name")
+            .order_by("-ruleset__precedence")
             .values("ruleset_id")[:1]
         )
         return self.filter(
@@ -118,7 +122,7 @@ class ProductTriageRuleset(DataspacedModel):
 
     class Meta:
         unique_together = [("product", "ruleset"), ("dataspace", "uuid")]
-        ordering = ["-ruleset__precedence", "ruleset__name"]
+        ordering = ["-ruleset__precedence"]
 
     def __str__(self):
         return f"{self.product} / {self.ruleset}"
