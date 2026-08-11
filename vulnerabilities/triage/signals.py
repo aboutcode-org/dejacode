@@ -25,5 +25,5 @@ def delete_triage_records_on_unassign(sender, instance, **kwargs):
     """Delete triage records for a ruleset when it is de-assigned from a product."""
     TriageRecord.objects.filter(
         ruleset=instance.ruleset,
-        product_package__product=instance.product,
+        product=instance.product,
     ).delete()

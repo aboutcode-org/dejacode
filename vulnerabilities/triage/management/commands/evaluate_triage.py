@@ -56,6 +56,6 @@ class Command(BaseCommand):
         total = TriageRecord.objects.filter(dataspace=dataspace).count()
         self.stdout.write(
             self.style.SUCCESS(
-                f"Done: {total} package triage record(s) active in dataspace '{dataspace_name}'."
+                f"Done: {total} vulnerability triage record(s) active in '{dataspace_name}'."
             )
         )

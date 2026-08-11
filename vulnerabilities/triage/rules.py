@@ -28,14 +28,14 @@ class BaseTriageRule(BaseRule):
 
     parameters_schema = {}
 
-    def get_matching_packages(self, product, parameters=None):
+    def get_matching_vulnerabilities(self, product, parameters=None):
         raise NotImplementedError
 
 
 class RiskScoreTriageRule(BaseTriageRule):
     rule_type = "risk_score"
     label = "Risk Score"
-    description = "Packages with a vulnerability at or above the configured risk score."
+    description = "Vulnerabilities at or above the configured risk score affecting the product."
     parameters_schema = {
         "min_risk_score": {
             "default": 8.0,
@@ -43,21 +43,23 @@ class RiskScoreTriageRule(BaseTriageRule):
         },
     }
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         min_risk_score = (parameters or {}).get(
             "min_risk_score", self.parameters_schema["min_risk_score"]["default"]
         )
-        return ProductPackage.objects.filter(
-            product=product,
-            package__affected_by_vulnerabilities__risk_score__gte=min_risk_score,
+        return Vulnerability.objects.filter(
+            affected_packages__productpackages__product=product,
+            risk_score__gte=min_risk_score,
         ).distinct()
 
 
 class WeightedRiskTriageRule(BaseTriageRule):
     rule_type = "weighted_risk"
     label = "Weighted Risk"
-    description = "Packages with a weighted risk score at or above the configured threshold."
+    description = (
+        "Vulnerabilities affecting packages whose weighted risk score meets the threshold."
+    )
     parameters_schema = {
         "min_weighted_risk_score": {
             "default": 8.0,
@@ -65,46 +67,47 @@ class WeightedRiskTriageRule(BaseTriageRule):
         },
     }
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         min_weighted_risk_score = (parameters or {}).get(
             "min_weighted_risk_score",
             self.parameters_schema["min_weighted_risk_score"]["default"],
         )
-        return ProductPackage.objects.filter(
-            product=product,
-            weighted_risk_score__gte=min_weighted_risk_score,
+        return Vulnerability.objects.filter(
+            affected_packages__productpackages__product=product,
+            affected_packages__productpackages__weighted_risk_score__gte=min_weighted_risk_score,
         ).distinct()
 
 
 class ExploitedVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "exploited_vulnerability"
     label = "Exploited Vulnerability"
-    description = "Packages with a vulnerability for which a known exploit is available."
+    description = "Vulnerabilities for which a known exploit is available."
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         # exploitability == 2.0 means known exploits are available
-        return ProductPackage.objects.filter(
-            product=product,
-            package__affected_by_vulnerabilities__exploitability=2.0,
+        return Vulnerability.objects.filter(
+            affected_packages__productpackages__product=product,
+            exploitability=2.0,
         ).distinct()
 
 
 class ReachableVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "reachable_vulnerability"
     label = "Reachable Vulnerability"
-    description = "Packages with a vulnerability confirmed as reachable in the product context."
+    description = "Vulnerabilities confirmed as reachable in the product context."
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
         reachable_analysis = VulnerabilityAnalysis.objects.filter(
-            product_package=OuterRef("pk"),
+            product_package__product=product,
+            vulnerability=OuterRef("pk"),
             is_reachable=True,
         )
         return (
-            ProductPackage.objects.filter(product=product)
+            Vulnerability.objects.filter(affected_packages__productpackages__product=product)
             .filter(Exists(reachable_analysis))
             .distinct()
         )
@@ -113,27 +116,28 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
 class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "unresolved_vulnerability"
     label = "Unresolved Vulnerability"
-    description = "Packages with known vulnerabilities that have no completed analysis."
+    description = "Vulnerabilities affecting the product that have no completed analysis."
 
-    def get_matching_packages(self, product, parameters=None):
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         ProductPackage = apps.get_model("product_portfolio", "productpackage")
-        PackageAffectedByVulnerability = apps.get_model(
-            "component_catalog", "packageaffectedbyvulnerability"
-        )
         VulnerabilityAnalysis = apps.get_model("vulnerabilities", "vulnerabilityanalysis")
+        # A terminal analysis for the (product_package, vulnerability) pair
         terminal_analysis = VulnerabilityAnalysis.objects.filter(
-            product_package=OuterRef(OuterRef("pk")),
+            product_package=OuterRef("pk"),
+            vulnerability=OuterRef(OuterRef("pk")),
             state__in=TERMINAL_VULNERABILITY_STATES,
-            vulnerability=OuterRef("vulnerability"),
         )
-        unresolved_link = (
-            PackageAffectedByVulnerability.objects.filter(package=OuterRef("package"))
-            .annotate(has_terminal=Exists(terminal_analysis))
-            .filter(has_terminal=False)
-        )
+        # A package in the product that carries this vulnerability but has no terminal analysis
+        unresolved_package = ProductPackage.objects.filter(
+            product=product,
+            package__affected_by_vulnerabilities=OuterRef("pk"),
+        ).filter(~Exists(terminal_analysis))
         return (
-            ProductPackage.objects.filter(product=product)
-            .filter(Exists(unresolved_link))
+            Vulnerability.objects.filter(
+                affected_packages__productpackages__product=product,
+            )
+            .filter(Exists(unresolved_package))
             .distinct()
         )
 
@@ -142,7 +146,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "stale_vulnerability"
     label = "Stale Vulnerability"
     description = (
-        "Packages with vulnerabilities above the configured risk score,"
+        "Vulnerabilities above the configured risk score,"
         " unaddressed beyond the configured number of days."
     )
     parameters_schema = {
@@ -158,8 +162,8 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         },
     }
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
         PackageAffectedByVulnerability = apps.get_model(
             "component_catalog", "packageaffectedbyvulnerability"
         )
@@ -170,35 +174,44 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         )
         max_days = parameters.get("max_days", self.parameters_schema["max_days"]["default"])
         cutoff_date = timezone.now() - timedelta(days=max_days)
-        terminal_analysis = VulnerabilityAnalysis.objects.filter(
-            product_package=OuterRef(OuterRef("pk")),
+        terminal_vuln_ids = VulnerabilityAnalysis.objects.filter(
+            product_package__product=product,
             state__in=TERMINAL_VULNERABILITY_STATES,
-            vulnerability=OuterRef("vulnerability"),
-        )
-        stale_link = (
-            PackageAffectedByVulnerability.objects.filter(
-                package=OuterRef("package"),
-                vulnerability__risk_score__gte=min_risk_score,
-                detected_date__lte=cutoff_date,
+        ).values_list("vulnerability_id", flat=True)
+        stale_detection_vuln_ids = PackageAffectedByVulnerability.objects.filter(
+            package__productpackages__product=product,
+            detected_date__lte=cutoff_date,
+        ).values_list("vulnerability_id", flat=True)
+        return (
+            Vulnerability.objects.filter(
+                affected_packages__productpackages__product=product,
+                risk_score__gte=min_risk_score,
+                id__in=stale_detection_vuln_ids,
             )
-            .annotate(has_terminal=Exists(terminal_analysis))
-            .filter(has_terminal=False)
+            .exclude(id__in=terminal_vuln_ids)
+            .distinct()
         )
-        return ProductPackage.objects.filter(product=product).filter(Exists(stale_link)).distinct()
 
 
 class DevOnlyPackageTriageRule(BaseTriageRule):
     rule_type = "dev_only_vulnerable_package"
     label = "Dev-Only Vulnerable Package"
-    description = "Packages not deployed in production that are affected by vulnerabilities."
+    description = "Vulnerabilities affecting only non-deployed packages in the product."
 
-    def get_matching_packages(self, product, parameters=None):
-        ProductPackage = apps.get_model("product_portfolio", "productpackage")
-        return ProductPackage.objects.filter(
-            product=product,
-            is_deployed=False,
-            package__affected_by_vulnerabilities__isnull=False,
-        ).distinct()
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
+        deployed_vuln_ids = Vulnerability.objects.filter(
+            affected_packages__productpackages__product=product,
+            affected_packages__productpackages__is_deployed=True,
+        ).values_list("id", flat=True)
+        return (
+            Vulnerability.objects.filter(
+                affected_packages__productpackages__product=product,
+                affected_packages__productpackages__is_deployed=False,
+            )
+            .exclude(id__in=deployed_vuln_ids)
+            .distinct()
+        )
 
 
 RULE_REGISTRY = {

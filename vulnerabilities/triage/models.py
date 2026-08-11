@@ -69,31 +69,27 @@ class TriageRuleset(DataspacedModel):
 
 class TriageRecordQuerySet(ProductSecuredQuerySet):
     def product_secured(self, user=None, perms="view_product"):
-        """
-        Filter by product object permission through the product_package relation.
-
-        The base implementation filters on a direct `product` FK, which does not exist
-        on this model. The product is reached via product_package__product instead.
-        """
+        """Filter by product object permission through the direct product FK."""
         if not user:
             return self.none()
         Product = apps.get_model("product_portfolio", "Product")
         product_qs = Product.objects.get_queryset(user, perms)
-        return self.filter(product_package__product__in=product_qs)
+        return self.filter(product__in=product_qs)
 
     def primary_actions(self):
         """
-        Return one record per product_package: the highest-precedence active ruleset
-        that is explicitly assigned to the package's product via ProductTriageRuleset.
+        Return one record per (vulnerability, product): the highest-precedence active ruleset
+        that is explicitly assigned to the product via ProductTriageRuleset.
 
         Uses a correlated subquery rather than DISTINCT ON, which breaks under Django's
         COUNT wrapping and select_related JOINs.
         """
         winning_ruleset_id = (
             self.model.objects.filter(
-                product_package=OuterRef("product_package"),
+                vulnerability=OuterRef("vulnerability"),
+                product=OuterRef("product"),
                 ruleset__enabled=True,
-                ruleset__product_triage_rulesets__product=OuterRef("product_package__product"),
+                ruleset__product_triage_rulesets__product=OuterRef("product"),
             )
             .order_by("-ruleset__precedence", "ruleset__name")
             .values("ruleset_id")[:1]
@@ -129,13 +125,19 @@ class ProductTriageRuleset(DataspacedModel):
 
 
 class TriageRecord(DataspacedModel):
-    """Stores the triage recommendation for a specific package usage within a product."""
+    """Stores the triage recommendation for a specific vulnerability within a product."""
 
-    product_package = models.ForeignKey(
-        to="product_portfolio.ProductPackage",
+    vulnerability = models.ForeignKey(
+        to="vulnerabilities.Vulnerability",
         on_delete=models.CASCADE,
         related_name="triage_records",
-        help_text=_("The specific package usage that triggered this recommendation."),
+        help_text=_("The vulnerability that triggered this recommendation."),
+    )
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="triage_records",
+        help_text=_("The product this recommendation applies to."),
     )
     ruleset = models.ForeignKey(
         to="vulnerabilities_triage.TriageRuleset",
@@ -149,7 +151,7 @@ class TriageRecord(DataspacedModel):
     )
     matched_rules = models.JSONField(
         default=list,
-        help_text=_("Rules that fired for this package during evaluation."),
+        help_text=_("Rules that fired for this vulnerability during evaluation."),
     )
     detected_date = models.DateTimeField(
         auto_now_add=True,
@@ -163,8 +165,8 @@ class TriageRecord(DataspacedModel):
     objects = DataspacedManager.from_queryset(TriageRecordQuerySet)()
 
     class Meta:
-        unique_together = [("product_package", "ruleset"), ("dataspace", "uuid")]
+        unique_together = [("vulnerability", "product", "ruleset"), ("dataspace", "uuid")]
         ordering = ["-detected_date"]
 
     def __str__(self):
-        return f"{self.product_package} / {self.ruleset}: {self.action}"
+        return f"{self.vulnerability} / {self.product} / {self.ruleset}: {self.action}"

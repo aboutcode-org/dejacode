@@ -9,6 +9,7 @@
 from django import forms
 from django.contrib import admin
 from django.db.models import Exists
+from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -451,8 +452,9 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         if not value:
             return queryset
         return queryset.filter(
-            triage_records__action=value,
-            triage_records__ruleset__enabled=True,
+            package__affected_by_vulnerabilities__triage_records__action=value,
+            package__affected_by_vulnerabilities__triage_records__ruleset__enabled=True,
+            package__affected_by_vulnerabilities__triage_records__product=F("product"),
         ).distinct()
 
     def __init__(self, *args, **kwargs):

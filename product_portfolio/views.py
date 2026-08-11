@@ -1233,15 +1233,15 @@ class ProductTabVulnerabilitiesView(
     table_headers = (
         Header("affected_packages", _("Package"), help_text="Affected product packages"),
         Header(
-            "triage_action",
-            _("Recommended action"),
-            help_text=_("Action recommended by the triage engine for this package"),
-            filter="triage_action",
-        ),
-        Header(
             "advisory_uid",
             _("Vulnerabilities"),
             help_text="Vulnerabilities affecting the product package",
+        ),
+        Header(
+            "triage_action",
+            _("Recommended action"),
+            help_text=_("Action recommended by the triage engine for this vulnerability"),
+            filter="triage_action",
         ),
         Header(
             "vulnerability_analyses__state",
@@ -1324,7 +1324,7 @@ class ProductTabVulnerabilitiesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        # Set the proper VulnerabilityAnalysis instance on the Package instance
+        # Set the proper VulnerabilityAnalysis instance on each vulnerability
         for product_package in page_obj.object_list:
             for vulnerability in product_package.package.affected_by_vulnerabilities.all():
                 for analysis in vulnerability.vulnerability_analyses.all():
@@ -1332,28 +1332,30 @@ class ProductTabVulnerabilitiesView(
                         vulnerability.vulnerability_analysis = analysis
                         continue
 
-        # Attach the winning triage record to each product_package
+        # Attach the winning triage record to each vulnerability
+        vulnerability_ids = {
+            vulnerability.id
+            for product_package in page_obj.object_list
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all()
+        }
         action_labels = dict(TriageAction.choices)
-        triage_by_package = {
-            record.product_package_id: record
-            for record in TriageRecord.objects.filter(
-                product_package__in=page_obj.object_list,
+        triage_records = list(
+            TriageRecord.objects.filter(
+                product=product,
+                vulnerability_id__in=vulnerability_ids,
             )
             .primary_actions()
             .select_related("ruleset")
-        }
+        )
+        for record in triage_records:
+            record.action_label = action_labels.get(record.action, record.action)
+            badge_class, icon = TRIAGE_ACTION_STYLES.get(record.action, TRIAGE_ACTION_DEFAULT_STYLE)
+            record.action_badge_class = badge_class
+            record.action_icon = icon
+        triage_by_vulnerability = {record.vulnerability_id: record for record in triage_records}
         for product_package in page_obj.object_list:
-            triage_record = triage_by_package.get(product_package.id)
-            if triage_record:
-                triage_record.action_label = action_labels.get(
-                    triage_record.action, triage_record.action
-                )
-                badge_class, icon = TRIAGE_ACTION_STYLES.get(
-                    triage_record.action, TRIAGE_ACTION_DEFAULT_STYLE
-                )
-                triage_record.action_badge_class = badge_class
-                triage_record.action_icon = icon
-            product_package.triage_record = triage_record
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
+                vulnerability.triage_record = triage_by_vulnerability.get(vulnerability.id)
 
         context_data.update(
             {
