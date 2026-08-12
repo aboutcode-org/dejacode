@@ -419,6 +419,9 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-affected_packages {
   min-width: 250px;
 }
+#tab_vulnerabilities .column-triage_action {
+  min-width: 165px;
+}
 #tab_vulnerabilities .column-exploitability {
   width: 140px;
 }
