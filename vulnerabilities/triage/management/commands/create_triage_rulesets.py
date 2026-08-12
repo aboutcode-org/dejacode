@@ -105,6 +105,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("dataspace", help="Name of the target Dataspace.")
+        parser.add_argument(
+            "--reset",
+            action="store_true",
+            help=(
+                "Delete all existing triage rulesets in the dataspace before recreating them."
+                " This also removes all associated product assignments and triage records."
+            ),
+        )
 
     def handle(self, *args, **options):
         dataspace_name = options["dataspace"]
@@ -113,6 +121,10 @@ class Command(BaseCommand):
             dataspace = Dataspace.objects.get(name=dataspace_name)
         except Dataspace.DoesNotExist:
             raise CommandError(f'Dataspace "{dataspace_name}" does not exist.')
+
+        if options["reset"]:
+            deleted_count, _ = TriageRuleset.objects.filter(dataspace=dataspace).delete()
+            self.stdout.write(f"  Deleted {deleted_count} existing ruleset(s).")
 
         created_count = 0
         for ruleset_data in REFERENCE_RULESETS:
