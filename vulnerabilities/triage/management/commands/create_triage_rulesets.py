@@ -20,9 +20,12 @@ docker compose -f compose.dev.yml exec web ./manage.py create_triage_rulesets ne
 REFERENCE_RULESETS = [
     {
         "name": "Critical Exploited Vulnerability",
-        "description": "Packages with a critical vulnerability and a known active exploit.",
+        "description": (
+            "Vulnerabilities with a critical risk score and a known active exploit"
+            " affecting the product."
+        ),
         "action": TriageAction.UPGRADE,
-        "precedence": 400,
+        "precedence": 700,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
             "exploited_vulnerability": {"is_active": True},
@@ -30,29 +33,33 @@ REFERENCE_RULESETS = [
     },
     {
         "name": "Active Exploit",
-        "description": "Packages with a known exploit available, regardless of severity.",
+        "description": (
+            "Vulnerabilities with a known active exploit affecting the product,"
+            " regardless of severity."
+        ),
         "action": TriageAction.UPGRADE,
-        "precedence": 300,
+        "precedence": 600,
         "rules_config": {
             "exploited_vulnerability": {"is_active": True},
         },
     },
     {
         "name": "Reachable Vulnerability",
-        "description": (
-            "Packages with a vulnerability confirmed as reachable in the product context."
-        ),
+        "description": "Vulnerabilities confirmed as reachable within the product context.",
         "action": TriageAction.APPLY_PATCH,
-        "precedence": 250,
+        "precedence": 500,
         "rules_config": {
             "reachable_vulnerability": {"is_active": True},
         },
     },
     {
         "name": "Critical Vulnerability",
-        "description": "Packages with a critical-severity vulnerability and no known exploit.",
+        "description": (
+            "Vulnerabilities with a critical risk score and no known active exploit"
+            " affecting the product."
+        ),
         "action": TriageAction.APPLY_PATCH,
-        "precedence": 200,
+        "precedence": 400,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
         },
@@ -60,31 +67,34 @@ REFERENCE_RULESETS = [
     {
         "name": "Stale Vulnerability",
         "description": (
-            "Packages with a critical-severity vulnerability left unaddressed"
-            " for more than 30 days."
+            "Vulnerabilities with a critical risk score left unaddressed"
+            " for more than 30 days in the product."
         ),
         "action": TriageAction.APPLY_PATCH,
-        "precedence": 150,
+        "precedence": 300,
         "rules_config": {
             "stale_vulnerability": {"is_active": True, "min_risk_score": 8.0, "max_days": 30},
         },
     },
     {
+        "name": "Dev-Only Vulnerable Package",
+        "description": "Vulnerabilities affecting only non-deployed packages in the product.",
+        "action": TriageAction.NOTIFY,
+        "precedence": 200,
+        "rules_config": {
+            "dev_only_vulnerable_package": {"is_active": True},
+        },
+    },
+    {
         "name": "Unresolved Vulnerability",
-        "description": "Packages with vulnerabilities that have no completed triage analysis.",
+        "description": (
+            "Vulnerabilities affecting the product where at least one package"
+            " has no completed triage analysis."
+        ),
         "action": TriageAction.FORENSIC_ANALYSIS,
         "precedence": 100,
         "rules_config": {
             "unresolved_vulnerability": {"is_active": True},
-        },
-    },
-    {
-        "name": "Dev-Only Vulnerable Package",
-        "description": "Packages not deployed in production that are affected by vulnerabilities.",
-        "action": TriageAction.NOTIFY,
-        "precedence": 50,
-        "rules_config": {
-            "dev_only_vulnerable_package": {"is_active": True},
         },
     },
 ]

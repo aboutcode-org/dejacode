@@ -58,7 +58,8 @@ class WeightedRiskTriageRule(BaseTriageRule):
     rule_type = "weighted_risk"
     label = "Weighted Risk"
     description = (
-        "Vulnerabilities affecting packages whose weighted risk score meets the threshold."
+        "Vulnerabilities affecting at least one package whose weighted risk score"
+        " in this product meets the threshold."
     )
     parameters_schema = {
         "min_weighted_risk_score": {
@@ -116,7 +117,10 @@ class ReachableVulnerabilityTriageRule(BaseTriageRule):
 class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
     rule_type = "unresolved_vulnerability"
     label = "Unresolved Vulnerability"
-    description = "Vulnerabilities affecting the product that have no completed analysis."
+    description = (
+        "Vulnerabilities affecting the product where at least one package"
+        " has no completed triage analysis."
+    )
 
     def get_matching_vulnerabilities(self, product, parameters=None):
         Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
