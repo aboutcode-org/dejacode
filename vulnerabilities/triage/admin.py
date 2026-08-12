@@ -12,10 +12,59 @@ from django.utils.html import mark_safe
 
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
+from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
+from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
+
+
+@admin.register(AnalysisPreset, site=dejacode_site)
+class AnalysisPresetAdmin(DataspacedAdmin):
+    form = AnalysisPresetForm
+    short_description = (
+        "An Analysis Preset defines default vulnerability analysis values that the triage"
+        " engine applies automatically when an assigned ruleset fires."
+    )
+    long_description = (
+        "Only non-blank preset fields are applied. Analyses already modified by a human"
+        " are never overwritten. When a user edits an auto-applied analysis, the preset"
+        " link is cleared and the analysis becomes human-owned."
+    )
+    list_display = [
+        "name",
+        "state",
+        "justification",
+        "get_responses",
+        "is_reachable",
+        "description",
+        "get_dataspace",
+    ]
+    search_fields = ["name"]
+    fieldsets = [
+        (
+            None,
+            {"fields": ["name", "description"]},
+        ),
+        (
+            "Analysis defaults",
+            {
+                "fields": ["state", "justification", "responses", "detail", "is_reachable"],
+                "description": (
+                    "Leave a field blank to leave it unchanged on the analysis."
+                    " At least one field should be set."
+                ),
+            },
+        ),
+    ]
+
+    @admin.display(description="Responses")
+    def get_responses(self, obj):
+        if not obj.responses:
+            return ""
+        labels = dict(AnalysisPreset.Response.choices)
+        return ", ".join(labels.get(response, response) for response in obj.responses)
 
 
 @admin.register(TriageRuleset, site=dejacode_site)
@@ -39,6 +88,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
         "get_action_label",
         "precedence",
         "get_enabled_rules",
+        "analysis_preset",
         "description",
         "enabled",
         "get_dataspace",
@@ -74,14 +124,30 @@ class TriageRulesetAdmin(DataspacedAdmin):
         return super().get_changes_details(form)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
-        kwargs["fields"] = ["name", "description", "action", "precedence", "enabled"]
+        kwargs["fields"] = [
+            "name",
+            "description",
+            "action",
+            "precedence",
+            "enabled",
+            "analysis_preset",
+        ]
         return super().get_form(request, obj, change=change, **kwargs)
 
     def get_fieldsets(self, request, obj=None):
         base_fieldsets = [
             (
                 None,
-                {"fields": ["name", "description", "action", "precedence", "enabled"]},
+                {
+                    "fields": [
+                        "name",
+                        "description",
+                        "action",
+                        "precedence",
+                        "enabled",
+                        "analysis_preset",
+                    ]
+                },
             ),
         ]
         rule_fieldsets = []

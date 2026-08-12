@@ -9,9 +9,31 @@
 from django import forms
 
 from dje.forms import DataspacedAdminForm
+from vulnerabilities.models import VulnerabilityAnalysisContentMixin
+from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
+
+
+class AnalysisPresetForm(DataspacedAdminForm):
+    responses = forms.MultipleChoiceField(
+        choices=VulnerabilityAnalysisContentMixin.Response.choices,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    class Meta:
+        model = AnalysisPreset
+        fields = [
+            "name",
+            "description",
+            "state",
+            "justification",
+            "responses",
+            "detail",
+            "is_reachable",
+        ]
 
 
 class TriageRulesetForm(DataspacedAdminForm):
@@ -22,7 +44,7 @@ class TriageRulesetForm(DataspacedAdminForm):
 
     class Meta:
         model = TriageRuleset
-        fields = ["name", "description", "action", "precedence", "enabled"]
+        fields = ["name", "description", "action", "precedence", "enabled", "analysis_preset"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

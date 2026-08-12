@@ -274,8 +274,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         )
 
 
-class VulnerabilityAnalysisMixin(models.Model):
-    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+class VulnerabilityAnalysisContentMixin(models.Model):
+    """Core analysis content fields, shared with AnalysisPreset. CycloneDX-aligned."""
 
     # cyclonedx.model.impact_analysis.ImpactAnalysisState
     class State(models.TextChoices):
@@ -344,6 +344,14 @@ class VulnerabilityAnalysisMixin(models.Model):
             "details on why the component or service is not impacted by this vulnerability."
         ),
     )
+
+    class Meta:
+        abstract = True
+
+
+class VulnerabilityAnalysisMixin(VulnerabilityAnalysisContentMixin):
+    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+
     first_issued = models.DateTimeField(
         auto_now_add=True,
         help_text=_("The date and time (timestamp) when the analysis was first issued."),
@@ -544,6 +552,17 @@ class VulnerabilityAnalysis(
         help_text=_(
             "Indicates whether the vulnerability is reachable in the context of this "
             "product package."
+        ),
+    )
+    applied_by_preset = models.ForeignKey(
+        to="vulnerabilities_triage.AnalysisPreset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="applied_analyses",
+        help_text=_(
+            "The analysis preset that automatically created this analysis."
+            " Cleared when a user edits the analysis manually."
         ),
     )
 

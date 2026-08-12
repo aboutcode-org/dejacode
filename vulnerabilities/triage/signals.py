@@ -19,7 +19,7 @@ def reevaluate_product_rulesets(product):
     """Re-evaluate all enabled triage rulesets currently assigned to the product."""
     assignments = ProductTriageRuleset.objects.filter(
         product=product, ruleset__enabled=True
-    ).select_related("ruleset")
+    ).select_related("ruleset", "ruleset__analysis_preset")
 
     for assignment in assignments:
         evaluate_ruleset(ruleset=assignment.ruleset, product=product)
@@ -51,6 +51,8 @@ def delete_triage_records_on_unassign(sender, instance, **kwargs):
 @receiver([post_save, post_delete], sender="vulnerabilities.VulnerabilityAnalysis")
 def reevaluate_on_analysis_change(sender, instance, **kwargs):
     """Re-evaluate triage when an analysis state or reachability is updated."""
+    if instance.applied_by_preset_id:
+        return  # Written by the triage engine itself -- re-evaluating would loop
     reevaluate_product_rulesets(instance.product_package.product)
 
 

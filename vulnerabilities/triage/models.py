@@ -15,6 +15,7 @@ from django.utils.translation import gettext_lazy as _
 from dje.models import DataspacedManager
 from dje.models import DataspacedModel
 from dje.models import ProductSecuredQuerySet
+from vulnerabilities.models import VulnerabilityAnalysisContentMixin
 
 
 class TriageAction(models.TextChoices):
@@ -26,6 +27,46 @@ class TriageAction(models.TextChoices):
     REPLACE_PACKAGE = "replace_package", _("Replace Package")
     NOTIFY = "notify", _("Notify")
     CREATE_REQUEST = "create_request", _("Create DejaCode Request")
+
+
+class AnalysisPreset(DataspacedModel, VulnerabilityAnalysisContentMixin):
+    """Default VulnerabilityAnalysis values applied automatically when a TriageRuleset fires."""
+
+    name = models.CharField(
+        max_length=100,
+        help_text=_("Short name identifying this analysis preset."),
+    )
+    description = models.TextField(
+        blank=True,
+        help_text=_("Optional description of when and why this preset is applied."),
+    )
+    is_reachable = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text=_(
+            "Reachability value to set on the analysis. Leave blank to leave the field unchanged."
+        ),
+    )
+
+    class Meta:
+        unique_together = (("dataspace", "name"), ("dataspace", "uuid"))
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
+
+    def apply_to_analysis(self, analysis):
+        """Copy non-blank preset fields onto the analysis instance (does not save)."""
+        if self.state:
+            analysis.state = self.state
+        if self.justification:
+            analysis.justification = self.justification
+        if self.responses:
+            analysis.responses = self.responses
+        if self.detail:
+            analysis.detail = self.detail
+        if self.is_reachable is not None:
+            analysis.is_reachable = self.is_reachable
 
 
 class TriageRuleset(DataspacedModel):
@@ -57,6 +98,17 @@ class TriageRuleset(DataspacedModel):
         default=dict,
         blank=True,
         help_text=_("Active rules for this ruleset, keyed by rule type."),
+    )
+    analysis_preset = models.ForeignKey(
+        to="AnalysisPreset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="triage_rulesets",
+        help_text=_(
+            "Optional preset automatically applied to matching vulnerability analyses."
+            " Only applied when no human-owned analysis exists."
+        ),
     )
 
     class Meta:
