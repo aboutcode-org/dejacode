@@ -1217,6 +1217,10 @@ class ProductTabDependenciesView(
         return context_data
 
 
+def has_triage_column_condition(view):
+    return getattr(view, "has_triage_rulesets", True)
+
+
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
@@ -1242,6 +1246,7 @@ class ProductTabVulnerabilitiesView(
             _("Recommendation"),
             help_text=_("Action recommended by the triage engine for this vulnerability"),
             filter="triage_action",
+            condition=has_triage_column_condition,
         ),
         Header(
             "vulnerability_analyses__state",
@@ -1406,6 +1411,10 @@ class ProductTabVulnerabilitiesView(
             anchor=f"#{self.tab_id}",
         )
 
+        self.has_triage_rulesets = product.product_triage_rulesets.filter(
+            ruleset__enabled=True
+        ).exists()
+
         # The self.filterset needs to be set before calling super()
         context_data = super().get_context_data(**kwargs)
 
@@ -1423,6 +1432,7 @@ class ProductTabVulnerabilitiesView(
                 "total_count": base_productpackage_qs.count(),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
+                "has_triage_rulesets": self.has_triage_rulesets,
             }
         )
 

@@ -74,6 +74,7 @@
                 </div>
               {% endif %}
             </td>
+            {% if has_triage_rulesets %}
             <td>
               {% if vulnerability.triage_record %}
                 {% with record=vulnerability.triage_record %}
@@ -91,6 +92,7 @@
                 {% endwith %}
               {% endif %}
             </td>
+            {% endif %}
             <td>
               {% if vulnerability.vulnerability_analysis %}
                 {% if vulnerability.vulnerability_analysis.state %}
