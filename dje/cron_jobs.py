@@ -35,5 +35,5 @@ cron.register(
     func=evaluate_all_products_vulnerability_triage_task,
     queue_name="default",
     cron=settings.DEJACODE_VULNERABILITY_TRIAGE_CRON,  # Hourly by default
-    job_timeout=ten_minutes,
+    job_timeout=two_hours,
 )

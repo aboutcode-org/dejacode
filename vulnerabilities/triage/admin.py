@@ -18,6 +18,7 @@ from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
+from vulnerabilities.triage.rules import rule_parameters_from_config
 
 
 @admin.register(AnalysisPreset, site=dejacode_site)
@@ -107,7 +108,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
             if rule_type not in RULE_REGISTRY or not config.get("is_active"):
                 continue
             handler = RULE_REGISTRY[rule_type]
-            params = {key: value for key, value in config.items() if key != "is_active"}
+            params = rule_parameters_from_config(config)
             if params:
                 param_str = ", ".join(f"{key}: {value}" for key, value in params.items())
                 label = f"{handler.label} ({param_str})"

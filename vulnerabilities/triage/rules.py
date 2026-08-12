@@ -234,3 +234,8 @@ RULE_REGISTRY = {
     StaleVulnerabilityTriageRule.rule_type: StaleVulnerabilityTriageRule(),
     DevOnlyPackageTriageRule.rule_type: DevOnlyPackageTriageRule(),
 }
+
+
+def rule_parameters_from_config(config):
+    """Extract rule-specific parameters from a rule config dict, excluding is_active."""
+    return {key: value for key, value in config.items() if key != "is_active"}

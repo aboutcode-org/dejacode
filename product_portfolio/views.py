@@ -156,6 +156,7 @@ from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
+from vulnerabilities.triage.rules import rule_parameters_from_config
 
 TRIAGE_ACTION_STYLES = {
     "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
@@ -2224,19 +2225,20 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
         submitted_uuids = set(request.POST.getlist("ruleset_uuids"))
         current_assignments = {
             str(ptr.ruleset.uuid): ptr
-            for ptr in ProductTriageRuleset.objects.filter(product=product).select_related(
-                "ruleset"
-            )
+            for ptr in ProductTriageRuleset.objects.filter(
+                product=product, ruleset__enabled=True
+            ).select_related("ruleset")
         }
         for ruleset in available_rulesets:
             ruleset_uuid = str(ruleset.uuid)
             if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
-                ProductTriageRuleset.objects.create(
-                    product=product,
-                    ruleset=ruleset,
-                    dataspace=product.dataspace,
-                )
-                evaluate_ruleset(ruleset=ruleset, product=product)
+                with transaction.atomic():
+                    ProductTriageRuleset.objects.create(
+                        product=product,
+                        ruleset=ruleset,
+                        dataspace=product.dataspace,
+                    )
+                    evaluate_ruleset(ruleset=ruleset, product=product)
         for ruleset_uuid, assignment in current_assignments.items():
             if ruleset_uuid not in submitted_uuids:
                 assignment.delete()
@@ -2257,7 +2259,7 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
             if rule_type not in TRIAGE_RULE_REGISTRY or not config.get("is_active"):
                 continue
             handler = TRIAGE_RULE_REGISTRY[rule_type]
-            params = {key: value for key, value in config.items() if key != "is_active"}
+            params = rule_parameters_from_config(config)
             params_str = ", ".join(
                 f"{key.replace('_', ' ')}: {value}" for key, value in params.items()
             )

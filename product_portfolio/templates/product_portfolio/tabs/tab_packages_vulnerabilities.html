@@ -144,7 +144,7 @@
       {% endif %}
     {% empty %}
       <tr>
-        <td colspan="10">
+        <td colspan="{% if has_triage_rulesets %}8{% else %}7{% endif %}">
           No results.
           {% if filterset.is_active %}
             <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
