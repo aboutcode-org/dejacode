@@ -86,6 +86,14 @@
                   <div class="small text-body-secondary mt-1 ps-1">
                     <i class="fas fa-layer-group fa-xs me-1"></i>{{ record.ruleset.name }}
                   </div>
+                  {% if record.request %}
+                    <div class="small mt-1 ps-1">
+                      <a href="{{ record.request.get_absolute_url }}" target="_blank" class="text-body-secondary">
+                        {% include 'workflow/includes/request_status_icon.html' with req=record.request %}
+                        <span class="fw-semibold">Request #{{ record.request_id }}</span>
+                      </a>
+                    </div>
+                  {% endif %}
                   <div class="small text-body-tertiary mt-1 ps-1">
                     {% trans "Since:" %} {{ record.detected_date|date:"M j, Y" }}
                   </div>
