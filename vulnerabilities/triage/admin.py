@@ -12,6 +12,7 @@ from django.utils.html import mark_safe
 
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
+from dje.list_display import AsLink
 from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
 from vulnerabilities.triage.models import AnalysisPreset
@@ -23,7 +24,6 @@ from vulnerabilities.triage.rules import rule_parameters_from_config
 
 @admin.register(AnalysisPreset, site=dejacode_site)
 class AnalysisPresetAdmin(DataspacedAdmin):
-    form = AnalysisPresetForm
     short_description = (
         "An Analysis Preset defines default vulnerability analysis values that the triage"
         " engine applies automatically when an assigned ruleset fires."
@@ -33,6 +33,7 @@ class AnalysisPresetAdmin(DataspacedAdmin):
         " are never overwritten. When a user edits an auto-applied analysis, the preset"
         " link is cleared and the analysis becomes human-owned."
     )
+    form = AnalysisPresetForm
     list_display = [
         "name",
         "state",
@@ -64,6 +65,7 @@ class AnalysisPresetAdmin(DataspacedAdmin):
     def get_responses(self, obj):
         if not obj.responses:
             return ""
+
         labels = dict(AnalysisPreset.Response.choices)
         return ", ".join(labels.get(response, response) for response in obj.responses)
 
@@ -82,14 +84,14 @@ class TriageRulesetAdmin(DataspacedAdmin):
         " product; when conditions overlap, the ruleset with the highest precedence takes"
         " effect."
     )
-
     form = TriageRulesetForm
     list_display = [
         "name",
         "get_action_label",
         "precedence",
         "get_enabled_rules",
-        "analysis_preset",
+        AsLink("analysis_preset"),
+        AsLink("request_template"),
         "description",
         "enabled",
         "get_dataspace",
@@ -115,13 +117,19 @@ class TriageRulesetAdmin(DataspacedAdmin):
             else:
                 label = handler.label
             lines.append(escape(label))
+
         if not lines:
             return ""
+
         return mark_safe("<br>".join(lines))
 
     def get_changes_details(self, form):
         model_field_names = {field.name for field in TriageRuleset._meta.get_fields()}
-        form.__dict__["changed_data"] = [f for f in form.changed_data if f in model_field_names]
+        form.__dict__["changed_data"] = [
+            field_name
+            for field_name in form.changed_data
+            if field_name in model_field_names
+        ]
         return super().get_changes_details(form)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
@@ -132,6 +140,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
             "precedence",
             "enabled",
             "analysis_preset",
+            "request_template",
         ]
         return super().get_form(request, obj, change=change, **kwargs)
 
@@ -147,10 +156,12 @@ class TriageRulesetAdmin(DataspacedAdmin):
                         "precedence",
                         "enabled",
                         "analysis_preset",
+                        "request_template",
                     ]
                 },
             ),
         ]
+
         rule_fieldsets = []
         for rule_type, handler in RULE_REGISTRY.items():
             fields = [f"rule_{rule_type}_enabled"]
@@ -166,4 +177,5 @@ class TriageRulesetAdmin(DataspacedAdmin):
                     },
                 )
             )
+
         return base_fieldsets + rule_fieldsets
