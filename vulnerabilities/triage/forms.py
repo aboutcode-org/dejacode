@@ -44,7 +44,15 @@ class TriageRulesetForm(DataspacedAdminForm):
 
     class Meta:
         model = TriageRuleset
-        fields = ["name", "description", "action", "precedence", "enabled", "analysis_preset"]
+        fields = [
+            "name",
+            "description",
+            "action",
+            "precedence",
+            "enabled",
+            "analysis_preset",
+            "request_template",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

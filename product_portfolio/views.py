@@ -1345,7 +1345,7 @@ class ProductTabVulnerabilitiesView(
                 vulnerability_id__in=vulnerability_ids,
             )
             .primary_actions()
-            .select_related("ruleset")
+            .select_related("ruleset", "request")
         )
         for record in triage_records:
             record.action_label = action_labels.get(record.action, record.action)
