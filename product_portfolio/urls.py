@@ -39,6 +39,7 @@ from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
 from product_portfolio.views import add_customcomponent_ajax_view
+from product_portfolio.views import apply_analysis_preset_view
 from product_portfolio.views import check_package_version_ajax_view
 from product_portfolio.views import delete_scan_htmx_view
 from product_portfolio.views import edit_productrelation_ajax_view
@@ -117,6 +118,11 @@ urlpatterns = [
         "edit/<str:relation_type>/<uuid:relation_uuid>/",
         edit_productrelation_ajax_view,
         name="edit_productrelation_ajax",
+    ),
+    path(
+        "vulnerability_analysis/<uuid:productpackage_uuid>/preset/<int:preset_id>/<path:advisory_uid>/",
+        apply_analysis_preset_view,
+        name="apply_analysis_preset",
     ),
     path(
         "vulnerability_analysis/<uuid:productpackage_uuid>/<path:advisory_uid>/",

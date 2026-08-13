@@ -134,7 +134,7 @@
                 <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
               {% endif %}
             </td>
-            <td class="p-1">
+            <td class="p-1 text-nowrap">
               <span data-bs-toggle="modal"
                     data-bs-target="#vulnerability-analysis-modal"
                     data-advisory-uid="{{ vulnerability.advisory_uid }}"
@@ -145,6 +145,24 @@
                   <i class="far fa-edit fa-sm"></i>
                 </button>
               </span>
+              {% if analysis_presets and not vulnerability.vulnerability_analysis %}
+                <div class="dropdown d-inline">
+                  <button type="button" class="btn btn-link p-0" data-bs-toggle="dropdown" aria-label="Quick action" title="Apply preset">
+                    <i class="fas fa-bolt fa-sm text-warning"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header small">Apply preset</h6></li>
+                    {% for preset in analysis_presets %}
+                    <li>
+                      <button type="button" class="dropdown-item small quick-preset-btn"
+                              data-apply-url="{% url 'product_portfolio:apply_analysis_preset' product_package.uuid preset.pk vulnerability.advisory_uid %}">
+                        {{ preset.name }}
+                      </button>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
             </td>
             {% if not forloop.first %}</tr>{% endif %}
           {% endfor %}

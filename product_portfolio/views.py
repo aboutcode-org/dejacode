@@ -151,6 +151,7 @@ from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
 from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
@@ -1426,6 +1427,7 @@ class ProductTabVulnerabilitiesView(
         self.attach_vulnerability_analyses(page_obj)
         self.attach_triage_data(product, page_obj)
 
+        analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
         context_data.update(
             {
                 "filterset": self.filterset,
@@ -1434,6 +1436,7 @@ class ProductTabVulnerabilitiesView(
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
                 "has_triage_rulesets": self.has_triage_rulesets,
+                "analysis_presets": analysis_presets,
             }
         )
 
@@ -2932,6 +2935,45 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, advisory_uid)
     rendered_form = render_crispy_form(form, context=csrf(request))
 
     return HttpResponse(rendered_form)
+
+
+@login_required
+@require_POST
+def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, preset_id):
+    user = request.user
+    dataspace = user.dataspace
+
+    product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
+    product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
+    vulnerability = get_object_or_404(
+        Vulnerability.objects.scope(dataspace), advisory_uid=advisory_uid
+    )
+    preset = get_object_or_404(AnalysisPreset.objects.scope(dataspace), pk=preset_id)
+
+    existing = VulnerabilityAnalysis.objects.scope(dataspace).get_or_none(
+        product_package=product_package,
+        vulnerability=vulnerability,
+    )
+    if existing:
+        return JsonResponse(
+            {"error": "An analysis already exists for this vulnerability."}, status=400
+        )
+
+    analysis = VulnerabilityAnalysis(
+        product_package=product_package,
+        vulnerability=vulnerability,
+        dataspace=dataspace,
+    )
+    preset.apply_to_analysis(analysis)
+
+    content_fields = [analysis.state, analysis.justification, analysis.responses, analysis.detail]
+    if not any(content_fields):
+        return JsonResponse({"error": "This preset has no content fields to apply."}, status=400)
+
+    analysis.applied_by_preset = preset
+    analysis.save()
+
+    return JsonResponse({"success": "applied"}, status=200)
 
 
 @login_required

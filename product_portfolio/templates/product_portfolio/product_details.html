@@ -384,6 +384,21 @@
           });
         });
 
+        document.addEventListener('click', function(event) {
+          const btn = event.target.closest('.quick-preset-btn');
+          if (!btn) return;
+          fetch(btn.dataset.applyUrl, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) location.reload();
+            else alert(data.error || 'Error applying preset.');
+          })
+          .catch(() => alert('Error applying preset.'));
+        });
+
       });
     </script>
   {% endif %}
