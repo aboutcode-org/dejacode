@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from django.apps import apps
 from django.db import models
 from django.db.models import OuterRef
 from django.db.models import Subquery
@@ -57,14 +56,9 @@ class AnalysisPreset(DataspacedModel, VulnerabilityAnalysisContentMixin):
 
     def apply_to_analysis(self, analysis):
         """Copy non-blank preset fields onto the analysis instance (does not save)."""
-        if self.state:
-            analysis.state = self.state
-        if self.justification:
-            analysis.justification = self.justification
-        if self.responses:
-            analysis.responses = self.responses
-        if self.detail:
-            analysis.detail = self.detail
+        for field_name in ("state", "justification", "responses", "detail"):
+            if value := getattr(self, field_name):
+                setattr(analysis, field_name, value)
         if self.is_reachable is not None:
             analysis.is_reachable = self.is_reachable
 
@@ -84,7 +78,6 @@ class TriageRuleset(DataspacedModel):
         help_text=_("Action recommended when this ruleset's conditions are met."),
     )
     precedence = models.PositiveIntegerField(
-        default=100,
         help_text=_(
             "When multiple rulesets are assigned to a product and produce different"
             " actions, the one with the highest precedence takes effect."
@@ -139,15 +132,7 @@ class TriageRuleset(DataspacedModel):
 
 
 class TriageRecordQuerySet(ProductSecuredQuerySet):
-    def product_secured(self, user=None, perms="view_product"):
-        """Filter by product object permission through the direct product FK."""
-        if not user:
-            return self.none()
-        Product = apps.get_model("product_portfolio", "Product")
-        product_qs = Product.objects.get_queryset(user, perms)
-        return self.filter(product__in=product_qs)
-
-    def primary_actions(self):
+    def highest_precedence(self):
         """
         Return one record per (vulnerability, product): the highest-precedence active ruleset
         that is explicitly assigned to the product via ProductTriageRuleset.

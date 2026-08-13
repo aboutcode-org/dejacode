@@ -126,9 +126,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
     def get_changes_details(self, form):
         model_field_names = {field.name for field in TriageRuleset._meta.get_fields()}
         form.__dict__["changed_data"] = [
-            field_name
-            for field_name in form.changed_data
-            if field_name in model_field_names
+            field_name for field_name in form.changed_data if field_name in model_field_names
         ]
         return super().get_changes_details(form)
 

@@ -1344,7 +1344,7 @@ class ProductTabVulnerabilitiesView(
                 product=product,
                 vulnerability_id__in=vulnerability_ids,
             )
-            .primary_actions()
+            .highest_precedence()
             .select_related("ruleset", "request")
         )
         for record in triage_records:
