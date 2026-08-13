@@ -108,7 +108,7 @@ def apply_preset_for_vulnerabilities(preset, product, vulnerability_ids):
                 analysis.detail,
             ]
             if not any(content_fields):
-                continue  # Preset has no content fields -- cannot save a new analysis
+                continue  # Preset has no content fields - cannot save a new analysis
         else:
             analysis = existing
             preset.apply_to_analysis(analysis)
@@ -184,6 +184,40 @@ def sync_triage_records(ruleset, product, matched_rules_per_vulnerability_id, ap
             product=product,
             vulnerability_ids=list(matched_rules_per_vulnerability_id.keys()),
         )
+
+    # Open a workflow Request for each TriageRecord when the Ruleset request_template is set.
+    if ruleset.request_template_id:
+        records_without_request = TriageRecord.objects.filter(
+            ruleset=ruleset,
+            product=product,
+            request=None,
+        ).select_related("vulnerability")
+
+        if records_without_request:
+            create_triage_requests(
+                request_template=ruleset.request_template,
+                product=product,
+                records=records_without_request,
+            )
+
+
+def create_triage_requests(request_template, product, records):
+    """
+    Open one Request per TriageRecord using the given request_template.
+
+    Uses the request_template creator as requester.
+    """
+    requester = request_template.created_by
+
+    for record in records:
+        advisory_id = record.vulnerability.advisory_id
+        triage_request = request_template.create_request(
+            requester=requester,
+            title=f"Vulnerability: {advisory_id}",
+            product_context=product,
+            object_id=product.pk,
+        )
+        TriageRecord.objects.filter(pk=record.pk).update(request=triage_request)
 
 
 def evaluate_ruleset(ruleset, product, apply_preset=True):
