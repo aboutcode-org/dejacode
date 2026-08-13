@@ -110,6 +110,21 @@ class TriageRuleset(DataspacedModel):
             " Only applied when no human-owned analysis exists."
         ),
     )
+    request_template = models.ForeignKey(
+        to="workflow.RequestTemplate",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="triage_rulesets",
+        limit_choices_to={
+            "content_type__app_label": "product_portfolio",
+            "content_type__model": "product",
+        },
+        help_text=_(
+            "Optional product-type request template. When set, the triage engine"
+            " automatically opens a request for each newly detected vulnerability match."
+        ),
+    )
 
     class Meta:
         unique_together = (
@@ -209,6 +224,16 @@ class TriageRecord(DataspacedModel):
     matched_rules = models.JSONField(
         default=list,
         help_text=_("Rules that fired for this vulnerability during evaluation."),
+    )
+    request = models.ForeignKey(
+        to="workflow.Request",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="triage_records",
+        help_text=_(
+            "Request automatically opened by the triage engine for this vulnerability match."
+        ),
     )
     detected_date = models.DateTimeField(
         auto_now_add=True,
