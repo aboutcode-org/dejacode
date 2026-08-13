@@ -345,6 +345,21 @@ class VulnerabilityAnalysisContentMixin(models.Model):
         ),
     )
 
+    def save(self, *args, **kwargs):
+        # At least one of those fields must be provided.
+        main_fields = [
+            self.state,
+            self.justification,
+            self.responses,
+            self.detail,
+        ]
+        if not any(main_fields):
+            raise ValueError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
+
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True
 
@@ -363,21 +378,6 @@ class VulnerabilityAnalysisMixin(VulnerabilityAnalysisContentMixin):
 
     class Meta:
         abstract = True
-
-    def save(self, *args, **kwargs):
-        # At least one of those fields must be provided.
-        main_fields = [
-            self.state,
-            self.justification,
-            self.responses,
-            self.detail,
-        ]
-        if not any(main_fields):
-            raise ValueError(
-                "At least one of state, justification, responses or detail must be provided."
-            )
-
-        super().save(*args, **kwargs)
 
     def as_cyclonedx(self):
         state = None
