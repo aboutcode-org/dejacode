@@ -150,17 +150,20 @@ class TriageRecordModelTestCase(TestCase):
         self.package = make_package(self.dataspace)
         make_product_package(self.product, package=self.package)
         self.vulnerability = make_vulnerability(self.dataspace, affecting=self.package)
-        self.ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
+        self.ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.NOTIFY)
 
     def test_str(self):
         record = TriageRecord.objects.create(
             vulnerability=self.vulnerability,
             product=self.product,
             ruleset=self.ruleset,
-            action=self.ruleset.action,
+            recommended_action=self.ruleset.recommended_action,
             dataspace=self.dataspace,
         )
-        expected = f"{self.vulnerability} / {self.product} / {self.ruleset}: {self.ruleset.action}"
+        expected = (
+            f"{self.vulnerability} / {self.product} /"
+            f" {self.ruleset}: {self.ruleset.recommended_action}"
+        )
         self.assertEqual(expected, str(record))
 
 
@@ -177,16 +180,16 @@ class TriageRecordQuerySetHighestPrecedenceTestCase(TestCase):
             vulnerability=self.vulnerability,
             product=self.product,
             ruleset=ruleset,
-            action=ruleset.action,
+            recommended_action=ruleset.recommended_action,
             dataspace=self.dataspace,
         )
 
     def test_returns_the_record_of_the_highest_precedence_assigned_ruleset(self):
         low_ruleset = make_triage_ruleset(
-            self.dataspace, precedence=100, action=TriageAction.NOTIFY
+            self.dataspace, precedence=100, recommended_action=TriageAction.NOTIFY
         )
         high_ruleset = make_triage_ruleset(
-            self.dataspace, precedence=900, action=TriageAction.UPGRADE
+            self.dataspace, precedence=900, recommended_action=TriageAction.UPGRADE
         )
         make_product_triage_ruleset(self.product, ruleset=low_ruleset)
         make_product_triage_ruleset(self.product, ruleset=high_ruleset)
@@ -227,7 +230,7 @@ class TriageRecordQuerySetHighestPrecedenceTestCase(TestCase):
             vulnerability=self.vulnerability,
             product=other_product,
             ruleset=high_ruleset,
-            action=high_ruleset.action,
+            recommended_action=high_ruleset.recommended_action,
             dataspace=self.dataspace,
         )
 

@@ -37,7 +37,7 @@ class AnalysisPresetForm(DataspacedAdminForm):
 
 
 class TriageRulesetForm(DataspacedAdminForm):
-    action = forms.ChoiceField(
+    recommended_action = forms.ChoiceField(
         choices=[("", "---------")] + list(TriageAction.choices),
         required=False,
     )
@@ -47,7 +47,7 @@ class TriageRulesetForm(DataspacedAdminForm):
         fields = [
             "name",
             "description",
-            "action",
+            "recommended_action",
             "precedence",
             "enabled",
             "analysis_preset",

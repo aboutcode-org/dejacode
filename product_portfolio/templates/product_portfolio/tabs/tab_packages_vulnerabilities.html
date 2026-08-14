@@ -78,7 +78,7 @@
             <td>
               {% if vulnerability.triage_record %}
                 {% with record=vulnerability.triage_record %}
-                  {% if record.action %}
+                  {% if record.recommended_action %}
                     <span class="badge {{ record.action_badge_class }} d-block text-start">
                       <i class="fas {{ record.action_icon }} me-1"></i>{{ record.action_label }}
                     </span>

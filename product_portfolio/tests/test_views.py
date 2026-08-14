@@ -306,7 +306,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         # product has at least one enabled TriageRuleset assigned to it.
         ruleset = TriageRuleset.objects.create(
             name="Upgrade Ruleset",
-            action=TriageAction.UPGRADE,
+            recommended_action=TriageAction.UPGRADE,
             precedence=100,
             dataspace=self.dataspace,
         )
@@ -4361,7 +4361,7 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         )
         self.ruleset = TriageRuleset.objects.create(
             name="Upgrade Ruleset",
-            action=TriageAction.UPGRADE,
+            recommended_action=TriageAction.UPGRADE,
             precedence=100,
             dataspace=self.dataspace,
         )

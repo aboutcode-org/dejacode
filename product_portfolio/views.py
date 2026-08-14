@@ -1349,8 +1349,12 @@ class ProductTabVulnerabilitiesView(
             .select_related("ruleset", "request")
         )
         for record in triage_records:
-            record.action_label = action_labels.get(record.action, record.action)
-            badge_class, icon = TRIAGE_ACTION_STYLES.get(record.action, TRIAGE_ACTION_DEFAULT_STYLE)
+            record.action_label = action_labels.get(
+                record.recommended_action, record.recommended_action
+            )
+            badge_class, icon = TRIAGE_ACTION_STYLES.get(
+                record.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
+            )
             record.action_badge_class = badge_class
             record.action_icon = icon
 
@@ -2251,9 +2255,11 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
     action_labels = dict(TriageAction.choices)
 
     for ruleset in available_rulesets:
-        ruleset.action_label = action_labels.get(ruleset.action, ruleset.action)
+        ruleset.action_label = action_labels.get(
+            ruleset.recommended_action, ruleset.recommended_action
+        )
         action_badge_class, action_icon = TRIAGE_ACTION_STYLES.get(
-            ruleset.action, TRIAGE_ACTION_DEFAULT_STYLE
+            ruleset.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
         )
         ruleset.action_badge_class = action_badge_class
         ruleset.action_icon = action_icon

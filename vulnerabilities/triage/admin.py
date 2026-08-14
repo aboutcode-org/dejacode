@@ -101,7 +101,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
 
     @admin.display(description="Action")
     def get_action_label(self, obj):
-        return dict(TriageAction.choices).get(obj.action, obj.action)
+        return dict(TriageAction.choices).get(obj.recommended_action, obj.recommended_action)
 
     @admin.display(description="Enabled rules")
     def get_enabled_rules(self, obj):
@@ -134,7 +134,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
         kwargs["fields"] = [
             "name",
             "description",
-            "action",
+            "recommended_action",
             "precedence",
             "enabled",
             "analysis_preset",
@@ -150,7 +150,7 @@ class TriageRulesetAdmin(DataspacedAdmin):
                     "fields": [
                         "name",
                         "description",
-                        "action",
+                        "recommended_action",
                         "precedence",
                         "enabled",
                         "analysis_preset",

@@ -194,7 +194,7 @@ class SyncTriageRecordsTestCase(TestCase):
         self.package = make_package(self.dataspace)
         self.product_package = make_product_package(self.product, package=self.package)
         self.vulnerability = make_vulnerability(self.dataspace, affecting=self.package)
-        self.ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.UPGRADE)
+        self.ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.UPGRADE)
 
     def test_creates_one_record_per_matching_vulnerability(self):
         sync_triage_records(self.ruleset, self.product, {self.vulnerability.pk: ["risk_score"]})
@@ -202,7 +202,7 @@ class SyncTriageRecordsTestCase(TestCase):
         self.assertEqual(self.vulnerability, record.vulnerability)
         self.assertEqual(self.product, record.product)
         self.assertEqual(self.ruleset, record.ruleset)
-        self.assertEqual(TriageAction.UPGRADE, record.action)
+        self.assertEqual(TriageAction.UPGRADE, record.recommended_action)
         self.assertEqual(["risk_score"], record.matched_rules)
 
     def test_reevaluation_updates_matched_rules_without_duplicating_the_record(self):
@@ -257,7 +257,7 @@ class SyncTriageRecordsTestCase(TestCase):
         self.assertEqual(request, record.request)
 
     def test_does_not_touch_records_from_another_ruleset(self):
-        other_ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
+        other_ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.NOTIFY)
         sync_triage_records(other_ruleset, self.product, {self.vulnerability.pk: ["risk_score"]})
         sync_triage_records(self.ruleset, self.product, {})
         self.assertEqual(1, TriageRecord.objects.count())
@@ -337,7 +337,7 @@ class CreateTriageRequestsTestCase(TestCase):
         self.package = make_package(self.dataspace)
         make_product_package(self.product, package=self.package)
         self.vulnerability = make_vulnerability(self.dataspace, affecting=self.package)
-        self.ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.UPGRADE)
+        self.ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.UPGRADE)
         self.requester = create_user("requester", self.dataspace)
         self.request_template = RequestTemplate.objects.create(
             name="Vulnerability Template",
@@ -352,7 +352,7 @@ class CreateTriageRequestsTestCase(TestCase):
             vulnerability=self.vulnerability,
             product=self.product,
             ruleset=self.ruleset,
-            action=self.ruleset.action,
+            recommended_action=self.ruleset.recommended_action,
             dataspace=self.dataspace,
         )
         create_triage_requests(self.request_template, self.product, [record])
@@ -367,7 +367,7 @@ class CreateTriageRequestsTestCase(TestCase):
             vulnerability=self.vulnerability,
             product=self.product,
             ruleset=self.ruleset,
-            action=self.ruleset.action,
+            recommended_action=self.ruleset.recommended_action,
             dataspace=self.dataspace,
         )
         create_triage_requests(self.request_template, self.product, [record])
@@ -386,7 +386,7 @@ class EvaluateRulesetTestCase(TestCase):
         vulnerability = make_vulnerability(self.dataspace, affecting=self.package, risk_score=9.0)
         ruleset = make_triage_ruleset(
             self.dataspace,
-            action=TriageAction.UPGRADE,
+            recommended_action=TriageAction.UPGRADE,
             rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
         )
         evaluate_ruleset(ruleset, self.product)
@@ -398,7 +398,7 @@ class EvaluateRulesetTestCase(TestCase):
         vulnerability = make_vulnerability(self.dataspace, affecting=self.package, risk_score=9.0)
         ruleset = make_triage_ruleset(
             self.dataspace,
-            action=TriageAction.UPGRADE,
+            recommended_action=TriageAction.UPGRADE,
             rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
         )
         evaluate_ruleset(ruleset, self.product)

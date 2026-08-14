@@ -467,7 +467,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             vulnerability__affected_packages__productpackages=OuterRef("pk"),
             ruleset__enabled=True,
             ruleset_id=Subquery(winning_ruleset_id),
-            action=value,
+            recommended_action=value,
         )
         return queryset.filter(Exists(primary_triage)).distinct()
 

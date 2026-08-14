@@ -108,13 +108,13 @@ class TriageRulesetSaveSignalTestCase(TestCase):
         package = make_package(self.dataspace)
         make_product_package(self.product, package=package)
         vulnerability = make_vulnerability(self.dataspace, affecting=package)
-        ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
+        ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.NOTIFY)
         make_product_triage_ruleset(self.product, ruleset=ruleset)
         TriageRecord.objects.create(
             vulnerability=vulnerability,
             product=self.product,
             ruleset=ruleset,
-            action=ruleset.action,
+            recommended_action=ruleset.recommended_action,
             dataspace=self.dataspace,
         )
         mock_evaluate.reset_mock()
@@ -130,7 +130,7 @@ class TriageRulesetSaveSignalTestCase(TestCase):
         package = make_package(self.dataspace)
         make_product_package(self.product, package=package)
         vulnerability = make_vulnerability(self.dataspace, affecting=package)
-        ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
+        ruleset = make_triage_ruleset(self.dataspace, recommended_action=TriageAction.NOTIFY)
         make_product_triage_ruleset(self.product, ruleset=ruleset)
         requester = create_user("requester", self.dataspace)
         request_template = RequestTemplate.objects.create(
@@ -150,7 +150,7 @@ class TriageRulesetSaveSignalTestCase(TestCase):
             vulnerability=vulnerability,
             product=self.product,
             ruleset=ruleset,
-            action=ruleset.action,
+            recommended_action=ruleset.recommended_action,
             request=request,
             dataspace=self.dataspace,
         )
@@ -178,7 +178,7 @@ class TriageRulesetSaveSignalTestCase(TestCase):
         )
         ruleset = make_triage_ruleset(
             self.dataspace,
-            action=TriageAction.NOTIFY,
+            recommended_action=TriageAction.NOTIFY,
             request_template=request_template,
             rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
         )
@@ -207,7 +207,7 @@ class DeleteTriageRecordsOnUnassignSignalTestCase(TestCase):
         )
         self.ruleset = make_triage_ruleset(
             self.dataspace,
-            action=TriageAction.NOTIFY,
+            recommended_action=TriageAction.NOTIFY,
             rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
         )
         self.assignment = make_product_triage_ruleset(self.product, ruleset=self.ruleset)

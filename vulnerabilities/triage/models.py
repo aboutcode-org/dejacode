@@ -72,10 +72,10 @@ class TriageRuleset(DataspacedModel):
         blank=True,
         help_text=_("Optional description of the purpose or scope of this ruleset."),
     )
-    action = models.CharField(
+    recommended_action = models.CharField(
         max_length=50,
         blank=True,
-        help_text=_("Action recommended when this ruleset's conditions are met."),
+        help_text=_("Remediation action recommended when this ruleset's conditions are met."),
     )
     precedence = models.PositiveIntegerField(
         help_text=_(
@@ -201,7 +201,7 @@ class TriageRecord(DataspacedModel):
         related_name="triage_records",
         help_text=_("The ruleset that produced this action."),
     )
-    action = models.CharField(
+    recommended_action = models.CharField(
         max_length=50,
         blank=True,
         help_text=_("Recommended action captured at the time of evaluation."),
@@ -236,4 +236,4 @@ class TriageRecord(DataspacedModel):
         ordering = ["-detected_date"]
 
     def __str__(self):
-        return f"{self.vulnerability} / {self.product} / {self.ruleset}: {self.action}"
+        return f"{self.vulnerability} / {self.product} / {self.ruleset}: {self.recommended_action}"

@@ -147,7 +147,7 @@ def sync_triage_records(ruleset, product, matched_rules_per_vulnerability_id, ap
             vulnerability_id=vulnerability_id,
             product=product,
             ruleset=ruleset,
-            action=ruleset.action,
+            recommended_action=ruleset.recommended_action,
             matched_rules=matched_rules,
             dataspace=ruleset.dataspace,
             detected_date=now,
@@ -159,7 +159,7 @@ def sync_triage_records(ruleset, product, matched_rules_per_vulnerability_id, ap
         records,
         update_conflicts=True,
         unique_fields=["vulnerability", "product", "ruleset"],
-        update_fields=["action", "matched_rules", "last_checked", "dataspace"],
+        update_fields=["recommended_action", "matched_rules", "last_checked", "dataspace"],
     )
 
     stale_records_qs = TriageRecord.objects.filter(

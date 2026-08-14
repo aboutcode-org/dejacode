@@ -206,7 +206,7 @@ class ProductPackageFilterByTriageActionTestCase(TestCase):
         )
         ruleset = TriageRuleset.objects.create(
             name="Upgrade Ruleset",
-            action=TriageAction.UPGRADE,
+            recommended_action=TriageAction.UPGRADE,
             precedence=100,
             dataspace=self.dataspace,
             rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},

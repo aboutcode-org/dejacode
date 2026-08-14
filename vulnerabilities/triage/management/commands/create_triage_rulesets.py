@@ -57,7 +57,7 @@ REFERENCE_RULESETS = [
             "Vulnerabilities with a critical risk score and a known active exploit"
             " affecting the product."
         ),
-        "action": TriageAction.UPGRADE,
+        "recommended_action": TriageAction.UPGRADE,
         "precedence": 700,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
@@ -70,7 +70,7 @@ REFERENCE_RULESETS = [
             "Vulnerabilities with a known active exploit affecting the product,"
             " regardless of severity."
         ),
-        "action": TriageAction.UPGRADE,
+        "recommended_action": TriageAction.UPGRADE,
         "precedence": 600,
         "rules_config": {
             "exploited_vulnerability": {"is_active": True},
@@ -79,7 +79,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Reachable Vulnerability",
         "description": "Vulnerabilities confirmed as reachable within the product context.",
-        "action": TriageAction.APPLY_PATCH,
+        "recommended_action": TriageAction.APPLY_PATCH,
         "precedence": 500,
         "rules_config": {
             "reachable_vulnerability": {"is_active": True},
@@ -91,7 +91,7 @@ REFERENCE_RULESETS = [
             "Vulnerabilities with a critical risk score and no known active exploit"
             " affecting the product."
         ),
-        "action": TriageAction.APPLY_PATCH,
+        "recommended_action": TriageAction.APPLY_PATCH,
         "precedence": 400,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
@@ -103,7 +103,7 @@ REFERENCE_RULESETS = [
             "Vulnerabilities with a critical risk score left unaddressed"
             " for more than 30 days in the product."
         ),
-        "action": TriageAction.APPLY_PATCH,
+        "recommended_action": TriageAction.APPLY_PATCH,
         "precedence": 300,
         "rules_config": {
             "stale_vulnerability": {"is_active": True, "min_risk_score": 8.0, "max_days": 30},
@@ -112,7 +112,7 @@ REFERENCE_RULESETS = [
     {
         "name": "Dev-Only Vulnerable Package",
         "description": "Vulnerabilities affecting only non-deployed packages in the product.",
-        "action": TriageAction.NOTIFY,
+        "recommended_action": TriageAction.NOTIFY,
         "precedence": 200,
         "rules_config": {
             "dev_only_vulnerable_package": {"is_active": True},
@@ -124,7 +124,7 @@ REFERENCE_RULESETS = [
             "Vulnerabilities affecting the product where at least one package"
             " has no completed triage analysis."
         ),
-        "action": TriageAction.FORENSIC_ANALYSIS,
+        "recommended_action": TriageAction.FORENSIC_ANALYSIS,
         "precedence": 100,
         "rules_config": {
             "unresolved_vulnerability": {"is_active": True},
@@ -169,7 +169,7 @@ class Command(BaseCommand):
                 name=ruleset_data["name"],
                 defaults={
                     "description": ruleset_data["description"],
-                    "action": ruleset_data["action"],
+                    "recommended_action": ruleset_data["recommended_action"],
                     "precedence": ruleset_data["precedence"],
                     "rules_config": ruleset_data["rules_config"],
                     "enabled": True,
