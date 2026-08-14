@@ -146,8 +146,8 @@
                 </button>
               </span>
               {% if analysis_presets and not vulnerability.vulnerability_analysis %}
-                <div class="dropdown d-inline">
-                  <button type="button" class="btn btn-link p-0" data-bs-toggle="dropdown" aria-label="Quick action" title="Apply preset">
+                <span class="dropdown d-inline ms-1" data-bs-toggle="tooltip" title="Apply analysis preset">
+                  <button type="button" class="btn btn-link p-0" data-bs-toggle="dropdown" aria-label="Quick action">
                     <i class="fas fa-bolt fa-sm text-warning"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
@@ -161,7 +161,7 @@
                     </li>
                     {% endfor %}
                   </ul>
-                </div>
+                </span>
               {% endif %}
             </td>
             {% if not forloop.first %}</tr>{% endif %}
