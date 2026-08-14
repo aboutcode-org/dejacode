@@ -64,6 +64,9 @@ from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRuleset
 from workflow.models import Request
 from workflow.models import RequestTemplate
 
@@ -298,6 +301,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
     def test_product_portfolio_tab_vulnerability_view_filters(self):
         self.client.login(username="nexb_user", password="secret")
+        # The "Recommendation" column, and its triage_action filter, only render when the
+        # product has at least one enabled TriageRuleset assigned to it.
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset",
+            action=TriageAction.UPGRADE,
+            precedence=100,
+            dataspace=self.dataspace,
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
+
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
         self.assertContains(response, "?vulnerabilities-triage_action=#vulnerabilities")
