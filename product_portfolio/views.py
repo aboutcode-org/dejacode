@@ -2223,9 +2223,9 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
         dataspace__name=dataspace,
     )
     available_rulesets = list(
-        TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True).order_by(
-            "-precedence", "name"
-        )
+        TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True)
+        .select_related("analysis_preset")
+        .order_by("-precedence", "name")
     )
 
     if request.method == "POST":

@@ -4385,6 +4385,17 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         self.assertContains(response, self.ruleset.name)
         self.assertNotContains(response, "checked")
 
+    def test_get_displays_the_ruleset_analysis_preset(self):
+        preset = AnalysisPreset.objects.create(
+            name="Auto-Close Preset", state="not_affected", dataspace=self.dataspace
+        )
+        self.ruleset.analysis_preset = preset
+        self.ruleset.save()
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertContains(response, preset.name)
+
     def test_get_marks_the_assigned_rulesets_as_checked(self):
         ProductTriageRuleset.objects.create(
             product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace

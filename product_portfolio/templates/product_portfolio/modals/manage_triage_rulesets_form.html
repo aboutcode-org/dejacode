@@ -41,6 +41,14 @@
                 </span>
               </span>
             {% endif %}
+            {% if ruleset.analysis_preset %}
+              <span class="d-flex align-items-center gap-2 mt-1">
+                <span class="small text-body-secondary">{% trans "Auto-applies preset:" %}</span>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis fw-normal">
+                  {{ ruleset.analysis_preset.name }}
+                </span>
+              </span>
+            {% endif %}
           </span>
         </label>
       {% endfor %}
