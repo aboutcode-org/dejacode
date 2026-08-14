@@ -8,10 +8,13 @@
 
 from unittest.mock import patch
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.tests import create_user
+from product_portfolio.models import Product
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.models import VulnerabilityAnalysis
@@ -26,6 +29,8 @@ from vulnerabilities.triage.signals import reevaluate_product_rulesets
 from vulnerabilities.triage.tests import make_analysis_preset
 from vulnerabilities.triage.tests import make_product_triage_ruleset
 from vulnerabilities.triage.tests import make_triage_ruleset
+from workflow.models import Request
+from workflow.models import RequestTemplate
 
 
 class ReevaluateProductRulesetsTestCase(TestCase):
@@ -120,6 +125,76 @@ class TriageRulesetSaveSignalTestCase(TestCase):
         self.assertFalse(TriageRecord.objects.exists())
         mock_evaluate.assert_not_called()
 
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
+    def test_disabling_a_ruleset_keeps_records_that_have_an_open_request(self, mock_evaluate):
+        package = make_package(self.dataspace)
+        make_product_package(self.product, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package)
+        ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        request = request_template.create_request(
+            requester=requester,
+            title="Vulnerability request",
+            product_context=self.product,
+            object_id=self.product.pk,
+        )
+        record = TriageRecord.objects.create(
+            vulnerability=vulnerability,
+            product=self.product,
+            ruleset=ruleset,
+            action=ruleset.action,
+            request=request,
+            dataspace=self.dataspace,
+        )
+        mock_evaluate.reset_mock()
+
+        ruleset.enabled = False
+        ruleset.save()
+
+        record.refresh_from_db()
+        self.assertEqual(request, record.request)
+
+    def test_disabling_then_reenabling_a_ruleset_reuses_the_existing_request(self):
+        # Regression: disabling then re-enabling a ruleset used to reopen a new Request
+        # instead of reconnecting to the one already tracking this vulnerability.
+        package = make_package(self.dataspace)
+        make_product_package(self.product, package=package)
+        make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            action=TriageAction.NOTIFY,
+            request_template=request_template,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+        evaluate_ruleset(ruleset, self.product)
+        original_request = TriageRecord.objects.get().request
+        self.assertIsNotNone(original_request)
+
+        ruleset.enabled = False
+        ruleset.save()
+        ruleset.enabled = True
+        ruleset.save()
+
+        self.assertEqual(1, Request.objects.count())
+        self.assertEqual(original_request, TriageRecord.objects.get().request)
+
 
 class DeleteTriageRecordsOnUnassignSignalTestCase(TestCase):
     def setUp(self):
@@ -142,6 +217,53 @@ class DeleteTriageRecordsOnUnassignSignalTestCase(TestCase):
     def test_unassigning_the_ruleset_deletes_its_triage_records_for_the_product(self):
         self.assignment.delete()
         self.assertFalse(TriageRecord.objects.exists())
+
+    def test_unassigning_keeps_a_record_that_has_an_open_request(self):
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        request = request_template.create_request(
+            requester=requester,
+            title="Vulnerability request",
+            product_context=self.product,
+            object_id=self.product.pk,
+        )
+        record = TriageRecord.objects.get()
+        record.request = request
+        record.save()
+
+        self.assignment.delete()
+
+        record.refresh_from_db()
+        self.assertEqual(request, record.request)
+
+    def test_reassigning_the_ruleset_reuses_the_existing_request(self):
+        # Regression: unassigning then reassigning a ruleset used to reopen a new Request
+        # instead of reconnecting to the one already tracking this vulnerability.
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        self.ruleset.request_template = request_template
+        self.ruleset.save()
+        original_request = TriageRecord.objects.get().request
+        self.assertIsNotNone(original_request)
+
+        self.assignment.delete()
+        make_product_triage_ruleset(self.product, ruleset=self.ruleset)
+        evaluate_ruleset(self.ruleset, self.product)
+
+        self.assertEqual(1, Request.objects.count())
+        self.assertEqual(original_request, TriageRecord.objects.get().request)
 
     def test_does_not_delete_records_belonging_to_another_product(self):
         other_product = make_product(self.dataspace)

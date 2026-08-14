@@ -176,7 +176,9 @@ def sync_triage_records(ruleset, product, matched_rules_per_vulnerability_id, ap
                 vulnerability_ids=stale_vulnerability_ids,
             )
 
-    stale_records_qs.delete()
+    # Records with an open Request are kept so a later rematch reconnects to it (via the
+    # update_conflicts upsert above) instead of opening a duplicate Request.
+    stale_records_qs.filter(request__isnull=True).delete()
 
     if apply_preset and ruleset.analysis_preset_id and matched_rules_per_vulnerability_id:
         apply_preset_for_vulnerabilities(

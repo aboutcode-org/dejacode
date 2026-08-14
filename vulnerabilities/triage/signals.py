@@ -30,7 +30,9 @@ def reevaluate_product_rulesets(product, apply_preset=True):
 def reevaluate_or_delete_on_ruleset_save(sender, instance, created, **kwargs):
     """Re-evaluate assigned products on config change; delete records when disabled."""
     if not instance.enabled:
-        instance.triage_records.all().delete()
+        # Records with an open Request are kept so re-enabling the ruleset reconnects to it
+        # instead of opening a duplicate Request.
+        instance.triage_records.filter(request__isnull=True).delete()
         return
 
     if created:
@@ -43,16 +45,14 @@ def reevaluate_or_delete_on_ruleset_save(sender, instance, created, **kwargs):
 @receiver(post_delete, sender="vulnerabilities_triage.ProductTriageRuleset")
 def delete_triage_records_on_unassign(sender, instance, **kwargs):
     """Delete triage records and associated preset analyses when a ruleset is de-assigned."""
-    stale_vulnerability_ids = list(
-        TriageRecord.objects.filter(
-            ruleset=instance.ruleset,
-            product=instance.product,
-        ).values_list("vulnerability_id", flat=True)
-    )
-    TriageRecord.objects.filter(
+    matching_records = TriageRecord.objects.filter(
         ruleset=instance.ruleset,
         product=instance.product,
-    ).delete()
+    )
+    stale_vulnerability_ids = list(matching_records.values_list("vulnerability_id", flat=True))
+    # Records with an open Request are kept so reassigning the ruleset reconnects to it
+    # instead of opening a duplicate Request.
+    matching_records.filter(request__isnull=True).delete()
     if instance.ruleset.analysis_preset_id and stale_vulnerability_ids:
         delete_preset_analyses_for_product(
             preset_id=instance.ruleset.analysis_preset_id,

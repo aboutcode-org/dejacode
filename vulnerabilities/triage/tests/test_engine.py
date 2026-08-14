@@ -225,6 +225,37 @@ class SyncTriageRecordsTestCase(TestCase):
         sync_triage_records(self.ruleset, self.product, {})
         self.assertFalse(TriageRecord.objects.exists())
 
+    def test_keeps_a_stale_record_that_has_an_open_request(self):
+        # A record with a Request already attached must survive going stale, so a later
+        # rematch reconnects to the same Request instead of opening a duplicate.
+        sync_triage_records(self.ruleset, self.product, {self.vulnerability.pk: ["risk_score"]})
+        record = TriageRecord.objects.get()
+        request = Request.objects.create(
+            request_template=RequestTemplate.objects.create(
+                name="Template",
+                description="Header",
+                dataspace=self.dataspace,
+                content_type=ContentType.objects.get_for_model(Product),
+                created_by=create_user("requester", self.dataspace),
+            ),
+            dataspace=self.dataspace,
+            requester=create_user("requester2", self.dataspace),
+            title="Vulnerability request",
+            product_context=self.product,
+        )
+        record.request = request
+        record.save()
+
+        sync_triage_records(self.ruleset, self.product, {})
+        self.assertEqual(1, TriageRecord.objects.count())
+        record.refresh_from_db()
+        self.assertEqual(request, record.request)
+
+        sync_triage_records(self.ruleset, self.product, {self.vulnerability.pk: ["risk_score"]})
+        self.assertEqual(1, TriageRecord.objects.count())
+        record.refresh_from_db()
+        self.assertEqual(request, record.request)
+
     def test_does_not_touch_records_from_another_ruleset(self):
         other_ruleset = make_triage_ruleset(self.dataspace, action=TriageAction.NOTIFY)
         sync_triage_records(other_ruleset, self.product, {self.vulnerability.pk: ["risk_score"]})
