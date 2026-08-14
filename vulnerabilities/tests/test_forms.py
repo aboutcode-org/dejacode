@@ -16,6 +16,7 @@ from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.forms import VulnerabilityAnalysisForm
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.triage.models import AnalysisPreset
 
 
 class VulnerabilitiesFormsTestCase(TestCase):
@@ -48,6 +49,31 @@ class VulnerabilitiesFormsTestCase(TestCase):
         self.assertEqual(product_package1.product, analysis.product)
         self.assertEqual(product_package1.package, analysis.package)
         self.assertEqual(data["detail"], analysis.detail)
+
+    def test_vulnerability_forms_vulnerability_analysis_save_clears_applied_by_preset(self):
+        product_package1 = make_product_package(make_product(self.dataspace))
+        vulnerability1 = make_vulnerability(
+            dataspace=self.dataspace, affecting=[product_package1.package]
+        )
+        preset = AnalysisPreset.objects.create(
+            name="Preset1", state="not_affected", dataspace=self.dataspace
+        )
+        analysis = product_package1.vulnerability_analyses.create(
+            vulnerability=vulnerability1,
+            dataspace=self.dataspace,
+            state="not_affected",
+            applied_by_preset=preset,
+        )
+
+        data = {
+            "product_package": product_package1,
+            "vulnerability": vulnerability1,
+            "detail": "Human edit",
+        }
+        form = VulnerabilityAnalysisForm(user=self.super_user, data=data, instance=analysis)
+        self.assertTrue(form.is_valid())
+        saved_analysis = form.save()
+        self.assertIsNone(saved_analysis.applied_by_preset)
 
     def test_vulnerability_forms_vulnerability_analysis_propagate_to_products(self):
         product_package1 = make_product_package(make_product(self.dataspace))

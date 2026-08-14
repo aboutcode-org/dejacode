@@ -25,6 +25,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.tests import make_product_dependency
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageRuleset
 
 
 class ProductPortfolioAdminsTestCase(TestCase):
@@ -430,6 +432,12 @@ class ProductPortfolioAdminsTestCase(TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
 
         url = self.product1.get_admin_url()
         data = {
@@ -447,6 +455,7 @@ class ProductPortfolioAdminsTestCase(TestCase):
         new_product = Product.unsecured_objects.get(name=self.product1.name, version="new version")
         self.assertEqual(1, new_product.productcomponents.count())
         self.assertEqual(1, new_product.productpackages.count())
+        self.assertEqual(1, new_product.product_triage_rulesets.count())
 
     def test_codebaseresource_admin_changeform_product_prefill_on_save_addanother(self):
         self.client.login(username=self.user.username, password="secret")

@@ -72,6 +72,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from reporting.filters import ReportingQueryListFilter
+from vulnerabilities.triage.models import ProductTriageRuleset
 
 
 @admin.register(ProductStatus, site=dejacode_site)
@@ -240,7 +241,7 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
         if "_saveasnew" in request.POST:
             old_product_id = request.resolver_match.kwargs.get("object_id")
             old_product = self.get_object(request, old_product_id)
-            for model_class in [ProductComponent, ProductPackage]:
+            for model_class in [ProductComponent, ProductPackage, ProductTriageRuleset]:
                 for relationship in model_class.objects.filter(product=old_product):
                     relationship.id = None
                     relationship.uuid = uuid.uuid4()
