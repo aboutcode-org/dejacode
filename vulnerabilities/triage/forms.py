@@ -7,6 +7,7 @@
 #
 
 from django import forms
+from django.core.exceptions import ValidationError
 
 from dje.forms import DataspacedAdminForm
 from vulnerabilities.models import VulnerabilityAnalysisContentMixin
@@ -34,6 +35,13 @@ class AnalysisPresetForm(DataspacedAdminForm):
             "detail",
             "is_reachable",
         ]
+
+    def clean(self):
+        main_fields = ["state", "justification", "responses", "detail"]
+        if not any(self.cleaned_data.get(field_name) for field_name in main_fields):
+            raise ValidationError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
 
 
 class TriageRulesetForm(DataspacedAdminForm):

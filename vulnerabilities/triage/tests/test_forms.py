@@ -9,8 +9,31 @@
 from django.test import TestCase
 
 from dje.models import Dataspace
+from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
+from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageRuleset
+
+
+class AnalysisPresetFormTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+
+    def test_rejects_a_preset_with_no_content_field_set(self):
+        # Mirrors VulnerabilityAnalysisForm.clean: is_reachable alone is not enough content
+        # to apply, and must be caught here rather than crash in AnalysisPreset.save().
+        data = {"name": "No content", "is_reachable": True}
+        form = AnalysisPresetForm(data=data, instance=AnalysisPreset(dataspace=self.dataspace))
+        self.assertFalse(form.is_valid())
+        msg = "At least one of state, justification, responses or detail must be provided."
+        self.assertEqual({"__all__": [msg]}, form.errors)
+
+    def test_accepts_a_preset_with_detail_only(self):
+        data = {"name": "Detail only", "detail": "Some detail"}
+        form = AnalysisPresetForm(data=data, instance=AnalysisPreset(dataspace=self.dataspace))
+        self.assertTrue(form.is_valid(), form.errors)
+        preset = form.save()
+        self.assertEqual("Some detail", preset.detail)
 
 
 class TriageRulesetFormTestCase(TestCase):
