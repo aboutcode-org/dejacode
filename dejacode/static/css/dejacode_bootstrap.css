@@ -417,10 +417,14 @@ table.vulnerabilities-table .column-summary {
   width: 240px;
 }
 #tab_vulnerabilities .column-affected_packages {
-  min-width: 250px;
+  min-width: 300px;
+  width: 300px;
 }
 #tab_vulnerabilities .column-triage_action {
   min-width: 165px;
+}
+#tab_vulnerabilities .column-action {
+  width: 30px;
 }
 #tab_vulnerabilities .column-exploitability {
   width: 140px;
