@@ -62,6 +62,14 @@ class TriageRulesetForm(DataspacedAdminForm):
             "request_template",
         ]
 
+    def clean_request_template(self):
+        request_template = self.cleaned_data.get("request_template")
+        if request_template and not request_template.created_by_id:
+            raise ValidationError(
+                "This request template has no creator and cannot be used to open requests."
+            )
+        return request_template
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.add_rule_fields()

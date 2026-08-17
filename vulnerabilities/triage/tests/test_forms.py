@@ -6,13 +6,17 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from dje.models import Dataspace
+from dje.tests import create_user
+from product_portfolio.models import Product
 from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageRuleset
+from workflow.models import RequestTemplate
 
 
 class AnalysisPresetFormTestCase(TestCase):
@@ -84,3 +88,35 @@ class TriageRulesetFormTestCase(TestCase):
         self.assertEqual(
             {"is_active": False, "min_risk_score": 8.0}, ruleset.rules_config["risk_score"]
         )
+
+    def test_rejects_a_request_template_with_no_creator(self):
+        # A RequestTemplate normally always has a creator (the admin form sets it on
+        # addition), but nothing at the DB level guarantees it -- reject it here rather
+        # than let create_triage_requests crash later with an IntegrityError.
+        request_template = RequestTemplate.objects.create(
+            name="Broken Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+        )
+        data = {"name": "My Ruleset", "precedence": 100, "request_template": request_template.pk}
+        form = TriageRulesetForm(data=data, instance=TriageRuleset(dataspace=self.dataspace))
+
+        self.assertFalse(form.is_valid())
+
+        msg = "This request template has no creator and cannot be used to open requests."
+        self.assertEqual({"request_template": [msg]}, form.errors)
+
+    def test_accepts_a_request_template_with_a_creator(self):
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Valid Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        data = {"name": "My Ruleset", "precedence": 100, "request_template": request_template.pk}
+        form = TriageRulesetForm(data=data, instance=TriageRuleset(dataspace=self.dataspace))
+
+        self.assertTrue(form.is_valid(), form.errors)

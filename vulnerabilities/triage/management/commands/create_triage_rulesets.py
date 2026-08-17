@@ -14,10 +14,6 @@ from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 
-"""
-docker compose -f compose.dev.yml exec web ./manage.py create_triage_rulesets nexB
-"""
-
 REFERENCE_PRESETS = [
     {
         "name": "Auto-Close - Dev Only",
