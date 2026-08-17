@@ -1083,3 +1083,6 @@ select.bootstrap-select-filter {
   --bs-popover-max-width: 420px;
   max-width: 420px;
 }
+.stretch-cell {
+  height: 1px;
+}
