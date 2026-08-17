@@ -174,6 +174,16 @@ TRIAGE_ACTION_DEFAULT_STYLE = (
     "fa-exclamation-circle",
 )
 
+ANALYSIS_STATE_STYLES = {
+    "exploitable": "bg-danger-subtle text-danger-emphasis",
+    "in_triage": "bg-warning-subtle text-warning-emphasis",
+    "resolved": "bg-success-subtle text-success-emphasis",
+    "resolved_with_pedigree": "bg-success-subtle text-success-emphasis",
+    "not_affected": "bg-secondary-subtle text-secondary-emphasis",
+    "false_positive": "bg-secondary-subtle text-secondary-emphasis",
+}
+ANALYSIS_STATE_DEFAULT_STYLE = "bg-secondary-subtle text-secondary-emphasis"
+
 
 class BaseProductViewMixin:
     model = Product
@@ -1252,43 +1262,30 @@ class ProductTabVulnerabilitiesView(
         ),
         Header(
             "vulnerability_analyses__state",
-            _("Status"),
-            help_text=_("Exploitability analysis status"),
+            _("Analysis"),
+            help_text=_(
+                "Exploitability analysis: status, justification, responses and reachability."
+            ),
             filter="vulnerability_analyses__state",
-        ),
-        Header(
-            "vulnerability_analyses__justification",
-            _("Justification"),
-            help_text=_("The rationale of why the impact analysis state was asserted."),
-            filter="vulnerability_analyses__justification",
-        ),
-        Header(
-            "vulnerability_analyses__responses",
-            _("Responses"),
-            help_text=_(
-                "A response to the vulnerability by the manufacturer, supplier, or project "
-                "responsible for the affected component or service."
-            ),
-            filter="responses",
-        ),
-        Header(
-            "vulnerability_analyses__is_reachable",
-            _("Reach"),
-            help_text=_(
-                "Indicates whether the vulnerability is reachable in the context of "
-                "this product package."
-            ),
-            filter="is_reachable",
         ),
     )
 
     def attach_vulnerability_analyses(self, page_obj):
         """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
+        response_labels = dict(VulnerabilityAnalysis.Response.choices)
+
         for product_package in page_obj.object_list:
             for vulnerability in product_package.package.affected_by_vulnerabilities.all():
                 for analysis in vulnerability.vulnerability_analyses.all():
                     if analysis.product_package_id == product_package.id:
                         vulnerability.vulnerability_analysis = analysis
+                        analysis.state_badge_class = ANALYSIS_STATE_STYLES.get(
+                            analysis.state, ANALYSIS_STATE_DEFAULT_STYLE
+                        )
+                        analysis.response_labels = [
+                            response_labels.get(response, response)
+                            for response in analysis.responses or []
+                        ]
                         break
 
     REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
@@ -1384,8 +1381,11 @@ class ProductTabVulnerabilitiesView(
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
+        vulnerability_analyses_qs = VulnerabilityAnalysis.objects.select_related(
+            "last_modified_by", "applied_by_preset"
+        )
         vulnerability_qs = Vulnerability.objects.prefetch_related(
-            "vulnerability_analyses"
+            Prefetch("vulnerability_analyses", queryset=vulnerability_analyses_qs)
         ).order_by(F("risk_score").desc(nulls_last=True))
         package_qs = (
             Package.objects.all()

@@ -419,18 +419,19 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         expected = """
         <td>
-          <strong>Resolved</strong>
-          <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
-                data-bs-html="true" data-bs-content="detail">
-            <i class="fa-solid fa-circle-info text-muted"></i>
-          </span>
-        </td>
-        <td>Code Not Present</td>
-        <td>
-          <ul class="ps-3 m-0">
-            <li>can_not_fix</li>
-            <li>rollback</li>
-          </ul>
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="badge bg-success-subtle text-success-emphasis">Resolved</span>
+          </div>
+          <div class="small text-body-secondary mt-1">Code Not Present</div>
+          <div class="small text-body-secondary mt-1" data-bs-toggle="popover"
+               data-bs-placement="right" data-bs-trigger="hover focus"
+               data-bs-html="true" data-bs-content="detail">
+            <i class="fa-solid fa-circle-info text-muted me-1"></i>detail
+          </div>
+          <div class="d-flex flex-wrap gap-1 mt-1">
+            <span class="badge bg-light text-body-secondary border fw-normal">Can Not Fix</span>
+            <span class="badge bg-light text-body-secondary border fw-normal">Rollback</span>
+          </div>
         </td>
         """
         self.assertContains(response, expected, html=True)
