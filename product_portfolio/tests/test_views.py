@@ -420,13 +420,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = """
         <td class="stretch-cell">
           <div class="d-flex flex-column h-100">
-            <div>
+            <div class="mb-2">
               <div class="d-flex align-items-center flex-wrap gap-2">
                 <span class="badge bg-success-subtle text-success-emphasis">Resolved</span>
               </div>
               <div class="small text-body-secondary mt-1">Code Not Present</div>
               <div class="small text-body-secondary mt-1" data-bs-toggle="popover"
-                   data-bs-placement="right" data-bs-trigger="hover focus"
+                   data-bs-placement="top" data-bs-trigger="hover focus"
                    data-bs-html="true" data-bs-content="detail">
                 <i class="fa-solid fa-circle-info text-muted me-1"></i>detail
               </div>
