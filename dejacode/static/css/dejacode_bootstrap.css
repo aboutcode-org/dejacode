@@ -1075,3 +1075,7 @@ select.bootstrap-select-filter {
     position: absolute;
     z-index: 1;
 }
+.popover.wide-popover {
+  --bs-popover-max-width: 420px;
+  max-width: 420px;
+}

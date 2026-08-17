@@ -48,8 +48,8 @@
                 {% else %}
                   {{ vulnerability.advisory_id }}
                 {% endif %}
-                {% if vulnerability.summary %}
-                  <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
+                {% if vulnerability.summary or vulnerability.aliases or vulnerability.exploitability or vulnerability.risk_score %}
+                  <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{% include 'component_catalog/includes/vulnerability_info_popover.html' with vulnerability=vulnerability only %}">
                     <i class="fa-solid fa-circle-info text-muted"></i>
                   </span>
                 {% endif %}
@@ -68,11 +68,6 @@
                   </span>
                 {% endif %}
               </div>
-              {% if vulnerability.aliases %}
-                <div class="mt-2">
-                  {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
-                </div>
-              {% endif %}
             </td>
             {% if has_triage_rulesets %}
             <td>
