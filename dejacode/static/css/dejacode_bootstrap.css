@@ -414,7 +414,7 @@ table.vulnerabilities-table .column-summary {
 
 /* -- Vulnerability tab -- */
 #tab_vulnerabilities .column-advisory_uid {
-  width: 230px;
+  width: 240px;
 }
 #tab_vulnerabilities .column-affected_packages {
   min-width: 250px;

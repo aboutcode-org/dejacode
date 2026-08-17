@@ -49,8 +49,8 @@
                   {{ vulnerability.advisory_id }}
                 {% endif %}
                 {% if vulnerability.summary or vulnerability.aliases or vulnerability.exploitability or vulnerability.risk_score %}
-                  <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{% include 'component_catalog/includes/vulnerability_info_popover.html' with vulnerability=vulnerability only %}">
-                    <i class="fa-solid fa-circle-info text-muted"></i>
+                  <span data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{% include 'component_catalog/includes/vulnerability_info_popover.html' with vulnerability=vulnerability only %}">
+                    <i class="fa-solid fa-circle-info fa-xs text-muted ms-1"></i>
                   </span>
                 {% endif %}
               </strong>
