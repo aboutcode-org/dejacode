@@ -345,15 +345,12 @@ class VulnerabilityAnalysisContentMixin(models.Model):
         ),
     )
 
+    def has_content_fields(self):
+        return any([self.state, self.justification, self.responses, self.detail])
+
     def save(self, *args, **kwargs):
         # At least one of those fields must be provided.
-        main_fields = [
-            self.state,
-            self.justification,
-            self.responses,
-            self.detail,
-        ]
-        if not any(main_fields):
+        if not self.has_content_fields():
             raise ValueError(
                 "At least one of state, justification, responses or detail must be provided."
             )

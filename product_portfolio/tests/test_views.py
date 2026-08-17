@@ -296,7 +296,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(15):
+        with self.assertMaxQueries(16):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 

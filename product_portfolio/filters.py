@@ -11,7 +11,6 @@ from django.contrib import admin
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.db.models import Q
-from django.db.models import Subquery
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
@@ -452,21 +451,9 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
     def filter_triage_action(queryset, name, value):
         if not value:
             return queryset
-        winning_ruleset_id = (
-            TriageRecord.objects.filter(
-                vulnerability=OuterRef("vulnerability"),
-                product=OuterRef("product"),
-                ruleset__enabled=True,
-                ruleset__product_triage_rulesets__product=OuterRef("product"),
-            )
-            .order_by("-ruleset__precedence")
-            .values("ruleset_id")[:1]
-        )
-        primary_triage = TriageRecord.objects.filter(
+        primary_triage = TriageRecord.objects.highest_precedence().filter(
             product=OuterRef("product"),
             vulnerability__affected_packages__productpackages=OuterRef("pk"),
-            ruleset__enabled=True,
-            ruleset_id=Subquery(winning_ruleset_id),
             recommended_action=value,
         )
         return queryset.filter(Exists(primary_triage)).distinct()

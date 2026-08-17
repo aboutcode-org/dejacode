@@ -15,7 +15,9 @@ from django.utils import timezone
 
 from policy.rules import BaseRule
 
-TERMINAL_VULNERABILITY_STATES = [
+# Not shared with policy.rules.TERMINAL_VULNERABILITY_STATES: the two lists are
+# intentionally scoped to their own engine and are not guaranteed to stay identical.
+TRIAGE_TERMINAL_VULNERABILITY_STATES = [
     "resolved",
     "resolved_with_pedigree",
     "not_affected",
@@ -130,7 +132,7 @@ class UnresolvedVulnerabilityTriageRule(BaseTriageRule):
         terminal_analysis = VulnerabilityAnalysis.objects.filter(
             product_package=OuterRef("pk"),
             vulnerability=OuterRef(OuterRef("pk")),
-            state__in=TERMINAL_VULNERABILITY_STATES,
+            state__in=TRIAGE_TERMINAL_VULNERABILITY_STATES,
         )
         # A package in the product that carries this vulnerability but has no terminal analysis
         unresolved_package = ProductPackage.objects.filter(
@@ -186,7 +188,7 @@ class StaleVulnerabilityTriageRule(BaseTriageRule):
         terminal_analysis = VulnerabilityAnalysis.objects.filter(
             product_package=OuterRef("pk"),
             vulnerability=OuterRef(OuterRef("pk")),
-            state__in=TERMINAL_VULNERABILITY_STATES,
+            state__in=TRIAGE_TERMINAL_VULNERABILITY_STATES,
         )
         unresolved_package = ProductPackage.objects.filter(
             product=product,

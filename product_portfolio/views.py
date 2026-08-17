@@ -1308,21 +1308,25 @@ class ProductTabVulnerabilitiesView(
             record = getattr(vulnerability, "triage_record", None)
             if getattr(record, "recommended_action", "") != triage_action:
                 return False
+
         analysis = getattr(vulnerability, "vulnerability_analysis", None)
         state = display_filters.get("state")
         if state:
             if getattr(analysis, "state", "") != state:
                 return False
+
         justification = display_filters.get("justification")
         if justification:
             if getattr(analysis, "justification", "") != justification:
                 return False
+
         is_reachable_filter = display_filters.get("is_reachable")
-        if is_reachable_filter:
+        if is_reachable_filter in self.REACHABILITY_FILTER_MAP:
             expected = self.REACHABILITY_FILTER_MAP[is_reachable_filter]
             actual = None if analysis is None else analysis.is_reachable
             if actual != expected:
                 return False
+
         return True
 
     def attach_triage_data(self, product, page_obj):
@@ -2982,8 +2986,7 @@ def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, prese
     )
     preset.apply_to_analysis(analysis)
 
-    content_fields = [analysis.state, analysis.justification, analysis.responses, analysis.detail]
-    if not any(content_fields):
+    if not analysis.has_content_fields():
         return JsonResponse({"error": "This preset has no content fields to apply."}, status=400)
 
     analysis.applied_by_preset = preset
