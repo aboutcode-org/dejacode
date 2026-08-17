@@ -348,8 +348,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-package-identifier="{p1}"
               data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_uid}/"
         >
-        <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
-                aria-label="Edit">
+        <button type="button" data-bs-toggle="tooltip" title="Add analysis" class="btn btn-link p-0"
+                aria-label="Add analysis">
             <i class="far fa-edit fa-sm"></i>
           </button>
         </span>
