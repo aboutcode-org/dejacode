@@ -1306,7 +1306,7 @@ class ProductTabVulnerabilitiesView(
         triage_action = display_filters.get("triage_action")
         if triage_action:
             record = getattr(vulnerability, "triage_record", None)
-            if getattr(record, "action", "") != triage_action:
+            if getattr(record, "recommended_action", "") != triage_action:
                 return False
         analysis = getattr(vulnerability, "vulnerability_analysis", None)
         state = display_filters.get("state")
