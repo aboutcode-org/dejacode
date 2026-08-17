@@ -1382,7 +1382,7 @@ class ProductTabVulnerabilitiesView(
 
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
         vulnerability_analyses_qs = VulnerabilityAnalysis.objects.select_related(
-            "last_modified_by", "applied_by_preset"
+            "created_by", "last_modified_by", "applied_by_preset"
         )
         vulnerability_qs = Vulnerability.objects.prefetch_related(
             Prefetch("vulnerability_analyses", queryset=vulnerability_analyses_qs)

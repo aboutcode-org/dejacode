@@ -130,9 +130,9 @@
                     <div class="small text-body-tertiary mt-1 pt-1 border-top">
                       <i class="fas fa-bolt text-warning fa-xs me-1"></i>{% trans "Auto-applied:" %} {{ analysis.applied_by_preset.name }}
                     </div>
-                  {% elif analysis.last_modified_by %}
+                  {% elif analysis.last_modified_by or analysis.created_by %}
                     <div class="small text-body-tertiary mt-1 pt-1 border-top">
-                      <i class="fas fa-user fa-xs me-1"></i>{{ analysis.last_modified_by }}
+                      <i class="fas fa-user fa-xs me-1"></i>{{ analysis.last_modified_by|default:analysis.created_by }}
                       &middot; {{ analysis.last_updated|date:"M j, Y" }}
                     </div>
                   {% endif %}
