@@ -1432,6 +1432,15 @@ class ProductTabVulnerabilitiesView(
         self.attach_triage_data(product, page_obj)
 
         analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
+        has_change_permission = "change_product" in guardian_get_perms(self.request.user, product)
+        can_manage_triage_rules = (
+            has_change_permission and self.request.user.dataspace.enable_vulnerablecodedb_access
+        )
+        manage_triage_rules_nav_item_template = None
+        if can_manage_triage_rules:
+            manage_triage_rules_nav_item_template = (
+                "product_portfolio/includes/manage_triage_rules_nav_item.html"
+            )
         context_data.update(
             {
                 "filterset": self.filterset,
@@ -1441,6 +1450,7 @@ class ProductTabVulnerabilitiesView(
                 "risk_threshold": risk_threshold,
                 "has_triage_rulesets": self.has_triage_rulesets,
                 "analysis_presets": analysis_presets,
+                "manage_triage_rules_nav_item_template": manage_triage_rules_nav_item_template,
             }
         )
 

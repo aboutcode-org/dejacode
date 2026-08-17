@@ -19,6 +19,9 @@
           {% endif %}
         </div>
       </li>
+      {% if extra_nav_item_template %}
+        {% include extra_nav_item_template %}
+      {% endif %}
     </ul>
     <div class="mt-1">
       {% include 'includes/filters_breadcrumbs.html' with filterset=filterset fragment=tab_id only %}
