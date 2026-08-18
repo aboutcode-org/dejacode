@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from dje.models import Dataspace
-from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.engine import evaluate_assignments
 from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageRecord
 
@@ -45,9 +45,8 @@ class Command(BaseCommand):
             self.stdout.write("No active ruleset assignments found.")
             return
 
-        for assignment in assignments:
-            self.stdout.write(f"  {assignment.product} / {assignment.ruleset}")
-            evaluate_ruleset(ruleset=assignment.ruleset, product=assignment.product)
+        evaluated_count = evaluate_assignments(assignments)
+        self.stdout.write(f"Evaluated: {evaluated_count}/{assignment_count}")
 
         total = TriageRecord.objects.filter(dataspace=dataspace).count()
         self.stdout.write(

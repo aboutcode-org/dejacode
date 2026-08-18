@@ -13,7 +13,7 @@ from django.apps import apps
 from django_rq import job
 
 from dje.models import get_unsecured_manager
-from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.engine import evaluate_assignments
 from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import ProductTriageRuleset
 
@@ -34,7 +34,7 @@ def reevaluate_product_triage_rulesets_task(product_uuid):
         )
         return
 
-    logger.info(f"Evaluating triage rulesets for product {product}")
+    logger.info(f"Evaluating triage rulesets for product id={product.id}")
     reevaluate_product_rulesets(product)
 
 
@@ -50,15 +50,5 @@ def evaluate_all_products_vulnerability_triage_task():
     count = assignments.count()
     logger.info(f"Starting triage evaluation for {count} ruleset assignment(s).")
 
-    for assignment in assignments:
-        logger.info(f"Evaluating triage ruleset {assignment.ruleset} for {assignment.product}")
-        try:
-            evaluate_ruleset(ruleset=assignment.ruleset, product=assignment.product)
-        except Exception:
-            logger.exception(
-                f"Triage evaluation failed for {assignment.ruleset} / {assignment.product},"
-                " skipping."
-            )
-            continue
-
-    logger.info("Triage evaluation complete.")
+    evaluated_count = evaluate_assignments(assignments)
+    logger.info(f"Triage evaluation complete: {evaluated_count}/{count} evaluated.")

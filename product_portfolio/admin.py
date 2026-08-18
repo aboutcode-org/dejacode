@@ -59,6 +59,8 @@ from product_portfolio.forms import ProductRelatedAdminForm
 from product_portfolio.importers import CodebaseResourceImporter
 from product_portfolio.importers import ProductComponentImporter
 from product_portfolio.importers import ProductPackageImporter
+from product_portfolio.importers import paused_product_package_reevaluation
+from product_portfolio.importers import reevaluate_products
 from product_portfolio.inlines import CodebaseResourceUsageDeployedFromInline
 from product_portfolio.inlines import CodebaseResourceUsageDeployedToInline
 from product_portfolio.inlines import ProductComponentInline
@@ -72,7 +74,6 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from reporting.filters import ReportingQueryListFilter
-from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import ProductTriageRuleset
 
 
@@ -242,13 +243,14 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
         if "_saveasnew" in request.POST:
             old_product_id = request.resolver_match.kwargs.get("object_id")
             old_product = self.get_object(request, old_product_id)
-            for model_class in [ProductComponent, ProductPackage, ProductTriageRuleset]:
-                for relationship in model_class.objects.filter(product=old_product):
-                    relationship.id = None
-                    relationship.uuid = uuid.uuid4()
-                    relationship.product = obj
-                    relationship.save()
-            reevaluate_product_rulesets(obj)
+            with paused_product_package_reevaluation():
+                for model_class in [ProductComponent, ProductPackage, ProductTriageRuleset]:
+                    for relationship in model_class.objects.filter(product=old_product):
+                        relationship.id = None
+                        relationship.uuid = uuid.uuid4()
+                        relationship.product = obj
+                        relationship.save()
+            reevaluate_products([obj])
 
     def get_obj_perms_user_select_form(self, request):
         """

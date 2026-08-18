@@ -33,10 +33,10 @@ def evaluate_product_rules_task(product_uuid):
         logger.error(f"evaluate_product_rules_task: product {product_uuid} not found, skipping.")
         return
 
-    logger.info(f"Evaluating policy rules for product {product}")
+    logger.info(f"Evaluating policy rules for product id={product.id}")
     new_violations, resolved_count = evaluate_rules(product)
     logger.info(
-        f"Policy rules evaluated for {product}: "
+        f"Policy rules evaluated for product id={product.id}: "
         f"{len(new_violations)} new violation(s), {resolved_count} resolved."
     )
 
@@ -59,14 +59,16 @@ def evaluate_all_products_rules_task(include_locked=False, product_uuids=None):
     logger.info(f"Starting policy rule evaluation for {count} product(s).")
 
     for product in products:
-        logger.info(f"Evaluating policy rules for product {product}")
+        logger.info(f"Evaluating policy rules for product id={product.id}")
         try:
             new_violations, resolved_count = evaluate_rules(product)
         except Exception:
-            logger.exception(f"Policy rule evaluation failed for product {product}, skipping.")
+            logger.exception(
+                f"Policy rule evaluation failed for product id={product.id}, skipping."
+            )
             continue
         logger.info(
-            f"Policy rules evaluated for {product}: "
+            f"Policy rules evaluated for product id={product.id}: "
             f"{len(new_violations)} new violation(s), {resolved_count} resolved."
         )
 

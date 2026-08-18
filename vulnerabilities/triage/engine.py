@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import logging
+
 from django.apps import apps
 from django.utils import timezone
 
@@ -13,6 +15,8 @@ from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.rules import RULE_REGISTRY
 from vulnerabilities.triage.rules import rule_parameters_from_config
+
+logger = logging.getLogger(__name__)
 
 
 def collect_matches(ruleset, product):
@@ -241,6 +245,27 @@ def evaluate_ruleset(ruleset, product, apply_preset=True):
         matched_rules_per_vulnerability_id=matched_rules_per_vulnerability_id,
         apply_preset=apply_preset,
     )
+
+
+def evaluate_assignments(assignments):
+    """
+    Evaluate each ProductTriageRuleset assignment in the given queryset, skipping and
+    logging any that raise instead of aborting the whole batch.
+
+    Returns the number of assignments successfully evaluated.
+    """
+    evaluated_count = 0
+    for assignment in assignments:
+        try:
+            evaluate_ruleset(ruleset=assignment.ruleset, product=assignment.product)
+        except Exception:
+            logger.exception(
+                f"Triage evaluation failed for ruleset id={assignment.ruleset_id} /"
+                f" product id={assignment.product_id}, skipping."
+            )
+            continue
+        evaluated_count += 1
+    return evaluated_count
 
 
 def reevaluate_product_rulesets(product, apply_preset=True):
