@@ -46,17 +46,18 @@ def delete_triage_records_on_unassign(sender, instance, **kwargs):
 
 @receiver([post_save, post_delete], sender="vulnerabilities.VulnerabilityAnalysis")
 def reevaluate_on_analysis_change(sender, instance, **kwargs):
-    """Re-evaluate triage when an analysis state or reachability is updated."""
+    """Re-evaluate triage on a product when an vulnerability analysis is updated."""
     signal = kwargs.get("signal")
     if signal == post_save and instance.applied_by_preset_id:
-        return  # Written by the triage engine itself, re-evaluating would loop
+          # When the analysis is created by the triage engine itself, the evaluation is skipped.
+        return
 
-    # When an user explicitly deletes their analysis, skip preset application to avoid
+    # When a user explicitly deletes their analysis, skip preset application to avoid
     # having the engine immediately recreate it.
-    is_human_delete = signal == post_delete and not instance.applied_by_preset_id
+    is_user_delete = signal == post_delete and not instance.applied_by_preset_id
     reevaluate_product_rulesets(
         instance.product_package.product,
-        apply_preset=not is_human_delete,
+        apply_preset=not is_user_delete,
     )
 
 
