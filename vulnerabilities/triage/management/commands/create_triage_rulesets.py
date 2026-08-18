@@ -10,7 +10,6 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from dje.models import Dataspace
-from vulnerabilities.triage.engine import delete_preset_analyses_before_ruleset_delete
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
@@ -180,8 +179,6 @@ class Command(BaseCommand):
                 self.stdout.write("Reset cancelled.")
                 return
 
-            for ruleset in TriageRuleset.objects.filter(dataspace=dataspace):
-                delete_preset_analyses_before_ruleset_delete(ruleset)
             deleted_rulesets, _ = TriageRuleset.objects.filter(dataspace=dataspace).delete()
             deleted_presets, _ = AnalysisPreset.objects.filter(dataspace=dataspace).delete()
             self.stdout.write(

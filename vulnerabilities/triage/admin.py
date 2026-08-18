@@ -13,7 +13,6 @@ from django.utils.html import mark_safe
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from dje.list_display import AsLink
-from vulnerabilities.triage.engine import delete_preset_analyses_before_ruleset_delete
 from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
@@ -146,15 +145,6 @@ class TriageRulesetAdmin(DataspacedAdmin):
 
         for assignment in obj.product_triage_rulesets.select_related("product"):
             evaluate_ruleset(ruleset=obj, product=assignment.product)
-
-    def delete_model(self, request, obj):
-        delete_preset_analyses_before_ruleset_delete(obj)
-        super().delete_model(request, obj)
-
-    def delete_queryset(self, request, queryset):
-        for obj in queryset:
-            delete_preset_analyses_before_ruleset_delete(obj)
-        super().delete_queryset(request, queryset)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         kwargs["fields"] = [
