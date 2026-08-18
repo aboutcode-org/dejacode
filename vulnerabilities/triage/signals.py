@@ -49,7 +49,7 @@ def reevaluate_on_analysis_change(sender, instance, **kwargs):
     """Re-evaluate triage on a product when an vulnerability analysis is updated."""
     signal = kwargs.get("signal")
     if signal == post_save and instance.applied_by_preset_id:
-          # When the analysis is created by the triage engine itself, the evaluation is skipped.
+        # When the analysis is created by the triage engine itself, the evaluation is skipped.
         return
 
     # When a user explicitly deletes their analysis, skip preset application to avoid

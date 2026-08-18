@@ -8,12 +8,34 @@
 
 import logging
 
+from django.apps import apps
+
 from django_rq import job
 
+from dje.models import get_unsecured_manager
 from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import ProductTriageRuleset
 
 logger = logging.getLogger(__name__)
+
+
+@job
+def reevaluate_product_triage_rulesets_task(product_uuid):
+    """Re-evaluate all enabled triage rulesets assigned to the given product."""
+    Product = apps.get_model("product_portfolio", "product")
+
+    try:
+        product = get_unsecured_manager(Product).get(uuid=product_uuid)
+    except Product.DoesNotExist:
+        logger.error(
+            f"reevaluate_product_triage_rulesets_task: product {product_uuid} not found,"
+            " skipping."
+        )
+        return
+
+    logger.info(f"Evaluating triage rulesets for product {product}")
+    reevaluate_product_rulesets(product)
 
 
 @job
