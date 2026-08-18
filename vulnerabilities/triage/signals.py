@@ -16,18 +16,15 @@ from vulnerabilities.triage.engine import reevaluate_product_rulesets
 @receiver([post_save, post_delete], sender="vulnerabilities.VulnerabilityAnalysis")
 def reevaluate_on_analysis_change(sender, instance, **kwargs):
     """Re-evaluate triage on a product when an vulnerability analysis is updated."""
-    signal = kwargs.get("signal")
-    if signal == post_save and instance.applied_by_preset_id:
-        # When the analysis is created by the triage engine itself, the evaluation is skipped.
+    if instance.applied_by_preset_id:
+        # A write or delete made by the triage engine itself always happens inside an
+        # evaluation pass that already covers every ruleset assigned to the product.
         return
 
-    # When a user explicitly deletes their analysis, skip preset application to avoid
-    # having the engine immediately recreate it.
-    is_user_delete = signal == post_delete and not instance.applied_by_preset_id
-    reevaluate_product_rulesets(
-        instance.product_package.product,
-        apply_preset=not is_user_delete,
-    )
+    # Skip preset re-application on a user's own delete, to avoid the engine
+    # immediately recreating the analysis they just removed.
+    apply_preset = kwargs.get("signal") != post_delete
+    reevaluate_product_rulesets(instance.product_package.product, apply_preset=apply_preset)
 
 
 @receiver([post_save, post_delete], sender="product_portfolio.ProductPackage")
