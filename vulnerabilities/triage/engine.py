@@ -9,6 +9,7 @@
 from django.apps import apps
 from django.utils import timezone
 
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.rules import RULE_REGISTRY
 from vulnerabilities.triage.rules import rule_parameters_from_config
@@ -225,3 +226,13 @@ def evaluate_ruleset(ruleset, product, apply_preset=True):
         matched_rules_per_vulnerability_id=matched_rules_per_vulnerability_id,
         apply_preset=apply_preset,
     )
+
+
+def reevaluate_product_rulesets(product, apply_preset=True):
+    """Re-evaluate all enabled triage rulesets currently assigned to the product."""
+    assignments = ProductTriageRuleset.objects.filter(
+        product=product, ruleset__enabled=True
+    ).select_related("ruleset", "ruleset__analysis_preset")
+
+    for assignment in assignments:
+        evaluate_ruleset(ruleset=assignment.ruleset, product=product, apply_preset=apply_preset)

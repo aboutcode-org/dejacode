@@ -13,6 +13,7 @@ from django.utils.html import mark_safe
 from dje.admin import DataspacedAdmin
 from dje.admin import dejacode_site
 from dje.list_display import AsLink
+from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.forms import AnalysisPresetForm
 from vulnerabilities.triage.forms import TriageRulesetForm
 from vulnerabilities.triage.models import AnalysisPreset
@@ -129,6 +130,21 @@ class TriageRulesetAdmin(DataspacedAdmin):
             field_name for field_name in form.changed_data if field_name in model_field_names
         ]
         return super().get_changes_details(form)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+
+        if not obj.enabled:
+            # Records with an open Request are kept so re-enabling the ruleset reconnects to
+            # it instead of opening a duplicate Request.
+            obj.triage_records.filter(request__isnull=True).delete()
+            return
+
+        if not change:
+            return
+
+        for assignment in obj.product_triage_rulesets.select_related("product"):
+            evaluate_ruleset(ruleset=obj, product=assignment.product)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         kwargs["fields"] = [
