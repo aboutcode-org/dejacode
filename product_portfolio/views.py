@@ -150,6 +150,7 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
 from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import ProductTriageRuleset
@@ -2262,6 +2263,9 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
             for ruleset_uuid, assignment in current_assignments.items():
                 if ruleset_uuid not in submitted_uuids:
                     assignment.delete()
+                    delete_triage_records_for_assignment(
+                        ruleset=assignment.ruleset, product=product
+                    )
             reevaluate_product_rulesets(product)
         return JsonResponse({"success": True})
 

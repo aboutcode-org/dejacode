@@ -10,28 +10,7 @@ from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from vulnerabilities.triage.engine import delete_preset_analyses_for_product
 from vulnerabilities.triage.engine import reevaluate_product_rulesets
-from vulnerabilities.triage.models import TriageRecord
-
-
-@receiver(post_delete, sender="vulnerabilities_triage.ProductTriageRuleset")
-def delete_triage_records_on_unassign(sender, instance, **kwargs):
-    """Delete triage records and associated preset analyses when a ruleset is de-assigned."""
-    matching_records = TriageRecord.objects.filter(
-        ruleset=instance.ruleset,
-        product=instance.product,
-    )
-    stale_vulnerability_ids = list(matching_records.values_list("vulnerability_id", flat=True))
-    # Records with an open Request are kept so reassigning the ruleset reconnects to it
-    # instead of opening a duplicate Request.
-    matching_records.filter(request__isnull=True).delete()
-    if instance.ruleset.analysis_preset_id and stale_vulnerability_ids:
-        delete_preset_analyses_for_product(
-            preset_id=instance.ruleset.analysis_preset_id,
-            product=instance.product,
-            vulnerability_ids=stale_vulnerability_ids,
-        )
 
 
 @receiver([post_save, post_delete], sender="vulnerabilities.VulnerabilityAnalysis")

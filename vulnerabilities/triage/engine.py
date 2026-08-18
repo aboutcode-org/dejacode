@@ -130,6 +130,24 @@ def delete_preset_analyses_for_product(preset_id, product, vulnerability_ids):
     ).delete()
 
 
+def delete_triage_records_for_assignment(ruleset, product):
+    """
+    Delete triage records and associated preset analyses for a ruleset being
+    unassigned from a product.
+    """
+    matching_records = TriageRecord.objects.filter(ruleset=ruleset, product=product)
+    stale_vulnerability_ids = list(matching_records.values_list("vulnerability_id", flat=True))
+    # Records with an open Request are kept so reassigning the ruleset reconnects to it
+    # instead of opening a duplicate Request.
+    matching_records.filter(request__isnull=True).delete()
+    if ruleset.analysis_preset_id and stale_vulnerability_ids:
+        delete_preset_analyses_for_product(
+            preset_id=ruleset.analysis_preset_id,
+            product=product,
+            vulnerability_ids=stale_vulnerability_ids,
+        )
+
+
 def sync_triage_records(ruleset, product, matched_rules_per_vulnerability_id, apply_preset=True):
     """
     Create or update one TriageRecord per matching vulnerability, then
@@ -226,6 +244,33 @@ def evaluate_ruleset(ruleset, product, apply_preset=True):
         matched_rules_per_vulnerability_id=matched_rules_per_vulnerability_id,
         apply_preset=apply_preset,
     )
+
+
+def delete_preset_analyses_before_ruleset_delete(ruleset):
+    """
+    Delete VulnerabilityAnalysis records applied by the ruleset's preset, for every
+    product currently assigned to it.
+
+    Must run before the ruleset itself is deleted: its TriageRecords have no signal of
+    their own, so Django cascade-deletes them via a fast bulk query before a post_delete
+    signal on the ruleset or its assignments would even get a chance to see them.
+    """
+    if not ruleset.analysis_preset_id:
+        return
+
+    assignments = ProductTriageRuleset.objects.filter(ruleset=ruleset).select_related("product")
+    for assignment in assignments:
+        vulnerability_ids = list(
+            TriageRecord.objects.filter(
+                ruleset=ruleset, product=assignment.product
+            ).values_list("vulnerability_id", flat=True)
+        )
+        if vulnerability_ids:
+            delete_preset_analyses_for_product(
+                preset_id=ruleset.analysis_preset_id,
+                product=assignment.product,
+                vulnerability_ids=vulnerability_ids,
+            )
 
 
 def reevaluate_product_rulesets(product, apply_preset=True):
