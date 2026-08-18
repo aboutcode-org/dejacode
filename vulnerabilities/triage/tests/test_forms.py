@@ -91,7 +91,7 @@ class TriageRulesetFormTestCase(TestCase):
 
     def test_rejects_a_request_template_with_no_creator(self):
         # A RequestTemplate normally always has a creator (the admin form sets it on
-        # addition), but nothing at the DB level guarantees it -- reject it here rather
+        # addition), but nothing at the DB level guarantees it, reject it here rather
         # than let create_triage_requests crash later with an IntegrityError.
         request_template = RequestTemplate.objects.create(
             name="Broken Template",

@@ -378,6 +378,28 @@ class ProductRelationImporterTestCase(TestCase):
         self.assertEqual(False, productpackage.is_deployed)
         self.assertEqual(True, productpackage.is_modified)
 
+    @mock.patch("product_portfolio.importers.reevaluate_product_triage_rulesets_task")
+    @mock.patch("product_portfolio.importers.evaluate_product_rules_task")
+    def test_productpackage_import_evaluates_each_product_once_for_multiple_rows(
+        self, mock_policy_task, mock_triage_task
+    ):
+        formset_data = self.package_formset_data.copy()
+        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="p2.zip", dataspace=self.dataspace)
+
+        formset_data["form-TOTAL_FORMS"] = "2"
+        formset_data["form-0-package"] = package1.filename
+        formset_data["form-1-product"] = formset_data["form-0-product"]
+        formset_data["form-1-package"] = package2.filename
+
+        importer = ProductPackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+
+        self.assertEqual(2, len(importer.results["added"]))
+        mock_policy_task.delay.assert_called_once_with(product_uuid=self.p1.uuid)
+        mock_triage_task.delay.assert_called_once_with(product_uuid=self.p1.uuid)
+
 
 class CodebaseResourceImporterTestCase(TestCase):
     def setUp(self):

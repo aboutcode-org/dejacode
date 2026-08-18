@@ -96,7 +96,7 @@ def apply_preset_for_vulnerabilities(preset, product, vulnerability_ids):
         existing = existing_analyses.get((product_package_id, vulnerability_id))
 
         if existing is not None and existing.applied_by_preset_id is None:
-            continue  # Human-owned analysis -- never overwrite
+            continue  # User-owned analysis, never overwrite
 
         if existing is None:
             product_package = product_packages_by_id[product_package_id]

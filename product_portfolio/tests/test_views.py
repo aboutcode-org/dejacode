@@ -4416,8 +4416,8 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         response = self.client.post(url)
         self.assertEqual(404, response.status_code)
 
-    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
-    def test_post_assigns_the_submitted_rulesets(self, mock_evaluate):
+    @patch("product_portfolio.views.reevaluate_product_rulesets")
+    def test_post_assigns_the_submitted_rulesets(self, mock_reevaluate):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_manage_triage_rulesets_url()
         response = self.client.post(url, {"ruleset_uuids": [str(self.ruleset.uuid)]})
@@ -4427,14 +4427,14 @@ class ManageTriageRulesetsViewTestCase(TestCase):
                 product=self.product1, ruleset=self.ruleset
             ).exists()
         )
-        mock_evaluate.assert_called_once_with(ruleset=self.ruleset, product=self.product1)
+        mock_reevaluate.assert_called_once_with(self.product1)
 
-    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
-    def test_post_unassigns_the_deselected_rulesets(self, mock_evaluate):
+    @patch("product_portfolio.views.delete_triage_records_for_assignment")
+    @patch("product_portfolio.views.reevaluate_product_rulesets")
+    def test_post_unassigns_the_deselected_rulesets(self, mock_reevaluate, mock_delete):
         ProductTriageRuleset.objects.create(
             product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace
         )
-        mock_evaluate.reset_mock()
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_manage_triage_rulesets_url()
         response = self.client.post(url, {"ruleset_uuids": []})
@@ -4444,7 +4444,8 @@ class ManageTriageRulesetsViewTestCase(TestCase):
                 product=self.product1, ruleset=self.ruleset
             ).exists()
         )
-        mock_evaluate.assert_not_called()
+        mock_delete.assert_called_once_with(ruleset=self.ruleset, product=self.product1)
+        mock_reevaluate.assert_called_once_with(self.product1)
 
 
 class TabCompliancePolicyContextTestCase(TestCase):

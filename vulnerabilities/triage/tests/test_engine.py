@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from unittest.mock import patch
+
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
@@ -22,12 +24,17 @@ from vulnerabilities.triage.engine import apply_preset_for_vulnerabilities
 from vulnerabilities.triage.engine import collect_matches
 from vulnerabilities.triage.engine import create_triage_requests
 from vulnerabilities.triage.engine import delete_preset_analyses_for_product
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import evaluate_assignments
 from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.engine import sync_triage_records
 from vulnerabilities.triage.models import AnalysisPreset
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.tests import make_analysis_preset
+from vulnerabilities.triage.tests import make_product_triage_ruleset
 from vulnerabilities.triage.tests import make_triage_ruleset
 from workflow.models import Request
 from workflow.models import RequestTemplate
@@ -409,3 +416,172 @@ class EvaluateRulesetTestCase(TestCase):
         evaluate_ruleset(ruleset, self.product)
 
         self.assertFalse(TriageRecord.objects.exists())
+
+
+class ReevaluateProductRulesetsTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    @patch("vulnerabilities.triage.engine.evaluate_ruleset")
+    def test_evaluates_every_enabled_ruleset_assigned_to_the_product(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=True)
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+
+        reevaluate_product_rulesets(self.product)
+
+        mock_evaluate.assert_called_once_with(
+            ruleset=ruleset, product=self.product, apply_preset=True
+        )
+
+    @patch("vulnerabilities.triage.engine.evaluate_ruleset")
+    def test_skips_disabled_ruleset_assignments(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=False)
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+
+        reevaluate_product_rulesets(self.product)
+
+        mock_evaluate.assert_not_called()
+
+    @patch("vulnerabilities.triage.engine.evaluate_ruleset")
+    def test_apply_preset_flag_is_forwarded(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=True)
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+
+        reevaluate_product_rulesets(self.product, apply_preset=False)
+
+        mock_evaluate.assert_called_once_with(
+            ruleset=ruleset, product=self.product, apply_preset=False
+        )
+
+
+class EvaluateAssignmentsTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+
+    def test_evaluates_each_assignment_and_returns_the_evaluated_count(self):
+        product = make_product(self.dataspace)
+        package = make_package(self.dataspace)
+        make_product_package(product, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        make_product_triage_ruleset(product, ruleset=ruleset)
+
+        evaluated_count = evaluate_assignments(ProductTriageRuleset.objects.all())
+
+        self.assertEqual(1, evaluated_count)
+        record = TriageRecord.objects.get()
+        self.assertEqual(vulnerability, record.vulnerability)
+
+    @patch("vulnerabilities.triage.engine.evaluate_ruleset")
+    def test_continues_evaluating_remaining_assignments_after_one_raises(self, mock_evaluate):
+        product1 = make_product(self.dataspace, name="a-product")
+        product2 = make_product(self.dataspace, name="b-product")
+        ruleset = make_triage_ruleset(self.dataspace)
+        make_product_triage_ruleset(product1, ruleset=ruleset)
+        make_product_triage_ruleset(product2, ruleset=ruleset)
+        mock_evaluate.side_effect = [Exception("boom"), None]
+        assignments = ProductTriageRuleset.objects.order_by("product__name")
+
+        with self.assertLogs("vulnerabilities.triage.engine", level="ERROR") as captured:
+            evaluated_count = evaluate_assignments(assignments)
+
+        self.assertEqual(2, mock_evaluate.call_count)
+        self.assertEqual(1, evaluated_count)
+        self.assertTrue(any("Triage evaluation failed" in line for line in captured.output))
+
+
+class DeleteTriageRecordsForAssignmentTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+        self.package = make_package(self.dataspace)
+        self.product_package = make_product_package(self.product, package=self.package)
+        self.vulnerability = make_vulnerability(
+            self.dataspace, affecting=self.package, risk_score=9.0
+        )
+        self.ruleset = make_triage_ruleset(
+            self.dataspace,
+            recommended_action=TriageAction.NOTIFY,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        evaluate_ruleset(self.ruleset, self.product)
+        self.assertTrue(TriageRecord.objects.exists())
+
+    def test_deletes_the_triage_records_for_the_product(self):
+        delete_triage_records_for_assignment(ruleset=self.ruleset, product=self.product)
+        self.assertFalse(TriageRecord.objects.exists())
+
+    def test_keeps_a_record_that_has_an_open_request(self):
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        request = request_template.create_request(
+            requester=requester,
+            title="Vulnerability request",
+            product_context=self.product,
+            object_id=self.product.pk,
+        )
+        record = TriageRecord.objects.get()
+        record.request = request
+        record.save()
+
+        delete_triage_records_for_assignment(ruleset=self.ruleset, product=self.product)
+
+        record.refresh_from_db()
+        self.assertEqual(request, record.request)
+
+    def test_reassigning_the_ruleset_reuses_the_existing_request(self):
+        # Regression: unassigning then reassigning a ruleset used to reopen a new Request
+        # instead of reconnecting to the one already tracking this vulnerability.
+        requester = create_user("requester", self.dataspace)
+        request_template = RequestTemplate.objects.create(
+            name="Template",
+            description="Header",
+            dataspace=self.dataspace,
+            content_type=ContentType.objects.get_for_model(Product),
+            created_by=requester,
+        )
+        self.ruleset.request_template = request_template
+        self.ruleset.save()
+        evaluate_ruleset(self.ruleset, self.product)
+        original_request = TriageRecord.objects.get().request
+        self.assertIsNotNone(original_request)
+
+        delete_triage_records_for_assignment(ruleset=self.ruleset, product=self.product)
+        evaluate_ruleset(self.ruleset, self.product)
+
+        self.assertEqual(1, Request.objects.count())
+        self.assertEqual(original_request, TriageRecord.objects.get().request)
+
+    def test_does_not_delete_records_belonging_to_another_product(self):
+        other_product = make_product(self.dataspace)
+        make_product_package(other_product, package=self.package)
+        evaluate_ruleset(self.ruleset, other_product)
+        other_record = TriageRecord.objects.get(product=other_product)
+
+        delete_triage_records_for_assignment(ruleset=self.ruleset, product=self.product)
+
+        self.assertEqual([other_record], list(TriageRecord.objects.all()))
+
+    def test_keeps_the_preset_analyses_tied_to_the_deleted_records(self):
+        # The facts that justified the analysis have not changed, only the decision to keep
+        # monitoring with this ruleset (matches disabling a ruleset, which also leaves
+        # previously-applied analyses in place).
+        preset = make_analysis_preset(self.dataspace, state=AnalysisPreset.State.NOT_AFFECTED)
+        self.ruleset.analysis_preset = preset
+        self.ruleset.save()
+        evaluate_ruleset(self.ruleset, self.product)
+        self.assertTrue(VulnerabilityAnalysis.objects.exists())
+
+        delete_triage_records_for_assignment(ruleset=self.ruleset, product=self.product)
+
+        self.assertTrue(VulnerabilityAnalysis.objects.exists())

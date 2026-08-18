@@ -29,8 +29,7 @@ def reevaluate_product_triage_rulesets_task(product_uuid):
         product = get_unsecured_manager(Product).get(uuid=product_uuid)
     except Product.DoesNotExist:
         logger.error(
-            f"reevaluate_product_triage_rulesets_task: product {product_uuid} not found,"
-            " skipping."
+            f"reevaluate_product_triage_rulesets_task: product {product_uuid} not found, skipping."
         )
         return
 
