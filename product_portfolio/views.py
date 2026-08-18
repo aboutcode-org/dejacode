@@ -150,6 +150,7 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
@@ -2249,20 +2250,19 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
                 product=product, ruleset__enabled=True
             ).select_related("ruleset")
         }
-        for ruleset in available_rulesets:
-            ruleset_uuid = str(ruleset.uuid)
-            if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
-                # The evaluate_on_assign signal evaluates the ruleset against the product;
-                # wrapping in atomic() rolls the assignment back if that evaluation fails.
-                with transaction.atomic():
+        with transaction.atomic():
+            for ruleset in available_rulesets:
+                ruleset_uuid = str(ruleset.uuid)
+                if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
                     ProductTriageRuleset.objects.create(
                         product=product,
                         ruleset=ruleset,
                         dataspace=product.dataspace,
                     )
-        for ruleset_uuid, assignment in current_assignments.items():
-            if ruleset_uuid not in submitted_uuids:
-                assignment.delete()
+            for ruleset_uuid, assignment in current_assignments.items():
+                if ruleset_uuid not in submitted_uuids:
+                    assignment.delete()
+            reevaluate_product_rulesets(product)
         return JsonResponse({"success": True})
 
     assigned_ruleset_ids = set(product.product_triage_rulesets.values_list("ruleset_id", flat=True))

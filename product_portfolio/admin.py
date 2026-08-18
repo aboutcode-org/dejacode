@@ -72,6 +72,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from reporting.filters import ReportingQueryListFilter
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import ProductTriageRuleset
 
 
@@ -247,6 +248,7 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
                     relationship.uuid = uuid.uuid4()
                     relationship.product = obj
                     relationship.save()
+            reevaluate_product_rulesets(obj)
 
     def get_obj_perms_user_select_form(self, request):
         """

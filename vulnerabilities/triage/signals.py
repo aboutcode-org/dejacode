@@ -11,18 +11,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from vulnerabilities.triage.engine import delete_preset_analyses_for_product
-from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.engine import reevaluate_product_rulesets
 from vulnerabilities.triage.models import TriageRecord
-
-
-@receiver(post_save, sender="vulnerabilities_triage.ProductTriageRuleset")
-def evaluate_on_assign(sender, instance, created, **kwargs):
-    """Evaluate the ruleset against the product as soon as it is assigned."""
-    if not created or not instance.ruleset.enabled:
-        return
-
-    evaluate_ruleset(ruleset=instance.ruleset, product=instance.product)
 
 
 @receiver(post_delete, sender="vulnerabilities_triage.ProductTriageRuleset")
