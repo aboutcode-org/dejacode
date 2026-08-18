@@ -4416,7 +4416,7 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         response = self.client.post(url)
         self.assertEqual(404, response.status_code)
 
-    @patch("product_portfolio.views.evaluate_ruleset")
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
     def test_post_assigns_the_submitted_rulesets(self, mock_evaluate):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_manage_triage_rulesets_url()
@@ -4429,11 +4429,12 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         )
         mock_evaluate.assert_called_once_with(ruleset=self.ruleset, product=self.product1)
 
-    @patch("product_portfolio.views.evaluate_ruleset")
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
     def test_post_unassigns_the_deselected_rulesets(self, mock_evaluate):
         ProductTriageRuleset.objects.create(
             product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace
         )
+        mock_evaluate.reset_mock()
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_manage_triage_rulesets_url()
         response = self.client.post(url, {"ruleset_uuids": []})

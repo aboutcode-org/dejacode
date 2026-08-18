@@ -150,7 +150,6 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
-from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
@@ -2253,13 +2252,14 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
         for ruleset in available_rulesets:
             ruleset_uuid = str(ruleset.uuid)
             if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
+                # The evaluate_on_assign signal evaluates the ruleset against the product;
+                # wrapping in atomic() rolls the assignment back if that evaluation fails.
                 with transaction.atomic():
                     ProductTriageRuleset.objects.create(
                         product=product,
                         ruleset=ruleset,
                         dataspace=product.dataspace,
                     )
-                    evaluate_ruleset(ruleset=ruleset, product=product)
         for ruleset_uuid, assignment in current_assignments.items():
             if ruleset_uuid not in submitted_uuids:
                 assignment.delete()

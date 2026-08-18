@@ -15,8 +15,6 @@ from django.utils import timezone
 
 from policy.rules import BaseRule
 
-# Not shared with policy.rules.TERMINAL_VULNERABILITY_STATES: the two lists are
-# intentionally scoped to their own engine and are not guaranteed to stay identical.
 TRIAGE_TERMINAL_VULNERABILITY_STATES = [
     "resolved",
     "resolved_with_pedigree",

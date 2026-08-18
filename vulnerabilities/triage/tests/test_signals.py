@@ -42,6 +42,7 @@ class ReevaluateProductRulesetsTestCase(TestCase):
     def test_evaluates_every_enabled_ruleset_assigned_to_the_product(self, mock_evaluate):
         ruleset = make_triage_ruleset(self.dataspace, enabled=True)
         make_product_triage_ruleset(self.product, ruleset=ruleset)
+        mock_evaluate.reset_mock()  # Called once already by the evaluate_on_assign signal.
 
         reevaluate_product_rulesets(self.product)
 
@@ -62,6 +63,7 @@ class ReevaluateProductRulesetsTestCase(TestCase):
     def test_apply_preset_flag_is_forwarded(self, mock_evaluate):
         ruleset = make_triage_ruleset(self.dataspace, enabled=True)
         make_product_triage_ruleset(self.product, ruleset=ruleset)
+        mock_evaluate.reset_mock()  # Called once already by the evaluate_on_assign signal.
 
         reevaluate_product_rulesets(self.product, apply_preset=False)
 
@@ -194,6 +196,38 @@ class TriageRulesetSaveSignalTestCase(TestCase):
 
         self.assertEqual(1, Request.objects.count())
         self.assertEqual(original_request, TriageRecord.objects.get().request)
+
+
+class EvaluateOnAssignSignalTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
+    def test_assigning_an_enabled_ruleset_evaluates_it(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=True)
+
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+
+        mock_evaluate.assert_called_once_with(ruleset=ruleset, product=self.product)
+
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
+    def test_assigning_a_disabled_ruleset_does_not_evaluate(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=False)
+
+        make_product_triage_ruleset(self.product, ruleset=ruleset)
+
+        mock_evaluate.assert_not_called()
+
+    @patch("vulnerabilities.triage.signals.evaluate_ruleset")
+    def test_resaving_an_existing_assignment_does_not_reevaluate(self, mock_evaluate):
+        ruleset = make_triage_ruleset(self.dataspace, enabled=True)
+        assignment = make_product_triage_ruleset(self.product, ruleset=ruleset)
+        mock_evaluate.reset_mock()
+
+        assignment.save()
+
+        mock_evaluate.assert_not_called()
 
 
 class DeleteTriageRecordsOnUnassignSignalTestCase(TestCase):
