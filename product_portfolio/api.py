@@ -51,6 +51,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
+from vulnerabilities.triage.models import TriageRecord
 
 base_extra_kwargs = {
     "licenses": {
@@ -363,6 +364,24 @@ class ProductPolicyViolationSerializer(serializers.ModelSerializer):
         )
 
 
+class TriageRecordSerializer(serializers.ModelSerializer):
+    advisory_id = serializers.ReadOnlyField(source="vulnerability.advisory_id")
+    ruleset = serializers.ReadOnlyField(source="ruleset.name")
+    request = serializers.StringRelatedField()
+
+    class Meta:
+        model = TriageRecord
+        fields = (
+            "advisory_id",
+            "ruleset",
+            "recommended_action",
+            "matched_rules",
+            "request",
+            "detected_date",
+            "last_checked",
+        )
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -439,6 +458,16 @@ class ProductViewSet(
         product = self.get_object()
         violations = product.policy_violations.unresolved()
         serializer = ProductPolicyViolationSerializer(violations, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="triage_records")
+    def triage_records(self, request, uuid):
+        """List active triage recommendations for this product, one per vulnerability."""
+        product = self.get_object()
+        records = product.triage_records.highest_precedence().select_related(
+            "vulnerability", "ruleset", "request"
+        )
+        serializer = TriageRecordSerializer(records, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)

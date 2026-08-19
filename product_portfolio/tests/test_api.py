@@ -24,6 +24,7 @@ from rest_framework.exceptions import ErrorDetail
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.models import History
 from dje.tests import MaxQueryMixin
@@ -47,8 +48,13 @@ from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.tests import make_product_triage_ruleset
+from vulnerabilities.triage.tests import make_triage_ruleset
 
 
 class ProductAPITestCase(MaxQueryMixin, TestCase):
@@ -757,6 +763,43 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual([], response.data)
+
+    def test_api_product_endpoint_triage_records_action(self):
+        url = reverse("api_v2:product-triage-records", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
+
+        package = make_package(self.dataspace)
+        make_product_package(self.product1, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            recommended_action=TriageAction.UPGRADE,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+        evaluate_ruleset(ruleset, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data))
+        entry = response.data[0]
+        self.assertEqual(vulnerability.advisory_id, entry["advisory_id"])
+        self.assertEqual(ruleset.name, entry["ruleset"])
+        self.assertEqual(TriageAction.UPGRADE, entry["recommended_action"])
+        self.assertEqual(["risk_score"], entry["matched_rules"])
+        self.assertIsNone(entry["request"])
+        self.assertIn("detected_date", entry)
+        self.assertIn("last_checked", entry)
 
 
 class ProductRelatedAPITestCase(TestCase):
