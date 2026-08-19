@@ -868,6 +868,25 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
             ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
         )
 
+    def test_api_product_endpoint_manage_triage_rulesets_post_unassigns_form_encoded(self):
+        # Regression: a form-encoded "false" string must not be treated as truthy.
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace)
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": "false"}
+        response = self.client.post(url, data=data)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+
     def test_api_product_endpoint_manage_triage_rulesets_post_requires_both_fields(self):
         url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
         self.client.login(username=self.base_user.username, password="secret")

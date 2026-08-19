@@ -396,6 +396,11 @@ class TriageRulesetAssignmentSerializer(serializers.Serializer):
     assigned = serializers.BooleanField(read_only=True)
 
 
+class AssignTriageRulesetSerializer(serializers.Serializer):
+    ruleset = serializers.UUIDField()
+    assigned = serializers.BooleanField()
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -484,7 +489,12 @@ class ProductViewSet(
         serializer = TriageRecordSerializer(records, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get", "post"], url_path="manage_triage_rulesets")
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="manage_triage_rulesets",
+        serializer_class=AssignTriageRulesetSerializer,
+    )
     def manage_triage_rulesets(self, request, uuid):
         """
         GET: list every enabled triage ruleset in this product's dataspace, each flagged
@@ -496,22 +506,16 @@ class ProductViewSet(
         product = self.get_object()
 
         if request.method == "POST":
-            if not isinstance(request.data, dict):
-                return Response(
-                    {"error": "Expected a JSON object with 'ruleset' and 'assigned'."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            ruleset_uuid = request.data.get("ruleset")
-            assigned = request.data.get("assigned")
-            if ruleset_uuid is None or assigned is None:
-                return Response(
-                    {"error": "Both 'ruleset' and 'assigned' are required."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            serializer = AssignTriageRulesetSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
             ruleset = get_object_or_404(
                 TriageRuleset.objects.scope(product.dataspace).filter(enabled=True),
-                uuid=ruleset_uuid,
+                uuid=serializer.validated_data["ruleset"],
             )
+            assigned = serializer.validated_data["assigned"]
+
             with transaction.atomic():
                 assignment = ProductTriageRuleset.objects.filter(
                     product=product, ruleset=ruleset
@@ -520,10 +524,11 @@ class ProductViewSet(
                     ProductTriageRuleset.objects.create(
                         product=product, ruleset=ruleset, dataspace=product.dataspace
                     )
+                    reevaluate_product_rulesets(product)
                 elif not assigned and assignment:
                     assignment.delete()
                     delete_triage_records_for_assignment(ruleset=ruleset, product=product)
-                reevaluate_product_rulesets(product)
+                    reevaluate_product_rulesets(product)
             return Response(status=status.HTTP_200_OK)
 
         assigned_ruleset_ids = set(

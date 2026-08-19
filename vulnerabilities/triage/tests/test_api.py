@@ -144,6 +144,19 @@ class TriageRulesetAPITestCase(TestCase):
         msg = "This request template has no creator and cannot be used to open requests."
         self.assertIn(msg, response.data["request_template"])
 
+    def test_api_triageruleset_endpoint_create_rejects_cross_dataspace_analysis_preset(self):
+        self.client.login(username="super_user", password="secret")
+        other_preset = make_analysis_preset(self.alternate, name="OtherPreset")
+        other_preset_url = reverse("api_v2:analysispreset-detail", args=[other_preset.uuid])
+        data = {
+            "name": "New Ruleset",
+            "precedence": 200,
+            "analysis_preset": other_preset_url,
+        }
+        response = self.client.post(self.list_url, data=data, content_type="application/json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("analysis_preset", response.data)
+
     def test_api_triageruleset_endpoint_update(self):
         self.client.login(username="super_user", password="secret")
         data = {"enabled": False}

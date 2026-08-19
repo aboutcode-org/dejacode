@@ -10,6 +10,7 @@ from rest_framework import mixins
 from rest_framework import serializers
 
 from dje.api import CreateRetrieveUpdateListViewSet
+from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import ExtraPermissionsViewSetMixin
 from dje.api_custom import TabPermission
@@ -73,6 +74,19 @@ class AnalysisPresetViewSet(
 
 
 class TriageRulesetSerializer(DataspacedSerializer):
+    analysis_preset = DataspacedHyperlinkedRelatedField(
+        view_name="api_v2:analysispreset-detail",
+        lookup_field="uuid",
+        required=False,
+        allow_null=True,
+    )
+    request_template = DataspacedHyperlinkedRelatedField(
+        view_name="api_v2:requesttemplate-detail",
+        lookup_field="uuid",
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = TriageRuleset
         fields = (
@@ -91,18 +105,6 @@ class TriageRulesetSerializer(DataspacedSerializer):
             "api_url": {
                 "view_name": "api_v2:triageruleset-detail",
                 "lookup_field": "uuid",
-            },
-            "analysis_preset": {
-                "view_name": "api_v2:analysispreset-detail",
-                "lookup_field": "uuid",
-                "required": False,
-                "allow_null": True,
-            },
-            "request_template": {
-                "view_name": "api_v2:requesttemplate-detail",
-                "lookup_field": "uuid",
-                "required": False,
-                "allow_null": True,
             },
         }
 
