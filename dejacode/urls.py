@@ -55,6 +55,8 @@ from product_portfolio.api import ProductViewSet
 from reporting.api import ReportViewSet
 from vulnerabilities.api import VulnerabilityAnalysisViewSet
 from vulnerabilities.api import VulnerabilityViewSet
+from vulnerabilities.triage.api import AnalysisPresetViewSet
+from vulnerabilities.triage.api import TriageRulesetViewSet
 from workflow.api import RequestTemplateViewSet
 from workflow.api import RequestViewSet
 
@@ -83,6 +85,8 @@ api_router.register("external_references", ExternalReferenceViewSet)
 api_router.register("usage_policies", UsagePolicyViewSet)
 api_router.register("vulnerabilities", VulnerabilityViewSet)
 api_router.register("vulnerability_analyses", VulnerabilityAnalysisViewSet)
+api_router.register("triage_rulesets", TriageRulesetViewSet)
+api_router.register("analysis_presets", AnalysisPresetViewSet)
 
 
 urlpatterns = [
