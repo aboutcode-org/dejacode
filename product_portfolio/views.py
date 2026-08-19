@@ -150,6 +150,40 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
+from vulnerabilities.triage.models import AnalysisPreset
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
+from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
+from vulnerabilities.triage.rules import rule_parameters_from_config
+
+TRIAGE_ACTION_STYLES = {
+    "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
+    "apply_patch": ("bg-danger-subtle text-danger-emphasis", "fa-wrench"),
+    "replace_package": ("bg-warning-subtle text-warning-emphasis", "fa-exchange-alt"),
+    "forensic_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-search"),
+    "reachability_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-sitemap"),
+    "change_config": ("bg-info-subtle text-info-emphasis", "fa-cog"),
+    "notify": ("bg-primary-subtle text-primary-emphasis", "fa-bell"),
+    "create_request": ("bg-secondary-subtle text-secondary-emphasis", "fa-file-alt"),
+}
+TRIAGE_ACTION_DEFAULT_STYLE = (
+    "bg-secondary-subtle text-secondary-emphasis",
+    "fa-exclamation-circle",
+)
+
+ANALYSIS_STATE_STYLES = {
+    "exploitable": "bg-danger-subtle text-danger-emphasis",
+    "in_triage": "bg-warning-subtle text-warning-emphasis",
+    "resolved": "bg-success-subtle text-success-emphasis",
+    "resolved_with_pedigree": "bg-success-subtle text-success-emphasis",
+    "not_affected": "bg-secondary-subtle text-secondary-emphasis",
+    "false_positive": "bg-secondary-subtle text-secondary-emphasis",
+}
+ANALYSIS_STATE_DEFAULT_STYLE = "bg-secondary-subtle text-secondary-emphasis"
 
 
 class BaseProductViewMixin:
@@ -1196,6 +1230,10 @@ class ProductTabDependenciesView(
         return context_data
 
 
+def has_triage_column_condition(view):
+    return getattr(view, "has_triage_rulesets", True)
+
+
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
@@ -1211,43 +1249,133 @@ class ProductTabVulnerabilitiesView(
     filterset_class = ProductPackageFilterSet
     table_headers = (
         Header("affected_packages", _("Package"), help_text="Affected product packages"),
-        Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
         Header(
             "advisory_uid",
             _("Vulnerabilities"),
             help_text="Vulnerabilities affecting the product package",
         ),
         Header(
+            "triage_action",
+            _("Recommendation"),
+            help_text=_("Action recommended by the triage engine for this vulnerability"),
+            filter="triage_action",
+            condition=has_triage_column_condition,
+        ),
+        Header(
             "vulnerability_analyses__state",
-            _("Status"),
-            help_text=_("Exploitability analysis status"),
+            _("Analysis"),
+            help_text=_(
+                "Exploitability analysis: status, justification, responses and reachability."
+            ),
             filter="vulnerability_analyses__state",
         ),
-        Header(
-            "vulnerability_analyses__justification",
-            _("Justification"),
-            help_text=_("The rationale of why the impact analysis state was asserted."),
-            filter="vulnerability_analyses__justification",
-        ),
-        Header(
-            "vulnerability_analyses__responses",
-            _("Responses"),
-            help_text=_(
-                "A response to the vulnerability by the manufacturer, supplier, or project "
-                "responsible for the affected component or service."
-            ),
-            filter="responses",
-        ),
-        Header(
-            "vulnerability_analyses__is_reachable",
-            _("Reach"),
-            help_text=_(
-                "Indicates whether the vulnerability is reachable in the context of "
-                "this product package."
-            ),
-            filter="is_reachable",
-        ),
     )
+
+    def attach_vulnerability_analyses(self, page_obj):
+        """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
+        response_labels = dict(VulnerabilityAnalysis.Response.choices)
+
+        for product_package in page_obj.object_list:
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
+                for analysis in vulnerability.vulnerability_analyses.all():
+                    if analysis.product_package_id == product_package.id:
+                        vulnerability.vulnerability_analysis = analysis
+                        analysis.state_badge_class = ANALYSIS_STATE_STYLES.get(
+                            analysis.state, ANALYSIS_STATE_DEFAULT_STYLE
+                        )
+                        analysis.response_labels = [
+                            response_labels.get(response, response)
+                            for response in analysis.responses or []
+                        ]
+                        break
+
+    REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
+
+    def get_vulnerability_display_filters(self):
+        """Return the active per-vulnerability filters from the request."""
+        params = self.request.GET
+        prefix = self.tab_id
+        return {
+            "triage_action": params.get(f"{prefix}-triage_action", ""),
+            "state": params.get(f"{prefix}-vulnerability_analyses__state", ""),
+            "justification": params.get(f"{prefix}-vulnerability_analyses__justification", ""),
+            "is_reachable": params.get(f"{prefix}-is_reachable", ""),
+        }
+
+    def vulnerability_passes_display_filters(self, vulnerability, display_filters):
+        """Return True if the vulnerability matches all active display filters."""
+        triage_action = display_filters.get("triage_action")
+        if triage_action:
+            record = getattr(vulnerability, "triage_record", None)
+            if getattr(record, "recommended_action", "") != triage_action:
+                return False
+
+        analysis = getattr(vulnerability, "vulnerability_analysis", None)
+        state = display_filters.get("state")
+        if state:
+            if getattr(analysis, "state", "") != state:
+                return False
+
+        justification = display_filters.get("justification")
+        if justification:
+            if getattr(analysis, "justification", "") != justification:
+                return False
+
+        is_reachable_filter = display_filters.get("is_reachable")
+        if is_reachable_filter in self.REACHABILITY_FILTER_MAP:
+            expected = self.REACHABILITY_FILTER_MAP[is_reachable_filter]
+            actual = None if analysis is None else analysis.is_reachable
+            if actual != expected:
+                return False
+
+        return True
+
+    def attach_triage_data(self, product, page_obj):
+        """
+        Attach the winning TriageRecord to each vulnerability and build
+        display_vulnerabilities on each product_package, filtered by any
+        active per-vulnerability filters.
+        """
+        vulnerability_ids = {
+            vulnerability.id
+            for product_package in page_obj.object_list
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all()
+        }
+        action_labels = dict(TriageAction.choices)
+        triage_records = list(
+            TriageRecord.objects.filter(
+                product=product,
+                vulnerability_id__in=vulnerability_ids,
+            )
+            .highest_precedence()
+            .select_related("ruleset", "request")
+        )
+        for record in triage_records:
+            record.action_label = action_labels.get(
+                record.recommended_action, record.recommended_action
+            )
+            badge_class, icon = TRIAGE_ACTION_STYLES.get(
+                record.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
+            )
+            record.action_badge_class = badge_class
+            record.action_icon = icon
+
+        triage_by_vulnerability = {record.vulnerability_id: record for record in triage_records}
+        display_filters = self.get_vulnerability_display_filters()
+        has_display_filters = any(display_filters.values())
+
+        for product_package in page_obj.object_list:
+            all_vulnerabilities = list(product_package.package.affected_by_vulnerabilities.all())
+            for vulnerability in all_vulnerabilities:
+                vulnerability.triage_record = triage_by_vulnerability.get(vulnerability.id)
+            if has_display_filters:
+                product_package.display_vulnerabilities = [
+                    vulnerability
+                    for vulnerability in all_vulnerabilities
+                    if self.vulnerability_passes_display_filters(vulnerability, display_filters)
+                ]
+            else:
+                product_package.display_vulnerabilities = all_vulnerabilities
 
     def get_context_data(self, **kwargs):
         product = self.object
@@ -1258,9 +1386,12 @@ class ProductTabVulnerabilitiesView(
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
+        vulnerability_analyses_qs = VulnerabilityAnalysis.objects.select_related(
+            "created_by", "last_modified_by", "applied_by_preset"
+        )
         vulnerability_qs = Vulnerability.objects.prefetch_related(
-            "vulnerability_analyses"
-        ).order_by("-risk_score")
+            Prefetch("vulnerability_analyses", queryset=vulnerability_analyses_qs)
+        ).order_by(F("risk_score").desc(nulls_last=True))
         package_qs = (
             Package.objects.all()
             .only_rendering_fields()
@@ -1278,7 +1409,7 @@ class ProductTabVulnerabilitiesView(
                 Prefetch("package", package_qs),
             )
             .order_by(
-                "-weighted_risk_score",
+                F("weighted_risk_score").desc(nulls_last=True),
                 "package__name",
             )
         )
@@ -1291,6 +1422,10 @@ class ProductTabVulnerabilitiesView(
             anchor=f"#{self.tab_id}",
         )
 
+        self.has_triage_rulesets = product.product_triage_rulesets.filter(
+            ruleset__enabled=True
+        ).exists()
+
         # The self.filterset needs to be set before calling super()
         context_data = super().get_context_data(**kwargs)
 
@@ -1298,14 +1433,19 @@ class ProductTabVulnerabilitiesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        # Set the proper VulnerabilityAnalysis instance on the Package instance
-        for product_package in page_obj.object_list:
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
-                for analysis in vulnerability.vulnerability_analyses.all():
-                    if analysis.product_package_id == product_package.id:
-                        vulnerability.vulnerability_analysis = analysis
-                        continue
+        self.attach_vulnerability_analyses(page_obj)
+        self.attach_triage_data(product, page_obj)
 
+        analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
+        has_change_permission = "change_product" in guardian_get_perms(self.request.user, product)
+        can_manage_triage_rules = (
+            has_change_permission and self.request.user.dataspace.enable_vulnerablecodedb_access
+        )
+        manage_triage_rules_nav_item_template = None
+        if can_manage_triage_rules:
+            manage_triage_rules_nav_item_template = (
+                "product_portfolio/includes/manage_triage_rules_nav_item.html"
+            )
         context_data.update(
             {
                 "filterset": self.filterset,
@@ -1313,6 +1453,9 @@ class ProductTabVulnerabilitiesView(
                 "total_count": base_productpackage_qs.count(),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
+                "has_triage_rulesets": self.has_triage_rulesets,
+                "analysis_presets": analysis_presets,
+                "manage_triage_rules_nav_item_template": manage_triage_rules_nav_item_template,
             }
         )
 
@@ -2084,6 +2227,82 @@ def evaluate_policy_rules_view(request, dataspace, name, version=""):
     return HttpResponse(headers={"HX-Refresh": "true"})
 
 
+@require_http_methods(["GET", "POST"])
+@login_required
+def manage_triage_rulesets_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+    available_rulesets = list(
+        TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True)
+        .select_related("analysis_preset")
+        .order_by("-precedence", "name")
+    )
+
+    if request.method == "POST":
+        submitted_uuids = set(request.POST.getlist("ruleset_uuids"))
+        current_assignments = {
+            str(ptr.ruleset.uuid): ptr
+            for ptr in ProductTriageRuleset.objects.filter(
+                product=product, ruleset__enabled=True
+            ).select_related("ruleset")
+        }
+        with transaction.atomic():
+            for ruleset in available_rulesets:
+                ruleset_uuid = str(ruleset.uuid)
+                if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
+                    ProductTriageRuleset.objects.create(
+                        product=product,
+                        ruleset=ruleset,
+                        dataspace=product.dataspace,
+                    )
+            for ruleset_uuid, assignment in current_assignments.items():
+                if ruleset_uuid not in submitted_uuids:
+                    assignment.delete()
+                    delete_triage_records_for_assignment(
+                        ruleset=assignment.ruleset, product=product
+                    )
+            reevaluate_product_rulesets(product)
+        return JsonResponse({"success": True})
+
+    assigned_ruleset_ids = set(product.product_triage_rulesets.values_list("ruleset_id", flat=True))
+    action_labels = dict(TriageAction.choices)
+
+    for ruleset in available_rulesets:
+        ruleset.action_label = action_labels.get(
+            ruleset.recommended_action, ruleset.recommended_action
+        )
+        action_badge_class, action_icon = TRIAGE_ACTION_STYLES.get(
+            ruleset.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
+        )
+        ruleset.action_badge_class = action_badge_class
+        ruleset.action_icon = action_icon
+        active_rules = []
+        for rule_type, config in ruleset.rules_config.items():
+            if rule_type not in TRIAGE_RULE_REGISTRY or not config.get("is_active"):
+                continue
+            handler = TRIAGE_RULE_REGISTRY[rule_type]
+            params = rule_parameters_from_config(config)
+            params_str = ", ".join(
+                f"{key.replace('_', ' ')}: {value}" for key, value in params.items()
+            )
+            active_rules.append({"label": handler.label, "params_str": params_str})
+        ruleset.active_rules = active_rules
+
+    return render(
+        request,
+        "product_portfolio/modals/manage_triage_rulesets_form.html",
+        {
+            "available_rulesets": available_rulesets,
+            "assigned_ruleset_ids": assigned_ruleset_ids,
+        },
+    )
+
+
 @login_required
 def import_from_scan_view(request, dataspace, name, version=""):
     """
@@ -2740,6 +2959,44 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, advisory_uid)
     rendered_form = render_crispy_form(form, context=csrf(request))
 
     return HttpResponse(rendered_form)
+
+
+@login_required
+@require_POST
+def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, preset_id):
+    user = request.user
+    dataspace = user.dataspace
+
+    product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
+    product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
+    vulnerability = get_object_or_404(
+        Vulnerability.objects.scope(dataspace), advisory_uid=advisory_uid
+    )
+    preset = get_object_or_404(AnalysisPreset.objects.scope(dataspace), pk=preset_id)
+
+    existing = VulnerabilityAnalysis.objects.scope(dataspace).get_or_none(
+        product_package=product_package,
+        vulnerability=vulnerability,
+    )
+    if existing:
+        return JsonResponse(
+            {"error": "An analysis already exists for this vulnerability."}, status=400
+        )
+
+    analysis = VulnerabilityAnalysis(
+        product_package=product_package,
+        vulnerability=vulnerability,
+        dataspace=dataspace,
+    )
+    preset.apply_to_analysis(analysis)
+
+    if not analysis.has_content_fields():
+        return JsonResponse({"error": "This preset has no content fields to apply."}, status=400)
+
+    analysis.applied_by_preset = preset
+    analysis.save()
+
+    return JsonResponse({"success": "applied"}, status=200)
 
 
 @login_required

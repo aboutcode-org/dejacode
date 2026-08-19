@@ -141,6 +141,7 @@ def scancodeio_submit_scan(uris, user_uuid, dataspace_uuid):
 def update_vulnerabilities():
     """Fetch vulnerabilities for all Dataspaces that enable vulnerablecodedb access."""
     from vulnerabilities.fetch import fetch_from_vulnerablecode
+    from vulnerabilities.triage.tasks import evaluate_all_products_vulnerability_triage_task
 
     logger.info("Entering update_vulnerabilities task")
     Dataspace = apps.get_model("dje", "Dataspace")
@@ -155,3 +156,6 @@ def update_vulnerabilities():
             timeout=60,
             log_func=logger.debug,
         )
+
+    logger.info("Vulnerability fetch complete. Enqueuing triage evaluation.")
+    evaluate_all_products_vulnerability_triage_task.delay()

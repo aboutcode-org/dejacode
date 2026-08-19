@@ -43,6 +43,8 @@ from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 
 
 class HasComplianceIssueFilter(django_filters.BooleanFilter):
@@ -366,6 +368,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
+        "triage_action",
         "vulnerability_analyses__state",
         "vulnerability_analyses__justification",
         "responses",
@@ -419,6 +422,12 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("unknown", _("Reachability not known")),
         ),
     )
+    triage_action = django_filters.ChoiceFilter(
+        label=_("Triage action"),
+        choices=TriageAction.choices,
+        empty_label=_("All actions"),
+        method="filter_triage_action",
+    )
     compliance_issues = HasComplianceIssueFilter(
         field_name="package__usage_policy__compliance_alert",
         distinct=True,
@@ -437,6 +446,17 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "is_reachable",
             "exploitability",
         ]
+
+    @staticmethod
+    def filter_triage_action(queryset, name, value):
+        if not value:
+            return queryset
+        primary_triage = TriageRecord.objects.highest_precedence().filter(
+            product=OuterRef("product"),
+            vulnerability__affected_packages__productpackages=OuterRef("pk"),
+            recommended_action=value,
+        )
+        return queryset.filter(Exists(primary_triage)).distinct()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

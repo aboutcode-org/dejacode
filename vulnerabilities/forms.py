@@ -97,6 +97,7 @@ class VulnerabilityAnalysisForm(DataspacedModelForm):
         return helper
 
     def save(self, *args, **kwargs):
+        self.instance.applied_by_preset = None
         instance = super().save(*args, **kwargs)
 
         if products := self.cleaned_data.get("propagate_to_products"):

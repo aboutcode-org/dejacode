@@ -25,6 +25,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.tests import make_product_dependency
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageRuleset
 
 
 class ProductPortfolioAdminsTestCase(TestCase):
@@ -430,6 +432,12 @@ class ProductPortfolioAdminsTestCase(TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
 
         url = self.product1.get_admin_url()
         data = {
@@ -447,6 +455,40 @@ class ProductPortfolioAdminsTestCase(TestCase):
         new_product = Product.unsecured_objects.get(name=self.product1.name, version="new version")
         self.assertEqual(1, new_product.productcomponents.count())
         self.assertEqual(1, new_product.productpackages.count())
+        self.assertEqual(1, new_product.product_triage_rulesets.count())
+
+    @patch("product_portfolio.admin.reevaluate_products")
+    def test_product_admin_changeform_save_as_evaluates_the_new_product_once(self, mock_reevaluate):
+        # Cloning must evaluate the new product exactly once, not once per cloned
+        # ProductPackage relationship.
+        package2 = make_package(self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        ProductPackage.objects.create(
+            product=self.product1, package=package2, dataspace=self.dataspace
+        )
+        self.client.login(username=self.user.username, password="secret")
+
+        url = self.product1.get_admin_url()
+        data = {
+            "_saveasnew": "Save as new",
+            "name": self.product1.name,
+            "version": "new version 2",
+            "productcomponents-INITIAL_FORMS": 0,
+            "productcomponents-TOTAL_FORMS": 0,
+            "productpackages-INITIAL_FORMS": 0,
+            "productpackages-TOTAL_FORMS": 0,
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        new_product = Product.unsecured_objects.get(
+            name=self.product1.name, version="new version 2"
+        )
+        self.assertEqual(2, new_product.productpackages.count())
+        mock_reevaluate.assert_called_once_with([new_product])
 
     def test_codebaseresource_admin_changeform_product_prefill_on_save_addanother(self):
         self.client.login(username=self.user.username, password="secret")

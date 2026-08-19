@@ -274,8 +274,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         )
 
 
-class VulnerabilityAnalysisMixin(models.Model):
-    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+class VulnerabilityAnalysisContentMixin(models.Model):
+    """Core analysis content fields, shared with AnalysisPreset. CycloneDX-aligned."""
 
     # cyclonedx.model.impact_analysis.ImpactAnalysisState
     class State(models.TextChoices):
@@ -344,6 +344,26 @@ class VulnerabilityAnalysisMixin(models.Model):
             "details on why the component or service is not impacted by this vulnerability."
         ),
     )
+
+    def has_content_fields(self):
+        return any([self.state, self.justification, self.responses, self.detail])
+
+    def save(self, *args, **kwargs):
+        # At least one of those fields must be provided.
+        if not self.has_content_fields():
+            raise ValueError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
+
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class VulnerabilityAnalysisMixin(VulnerabilityAnalysisContentMixin):
+    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+
     first_issued = models.DateTimeField(
         auto_now_add=True,
         help_text=_("The date and time (timestamp) when the analysis was first issued."),
@@ -355,21 +375,6 @@ class VulnerabilityAnalysisMixin(models.Model):
 
     class Meta:
         abstract = True
-
-    def save(self, *args, **kwargs):
-        # At least one of those fields must be provided.
-        main_fields = [
-            self.state,
-            self.justification,
-            self.responses,
-            self.detail,
-        ]
-        if not any(main_fields):
-            raise ValueError(
-                "At least one of state, justification, responses or detail must be provided."
-            )
-
-        super().save(*args, **kwargs)
 
     def as_cyclonedx(self):
         state = None
@@ -544,6 +549,17 @@ class VulnerabilityAnalysis(
         help_text=_(
             "Indicates whether the vulnerability is reachable in the context of this "
             "product package."
+        ),
+    )
+    applied_by_preset = models.ForeignKey(
+        to="vulnerabilities_triage.AnalysisPreset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="applied_analyses",
+        help_text=_(
+            "The analysis preset that automatically created this analysis."
+            " Cleared when a user edits the analysis manually."
         ),
     )
 

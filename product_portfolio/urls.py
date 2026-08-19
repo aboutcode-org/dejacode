@@ -39,6 +39,7 @@ from product_portfolio.views import ProductTreeComparisonView
 from product_portfolio.views import ProductUpdateView
 from product_portfolio.views import PullProjectDataFromScanCodeIOView
 from product_portfolio.views import add_customcomponent_ajax_view
+from product_portfolio.views import apply_analysis_preset_view
 from product_portfolio.views import check_package_version_ajax_view
 from product_portfolio.views import delete_scan_htmx_view
 from product_portfolio.views import edit_productrelation_ajax_view
@@ -46,6 +47,7 @@ from product_portfolio.views import evaluate_policy_rules_view
 from product_portfolio.views import import_from_scan_view
 from product_portfolio.views import import_packages_from_scancodeio_view
 from product_portfolio.views import improve_packages_from_purldb_view
+from product_portfolio.views import manage_triage_rulesets_view
 from product_portfolio.views import scan_all_packages_view
 from product_portfolio.views import scancodeio_project_download_input_view
 from product_portfolio.views import scancodeio_project_status_view
@@ -118,6 +120,11 @@ urlpatterns = [
         name="edit_productrelation_ajax",
     ),
     path(
+        "vulnerability_analysis/<uuid:productpackage_uuid>/preset/<int:preset_id>/<path:advisory_uid>/",
+        apply_analysis_preset_view,
+        name="apply_analysis_preset",
+    ),
+    path(
         "vulnerability_analysis/<uuid:productpackage_uuid>/<path:advisory_uid>/",
         vulnerability_analysis_form_view,
         name="vulnerability_analysis_form",
@@ -131,6 +138,7 @@ urlpatterns = [
     *product_path("vulnerability_analysis_form", vulnerability_analysis_form_view),
     *product_path("scan_all_packages", scan_all_packages_view),
     *product_path("evaluate_policy_rules", evaluate_policy_rules_view),
+    *product_path("manage_triage_rulesets", manage_triage_rulesets_view),
     *product_path("improve_packages_from_purldb", improve_packages_from_purldb_view),
     *product_path("about_files", ProductSendAboutFilesView.as_view()),
     *product_path("export_spdx", ProductExportSPDXDocumentView.as_view()),

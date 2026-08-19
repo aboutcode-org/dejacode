@@ -26,15 +26,9 @@ def evaluate_product_rules_on_product_save(sender, instance, **kwargs):
     evaluate_product_rules_task.delay(product_uuid=instance.uuid)
 
 
-@receiver(post_save, sender="product_portfolio.ProductPackage")
-def evaluate_product_rules_on_productpackage_save(sender, instance, **kwargs):
-    """Queue a policy rule evaluation whenever a package is added or updated in a product."""
-    evaluate_product_rules_task.delay(product_uuid=instance.product.uuid)
-
-
-@receiver(post_delete, sender="product_portfolio.ProductPackage")
-def evaluate_product_rules_on_productpackage_delete(sender, instance, **kwargs):
-    """Queue a policy rule evaluation whenever a package is removed from a product."""
+@receiver([post_save, post_delete], sender="product_portfolio.ProductPackage")
+def evaluate_product_rules_on_productpackage_change(sender, instance, **kwargs):
+    """Queue a policy rule evaluation whenever a package is added, updated, or removed."""
     evaluate_product_rules_task.delay(product_uuid=instance.product.uuid)
 
 

@@ -20,6 +20,8 @@ from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import ObjectDoesNotExist
 from django.db.models import Q
+from django.db.models.signals import post_delete
+from django.db.models.signals import post_save
 from django.utils.translation import gettext_lazy as _
 
 from license_expression import Licensing
@@ -40,6 +42,8 @@ from dje.importers import ModelChoiceFieldForImport
 from dje.models import Dataspace
 from dje.utils import get_help_text
 from dje.utils import is_uuid4
+from policy.signals import evaluate_product_rules_on_productpackage_change
+from policy.tasks import evaluate_product_rules_task
 from product_portfolio.forms import ProductComponentLicenseExpressionFormMixin
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import CodebaseResourceUsage
@@ -50,6 +54,8 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.triage.signals import reevaluate_on_product_package_change
+from vulnerabilities.triage.tasks import reevaluate_product_triage_rulesets_task
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +66,35 @@ def log_elapsed(label):
     start = time.perf_counter()
     yield
     logger.info(f"{label}: {time.perf_counter() - start:.1f}s")
+
+
+@contextmanager
+def paused_product_package_reevaluation():
+    """
+    Pause the policy and triage re-evaluation signals triggered by ProductPackage changes,
+    for the duration of a bulk import. Call `reevaluate_products()` once the import completes
+    to evaluate each affected product exactly once, instead of once per imported row.
+    """
+    receivers = [
+        evaluate_product_rules_on_productpackage_change,
+        reevaluate_on_product_package_change,
+    ]
+    for receiver in receivers:
+        post_save.disconnect(receiver, sender=ProductPackage)
+        post_delete.disconnect(receiver, sender=ProductPackage)
+    try:
+        yield
+    finally:
+        for receiver in receivers:
+            post_save.connect(receiver, sender=ProductPackage)
+            post_delete.connect(receiver, sender=ProductPackage)
+
+
+def reevaluate_products(products):
+    """Queue the policy and triage re-evaluation once for each of the given products."""
+    for product in products:
+        evaluate_product_rules_task.delay(product_uuid=product.uuid)
+        reevaluate_product_triage_rulesets_task.delay(product_uuid=product.uuid)
 
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
@@ -229,6 +264,14 @@ class ProductPackageImportForm(ProductRelationshipMixin):
 
 class ProductPackageImporter(BaseImporter):
     model_form = ProductPackageImportForm
+
+    def save_all(self):
+        with paused_product_package_reevaluation():
+            super().save_all()
+
+        touched_product_packages = self.results["added"] + self.results["modified"]
+        products = {product_package.product for product_package in touched_product_packages}
+        reevaluate_products(products)
 
 
 class CodebaseResourceImportForm(CleanProductMixin, BaseImportModelForm):
@@ -434,7 +477,9 @@ class ImportFromScan:
         self.create_scancode_project()
         self.load_data_from_file()
         self.validate_headers()
-        self.import_packages()
+        with paused_product_package_reevaluation():
+            self.import_packages()
+        reevaluate_products([self.product])
         if self.create_codebase_resources:
             self.import_codebase_resources()
         self.update_scancode_project()
@@ -720,7 +765,9 @@ class ImportPackageFromScanCodeIO:
                 self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
         with log_elapsed("import_packages"):
-            self.import_packages()
+            with paused_product_package_reevaluation():
+                self.import_packages()
+        reevaluate_products([self.product])
 
         if self.create_dependencies:
             with log_elapsed("import_dependencies"):

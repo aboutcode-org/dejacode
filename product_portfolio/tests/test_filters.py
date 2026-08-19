@@ -26,6 +26,10 @@ from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_component
 from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRuleset
 
 
 class ProductPackageFilterSetTestCase(TestCase):
@@ -185,6 +189,47 @@ class ProductPackageFilterByRuleDistinctTestCase(TestCase):
             data={"policy_rule": "vulnerability_detected"},
         )
         self.assertEqual(1, filterset.qs.count())
+
+
+class ProductPackageFilterByTriageActionTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+        self.pp_with_recommendation = make_product_package(
+            self.product, make_package(self.dataspace)
+        )
+        self.pp_without_recommendation = make_product_package(
+            self.product, make_package(self.dataspace)
+        )
+        make_vulnerability(
+            self.dataspace, affecting=self.pp_with_recommendation.package, risk_score=9.0
+        )
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset",
+            recommended_action=TriageAction.UPGRADE,
+            precedence=100,
+            dataspace=self.dataspace,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product, ruleset=ruleset, dataspace=self.dataspace
+        )
+        evaluate_ruleset(ruleset, self.product)
+
+    def test_filter_by_triage_action_filters_matching_packages(self):
+        filterset = ProductPackageFilterSet(
+            dataspace=self.dataspace,
+            data={"triage_action": "upgrade"},
+        )
+        self.assertIn(self.pp_with_recommendation, filterset.qs)
+        self.assertNotIn(self.pp_without_recommendation, filterset.qs)
+
+    def test_filter_by_triage_action_excludes_non_matching_action(self):
+        filterset = ProductPackageFilterSet(
+            dataspace=self.dataspace,
+            data={"triage_action": "notify"},
+        )
+        self.assertNotIn(self.pp_with_recommendation, filterset.qs)
 
 
 class ProductComponentFilterByRuleTestCase(TestCase):

@@ -1,0 +1,61 @@
+{% load i18n %}
+<form id="manage-triage-rulesets-form">
+  {% if available_rulesets %}
+    <p class="text-body-secondary small px-3 pt-3 mb-0">
+      {% trans "Select the rules to activate for this product. Saving triggers an evaluation of all active packages." %}
+    </p>
+    <div class="list-group list-group-flush mt-2">
+      {% for ruleset in available_rulesets %}
+        <label class="list-group-item d-flex gap-3 py-3" for="ruleset_{{ ruleset.uuid }}">
+          <input class="form-check-input flex-shrink-0 mt-1"
+                 type="checkbox"
+                 name="ruleset_uuids"
+                 value="{{ ruleset.uuid }}"
+                 id="ruleset_{{ ruleset.uuid }}"
+                 {% if ruleset.id in assigned_ruleset_ids %}checked{% endif %}>
+          <span class="flex-grow-1">
+            <span class="d-flex justify-content-between align-items-baseline mb-1">
+              <strong>{{ ruleset.name }}</strong>
+              <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2 flex-shrink-0">
+                {% trans "Precedence:" %} {{ ruleset.precedence }}
+              </span>
+            </span>
+            {% if ruleset.description %}
+              <span class="d-block small text-body-secondary mb-1">{{ ruleset.description }}</span>
+            {% endif %}
+            {% if ruleset.active_rules %}
+              <span class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                <span class="small text-body-secondary me-1">{% trans "Conditions:" %}</span>
+                {% for rule in ruleset.active_rules %}
+                  <span class="badge bg-secondary-subtle text-secondary-emphasis fw-normal">
+                    {{ rule.label }}{% if rule.params_str %} ({{ rule.params_str }}){% endif %}
+                  </span>
+                {% endfor %}
+              </span>
+            {% endif %}
+            {% if ruleset.recommended_action %}
+              <span class="d-flex align-items-center gap-2 mt-1">
+                <span class="small text-body-secondary">{% trans "Recommended action:" %}</span>
+                <span class="badge {{ ruleset.action_badge_class }} text-nowrap">
+                  <i class="fas {{ ruleset.action_icon }} me-1"></i>{{ ruleset.action_label }}
+                </span>
+              </span>
+            {% endif %}
+            {% if ruleset.analysis_preset %}
+              <span class="d-flex align-items-center gap-2 mt-1">
+                <span class="small text-body-secondary">{% trans "Auto-applies preset:" %}</span>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis fw-normal">
+                  {{ ruleset.analysis_preset.name }}
+                </span>
+              </span>
+            {% endif %}
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-body-secondary px-3 py-3 mb-0">
+      {% trans "No triage rules are available in this dataspace." %}
+    </p>
+  {% endif %}
+</form>

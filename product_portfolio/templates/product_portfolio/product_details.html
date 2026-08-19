@@ -10,7 +10,7 @@
           <i class="fas fa-tasks"></i> Manage
         </button>
       </span>
-    {% elif has_edit_productcomponent or has_edit_productpackage or has_change_codebaseresource_permission or has_add_productcomponent %}
+    {% elif has_edit_productcomponent or has_edit_productpackage or has_change_codebaseresource_permission or has_add_productcomponent or has_change_permission %}
       <div class="dropdown btn-group">
         <a class="btn btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown" role="button" href="#"><i class="fas fa-tasks"></i> {% trans 'Manage' %}</a>
         <div class="dropdown-menu dropdown-menu-end">
@@ -31,6 +31,16 @@
           {% endif %}
           {% if purldb_enabled %}
             <a class="dropdown-item" href="#" id="check-package-versions"><i class="fas fa-arrow-alt-circle-up"></i> {% trans 'Check for new Package versions' %}</a>
+          {% endif %}
+          {% if has_change_permission and request.user.dataspace.enable_vulnerablecodedb_access %}
+            <hr class="dropdown-divider">
+            <div class="dropdown-header">{% trans "Vulnerabilities" %}</div>
+            <button class="dropdown-item" type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#manage-triage-rulesets-modal"
+                    data-manage-url="{{ product.get_manage_triage_rulesets_url }}">
+              <i class="fas fa-sliders me-1"></i> {% trans "Triage Rules" %}
+            </button>
           {% endif %}
         </div>
       </div>
@@ -147,6 +157,9 @@
   {% endif %}
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     {% include 'product_portfolio/modals/vulnerability_analysis_modal.html' %}
+  {% endif %}
+  {% if has_change_permission and request.user.dataspace.enable_vulnerablecodedb_access %}
+    {% include 'product_portfolio/modals/manage_triage_rulesets_modal.html' %}
   {% endif %}
 {% endblock %}
 
@@ -281,6 +294,40 @@
     </script>
   {% endif %}
 
+  {% if has_change_permission and request.user.dataspace.enable_vulnerablecodedb_access %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const triageModal = document.getElementById("manage-triage-rulesets-modal");
+        if (!triageModal) return;
+
+        triageModal.addEventListener("show.bs.modal", function (event) {
+          const body = document.getElementById("manage-triage-rulesets-body");
+          body.innerHTML = "";
+          const manageUrl = event.relatedTarget.dataset.manageUrl;
+          document.getElementById("submit-triage-rulesets").dataset.manageUrl = manageUrl;
+          fetch(manageUrl)
+            .then(r => r.text())
+            .then(html => { body.innerHTML = html; })
+            .catch(() => { body.innerHTML = "Error loading content."; });
+        });
+
+        document.getElementById("submit-triage-rulesets").addEventListener("click", function () {
+          const manageUrl = this.dataset.manageUrl;
+          const form = document.getElementById("manage-triage-rulesets-form");
+          NEXB.displayOverlay("Evaluating triage rules...");
+          fetch(manageUrl, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            body: new FormData(form),
+          })
+            .then(r => r.json())
+            .then(data => { if (data.success) location.reload(); })
+            .catch(() => { NEXB.closeOverlay?.(); });
+        });
+      });
+    </script>
+  {% endif %}
+
   {% if request.user.dataspace.enable_vulnerablecodedb_access and product.vulnerability_count %}
     <script>
       $(document).ready(function () {
@@ -335,6 +382,21 @@
               modal_body.html('Error.');
             }
           });
+        });
+
+        document.addEventListener('click', function(event) {
+          const btn = event.target.closest('.quick-preset-btn');
+          if (!btn) return;
+          fetch(btn.dataset.applyUrl, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) location.reload();
+            else alert(data.error || 'Error applying preset.');
+          })
+          .catch(() => alert('Error applying preset.'));
         });
 
       });
