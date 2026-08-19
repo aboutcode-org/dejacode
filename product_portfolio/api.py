@@ -7,6 +7,8 @@
 #
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 import django_filters
 from rest_framework import permissions
@@ -51,7 +53,11 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
 
 base_extra_kwargs = {
     "licenses": {
@@ -382,6 +388,14 @@ class TriageRecordSerializer(serializers.ModelSerializer):
         )
 
 
+class TriageRulesetAssignmentSerializer(serializers.Serializer):
+    uuid = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    recommended_action = serializers.CharField(read_only=True)
+    precedence = serializers.IntegerField(read_only=True)
+    assigned = serializers.BooleanField(read_only=True)
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -468,6 +482,59 @@ class ProductViewSet(
             "vulnerability", "ruleset", "request"
         )
         serializer = TriageRecordSerializer(records, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get", "post"], url_path="manage_triage_rulesets")
+    def manage_triage_rulesets(self, request, uuid):
+        """
+        GET: list every enabled triage ruleset in this product's dataspace, each flagged
+        with whether it is currently assigned to this product.
+
+        POST: assign or unassign a single ruleset for this product.
+        Body: {"ruleset": "<uuid>", "assigned": true}
+        """
+        product = self.get_object()
+
+        if request.method == "POST":
+            if not isinstance(request.data, dict):
+                return Response(
+                    {"error": "Expected a JSON object with 'ruleset' and 'assigned'."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            ruleset_uuid = request.data.get("ruleset")
+            assigned = request.data.get("assigned")
+            if ruleset_uuid is None or assigned is None:
+                return Response(
+                    {"error": "Both 'ruleset' and 'assigned' are required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            ruleset = get_object_or_404(
+                TriageRuleset.objects.scope(product.dataspace).filter(enabled=True),
+                uuid=ruleset_uuid,
+            )
+            with transaction.atomic():
+                assignment = ProductTriageRuleset.objects.filter(
+                    product=product, ruleset=ruleset
+                ).first()
+                if assigned and not assignment:
+                    ProductTriageRuleset.objects.create(
+                        product=product, ruleset=ruleset, dataspace=product.dataspace
+                    )
+                elif not assigned and assignment:
+                    assignment.delete()
+                    delete_triage_records_for_assignment(ruleset=ruleset, product=product)
+                reevaluate_product_rulesets(product)
+            return Response(status=status.HTTP_200_OK)
+
+        assigned_ruleset_ids = set(
+            product.product_triage_rulesets.values_list("ruleset_id", flat=True)
+        )
+        rulesets = TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True).order_by(
+            "-precedence", "name"
+        )
+        for ruleset in rulesets:
+            ruleset.assigned = ruleset.id in assigned_ruleset_ids
+        serializer = TriageRulesetAssignmentSerializer(rulesets, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)

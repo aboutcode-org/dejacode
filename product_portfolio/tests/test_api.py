@@ -52,6 +52,7 @@ from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
 from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import ProductTriageRuleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.tests import make_product_triage_ruleset
 from vulnerabilities.triage.tests import make_triage_ruleset
@@ -800,6 +801,107 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertIsNone(entry["request"])
         self.assertIn("detected_date", entry)
         self.assertIn("last_checked", entry)
+
+    def test_api_product_endpoint_manage_triage_rulesets_get(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        assigned_ruleset = make_triage_ruleset(self.dataspace, name="Assigned Ruleset")
+        make_product_triage_ruleset(self.product1, ruleset=assigned_ruleset)
+        unassigned_ruleset = make_triage_ruleset(self.dataspace, name="Unassigned Ruleset")
+        make_triage_ruleset(self.dataspace, name="Disabled Ruleset", enabled=False)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(2, len(response.data))
+        entries_by_name = {entry["name"]: entry for entry in response.data}
+        self.assertTrue(entries_by_name[assigned_ruleset.name]["assigned"])
+        self.assertFalse(entries_by_name[unassigned_ruleset.name]["assigned"])
+        self.assertNotIn("Disabled Ruleset", entries_by_name)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_assigns(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        package = make_package(self.dataspace)
+        make_product_package(self.product1, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            recommended_action=TriageAction.UPGRADE,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": True}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+        triage_record = self.product1.triage_records.get()
+        self.assertEqual(vulnerability, triage_record.vulnerability)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_unassigns(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace)
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": False}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_requires_both_fields(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={}, content_type="application/json")
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_rejects_non_dict_body(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data=[], content_type="application/json")
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_rejects_disabled_ruleset(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace, enabled=False)
+        data = {"ruleset": str(ruleset.uuid), "assigned": True}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
 
 class ProductRelatedAPITestCase(TestCase):
