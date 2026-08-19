@@ -9,6 +9,7 @@
 
 from django.db.models import Prefetch
 
+import django_filters
 from rest_framework import serializers
 from rest_framework import viewsets
 
@@ -134,6 +135,9 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
 
 class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSerializer):
     advisory_uid = serializers.ReadOnlyField(source="vulnerability.advisory_uid")
+    applied_by_preset = serializers.ReadOnlyField(source="applied_by_preset.name", allow_null=True)
+    created_by = serializers.StringRelatedField()
+    last_modified_by = serializers.StringRelatedField()
 
     class Meta:
         model = VulnerabilityAnalysis
@@ -148,6 +152,9 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "responses",
             "detail",
             "is_reachable",
+            "applied_by_preset",
+            "created_by",
+            "last_modified_by",
             "first_issued",
             "last_updated",
         )
@@ -170,6 +177,9 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
 class VulnerabilityAnalysisFilterSet(DataspacedAPIFilterSet):
     uuid = MultipleUUIDFilter()
     last_updated = LastModifiedDateFilter()
+    applied_by_preset__isnull = django_filters.BooleanFilter(
+        field_name="applied_by_preset", lookup_expr="isnull"
+    )
 
     class Meta:
         model = VulnerabilityAnalysis
@@ -203,5 +213,8 @@ class VulnerabilityAnalysisViewSet(ProductRelatedViewSet):
             .select_related(
                 "vulnerability",
                 "product_package",
+                "applied_by_preset",
+                "created_by",
+                "last_modified_by",
             )
         )

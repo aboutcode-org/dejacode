@@ -7,6 +7,8 @@
 #
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 import django_filters
 from rest_framework import permissions
@@ -51,6 +53,11 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
 
 base_extra_kwargs = {
     "licenses": {
@@ -363,6 +370,37 @@ class ProductPolicyViolationSerializer(serializers.ModelSerializer):
         )
 
 
+class TriageRecordSerializer(serializers.ModelSerializer):
+    advisory_id = serializers.ReadOnlyField(source="vulnerability.advisory_id")
+    ruleset = serializers.ReadOnlyField(source="ruleset.name")
+    request = serializers.StringRelatedField()
+
+    class Meta:
+        model = TriageRecord
+        fields = (
+            "advisory_id",
+            "ruleset",
+            "recommended_action",
+            "matched_rules",
+            "request",
+            "detected_date",
+            "last_checked",
+        )
+
+
+class TriageRulesetAssignmentSerializer(serializers.Serializer):
+    uuid = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    recommended_action = serializers.CharField(read_only=True)
+    precedence = serializers.IntegerField(read_only=True)
+    assigned = serializers.BooleanField(read_only=True)
+
+
+class AssignTriageRulesetSerializer(serializers.Serializer):
+    ruleset = serializers.UUIDField()
+    assigned = serializers.BooleanField()
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -439,6 +477,69 @@ class ProductViewSet(
         product = self.get_object()
         violations = product.policy_violations.unresolved()
         serializer = ProductPolicyViolationSerializer(violations, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="triage_records")
+    def triage_records(self, request, uuid):
+        """List active triage recommendations for this product, one per vulnerability."""
+        product = self.get_object()
+        records = product.triage_records.highest_precedence().select_related(
+            "vulnerability", "ruleset", "request"
+        )
+        serializer = TriageRecordSerializer(records, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="manage_triage_rulesets",
+        serializer_class=AssignTriageRulesetSerializer,
+    )
+    def manage_triage_rulesets(self, request, uuid):
+        """
+        GET: list every enabled triage ruleset in this product's dataspace, each flagged
+        with whether it is currently assigned to this product.
+
+        POST: assign or unassign a single ruleset for this product.
+        Body: {"ruleset": "<uuid>", "assigned": true}
+        """
+        product = self.get_object()
+
+        if request.method == "POST":
+            serializer = AssignTriageRulesetSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            ruleset = get_object_or_404(
+                TriageRuleset.objects.scope(product.dataspace).filter(enabled=True),
+                uuid=serializer.validated_data["ruleset"],
+            )
+            assigned = serializer.validated_data["assigned"]
+
+            with transaction.atomic():
+                assignment = ProductTriageRuleset.objects.filter(
+                    product=product, ruleset=ruleset
+                ).first()
+                if assigned and not assignment:
+                    ProductTriageRuleset.objects.create(
+                        product=product, ruleset=ruleset, dataspace=product.dataspace
+                    )
+                    reevaluate_product_rulesets(product)
+                elif not assigned and assignment:
+                    assignment.delete()
+                    delete_triage_records_for_assignment(ruleset=ruleset, product=product)
+                    reevaluate_product_rulesets(product)
+            return Response(status=status.HTTP_200_OK)
+
+        assigned_ruleset_ids = set(
+            product.product_triage_rulesets.values_list("ruleset_id", flat=True)
+        )
+        rulesets = TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True).order_by(
+            "-precedence", "name"
+        )
+        for ruleset in rulesets:
+            ruleset.assigned = ruleset.id in assigned_ruleset_ids
+        serializer = TriageRulesetAssignmentSerializer(rulesets, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)

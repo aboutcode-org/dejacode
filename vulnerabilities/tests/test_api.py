@@ -20,6 +20,9 @@ from product_portfolio.tests import make_product
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.engine import apply_preset_for_vulnerabilities
+from vulnerabilities.triage.models import AnalysisPreset
+from vulnerabilities.triage.tests import make_analysis_preset
 
 
 class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
@@ -153,6 +156,49 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.vulnerability1.advisory_uid, response.data["advisory_uid"])
         self.assertEqual(str(analysis1.uuid), response.data["uuid"])
         self.assertTrue(response.data["is_reachable"])
+
+    def test_api_vulnerability_analysis_detail_endpoint_applied_by_preset_and_authors(self):
+        self.client.login(username="super_user", password="secret")
+
+        human_analysis = make_vulnerability_analysis(
+            self.product_package1,
+            self.vulnerability1,
+            created_by=self.super_user,
+            last_modified_by=self.super_user,
+        )
+        detail_url = reverse("api_v2:vulnerabilityanalysis-detail", args=[human_analysis.uuid])
+        response = self.client.get(detail_url)
+        self.assertIsNone(response.data["applied_by_preset"])
+        self.assertEqual(self.super_user.username, response.data["created_by"])
+        self.assertEqual(self.super_user.username, response.data["last_modified_by"])
+
+        preset = make_analysis_preset(self.dataspace, state=AnalysisPreset.State.NOT_AFFECTED)
+        apply_preset_for_vulnerabilities(preset, self.product1, [self.vulnerability2.pk])
+        auto_analysis = VulnerabilityAnalysis.objects.get(vulnerability=self.vulnerability2)
+        detail_url = reverse("api_v2:vulnerabilityanalysis-detail", args=[auto_analysis.uuid])
+
+        response = self.client.get(detail_url)
+        self.assertEqual(preset.name, response.data["applied_by_preset"])
+        self.assertIsNone(response.data["created_by"])
+        self.assertIsNone(response.data["last_modified_by"])
+
+    def test_api_vulnerability_analysis_list_endpoint_filters_applied_by_preset(self):
+        self.client.login(username="super_user", password="secret")
+        make_vulnerability_analysis(self.product_package1, self.vulnerability1)
+        preset = make_analysis_preset(self.dataspace, state=AnalysisPreset.State.NOT_AFFECTED)
+        apply_preset_for_vulnerabilities(preset, self.product1, [self.vulnerability2.pk])
+
+        data = {"applied_by_preset__isnull": "true"}
+        response = self.client.get(self.analysis_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.vulnerability1.advisory_id)
+        self.assertNotContains(response, self.vulnerability2.advisory_id)
+
+        data = {"applied_by_preset__isnull": "false"}
+        response = self.client.get(self.analysis_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertNotContains(response, self.vulnerability1.advisory_id)
+        self.assertContains(response, self.vulnerability2.advisory_id)
 
     def test_api_vulnerability_analysis_endpoint_create(self):
         self.client.login(username="super_user", password="secret")
