@@ -24,6 +24,7 @@ Welcome to the very start of your DejaCode journey!
     tutorial-5-sboms
     tutorial-6-vuln-report
     tutorial-7-policy-rules
+    tutorial-8-vulnerability-triage
 
 .. toctree::
     :maxdepth: 1
@@ -35,6 +36,7 @@ Welcome to the very start of your DejaCode journey!
     howto-4-product-vulnerability-analysis
     howto-5-product-object-permissions
     howto-6-policy-rules-configuration
+    howto-7-vulnerability-triage-configuration
 
 .. toctree::
     :maxdepth: 1
@@ -43,6 +45,7 @@ Welcome to the very start of your DejaCode journey!
     reference-data-models
     reference-vulnerability-management
     reference-policy-rules
+    reference-vulnerability-triage
     reference-1
     reference-2
     reference-3-cravex
