@@ -14,6 +14,7 @@ from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import ExtraPermissionsViewSetMixin
 from dje.api_custom import TabPermission
+from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageRuleset
 
@@ -137,3 +138,14 @@ class TriageRulesetViewSet(
 
     def get_queryset(self):
         return super().get_queryset().select_related("analysis_preset", "request_template")
+
+    def perform_update(self, serializer):
+        """Mirror TriageRulesetAdmin.save_model(): re-evaluate or clean up on change."""
+        ruleset = serializer.save()
+
+        if not ruleset.enabled:
+            ruleset.triage_records.filter(request__isnull=True).delete()
+            return
+
+        for assignment in ruleset.product_triage_rulesets.select_related("product"):
+            evaluate_ruleset(ruleset=ruleset, product=assignment.product)

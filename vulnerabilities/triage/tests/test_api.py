@@ -12,13 +12,20 @@ from django.urls import reverse
 
 from rest_framework import status
 
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from product_portfolio.models import Product
+from product_portfolio.tests import make_product
+from product_portfolio.tests import make_product_package
+from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.tests import make_analysis_preset
+from vulnerabilities.triage.tests import make_product_triage_ruleset
 from vulnerabilities.triage.tests import make_triage_ruleset
 from workflow.models import RequestTemplate
 
@@ -164,6 +171,42 @@ class TriageRulesetAPITestCase(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.ruleset.refresh_from_db()
         self.assertFalse(self.ruleset.enabled)
+
+    def test_api_triageruleset_endpoint_update_reevaluates_assigned_products(self):
+        # Regression: editing a ruleset via the API must re-evaluate its assigned
+        # products, matching what already happens when editing it in the Admin.
+        self.client.login(username="super_user", password="secret")
+        product = make_product(self.dataspace)
+        package = make_package(self.dataspace)
+        make_product_package(product, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        make_product_triage_ruleset(product, ruleset=self.ruleset)
+        self.assertFalse(TriageRecord.objects.exists())
+
+        data = {"rules_config": {"risk_score": {"is_active": True, "min_risk_score": 8.0}}}
+        response = self.client.patch(self.detail_url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        record = TriageRecord.objects.get()
+        self.assertEqual(vulnerability, record.vulnerability)
+
+    def test_api_triageruleset_endpoint_disabling_deletes_its_triage_records(self):
+        self.client.login(username="super_user", password="secret")
+        product = make_product(self.dataspace)
+        package = make_package(self.dataspace)
+        make_product_package(product, package=package)
+        make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        self.ruleset.rules_config = {"risk_score": {"is_active": True, "min_risk_score": 8.0}}
+        self.ruleset.save()
+        make_product_triage_ruleset(product, ruleset=self.ruleset)
+        evaluate_ruleset(self.ruleset, product)
+        self.assertTrue(TriageRecord.objects.exists())
+
+        data = {"enabled": False}
+        response = self.client.patch(self.detail_url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(TriageRecord.objects.exists())
 
     def test_api_triageruleset_endpoint_delete(self):
         self.client.login(username="super_user", password="secret")
