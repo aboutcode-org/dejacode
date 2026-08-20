@@ -70,6 +70,10 @@ Conduct Vulnerability Analysis
 
 .. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab-with-analysis.jpg
 
+.. seealso::
+    Refer to :ref:`how_to_4` for a detailed guide on each analysis field and its
+    meaning.
+
 Export CycloneDX SBOM with VEX
 ------------------------------
 
@@ -81,3 +85,8 @@ Export CycloneDX SBOM with VEX
 
 2. The analysis details you provide for product package vulnerabilities are
    included in the ``vulnerabilities`` section of the CycloneDX VEX output.
+
+.. seealso::
+    Once your administrator has configured triage rulesets for your Dataspace, this
+    manual review is complemented by automated remediation recommendations. Refer to
+    :ref:`user_tutorial_8_vulnerability_triage` to get started.
