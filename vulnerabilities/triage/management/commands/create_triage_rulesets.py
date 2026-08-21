@@ -44,6 +44,15 @@ REFERENCE_PRESETS = [
         "detail": "Vulnerability unaddressed beyond configured threshold. Escalated by triage.",
         "ruleset_name": "Stale Vulnerability",
     },
+    {
+        "name": "Flag - SSVC Decision",
+        "description": (
+            "Flag vulnerabilities whose SSVC decision tree recommends immediate attention."
+        ),
+        "state": "in_triage",
+        "detail": "SSVC decision recommends Attend or Act. Flagged for review by triage.",
+        "ruleset_name": "SSVC Attend or Act",
+    },
 ]
 
 REFERENCE_RULESETS = [
@@ -70,6 +79,18 @@ REFERENCE_RULESETS = [
         "precedence": 600,
         "rules_config": {
             "exploited_vulnerability": {"is_active": True},
+        },
+    },
+    {
+        "name": "SSVC Attend or Act",
+        "description": (
+            "Vulnerabilities whose SSVC decision tree recommends immediate attention"
+            " (Attend or Act)."
+        ),
+        "recommended_action": TriageAction.UPGRADE,
+        "precedence": 550,
+        "rules_config": {
+            "ssvc_decision": {"is_active": True},
         },
     },
     {
