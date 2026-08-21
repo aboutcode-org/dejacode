@@ -435,3 +435,16 @@ class VulnerabilitiesModelsTestCase(TestCase):
         vulnerability1.save()
         vulnerability1.refresh_from_db()
         self.assertEqual("critical", vulnerability1.risk_level)
+
+    def test_vulnerability_highest_ssvc_decision(self):
+        vulnerability1 = make_vulnerability(self.dataspace)
+        self.assertIsNone(vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Track"}]
+        self.assertEqual("Track", vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Track"}, {"decision": "Act"}]
+        self.assertEqual("Act", vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Attend"}, {"decision": "Track*"}]
+        self.assertEqual("Attend", vulnerability1.highest_ssvc_decision)
