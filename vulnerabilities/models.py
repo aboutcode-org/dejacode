@@ -208,6 +208,14 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             if alias.startswith("CVE-"):
                 return alias
 
+    @property
+    def highest_ssvc_decision(self):
+        """Return the most severe SSVC decision among this vulnerability's published trees."""
+        decisions = {tree.get("decision") for tree in self.ssvc_trees}
+        for decision in ("Act", "Attend", "Track*", "Track"):
+            if decision in decisions:
+                return decision
+
     def add_affected(self, instances, update_score=True):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
         if not isinstance(instances, (list, tuple, models.QuerySet)):

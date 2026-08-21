@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.apps import apps
 from django.db.models import Exists
 from django.db.models import OuterRef
+from django.db.models import Q
 from django.utils import timezone
 
 from policy.rules import BaseRule
@@ -92,6 +93,26 @@ class ExploitedVulnerabilityTriageRule(BaseTriageRule):
             affected_packages__productpackages__product=product,
             exploitability=2.0,
         ).distinct()
+
+
+class SSVCDecisionTriageRule(BaseTriageRule):
+    rule_type = "ssvc_decision"
+    label = "SSVC Decision"
+    description = (
+        "Vulnerabilities whose SSVC decision tree recommends Attend or Act"
+        " (immediate attention required)."
+    )
+
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
+        return (
+            Vulnerability.objects.filter(affected_packages__productpackages__product=product)
+            .filter(
+                Q(ssvc_trees__contains=[{"decision": "Attend"}])
+                | Q(ssvc_trees__contains=[{"decision": "Act"}])
+            )
+            .distinct()
+        )
 
 
 class ReachableVulnerabilityTriageRule(BaseTriageRule):
@@ -229,6 +250,7 @@ RULE_REGISTRY = {
     RiskScoreTriageRule.rule_type: RiskScoreTriageRule(),
     WeightedRiskTriageRule.rule_type: WeightedRiskTriageRule(),
     ExploitedVulnerabilityTriageRule.rule_type: ExploitedVulnerabilityTriageRule(),
+    SSVCDecisionTriageRule.rule_type: SSVCDecisionTriageRule(),
     ReachableVulnerabilityTriageRule.rule_type: ReachableVulnerabilityTriageRule(),
     UnresolvedVulnerabilityTriageRule.rule_type: UnresolvedVulnerabilityTriageRule(),
     StaleVulnerabilityTriageRule.rule_type: StaleVulnerabilityTriageRule(),

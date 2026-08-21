@@ -37,8 +37,8 @@ class CreateTriageRulesetsCommandTestCase(TestCase):
     def test_creates_the_reference_rulesets_and_presets(self):
         management.call_command("create_triage_rulesets", self.dataspace.name, stdout=StringIO())
 
-        self.assertEqual(7, TriageRuleset.objects.filter(dataspace=self.dataspace).count())
-        self.assertEqual(3, AnalysisPreset.objects.filter(dataspace=self.dataspace).count())
+        self.assertEqual(8, TriageRuleset.objects.filter(dataspace=self.dataspace).count())
+        self.assertEqual(4, AnalysisPreset.objects.filter(dataspace=self.dataspace).count())
 
     def test_raises_when_rulesets_already_exist_without_reset(self):
         management.call_command("create_triage_rulesets", self.dataspace.name, stdout=StringIO())
@@ -79,7 +79,7 @@ class CreateTriageRulesetsCommandTestCase(TestCase):
         )
 
         self.assertIn("Reset cancelled.", out.getvalue())
-        self.assertEqual(7, TriageRuleset.objects.filter(dataspace=self.dataspace).count())
+        self.assertEqual(8, TriageRuleset.objects.filter(dataspace=self.dataspace).count())
 
     def test_links_each_preset_to_its_ruleset(self):
         management.call_command("create_triage_rulesets", self.dataspace.name, stdout=StringIO())

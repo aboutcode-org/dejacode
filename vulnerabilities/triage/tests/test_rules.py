@@ -22,6 +22,7 @@ from vulnerabilities.triage.rules import DevOnlyPackageTriageRule
 from vulnerabilities.triage.rules import ExploitedVulnerabilityTriageRule
 from vulnerabilities.triage.rules import ReachableVulnerabilityTriageRule
 from vulnerabilities.triage.rules import RiskScoreTriageRule
+from vulnerabilities.triage.rules import SSVCDecisionTriageRule
 from vulnerabilities.triage.rules import StaleVulnerabilityTriageRule
 from vulnerabilities.triage.rules import UnresolvedVulnerabilityTriageRule
 from vulnerabilities.triage.rules import WeightedRiskTriageRule
@@ -116,6 +117,81 @@ class ExploitedVulnerabilityTriageRuleTestCase(TestCase):
         make_vulnerability(self.dataspace, affecting=package)
         make_product_package(self.product, package=package)
         matches = ExploitedVulnerabilityTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([], list(matches))
+
+
+class SSVCDecisionTriageRuleTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+
+    @staticmethod
+    def _ssvc_tree(decision):
+        return {
+            "vector": "SSVCv2/E:N/A:N/T:P/P:M/B:A/M:M/D:T/2024-07-07T19:07:43Z/",
+            "decision": decision,
+            "options": [{"Exploitation": "none"}],
+            "source_url": "https://github.com/cisagov/vulnrichment",
+        }
+
+    def test_matches_vulnerability_with_attend_decision(self):
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(
+            self.dataspace, affecting=package, ssvc_trees=[self._ssvc_tree("Attend")]
+        )
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([vulnerability], list(matches))
+
+    def test_matches_vulnerability_with_act_decision(self):
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(
+            self.dataspace, affecting=package, ssvc_trees=[self._ssvc_tree("Act")]
+        )
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([vulnerability], list(matches))
+
+    def test_excludes_vulnerability_with_track_decision(self):
+        package = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=package, ssvc_trees=[self._ssvc_tree("Track")])
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([], list(matches))
+
+    def test_excludes_vulnerability_with_track_star_decision(self):
+        package = make_package(self.dataspace)
+        make_vulnerability(
+            self.dataspace, affecting=package, ssvc_trees=[self._ssvc_tree("Track*")]
+        )
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([], list(matches))
+
+    def test_excludes_vulnerability_with_no_ssvc_trees(self):
+        package = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=package)
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([], list(matches))
+
+    def test_matches_when_at_least_one_tree_meets_the_threshold(self):
+        # A vulnerability can carry several SSVC trees (e.g. from different sources or
+        # re-evaluations). A single matching tree is enough to flag it.
+        package = make_package(self.dataspace)
+        vulnerability = make_vulnerability(
+            self.dataspace,
+            affecting=package,
+            ssvc_trees=[self._ssvc_tree("Track"), self._ssvc_tree("Act")],
+        )
+        make_product_package(self.product, package=package)
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([vulnerability], list(matches))
+
+    def test_ignores_vulnerabilities_affecting_packages_outside_the_product(self):
+        package = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=package, ssvc_trees=[self._ssvc_tree("Act")])
+        matches = SSVCDecisionTriageRule().get_matching_vulnerabilities(self.product)
         self.assertEqual([], list(matches))
 
 
