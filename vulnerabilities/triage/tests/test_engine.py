@@ -145,7 +145,6 @@ class ApplyPresetForVulnerabilitiesTestCase(TestCase):
         self.assertEqual(second_preset, analysis.applied_by_preset)
         self.assertEqual(1, VulnerabilityAnalysis.objects.count())
 
-
     def test_does_nothing_when_no_product_package_carries_the_vulnerability(self):
         other_package = make_package(self.dataspace)
         other_vulnerability = make_vulnerability(self.dataspace, affecting=other_package)

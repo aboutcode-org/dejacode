@@ -1520,9 +1520,6 @@ class ProductImportFromScanTestCase(TestCase):
                         "advisory_uid": "github_osv/GHSA-existing",
                         "summary": "A vulnerability",
                         "is_reachable": "yes",
-                        "cdx_vulnerability_data": {
-                            "analysis": {"state": "in_triage", "detail": "Under review"},
-                        },
                     }
                 ],
             }
