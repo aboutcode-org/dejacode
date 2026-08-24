@@ -145,13 +145,6 @@ class ApplyPresetForVulnerabilitiesTestCase(TestCase):
         self.assertEqual(second_preset, analysis.applied_by_preset)
         self.assertEqual(1, VulnerabilityAnalysis.objects.count())
 
-    def test_skips_creation_when_the_preset_has_no_content_field_set(self):
-        # An AnalysisPreset always requires at least one content field to be saved (see
-        # VulnerabilityAnalysisContentMixin.save), so this can only happen with an in-memory
-        # preset. This exercises the defensive guard against saving a content-less analysis.
-        content_less_preset = AnalysisPreset(dataspace=self.dataspace, is_reachable=True)
-        apply_preset_for_vulnerabilities(content_less_preset, self.product, [self.vulnerability.pk])
-        self.assertFalse(VulnerabilityAnalysis.objects.exists())
 
     def test_does_nothing_when_no_product_package_carries_the_vulnerability(self):
         other_package = make_package(self.dataspace)

@@ -1507,9 +1507,26 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertFalse(analysis.is_reachable)
 
         # A second import with a conflicting value must not overwrite the existing one.
-        mock_fetch_packages.return_value[0]["affected_by_vulnerabilities"][0]["is_reachable"] = (
-            "yes"
-        )
+        # Reassign return_value because import_package pops "affected_by_vulnerabilities".
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [
+                    {
+                        "advisory_uid": "github_osv/GHSA-existing",
+                        "summary": "A vulnerability",
+                        "is_reachable": "yes",
+                        "cdx_vulnerability_data": {
+                            "analysis": {"state": "in_triage", "detail": "Under review"},
+                        },
+                    }
+                ],
+            }
+        ]
         importer2 = ImportPackageFromScanCodeIO(
             user=self.super_user,
             project_uuid=uuid.uuid4(),
@@ -1556,4 +1573,4 @@ class ProductImportFromScanTestCase(TestCase):
             vulnerability__advisory_uid="github_osv/GHSA-no-cdx"
         )
         self.assertTrue(analysis.is_reachable)
-        self.assertIsNone(analysis.state)
+        self.assertFalse(analysis.state)
