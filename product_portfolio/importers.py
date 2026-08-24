@@ -810,9 +810,11 @@ class ImportPackageFromScanCodeIO:
         if not vulnerabilities:
             return
 
+        vulnerability = vulnerabilities[0]
+
         if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability_data"):
             if analysis_data := cdx_vulnerability.get("analysis"):
-                # CycloneDX model uses "response" while the local model uses "response"
+                # CycloneDX model uses "response" while the local model uses "responses"
                 if response_value := analysis_data.pop("response", None):
                     analysis_data["responses"] = response_value
 
@@ -820,10 +822,25 @@ class ImportPackageFromScanCodeIO:
                     user=product_package.dataspace,
                     data={
                         "product_package": product_package,
-                        "vulnerability": vulnerabilities[0],
+                        "vulnerability": vulnerability,
                         **analysis_data,
                     },
                 )
+
+        # Import reachability from the "symbol reachability analysis" scan when available.
+        is_reachable_raw = vulnerability_data.get("is_reachable")
+        is_reachable = None
+        if is_reachable_raw == "yes":
+            is_reachable = True
+        elif is_reachable_raw == "no":
+            is_reachable = False
+
+        if is_reachable is not None:
+            VulnerabilityAnalysis.objects.filter(
+                product_package=product_package,
+                vulnerability=vulnerability,
+                is_reachable__isnull=True,
+            ).update(is_reachable=is_reachable)
 
     def import_package(self, package_data):
         # Vulnerabilities are assigned after the package creation.
