@@ -106,8 +106,6 @@ def apply_preset_for_vulnerabilities(preset, product, vulnerability_ids):
                 dataspace_id=product.dataspace_id,
             )
             preset.apply_to_analysis(analysis)
-            if not analysis.has_content_fields():
-                continue  # Preset has no content fields - cannot save a new analysis
         else:
             analysis = existing
             preset.apply_to_analysis(analysis)

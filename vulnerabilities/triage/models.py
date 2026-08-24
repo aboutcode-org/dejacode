@@ -54,6 +54,13 @@ class AnalysisPreset(DataspacedModel, VulnerabilityAnalysisContentMixin):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if not any([self.state, self.justification, self.responses, self.detail]):
+            raise ValueError(
+                "At least one of state, justification, responses or detail must be provided."
+            )
+        super().save(*args, **kwargs)
+
     def apply_to_analysis(self, analysis):
         """Copy non-blank preset fields onto the analysis instance (does not save)."""
         for field_name in ("state", "justification", "responses", "detail"):

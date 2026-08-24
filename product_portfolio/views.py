@@ -2989,10 +2989,6 @@ def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, prese
         dataspace=dataspace,
     )
     preset.apply_to_analysis(analysis)
-
-    if not analysis.has_content_fields():
-        return JsonResponse({"error": "This preset has no content fields to apply."}, status=400)
-
     analysis.applied_by_preset = preset
     analysis.save()
 

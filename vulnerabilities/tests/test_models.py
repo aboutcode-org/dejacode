@@ -327,13 +327,8 @@ class VulnerabilitiesModelsTestCase(TestCase):
             product_package=product_package1,
             vulnerability=vulnerability1,
             dataspace=self.dataspace,
+            state=VulnerabilityAnalysis.State.RESOLVED,
         )
-
-        msg = "At least one of state, justification, responses or detail must be provided."
-        with self.assertRaisesMessage(ValueError, msg):
-            analysis.save()
-
-        analysis.state = VulnerabilityAnalysis.State.RESOLVED
         analysis.save()
 
         # Refresh from db

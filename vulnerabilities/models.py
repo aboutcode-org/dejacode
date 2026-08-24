@@ -353,18 +353,6 @@ class VulnerabilityAnalysisContentMixin(models.Model):
         ),
     )
 
-    def has_content_fields(self):
-        return any([self.state, self.justification, self.responses, self.detail])
-
-    def save(self, *args, **kwargs):
-        # At least one of those fields must be provided.
-        if not self.has_content_fields():
-            raise ValueError(
-                "At least one of state, justification, responses or detail must be provided."
-            )
-
-        super().save(*args, **kwargs)
-
     class Meta:
         abstract = True
 
@@ -385,13 +373,15 @@ class VulnerabilityAnalysisMixin(VulnerabilityAnalysisContentMixin):
         abstract = True
 
     def as_cyclonedx(self):
-        state = None
-        if self.state:
-            state = cdx_vulnerability.ImpactAnalysisState(self.state)
+        if not any([self.state, self.justification, self.responses, self.detail]):
+            return None
 
-        justification = None
-        if self.justification:
-            justification = cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+        state = cdx_vulnerability.ImpactAnalysisState(self.state) if self.state else None
+        justification = (
+            cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+            if self.justification
+            else None
+        )
 
         return cdx_vulnerability.VulnerabilityAnalysis(
             state=state,
@@ -583,9 +573,6 @@ class VulnerabilityAnalysis(
 
     def __str__(self):
         return f"{self.vulnerability} analysis"
-
-    def has_content_fields(self):
-        return super().has_content_fields() or self.is_reachable is not None
 
     def save(self, *args, **kwargs):
         """Set the product and package fields values from the product_package FK."""
