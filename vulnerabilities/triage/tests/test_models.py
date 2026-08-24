@@ -29,9 +29,9 @@ class AnalysisPresetModelTestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
 
     def test_save_requires_at_least_one_content_field(self):
-        # AnalysisPreset shares its `save` validation with VulnerabilityAnalysis through
-        # VulnerabilityAnalysisContentMixin: a preset that only sets `is_reachable` has no
-        # content to apply and must be rejected the same way a bare analysis would be.
+        # A preset that only sets is_reachable has no content to apply to an analysis
+        # and must be rejected. Unlike VulnerabilityAnalysis, is_reachable alone is not
+        # sufficient for AnalysisPreset because the preset's purpose is to carry content.
         preset = AnalysisPreset(dataspace=self.dataspace, name="No content", is_reachable=True)
         with self.assertRaises(ValueError):
             preset.save()
