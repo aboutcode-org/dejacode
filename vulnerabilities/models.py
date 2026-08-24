@@ -584,6 +584,9 @@ class VulnerabilityAnalysis(
     def __str__(self):
         return f"{self.vulnerability} analysis"
 
+    def has_content_fields(self):
+        return super().has_content_fields() or self.is_reachable is not None
+
     def save(self, *args, **kwargs):
         """Set the product and package fields values from the product_package FK."""
         self.product_id = self.product_package.product_id

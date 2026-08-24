@@ -839,11 +839,16 @@ class ImportPackageFromScanCodeIO:
             is_reachable = False
 
         if is_reachable is not None:
-            VulnerabilityAnalysis.objects.filter(
+            analysis, created = VulnerabilityAnalysis.objects.get_or_create(
                 product_package=product_package,
                 vulnerability=vulnerability,
-                is_reachable__isnull=True,
-            ).update(is_reachable=is_reachable)
+                dataspace=product_package.dataspace,
+                defaults={"is_reachable": is_reachable},
+            )
+            if not created and analysis.is_reachable is None:
+                VulnerabilityAnalysis.objects.filter(pk=analysis.pk).update(
+                    is_reachable=is_reachable
+                )
 
     def import_package(self, package_data):
         # Vulnerabilities are assigned after the package creation.
