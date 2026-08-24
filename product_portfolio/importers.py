@@ -713,8 +713,11 @@ class ImportFromScan:
 
 class ImportPackageFromScanCodeIO:
     """
-    Creates, and assign to a product, packages in Dejacode from a ScanCode.io project
-    discovered packages.
+    Import packages discovered by a ScanCode.io project and assign them to a product.
+
+    For each package, associated vulnerabilities are imported and linked, including
+    reachability data when available.
+    Dependencies can optionally be imported as well.
     """
 
     unique_together_fields = [
