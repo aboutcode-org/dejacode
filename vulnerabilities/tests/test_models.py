@@ -319,6 +319,42 @@ class VulnerabilitiesModelsTestCase(TestCase):
         }
         self.assertEqual(expected, as_dict["analysis"])
 
+    def test_vulnerability_model_as_cyclonedx_is_reachable_property(self):
+        vulnerability = make_vulnerability(self.dataspace)
+        package = make_package(self.dataspace)
+        product_package = make_product_package(make_product(self.dataspace), package=package)
+
+        def make_analysis(is_reachable):
+            return VulnerabilityAnalysis(
+                product_package=product_package,
+                vulnerability=vulnerability,
+                dataspace=self.dataspace,
+                state=VulnerabilityAnalysis.State.IN_TRIAGE,
+                is_reachable=is_reachable,
+            )
+
+        cdx = vulnerability.as_cyclonedx(
+            affected_instances=[package], analysis=make_analysis(True)
+        )
+        as_dict = json.loads(cdx.as_json())
+        self.assertEqual(
+            [{"name": "aboutcode:is_reachable", "value": "true"}], as_dict["properties"]
+        )
+
+        cdx = vulnerability.as_cyclonedx(
+            affected_instances=[package], analysis=make_analysis(False)
+        )
+        as_dict = json.loads(cdx.as_json())
+        self.assertEqual(
+            [{"name": "aboutcode:is_reachable", "value": "false"}], as_dict["properties"]
+        )
+
+        cdx = vulnerability.as_cyclonedx(
+            affected_instances=[package], analysis=make_analysis(None)
+        )
+        as_dict = json.loads(cdx.as_json())
+        self.assertNotIn("properties", as_dict)
+
     def test_vulnerability_model_vulnerability_analysis_save(self):
         vulnerability1 = make_vulnerability(dataspace=self.dataspace)
         product_package1 = make_product_package(make_product(self.dataspace))

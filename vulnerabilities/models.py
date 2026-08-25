@@ -19,6 +19,7 @@ from django.db.models import When
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from cyclonedx import model as cdx_model
 from cyclonedx.model import vulnerability as cdx_vulnerability
 
 from dje.fields import JSONListField
@@ -266,7 +267,16 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             for instance in affected_instances
         ]
 
-        analysis = analysis.as_cyclonedx() if analysis else None
+        properties = None
+        if analysis is not None and analysis.is_reachable is not None:
+            properties = [
+                cdx_model.Property(
+                    name="aboutcode:is_reachable",
+                    value="true" if analysis.is_reachable else "false",
+                )
+            ]
+
+        cdx_analysis = analysis.as_cyclonedx() if analysis else None
 
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
@@ -278,7 +288,8 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             source=source,
             description=self.summary,
             affects=affects,
-            analysis=analysis,
+            analysis=cdx_analysis,
+            properties=properties,
         )
 
 
