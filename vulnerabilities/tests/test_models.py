@@ -333,9 +333,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
                 is_reachable=is_reachable,
             )
 
-        cdx = vulnerability.as_cyclonedx(
-            affected_instances=[package], analysis=make_analysis(True)
-        )
+        cdx = vulnerability.as_cyclonedx(affected_instances=[package], analysis=make_analysis(True))
         as_dict = json.loads(cdx.as_json())
         self.assertEqual(
             [{"name": "aboutcode:is_reachable", "value": "true"}], as_dict["properties"]
@@ -349,9 +347,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
             [{"name": "aboutcode:is_reachable", "value": "false"}], as_dict["properties"]
         )
 
-        cdx = vulnerability.as_cyclonedx(
-            affected_instances=[package], analysis=make_analysis(None)
-        )
+        cdx = vulnerability.as_cyclonedx(affected_instances=[package], analysis=make_analysis(None))
         as_dict = json.loads(cdx.as_json())
         self.assertNotIn("properties", as_dict)
 

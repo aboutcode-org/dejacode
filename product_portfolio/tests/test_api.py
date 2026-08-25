@@ -1553,6 +1553,35 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertNotContains(response, self.product1_detail_url)
         self.assertNotContains(response, self.product2_detail_url)
 
+    def test_api_productpackage_has_reachable_vulnerability_filter(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.pp1_detail_url)
+
+        data = {"has_reachable_vulnerability": "false"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(0, response.data["count"])
+
+    def test_api_product_has_reachable_vulnerability_filter(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.product1_detail_url)
+        self.assertNotContains(response, self.product2_detail_url)
+
+        data = {"has_reachable_vulnerability": "false"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(0, response.data["count"])
+
     def test_api_codebaseresource_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
         response = self.client.get(self.codebase_resource_list_url)
