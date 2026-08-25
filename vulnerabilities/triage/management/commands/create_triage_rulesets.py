@@ -53,6 +53,18 @@ REFERENCE_PRESETS = [
         "detail": "SSVC decision recommends Attend or Act. Flagged for review by triage.",
         "ruleset_name": "SSVC Attend or Act",
     },
+    {
+        "name": "Flag - Reachable Vulnerability",
+        "description": (
+            "Flag vulnerabilities confirmed as reachable in the product for patch prioritization."
+        ),
+        "state": "in_triage",
+        "detail": (
+            "Vulnerability confirmed reachable in the product context. "
+            "Flagged for patch prioritization."
+        ),
+        "ruleset_name": "Reachable Vulnerability",
+    },
 ]
 
 REFERENCE_RULESETS = [
