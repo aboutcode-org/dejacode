@@ -211,6 +211,7 @@ class ProductFilterSet(DataspacedAPIFilterSet):
     has_reachable_vulnerability = django_filters.BooleanFilter(
         field_name="vulnerability_analyses__is_reachable",
         label="Has reachable vulnerability",
+        distinct=True,
     )
 
     class Meta:
@@ -893,6 +894,7 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
     has_reachable_vulnerability = django_filters.BooleanFilter(
         field_name="vulnerability_analyses__is_reachable",
         label="Has reachable vulnerability",
+        distinct=True,
     )
 
     class Meta:
