@@ -38,7 +38,7 @@ class CreateTriageRulesetsCommandTestCase(TestCase):
         management.call_command("create_triage_rulesets", self.dataspace.name, stdout=StringIO())
 
         self.assertEqual(8, TriageRuleset.objects.filter(dataspace=self.dataspace).count())
-        self.assertEqual(4, AnalysisPreset.objects.filter(dataspace=self.dataspace).count())
+        self.assertEqual(5, AnalysisPreset.objects.filter(dataspace=self.dataspace).count())
 
     def test_raises_when_rulesets_already_exist_without_reset(self):
         management.call_command("create_triage_rulesets", self.dataspace.name, stdout=StringIO())

@@ -322,6 +322,14 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response, "?vulnerabilities-vulnerability_analyses__state=#vulnerabilities"
         )
 
+    def test_product_portfolio_tab_vulnerability_view_is_reachable_filter_in_analysis_header(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_vulnerabilities")
+        response = self.client.get(url)
+        self.assertContains(response, "fa-circle-radiation")
+        self.assertContains(response, "?vulnerabilities-is_reachable=yes#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-is_reachable=no#vulnerabilities")
+
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.

@@ -1271,6 +1271,17 @@ class ProductTabVulnerabilitiesView(
         ),
     )
 
+    def get_table_headers(self):
+        """Inject the is_reachable filter widget into the Analysis column header."""
+        headers = super().get_table_headers()
+        is_reachable_widget = f'<span class="me-2">{self.filterset.form["is_reachable"]}</span>'
+        return [
+            header._replace(filter=mark_safe(is_reachable_widget + str(header.filter)))
+            if header.field_name == "vulnerability_analyses__state"
+            else header
+            for header in headers
+        ]
+
     def attach_vulnerability_analyses(self, page_obj):
         """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
         response_labels = dict(VulnerabilityAnalysis.Response.choices)

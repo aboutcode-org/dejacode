@@ -54,6 +54,7 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.triage.signals import reevaluate_on_analysis_change
 from vulnerabilities.triage.signals import reevaluate_on_product_package_change
 from vulnerabilities.triage.tasks import reevaluate_product_triage_rulesets_task
 
@@ -71,23 +72,34 @@ def log_elapsed(label):
 @contextmanager
 def paused_product_package_reevaluation():
     """
-    Pause the policy and triage re-evaluation signals triggered by ProductPackage changes,
-    for the duration of a bulk import. Call `reevaluate_products()` once the import completes
-    to evaluate each affected product exactly once, instead of once per imported row.
+    Pause re-evaluation signals for the duration of a bulk import.
+
+    Covers ProductPackage add/remove and VulnerabilityAnalysis create/update signals so that
+    each triggers at most once per affected product. Call `reevaluate_products()` after the
+    import to run the evaluation exactly once instead of once per imported row.
     """
-    receivers = [
+    from vulnerabilities.models import VulnerabilityAnalysis
+
+    productpackage_receivers = [
         evaluate_product_rules_on_productpackage_change,
         reevaluate_on_product_package_change,
     ]
-    for receiver in receivers:
+    for receiver in productpackage_receivers:
         post_save.disconnect(receiver, sender=ProductPackage)
         post_delete.disconnect(receiver, sender=ProductPackage)
+
+    post_save.disconnect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+    post_delete.disconnect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+
     try:
         yield
     finally:
-        for receiver in receivers:
+        for receiver in productpackage_receivers:
             post_save.connect(receiver, sender=ProductPackage)
             post_delete.connect(receiver, sender=ProductPackage)
+
+        post_save.connect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+        post_delete.connect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
 
 
 def reevaluate_products(products):
