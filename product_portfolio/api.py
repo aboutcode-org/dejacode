@@ -208,6 +208,10 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         field_name="packages__affected_by_vulnerabilities__advisory_id",
         label="Affected by (advisory_id)",
     )
+    has_reachable_vulnerability = django_filters.BooleanFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        label="Has reachable vulnerability",
+    )
 
     class Meta:
         model = Product
@@ -226,6 +230,7 @@ class ProductFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "is_vulnerable",
             "affected_by",
+            "has_reachable_vulnerability",
         )
 
 
@@ -885,6 +890,10 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         field_name="package__affected_by_vulnerabilities__advisory_id",
         label="Affected by (advisory_id)",
     )
+    has_reachable_vulnerability = django_filters.BooleanFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        label="Has reachable vulnerability",
+    )
 
     class Meta:
         model = ProductPackage
@@ -898,6 +907,7 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "is_vulnerable",
             "affected_by",
+            "has_reachable_vulnerability",
         )
 
 
