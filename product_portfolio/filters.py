@@ -422,6 +422,7 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("unknown", _("Reachability not known")),
         ),
     )
+
     triage_action = django_filters.ChoiceFilter(
         label=_("Triage action"),
         choices=TriageAction.choices,
@@ -462,6 +463,8 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         super().__init__(*args, **kwargs)
         self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
         self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
+        is_reachable = self.filters["is_reachable"]
+        is_reachable.extra["widget"].link_content = '<i class="fa-solid fa-circle-radiation"></i>'
 
 
 class ComponentCompletenessListFilter(admin.SimpleListFilter):
