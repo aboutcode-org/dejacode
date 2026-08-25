@@ -59,6 +59,7 @@ REFERENCE_PRESETS = [
             "Flag vulnerabilities confirmed as reachable in the product for patch prioritization."
         ),
         "state": "in_triage",
+        "is_reachable": True,
         "detail": (
             "Vulnerability confirmed reachable in the product context. "
             "Flagged for patch prioritization."
@@ -75,7 +76,7 @@ REFERENCE_RULESETS = [
             " affecting the product."
         ),
         "recommended_action": TriageAction.UPGRADE,
-        "precedence": 700,
+        "precedence": 800,
         "rules_config": {
             "risk_score": {"is_active": True, "min_risk_score": 8.0},
             "exploited_vulnerability": {"is_active": True},
@@ -88,7 +89,7 @@ REFERENCE_RULESETS = [
             " regardless of severity."
         ),
         "recommended_action": TriageAction.UPGRADE,
-        "precedence": 600,
+        "precedence": 700,
         "rules_config": {
             "exploited_vulnerability": {"is_active": True},
         },
@@ -100,7 +101,7 @@ REFERENCE_RULESETS = [
             " (Attend or Act)."
         ),
         "recommended_action": TriageAction.UPGRADE,
-        "precedence": 550,
+        "precedence": 600,
         "rules_config": {
             "ssvc_decision": {"is_active": True},
         },
@@ -244,6 +245,7 @@ class Command(BaseCommand):
                 justification=preset_data.get("justification", ""),
                 responses=preset_data.get("responses"),
                 detail=preset_data.get("detail", ""),
+                is_reachable=preset_data.get("is_reachable"),
             )
             self.stdout.write(f"  Created preset: {preset_data['name']}")
 
