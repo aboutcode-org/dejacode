@@ -713,8 +713,11 @@ class ImportFromScan:
 
 class ImportPackageFromScanCodeIO:
     """
-    Creates, and assign to a product, packages in Dejacode from a ScanCode.io project
-    discovered packages.
+    Import packages discovered by a ScanCode.io project and assign them to a product.
+
+    For each package, associated vulnerabilities are imported and linked, including
+    reachability data when available.
+    Dependencies can optionally be imported as well.
     """
 
     unique_together_fields = [
@@ -810,9 +813,11 @@ class ImportPackageFromScanCodeIO:
         if not vulnerabilities:
             return
 
+        vulnerability = vulnerabilities[0]
+
         if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability_data"):
             if analysis_data := cdx_vulnerability.get("analysis"):
-                # CycloneDX model uses "response" while the local model uses "response"
+                # CycloneDX model uses "response" while the local model uses "responses"
                 if response_value := analysis_data.pop("response", None):
                     analysis_data["responses"] = response_value
 
@@ -820,9 +825,29 @@ class ImportPackageFromScanCodeIO:
                     user=product_package.dataspace,
                     data={
                         "product_package": product_package,
-                        "vulnerability": vulnerabilities[0],
+                        "vulnerability": vulnerability,
                         **analysis_data,
                     },
+                )
+
+        # Import reachability from the "symbol reachability analysis" scan when available.
+        is_reachable_raw = vulnerability_data.get("is_reachable")
+        is_reachable = None
+        if is_reachable_raw == "yes":
+            is_reachable = True
+        elif is_reachable_raw == "no":
+            is_reachable = False
+
+        if is_reachable is not None:
+            analysis, created = VulnerabilityAnalysis.objects.get_or_create(
+                product_package=product_package,
+                vulnerability=vulnerability,
+                dataspace=product_package.dataspace,
+                defaults={"is_reachable": is_reachable},
+            )
+            if not created and analysis.is_reachable is None:
+                VulnerabilityAnalysis.objects.filter(pk=analysis.pk).update(
+                    is_reachable=is_reachable
                 )
 
     def import_package(self, package_data):
