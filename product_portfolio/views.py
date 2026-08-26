@@ -2899,7 +2899,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: improve_packages_from_purldb_task(
+            lambda: improve_packages_from_purldb_task.delay(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )
