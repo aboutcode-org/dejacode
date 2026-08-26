@@ -4,15 +4,15 @@
 {% if has_projects_in_progress %}
   <div class="alert alert-primary" role="alert">
     <i class="fas fa-spinner fa-spin"></i>
-    Imports are currently in progress. This view will automatically refresh upon
-    completion of the import process.
+    Actions are currently in progress.
+    This view will automatically refresh upon completion.
   </div>
 {% endif %}
 
-<div class="border rounded-3 p-3 mb-4" id="activity-imports">
+<div class="border rounded-3 p-3 mb-4" id="activity-actions">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="fs-5 fw-medium mb-0">
-      Imports
+      Actions
       {% if scancode_projects %}<span class="text-body-tertiary fw-normal ms-1">{{ scancode_projects|length }}</span>{% endif %}
     </h3>
     {% if has_projects_in_progress %}
@@ -27,9 +27,9 @@
       <table class="table table-sm mb-0 align-middle">
         <thead>
           <tr>
-            <th class="fw-medium">Type</th>
+            <th class="fw-medium" style="min-width: 200px;">Type</th>
             <th class="fw-medium" style="width: 200px;">Status</th>
-            <th class="fw-medium">Input</th>
+            <th class="fw-medium" style="min-width: 200px;">Input</th>
             <th class="fw-medium">Log</th>
           </tr>
         </thead>
@@ -79,7 +79,7 @@
     </div>
   {% else %}
     <div class="text-body-tertiary small">
-      No imports yet
+      No actions yet
     </div>
   {% endif %}
 </div>

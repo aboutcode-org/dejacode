@@ -1492,13 +1492,7 @@ class ProductTabActivityView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         scancode_projects = self.object.scancodeprojects.all()
-        submitted_projects = self.get_submitted_projects(scancode_projects)
-
-        # Check the status of the "submitted" projects on ScanCode.io and update the
-        # local ScanCodeProject instances accordingly.
-        scancodeio = ScanCodeIO(self.request.user.dataspace)
-        for submitted_project in submitted_projects:
-            self.synchronize(scancodeio=scancodeio, project=submitted_project)
+        self.synchronize_scancodeio_projects(scancode_projects)
 
         history_entries = (
             History.objects.get_for_object(self.object)
@@ -1509,9 +1503,9 @@ class ProductTabActivityView(
         context_data.update(
             {
                 "tab_view_url": self.object.get_url("tab_activity"),
-                # Imports
+                # Actions
                 "scancode_projects": scancode_projects,
-                "has_projects_in_progress": bool(submitted_projects),
+                "has_projects_in_progress": scancode_projects.in_progress().exists(),
                 # Requests
                 "requests": self.object.get_requests(self.request.user),
                 # History
@@ -1521,20 +1515,32 @@ class ProductTabActivityView(
 
         return context_data
 
-    @staticmethod
-    def get_submitted_projects(scancode_projects):
-        submitted_types = [
+    def synchronize_scancodeio_projects(self, scancode_projects):
+        """
+        Poll ScanCode.io for the run status of the projects submitted to it as
+        external pipeline runs (SBOM and manifest imports), and update the
+        local ScanCodeProject status accordingly.
+        Other action types are handled entirely by local RQ tasks and have no
+        external run to poll.
+        """
+        scancodeio_project_types = [
             ScanCodeProject.ProjectType.LOAD_SBOMS,
             ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
         ]
-        return [
+        pending_scancodeio_projects = [
             project
             for project in scancode_projects
             if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type in submitted_types
+            and project.type in scancodeio_project_types
         ]
+        if not pending_scancodeio_projects:
+            return
 
-    def synchronize(self, scancodeio, project):
+        scancodeio = ScanCodeIO(self.request.user.dataspace)
+        for project in pending_scancodeio_projects:
+            self.synchronize_scancodeio_project_status(scancodeio, project)
+
+    def synchronize_scancodeio_project_status(self, scancodeio, project):
         scan_detail_url = scancodeio.get_scan_detail_url(project.project_uuid)
         scan_data = scancodeio.fetch_scan_data(scan_detail_url)
         if not scan_data:
@@ -2899,7 +2905,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: improve_packages_from_purldb_task(
+            lambda: improve_packages_from_purldb_task.delay(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )
