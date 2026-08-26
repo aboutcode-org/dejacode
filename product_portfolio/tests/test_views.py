@@ -243,6 +243,28 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected)
         self.assertContains(response, download_url)
 
+    def test_product_portfolio_detail_view_tab_activity_in_progress_any_type(self):
+        """has_projects_in_progress is not limited to the ScanCode.io submitted types."""
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_activity")
+
+        project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+            status=ScanCodeProject.Status.IMPORT_STARTED,
+        )
+
+        response = self.client.get(url)
+        self.assertTrue(response.context["has_projects_in_progress"])
+        self.assertContains(response, "Actions are currently in progress.")
+
+        project.status = ScanCodeProject.Status.SUCCESS
+        project.save()
+        response = self.client.get(url)
+        self.assertFalse(response.context["has_projects_in_progress"])
+        self.assertNotContains(response, "Actions are currently in progress.")
+
     def test_product_portfolio_detail_view_tab_dependency_view(self):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_dependencies")
