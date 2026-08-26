@@ -23,6 +23,10 @@ start:
 	@echo "-> Start the Docker compose services in background"
 	${COMPOSE} up -d
 
+stop:
+	@echo "-> Stop the Docker compose services"
+	${COMPOSE} stop
+
 # make logs TAIL=100 SERVICE=db
 logs:
 	${COMPOSE} logs -f --tail=${TAIL:-50} ${SERVICE}
