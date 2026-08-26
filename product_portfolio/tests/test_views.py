@@ -205,7 +205,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_url("tab_activity")
 
         response = self.client.get(url)
-        self.assertContains(response, "No imports yet")
+        self.assertContains(response, "No actions yet")
         self.assertContains(response, "No requests yet")
         self.assertContains(response, "No changes yet")
 
@@ -220,7 +220,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(response.context["has_projects_in_progress"])
         htmx_refresh = 'hx-trigger="load delay:10s" hx-swap="outerHTML"'
         self.assertContains(response, htmx_refresh)
-        self.assertContains(response, "Imports are currently in progress.")
+        self.assertContains(response, "Actions are currently in progress.")
         self.assertContains(response, "Import SBOM")
 
         project.status = ScanCodeProject.Status.SUCCESS
@@ -229,7 +229,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertFalse(response.context["has_projects_in_progress"])
         self.assertContains(response, "Import SBOM")
         self.assertNotContains(response, "hx-trigger")
-        self.assertNotContains(response, "Imports are currently in progress.")
+        self.assertNotContains(response, "Actions are currently in progress.")
 
         expected = "File:"
         download_url = reverse(
