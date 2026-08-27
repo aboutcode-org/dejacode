@@ -332,8 +332,6 @@ class ComponentSerializer(
             "license_choices",
             "declared_license_expression",
             "other_license_expression",
-            "next_non_vulnerable_version",
-            "latest_non_vulnerable_version",
             "created_date",
             "last_modified_date",
         )

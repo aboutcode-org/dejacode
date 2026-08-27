@@ -439,16 +439,6 @@ class AffectedByVulnerabilityMixin(models.Model):
             "indicate greater vulnerability risk for the package."
         ),
     )
-    next_non_vulnerable_version = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text=_("The next version, following this one, that is not vulnerable."),
-    )
-    latest_non_vulnerable_version = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text=_("The latest available version that is not vulnerable."),
-    )
 
     class Meta:
         abstract = True

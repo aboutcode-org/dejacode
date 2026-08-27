@@ -1977,6 +1977,17 @@ class Package(
         related_name="affected_%(class)ss",
         help_text=_("Vulnerabilities affecting this object."),
     )
+    # Based on vulnerablecode.vulnerabilities.models.Package
+    next_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The next version, following this one, that is not vulnerable."),
+    )
+    latest_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The latest available version that is not vulnerable."),
+    )
 
     objects = DataspacedManager.from_queryset(PackageQuerySet)()
 

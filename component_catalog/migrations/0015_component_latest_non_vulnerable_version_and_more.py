@@ -11,16 +11,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='component',
-            name='latest_non_vulnerable_version',
-            field=models.CharField(blank=True, help_text='The latest available version that is not vulnerable.', max_length=100),
-        ),
-        migrations.AddField(
-            model_name='component',
-            name='next_non_vulnerable_version',
-            field=models.CharField(blank=True, help_text='The next version, following this one, that is not vulnerable.', max_length=100),
-        ),
-        migrations.AddField(
             model_name='package',
             name='latest_non_vulnerable_version',
             field=models.CharField(blank=True, help_text='The latest available version that is not vulnerable.', max_length=100),
