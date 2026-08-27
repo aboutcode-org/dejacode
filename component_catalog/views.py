@@ -8,7 +8,6 @@
 
 import json
 from collections import Counter
-from operator import itemgetter
 from urllib.parse import quote_plus
 
 from django.apps import apps
@@ -280,53 +279,25 @@ class TabVulnerabilityMixin:
         }
 
     def get_fixed_packages_html(self, vulnerability, dataspace):
-        if not vulnerability.fixed_packages:
+        if not vulnerability.fixed_by_packages:
             return
 
-        fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
+        fixed_packages_sorted = natsorted(vulnerability.fixed_by_packages)
         add_package_url = reverse("component_catalog:package_add")
-        vulnerability_icon = (
-            '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
-            ' data-boundary="viewport">'
-            '<i class="fas fa-bug vulnerability mx-1"></i>'
-            "</span>"
-        )
-        no_vulnerabilities_icon = (
-            '<span class="fa-stack fa-small text-muted-light ms-1"'
-            ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
-            ' data-boundary="viewport">'
-            '  <i class="fas fa-bug fa-stack-1x"></i>'
-            '  <i class="fas fa-ban fa-stack-2x"></i>'
-            "</span>"
-        )
 
         fixed_packages_values = []
-        for fixed_package in fixed_packages_sorted:
-            purl = fixed_package.get("purl")
-            is_vulnerable = fixed_package.get("is_vulnerable")
+        for purl in fixed_packages_sorted:
             package_instances = Package.objects.scope(dataspace).for_package_url(purl)
 
             for package in package_instances:
-                absolute_url = package.get_absolute_url()
-                display_value = package.get_html_link(href=absolute_url)
-                if is_vulnerable:
-                    display_value += package.get_html_link(
-                        href=f"{absolute_url}#vulnerabilities",
-                        value=mark_safe(vulnerability_icon),
-                    )
-                else:
-                    display_value += no_vulnerabilities_icon
+                display_value = package.get_html_link(href=package.get_absolute_url())
                 fixed_packages_values.append(display_value)
 
             if not package_instances:
-                display_value = purl.replace("pkg:", "")
-                if is_vulnerable:
-                    display_value += vulnerability_icon
-                else:
-                    display_value += no_vulnerabilities_icon
                 # Warning: do not add spaces between HTML elements as this content
                 # is displayed in a <pre>
-                display_value += (
+                display_value = (
+                    f"{purl.replace('pkg:', '')}"
                     f'<a href="{add_package_url}?package_url={purl}"'
                     f'   target="_blank">'
                     f'<span data-bs-toggle="tooltip" title="Add Package"'

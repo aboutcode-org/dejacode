@@ -32,7 +32,7 @@ class VulnerabilityListView(
         Header("risk_score", _("Risk"), filter="risk_score"),
         Header("affected_products_count", _("Affected products"), help_text="Affected products"),
         Header("affected_packages_count", _("Affected packages"), help_text="Affected packages"),
-        Header("fixed_packages_count", _("Fixed by"), help_text="Fixed by packages"),
+        Header("fixed_by_packages_count", _("Fixed by"), help_text="Fixed by packages"),
     )
 
     def get_queryset(self):
@@ -46,7 +46,7 @@ class VulnerabilityListView(
                 "resource_url",
                 "aliases",
                 "summary",
-                "fixed_packages_count",
+                "fixed_by_packages_count",
                 "exploitability",
                 "weighted_severity",
                 "risk_score",

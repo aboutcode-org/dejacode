@@ -3574,7 +3574,7 @@ class ProductSecurityComplianceExportView(
         "exploitability": "Exploitability",
         "weighted_severity": "Weighted severity",
         "affected_package_count": "Affected packages",
-        "fixed_packages_count": "Fixed packages",
+        "fixed_by_packages_count": "Fixed packages",
         "resource_url": "Reference URL",
         "advisory_uid": "Advisory UID",
     }
