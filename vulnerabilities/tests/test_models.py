@@ -49,8 +49,9 @@ class VulnerabilitiesModelsTestCase(TestCase):
         mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
-        self.assertEqual(2, len(affected_by_vulnerabilities))
+        self.assertEqual(3, len(affected_by_vulnerabilities))
         self.assertEqual("pypa/idna/PYSEC-2024-60", affected_by_vulnerabilities[0]["advisory_uid"])
+        self.assertEqual(["pkg:pypi/idna@3.7"], affected_by_vulnerabilities[0]["fixed_by_packages"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -79,12 +80,19 @@ class VulnerabilitiesModelsTestCase(TestCase):
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         package1.fetch_vulnerabilities()
 
-        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(3, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.filter(
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
         self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
+        self.assertEqual(["pkg:pypi/idna@3.7"], vulnerability.fixed_by_packages)
+
+        # This code path (single-package fetch) does not go through
+        # vulnerabilities.fetch.process_vc_entry, so the purl-level fields are not set.
+        package1.refresh_from_db()
+        self.assertEqual("", package1.next_non_vulnerable_version)
+        self.assertEqual("", package1.latest_non_vulnerable_version)
 
     def test_vulnerability_mixin_create_vulnerabilities(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
@@ -96,7 +104,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(4, Vulnerability.objects.scope(self.dataspace).count())
         self.assertEqual("5.0", str(package1.risk_score))
         self.assertEqual("5.0", str(product1.productpackages.get().weighted_risk_score))
 
@@ -199,17 +207,17 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertQuerySetEqual(vulnerability2.affected_packages.all(), [package1])
         self.assertQuerySetEqual(vulnerability2.affected_components.all(), [component1])
 
-    def test_vulnerability_model_fixed_packages_count_generated_field(self):
+    def test_vulnerability_model_fixed_by_packages_count_generated_field(self):
         vulnerability1 = make_vulnerability(dataspace=self.dataspace)
-        self.assertEqual(0, vulnerability1.fixed_packages_count)
+        self.assertEqual(0, vulnerability1.fixed_by_packages_count)
 
-        vulnerability1.fixed_packages = [
-            {"purl": "pkg:pypi/gitpython@3.1.41", "is_vulnerable": True},
-            {"purl": "pkg:pypi/gitpython@3.2", "is_vulnerable": False},
+        vulnerability1.fixed_by_packages = [
+            "pkg:pypi/gitpython@3.1.41",
+            "pkg:pypi/gitpython@3.2",
         ]
         vulnerability1.save()
         vulnerability1.refresh_from_db()
-        self.assertEqual(2, vulnerability1.fixed_packages_count)
+        self.assertEqual(2, vulnerability1.fixed_by_packages_count)
 
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)

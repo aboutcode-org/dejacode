@@ -417,8 +417,8 @@ table.vulnerabilities-table .column-summary {
   width: 240px;
 }
 #tab_vulnerabilities .column-affected_packages {
-  min-width: 300px;
-  width: 300px;
+  min-width: 310px;
+  width: 310px;
 }
 #tab_vulnerabilities .column-triage_action {
   min-width: 165px;
