@@ -29,6 +29,11 @@ from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
 
 
+# Command used to regenerate the idna_3.6_response.json test fixture:
+# curl -s -X POST "https://public.vulnerablecode.io/api/v3/packages" \
+# -H "Content-Type: application/json" \
+# -H "User-Agent: VCIO_API_AGENT" \
+# -d '{"purls": ["pkg:pypi/idna@3.6"], "details": true}' | jq .
 class VulnerabilitiesModelsTestCase(TestCase):
     data = Path(__file__).parent / "data"
 
