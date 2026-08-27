@@ -120,12 +120,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "(e.g., 'CVE-2017-1000136')."
         ),
     )
-    fixed_packages = JSONListField(
+    fixed_by_packages = JSONListField(
         blank=True,
-        help_text=_("A list of packages that are not affected by this vulnerability."),
+        help_text=_("A list of packages that fix this vulnerability."),
     )
-    fixed_packages_count = models.GeneratedField(
-        expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
+    fixed_by_packages_count = models.GeneratedField(
+        expression=models.Func(models.F("fixed_by_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
     )
@@ -438,6 +438,16 @@ class AffectedByVulnerabilityMixin(models.Model):
             "Risk score between 0.0 and 10.0, where higher values "
             "indicate greater vulnerability risk for the package."
         ),
+    )
+    next_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The next version, following this one, that is not vulnerable."),
+    )
+    latest_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The latest available version that is not vulnerable."),
     )
 
     class Meta:
