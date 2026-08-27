@@ -71,15 +71,15 @@ dependencies = [
     # Database
     "psycopg==3.3.4",
     # Cache
-    "redis==8.0.1",
+    "redis==8.1.0",
     # Antivirus
     "clamd==1.0.2",
     # Testing
     "model_bakery==1.23.3",
     # Task queue
-    "rq==2.10.0",
+    "rq==2.11.0",
     "croniter==6.2.3",
-    "django-rq==3.2.2",
+    "django-rq==4.1.1",
     "fakeredis==2.36.2",
     # Libs
     "certifi==2026.6.17",
@@ -176,6 +176,8 @@ dejacode = "dejacode:command_line"
 where = ["."]
 
 [tool.uv]
+# Pin the uv version so everyone regenerates uv.lock with the same resolver/serializer
+required-version = "==0.11.6"
 # Disable PyPI and any remote index, only use local sources
 no-index = true
 # Look for wheels in this local directory only
