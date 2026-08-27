@@ -1,14 +1,28 @@
 {% load i18n %}
-<dl class="row mb-3">
-  <dt class="col-sm-1 text-end pe-0">
-    <span class="help_text" data-bs-placement="right" data-bs-toggle="tooltip" data-bs-title="Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.">
+<div class="d-flex flex-wrap align-items-center gap-4 mb-3">
+  <div class="d-flex align-items-center gap-2">
+    <span class="help_text" data-bs-toggle="tooltip" data-bs-title="Risk score between 0.0 and 10.0, where higher values indicate greater vulnerability risk for the package.">
       Risk score
     </span>
-  </dt>
-  <dd class="col-sm-11 fs-110pct">
     {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=package.risk_score only %}
-  </dd>
-</dl>
+  </div>
+  {% if package.next_non_vulnerable_version %}
+    <div class="d-flex align-items-center gap-2">
+      <span class="help_text" data-bs-toggle="tooltip" data-bs-title="The next version, following this one, that is not vulnerable.">
+        Next non-vulnerable version
+      </span>
+      <span class="fw-semibold">{{ package.next_non_vulnerable_version }}</span>
+    </div>
+  {% endif %}
+  {% if package.latest_non_vulnerable_version %}
+    <div class="d-flex align-items-center gap-2">
+      <span class="help_text" data-bs-toggle="tooltip" data-bs-title="The latest available version that is not vulnerable.">
+        Latest non-vulnerable version
+      </span>
+      <span class="fw-semibold">{{ package.latest_non_vulnerable_version }}</span>
+    </div>
+  {% endif %}
+</div>
 <table class="table table-bordered table-hover table-md text-break">
   <thead>
     <tr>
@@ -39,7 +53,7 @@
       </th>
       <th style="min-width: 320px;">
         <span class="help_text" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="The identifiers of Package Versions that have been reported to fix a specific vulnerability and collected in VulnerableCodeDB.">
-          {% trans 'Fixed packages' %}
+          {% trans 'Fixed by packages' %}
         </span>
       </th>
     </tr>

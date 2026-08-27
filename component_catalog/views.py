@@ -260,7 +260,8 @@ class TabVulnerabilityMixin:
 
         label = (
             f"Vulnerabilities"
-            f' <span class="badge badge-vulnerability">{len(vulnerabilities_qs)}</span>'
+            f' <span class="badge bg-danger-subtle text-danger-emphasis">'
+            f"{len(vulnerabilities_qs)}</span>"
         )
 
         vulnerabilities = []
@@ -299,7 +300,7 @@ class TabVulnerabilityMixin:
                 display_value = (
                     f"{purl.replace('pkg:', '')}"
                     f'<a href="{add_package_url}?package_url={purl}"'
-                    f'   target="_blank">'
+                    f'   class="ms-1" target="_blank">'
                     f'<span data-bs-toggle="tooltip" title="Add Package"'
                     f'      data-boundary="viewport">'
                     f'<i class="fas fa-plus-circle"></i>'
