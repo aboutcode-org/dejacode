@@ -3023,6 +3023,23 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, 'id="tab_vulnerabilities"')
         self.assertContains(response, self.vulnerability1.advisory_id)
 
+    def test_package_details_view_tab_vulnerabilities_fixed_by_packages(self):
+        fixing_package = make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        self.vulnerability1.fixed_by_packages = [
+            "pkg:pypi/idna@3.7",
+            "pkg:pypi/idna@9.9.9",
+        ]
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+
+        # A known package is linked directly.
+        self.assertContains(response, fixing_package.get_absolute_url())
+        # An unknown package offers an "Add Package" link instead.
+        self.assertContains(response, "idna@9.9.9")
+        self.assertContains(response, "package_url=pkg:pypi/idna@9.9.9")
+
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])
         self.assertEqual([], purls)
