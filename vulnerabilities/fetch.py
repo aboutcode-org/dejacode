@@ -221,7 +221,8 @@ def process_vc_entry(
 ):
     """
     Process a single VulnerableCode purl entry: find matching packages, create or update
-    linked vulnerabilities, and apply the API-provided risk score.
+    linked vulnerabilities, and apply the API-provided risk score and non-vulnerable
+    version values.
 
     Returns the affected packages as a list, or an empty list if the entry has no
     vulnerabilities. The ``results`` dict is updated in-place.
@@ -267,9 +268,19 @@ def process_vc_entry(
     # Link packages to vulnerabilities: 1 SELECT + 1 bulk INSERT instead of N*M get_or_create.
     batch_add_affected(affected_packages, vulnerabilities)
 
-    # Update risk_score without triggering Package.save() (which carries handle_assigned_licenses).
-    if package_risk_score := vc_entry.get("risk_score"):
-        packages_qs.update(risk_score=package_risk_score)
+    # Update those fields without triggering Package.save() (which carries
+    # handle_assigned_licenses).
+    package_field_names = (
+        "risk_score",
+        "next_non_vulnerable_version",
+        "latest_non_vulnerable_version",
+    )
+    package_update_fields = {}
+    for field_name in package_field_names:
+        if field_value := vc_entry.get(field_name):
+            package_update_fields[field_name] = field_value
+    if package_update_fields:
+        packages_qs.update(**package_update_fields)
 
     return affected_packages
 
