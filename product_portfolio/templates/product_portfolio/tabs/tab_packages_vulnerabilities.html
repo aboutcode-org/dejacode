@@ -40,6 +40,13 @@
               <i class="fas fa-arrow-alt-circle-right"></i> {% trans "Exposure factor:" %} {{ product_package.purpose.exposure_factor }}
             </div>
           {% endif %}
+          {% if product_package.package.latest_non_vulnerable_version %}
+            <div class="small text-body-secondary mt-2">
+              <i class="fa-solid fa-circle-up text-success" data-bs-toggle="tooltip" title="Latest non-vulnerable version"></i>
+              {% trans "Non-vulnerable version available:" %}
+              <span class="fw-semibold text-success-emphasis">{{ product_package.package.latest_non_vulnerable_version }}</span>
+            </div>
+          {% endif %}
         </td>
         {% for vulnerability in product_package.display_vulnerabilities %}
           {% if not forloop.first %}<tr>{% endif %}

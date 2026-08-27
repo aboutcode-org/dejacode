@@ -1,101 +1,148 @@
 {
-    "count": 1,
-    "next": null,
-    "previous": null,
-    "results": [
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "purl": "pkg:pypi/idna@3.6",
+      "affected_by_vulnerabilities": [
         {
-            "purl": "pkg:pypi/idna@3.6",
-            "affected_by_vulnerabilities": [
+          "advisory_id": "PYSEC-2024-60",
+          "advisory_uid": "pypa/idna/PYSEC-2024-60",
+          "aliases": [
+            "CVE-2024-3651",
+            "GHSA-jjg7-2v4v-x38h"
+          ],
+          "summary": "A vulnerability was identified in the kjd/idna library, specifically within the `idna.encode()` function, affecting version 3.6. The issue arises from the function's handling of crafted input strings, which can lead to quadratic complexity and consequently, a denial of service condition. This vulnerability is triggered by a crafted input that causes the `idna.encode()` function to process the input with considerable computational load, significantly increasing the processing time in a quadratic manner relative to the input size.",
+          "weighted_severity": 6.8,
+          "exploitability": 0.5,
+          "risk_score": 3.4,
+          "fixed_by_packages": [
+            "pkg:pypi/idna@3.7"
+          ],
+          "introduced_in_patches": [],
+          "fixed_in_patches": [],
+          "ssvc_trees": [
+            {
+              "vector": "SSVCv2/E:N/A:N/T:P/P:M/B:A/M:M/D:T/2024-07-07T19:07:43Z/",
+              "decision": "Track",
+              "options": [
                 {
-                    "advisory_id": "PYSEC-2024-60",
-                    "advisory_uid": "pypa/idna/PYSEC-2024-60",
-                    "aliases": [
-                        "CVE-2024-3651",
-                        "GHSA-jjg7-2v4v-x38h"
-                    ],
-                    "summary": "A vulnerability was identified in the kjd/idna library, specifically within the `idna.encode()` function, affecting version 3.6. The issue arises from the function's handling of crafted input strings, which can lead to quadratic complexity and consequently, a denial of service condition. This vulnerability is triggered by a crafted input that causes the `idna.encode()` function to process the input with considerable computational load, significantly increasing the processing time in a quadratic manner relative to the input size.",
-                    "weighted_severity": 6.8,
-                    "exploitability": 0.5,
-                    "risk_score": 3.4,
-                    "fixed_by_packages": [
-                        "pkg:pypi/idna@3.7"
-                    ],
-                    "ssvc_trees": [
-                        {
-                            "vector": "SSVCv2/E:N/A:N/T:P/P:M/B:A/M:M/D:T/2024-07-07T19:07:43Z/",
-                            "decision": "Track",
-                            "options": [
-                                {
-                                    "Exploitation": "none"
-                                },
-                                {
-                                    "Automatable": "no"
-                                },
-                                {
-                                    "Technical Impact": "partial"
-                                },
-                                {
-                                    "Mission Prevalence": "minimal"
-                                },
-                                {
-                                    "Public Well-being Impact": "material"
-                                },
-                                {
-                                    "Mission & Well-being": "medium"
-                                }
-                            ],
-                            "source_url": "https://github.com/cisagov/vulnrichment/blob/develop/2024/3xxx/CVE-2024-3651.json"
-                        }
-                    ],
-                    "resource_url": "http://public.vulnerablecode.io/advisories/pypa/idna/PYSEC-2024-60"
+                  "Exploitation": "none"
                 },
                 {
-                    "advisory_id": "GHSA-65pc-fj4g-8rjx",
-                    "advisory_uid": "github_osv/GHSA-65pc-fj4g-8rjx",
-                    "aliases": [
-                        "CVE-2026-45409"
-                    ],
-                    "summary": "Internationalized Domain Names in Applications (IDNA): Specially crafted inputs to idna.encode() can bypass CVE-2024-3651 fix\nThis is the same issue as CVE-2024-3651, however the original remediation in 2024 was not a complete fix. Payloads such as `\"\\u0660\" * N` or `\"\\u30fb\" * N + \"\\u6f22\"` utilize the `valid_contexto` function prior to length rejection, and for high values of `N` will take a long time to process.\n\n### Impact\nA specially crafted argument to the `idna.encode()` function could consume significant resources. This may lead to a denial-of-service.\n\n### Patches\nStarting in version 3.14, the function rejects long inputs as soon as practicable prior to any further processing to minimize resource consumption. In version 3.15, this approach was extended to lesser used alternate functions (i.e. per-label conversions and codec support).\n\n### Workarounds\nDomain names cannot exceed 253 characters in length, if this length limit is enforced prior to passing the domain to the `idna.encode()` function it should no longer consume significant resources. This is triggered by arbitrarily large inputs that would not occur in normal usage, but may be passed to the library assuming there is no preliminary input validation by the higher-level application.",
-                    "weighted_severity": 6.2,
-                    "exploitability": 0.5,
-                    "risk_score": 3.1,
-                    "fixed_by_packages": [
-                        "pkg:pypi/idna@3.15"
-                    ],
-                    "ssvc_trees": [
-                        {
-                            "vector": "SSVCv2/E:N/A:Y/T:P/P:M/B:A/M:M/D:T/2026-06-08T14:30:54Z/",
-                            "decision": "Track",
-                            "options": [
-                                {
-                                    "Exploitation": "none"
-                                },
-                                {
-                                    "Automatable": "yes"
-                                },
-                                {
-                                    "Technical Impact": "partial"
-                                },
-                                {
-                                    "Mission Prevalence": "minimal"
-                                },
-                                {
-                                    "Public Well-being Impact": "material"
-                                },
-                                {
-                                    "Mission & Well-being": "medium"
-                                }
-                            ],
-                            "source_url": "https://github.com/cisagov/vulnrichment/blob/develop/2026/45xxx/CVE-2026-45409.json"
-                        }
-                    ],
-                    "resource_url": "http://public.vulnerablecode.io/advisories/github_osv/GHSA-65pc-fj4g-8rjx"
+                  "Automatable": "no"
+                },
+                {
+                  "Technical Impact": "partial"
+                },
+                {
+                  "Mission Prevalence": "minimal"
+                },
+                {
+                  "Public Well-being Impact": "material"
+                },
+                {
+                  "Mission & Well-being": "medium"
                 }
-            ],
-            "fixing_vulnerabilities": [],
-            "next_non_vulnerable_version": "3.15",
-            "latest_non_vulnerable_version": "3.15",
-            "risk_score": 3.4
+              ],
+              "source_url": "https://github.com/cisagov/vulnrichment/blob/develop/2024/3xxx/CVE-2024-3651.json"
+            }
+          ],
+          "resource_url": "http://public.vulnerablecode.io/advisories/pypa/idna/PYSEC-2024-60"
+        },
+        {
+          "advisory_id": "CVE-2026-45409",
+          "advisory_uid": "gitlab/pypi/idna/CVE-2026-45409",
+          "aliases": [
+            "GHSA-65pc-fj4g-8rjx"
+          ],
+          "summary": "Internationalized Domain Names in Applications (IDNA): Specially crafted inputs to idna.encode() can bypass CVE-2024-3651 fix\nThis is the same issue as CVE-2024-3651, however the original remediation in 2024 was not a complete fix. Payloads such as `\"\\u0660\" * N` or `\"\\u30fb\" * N + \"\\u6f22\"` utilize the `valid_contexto` function prior to length rejection, and for high values of `N` will take a long time to process.",
+          "weighted_severity": null,
+          "exploitability": 0.5,
+          "risk_score": null,
+          "fixed_by_packages": [],
+          "introduced_in_patches": [],
+          "fixed_in_patches": [],
+          "ssvc_trees": [
+            {
+              "vector": "SSVCv2/E:N/A:Y/T:P/P:M/B:A/M:M/D:T/2026-06-08T14:30:54Z/",
+              "decision": "Track",
+              "options": [
+                {
+                  "Exploitation": "none"
+                },
+                {
+                  "Automatable": "yes"
+                },
+                {
+                  "Technical Impact": "partial"
+                },
+                {
+                  "Mission Prevalence": "minimal"
+                },
+                {
+                  "Public Well-being Impact": "material"
+                },
+                {
+                  "Mission & Well-being": "medium"
+                }
+              ],
+              "source_url": "https://github.com/cisagov/vulnrichment/blob/develop/2026/45xxx/CVE-2026-45409.json"
+            }
+          ],
+          "resource_url": "http://public.vulnerablecode.io/advisories/gitlab/pypi/idna/CVE-2026-45409"
+        },
+        {
+          "advisory_id": "PYSEC-2026-215",
+          "advisory_uid": "pypa/idna/PYSEC-2026-215",
+          "aliases": [
+            "CVE-2026-45409",
+            "GHSA-65pc-fj4g-8rjx"
+          ],
+          "summary": "Internationalized Domain Names in Applications (IDNA) for Python provides support for Internationalized Domain Names in Applications (IDNA) and Unicode IDNA Compatibility Processing. In versions prior to 3.15, payloads such as `\"\\u0660\" * N` or `\"\\u30fb\" * N + \"\\u6f22\"` utilize the `valid_contexto` function prior to length rejection, and for high values of `N` will take a long time to process. This is the same issue as CVE-2024-3651, however the original remediation in 2024 was not a complete fix. A specially crafted argument to the `idna.encode()` function could consume significant resources. This may lead to a denial-of-service. Starting in version 3.14, the function rejects long inputs as soon as practicable prior to any further processing to minimize resource consumption. In version 3.15, this approach was extended to lesser used alternate functions (i.e. per-label conversions and codec support). A workaround is available. Domain names cannot exceed 253 characters in length. If this length limit is enforced prior to passing the domain to the `idna.encode()` function, it should no longer consume significant resources. This is triggered by arbitrarily large inputs that would not occur in normal usage, but may be passed to the library assuming there is no preliminary input validation by the higher-level application.",
+          "weighted_severity": 6.2,
+          "exploitability": 0.5,
+          "risk_score": 3.1,
+          "fixed_by_packages": [
+            "pkg:pypi/idna@3.15"
+          ],
+          "introduced_in_patches": [],
+          "fixed_in_patches": [],
+          "ssvc_trees": [
+            {
+              "vector": "SSVCv2/E:N/A:Y/T:P/P:M/B:A/M:M/D:T/2026-06-08T14:30:54Z/",
+              "decision": "Track",
+              "options": [
+                {
+                  "Exploitation": "none"
+                },
+                {
+                  "Automatable": "yes"
+                },
+                {
+                  "Technical Impact": "partial"
+                },
+                {
+                  "Mission Prevalence": "minimal"
+                },
+                {
+                  "Public Well-being Impact": "material"
+                },
+                {
+                  "Mission & Well-being": "medium"
+                }
+              ],
+              "source_url": "https://github.com/cisagov/vulnrichment/blob/develop/2026/45xxx/CVE-2026-45409.json"
+            }
+          ],
+          "resource_url": "http://public.vulnerablecode.io/advisories/pypa/idna/PYSEC-2026-215"
         }
-    ]
+      ],
+      "fixing_vulnerabilities": [],
+      "next_non_vulnerable_version": "3.15",
+      "latest_non_vulnerable_version": "3.15",
+      "risk_score": 3.4
+    }
+  ]
 }

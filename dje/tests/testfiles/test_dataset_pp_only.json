@@ -49,7 +49,9 @@
     "api_data_url": "",
     "datasource_id": "",
     "file_references": [],
-    "parties": []
+    "parties": [],
+    "next_non_vulnerable_version": "",
+    "latest_non_vulnerable_version": ""
   }
 },
 {

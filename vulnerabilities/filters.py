@@ -86,7 +86,7 @@ class VulnerabilityFilterSet(DataspacedFilterSet):
             "affected_products_count",
             "affected_packages",
             "affected_packages_count",
-            "fixed_packages_count",
+            "fixed_by_packages_count",
             "created_date",
             "last_modified_date",
         ],

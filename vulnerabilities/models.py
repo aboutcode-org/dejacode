@@ -120,12 +120,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "(e.g., 'CVE-2017-1000136')."
         ),
     )
-    fixed_packages = JSONListField(
+    fixed_by_packages = JSONListField(
         blank=True,
-        help_text=_("A list of packages that are not affected by this vulnerability."),
+        help_text=_("A list of packages that fix this vulnerability."),
     )
-    fixed_packages_count = models.GeneratedField(
-        expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
+    fixed_by_packages_count = models.GeneratedField(
+        expression=models.Func(models.F("fixed_by_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
     )
