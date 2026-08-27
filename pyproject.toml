@@ -77,7 +77,7 @@ dependencies = [
     # Testing
     "model_bakery==1.23.3",
     # Task queue
-    "rq==2.10.0",
+    "rq==2.9.0",
     "croniter==6.2.3",
     "django-rq==3.2.2",
     "fakeredis==2.36.2",
