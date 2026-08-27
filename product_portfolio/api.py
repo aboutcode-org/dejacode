@@ -148,6 +148,8 @@ class ProductSerializer(ValidateLicenseExpressionMixin, DataspacedSerializer):
             "admin_notes",
             "notice_text",
             "vulnerabilities_risk_threshold",
+            "next_non_vulnerable_version",
+            "latest_non_vulnerable_version",
             "created_date",
             "last_modified_date",
         )

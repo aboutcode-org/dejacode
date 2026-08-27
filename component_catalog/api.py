@@ -332,6 +332,8 @@ class ComponentSerializer(
             "license_choices",
             "declared_license_expression",
             "other_license_expression",
+            "next_non_vulnerable_version",
+            "latest_non_vulnerable_version",
             "created_date",
             "last_modified_date",
         )
@@ -697,6 +699,8 @@ class PackageSerializer(
             "last_modified_date",
             "collect_data",
             "risk_score",
+            "next_non_vulnerable_version",
+            "latest_non_vulnerable_version",
             "affected_by_vulnerabilities",
         )
         extra_kwargs = {
