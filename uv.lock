@@ -376,10 +376,10 @@ requires-dist = [
     { name = "requests", specifier = "==2.34.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "rpds-py", specifier = "==0.30.0" },
-    { name = "rq", specifier = "==2.10.0" },
+    { name = "rq", specifier = "==2.9.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
-    { name = "semantic-version", specifier = "==2.10.0" },
+    { name = "semantic-version", specifier = "==2.9.0" },
     { name = "setuptools", specifier = "==83.0.0" },
     { name = "setuptools-rust", specifier = "==1.12.0" },
     { name = "setuptools-scm", specifier = "==9.2.2" },
@@ -1009,7 +1009,7 @@ wheels = [
 
 [[package]]
 name = "rq"
-version = "2.10.0"
+version = "2.9.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "click" },
@@ -1017,7 +1017,7 @@ dependencies = [
     { name = "redis" },
 ]
 wheels = [
-    { path = "rq-2.10.0-py3-none-any.whl" },
+    { path = "rq-2.9.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1042,10 +1042,10 @@ wheels = [
 
 [[package]]
 name = "semantic-version"
-version = "2.10.0"
+version = "2.9.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "semantic_version-2.10.0-py2.py3-none-any.whl" },
+    { path = "semantic_version-2.9.0-py2.py3-none-any.whl" },
 ]
 
 [[package]]
