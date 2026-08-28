@@ -2473,6 +2473,21 @@ class ComponentCatalogModelsTestCase(TestCase):
         }
         self.assertEqual(expected_data, collect_package_data(download_url))
 
+    @mock.patch("requests.get")
+    def test_collect_package_data_user_agent(self, mock_get):
+        mock_get.return_value = mock.Mock(
+            content=b"\x00",
+            headers={"content-length": 1},
+            status_code=200,
+            url="http://domain.com/a.zip",
+        )
+
+        collect_package_data("http://domain.com/a.zip")
+        self.assertEqual(
+            download.USER_AGENT,
+            mock_get.call_args.kwargs["headers"]["User-Agent"],
+        )
+
     def test_package_create_save_set_usage_policy_from_license(self):
         from policy.models import AssociatedPolicy
         from policy.models import UsagePolicy
