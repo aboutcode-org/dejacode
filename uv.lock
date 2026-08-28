@@ -95,19 +95,19 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.6.17"
+version = "2026.7.22"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "certifi-2026.6.17-py3-none-any.whl" },
+    { path = "certifi-2026.7.22-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "charset-normalizer"
-version = "3.4.9"
+version = "3.5.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "charset_normalizer-3.4.9-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "charset_normalizer-3.4.9-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "charset_normalizer-3.5.1-cp314-cp314-macosx_10_15_universal2.whl" },
+    { path = "charset_normalizer-3.5.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -148,13 +148,13 @@ wheels = [
 
 [[package]]
 name = "croniter"
-version = "6.2.3"
+version = "6.2.4"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "python-dateutil" },
 ]
 wheels = [
-    { path = "croniter-6.2.3-py3-none-any.whl" },
+    { path = "croniter-6.2.4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -307,22 +307,22 @@ requires-dist = [
     { name = "bleach", specifier = "==6.4.0" },
     { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
-    { name = "certifi", specifier = "==2026.6.17" },
-    { name = "charset-normalizer", specifier = "==3.4.9" },
+    { name = "certifi", specifier = "==2026.7.22" },
+    { name = "charset-normalizer", specifier = "==3.5.1" },
     { name = "clamd", specifier = "==1.0.2" },
     { name = "click", specifier = "==8.3.3" },
     { name = "confusable-homoglyphs", specifier = "==3.3.1" },
     { name = "crispy-bootstrap5", specifier = "==2026.3" },
-    { name = "croniter", specifier = "==6.2.3" },
+    { name = "croniter", specifier = "==6.2.4" },
     { name = "cyclonedx-python-lib", specifier = "==11.6.0" },
     { name = "cython", specifier = "==3.2.4" },
     { name = "defusedxml", specifier = "==0.7.1" },
-    { name = "django", specifier = "==6.0.7" },
+    { name = "django", specifier = "==6.0.8" },
     { name = "django-altcha", specifier = "==1.0.0" },
     { name = "django-auth-ldap", specifier = "==5.3.0" },
     { name = "django-axes", specifier = "==8.3.1" },
     { name = "django-crispy-forms", specifier = "==2.6" },
-    { name = "django-debug-toolbar", specifier = "==7.0.0" },
+    { name = "django-debug-toolbar", specifier = "==7.1.1" },
     { name = "django-environ", specifier = "==0.14.0" },
     { name = "django-filter", specifier = "==25.2" },
     { name = "django-grappelli", specifier = "==5.0.0" },
@@ -335,8 +335,8 @@ requires-dist = [
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
     { name = "fakeredis", specifier = "==2.36.2" },
-    { name = "gunicorn", specifier = "==26.0.0" },
-    { name = "idna", specifier = "==3.18" },
+    { name = "gunicorn", specifier = "==26.1.0" },
+    { name = "idna", specifier = "==3.19" },
     { name = "inflection", specifier = "==0.5.1" },
     { name = "jinja2", specifier = "==3.1.6" },
     { name = "jsonfield", specifier = "==3.2.0" },
@@ -355,10 +355,10 @@ requires-dist = [
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.2" },
-    { name = "pip", specifier = "==26.1.2" },
+    { name = "pip", specifier = "==26.2.1" },
     { name = "psycopg", specifier = "==3.3.4" },
     { name = "py-serializable", specifier = "==2.1.0" },
-    { name = "pyasn1", specifier = "==0.6.3" },
+    { name = "pyasn1", specifier = "==0.6.4" },
     { name = "pyasn1-modules", specifier = "==0.4.2" },
     { name = "pydantic", specifier = "==2.12.5" },
     { name = "pydantic-core", specifier = "==2.41.5" },
@@ -371,7 +371,7 @@ requires-dist = [
     { name = "pytz", specifier = "==2026.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
-    { name = "redis", specifier = "==8.0.1" },
+    { name = "redis", specifier = "==8.1.0" },
     { name = "referencing", specifier = "==0.37.0" },
     { name = "requests", specifier = "==2.34.2" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
@@ -379,13 +379,13 @@ requires-dist = [
     { name = "rq", specifier = "==2.9.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
-    { name = "semantic-version", specifier = "==2.9.0" },
-    { name = "setuptools", specifier = "==83.0.0" },
+    { name = "semantic-version", specifier = "==2.10.0" },
+    { name = "setuptools", specifier = "==84.0.0" },
     { name = "setuptools-rust", specifier = "==1.12.0" },
     { name = "setuptools-scm", specifier = "==9.2.2" },
     { name = "six", specifier = "==1.17.0" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
-    { name = "sqlparse", specifier = "==0.5.5" },
+    { name = "sqlparse", specifier = "==0.6.0" },
     { name = "swapper", specifier = "==1.4.0" },
     { name = "tblib", specifier = "==3.2.2" },
     { name = "typing-extensions", specifier = "==4.15.0" },
@@ -393,7 +393,7 @@ requires-dist = [
     { name = "uritemplate", specifier = "==4.2.0" },
     { name = "urllib3", specifier = "==2.7.0" },
     { name = "webencodings", specifier = "==0.5.1" },
-    { name = "wheel", specifier = "==0.47.0" },
+    { name = "wheel", specifier = "==0.48.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
     { name = "zipp", specifier = "==4.1.0" },
 ]
@@ -401,14 +401,14 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "django"
-version = "6.0.7"
+version = "6.0.8"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
 ]
 wheels = [
-    { path = "django-6.0.7-py3-none-any.whl" },
+    { path = "django-6.0.8-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -460,14 +460,14 @@ wheels = [
 
 [[package]]
 name = "django-debug-toolbar"
-version = "7.0.0"
+version = "7.1.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django" },
     { name = "sqlparse" },
 ]
 wheels = [
-    { path = "django_debug_toolbar-7.0.0-py3-none-any.whl" },
+    { path = "django_debug_toolbar-7.1.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -605,21 +605,18 @@ wheels = [
 
 [[package]]
 name = "gunicorn"
-version = "26.0.0"
+version = "26.1.0"
 source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-]
 wheels = [
-    { path = "gunicorn-26.0.0-py3-none-any.whl" },
+    { path = "gunicorn-26.1.0-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "idna"
-version = "3.18"
+version = "3.19"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "idna-3.18-py3-none-any.whl" },
+    { path = "idna-3.19-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -798,10 +795,10 @@ wheels = [
 
 [[package]]
 name = "pip"
-version = "26.1.2"
+version = "26.2.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pip-26.1.2-py3-none-any.whl" },
+    { path = "pip-26.2.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -825,10 +822,10 @@ wheels = [
 
 [[package]]
 name = "pyasn1"
-version = "0.6.3"
+version = "0.6.4"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pyasn1-0.6.3-py3-none-any.whl" },
+    { path = "pyasn1-0.6.4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -953,10 +950,10 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "8.0.1"
+version = "8.1.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "redis-8.0.1-py3-none-any.whl" },
+    { path = "redis-8.1.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1042,18 +1039,18 @@ wheels = [
 
 [[package]]
 name = "semantic-version"
-version = "2.9.0"
+version = "2.10.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "semantic_version-2.9.0-py2.py3-none-any.whl" },
+    { path = "semantic_version-2.10.0-py2.py3-none-any.whl" },
 ]
 
 [[package]]
 name = "setuptools"
-version = "83.0.0"
+version = "84.0.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "setuptools-83.0.0-py3-none-any.whl" },
+    { path = "setuptools-84.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1098,10 +1095,10 @@ wheels = [
 
 [[package]]
 name = "sqlparse"
-version = "0.5.5"
+version = "0.6.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "sqlparse-0.5.5-py3-none-any.whl" },
+    { path = "sqlparse-0.6.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1165,13 +1162,13 @@ wheels = [
 
 [[package]]
 name = "wheel"
-version = "0.47.0"
+version = "0.48.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "packaging" },
 ]
 wheels = [
-    { path = "wheel-0.47.0-py3-none-any.whl" },
+    { path = "wheel-0.48.0-py3-none-any.whl" },
 ]
 
 [[package]]

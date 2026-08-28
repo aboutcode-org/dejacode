@@ -31,15 +31,15 @@ classifiers = [
 ]
 dependencies = [
     # Base configuration tools
-    "setuptools==83.0.0",
-    "wheel==0.47.0",
+    "setuptools==84.0.0",
+    "wheel==0.48.0",
     "packaging==26.2",
-    "pip==26.1.2",
+    "pip==26.2.1",
     # Django
-    "django==6.0.7",
+    "django==6.0.8",
     "asgiref==3.12.1",
     "typing_extensions==4.15.0",
-    "sqlparse==0.5.5",
+    "sqlparse==0.6.0",
     # Django apps
     "django-crispy-forms==2.6",
     "crispy_bootstrap5==2026.3",
@@ -49,7 +49,7 @@ dependencies = [
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.3.2",
     "django-environ==0.14.0",
-    "django-debug-toolbar==7.0.0",
+    "django-debug-toolbar==7.1.1",
     # Parallel testing
     "tblib==3.2.2",
     # CAPTCHA
@@ -71,18 +71,18 @@ dependencies = [
     # Database
     "psycopg==3.3.4",
     # Cache
-    "redis==8.0.1",
+    "redis==8.1.0",
     # Antivirus
     "clamd==1.0.2",
     # Testing
     "model_bakery==1.23.3",
     # Task queue
     "rq==2.9.0",
-    "croniter==6.2.3",
+    "croniter==6.2.4",
     "django-rq==3.2.2",
     "fakeredis==2.36.2",
     # Libs
-    "certifi==2026.6.17",
+    "certifi==2026.7.22",
     "urllib3==2.7.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
@@ -90,8 +90,8 @@ dependencies = [
     "natsort==8.4.0",
     "six==1.17.0",
     "requests==2.34.2",
-    "idna==3.18",
-    "charset-normalizer==3.4.9",
+    "idna==3.19",
+    "charset-normalizer==3.5.1",
     "PyYAML==6.0.3",
     "cython==3.2.4",
     "zipp==4.1.0",
@@ -109,7 +109,7 @@ dependencies = [
     # LDAP Auth
     "python_ldap==3.4.5",
     "setuptools-scm==9.2.2",
-    "pyasn1==0.6.3",
+    "pyasn1==0.6.4",
     "pyasn1-modules==0.4.2",
     "django-auth-ldap==5.3.0",
     # license expressions
@@ -130,7 +130,7 @@ dependencies = [
     # PackageURL
     "packageurl-python==0.17.6",
     # Gunicorn
-    "gunicorn==26.0.0",
+    "gunicorn==26.1.0",
     # SPDX validation
     "jsonschema==4.26.0",
     "jsonschema-specifications==2025.9.1",
