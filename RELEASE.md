@@ -1,4 +1,4 @@
-# Release instructions for `DejaCode
+# Release instructions for `DejaCode`
 
 ## Automated release workflow
 

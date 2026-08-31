@@ -191,7 +191,7 @@ wheels = [
 
 [[package]]
 name = "dejacode"
-version = "5.8.1"
+version = "5.9.0"
 source = { editable = "." }
 dependencies = [
     { name = "aboutcode-toolkit" },
