@@ -531,11 +531,18 @@ class DJEUtilsTestCase(TestCase):
     def test_utils_get_plain_purl(self):
         self.assertEqual("", get_plain_purl(None))
         self.assertEqual("", get_plain_purl(""))
+        # Invalid PURLs fall back to simple string split (no exception raised)
         self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
         self.assertEqual("not:a/purl", get_plain_purl("not:a/purl"))
         self.assertEqual("pkg:npm/is-npm@1.0.0", get_plain_purl("pkg:npm/is-npm@1.0.0"))
         self.assertEqual(
             "pkg:npm/is-npm@1.0.0", get_plain_purl("pkg:npm/is-npm@1.0.0?qualifier=1#frament")
+        )
+        # Percent-encoded and literal forms of the same version compare equal.
+        # "+" in a version is encoded as "%2B" by PackageURL.to_string().
+        self.assertEqual(
+            get_plain_purl("pkg:golang/github.com/foo/bar@v1.0.0%2Bincompatible"),
+            get_plain_purl("pkg:golang/github.com/foo/bar@v1.0.0+incompatible"),
         )
 
     def test_utils_plain_purls_equal(self):
@@ -553,6 +560,17 @@ class DJEUtilsTestCase(TestCase):
 
         purl1 = "pkg:npm/is-npm@1.0.0"
         purl2 = "pkg:npm/is-npm@2.0.0"
+        self.assertFalse(plain_purls_equal(purl1, purl2))
+
+        # Go packages: percent-encoded "+" vs literal "+" in +incompatible versions
+        # must be treated as equal (issue #462).
+        purl1 = "pkg:golang/github.com/docker/docker@v19.03.15%2Bincompatible"
+        purl2 = "pkg:golang/github.com/docker/docker@v19.03.15+incompatible"
+        self.assertTrue(plain_purls_equal(purl1, purl2))
+
+        # Different versions must still be not-equal.
+        purl1 = "pkg:golang/github.com/docker/docker@v19.03.15+incompatible"
+        purl2 = "pkg:golang/github.com/docker/docker@v20.10.0+incompatible"
         self.assertFalse(plain_purls_equal(purl1, purl2))
 
     def test_utils_localized_datetime(self):
