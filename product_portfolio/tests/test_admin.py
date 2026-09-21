@@ -106,7 +106,7 @@ class ProductPortfolioAdminsTestCase(TestCase):
         self.client.login(username=self.user.username, password="secret")
         response = self.client.get(self.product_changelist_url)
         expected = [
-            ("", "---------"),
+            ("", "- Select an option -"),
             ("evaluate_policy_rules", "Evaluate policy rules"),
             ("mass_update", "Mass update"),
         ]

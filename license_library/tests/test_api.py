@@ -631,7 +631,7 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
             self.license_list_url, data=json.dumps(data), content_type="application/json"
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = {"tags": [{"label": ["Object with label=Non existing does not exist."]}]}
+        expected = {"tags": {0: {"label": ["Object with label=Non existing does not exist."]}}}
         self.assertEqual(expected, response.data)
 
         data["tags"][0]["label"] = self.license_tag1.label

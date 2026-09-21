@@ -59,7 +59,7 @@ class ProductGuardianAdminViewsTestCase(TestCase):
         # actions = []
         # actions_to_remove = ['copy_to', 'compare_with', 'delete_selected']
         expected = [
-            ("", "---------"),
+            ("", "- Select an option -"),
             ("evaluate_policy_rules", "Evaluate policy rules"),
             ("mass_update", "Mass update"),
         ]
@@ -455,7 +455,7 @@ class ProductComponentSecuredAdminViewsTestCase(TestCase):
         # actions = []
         # actions_to_remove = ['copy_to', 'compare_with']
         expected = [
-            ("", "---------"),
+            ("", "- Select an option -"),
             ("delete_selected", "Delete selected product component relationships"),
             ("mass_update", "Mass update"),
         ]
