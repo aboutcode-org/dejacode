@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 from django.core.serializers.json import Serializer
+from django.db.models import FETCH_PEERS
 
 from component_catalog.models import AcceptableLinkage
 from component_catalog.models import Component
@@ -216,32 +217,32 @@ class Command(BaseCommand):
             # The handle_assigned_licenses() method is not called so we need to dump
             # ComponentAssignedLicense and SubcomponentAssignedLicense models data
             data += list(
-                ComponentAssignedLicense.objects.filter(
-                    component__id__in=component_ids
-                ).select_related()
+                ComponentAssignedLicense.objects.filter(component__id__in=component_ids).fetch_mode(
+                    FETCH_PEERS
+                )
             )
             data += list(
                 SubcomponentAssignedLicense.objects.filter(
                     subcomponent__in=subcomponents
-                ).select_related()
+                ).fetch_mode(FETCH_PEERS)
             )
 
             data += list(ComponentKeyword.objects.scope(dataspace))
 
             packages = (
                 Package.objects.filter(componentassignedpackage__component__id__in=component_ids)
-                .select_related()
+                .fetch_mode(FETCH_PEERS)
                 .distinct()
             )
             data += list(packages)
             data += list(
                 ComponentAssignedPackage.objects.filter(component__id__in=component_ids)
-                .select_related()
+                .fetch_mode(FETCH_PEERS)
                 .distinct()
             )
             data += list(
                 PackageAssignedLicense.objects.filter(package__in=packages)
-                .select_related()
+                .fetch_mode(FETCH_PEERS)
                 .distinct()
             )
 
@@ -252,7 +253,7 @@ class Command(BaseCommand):
             models = REPORTING_MODELS[:]
 
         for model_class in models:
-            qs = get_unsecured_manager(model_class).scope(dataspace).select_related()
+            qs = get_unsecured_manager(model_class).scope(dataspace).fetch_mode(FETCH_PEERS)
             data += list(qs)
 
         return ExcludeFieldsSerializer().serialize(

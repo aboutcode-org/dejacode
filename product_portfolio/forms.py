@@ -602,7 +602,7 @@ class ImportFromScanForm(forms.Form):
     def save(self, product):
         from product_portfolio.importers import ImportFromScan
 
-        sid = transaction.savepoint()
+        sid = transaction.savepoint_create()
         importer = ImportFromScan(
             product,
             self.user,

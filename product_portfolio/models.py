@@ -92,9 +92,9 @@ class FieldChangesMixin:
     """
 
     @classmethod
-    def from_db(cls, db, field_names, values):
+    def from_db(cls, db, field_names, values, *, fetch_mode=None):
         """Store the original field values as loaded from the db on the instance."""
-        new = super().from_db(db, field_names, values)
+        new = super().from_db(db, field_names, values, fetch_mode=fetch_mode)
         new._loaded_values = dict(zip(field_names, values))
         return new
 
