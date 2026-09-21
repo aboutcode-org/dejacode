@@ -132,7 +132,8 @@ class TwoFactorAuthenticationTestCase(TestCase):
         response = self.client.post(self.tfa_disable_url, data=data)
         self.assertContains(response, "Please enter your OTP token.")
 
-        data = {"otp_token": "123456"}
+        device_form_value = OTPTokenForm.device_choices(self.user)[0][0]
+        data = {"otp_token": "123456", "otp_device": device_form_value}
         response = self.client.post(self.tfa_disable_url, data=data)
         form_error = "Invalid token. Please make sure you have entered it correctly."
         self.assertContains(response, form_error)
@@ -146,7 +147,6 @@ class TwoFactorAuthenticationTestCase(TestCase):
         device.save()
 
         valid_token = self._get_valid_token(device.bin_key)
-        device_form_value = OTPTokenForm.device_choices(self.user)[0][0]
         data = {
             "otp_token": valid_token,
             "otp_device": device_form_value,

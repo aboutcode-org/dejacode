@@ -351,7 +351,7 @@ class HistoryAdminMixin:
                     object_id=unquote(object_id),
                     content_type=ContentType.objects.get_for_model(self.model),
                 )
-                .select_related()
+                .select_related("user")
                 .order_by("-action_time")
             )
 

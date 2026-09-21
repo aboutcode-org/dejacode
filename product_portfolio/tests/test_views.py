@@ -2754,7 +2754,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = (
             '<select name="form-0-review_status" class="select form-select" disabled'
             ' aria-describedby="id_form-0-review_status_helptext" id="id_form-0-review_status">'
-            ' <option value="" selected>---------</option>'
+            ' <option value="" selected>- Select an option -</option>'
             "</select>"
         )
         self.assertContains(response, expected, html=True)

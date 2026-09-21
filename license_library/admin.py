@@ -174,7 +174,17 @@ class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
         "get_dataspace",
     )
     list_display_links = ("key",)
-    list_select_related = True
+    # Explicit fields since `AsLink("owner")` and `get_dataspace` are not
+    # plain field names Django can auto-detect from `list_display`.
+    list_select_related = (
+        "owner",
+        "category",
+        "license_style",
+        "license_profile",
+        "license_status",
+        "usage_policy",
+        "dataspace",
+    )
     search_fields = ("key", "name", "short_name", "keywords", "owner__name")
     ordering = ("-last_modified_date",)
     # Custom list as we don't want to inherit HistoryCreatedActionTimeListFilter

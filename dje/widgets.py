@@ -7,7 +7,6 @@
 #
 
 from django.contrib.admin.widgets import AdminTextInputWidget
-from django.db.models.fields import BLANK_CHOICE_DASH
 from django.forms import widgets
 from django.forms.utils import flatatt
 from django.utils.html import format_html
@@ -15,6 +14,7 @@ from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 
+from django_filters.conf import settings as django_filters_settings
 from django_filters.widgets import LinkWidget
 
 
@@ -67,7 +67,7 @@ class DropDownWidget(LinkWidget):
 
     def render_option(self, name, selected_choices, option_value, option_label):
         option_value = str(option_value)
-        if option_label == BLANK_CHOICE_DASH[0][1]:
+        if option_label == django_filters_settings.EMPTY_CHOICE_LABEL:
             option_label = _("All")
 
         data = self.data.copy()
