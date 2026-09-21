@@ -473,6 +473,11 @@ RQ_QUEUES = {
         "SSL": env.bool("DEJACODE_RQ_REDIS_SSL", default=False),
     },
 }
+# COMMIT_MODE "on_db_commit" enqueues jobs through transaction.on_commit(),
+# so a job is only picked up by a worker once its transaction is committed.
+RQ = {
+    "COMMIT_MODE": "on_db_commit",
+}
 
 # Cron jobs (scheduler)
 daily_at_3am = "0 3 * * *"
@@ -502,6 +507,11 @@ def enable_rq_eager_mode():
         return FakeStrictRedis() if use_strict_redis else FakeRedis()
 
     connection_utils.get_redis_connection = get_fake_redis_connection
+
+    # Default COMMIT_MODE is "on_db_commit": jobs are enqueued through
+    # transaction.on_commit(), which never fires inside a TestCase since its
+    # wrapping transaction is always rolled back. "auto" enqueues immediately.
+    RQ["COMMIT_MODE"] = "auto"
 
 
 DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
