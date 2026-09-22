@@ -498,6 +498,9 @@ class Product(
     def get_manage_triage_rulesets_url(self):
         return self.get_url("manage_triage_rulesets")
 
+    def get_clone_url(self):
+        return self.get_url("clone")
+
     @property
     def cyclonedx_bom_ref(self):
         return str(self.uuid)

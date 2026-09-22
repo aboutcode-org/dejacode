@@ -336,6 +336,17 @@ def get_model_class_from_path(path):
     return apps.get_model(app_name, model)
 
 
+def clone_related_objects(model_class, fk_field_name, source_object, target_object):
+    """Duplicate the `model_class` instances related to `source_object` onto `target_object`."""
+    related_objects = model_class.objects.filter(**{f"{fk_field_name}__id": source_object.id})
+
+    for relation in related_objects:
+        relation.id = None
+        relation.uuid = uuid.uuid4()
+        setattr(relation, fk_field_name, target_object)
+        relation.save()
+
+
 def merge_relations(original, duplicate):
     """Move `original` object references (ManyToOneRel, GenericRelation) from `duplicate`."""
     if original.__class__ != duplicate.__class__ or original.dataspace != duplicate.dataspace:

@@ -7,6 +7,7 @@
 #
 
 import json
+import uuid
 
 from django import forms
 from django.conf import settings
@@ -47,6 +48,9 @@ from dje.forms import StrictSubmit
 from dje.forms import autocomplete_placeholder
 from dje.mass_update import DejacodeMassUpdateForm
 from dje.models import History
+from dje.permissions import assign_all_object_permissions
+from dje.permissions import copy_object_permissions
+from dje.utils import clone_related_objects
 from dje.widgets import AdminAwesompleteInputWidget
 from dje.widgets import AutocompleteInput
 from dje.widgets import AwesompleteInputWidget
@@ -54,6 +58,7 @@ from dje.widgets import DatePicker
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
@@ -190,6 +195,106 @@ class ProductForm(
         )
 
         return helper
+
+
+class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
+    copy_inventory = forms.BooleanField(
+        label=_("Components, Packages, and Dependencies"),
+        required=False,
+        initial=True,
+    )
+    copy_codebase_resources = forms.BooleanField(
+        label=_("Codebase resources"),
+        required=False,
+        initial=True,
+    )
+    copy_triage_rulesets = forms.BooleanField(
+        label=_("Vulnerability triage rules"),
+        required=False,
+        initial=True,
+    )
+    copy_object_permissions = forms.BooleanField(
+        label=_("Permissions (view, change, delete grants)"),
+        required=False,
+        initial=True,
+    )
+
+    class Meta:
+        model = Product
+        fields = ["name", "version"]
+
+    def __init__(self, user, source_product, *args, **kwargs):
+        self.user = user
+        self.source_product = source_product
+
+        cloned_instance = Product.unsecured_objects.get(pk=source_product.pk)
+        cloned_instance.pk = None
+        cloned_instance._state.adding = True
+        cloned_instance.uuid = uuid.uuid4()
+        if source_product.version:
+            cloned_instance.version = f"{source_product.version} (copy)"[:100]
+        else:
+            cloned_instance.version = "copy"
+        cloned_instance.created_by = user
+        cloned_instance.last_modified_by = user
+        if hasattr(cloned_instance, "request_count"):
+            cloned_instance.request_count = None
+
+        kwargs["instance"] = cloned_instance
+        super().__init__(*args, **kwargs)
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_method = "post"
+        helper.form_id = "product-clone-form"
+        helper.attrs = {"autocomplete": "off"}
+        helper.layout = Layout(
+            Fieldset(
+                None,
+                Group("name", "version"),
+                HTML("<hr>"),
+                HTML(f"<p>{_('Data to copy over to the clone:')}</p>"),
+                "copy_inventory",
+                "copy_codebase_resources",
+                "copy_triage_rulesets",
+                "copy_object_permissions",
+                HTML("<hr>"),
+                HTML(
+                    format_html(
+                        '<a href="{}" class="btn btn-outline-secondary me-2"'
+                        ' data-bs-toggle="tooltip" title="{}">{}</a>',
+                        self.source_product.get_absolute_url(),
+                        _("Back to product"),
+                        _("Cancel"),
+                    )
+                ),
+                Submit("submit", _("Clone Product"), css_class="btn-success"),
+            ),
+        )
+        return helper
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+
+        History.log_addition(self.user, instance)
+        assign_all_object_permissions(self.user, instance)
+
+        relations_to_clone = {
+            "copy_inventory": [ProductComponent, ProductPackage, ProductDependency],
+            "copy_codebase_resources": [CodebaseResource],
+            "copy_triage_rulesets": [ProductTriageRuleset],
+        }
+        for field_name, model_classes in relations_to_clone.items():
+            if not self.cleaned_data.get(field_name):
+                continue
+            for model_class in model_classes:
+                clone_related_objects(model_class, "product", self.source_product, instance)
+
+        if self.cleaned_data.get("copy_object_permissions"):
+            copy_object_permissions(self.source_product, instance)
+
+        return instance
 
 
 class ProductAdminForm(
