@@ -39,3 +39,15 @@
     </div>
   </div>
 {% endblock %}
+
+{% block javascripts %}
+  <script>
+    $(document).ready(function () {
+      $('form#product-clone-form').on('submit', function () {
+        // Prevent from re-submitting the form by mistake
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Clone in progress...");
+      })
+    });
+  </script>
+{% endblock %}
