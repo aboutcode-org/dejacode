@@ -10,8 +10,13 @@ from django.apps import apps
 from django.contrib.auth.models import Group
 from django.test import TestCase
 
+from guardian.shortcuts import assign_perm
+from guardian.shortcuts import get_group_perms
+from guardian.shortcuts import get_user_perms
+
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
+from dje.permissions import copy_object_permissions
 from dje.permissions import get_all_tabsets
 from dje.permissions import get_authorized_tabs
 from dje.permissions import get_protected_fields
@@ -237,3 +242,25 @@ class DejaCodePermissionTestCase(TestCase):
 
         # Superuser users see all the tabs
         self.assertIsNone(get_authorized_tabs(Owner, self.super_user))
+
+    def test_permissions_copy_object_permissions(self):
+        Product = apps.get_model("product_portfolio", "Product")
+        source = Product.objects.create(name="Source", dataspace=self.dataspace)
+        target = Product.objects.create(name="Target", dataspace=self.dataspace)
+        group1 = Group.objects.create(name="Group1")
+
+        assign_perm("view_product", self.basic_user, source)
+        assign_perm("change_product", self.basic_user, source)
+        assign_perm("view_product", group1, source)
+
+        self.assertEqual(set(), set(get_user_perms(self.basic_user, target)))
+        self.assertEqual(set(), set(get_group_perms(group1, target)))
+
+        copy_object_permissions(source, target)
+
+        expected_user_perms = {"view_product", "change_product"}
+        self.assertEqual(expected_user_perms, set(get_user_perms(self.basic_user, target)))
+        self.assertEqual({"view_product"}, set(get_group_perms(group1, target)))
+
+        # The source keeps its own permissions untouched.
+        self.assertEqual(expected_user_perms, set(get_user_perms(self.basic_user, source)))

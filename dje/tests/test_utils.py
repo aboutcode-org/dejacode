@@ -25,6 +25,7 @@ from dejacode_toolkit.utils import md5
 from dejacode_toolkit.utils import sha1
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.utils import clone_related_objects
 from dje.utils import database_re_escape
 from dje.utils import extract_name_version
 from dje.utils import get_duplicates
@@ -54,6 +55,8 @@ Owner = apps.get_model("organization", "owner")
 License = apps.get_model("license_library", "license")
 ExternalReference = apps.get_model("dje", "ExternalReference")
 ExternalSource = apps.get_model("dje", "ExternalSource")
+Product = apps.get_model("product_portfolio", "Product")
+ProductComponent = apps.get_model("product_portfolio", "ProductComponent")
 
 
 class DJEUtilsTestCase(TestCase):
@@ -226,6 +229,24 @@ class DJEUtilsTestCase(TestCase):
         alternate_owner = Owner.objects.create(name="OwNer1", dataspace=alternate_dataspace)
         with self.assertRaises(AssertionError):
             merge_relations(original, alternate_owner)
+
+    def test_dje_utils_clone_related_objects(self):
+        nexb_dataspace = Dataspace.objects.create(name="nexB")
+        product1 = Product.objects.create(name="p1", dataspace=nexb_dataspace)
+        product2 = Product.objects.create(name="p2", dataspace=nexb_dataspace)
+        component1 = Component.objects.create(name="c1", dataspace=nexb_dataspace)
+        relation1 = ProductComponent.objects.create(
+            product=product1, component=component1, dataspace=nexb_dataspace
+        )
+
+        clone_related_objects(ProductComponent, "product", product1, product2)
+
+        self.assertEqual(1, product1.productcomponents.count())
+        self.assertEqual(relation1, product1.productcomponents.get())
+        cloned_relation = product2.productcomponents.get()
+        self.assertNotEqual(relation1.pk, cloned_relation.pk)
+        self.assertNotEqual(relation1.uuid, cloned_relation.uuid)
+        self.assertEqual(component1, cloned_relation.component)
 
     def test_dje_utils_group_by_name_version(self):
         test_cases = [

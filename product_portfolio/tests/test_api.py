@@ -455,6 +455,44 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+    def test_api_product_endpoint_clone_action(self):
+        url = reverse("api_v2:product-clone", args=[self.product1.uuid])
+        make_product_package(self.product1)
+        make_product_triage_ruleset(self.product1)
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # Required permissions
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"name": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        data = {
+            "name": self.product1.name,
+            "version": "2.0",
+            "copy_inventory": True,
+            "copy_triage_rulesets": True,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+        cloned_product = Product.objects.get_queryset(self.base_user).get(version="2.0")
+        self.assertEqual(str(cloned_product.uuid), response.data["uuid"])
+        self.assertEqual(1, cloned_product.productpackages.count())
+        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+
+        # Submitting the same name/version again is rejected.
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
     def test_api_product_endpoint_import_from_scan_action(self):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
 
