@@ -466,21 +466,22 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Required permissions
+        # The global `add_product` permission alone is not enough: object-level
+        # `change_product` on the source Product is also required.
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={"name": self.product1.name, "version": "2.0"})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        assign_perm("change_product", self.base_user, self.product1)
 
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         expected = {"name": ["This field is required."]}
         self.assertEqual(expected, response.data)
 
-        data = {
-            "name": self.product1.name,
-            "version": "2.0",
-            "copy_inventory": True,
-            "copy_triage_rulesets": True,
-        }
+        # The copy_* flags default to true when omitted from the payload
+        data = {"name": self.product1.name, "version": "2.0"}
         response = self.client.post(url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
@@ -489,9 +490,22 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.productpackages.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
 
-        # Submitting the same name/version again is rejected.
+        # Submitting the same name/version again is rejected
         response = self.client.post(url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        # Explicitly opting out of a copy flag is honored
+        data = {
+            "name": self.product1.name,
+            "version": "3.0",
+            "copy_inventory": False,
+            "copy_triage_rulesets": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        empty_clone = Product.objects.get_queryset(self.base_user).get(version="3.0")
+        self.assertEqual(0, empty_clone.productpackages.count())
+        self.assertEqual(0, empty_clone.product_triage_rulesets.count())
 
     def test_api_product_endpoint_import_from_scan_action(self):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])

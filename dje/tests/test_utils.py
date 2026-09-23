@@ -247,6 +247,7 @@ class DJEUtilsTestCase(TestCase):
         self.assertNotEqual(relation1.pk, cloned_relation.pk)
         self.assertNotEqual(relation1.uuid, cloned_relation.uuid)
         self.assertEqual(component1, cloned_relation.component)
+        self.assertEqual(product2.dataspace, cloned_relation.dataspace)
 
     def test_dje_utils_group_by_name_version(self):
         test_cases = [

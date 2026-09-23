@@ -264,3 +264,4 @@ class DejaCodePermissionTestCase(TestCase):
 
         # The source keeps its own permissions untouched.
         self.assertEqual(expected_user_perms, set(get_user_perms(self.basic_user, source)))
+        self.assertEqual({"view_product"}, set(get_group_perms(group1, source)))
