@@ -275,6 +275,9 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         return helper
 
     def save(self, commit=True):
+        from product_portfolio.importers import paused_product_package_reevaluation
+        from product_portfolio.importers import reevaluate_products
+
         instance = super().save(commit)
 
         History.log_addition(self.user, instance)
@@ -285,11 +288,15 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
             "copy_codebase_resources": [CodebaseResource],
             "copy_triage_rulesets": [ProductTriageRuleset],
         }
-        for field_name, model_classes in relations_to_clone.items():
-            if not self.cleaned_data.get(field_name):
-                continue
-            for model_class in model_classes:
-                clone_related_objects(model_class, "product", self.source_product, instance)
+
+        with paused_product_package_reevaluation():
+            for field_name, model_classes in relations_to_clone.items():
+                if not self.cleaned_data.get(field_name):
+                    continue
+                for model_class in model_classes:
+                    clone_related_objects(model_class, "product", self.source_product, instance)
+
+        reevaluate_products([instance])
 
         if self.cleaned_data.get("copy_object_permissions"):
             copy_object_permissions(self.source_product, instance)
