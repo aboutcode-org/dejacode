@@ -2597,10 +2597,13 @@ class Package(
         3. Package URL - Broadest match, may return multiple versions/variants
 
         A `max_request_call` integer can be provided to limit the number of
-        HTTP requests made to the PackageURL server.
+        HTTP requests made to the PackageURL server for the hash and download
+        URL fields.
         By default, one request will be made per field until a match is found.
         Providing max_request_call=1 will stop after the first request, even
         is nothing was found.
+        The Package URL is always used as a final fallback, regardless of
+        `max_request_call`, as it is the broadest match available.
         """
         payloads = []
         purldb_entries = []
@@ -2614,16 +2617,17 @@ class Package(
             payloads.append({"md5": self.md5})
         if self.download_url:
             payloads.append({"download_url": self.download_url})
-        if package_url:
-            payloads.append({"purl": package_url})
 
         purldb = PurlDB(user.dataspace)
         for index, payload in enumerate(payloads):
             if max_request_call and index >= max_request_call:
-                return
+                break
 
             if purldb_entries := purldb.find_packages(payload, timeout):
                 break
+
+        if not purldb_entries and package_url:
+            purldb_entries = purldb.find_packages({"purl": package_url}, timeout)
 
         if not purldb_entries:
             return []
