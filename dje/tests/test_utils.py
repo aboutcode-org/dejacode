@@ -239,7 +239,7 @@ class DJEUtilsTestCase(TestCase):
             product=product1, component=component1, dataspace=nexb_dataspace
         )
 
-        clone_related_objects(ProductComponent, "product", product1, product2)
+        cloned_pairs = clone_related_objects(ProductComponent, "product", product1.id, product2)
 
         self.assertEqual(1, product1.productcomponents.count())
         self.assertEqual(relation1, product1.productcomponents.get())
@@ -248,6 +248,8 @@ class DJEUtilsTestCase(TestCase):
         self.assertNotEqual(relation1.uuid, cloned_relation.uuid)
         self.assertEqual(component1, cloned_relation.component)
         self.assertEqual(product2.dataspace, cloned_relation.dataspace)
+
+        self.assertEqual([(relation1.pk, cloned_relation)], cloned_pairs)
 
     def test_dje_utils_group_by_name_version(self):
         test_cases = [

@@ -2077,11 +2077,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(self.product1.name, response.context["form"]["name"].value())
         self.assertEqual("1.0 (copy)", response.context["form"]["version"].value())
 
+        license1 = make_license(self.dataspace, key="license1")
         ProductComponent.objects.create(
-            product=self.product1, component=self.component1, dataspace=self.dataspace
+            product=self.product1,
+            component=self.component1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
         )
         ProductPackage.objects.create(
-            product=self.product1, package=self.package1, dataspace=self.dataspace
+            product=self.product1,
+            package=self.package1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
         )
         CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
@@ -2119,6 +2126,13 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.dependencies.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
         self.assertIn("view_product", get_user_perms(self.super_user, cloned_product))
+
+        cloned_productcomponent = cloned_product.productcomponents.get()
+        self.assertEqual(license1.key, cloned_productcomponent.license_expression)
+        self.assertEqual([license1], list(cloned_productcomponent.licenses.all()))
+        cloned_productpackage = cloned_product.productpackages.get()
+        self.assertEqual(license1.key, cloned_productpackage.license_expression)
+        self.assertEqual([license1], list(cloned_productpackage.licenses.all()))
 
         # Submitting the same name/version again is rejected.
         response = self.client.post(clone_url, data)

@@ -336,15 +336,25 @@ def get_model_class_from_path(path):
     return apps.get_model(app_name, model)
 
 
-def clone_related_objects(model_class, fk_field_name, source_object, target_object):
-    """Duplicate the `model_class` instances related to `source_object` onto `target_object`."""
-    related_objects = model_class.objects.filter(**{f"{fk_field_name}__id": source_object.id})
+def clone_related_objects(model_class, fk_field_name, source_id, target_object, save_kwargs=None):
+    """
+    Duplicate the `model_class` instances related to `source_id` onto `target_object`.
 
+    Return a list of (original_pk, cloned_instance) pairs.
+    """
+    related_objects = model_class.objects.filter(**{f"{fk_field_name}__id": source_id})
+    save_kwargs = save_kwargs or {}
+
+    cloned_pairs = []
     for relation in related_objects:
+        original_pk = relation.pk
         relation.id = None
         relation.uuid = uuid.uuid4()
         setattr(relation, fk_field_name, target_object)
-        relation.save()
+        relation.save(**save_kwargs)
+        cloned_pairs.append((original_pk, relation))
+
+    return cloned_pairs
 
 
 def merge_relations(original, duplicate):

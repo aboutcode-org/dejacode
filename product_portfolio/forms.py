@@ -58,8 +58,10 @@ from dje.widgets import DatePicker
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
+from product_portfolio.models import ProductComponentAssignedLicense
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPackageAssignedLicense
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from product_portfolio.tasks import scancodeio_submit_project_task
@@ -219,6 +221,20 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         initial=True,
     )
 
+    # Relations to duplicate, grouped by the form field that enables them.
+    relations_by_field = {
+        "copy_inventory": [ProductComponent, ProductPackage, ProductDependency],
+        "copy_codebase_resources": [CodebaseResource],
+        "copy_triage_rulesets": [ProductTriageRuleset],
+    }
+    # Relations carrying their own concluded license expression (`licenses` m2m): cloned
+    # with `copy=True` to skip the expensive per-row license re-resolution, their existing
+    # license assignments are copied over directly instead through their AssignedLicense model.
+    assigned_license_models = {
+        ProductComponent: (ProductComponentAssignedLicense, "productcomponent"),
+        ProductPackage: (ProductPackageAssignedLicense, "productpackage"),
+    }
+
     class Meta:
         model = Product
         fields = ["name", "version"]
@@ -274,6 +290,22 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         )
         return helper
 
+    def _clone_relations(self, model_class, target_product):
+        """Clone `model_class` relations from the source product onto `target_product`."""
+        assigned_license_model = self.assigned_license_models.get(model_class)
+        save_kwargs = {"copy": True} if assigned_license_model else None
+
+        cloned_pairs = clone_related_objects(
+            model_class, "product", self.source_product.id, target_product, save_kwargs=save_kwargs
+        )
+
+        if not assigned_license_model:
+            return
+
+        license_model, license_fk_name = assigned_license_model
+        for original_pk, cloned_relation in cloned_pairs:
+            clone_related_objects(license_model, license_fk_name, original_pk, cloned_relation)
+
     def save(self, commit=True):
         from product_portfolio.importers import paused_product_package_reevaluation
         from product_portfolio.importers import reevaluate_products
@@ -283,18 +315,12 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         History.log_addition(self.user, instance)
         assign_all_object_permissions(self.user, instance)
 
-        relations_to_clone = {
-            "copy_inventory": [ProductComponent, ProductPackage, ProductDependency],
-            "copy_codebase_resources": [CodebaseResource],
-            "copy_triage_rulesets": [ProductTriageRuleset],
-        }
-
         with paused_product_package_reevaluation():
-            for field_name, model_classes in relations_to_clone.items():
+            for field_name, model_classes in self.relations_by_field.items():
                 if not self.cleaned_data.get(field_name):
                     continue
                 for model_class in model_classes:
-                    clone_related_objects(model_class, "product", self.source_product, instance)
+                    self._clone_relations(model_class, instance)
 
         reevaluate_products([instance])
 

@@ -211,13 +211,12 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
         the `save_as_new` process.
         """
         field_name = self.instance._meta.model_name
-        original_instance = self.instance.__class__(pk=original_instance_id)
 
         for model_class in self.clone_m2m_classes:
             if model_class.__name__ == "Subcomponent":
                 field_name = "parent"
 
-            clone_related_objects(model_class, field_name, original_instance, cloned_instance)
+            clone_related_objects(model_class, field_name, original_instance_id, cloned_instance)
 
     @property
     def save_as_new_submit(self):
