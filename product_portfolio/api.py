@@ -44,6 +44,7 @@ from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import ProductCloneForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
@@ -407,6 +408,45 @@ class AssignTriageRulesetSerializer(serializers.Serializer):
     assigned = serializers.BooleanField()
 
 
+class CanChangeProduct(permissions.BasePermission):
+    """Allows the action only if the user has the `change_product` object permission."""
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.has_perm("product_portfolio.change_product", obj)
+
+
+class ProductCloneSerializer(serializers.Serializer):
+    name = serializers.CharField(
+        required=True,
+        help_text=ProductCloneForm.base_fields["name"].help_text,
+    )
+    version = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text=ProductCloneForm.base_fields["version"].help_text,
+    )
+    copy_inventory = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_inventory"].label),
+    )
+    copy_codebase_resources = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_codebase_resources"].label),
+    )
+    copy_triage_rulesets = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_triage_rulesets"].label),
+    )
+    copy_object_permissions = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_object_permissions"].label),
+    )
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -464,6 +504,43 @@ class ProductViewSet(
         """Add view/change/delete Object permissions to the Product creator."""
         super().perform_create(serializer)
         assign_all_object_permissions(self.request.user, serializer.instance)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        serializer_class=ProductCloneSerializer,
+        permission_classes=[
+            permissions.IsAuthenticated,
+            permissions.DjangoModelPermissions,
+            CanChangeProduct,
+        ],
+    )
+    def clone(self, request, *args, **kwargs):
+        """
+        Clone this Product into a new one.
+
+        Always copies the base Product fields under the given name/version.
+        Optionally copies the inventory (Components, Packages, and Dependencies),
+        Codebase resources, Vulnerability triage rules, and object Permissions,
+        depending on the submitted flags (all default to true).
+        """
+        product = self.get_object()
+
+        clone_serializer = ProductCloneSerializer(data=request.data)
+        if not clone_serializer.is_valid():
+            return Response(clone_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        form = ProductCloneForm(
+            user=request.user,
+            source_product=product,
+            data=clone_serializer.validated_data,
+        )
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        cloned_product = form.save()
+        serializer = ProductSerializer(cloned_product, context=self.get_serializer_context())
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True)
     def imports(self, request, uuid):

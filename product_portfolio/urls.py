@@ -18,6 +18,7 @@ from product_portfolio.views import LoadSBOMsView
 from product_portfolio.views import ManageComponentGridView
 from product_portfolio.views import ManagePackageGridView
 from product_portfolio.views import ProductAddView
+from product_portfolio.views import ProductCloneView
 from product_portfolio.views import ProductDeleteView
 from product_portfolio.views import ProductDetailsView
 from product_portfolio.views import ProductExportCSAFDocumentView
@@ -148,6 +149,7 @@ urlpatterns = [
     *product_path("export_license_compliance", ProductLicenseComplianceExportView.as_view()),
     *product_path("export_security_compliance", ProductSecurityComplianceExportView.as_view()),
     *product_path("attribution", AttributionView.as_view()),
+    *product_path("clone", ProductCloneView.as_view()),
     *product_path("change", ProductUpdateView.as_view()),
     *product_path("delete", ProductDeleteView.as_view()),
     *product_path("import_from_scan", import_from_scan_view),

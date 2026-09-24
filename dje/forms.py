@@ -45,6 +45,7 @@ from dje.models import is_content_type_related
 from dje.models import is_dataspace_related
 from dje.permissions import get_all_tabsets
 from dje.permissions import get_protected_fields
+from dje.utils import clone_related_objects
 from dje.utils import get_help_text
 from dje.utils import has_permission
 
@@ -210,21 +211,12 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
         the `save_as_new` process.
         """
         field_name = self.instance._meta.model_name
+
         for model_class in self.clone_m2m_classes:
             if model_class.__name__ == "Subcomponent":
                 field_name = "parent"
 
-            related_instances = model_class.objects.filter(
-                **{
-                    f"{field_name}__id": original_instance_id,
-                }
-            )
-
-            for relation in related_instances:
-                relation.id = None
-                relation.uuid = uuid.uuid4()
-                setattr(relation, field_name, cloned_instance)
-                relation.save()
+            clone_related_objects(model_class, field_name, original_instance_id, cloned_instance)
 
     @property
     def save_as_new_submit(self):

@@ -1,0 +1,53 @@
+{% extends "bootstrap_base.html" %}
+{% load i18n static crispy_forms_tags %}
+{% load inject_preserved_filters from dje_tags %}
+
+{% block page_title %}{% trans "Clone Product" %}{% endblock %}
+
+{% block content %}
+  <div class="header">
+    <div class="header-body">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="header-pretitle">
+            <a href="{% inject_preserved_filters 'product_portfolio:product_list' %}">{% trans "Products" %}</a>
+            / {{ object.get_absolute_link }}
+          </div>
+          <h1 class="header-title">
+            {% trans "Clone Product" %}
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-9">
+      {% include 'includes/messages_alert.html' %}
+
+      <div class="alert alert-primary" role="alert">
+        Create a new Product from a copy of <strong>{{ object }}</strong>. Choose what to copy
+        over below.
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          {% include 'includes/form_errors_alert.html' %}
+          {% crispy form %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script>
+    $(document).ready(function () {
+      $('form#product-clone-form').on('submit', function () {
+        // Prevent from re-submitting the form by mistake
+        $('button').prop('disabled', true);
+        NEXB.displayOverlay("Clone in progress...");
+      })
+    });
+  </script>
+{% endblock %}

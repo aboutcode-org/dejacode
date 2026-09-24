@@ -2059,6 +2059,102 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.codebaseresources.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
 
+    def test_product_portfolio_product_clone_view(self):
+        clone_url = self.product1.get_clone_url()
+        self.client.login(username=self.basic_user.username, password="secret")
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(clone_url)
+        self.assertEqual(403, response.status_code)
+
+        assign_perm("change_product", self.basic_user, self.product1)
+        response = self.client.get(clone_url)
+        self.assertEqual(403, response.status_code)
+
+        self.basic_user = add_perms(self.basic_user, ["add_product"])
+        response = self.client.get(clone_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.product1.name, response.context["form"]["name"].value())
+        self.assertEqual("1.0 (copy)", response.context["form"]["version"].value())
+
+        license1 = make_license(self.dataspace, key="license1")
+        ProductComponent.objects.create(
+            product=self.product1,
+            component=self.component1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
+        )
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=self.package1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
+        )
+        CodebaseResource.objects.create(
+            path="/path1/", product=self.product1, dataspace=self.dataspace
+        )
+        make_product_dependency(self.product1)
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
+        assign_perm("view_product", self.super_user, self.product1)
+        initial_product_count = Product.objects.get_queryset(self.basic_user).count()
+
+        data = {
+            "name": self.product1.name,
+            "version": "2.0",
+            "copy_inventory": "on",
+            "copy_codebase_resources": "on",
+            "copy_triage_rulesets": "on",
+            "copy_object_permissions": "on",
+        }
+        response = self.client.post(clone_url, data, follow=True)
+
+        new_count = Product.objects.get_queryset(self.basic_user).count()
+        self.assertEqual(new_count, initial_product_count + 1)
+        cloned_product = Product.objects.get_queryset(self.basic_user).get(version="2.0")
+        self.assertRedirects(response, cloned_product.get_absolute_url())
+        self.assertContains(response, "was successfully cloned into")
+
+        self.assertNotEqual(self.product1.id, cloned_product.id)
+        self.assertEqual(1, cloned_product.productcomponents.count())
+        self.assertEqual(1, cloned_product.productpackages.count())
+        self.assertEqual(1, cloned_product.codebaseresources.count())
+        self.assertEqual(1, cloned_product.dependencies.count())
+        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+        self.assertIn("view_product", get_user_perms(self.super_user, cloned_product))
+
+        cloned_productcomponent = cloned_product.productcomponents.get()
+        self.assertEqual(license1.key, cloned_productcomponent.license_expression)
+        self.assertEqual([license1], list(cloned_productcomponent.licenses.all()))
+        cloned_productpackage = cloned_product.productpackages.get()
+        self.assertEqual(license1.key, cloned_productpackage.license_expression)
+        self.assertEqual([license1], list(cloned_productpackage.licenses.all()))
+
+        # Submitting the same name/version again is rejected.
+        response = self.client.post(clone_url, data)
+        self.assertEqual(200, response.status_code)
+        expected = "Product with this Name and Version already exists."
+        self.assertContains(response, expected)
+
+        # Unchecking every option only creates the base Product.
+        data["version"] = "3.0"
+        data["copy_inventory"] = ""
+        data["copy_codebase_resources"] = ""
+        data["copy_triage_rulesets"] = ""
+        data["copy_object_permissions"] = ""
+        response = self.client.post(clone_url, data, follow=True)
+        empty_clone = Product.objects.get_queryset(self.basic_user).get(version="3.0")
+        self.assertEqual(0, empty_clone.productcomponents.count())
+        self.assertEqual(0, empty_clone.productpackages.count())
+        self.assertEqual(0, empty_clone.codebaseresources.count())
+        self.assertEqual(0, empty_clone.dependencies.count())
+        self.assertEqual(0, empty_clone.product_triage_rulesets.count())
+        self.assertNotIn("view_product", get_user_perms(self.super_user, empty_clone))
+
     def test_product_portfolio_product_delete_view(self):
         delete_url = self.product1.get_delete_url()
         details_url = self.product1.get_absolute_url()

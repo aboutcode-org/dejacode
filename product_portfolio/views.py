@@ -125,6 +125,7 @@ from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import ProductCloneForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
 from product_portfolio.forms import ProductCustomComponentForm
@@ -2791,6 +2792,28 @@ class ImportManifestsView(BaseProductImportFormView):
     template_name = "product_portfolio/import_manifests_form.html"
     form_class = ImportManifestsForm
     success_msg = "Manifest file submitted to ScanCode.io for inspection."
+
+
+class ProductCloneView(BaseProductImportFormView):
+    template_name = "product_portfolio/clone_product_form.html"
+    form_class = ProductCloneForm
+    permission_required = "product_portfolio.add_product"
+
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["user"] = self.request.user
+        form_kwargs["source_product"] = self.object
+        return form_kwargs
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+        cloned_product = form.save()
+
+        messages.success(
+            self.request,
+            f'Product "{self.object}" was successfully cloned into "{cloned_product}".',
+        )
+        return redirect(cloned_product)
 
 
 @method_decorator(require_POST, name="dispatch")

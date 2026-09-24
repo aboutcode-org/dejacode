@@ -2,6 +2,27 @@
 {% load i18n static %}
 {% load inject_preserved_filters from dje_tags %}
 
+{% block header_title %}
+  {{ object|truncatechars:100 }}
+  <small class="ms-1" style="font-size: 65%">
+    {% if is_user_dataspace %}
+      {% if has_change_permission %}
+        {% with object.get_change_url as object_change_url %}
+          <a href="{{ object_change_url }}" data-bs-toggle="tooltip" title="Edit"{% if 'admin' in object_change_url %} target="_blank"{% endif %} aria-label="Edit object"><i class="far fa-edit"></i></a>
+        {% endwith %}
+      {% endif %}
+      {% if has_change_permission and perms.product_portfolio.add_product %}
+        <a href="{{ object.get_clone_url }}" data-bs-toggle="tooltip" title="Clone" aria-label="Clone object"><i class="far fa-clone ms-1"></i></a>
+      {% endif %}
+      {% with object.get_delete_url as object_delete_url %}
+        {% if has_delete_permission and object_delete_url %}
+          <a href="{{ object_delete_url }}" data-bs-toggle="tooltip" title="Delete" aria-label="Delete object"><i class="far fa-trash-alt ms-1"></i></a>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  </small>
+{% endblock %}
+
 {% block pager-toolbar %}
   {% if is_user_dataspace %}
     {% if product.is_locked %}
