@@ -451,6 +451,37 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .column-vulnerability_analyses__is_reachable {
   width: 80px;
 }
+#tab_vulnerabilities .vulnerabilities-collapse-toggle.collapsed .fa-chevron-down {
+  transform: rotate(-90deg);
+}
+#tab_vulnerabilities .vulnerabilities-card:has(> .collapse:not(.show)) > .card-header {
+  border-bottom: 0;
+  border-radius: var(--bs-card-inner-border-radius);
+}
+/* Fixed layout keeps the columns aligned across the package cards */
+#tab_vulnerabilities .product-vulnerabilities-table {
+  table-layout: fixed;
+}
+#tab_vulnerabilities .product-vulnerabilities-table thead tr th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+}
+#tab_vulnerabilities .product-vulnerabilities-table .column-advisory_uid {
+  width: 25%;
+}
+#tab_vulnerabilities .product-vulnerabilities-table .column-risk_score {
+  width: 70px;
+}
+#tab_vulnerabilities .product-vulnerabilities-table .column-exploitability {
+  width: 160px;
+}
+#tab_vulnerabilities .product-vulnerabilities-table .column-triage_action {
+  width: 20%;
+}
+#tab_vulnerabilities .product-vulnerabilities-table .column-action {
+  width: 56px;
+}
 /* -- Vulnerability analysis modal -- */
 #vulnerability-analysis-modal #div_id_responses .form-check {
   display: inline-block;
