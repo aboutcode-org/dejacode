@@ -90,12 +90,17 @@
                     {% else %}
                       {{ vulnerability.advisory_id }}
                     {% endif %}
-                    {% if vulnerability.summary or vulnerability.aliases or vulnerability.exploitability or vulnerability.risk_score %}
+                    {% if vulnerability.aliases or vulnerability.highest_ssvc_decision %}
                       <span data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{% include 'component_catalog/includes/vulnerability_info_popover.html' with vulnerability=vulnerability only %}">
                         <i class="fa-solid fa-circle-info fa-xs text-muted ms-1"></i>
                       </span>
                     {% endif %}
                   </strong>
+                  {% if vulnerability.summary %}
+                    <div class="vulnerability-summary text-body-secondary small mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
+                      {{ vulnerability.summary }}
+                    </div>
+                  {% endif %}
                 </td>
                 <td>
                   {% with score=vulnerability.risk_score %}
@@ -146,41 +151,35 @@
                   {% with analysis=vulnerability.vulnerability_analysis %}
                     <div class="d-flex flex-column h-100">
                       {% if analysis %}
-                        <div class="mb-2">
-                          <div class="d-flex align-items-center flex-wrap gap-2">
-                            {% if analysis.state %}
-                              <span class="badge {{ analysis.state_badge_class }}">
-                                {{ analysis.get_state_display }}
-                              </span>
-                            {% endif %}
-                            {% if analysis.is_reachable %}
-                              <i class="fa-solid fa-circle-radiation text-danger" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
-                            {% elif analysis.is_reachable is False %}
-                              <i class="fa-solid fa-bug-slash text-body-secondary" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
-                            {% endif %}
-                          </div>
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                          {% if analysis.state %}
+                            <span class="badge {{ analysis.state_badge_class }}">
+                              {{ analysis.get_state_display }}
+                            </span>
+                          {% endif %}
+                          {% if analysis.is_reachable %}
+                            <i class="fa-solid fa-circle-radiation text-danger" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
+                          {% elif analysis.is_reachable is False %}
+                            <i class="fa-solid fa-bug-slash text-body-secondary" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
+                          {% endif %}
                           {% if analysis.justification %}
-                            <div class="small text-body-secondary mt-1">{{ analysis.get_justification_display }}</div>
+                            <span class="small text-body-secondary">{{ analysis.get_justification_display }}</span>
                           {% endif %}
-                          {% if analysis.detail %}
-                            <div class="small text-body-secondary mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ analysis.detail|linebreaksbr }}">
-                              <i class="fa-solid fa-circle-info text-muted me-1"></i>{{ analysis.detail|truncatechars:70 }}
-                            </div>
-                          {% endif %}
-                          {% if analysis.response_labels %}
-                            <div class="d-flex flex-wrap gap-1 mt-1">
-                              {% for response in analysis.response_labels %}
-                                <span class="badge bg-light text-body-secondary border fw-normal">{{ response }}</span>
-                              {% endfor %}
-                            </div>
-                          {% endif %}
+                          {% for response in analysis.response_labels %}
+                            <span class="badge bg-light text-body-secondary border fw-normal">{{ response }}</span>
+                          {% endfor %}
                         </div>
+                        {% if analysis.detail %}
+                          <div class="small text-body-secondary mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ analysis.detail|linebreaksbr }}">
+                            <i class="fa-solid fa-circle-info text-muted me-1"></i>{{ analysis.detail|truncatechars:70 }}
+                          </div>
+                        {% endif %}
                         {% if analysis.applied_by_preset %}
-                          <div class="small text-body-tertiary mt-auto pt-1 border-top">
+                          <div class="small text-body-tertiary mt-1">
                             <i class="fas fa-bolt text-warning fa-xs me-1"></i>{% trans "Auto-applied:" %} {{ analysis.applied_by_preset.name }}
                           </div>
                         {% elif analysis.last_modified_by or analysis.created_by %}
-                          <div class="small text-body-tertiary mt-auto pt-1 border-top">
+                          <div class="small text-body-tertiary mt-1">
                             <i class="fas fa-user fa-xs me-1"></i>{{ analysis.last_modified_by|default:analysis.created_by }}
                             &middot; {{ analysis.last_updated|date:"M j, Y" }}
                           </div>

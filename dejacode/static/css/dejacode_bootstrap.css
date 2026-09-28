@@ -470,11 +470,18 @@ table.vulnerabilities-table .column-summary {
 #tab_vulnerabilities .product-vulnerabilities-table .column-advisory_uid {
   width: 25%;
 }
+#tab_vulnerabilities .vulnerability-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
 #tab_vulnerabilities .product-vulnerabilities-table .column-risk_score {
-  width: 70px;
+  width: 50px;
 }
 #tab_vulnerabilities .product-vulnerabilities-table .column-exploitability {
-  width: 160px;
+  width: 120px;
 }
 #tab_vulnerabilities .product-vulnerabilities-table .column-triage_action {
   width: 20%;
