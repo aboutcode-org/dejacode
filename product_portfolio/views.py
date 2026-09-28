@@ -1279,6 +1279,7 @@ class ProductTabVulnerabilitiesView(
     )
 
     toolbar_filters = {
+        "weighted_risk_score": _("Risk"),
         "triage_action": _("Recommendation"),
         "vulnerability_analyses__state": _("Analysis"),
         "is_reachable": _("Reachability"),

@@ -1,8 +1,6 @@
 {% load i18n %}
-<li class="nav-item ms-2 d-flex align-items-center">
-  <span data-bs-toggle="modal" data-bs-target="#manage-triage-rulesets-modal" data-manage-url="{{ product.get_manage_triage_rulesets_url }}">
-    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="{% trans 'Manage triage rules' %}" aria-label="{% trans 'Manage triage rules' %}">
-      <i class="fas fa-sliders"></i><span class="d-none d-xxl-inline ms-1">{% trans "Manage triage rules" %}</span><span class="d-none d-xl-inline d-xxl-none ms-1">{% trans "Triage rules" %}</span>
-    </button>
-  </span>
+<li class="nav-item ms-auto d-flex align-items-center">
+  <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#manage-triage-rulesets-modal" data-manage-url="{{ product.get_manage_triage_rulesets_url }}">
+    <i class="fas fa-sliders me-1"></i>{% trans "Manage triage rules" %}
+  </button>
 </li>

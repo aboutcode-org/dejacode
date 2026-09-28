@@ -1,7 +1,22 @@
 {% load i18n %}
 {% load as_icon from dje_tags %}
 
-{% include 'tabs/pagination.html' with search_verbose_name="packages" extra_nav_item_template="product_portfolio/includes/vulnerabilities_nav_items.html" %}
+{% include 'tabs/pagination.html' with search_verbose_name="packages" extra_nav_item_template="product_portfolio/includes/vulnerabilities_nav_items.html" hide_filters_breadcrumbs=True %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 mb-3 bg-body-tertiary border rounded-3">
+  <span class="small fw-semibold text-uppercase text-body-secondary me-1">{% trans "Filters" %}</span>
+  {{ filterset.form.weighted_risk_score }}
+  {% if has_triage_rulesets %}
+    {{ filterset.form.triage_action }}
+  {% endif %}
+  {{ filterset.form.vulnerability_analyses__state }}
+  {{ filterset.form.is_reachable }}
+  {% if filterset.is_active %}
+    <a class="ms-auto small" href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+      {% trans "Clear search and filters" %}
+    </a>
+  {% endif %}
+</div>
 
 {% if risk_threshold %}
   <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">

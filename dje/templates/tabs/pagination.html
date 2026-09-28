@@ -23,9 +23,11 @@
         {% include extra_nav_item_template %}
       {% endif %}
     </ul>
-    <div class="mt-1">
-      {% include 'includes/filters_breadcrumbs.html' with filterset=filterset fragment=tab_id only %}
-    </div>
+    {% if not hide_filters_breadcrumbs %}
+      <div class="mt-1">
+        {% include 'includes/filters_breadcrumbs.html' with filterset=filterset fragment=tab_id only %}
+      </div>
+    {% endif %}
   </div>
   <div class="col-auto">
     {% include 'pagination/object_list_pagination.html' with hx_target=tab_id_html %}
