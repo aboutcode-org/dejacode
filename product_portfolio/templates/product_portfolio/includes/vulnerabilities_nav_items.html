@@ -1,10 +1,5 @@
 {% load i18n %}
 <li class="nav-item d-flex flex-wrap align-items-center gap-2 ms-sm-3">
-  {% if has_triage_rulesets %}
-    {{ filterset.form.triage_action }}
-  {% endif %}
-  {{ filterset.form.vulnerability_analyses__state }}
-  {{ filterset.form.is_reachable }}
   <div class="btn-group btn-group-sm" role="group" aria-label="{% trans 'Expand or collapse all packages' %}">
     <button type="button" class="btn btn-outline-dark" data-vulnerabilities-collapse="show" data-bs-toggle="tooltip" title="{% trans 'Expand all' %}" aria-label="{% trans 'Expand all' %}">
       <i class="fas fa-angles-down"></i>
@@ -13,6 +8,11 @@
       <i class="fas fa-angles-up"></i>
     </button>
   </div>
+  {% if has_triage_rulesets %}
+    {{ filterset.form.triage_action }}
+  {% endif %}
+  {{ filterset.form.vulnerability_analyses__state }}
+  {{ filterset.form.is_reachable }}
 </li>
 {% if manage_triage_rules_nav_item_template %}
   {% include manage_triage_rules_nav_item_template %}

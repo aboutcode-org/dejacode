@@ -1286,7 +1286,9 @@ class ProductTabVulnerabilitiesView(
 
     def set_toolbar_filter_widgets(self):
         for field_name, label in self.toolbar_filters.items():
-            self.filterset.filters[field_name].extra["widget"] = LabeledDropDownWidget(
+            toolbar_filter = self.filterset.filters[field_name]
+            toolbar_filter.label = label
+            toolbar_filter.extra["widget"] = LabeledDropDownWidget(
                 label=label, anchor=f"#{self.tab_id}"
             )
 

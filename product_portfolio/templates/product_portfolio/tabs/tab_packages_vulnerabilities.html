@@ -49,7 +49,7 @@
             <strong class="text-body">{{ product_package.vulnerability_count }}</strong> {% trans "vulnerabilities" %}
           </span>
           {% if product_package.known_exploits_count %}
-            <span class="text-danger-emphasis"><strong>{{ product_package.known_exploits_count }}</strong> {% trans "known exploits" %}</span>
+            <span class="badge bg-danger-subtle text-danger-emphasis">{{ product_package.known_exploits_count }} {% trans "known exploits" %}</span>
           {% endif %}
           <span class="d-flex align-items-center gap-2">
             <span class="progress" role="progressbar" aria-label="{% trans 'Analyzed vulnerabilities' %}" aria-valuenow="{{ product_package.analyzed_count }}" aria-valuemin="0" aria-valuemax="{{ product_package.vulnerability_count }}" style="width: 80px; height: 6px;">
@@ -60,11 +60,11 @@
         </div>
       </div>
       <div id="vulnerabilities-{{ product_package.id }}" class="collapse{% if not product_package.is_collapsed %} show{% endif %}">
-        <table class="table table-md table-hover align-middle text-break small mb-0 product-vulnerabilities-table">
+        <table class="table table-md table-hover text-break small mb-0 product-vulnerabilities-table">
           {% include 'includes/object_list_table_header.html' with include_actions=True %}
           <tbody>
             {% for vulnerability in product_package.display_vulnerabilities %}
-              <tr{% if forloop.counter > 10 %} class="d-none"{% endif %}>
+              <tr{% if forloop.counter > 5 %} class="d-none"{% endif %}>
                 <td>
                   <strong>
                     {% if vulnerability.resource_url %}
@@ -94,12 +94,10 @@
                   {% endwith %}
                 </td>
                 <td>
-                  {% if vulnerability.exploitability == 2.0 or vulnerability.exploitability == 1.0 %}
-                    <span class="badge {% if vulnerability.exploitability == 2.0 %}bg-danger-subtle text-danger-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %}">
+                  {% if vulnerability.exploitability %}
+                    <span class="badge {% if vulnerability.exploitability == 2.0 %}bg-danger-subtle text-danger-emphasis{% elif vulnerability.exploitability == 1.0 %}bg-warning-subtle text-warning-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
                       {{ vulnerability.get_exploitability_display }}
                     </span>
-                  {% elif vulnerability.exploitability %}
-                    <span class="small text-body-secondary">{{ vulnerability.get_exploitability_display }}</span>
                   {% endif %}
                 </td>
                 {% if has_triage_rulesets %}
@@ -131,7 +129,7 @@
                 {% endif %}
                 <td class="stretch-cell">
                   {% with analysis=vulnerability.vulnerability_analysis %}
-                    <div class="d-flex flex-column justify-content-center h-100">
+                    <div class="d-flex flex-column h-100">
                       {% if analysis %}
                         <div class="mb-2">
                           <div class="d-flex align-items-center flex-wrap gap-2">
@@ -218,11 +216,11 @@
                 </td>
               </tr>
             {% endfor %}
-            {% if product_package.display_vulnerabilities|length > 10 %}
+            {% if product_package.display_vulnerabilities|length > 5 %}
               <tr>
                 <td colspan="{% if has_triage_rulesets %}6{% else %}5{% endif %}" class="text-center bg-body-tertiary p-1">
                   <button type="button" class="btn btn-link btn-sm text-decoration-none" data-show-more-vulnerabilities>
-                    {% trans "Show" %} {{ product_package.display_vulnerabilities|length|add:"-10" }} {% trans "more vulnerabilities" %}
+                    {% trans "Show" %} {{ product_package.display_vulnerabilities|length|add:"-5" }} {% trans "more vulnerabilities" %}
                   </button>
                 </td>
               </tr>

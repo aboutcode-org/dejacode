@@ -9,7 +9,6 @@
 from django.contrib.admin.widgets import AdminTextInputWidget
 from django.forms import widgets
 from django.forms.utils import flatatt
-from django.utils.html import escape
 from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
@@ -102,27 +101,17 @@ class DropDownRightWidget(DropDownWidget):
 
 
 class LabeledDropDownWidget(DropDownWidget):
-    """Render as a button displaying the filter label and the selected choice label."""
+    """Render as a button displaying the filter label, filled when the filter is active."""
 
     dropdown_template = """
     <div class="dropdown">
       <button type="button" class="btn btn-sm btn-outline-dark dropdown-toggle {active}"
               data-bs-toggle="dropdown" aria-expanded="false" aria-label="{label} filter">
-        <span class="opacity-75">{label}:</span> {link_content}
+        {label}
       </button>
       {menu}
     </div>
     """
-
-    def get_selected_label(self, value):
-        if not value:
-            return _("All")
-        choice_labels = {str(choice_value): label for choice_value, label in self.choices}
-        return choice_labels.get(str(value), value)
-
-    def render(self, name, value, attrs=None, renderer=None, choices=()):
-        self.link_content = escape(self.get_selected_label(value))
-        return super().render(name, value, attrs, renderer, choices)
 
 
 class DropDownAsListWidget(DropDownRightWidget):
