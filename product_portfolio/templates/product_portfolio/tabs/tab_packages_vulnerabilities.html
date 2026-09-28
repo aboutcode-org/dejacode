@@ -12,7 +12,7 @@
   {{ filterset.form.vulnerability_analyses__state }}
   {{ filterset.form.is_reachable }}
   {% if filterset.is_active %}
-    <a class="ms-auto small" href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+    <a class="ms-auto small" href="{{ product.get_absolute_url }}#{{ tab_id }}">
       {% trans "Clear search and filters" %}
     </a>
   {% endif %}
@@ -249,7 +249,7 @@
   <p class="text-body-secondary">
     No results.
     {% if filterset.is_active %}
-      <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
+      <a href="{{ product.get_absolute_url }}#{{ tab_id }}">
         Clear search and filters
       </a>
     {% endif %}
