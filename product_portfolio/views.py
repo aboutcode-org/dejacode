@@ -1335,19 +1335,6 @@ class ProductTabVulnerabilitiesView(
                 if vulnerability.exploitability == KNOWN_EXPLOITS_EXPLOITABILITY
             )
 
-    def attach_advisory_todos_urls(self, dataspace, page_obj):
-        """Set the VulnerableCode curation URL on each vulnerability with open ToDos."""
-        vulnerablecode = VulnerableCode(dataspace)
-        if not vulnerablecode.is_configured():
-            return
-
-        for product_package in page_obj.object_list:
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
-                if vulnerability.todo_count:
-                    vulnerability.todos_url = vulnerablecode.get_advisory_todos_url(
-                        vulnerability.advisory_id
-                    )
-
     REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
 
     def get_vulnerability_display_filters(self):
@@ -1495,7 +1482,6 @@ class ProductTabVulnerabilitiesView(
 
         self.attach_vulnerability_analyses(page_obj)
         self.attach_vulnerability_summary(page_obj)
-        self.attach_advisory_todos_urls(product.dataspace, page_obj)
         self.attach_triage_data(product, page_obj)
 
         analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
@@ -1518,6 +1504,7 @@ class ProductTabVulnerabilitiesView(
                 "has_triage_rulesets": self.has_triage_rulesets,
                 "analysis_presets": analysis_presets,
                 "manage_triage_rules_nav_item_template": manage_triage_rules_nav_item_template,
+                "vulnerablecode_todos_url": VulnerableCode(product.dataspace).advisory_todos_url,
             }
         )
 

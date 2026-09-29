@@ -6,8 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-from urllib.parse import urlencode
-
 from django.core.cache import caches
 
 from requests.adapters import HTTPAdapter
@@ -43,10 +41,11 @@ class VulnerableCode(BaseService):
         session.mount("http://", adapter)
         return session
 
-    def get_advisory_todos_url(self, advisory_id):
-        """Return the URL to curate the ToDos of the provided `advisory_id`."""
-        query_string = urlencode({"search": advisory_id})
-        return f"{self.service_url.rstrip('/')}/advisories/todos/?{query_string}"
+    @property
+    def advisory_todos_url(self):
+        """Return the URL of the advisory curation ToDos list, when the service is configured."""
+        if self.is_configured():
+            return f"{self.service_url.rstrip('/')}/advisories/todos/"
 
     def get_vulnerabilities_by_purl(
         self,

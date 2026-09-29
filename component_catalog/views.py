@@ -77,6 +77,7 @@ from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import ScanStatus
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.models import DejacodeUser
@@ -272,6 +273,7 @@ class TabVulnerabilityMixin:
 
         context = {
             "vulnerabilities": vulnerabilities,
+            "vulnerablecode_todos_url": VulnerableCode(self.object.dataspace).advisory_todos_url,
         }
 
         return {
