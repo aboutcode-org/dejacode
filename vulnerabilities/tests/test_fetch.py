@@ -101,6 +101,18 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(Decimal("6.8"), vulnerability.weighted_severity)
         self.assertEqual(Decimal("3.4"), vulnerability.risk_score)
         self.assertEqual(["pkg:pypi/idna@3.7"], vulnerability.fixed_by_packages)
+        self.assertEqual(1, vulnerability.todo_count)
+        self.assertFalse(vulnerability.is_curation)
+        self.assertEqual([], vulnerability.curating_advisories)
+        curation_vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2026-215"
+        ).get()
+        self.assertEqual(0, curation_vulnerability.todo_count)
+        self.assertTrue(curation_vulnerability.is_curation)
+        expected_curating_advisories = [
+            "http://public.vulnerablecode.io/advisories/gitlab/pypi/idna/CVE-2026-45409"
+        ]
+        self.assertEqual(expected_curating_advisories, curation_vulnerability.curating_advisories)
         package1.refresh_from_db()
         pp1.refresh_from_db()
         self.assertEqual(Decimal("3.4"), package1.risk_score)
@@ -111,6 +123,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
         purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
         pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
+        response_json["results"][0]["affected_by_vulnerabilities"][0]["todo_count"] = 0
         mock_bulk_search_by_purl.return_value = response_json
         with self.assertNumQueries(10):
             results = fetch_for_packages(
@@ -121,6 +134,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
         self.assertEqual(Decimal("10.0"), vulnerability.risk_score)
+        self.assertEqual(0, vulnerability.todo_count)
         package1.refresh_from_db()
         pp1.refresh_from_db()
         self.assertEqual(Decimal("3.4"), package1.risk_score)

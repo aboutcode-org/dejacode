@@ -133,6 +133,21 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("A list of SSVC decision trees for this vulnerability."),
     )
+    todo_count = models.PositiveIntegerField(
+        default=0,
+        help_text=_(
+            "Number of open curation ToDos (data issues such as conflicting affected "
+            "packages) reported by VulnerableCode for this advisory."
+        ),
+    )
+    is_curation = models.BooleanField(
+        default=False,
+        help_text=_("Indicates whether this is a curation advisory."),
+    )
+    curating_advisories = JSONListField(
+        blank=True,
+        help_text=_("A list of URLs of the advisories curated by this curation advisory."),
+    )
     EXPLOITABILITY_CHOICES = [
         (0.5, _("No exploits known")),
         (1.0, _("Potential exploits")),
