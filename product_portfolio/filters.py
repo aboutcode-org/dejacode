@@ -41,7 +41,6 @@ from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
-from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
@@ -209,7 +208,6 @@ class ProductFilterSet(DataspacedFilterSet):
 
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
-    field_name_prefix = None
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
@@ -238,14 +236,6 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
                 ("package", _("Packages")),
             ),
         ),
-    )
-    exploitability = django_filters.ChoiceFilter(
-        label=_("Exploitability"),
-        choices=Vulnerability.EXPLOITABILITY_CHOICES,
-    )
-    weighted_severity = ScoreRangeFilter(
-        label=_("Severity"),
-        score_ranges=RISK_SCORE_RANGES,
     )
     weighted_risk_score = ScoreRangeFilter(
         label=_("Risk score"),
@@ -308,15 +298,8 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         self.filters["purpose"].extra["to_field_name"] = "label"
         self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
-        field_name_prefix = self.field_name_prefix
-        for field_name in ["exploitability", "weighted_severity"]:
-            field = self.filters[field_name]
-            field.extra["widget"] = DropDownWidget(anchor=self.anchor)
-            field.field_name = f"{field_name_prefix}__{field_name}"
-
 
 class ProductComponentFilterSet(BaseProductRelationFilterSet):
-    field_name_prefix = "component"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -364,7 +347,6 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
-    field_name_prefix = "package"
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
@@ -445,7 +427,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "vulnerability_analyses__state",
             "vulnerability_analyses__justification",
             "is_reachable",
-            "exploitability",
         ]
 
     @staticmethod
