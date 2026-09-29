@@ -232,6 +232,14 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             if decision in decisions:
                 return decision
 
+    @property
+    def curating_advisory_links(self):
+        """Return (url, label) pairs, the label being the advisory source and identifier."""
+        return [
+            (advisory_url, "/".join(advisory_url.rstrip("/").split("/")[-2:]))
+            for advisory_url in self.curating_advisories
+        ]
+
     def add_affected(self, instances, update_score=True):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
         if not isinstance(instances, (list, tuple, models.QuerySet)):
