@@ -523,6 +523,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(f"{url}?vulnerabilities-q={package1.filename}")
         self.assertNotContains(response, collapsed_body)
 
+    def test_product_portfolio_tab_vulnerability_view_aliases_menu(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1], aliases=["CVE-2024-0001"])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        expected = (
+            '<a class="dropdown-item small" href="https://nvd.nist.gov/vuln/detail/CVE-2024-0001"'
+        )
+        self.assertContains(response, expected)
+
     def test_product_portfolio_tab_vulnerability_view_curation_badges(self):
         self.client.login(username="nexb_user", password="secret")
         DataspaceConfiguration.objects.update_or_create(

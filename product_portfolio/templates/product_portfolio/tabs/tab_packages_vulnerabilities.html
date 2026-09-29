@@ -91,8 +91,11 @@
                       {{ vulnerability.advisory_id }}
                     {% endif %}
                     {% if vulnerability.aliases or vulnerability.highest_ssvc_decision %}
-                      <span data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{% include 'component_catalog/includes/vulnerability_info_popover.html' with vulnerability=vulnerability only %}">
-                        <i class="fa-solid fa-circle-info fa-xs text-muted ms-1"></i>
+                      <span class="dropdown d-inline" data-bs-toggle="tooltip" title="{% trans 'Aliases and SSVC decision' %}">
+                        <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Aliases and SSVC decision' %}">
+                          <i class="fa-solid fa-circle-info fa-xs text-muted ms-1"></i>
+                        </button>
+                        {% include 'component_catalog/includes/vulnerability_info_menu.html' with vulnerability=vulnerability only %}
                       </span>
                     {% endif %}
                   </strong>
