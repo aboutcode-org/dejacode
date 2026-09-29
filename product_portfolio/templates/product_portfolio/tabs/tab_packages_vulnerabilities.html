@@ -96,7 +96,9 @@
                       </span>
                     {% endif %}
                   </strong>
-                  {% include 'vulnerabilities/includes/curation_badges.html' with vulnerability=vulnerability vulnerablecode_todos_url=vulnerablecode_todos_url only %}
+                  <span class="ms-1">
+                    {% include 'vulnerabilities/includes/curation_badges.html' with vulnerability=vulnerability vulnerablecode_todos_url=vulnerablecode_todos_url only %}
+                  </span>
                   {% if vulnerability.summary %}
                     <div class="vulnerability-summary text-body-secondary small mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
                       {{ vulnerability.summary }}

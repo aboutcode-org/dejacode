@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje.views import DataspacedFilterView
 from dje.views import Header
 from vulnerabilities.filters import VulnerabilityFilterSet
@@ -50,6 +51,9 @@ class VulnerabilityListView(
                 "exploitability",
                 "weighted_severity",
                 "risk_score",
+                "is_curation",
+                "curating_advisories",
+                "todo_count",
                 "created_date",
                 "last_modified_date",
                 "dataspace",
@@ -65,4 +69,5 @@ class VulnerabilityListView(
         if not self.dataspace.enable_vulnerablecodedb_access:
             raise Http404("VulnerableCode access is not enabled.")
 
+        context_data["vulnerablecode_todos_url"] = VulnerableCode(self.dataspace).advisory_todos_url
         return context_data
