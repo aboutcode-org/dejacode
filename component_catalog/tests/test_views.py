@@ -49,6 +49,7 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
@@ -3039,6 +3040,20 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         # An unknown package offers an "Add Package" link instead.
         self.assertContains(response, "idna@9.9.9")
         self.assertContains(response, "package_url=pkg:pypi/idna@9.9.9")
+
+    def test_package_details_view_tab_vulnerabilities_curation_badges(self):
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace, vulnerablecode_url="https://vcio/"
+        )
+        self.vulnerability1.is_curation = True
+        self.vulnerability1.todo_count = 2
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+        self.assertContains(response, '<i class="fas fa-check me-1"></i>Curated')
+        expected = f'href="https://vcio/advisories/todos/?search={self.vulnerability1.advisory_id}"'
+        self.assertContains(response, expected)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])

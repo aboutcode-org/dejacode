@@ -488,3 +488,17 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
         vulnerability1.ssvc_trees = [{"decision": "Attend"}, {"decision": "Track*"}]
         self.assertEqual("Attend", vulnerability1.highest_ssvc_decision)
+
+    def test_vulnerability_curating_advisory_links(self):
+        vulnerability1 = make_vulnerability(self.dataspace)
+        self.assertEqual([], vulnerability1.curating_advisory_links)
+
+        vulnerability1.curating_advisories = [
+            "https://vcio/advisories/nvd_importer/CVE-2024-0001/",
+            "https://vcio/advisories/pypa_importer/PYSEC-2024-1",
+        ]
+        expected = [
+            ("https://vcio/advisories/nvd_importer/CVE-2024-0001/", "nvd_importer/CVE-2024-0001"),
+            ("https://vcio/advisories/pypa_importer/PYSEC-2024-1", "pypa_importer/PYSEC-2024-1"),
+        ]
+        self.assertEqual(expected, vulnerability1.curating_advisory_links)

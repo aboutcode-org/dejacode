@@ -12,6 +12,7 @@ from django.urls import reverse
 from component_catalog.tests import make_component
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.tests import MaxQueryMixin
 from dje.tests import create_superuser
 from vulnerabilities.models import Vulnerability
@@ -77,3 +78,17 @@ class VulnerabilityViewsTestCase(MaxQueryMixin, TestCase):
         """
         response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
         self.assertContains(response, expected, html=True)
+
+    def test_vulnerability_list_view_curation_badges(self):
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace, vulnerablecode_url="https://vcio/"
+        )
+        self.vulnerability1.is_curation = True
+        self.vulnerability1.todo_count = 2
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(reverse("vulnerabilities:vulnerability_list"))
+        self.assertContains(response, '<i class="fas fa-check me-1"></i>Curated')
+        expected = f'href="https://vcio/advisories/todos/?search={self.vulnerability1.advisory_id}"'
+        self.assertContains(response, expected)
