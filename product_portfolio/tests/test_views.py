@@ -374,13 +374,22 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         package1 = make_package(self.dataspace)
         vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        analyzed_vulnerability = make_vulnerability(self.dataspace, affecting=[package1])
         product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, analyzed_vulnerability)
         url = product1.get_url("tab_vulnerabilities")
 
+        # A partially analyzed package is included, displaying only its not analyzed entries.
         response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
         self.assertContains(response, '<span class="opacity-75">Analysis:</span> Not analyzed')
         self.assertContains(response, vulnerability1.advisory_id)
+        self.assertNotContains(response, analyzed_vulnerability.advisory_id)
         self.assertNotContains(response, "No results.")
+
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, "No results.")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")

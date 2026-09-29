@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
+from django_filters.conf import settings as django_filters_settings
 from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.filters import IsVulnerableBooleanFilter
@@ -41,6 +42,8 @@ from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
+from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import VulnerabilityAnalysisMixin
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
@@ -390,6 +393,12 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
+    vulnerability_analyses__state = django_filters.ChoiceFilter(
+        label=_("Vulnerability analyses state"),
+        choices=VulnerabilityAnalysisMixin.State.choices,
+        null_label="(No values)",
+        method="filter_analysis_state",
+    )
     responses = django_filters.ChoiceFilter(
         field_name="vulnerability_analyses__responses",
         lookup_expr="icontains",
@@ -440,9 +449,27 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         )
         return queryset.filter(Exists(primary_triage)).distinct()
 
+    @staticmethod
+    def filter_analysis_state(queryset, name, value):
+        """
+        Filter on the analysis state. The null choice matches the product packages
+        with at least one vulnerability that has no analysis state.
+        """
+        if value != django_filters_settings.NULL_CHOICE_VALUE:
+            return queryset.filter(vulnerability_analyses__state=value)
+
+        analyses_with_state = VulnerabilityAnalysis.objects.filter(
+            product_package=OuterRef(OuterRef("pk")),
+            vulnerability=OuterRef("pk"),
+        ).exclude(state="")
+        not_analyzed_vulnerabilities = Vulnerability.objects.filter(
+            ~Exists(analyses_with_state),
+            affected_packages__productpackages=OuterRef("pk"),
+        )
+        return queryset.filter(Exists(not_analyzed_vulnerabilities))
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
         self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
 
 
