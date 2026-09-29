@@ -55,8 +55,8 @@ Review Vulnerabilities Affecting Your Product
 
 .. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab.jpg
 
-2. You can sort and filter by Risk, Exploitability and Severity, as well as other
-   fields, to focus on specific Vulnerabilities.
+2. You can filter by Risk, Recommendation, Analysis and Reachability to focus on
+   specific Vulnerabilities.
 
 Conduct Vulnerability Analysis
 ------------------------------
