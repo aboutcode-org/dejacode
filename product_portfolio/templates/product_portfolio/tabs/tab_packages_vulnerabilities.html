@@ -119,6 +119,11 @@
                       {% endif %}
                     </span>
                   {% endif %}
+                  {% if vulnerability.todos_url %}
+                    <a href="{{ vulnerability.todos_url }}" target="_blank" class="btn badge bg-warning-subtle text-warning-emphasis ms-1" data-bs-toggle="tooltip" title="{% blocktrans count counter=vulnerability.todo_count %}{{ counter }} data issue to curate in VulnerableCode{% plural %}{{ counter }} data issues to curate in VulnerableCode{% endblocktrans %}">
+                      <i class="fas fa-triangle-exclamation me-1"></i>{% blocktrans count counter=vulnerability.todo_count %}{{ counter }} ToDo{% plural %}{{ counter }} ToDos{% endblocktrans %}
+                    </a>
+                  {% endif %}
                   {% if vulnerability.summary %}
                     <div class="vulnerability-summary text-body-secondary small mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
                       {{ vulnerability.summary }}
