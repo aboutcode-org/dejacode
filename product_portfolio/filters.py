@@ -444,10 +444,6 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
         super().__init__(*args, **kwargs)
         self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
         self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
-        is_reachable = self.filters["is_reachable"]
-        is_reachable.extra[
-            "widget"
-        ].link_content = '<i class="fa-solid fa-circle-radiation me-1"></i>'
 
 
 class ComponentCompletenessListFilter(admin.SimpleListFilter):

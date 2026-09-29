@@ -966,7 +966,7 @@ class DataspacedModel(DataspaceForeignKeyValidationMixin, models.Model):
 
             current_value = getattr(self, field_name, None)
             update_conditions = [
-                current_value in EMPTY_VALUES,
+                not current_value and current_value != value,
                 current_value != value and override,
                 current_value == "unknown" and override_unknown,
             ]

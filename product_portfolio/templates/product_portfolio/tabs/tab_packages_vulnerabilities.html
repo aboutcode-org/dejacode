@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load as_icon from dje_tags %}
 
 {% include 'tabs/pagination.html' with search_verbose_name="packages" extra_nav_item_template="product_portfolio/includes/vulnerabilities_nav_items.html" hide_filters_breadcrumbs=True %}
 
@@ -35,13 +34,8 @@
         <strong>
           <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
         </strong>
-        {% with score=product_package.weighted_risk_score %}
-          {% if score %}
-            <span class="badge {% if score >= 8.0 %}bg-danger-subtle text-danger-emphasis{% elif score >= 6.0 %}bg-warning-subtle text-warning-emphasis{% elif score >= 3.0 %}bg-info-subtle text-info-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
-              {% trans "Risk" %} {{ score }}
-            </span>
-          {% endif %}
-        {% endwith %}
+        {% trans "Risk" as risk_label %}
+        {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=product_package.weighted_risk_score label=risk_label only %}
         {% if product_package.is_deployed %}
           <span class="badge text-bg-light border">{% trans "Deployed" %}</span>
         {% endif %}
@@ -61,10 +55,10 @@
             {% if product_package.display_vulnerabilities|length != product_package.vulnerability_count %}
               <strong class="text-body">{{ product_package.display_vulnerabilities|length }}</strong> {% trans "of" %}
             {% endif %}
-            <strong class="text-body">{{ product_package.vulnerability_count }}</strong> {% trans "vulnerabilities" %}
+            {% blocktrans count counter=product_package.vulnerability_count %}<strong class="text-body">{{ counter }}</strong> vulnerability{% plural %}<strong class="text-body">{{ counter }}</strong> vulnerabilities{% endblocktrans %}
           </span>
           {% if product_package.known_exploits_count %}
-            <span class="badge bg-danger-subtle text-danger-emphasis">{{ product_package.known_exploits_count }} {% trans "known exploits" %}</span>
+            <span class="badge bg-danger-subtle text-danger-emphasis">{% blocktrans count counter=product_package.known_exploits_count %}{{ counter }} known exploit{% plural %}{{ counter }} known exploits{% endblocktrans %}</span>
           {% endif %}
           <span class="d-flex align-items-center gap-2">
             <span class="progress" role="progressbar" aria-label="{% trans 'Analyzed vulnerabilities' %}" aria-valuenow="{{ product_package.analyzed_count }}" aria-valuemin="0" aria-valuemax="{{ product_package.vulnerability_count }}" style="width: 80px; height: 6px;">
@@ -109,22 +103,14 @@
                   {% endif %}
                 </td>
                 <td>
-                  {% with score=vulnerability.risk_score %}
-                    {% if score %}
-                      <span class="badge {% if score >= 8.0 %}bg-danger-subtle text-danger-emphasis{% elif score >= 6.0 %}bg-warning-subtle text-warning-emphasis{% elif score >= 3.0 %}bg-info-subtle text-info-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
-                        {{ score }}
-                      </span>
-                    {% else %}
-                      <span class="text-body-tertiary">&ndash;</span>
-                    {% endif %}
-                  {% endwith %}
+                  {% if vulnerability.risk_score %}
+                    {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
+                  {% else %}
+                    <span class="text-body-tertiary">&ndash;</span>
+                  {% endif %}
                 </td>
                 <td>
-                  {% if vulnerability.exploitability %}
-                    <span class="badge {% if vulnerability.exploitability == 2.0 %}bg-danger-subtle text-danger-emphasis{% elif vulnerability.exploitability == 1.0 %}bg-warning-subtle text-warning-emphasis{% else %}bg-secondary-subtle text-secondary-emphasis{% endif %}">
-                      {{ vulnerability.get_exploitability_display }}
-                    </span>
-                  {% endif %}
+                  {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
                 </td>
                 {% if has_triage_rulesets %}
                 <td>
@@ -240,7 +226,7 @@
               <tr>
                 <td colspan="{% if has_triage_rulesets %}6{% else %}5{% endif %}" class="text-center bg-body-tertiary p-1">
                   <button type="button" class="btn btn-link btn-sm text-decoration-none" data-show-more-vulnerabilities>
-                    {% trans "Show" %} {{ product_package.display_vulnerabilities|length|add:"-5" }} {% trans "more vulnerabilities" %}
+                    {% blocktrans count counter=product_package.display_vulnerabilities|length|add:"-5" %}Show {{ counter }} more vulnerability{% plural %}Show {{ counter }} more vulnerabilities{% endblocktrans %}
                   </button>
                 </td>
               </tr>
@@ -250,7 +236,8 @@
       </div>
     </div>
   {% endif %}
-{% empty %}
+{% endfor %}
+{% if not has_displayed_vulnerabilities %}
   <p class="text-body-secondary">
     No results.
     {% if filterset.is_active %}
@@ -259,7 +246,7 @@
       </a>
     {% endif %}
   </p>
-{% endfor %}
+{% endif %}
 
 <script>
   document.querySelectorAll('[data-vulnerabilities-collapse]').forEach((button) => {

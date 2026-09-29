@@ -60,6 +60,7 @@ from django.views.generic.detail import BaseDetailView
 import odfdo
 import saneyaml
 from crispy_forms.utils import render_crispy_form
+from django_filters.conf import settings as django_filters_settings
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
 
@@ -186,8 +187,6 @@ ANALYSIS_STATE_STYLES = {
     "false_positive": "bg-secondary-subtle text-secondary-emphasis",
 }
 ANALYSIS_STATE_DEFAULT_STYLE = "bg-secondary-subtle text-secondary-emphasis"
-
-KNOWN_EXPLOITS_EXPLOITABILITY = 2
 
 
 class BaseProductViewMixin:
@@ -1285,13 +1284,16 @@ class ProductTabVulnerabilitiesView(
         "is_reachable": _("Reachability"),
     }
 
-    def set_toolbar_filter_widgets(self):
+    def setup_toolbar_filters(self):
         for field_name, label in self.toolbar_filters.items():
             toolbar_filter = self.filterset.filters[field_name]
             toolbar_filter.label = label
             toolbar_filter.extra["widget"] = LabeledDropDownWidget(
                 label=label, anchor=f"#{self.tab_id}"
             )
+
+        analysis_filter = self.filterset.filters["vulnerability_analyses__state"]
+        analysis_filter.extra["null_label"] = _("Not analyzed")
 
     def attach_vulnerability_analyses(self, page_obj):
         """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
@@ -1332,7 +1334,7 @@ class ProductTabVulnerabilitiesView(
             product_package.known_exploits_count = sum(
                 1
                 for vulnerability in vulnerabilities
-                if vulnerability.exploitability == KNOWN_EXPLOITS_EXPLOITABILITY
+                if vulnerability.exploitability == Vulnerability.KNOWN_EXPLOITS
             )
 
     REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
@@ -1348,6 +1350,13 @@ class ProductTabVulnerabilitiesView(
             "is_reachable": params.get(f"{prefix}-is_reachable", ""),
         }
 
+    @staticmethod
+    def value_matches_filter(value, filter_value):
+        """Return True if the value matches the filter value, the null choice matching empty."""
+        if filter_value == django_filters_settings.NULL_CHOICE_VALUE:
+            return not value
+        return value == filter_value
+
     def vulnerability_passes_display_filters(self, vulnerability, display_filters):
         """Return True if the vulnerability matches all active display filters."""
         triage_action = display_filters.get("triage_action")
@@ -1359,12 +1368,12 @@ class ProductTabVulnerabilitiesView(
         analysis = getattr(vulnerability, "vulnerability_analysis", None)
         state = display_filters.get("state")
         if state:
-            if getattr(analysis, "state", "") != state:
+            if not self.value_matches_filter(getattr(analysis, "state", ""), state):
                 return False
 
         justification = display_filters.get("justification")
         if justification:
-            if getattr(analysis, "justification", "") != justification:
+            if not self.value_matches_filter(getattr(analysis, "justification", ""), justification):
                 return False
 
         is_reachable_filter = display_filters.get("is_reachable")
@@ -1467,7 +1476,7 @@ class ProductTabVulnerabilitiesView(
             prefix=self.tab_id,
             anchor=f"#{self.tab_id}",
         )
-        self.set_toolbar_filter_widgets()
+        self.setup_toolbar_filters()
 
         self.has_triage_rulesets = product.product_triage_rulesets.filter(
             ruleset__enabled=True
@@ -1499,6 +1508,10 @@ class ProductTabVulnerabilitiesView(
                 "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": base_productpackage_qs.count(),
+                "has_displayed_vulnerabilities": any(
+                    product_package.display_vulnerabilities
+                    for product_package in page_obj.object_list
+                ),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
                 "has_triage_rulesets": self.has_triage_rulesets,

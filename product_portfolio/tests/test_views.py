@@ -370,6 +370,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         # The active filters are displayed in the toolbar in place of the breadcrumbs.
         self.assertNotContains(response, "fa-times-circle")
 
+    def test_product_portfolio_tab_vulnerability_view_not_analyzed_filter(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        url = product1.get_url("tab_vulnerabilities")
+
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, '<span class="opacity-75">Analysis:</span> Not analyzed')
+        self.assertContains(response, vulnerability1.advisory_id)
+        self.assertNotContains(response, "No results.")
+
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
         # Each have a unique vulnerability, and p1 p2 are sharing a common one.
@@ -498,9 +510,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.get(product1.get_url("tab_vulnerabilities"))
         self.assertContains(response, '<strong class="text-body">6</strong> vulnerabilities')
-        self.assertContains(response, "1 known exploits")
+        self.assertContains(response, "1 known exploit<")
         self.assertContains(response, "1/6 analyzed")
-        self.assertContains(response, "Show 1 more vulnerabilities")
+        self.assertContains(response, "Show 1 more vulnerability\n")
         self.assertContains(
             response, f'id="vulnerabilities-{product_package1.id}" class="collapse show"'
         )

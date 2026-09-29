@@ -148,10 +148,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("A list of URLs of the advisories curated by this curation advisory."),
     )
+    KNOWN_EXPLOITS = 2.0
     EXPLOITABILITY_CHOICES = [
         (0.5, _("No exploits known")),
         (1.0, _("Potential exploits")),
-        (2.0, _("Known exploits")),
+        (KNOWN_EXPLOITS, _("Known exploits")),
     ]
     exploitability = models.DecimalField(
         null=True,
@@ -234,9 +235,9 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
 
     @property
     def curating_advisory_links(self):
-        """Return (url, label) pairs, the label being the advisory source and identifier."""
+        """Return (url, label) pairs, the label being the advisory UID from the URL."""
         return [
-            (advisory_url, "/".join(advisory_url.rstrip("/").split("/")[-2:]))
+            (advisory_url, advisory_url.rstrip("/").split("/advisories/")[-1])
             for advisory_url in self.curating_advisories
         ]
 

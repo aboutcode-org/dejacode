@@ -495,10 +495,13 @@ class VulnerabilitiesModelsTestCase(TestCase):
 
         vulnerability1.curating_advisories = [
             "https://vcio/advisories/nvd_importer/CVE-2024-0001/",
-            "https://vcio/advisories/pypa_importer/PYSEC-2024-1",
+            "https://vcio/advisories/gitlab/pypi/idna/CVE-2026-45409",
         ]
         expected = [
             ("https://vcio/advisories/nvd_importer/CVE-2024-0001/", "nvd_importer/CVE-2024-0001"),
-            ("https://vcio/advisories/pypa_importer/PYSEC-2024-1", "pypa_importer/PYSEC-2024-1"),
+            (
+                "https://vcio/advisories/gitlab/pypi/idna/CVE-2026-45409",
+                "gitlab/pypi/idna/CVE-2026-45409",
+            ),
         ]
         self.assertEqual(expected, vulnerability1.curating_advisory_links)

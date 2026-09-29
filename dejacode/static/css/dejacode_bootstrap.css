@@ -413,44 +413,6 @@ table.vulnerabilities-table .column-summary {
 }
 
 /* -- Vulnerability tab -- */
-#tab_vulnerabilities .column-advisory_uid {
-  width: 240px;
-}
-#tab_vulnerabilities .column-affected_packages {
-  min-width: 310px;
-  width: 310px;
-}
-#tab_vulnerabilities .column-triage_action {
-  min-width: 165px;
-}
-#tab_vulnerabilities .column-action {
-  width: 30px;
-}
-#tab_vulnerabilities .column-exploitability {
-  width: 140px;
-}
-#tab_vulnerabilities .column-weighted_severity {
-  width: 105px;
-}
-#tab_vulnerabilities .column-risk_score,
-#tab_vulnerabilities .column-weighted_risk_score{
-  width: 80px;
-}
-#tab_vulnerabilities .column-summary {
-  width: 300px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__state {
-  min-width: 100px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__justification {
-  min-width: 130px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__responses {
-  min-width: 120px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__is_reachable {
-  width: 80px;
-}
 #tab_vulnerabilities .vulnerabilities-collapse-toggle.collapsed .fa-chevron-down {
   transform: rotate(-90deg);
 }
