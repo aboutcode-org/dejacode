@@ -344,13 +344,52 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response, "?vulnerabilities-vulnerability_analyses__state=#vulnerabilities"
         )
 
-    def test_product_portfolio_tab_vulnerability_view_is_reachable_filter_in_analysis_header(self):
+    def test_product_portfolio_tab_vulnerability_view_filters_toolbar(self):
         self.client.login(username="nexb_user", password="secret")
-        url = self.product1.get_url("tab_vulnerabilities")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(
+            product_package1, vulnerability1, state=VulnerabilityAnalysis.State.IN_TRIAGE
+        )
+        url = product1.get_url("tab_vulnerabilities")
+
         response = self.client.get(url)
-        self.assertContains(response, "fa-circle-radiation")
+        self.assertContains(response, '<span class="opacity-75">Risk:</span> All')
+        self.assertContains(
+            response, "?vulnerabilities-weighted_risk_score=critical#vulnerabilities"
+        )
         self.assertContains(response, "?vulnerabilities-is_reachable=yes#vulnerabilities")
         self.assertContains(response, "?vulnerabilities-is_reachable=no#vulnerabilities")
+        self.assertNotContains(response, "Clear search and filters")
+
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=in_triage")
+        self.assertContains(response, '<span class="opacity-75">Analysis:</span> In Triage')
+        self.assertContains(response, f'href="{product1.get_absolute_url()}#vulnerabilities"')
+        # The active filters are displayed in the toolbar in place of the breadcrumbs.
+        self.assertNotContains(response, "fa-times-circle")
+
+    def test_product_portfolio_tab_vulnerability_view_not_analyzed_filter(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        analyzed_vulnerability = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, analyzed_vulnerability)
+        url = product1.get_url("tab_vulnerabilities")
+
+        # A partially analyzed package is included, displaying only its not analyzed entries.
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, '<span class="opacity-75">Analysis:</span> Not analyzed')
+        self.assertContains(response, vulnerability1.advisory_id)
+        self.assertNotContains(response, analyzed_vulnerability.advisory_id)
+        self.assertNotContains(response, "No results.")
+
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, "No results.")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
@@ -450,25 +489,97 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = """
         <td class="stretch-cell">
           <div class="d-flex flex-column h-100">
-            <div class="mb-2">
-              <div class="d-flex align-items-center flex-wrap gap-2">
-                <span class="badge bg-success-subtle text-success-emphasis">Resolved</span>
-              </div>
-              <div class="small text-body-secondary mt-1">Code Not Present</div>
-              <div class="small text-body-secondary mt-1" data-bs-toggle="popover"
-                   data-bs-placement="top" data-bs-trigger="hover focus"
-                   data-bs-html="true" data-bs-content="detail">
-                <i class="fa-solid fa-circle-info text-muted me-1"></i>detail
-              </div>
-              <div class="d-flex flex-wrap gap-1 mt-1">
-                <span class="badge bg-light text-body-secondary border fw-normal">Can Not Fix</span>
-                <span class="badge bg-light text-body-secondary border fw-normal">Rollback</span>
-              </div>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="badge bg-success-subtle text-success-emphasis">Resolved</span>
+              <span class="small text-body-secondary">Code Not Present</span>
+              <span class="badge bg-light text-body-secondary border fw-normal">Can Not Fix</span>
+              <span class="badge bg-light text-body-secondary border fw-normal">Rollback</span>
+            </div>
+            <div class="small text-body-secondary mt-1" data-bs-toggle="popover"
+                 data-bs-placement="top" data-bs-trigger="hover focus"
+                 data-bs-html="true" data-bs-content="detail">
+              <i class="fa-solid fa-circle-info text-muted me-1"></i>detail
             </div>
           </div>
         </td>
         """
         self.assertContains(response, expected, html=True)
+
+    def test_product_portfolio_tab_vulnerability_view_package_card_summary(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        known_exploit_vulnerability = make_vulnerability(
+            self.dataspace, affecting=[package1], exploitability=2.0
+        )
+        for index in range(5):
+            make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, known_exploit_vulnerability)
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        self.assertContains(response, '<strong class="text-body">6</strong> vulnerabilities')
+        self.assertContains(response, "1 known exploit<")
+        self.assertContains(response, "1/6 analyzed")
+        self.assertContains(response, "Show 1 more vulnerability\n")
+        self.assertContains(
+            response, f'id="vulnerabilities-{product_package1.id}" class="collapse show"'
+        )
+
+    def test_product_portfolio_tab_vulnerability_view_fully_analyzed_package_collapsed(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        url = product1.get_url("tab_vulnerabilities")
+        collapsed_body = f'id="vulnerabilities-{product_package1.id}" class="collapse"'
+
+        response = self.client.get(url)
+        self.assertContains(response, collapsed_body)
+        self.assertContains(response, "vulnerabilities-collapse-toggle collapsed")
+
+        # Expanded when a search or filter is active.
+        response = self.client.get(f"{url}?vulnerabilities-q={package1.filename}")
+        self.assertNotContains(response, collapsed_body)
+
+    def test_product_portfolio_tab_vulnerability_view_aliases_menu(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1], aliases=["CVE-2024-0001"])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        expected = (
+            '<a class="dropdown-item small" href="https://nvd.nist.gov/vuln/detail/CVE-2024-0001"'
+        )
+        self.assertContains(response, expected)
+
+    def test_product_portfolio_tab_vulnerability_view_curation_badges(self):
+        self.client.login(username="nexb_user", password="secret")
+        DataspaceConfiguration.objects.update_or_create(
+            dataspace=self.dataspace, defaults={"vulnerablecode_url": "https://vcio/"}
+        )
+        package1 = make_package(self.dataspace)
+        make_vulnerability(
+            self.dataspace,
+            affecting=[package1],
+            advisory_id="GHSA-aaaa-bbbb-cccc",
+            is_curation=True,
+            curating_advisories=["https://vcio/advisories/nvd/CVE-2024-0001"],
+            todo_count=2,
+        )
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        self.assertContains(response, '<i class="fas fa-check me-1"></i>Curated')
+        self.assertContains(response, 'href="https://vcio/advisories/nvd/CVE-2024-0001"')
+        self.assertContains(response, "nvd/CVE-2024-0001")
+        self.assertContains(
+            response, 'href="https://vcio/advisories/todos/?search=GHSA-aaaa-bbbb-cccc"'
+        )
+        self.assertContains(response, "2 ToDos")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_include_tab_vulnerability_analysis_modal(

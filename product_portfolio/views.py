@@ -60,6 +60,7 @@ from django.views.generic.detail import BaseDetailView
 import odfdo
 import saneyaml
 from crispy_forms.utils import render_crispy_form
+from django_filters.conf import settings as django_filters_settings
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
 
@@ -109,6 +110,7 @@ from dje.views import TabContentView
 from dje.views import TabField
 from dje.views import TableHeaderMixin
 from dje.views_formset import FormSetView
+from dje.widgets import LabeledDropDownWidget
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
@@ -1249,17 +1251,21 @@ class ProductTabVulnerabilitiesView(
     table_model = ProductPackage
     filterset_class = ProductPackageFilterSet
     table_headers = (
-        Header("affected_packages", _("Package"), help_text="Affected product packages"),
         Header(
             "advisory_uid",
-            _("Vulnerabilities"),
-            help_text="Vulnerabilities affecting the product package",
+            _("Vulnerability"),
+            help_text=_("Vulnerability affecting the product package"),
+        ),
+        Header("risk_score", _("Risk"), help_text=_("Risk score of the vulnerability")),
+        Header(
+            "exploitability",
+            _("Exploitability"),
+            help_text=_("Availability of known exploits for the vulnerability"),
         ),
         Header(
             "triage_action",
             _("Recommendation"),
             help_text=_("Action recommended by the triage engine for this vulnerability"),
-            filter="triage_action",
             condition=has_triage_column_condition,
         ),
         Header(
@@ -1268,20 +1274,26 @@ class ProductTabVulnerabilitiesView(
             help_text=_(
                 "Exploitability analysis: status, justification, responses and reachability."
             ),
-            filter="vulnerability_analyses__state",
         ),
     )
 
-    def get_table_headers(self):
-        """Inject the is_reachable filter widget into the Analysis column header."""
-        headers = super().get_table_headers()
-        is_reachable_widget = f'<span class="me-2">{self.filterset.form["is_reachable"]}</span>'
-        return [
-            header._replace(filter=mark_safe(is_reachable_widget + str(header.filter)))
-            if header.field_name == "vulnerability_analyses__state"
-            else header
-            for header in headers
-        ]
+    toolbar_filters = {
+        "weighted_risk_score": _("Risk"),
+        "triage_action": _("Recommendation"),
+        "vulnerability_analyses__state": _("Analysis"),
+        "is_reachable": _("Reachability"),
+    }
+
+    def setup_toolbar_filters(self):
+        for field_name, label in self.toolbar_filters.items():
+            toolbar_filter = self.filterset.filters[field_name]
+            toolbar_filter.label = label
+            toolbar_filter.extra["widget"] = LabeledDropDownWidget(
+                label=label, anchor=f"#{self.tab_id}"
+            )
+
+        analysis_filter = self.filterset.filters["vulnerability_analyses__state"]
+        analysis_filter.extra["null_label"] = _("Not analyzed")
 
     def attach_vulnerability_analyses(self, page_obj):
         """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
@@ -1301,6 +1313,30 @@ class ProductTabVulnerabilitiesView(
                         ]
                         break
 
+    def attach_vulnerability_summary(self, page_obj):
+        """Set the vulnerability, analyzed, and known exploits counts on each product_package."""
+        has_active_filters = self.filterset.is_active()
+
+        for product_package in page_obj.object_list:
+            vulnerabilities = product_package.package.affected_by_vulnerabilities.all()
+            analyzed_count = sum(
+                1
+                for vulnerability in vulnerabilities
+                if getattr(vulnerability, "vulnerability_analysis", None)
+            )
+
+            product_package.vulnerability_count = len(vulnerabilities)
+            product_package.analyzed_count = analyzed_count
+            # Fully analyzed packages are collapsed, unless filters are active.
+            product_package.is_collapsed = (
+                analyzed_count == len(vulnerabilities) and not has_active_filters
+            )
+            product_package.known_exploits_count = sum(
+                1
+                for vulnerability in vulnerabilities
+                if vulnerability.exploitability == Vulnerability.KNOWN_EXPLOITS
+            )
+
     REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
 
     def get_vulnerability_display_filters(self):
@@ -1314,6 +1350,13 @@ class ProductTabVulnerabilitiesView(
             "is_reachable": params.get(f"{prefix}-is_reachable", ""),
         }
 
+    @staticmethod
+    def value_matches_filter(value, filter_value):
+        """Return True if the value matches the filter value, the null choice matching empty."""
+        if filter_value == django_filters_settings.NULL_CHOICE_VALUE:
+            return not value
+        return value == filter_value
+
     def vulnerability_passes_display_filters(self, vulnerability, display_filters):
         """Return True if the vulnerability matches all active display filters."""
         triage_action = display_filters.get("triage_action")
@@ -1325,12 +1368,12 @@ class ProductTabVulnerabilitiesView(
         analysis = getattr(vulnerability, "vulnerability_analysis", None)
         state = display_filters.get("state")
         if state:
-            if getattr(analysis, "state", "") != state:
+            if not self.value_matches_filter(getattr(analysis, "state", ""), state):
                 return False
 
         justification = display_filters.get("justification")
         if justification:
-            if getattr(analysis, "justification", "") != justification:
+            if not self.value_matches_filter(getattr(analysis, "justification", ""), justification):
                 return False
 
         is_reachable_filter = display_filters.get("is_reachable")
@@ -1433,6 +1476,7 @@ class ProductTabVulnerabilitiesView(
             prefix=self.tab_id,
             anchor=f"#{self.tab_id}",
         )
+        self.setup_toolbar_filters()
 
         self.has_triage_rulesets = product.product_triage_rulesets.filter(
             ruleset__enabled=True
@@ -1446,6 +1490,7 @@ class ProductTabVulnerabilitiesView(
         page_obj = paginator.get_page(page_number)
 
         self.attach_vulnerability_analyses(page_obj)
+        self.attach_vulnerability_summary(page_obj)
         self.attach_triage_data(product, page_obj)
 
         analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
@@ -1463,11 +1508,16 @@ class ProductTabVulnerabilitiesView(
                 "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": base_productpackage_qs.count(),
+                "has_displayed_vulnerabilities": any(
+                    product_package.display_vulnerabilities
+                    for product_package in page_obj.object_list
+                ),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
                 "has_triage_rulesets": self.has_triage_rulesets,
                 "analysis_presets": analysis_presets,
                 "manage_triage_rules_nav_item_template": manage_triage_rules_nav_item_template,
+                "vulnerablecode_todos_url": VulnerableCode(product.dataspace).advisory_todos_url,
             }
         )
 

@@ -1,0 +1,33 @@
+{% load i18n %}
+{% if vulnerability.is_curation or vulnerability.todo_count and vulnerablecode_todos_url %}
+<span class="d-inline-flex flex-wrap align-items-center gap-1">
+  {% if vulnerability.is_curation %}
+    <span class="dropdown d-inline" data-bs-toggle="tooltip" title="{% trans 'Curation advisory: data manually reviewed' %}">
+      <button type="button" class="btn badge bg-success-subtle text-success-emphasis border-0"{% if vulnerability.curating_advisories %} data-bs-toggle="dropdown" aria-expanded="false"{% endif %}>
+        <i class="fas fa-check me-1"></i>{% trans "Curated" %}
+        {% if vulnerability.curating_advisories %}
+          <i class="fas fa-caret-down ms-1"></i>
+        {% endif %}
+      </button>
+      {% if vulnerability.curating_advisories %}
+        <ul class="dropdown-menu">
+          <li><h6 class="dropdown-header small">{% trans "Curated advisories" %}</h6></li>
+          {% for advisory_url, advisory_label in vulnerability.curating_advisory_links %}
+            <li>
+              <a class="dropdown-item small" href="{{ advisory_url }}" target="_blank">
+                {{ advisory_label }}
+                <i class="fa-solid fa-up-right-from-square mini"></i>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </span>
+  {% endif %}
+  {% if vulnerability.todo_count and vulnerablecode_todos_url %}
+    <a href="{{ vulnerablecode_todos_url }}?search={{ vulnerability.advisory_id|urlencode }}" target="_blank" class="btn badge bg-warning-subtle text-warning-emphasis" data-bs-toggle="tooltip" title="{% blocktrans count counter=vulnerability.todo_count %}{{ counter }} data issue to curate in VulnerableCode{% plural %}{{ counter }} data issues to curate in VulnerableCode{% endblocktrans %}">
+      <i class="fas fa-triangle-exclamation me-1"></i>{% blocktrans count counter=vulnerability.todo_count %}{{ counter }} ToDo{% plural %}{{ counter }} ToDos{% endblocktrans %}
+    </a>
+  {% endif %}
+</span>
+{% endif %}

@@ -413,43 +413,43 @@ table.vulnerabilities-table .column-summary {
 }
 
 /* -- Vulnerability tab -- */
-#tab_vulnerabilities .column-advisory_uid {
-  width: 240px;
+#tab_vulnerabilities .vulnerabilities-collapse-toggle.collapsed .fa-chevron-down {
+  transform: rotate(-90deg);
 }
-#tab_vulnerabilities .column-affected_packages {
-  min-width: 310px;
-  width: 310px;
+#tab_vulnerabilities .vulnerabilities-card:has(> .collapse:not(.show)) > .card-header {
+  border-bottom: 0;
+  border-radius: var(--bs-card-inner-border-radius);
 }
-#tab_vulnerabilities .column-triage_action {
-  min-width: 165px;
+/* Fixed layout keeps the columns aligned across the package cards */
+#tab_vulnerabilities .product-vulnerabilities-table {
+  table-layout: fixed;
 }
-#tab_vulnerabilities .column-action {
-  width: 30px;
+#tab_vulnerabilities .product-vulnerabilities-table thead tr th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
 }
-#tab_vulnerabilities .column-exploitability {
-  width: 140px;
+#tab_vulnerabilities .product-vulnerabilities-table .column-advisory_uid {
+  width: 25%;
 }
-#tab_vulnerabilities .column-weighted_severity {
-  width: 105px;
+#tab_vulnerabilities .vulnerability-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
-#tab_vulnerabilities .column-risk_score,
-#tab_vulnerabilities .column-weighted_risk_score{
-  width: 80px;
+#tab_vulnerabilities .product-vulnerabilities-table .column-risk_score {
+  width: 50px;
 }
-#tab_vulnerabilities .column-summary {
-  width: 300px;
+#tab_vulnerabilities .product-vulnerabilities-table .column-exploitability {
+  width: 120px;
 }
-#tab_vulnerabilities .column-vulnerability_analyses__state {
-  min-width: 100px;
+#tab_vulnerabilities .product-vulnerabilities-table .column-triage_action {
+  width: 20%;
 }
-#tab_vulnerabilities .column-vulnerability_analyses__justification {
-  min-width: 130px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__responses {
-  min-width: 120px;
-}
-#tab_vulnerabilities .column-vulnerability_analyses__is_reachable {
-  width: 80px;
+#tab_vulnerabilities .product-vulnerabilities-table .column-action {
+  width: 56px;
 }
 /* -- Vulnerability analysis modal -- */
 #vulnerability-analysis-modal #div_id_responses .form-check {

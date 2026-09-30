@@ -1,0 +1,12 @@
+{% load i18n %}
+<li class="nav-item d-flex align-items-center gap-2 ms-sm-3">
+  <button type="button" class="btn btn-sm btn-outline-dark" data-vulnerabilities-collapse="show">
+    <i class="fas fa-angles-down me-1"></i>{% trans "Expand all" %}
+  </button>
+  <button type="button" class="btn btn-sm btn-outline-dark" data-vulnerabilities-collapse="hide">
+    <i class="fas fa-angles-up me-1"></i>{% trans "Collapse all" %}
+  </button>
+</li>
+{% if manage_triage_rules_nav_item_template %}
+  {% include manage_triage_rules_nav_item_template %}
+{% endif %}

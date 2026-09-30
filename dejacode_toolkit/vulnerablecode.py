@@ -41,6 +41,12 @@ class VulnerableCode(BaseService):
         session.mount("http://", adapter)
         return session
 
+    @property
+    def advisory_todos_url(self):
+        """Return the URL of the advisory curation ToDos list, when the service is configured."""
+        if self.is_configured():
+            return f"{self.service_url.rstrip('/')}/advisories/todos/"
+
     def get_vulnerabilities_by_purl(
         self,
         purl,
