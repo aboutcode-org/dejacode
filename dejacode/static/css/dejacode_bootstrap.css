@@ -301,8 +301,8 @@ th.column-selection {
   min-width: 200px;
 }
 .licenses-table th.column-usage_policy {
-  width: 80px;
-  min-width: 80px;
+  width: 100px;
+  min-width: 100px;
 }
 .licenses-table th.column-category {
   width: 125px;

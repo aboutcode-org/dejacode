@@ -43,9 +43,9 @@
           <span class="badge text-bg-light border">{{ product_package.purpose.label }}</span>
         {% endif %}
         {% if product_package.package.latest_non_vulnerable_version %}
-          <span class="badge bg-success-subtle text-success-emphasis" data-bs-toggle="tooltip" title="{% trans 'Latest non-vulnerable version' %}">
+          <a href="{{ product_package.package.get_latest_non_vulnerable_url }}" target="_blank" class="badge bg-success-subtle text-success-emphasis text-decoration-none" data-bs-toggle="tooltip" title="{% trans 'Latest non-vulnerable version' %}">
             <i class="fa-solid fa-circle-up me-1"></i>{% trans "Fixed in" %} {{ product_package.package.latest_non_vulnerable_version }}
-          </span>
+          </a>
         {% endif %}
         <div class="ms-auto d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
           {% if product_package.purpose.exposure_factor %}

@@ -25,6 +25,7 @@ from component_catalog.views import component_create_ajax_view
 from component_catalog.views import delete_scan_view
 from component_catalog.views import get_scan_progress_htmx_view
 from component_catalog.views import package_create_ajax_view
+from component_catalog.views import package_latest_non_vulnerable_view
 from component_catalog.views import package_scan_view
 from component_catalog.views import refresh_scan_view
 from component_catalog.views import send_scan_data_as_file_view
@@ -99,6 +100,11 @@ packages_patterns = [
         "packages/<str:dataspace>/<uuid:uuid>/scan/",
         package_scan_view,
         name="package_scan",
+    ),
+    path(
+        "packages/<str:dataspace>/<uuid:uuid>/latest_non_vulnerable/",
+        package_latest_non_vulnerable_view,
+        name="package_latest_non_vulnerable",
     ),
     path(
         "packages/<str:dataspace>/<uuid:uuid>/scan_progress_htmx/",

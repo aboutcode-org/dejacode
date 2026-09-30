@@ -1482,6 +1482,32 @@ def package_scan_view(request, dataspace, uuid):
 
 @login_required
 @require_GET
+def package_latest_non_vulnerable_view(request, dataspace, uuid):
+    """
+    Redirect to the Package matching the latest non-vulnerable version when available
+    in the Dataspace, or to the Package add form pre-filled from its Package URL.
+    """
+    user_dataspace = request.user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=user_dataspace)
+    if not package.latest_non_vulnerable_version:
+        raise Http404
+
+    non_vulnerable_purl = PackageURL(
+        type=package.type,
+        namespace=package.namespace,
+        name=package.name,
+        version=package.latest_non_vulnerable_version,
+    ).to_string()
+    dataspace_packages = Package.objects.scope(user_dataspace)
+    if non_vulnerable_package := dataspace_packages.for_package_url(non_vulnerable_purl).first():
+        return redirect(non_vulnerable_package)
+
+    query = {"package_url": non_vulnerable_purl}
+    return redirect(reverse("component_catalog:package_add", query=query))
+
+
+@login_required
+@require_GET
 def get_scan_progress_htmx_view(request, dataspace, uuid):
     template = "product_portfolio/tables/scan_progress_cell.html"
     dataspace = request.user.dataspace
