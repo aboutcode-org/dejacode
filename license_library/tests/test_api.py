@@ -538,8 +538,8 @@ class LicenseAPITestCase(MaxQueryMixin, TestCase):
 
         response = self.client.post(self.license_list_url, data=data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        error_msg = "duplicate key value violates unique constraint"
-        self.assertIn(error_msg, response.data[0])
+        error_msg = "A record with the same unique values already exists."
+        self.assertEqual(error_msg, response.data[0])
 
     def test_api_license_endpoint_create_full(self):
         self.client.login(username="super_user", password="secret")

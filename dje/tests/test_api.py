@@ -368,7 +368,7 @@ class RootAPITestCase(TestCase):
         patch_data = json.dumps({"uuid": str(generated_uuid)})
         response = self.client.patch(url, data=patch_data, content_type="application/json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        self.assertIn("duplicate key value violates unique constraint", response.data[0])
+        self.assertEqual("A record with the same unique values already exists.", response.data[0])
 
         generated_uuid = uuid.uuid4()
         patch_data = json.dumps({"uuid": str(generated_uuid)})

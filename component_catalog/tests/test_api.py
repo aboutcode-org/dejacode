@@ -1107,7 +1107,11 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         data = {"download_url": "https://download.url"}
         response = self.client.post(self.package_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = [ErrorDetail(string="['package_url or filename required']", code="invalid")]
+        expected = {
+            "non_field_errors": [
+                ErrorDetail(string="package_url or filename required", code="invalid")
+            ]
+        }
         self.assertEqual(expected, response.data)
 
         data = {
@@ -1228,13 +1232,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         # Same download_url, same filename
         data["download_url"] = self.package1.download_url
         response = self.client.post(self.package_list_url, data)
-        expected1 = "duplicate key value violates unique constraint"
-        expected2 = (
-            "Key (dataspace_id, type, namespace, name, version, qualifiers, subpath,"
-            " download_url, filename)"
-        )
-        self.assertContains(response, expected1, status_code=400)
-        self.assertContains(response, expected2, status_code=400)
+        expected = "A record with the same unique values already exists."
+        self.assertContains(response, expected, status_code=400)
 
         # Same download_url, same filename, name
         data["name"] = "Name"
@@ -1243,8 +1242,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         # Same download_url, same filename, same name
         response = self.client.post(self.package_list_url, data)
-        self.assertContains(response, expected1, status_code=400)
-        self.assertContains(response, expected2, status_code=400)
+        self.assertContains(response, expected, status_code=400)
 
     def test_api_package_endpoint_create_update_keywords(self):
         keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)

@@ -233,7 +233,7 @@ class OwnerAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(self.owner_list_url, data={"name": "NewOwner"})
         self.assertContains(
             response,
-            "duplicate key value violates unique constraint",
+            "A record with the same unique values already exists.",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
