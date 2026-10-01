@@ -528,7 +528,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
 
     def test_product_portfolio_tab_vulnerability_view_fixed_in_link(self):
         self.client.login(username="nexb_user", password="secret")
-        package1 = make_package(self.dataspace, latest_non_vulnerable_version="2.0")
+        package1 = make_package(
+            self.dataspace, package_url="pkg:pypi/django@1.0", latest_non_vulnerable_version="2.0"
+        )
         make_vulnerability(self.dataspace, affecting=[package1])
         product1 = make_product(self.dataspace, inventory=[package1])
 

@@ -1486,21 +1486,31 @@ def package_latest_non_vulnerable_view(request, dataspace, uuid):
     """
     Redirect to the Package matching the latest non-vulnerable version when available
     in the Dataspace, or to the Package add form pre-filled from its Package URL.
+    Users without the add permission are redirected to the list of available versions.
     """
-    user_dataspace = request.user.dataspace
+    user = request.user
+    user_dataspace = user.dataspace
     package = get_object_or_404(Package, uuid=uuid, dataspace=user_dataspace)
-    if not package.latest_non_vulnerable_version:
+    if not (package.package_url and package.latest_non_vulnerable_version):
         raise Http404
 
+    package_url_fields = {
+        "type": package.type,
+        "namespace": package.namespace,
+        "name": package.name,
+    }
     non_vulnerable_purl = PackageURL(
-        type=package.type,
-        namespace=package.namespace,
-        name=package.name,
+        **package_url_fields,
         version=package.latest_non_vulnerable_version,
     ).to_string()
     dataspace_packages = Package.objects.scope(user_dataspace)
     if non_vulnerable_package := dataspace_packages.for_package_url(non_vulnerable_purl).first():
         return redirect(non_vulnerable_package)
+
+    if not user.has_perm("component_catalog.add_package"):
+        messages.warning(request, f"{non_vulnerable_purl} is not available in the Dataspace.")
+        query = {"q": PackageURL(**package_url_fields).to_string()}
+        return redirect(reverse("component_catalog:package_list", query=query))
 
     query = {"package_url": non_vulnerable_purl}
     return redirect(reverse("component_catalog:package_add", query=query))
