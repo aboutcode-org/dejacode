@@ -224,8 +224,6 @@ dependencies = [
     { name = "inflection" },
     { name = "jinja2" },
     { name = "jsonfield" },
-    { name = "jsonschema" },
-    { name = "jsonschema-specifications" },
     { name = "license-expression" },
     { name = "lxml" },
     { name = "markdown" },
@@ -237,7 +235,6 @@ dependencies = [
     { name = "openpyxl" },
     { name = "packageurl-python" },
     { name = "packaging" },
-    { name = "pip" },
     { name = "psycopg" },
     { name = "py-serializable" },
     { name = "pyasn1" },
@@ -250,9 +247,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "qrcode" },
     { name = "redis" },
-    { name = "referencing" },
     { name = "requests" },
-    { name = "rpds-py" },
     { name = "rq" },
     { name = "saneyaml" },
     { name = "setuptools" },
@@ -316,8 +311,6 @@ requires-dist = [
     { name = "inflection", specifier = "==0.5.1" },
     { name = "jinja2", specifier = "==3.1.6" },
     { name = "jsonfield", specifier = "==3.2.0" },
-    { name = "jsonschema", specifier = "==4.26.0" },
-    { name = "jsonschema-specifications", specifier = "==2025.9.1" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
     { name = "markdown", specifier = "==3.11" },
@@ -329,7 +322,6 @@ requires-dist = [
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.3" },
-    { name = "pip", specifier = "==26.2.1" },
     { name = "psycopg", specifier = "==3.3.6" },
     { name = "py-serializable", specifier = "==2.1.0" },
     { name = "pyasn1", specifier = "==0.6.4" },
@@ -342,9 +334,7 @@ requires-dist = [
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "redis", specifier = "==8.1.0" },
-    { name = "referencing", specifier = "==0.37.0" },
     { name = "requests", specifier = "==2.34.2" },
-    { name = "rpds-py", specifier = "==2026.6.3" },
     { name = "rq", specifier = "==2.12.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
@@ -614,31 +604,6 @@ wheels = [
 ]
 
 [[package]]
-name = "jsonschema"
-version = "4.26.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "attrs" },
-    { name = "jsonschema-specifications" },
-    { name = "referencing" },
-    { name = "rpds-py" },
-]
-wheels = [
-    { path = "jsonschema-4.26.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "jsonschema-specifications"
-version = "2025.9.1"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "referencing" },
-]
-wheels = [
-    { path = "jsonschema_specifications-2025.9.1-py3-none-any.whl" },
-]
-
-[[package]]
 name = "license-expression"
 version = "30.4.4"
 source = { registry = "thirdparty/dist" }
@@ -741,14 +706,6 @@ version = "26.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "packaging-26.3-py3-none-any.whl" },
-]
-
-[[package]]
-name = "pip"
-version = "26.2.1"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pip-26.2.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -871,18 +828,6 @@ wheels = [
 ]
 
 [[package]]
-name = "referencing"
-version = "0.37.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "attrs" },
-    { name = "rpds-py" },
-]
-wheels = [
-    { path = "referencing-0.37.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "requests"
 version = "2.34.2"
 source = { registry = "thirdparty/dist" }
@@ -894,15 +839,6 @@ dependencies = [
 ]
 wheels = [
     { path = "requests-2.34.2-py3-none-any.whl" },
-]
-
-[[package]]
-name = "rpds-py"
-version = "2026.6.3"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "rpds_py-2026.6.3-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "rpds_py-2026.6.3-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
 ]
 
 [[package]]

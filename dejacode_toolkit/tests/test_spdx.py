@@ -7,9 +7,13 @@
 #
 
 import pathlib
+from importlib.util import find_spec
 from unittest import TestCase
+from unittest import skipUnless
 
 from dejacode_toolkit import spdx
+
+JSONSCHEMA_INSTALLED = find_spec("jsonschema") is not None
 
 
 class SPDXTestCase(TestCase):
@@ -311,10 +315,12 @@ class SPDXTestCase(TestCase):
     def test_spdx_document_safe_document_name(self):
         assert "upper_1_2_3_" == spdx.Document.safe_document_name("UPPER@1-2-3^&*")
 
+    @skipUnless(JSONSCHEMA_INSTALLED, "Requires the jsonschema library.")
     def test_spdx_document_validate(self):
         document = spdx.Document(**self.document_data)
         document.validate(self.schema)
 
+    @skipUnless(JSONSCHEMA_INSTALLED, "Requires the jsonschema library.")
     def test_spdx_validate_document(self):
         document = spdx.Document(**self.document_data)
         spdx.validate_document(document, self.schema)
