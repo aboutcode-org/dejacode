@@ -143,8 +143,8 @@ dependencies = [
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
     # CSAF
-    "pydantic==2.12.5",
-    "pydantic-core==2.41.5",
+    "pydantic==2.13.5",
+    "pydantic-core==2.46.5",
     "typing-inspection==0.4.4",
     "maturin==1.15.0",
     "setuptools-rust==1.13.0",
