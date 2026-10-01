@@ -244,7 +244,6 @@ dependencies = [
     { name = "model-bakery" },
     { name = "msgspec" },
     { name = "natsort" },
-    { name = "oauthlib" },
     { name = "odfdo" },
     { name = "openpyxl" },
     { name = "packageurl-python" },
@@ -261,14 +260,12 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "python-ldap" },
     { name = "python-mimeparse" },
-    { name = "python3-openid" },
     { name = "pytz" },
     { name = "pyyaml" },
     { name = "qrcode" },
     { name = "redis" },
     { name = "referencing" },
     { name = "requests" },
-    { name = "requests-oauthlib" },
     { name = "rpds-py" },
     { name = "rq" },
     { name = "saneyaml" },
@@ -350,7 +347,6 @@ requires-dist = [
     { name = "model-bakery", specifier = "==1.24.1" },
     { name = "msgspec", specifier = "==0.21.1" },
     { name = "natsort", specifier = "==8.4.0" },
-    { name = "oauthlib", specifier = "==3.3.1" },
     { name = "odfdo", specifier = "==3.26.1" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
@@ -367,14 +363,12 @@ requires-dist = [
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-ldap", specifier = "==3.4.8" },
     { name = "python-mimeparse", specifier = "==2.0.0" },
-    { name = "python3-openid", specifier = "==3.2.0" },
     { name = "pytz", specifier = "==2026.4" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "redis", specifier = "==8.1.0" },
     { name = "referencing", specifier = "==0.37.0" },
     { name = "requests", specifier = "==2.34.2" },
-    { name = "requests-oauthlib", specifier = "==2.0.0" },
     { name = "rpds-py", specifier = "==2026.6.3" },
     { name = "rq", specifier = "==2.12.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
@@ -751,14 +745,6 @@ wheels = [
 ]
 
 [[package]]
-name = "oauthlib"
-version = "3.3.1"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "oauthlib-3.3.1-py3-none-any.whl" },
-]
-
-[[package]]
 name = "odfdo"
 version = "3.26.1"
 source = { registry = "thirdparty/dist" }
@@ -915,17 +901,6 @@ wheels = [
 ]
 
 [[package]]
-name = "python3-openid"
-version = "3.2.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "defusedxml" },
-]
-wheels = [
-    { path = "python3_openid-3.2.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "pytz"
 version = "2026.4"
 source = { registry = "thirdparty/dist" }
@@ -983,18 +958,6 @@ dependencies = [
 ]
 wheels = [
     { path = "requests-2.34.2-py3-none-any.whl" },
-]
-
-[[package]]
-name = "requests-oauthlib"
-version = "2.0.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "oauthlib" },
-    { name = "requests" },
-]
-wheels = [
-    { path = "requests_oauthlib-2.0.0-py2.py3-none-any.whl" },
 ]
 
 [[package]]

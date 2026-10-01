@@ -97,12 +97,12 @@ docs:
 ########################################################################################
 
 outdated:
-	@echo "-> Check for outdated packages (with 7 days cooldown)"
+	@echo "-> Check for outdated packages (with 3 days cooldown)"
 	uv sync --frozen --quiet
 	uv pip list --outdated \
 		--no-config \
 		--index-url https://pypi.org/simple \
-		--exclude-newer "7 days"
+		--exclude-newer "3 days"
 	@echo "-> Audit the project's dependencies for known vulnerabilities"
 	uv audit
 

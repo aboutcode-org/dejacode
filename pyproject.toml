@@ -102,9 +102,6 @@ dependencies = [
     "bleach_allowlist==1.0.3",
     "webencodings==0.6.1",
     # Authentication
-    "oauthlib==3.3.1",
-    "python3-openid==3.2.0",
-    "requests-oauthlib==2.0.0",
     "defusedxml==0.7.1",
     # LDAP Auth
     "python-ldap==3.4.8",
