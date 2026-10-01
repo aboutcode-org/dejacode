@@ -40,30 +40,23 @@ JIRA_PATTERN = re.compile(
 
 SOURCEHUT_PATTERN = re.compile(r"^https://todo\.sr\.ht/~[^/]+/[^/]+/?$")
 
-ISSUE_TRACKER_PATTERNS = [
-    FORGEJO_PATTERN,
-    GITHUB_PATTERN,
-    GITLAB_PATTERN,
-    JIRA_PATTERN,
-    SOURCEHUT_PATTERN,
-]
+ISSUE_TRACKER_INTEGRATIONS = {
+    GITHUB_PATTERN: GitHubIntegration,
+    GITLAB_PATTERN: GitLabIntegration,
+    JIRA_PATTERN: JiraIntegration,
+    FORGEJO_PATTERN: ForgejoIntegration,
+    SOURCEHUT_PATTERN: SourceHutIntegration,
+}
 
 
 def is_valid_issue_tracker_id(issue_tracker_id):
-    return any(pattern.match(issue_tracker_id) for pattern in ISSUE_TRACKER_PATTERNS)
+    return get_class_for_tracker(issue_tracker_id) is not None
 
 
 def get_class_for_tracker(issue_tracker_id):
-    if "github.com" in issue_tracker_id:
-        return GitHubIntegration
-    elif "gitlab.com" in issue_tracker_id:
-        return GitLabIntegration
-    elif "atlassian.net" in issue_tracker_id:
-        return JiraIntegration
-    elif "forgejo" in issue_tracker_id:
-        return ForgejoIntegration
-    elif "todo.sr.ht" in issue_tracker_id:
-        return SourceHutIntegration
+    for pattern, integration_class in ISSUE_TRACKER_INTEGRATIONS.items():
+        if pattern.match(issue_tracker_id):
+            return integration_class
 
 
 def get_class_for_platform(platform):

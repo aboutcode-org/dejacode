@@ -77,7 +77,7 @@
       document.querySelectorAll('ul#menu-content li[data-toggle="collapse"]').forEach(item => {
         item.addEventListener('click', function () {
           const target = this.getAttribute('data-target').replace('-dropdown', '');
-          window.location.replace(target);
+          window.location.hash = target;
         });
       });
     });

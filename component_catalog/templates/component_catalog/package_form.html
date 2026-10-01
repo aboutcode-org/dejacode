@@ -18,29 +18,30 @@
         return purl.join('');
       }
 
-      let type_input = $('#id_type');
-      let namespace_input = $('#id_namespace');
-      let name_input = $('#id_name');
-      let version_input = $('#id_version');
-      let qualifiers_input = $('#id_qualifiers');
-      let subpath_input = $('#id_subpath');
+      const purl_inputs = ['type', 'namespace', 'name', 'version', 'qualifiers', 'subpath'].map(
+        (field_name) => document.getElementById(`id_${field_name}`)
+      );
+
+      const package_url_input = document.getElementById('id_package_url');
+      const copy_button = document.getElementById('copy_package_url');
 
       function update_purl() {
-        let purl = build_purl(
-          type_input.val(),
-          namespace_input.val(),
-          name_input.val(),
-          version_input.val(),
-          qualifiers_input.val(),
-          subpath_input.val(),
-        );
-        $('#id_package_url').html(purl);
+        package_url_input.value = build_purl(...purl_inputs.map((input) => input.value));
+        copy_button.disabled = !package_url_input.value;
       }
 
       update_purl();  // Call once on start for Update view.
 
-      let all_purl_inputs = $('#id_type,#id_namespace,#id_name,#id_version,#id_qualifiers,#id_subpath');
-      all_purl_inputs.on('keyup', update_purl);
+      purl_inputs.forEach((input) => input.addEventListener('input', update_purl));
+
+      package_url_input.addEventListener('focus', () => package_url_input.select());
+
+      copy_button.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(package_url_input.value);
+        const icon = copy_button.querySelector('i');
+        icon.classList.replace('fa-clipboard', 'fa-check');
+        setTimeout(() => icon.classList.replace('fa-check', 'fa-clipboard'), 1500);
+      });
 
     });
   </script>

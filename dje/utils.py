@@ -31,6 +31,7 @@ from django.utils.formats import date_format
 from django.utils.formats import get_format
 from django.utils.html import format_html
 from django.utils.html import mark_safe
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.http import urlencode
 
 import requests
@@ -496,6 +497,18 @@ def get_referer_resolver(request):
 
     with suppress(Resolver404):
         return resolve(urlparse(referer).path)
+
+
+def get_safe_referer(request):
+    """Return the `HTTP_REFERER` request header only when it targets the current host."""
+    referer = request.META.get("HTTP_REFERER")
+    is_safe_url = url_has_allowed_host_and_scheme(
+        url=referer,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    )
+    if is_safe_url:
+        return referer
 
 
 def get_instance_from_resolver(resolver):

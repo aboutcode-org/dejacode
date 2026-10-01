@@ -287,8 +287,10 @@ class DataspacedSerializer(DynamicFieldsSerializerMixin, serializers.Hyperlinked
         kwargs.update({"dataspace": self.dataspace})
         try:
             instance = super().save(**kwargs)
-        except (IntegrityError, DjangoValidationError) as e:
-            raise DRFValidationError(str(e))
+        except DjangoValidationError as error:
+            raise DRFValidationError(serializers.as_serializer_error(error))
+        except IntegrityError:
+            raise DRFValidationError(_("A record with the same unique values already exists."))
 
         for field, data in m2m_data.items():
             set_intermediate_explicit_m2m(instance, field, data)

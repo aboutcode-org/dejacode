@@ -14,15 +14,12 @@
 {% block extrastyle %}
   {{ block.super }}
   <link href="{% static 'awesomplete/awesomplete-1.1.5.css' %}" rel="stylesheet" integrity="sha384-pfLLVHVEI786OaichPaTYxVzYEhaODDVjI6M6aNF9XN6G5Xtcw54aAXnBqtRw0Br" crossorigin="anonymous">
-  <link href="{% static 'json-viewer/jquery.json-viewer-1.4.0.css' %}" rel="stylesheet" integrity="sha384-DmZAkMO3nwB4hNMUT3hEhJxxO0cuJHi8Av9y1dGpWNklTqw2mco8gSSHpNa5iXjP" crossorigin="anonymous">
 {% endblock %}
 
 {% block javascripts %}
   {{ block.super }}
   <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
   <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
-  <script src="{% static 'json-viewer/jquery.json-viewer-1.4.0.js' %}" integrity="sha384-mCd7P/7rxz1zpQAb195/BFZG4pDkLO6GdkRi772EZRiLTGdfnlhC74NrrwtSHvBI" crossorigin="anonymous"></script>
-  {% include 'includes/dependencies-json-viewer.js.html' %}
   {% if open_add_to_package_modal %}
     <script>
       document.addEventListener('DOMContentLoaded', function () {

@@ -27,6 +27,10 @@ stop:
 	@echo "-> Stop the Docker compose services"
 	${COMPOSE} stop
 
+restart:
+	@echo "-> Recreate the web service to reload the .env file"
+	${COMPOSE} up --detach --force-recreate web
+
 # make logs TAIL=100 SERVICE=db
 logs:
 	${COMPOSE} logs -f --tail=${TAIL:-50} ${SERVICE}
@@ -193,4 +197,4 @@ initdb:
 psql:
 	${DOCKER_EXEC} ${DB_CONTAINER_NAME} psql --username=${DB_USERNAME} postgres
 
-.PHONY: virtualenv conf dev lock upgrade envfile envfile_dev check outdated doc8 valid clean initdb postgresdb postgresdb_clean migrate run test docs build psql bash shell logs start superuser
+.PHONY: run start stop restart logs bash shell test migrations migrate build superuser doc8 valid check docs outdated upgrade lock clean conf dev envfile envfile_dev initdb psql

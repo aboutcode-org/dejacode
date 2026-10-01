@@ -87,6 +87,7 @@ from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
 from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
+from dje.utils import get_safe_referer
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
 from dje.utils import style_xlsx_worksheet
@@ -2396,7 +2397,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 warnings, created_counts = form.save(product=product)
             except ValidationError as error:
                 messages.error(request, " ".join(error.messages))
-                return redirect(request.path)
+                return redirect(product.get_import_from_scan_url())
 
             if not created_counts:
                 messages.warning(request, "Nothing imported.")
@@ -2439,6 +2440,7 @@ class BaseProductManageGridView(
     filterset_class = None
     can_delete_permission = None
     configuration_session_key = None
+    grid_url_name = None
     base_fields = []
 
     def get_relationship_queryset(self):
@@ -2450,6 +2452,8 @@ class BaseProductManageGridView(
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
         if "update-grid-configuration" in request.POST:
             grid_configuration_form = ProductGridConfigurationForm(data=request.POST)
             if grid_configuration_form.is_valid():
@@ -2458,7 +2462,6 @@ class BaseProductManageGridView(
                 messages.success(request, "Grid configuration updated.")
             return redirect(self.get_success_url())
 
-        self.object = self.get_object()
         self.filterset = self.get_filterset()
         return super().post(request, *args, **kwargs)
 
@@ -2473,7 +2476,7 @@ class BaseProductManageGridView(
         Use the HTTP_REFERER when available allows to keep the request.GET
         state of the view, keeping sort and filters for example.
         """
-        return self.request.META.get("HTTP_REFERER") or self.request.path
+        return get_safe_referer(self.request) or self.object.get_url(self.grid_url_name)
 
     def formset_valid(self, formset):
         request = self.request
@@ -2571,6 +2574,7 @@ class ManageComponentGridView(BaseProductManageGridView):
     form_class = ProductComponentInlineForm
     filterset_class = ProductComponentFilterSet
     configuration_session_key = "component_grid_configuration"
+    grid_url_name = "manage_components"
     base_fields = [
         "product",
         "component",
@@ -2603,6 +2607,7 @@ class ManagePackageGridView(BaseProductManageGridView):
     form_class = ProductPackageInlineForm
     filterset_class = ProductPackageFilterSet
     configuration_session_key = "package_grid_configuration"
+    grid_url_name = "manage_packages"
     base_fields = [
         "product",
         "package",

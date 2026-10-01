@@ -34,13 +34,13 @@
     document.querySelectorAll('.scan_delete_link').forEach(link => {
       link.addEventListener('click', function() {
         let deleteUrl = this.getAttribute('data-delete-url');
-        document.querySelector('#scan-delete-modal a.delete-confirm').setAttribute('href', deleteUrl);
+        document.querySelector('#scan-delete-modal a.delete-confirm').pathname = deleteUrl;
       });
     });
     document.querySelectorAll('.scan_refresh_link').forEach(link => {
       link.addEventListener('click', function() {
         let refreshUrl = this.getAttribute('data-refresh-url');
-        document.querySelector('#scan-refresh-modal a.refresh-confirm').setAttribute('href', refreshUrl);
+        document.querySelector('#scan-refresh-modal a.refresh-confirm').pathname = refreshUrl;
       });
     });
   </script>
