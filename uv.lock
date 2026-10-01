@@ -172,15 +172,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cython"
-version = "3.3.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "cython-3.3.0-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "cython-3.3.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
-]
-
-[[package]]
 name = "defusedxml"
 version = "0.7.1"
 source = { registry = "thirdparty/dist" }
@@ -209,7 +200,6 @@ dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "croniter" },
     { name = "cyclonedx-python-lib" },
-    { name = "cython" },
     { name = "defusedxml" },
     { name = "django" },
     { name = "django-altcha" },
@@ -240,7 +230,6 @@ dependencies = [
     { name = "lxml" },
     { name = "markdown" },
     { name = "markupsafe" },
-    { name = "maturin" },
     { name = "model-bakery" },
     { name = "msgspec" },
     { name = "natsort" },
@@ -255,11 +244,8 @@ dependencies = [
     { name = "pyasn1-modules" },
     { name = "pydantic" },
     { name = "pydantic-core" },
-    { name = "pyjwt" },
-    { name = "pypng" },
     { name = "python-dateutil" },
     { name = "python-ldap" },
-    { name = "python-mimeparse" },
     { name = "pytz" },
     { name = "pyyaml" },
     { name = "qrcode" },
@@ -269,10 +255,7 @@ dependencies = [
     { name = "rpds-py" },
     { name = "rq" },
     { name = "saneyaml" },
-    { name = "semantic-version" },
     { name = "setuptools" },
-    { name = "setuptools-rust" },
-    { name = "setuptools-scm" },
     { name = "six" },
     { name = "sortedcontainers" },
     { name = "sqlparse" },
@@ -282,11 +265,8 @@ dependencies = [
     { name = "typing-inspection" },
     { name = "uritemplate" },
     { name = "urllib3" },
-    { name = "vcs-versioning" },
     { name = "webencodings" },
-    { name = "wheel" },
     { name = "xlsxwriter" },
-    { name = "zipp" },
 ]
 
 [package.optional-dependencies]
@@ -312,7 +292,6 @@ requires-dist = [
     { name = "crispy-bootstrap5", specifier = "==2026.9" },
     { name = "croniter", specifier = "==6.2.4" },
     { name = "cyclonedx-python-lib", specifier = "==11.12.0" },
-    { name = "cython", specifier = "==3.3.0" },
     { name = "defusedxml", specifier = "==0.7.1" },
     { name = "django", specifier = "==6.1.1" },
     { name = "django-altcha", specifier = "==1.0.0" },
@@ -343,7 +322,6 @@ requires-dist = [
     { name = "lxml", specifier = "==6.1.3" },
     { name = "markdown", specifier = "==3.11" },
     { name = "markupsafe", specifier = "==3.0.3" },
-    { name = "maturin", specifier = "==1.15.0" },
     { name = "model-bakery", specifier = "==1.24.1" },
     { name = "msgspec", specifier = "==0.21.1" },
     { name = "natsort", specifier = "==8.4.0" },
@@ -358,11 +336,8 @@ requires-dist = [
     { name = "pyasn1-modules", specifier = "==0.4.2" },
     { name = "pydantic", specifier = "==2.13.5" },
     { name = "pydantic-core", specifier = "==2.46.5" },
-    { name = "pyjwt", specifier = "==2.15.0" },
-    { name = "pypng", specifier = "==0.20220715.0" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-ldap", specifier = "==3.4.8" },
-    { name = "python-mimeparse", specifier = "==2.0.0" },
     { name = "pytz", specifier = "==2026.4" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
@@ -373,10 +348,7 @@ requires-dist = [
     { name = "rq", specifier = "==2.12.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
-    { name = "semantic-version", specifier = "==2.10.0" },
     { name = "setuptools", specifier = "==84.0.0" },
-    { name = "setuptools-rust", specifier = "==1.13.0" },
-    { name = "setuptools-scm", specifier = "==10.3.4" },
     { name = "six", specifier = "==1.17.0" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
     { name = "sqlparse", specifier = "==0.6.0" },
@@ -386,11 +358,8 @@ requires-dist = [
     { name = "typing-inspection", specifier = "==0.4.4" },
     { name = "uritemplate", specifier = "==4.2.0" },
     { name = "urllib3", specifier = "==2.8.0" },
-    { name = "vcs-versioning", specifier = "==2.5.0" },
     { name = "webencodings", specifier = "==0.6.1" },
-    { name = "wheel", specifier = "==0.48.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
-    { name = "zipp", specifier = "==4.1.0" },
 ]
 provides-extras = ["dev"]
 
@@ -708,15 +677,6 @@ wheels = [
 ]
 
 [[package]]
-name = "maturin"
-version = "1.15.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "maturin-1.15.0-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl" },
-    { path = "maturin-1.15.0-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl" },
-]
-
-[[package]]
 name = "model-bakery"
 version = "1.24.1"
 source = { registry = "thirdparty/dist" }
@@ -856,22 +816,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyjwt"
-version = "2.15.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pyjwt-2.15.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "pypng"
-version = "0.20220715.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pypng-0.20220715.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "thirdparty/dist" }
@@ -891,14 +835,6 @@ dependencies = [
     { name = "pyasn1-modules" },
 ]
 sdist = { path = "python_ldap-3.4.8.tar.gz" }
-
-[[package]]
-name = "python-mimeparse"
-version = "2.0.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "python_mimeparse-2.0.0-py3-none-any.whl" },
-]
 
 [[package]]
 name = "pytz"
@@ -1003,44 +939,11 @@ wheels = [
 ]
 
 [[package]]
-name = "semantic-version"
-version = "2.10.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "semantic_version-2.10.0-py2.py3-none-any.whl" },
-]
-
-[[package]]
 name = "setuptools"
 version = "84.0.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "setuptools-84.0.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "setuptools-rust"
-version = "1.13.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "semantic-version" },
-    { name = "setuptools" },
-]
-wheels = [
-    { path = "setuptools_rust-1.13.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "setuptools-scm"
-version = "10.3.4"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-    { name = "setuptools" },
-    { name = "vcs-versioning" },
-]
-wheels = [
-    { path = "setuptools_scm-10.3.4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1119,17 +1022,6 @@ wheels = [
 ]
 
 [[package]]
-name = "vcs-versioning"
-version = "2.5.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-]
-wheels = [
-    { path = "vcs_versioning-2.5.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "webencodings"
 version = "0.6.1"
 source = { registry = "thirdparty/dist" }
@@ -1138,28 +1030,9 @@ wheels = [
 ]
 
 [[package]]
-name = "wheel"
-version = "0.48.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-]
-wheels = [
-    { path = "wheel-0.48.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "xlsxwriter"
 version = "3.2.9"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "xlsxwriter-3.2.9-py3-none-any.whl" },
-]
-
-[[package]]
-name = "zipp"
-version = "4.1.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "zipp-4.1.0-py3-none-any.whl" },
 ]
