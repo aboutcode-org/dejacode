@@ -33,7 +33,7 @@ dependencies = [
     # Base configuration tools
     "setuptools==84.0.0",
     "wheel==0.48.0",
-    "packaging==26.2",
+    "packaging==26.3",
     "pip==26.2.1",
     # Django
     "django==6.1.1",
@@ -61,7 +61,7 @@ dependencies = [
     "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
-    "pytz==2026.2",
+    "pytz==2026.4",
     # Track failed login attempts
     "django-axes==8.3.1",
     # Multi-factor authentication
@@ -69,7 +69,7 @@ dependencies = [
     "qrcode==8.2",
     "pypng==0.20220715.0",
     # Database
-    "psycopg==3.3.5",
+    "psycopg==3.3.6",
     # Cache
     "redis==8.1.0",
     # Antivirus
@@ -83,21 +83,21 @@ dependencies = [
     "fakeredis==2.38.0",
     # Libs
     "certifi==2026.7.22",
-    "urllib3==2.7.0",
+    "urllib3==2.8.0",
     "python-dateutil==2.9.0.post0",
     "python-mimeparse==2.0.0",
-    "pyjwt==2.13.0",
+    "pyjwt==2.15.0",
     "natsort==8.4.0",
     "six==1.17.0",
     "requests==2.34.2",
-    "idna==3.19",
+    "idna==3.20",
     "charset-normalizer==3.5.1",
     "PyYAML==6.0.3",
-    "cython==3.2.4",
+    "cython==3.3.0",
     "zipp==4.1.0",
     "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.10.2",
+    "markdown==3.10.3",
     "bleach==6.4.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.6.1",
@@ -107,7 +107,7 @@ dependencies = [
     "requests-oauthlib==2.0.0",
     "defusedxml==0.7.1",
     # LDAP Auth
-    "python_ldap==3.4.5",
+    "python-ldap==3.4.8",
     "setuptools-scm==9.2.2",
     "pyasn1==0.6.4",
     "pyasn1-modules==0.4.2",
@@ -118,7 +118,7 @@ dependencies = [
     # django-notifications
     "django_notifications_patched==2.0.0",
     "jsonfield==3.2.0",
-    "swapper==1.4.0",
+    "swapper==1.5.0",
     # AboutCode Toolkit
     "aboutcode_toolkit==11.1.1",
     "click==8.3.3",
@@ -130,7 +130,7 @@ dependencies = [
     # PackageURL
     "packageurl-python==0.17.6",
     # Gunicorn
-    "gunicorn==26.1.0",
+    "gunicorn==26.2.0",
     # SPDX validation
     "jsonschema==4.26.0",
     "jsonschema-specifications==2025.9.1",
@@ -182,8 +182,8 @@ no-index = true
 find-links = ["./thirdparty/dist"]
 # Copy files instead of hardlinking, works across all filesystems
 link-mode = "copy"
-# Ignore package versions published in the last 7 days for safety
-exclude-newer = "7 days"
+# Ignore package versions published in the last 3 days for safety
+exclude-newer = "3 days"
 # Only resolve for Linux and macOS
 environments = [
     "sys_platform == 'linux'",
