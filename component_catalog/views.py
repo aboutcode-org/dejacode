@@ -87,6 +87,7 @@ from dje.urn_resolver import URN_HELP_TEXT
 from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
+from dje.utils import get_safe_referer
 from dje.utils import is_available
 from dje.utils import is_hx_request
 from dje.utils import is_uuid4
@@ -188,7 +189,7 @@ class AddToProductFormMixin(BaseFormView):
         else:
             msg = f"Error assigning the {opts.model_name} to this product."
             messages.error(self.request, msg)
-            redirect_url = self.request.path
+            redirect_url = self.object.get_absolute_url()
 
         return redirect(redirect_url)
 
@@ -240,7 +241,8 @@ class AddToProductMultipleMixin(BaseFormView):
         return redirect(redirect_url)
 
     def form_invalid(self, form):
-        return redirect(self.request.path)
+        opts = self.model._meta
+        return redirect(f"{opts.app_label}:{opts.model_name}_list")
 
 
 def include_policy(view_instance):
@@ -1024,11 +1026,11 @@ class PackageListView(
 
             if component.is_active:
                 return redirect(f"{component.get_absolute_url()}#packages")
-            return redirect(request.path)
+            return redirect("component_catalog:package_list")
 
         error_msg = f"Error assigning packages to a component.\n{form.errors}"
         messages.error(request, mark_safe(error_msg))
-        return redirect(request.path)
+        return redirect("component_catalog:package_list")
 
     def post(self, request, *args, **kwargs):
         if request.POST.get("submit-add-to-component-form"):
@@ -1394,7 +1396,7 @@ class PackageDetailsView(
             error_msg = f"Error assigning values to the package.\n{form.errors}"
             messages.error(request, mark_safe(error_msg))
 
-        return redirect(f"{request.path}#essentials")
+        return redirect(f"{self.object.get_absolute_url()}#essentials")
 
     def post_add_to_component(self, form_class):
         request = self.request
@@ -1408,11 +1410,11 @@ class PackageDetailsView(
             messages.success(self.request, msg)
             if component.is_active:
                 return redirect(f"{component.get_absolute_url()}#packages")
-            return redirect(request.path)
+            return redirect(self.object)
 
         msg = format_html("Error assigning the package to a component.\n{}", form.errors)
         messages.error(request, msg)
-        return redirect(request.path)
+        return redirect(self.object)
 
     def post(self, request, *args, **kwargs):
         if not hasattr(self, "object"):
@@ -1652,7 +1654,7 @@ def delete_scan_view(request, project_uuid):
         raise Http404("Scan could not be deleted.")
 
     messages.success(request, "Scan deleted.")
-    if referer := request.META.get("HTTP_REFERER"):
+    if referer := get_safe_referer(request):
         return redirect(referer)
     return redirect("component_catalog:scan_list")
 
@@ -1671,7 +1673,7 @@ def refresh_scan_view(request, project_uuid):
         raise Http404("Scan could not be refreshed.")
 
     messages.success(request, "Refresh Scan started.")
-    if referer := request.META.get("HTTP_REFERER"):
+    if referer := get_safe_referer(request):
         return redirect(referer)
     return redirect("component_catalog:scan_list")
 
