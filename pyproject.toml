@@ -97,7 +97,7 @@ dependencies = [
     "zipp==4.1.0",
     "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.10.3",
+    "markdown==3.11",
     "bleach==6.4.0",
     "bleach_allowlist==1.0.3",
     "webencodings==0.6.1",
@@ -150,7 +150,7 @@ dependencies = [
     # OpenVEX
     "msgspec==0.21.1",
     # OpenDocument Format
-    "odfdo==3.26.1",
+    "odfdo==3.26.3",
     "lxml==6.1.3",
 ]
 

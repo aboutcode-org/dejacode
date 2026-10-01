@@ -341,13 +341,13 @@ requires-dist = [
     { name = "jsonschema-specifications", specifier = "==2025.9.1" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
-    { name = "markdown", specifier = "==3.10.3" },
+    { name = "markdown", specifier = "==3.11" },
     { name = "markupsafe", specifier = "==3.0.3" },
     { name = "maturin", specifier = "==1.15.0" },
     { name = "model-bakery", specifier = "==1.24.1" },
     { name = "msgspec", specifier = "==0.21.1" },
     { name = "natsort", specifier = "==8.4.0" },
-    { name = "odfdo", specifier = "==3.26.1" },
+    { name = "odfdo", specifier = "==3.26.3" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.3" },
@@ -691,10 +691,10 @@ wheels = [
 
 [[package]]
 name = "markdown"
-version = "3.10.3"
+version = "3.11"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "markdown-3.10.3-py3-none-any.whl" },
+    { path = "markdown-3.11-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -746,14 +746,14 @@ wheels = [
 
 [[package]]
 name = "odfdo"
-version = "3.26.1"
+version = "3.26.3"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "lxml" },
     { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "odfdo-3.26.1-py3-none-any.whl" },
+    { path = "odfdo-3.26.3-py3-none-any.whl" },
 ]
 
 [[package]]
