@@ -116,6 +116,7 @@ upgrade:
 		--only-binary=:all: \
 		--platform manylinux_2_28_x86_64 \
 		--platform manylinux_2_17_x86_64 \
+		--platform manylinux_2_12_x86_64 \
 		--python-version 3.14 \
 		--dest ./thirdparty/dist/
 	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
