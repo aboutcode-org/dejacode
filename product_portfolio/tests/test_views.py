@@ -2514,6 +2514,22 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["content-type"])
 
+    def test_product_portfolio_edit_productrelation_ajax_view_escape_relation_instance(self):
+        package = make_package(self.dataspace, filename='"><script>alert(1)</script>')
+        productpackage = ProductPackage.objects.create(
+            product=self.product1, package=package, dataspace=self.dataspace
+        )
+        edit_url = reverse(
+            "product_portfolio:edit_productrelation_ajax", args=["package", productpackage.uuid]
+        )
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(edit_url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "<script>alert(1)</script>")
+        expected = 'value="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"'
+        self.assertContains(response, expected)
+
     def test_product_portfolio_edit_productrelation_ajax_view_component(self):
         purpose = ProductItemPurpose.objects.create(
             label="Core", text="t", dataspace=self.dataspace

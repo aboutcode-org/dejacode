@@ -1707,15 +1707,19 @@ def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
 
     rendered_form = render_crispy_form(form)
 
-    relationship_field = f"""
+    relationship_field = format_html(
+        """
     <div class="mb-3">
       <label for="id_relationship_instance" class="col-form-label form-label">
-        {related_model_name.title()}
+        {label}
       </label>
-      <input type="text" value="{relation_instance}" class="form-control" disabled
+      <input type="text" value="{value}" class="form-control" disabled
        id="id_relationship_instance">
     </div>
-    """
+    """,
+        label=related_model_name.title(),
+        value=relation_instance,
+    )
 
     if relation_type != "custom-component":
         rendered_form = relationship_field + rendered_form
