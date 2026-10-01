@@ -387,8 +387,18 @@ class PackageForm(
             )
 
         package_url = HTML(
-            '<div class="row m-0 ps-1 mb-3">'
-            '   Package URL:<code class="ms-2" id="id_package_url"></code>'
+            '<div class="mb-3">'
+            '  <label for="id_package_url" class="form-label">Package URL</label>'
+            '  <div class="input-group">'
+            '    <input type="text" id="id_package_url" readonly'
+            '           class="form-control font-monospace bg-body-tertiary"'
+            '           placeholder="Enter a Type and a Name to build the Package URL">'
+            '    <button type="button" id="copy_package_url" class="btn btn-outline-secondary"'
+            '            title="Copy to clipboard" disabled>'
+            '      <i class="fas fa-clipboard"></i>'
+            "    </button>"
+            "  </div>"
+            '  <div class="form-text">Updated as you fill in the fields below.</div>'
             "</div>"
         )
 
@@ -788,7 +798,7 @@ class AddToComponentFormMixin(forms.Form):
         if self.user.has_perm("component_catalog.add_component"):
             component_add_url = reverse("component_catalog:component_add")
 
-            href = "#"
+            href = component_add_url
             package = (self.initial or {}).get("package")
             if package:
                 href = f"{component_add_url}?package_ids={package.id}"
@@ -798,8 +808,7 @@ class AddToComponentFormMixin(forms.Form):
                 f'<div class="text-center">'
                 f'  <a href="{href}" '
                 f'     id="new-component-link" '
-                f'     class="btn btn-outline-success" '
-                f'     data-add-url="{component_add_url}">'
+                f'     class="btn btn-outline-success">'
                 f"    Add Component from Package data"
                 f"  </a>"
                 f"</div>"

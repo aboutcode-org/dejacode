@@ -497,6 +497,11 @@ textarea.licenseexpressionwidget {
   display: block;
 }
 
+/* -- Package form -- */
+#id_package_url::placeholder {
+  font-family: var(--bs-body-font-family);
+}
+
 /* -- PurlDB List -- */
 table.purldb-table .column-type {
   min-width: 75px;

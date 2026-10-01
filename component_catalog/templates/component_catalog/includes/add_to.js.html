@@ -56,8 +56,7 @@
 
           let new_component_link = document.getElementById('new-component-link');
           if (new_component_link) {
-              let new_component_url = new_component_link.dataset.addUrl + '?package_ids=' + selected_ids.join(',');
-              new_component_link.setAttribute('href', new_component_url);
+              new_component_link.search = '?package_ids=' + selected_ids.join(',');
           }
         }
       });

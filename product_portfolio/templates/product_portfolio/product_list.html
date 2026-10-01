@@ -53,7 +53,7 @@
 
                 const currentHref = compareButton.getAttribute('data-href');
                 const parameters = left.value + '/' + right.value + '/';
-                window.location.href = currentHref + parameters;
+                window.location.pathname = currentHref + parameters;
             }
         });
     });
