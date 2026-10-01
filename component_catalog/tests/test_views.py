@@ -1356,6 +1356,51 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         for expected in expecteds:
             self.assertContains(response, expected)
 
+    def test_package_latest_non_vulnerable_view(self):
+        package1 = make_package(
+            self.dataspace,
+            package_url="pkg:pypi/django@5.0",
+            latest_non_vulnerable_version="5.0.1",
+        )
+        latest_non_vulnerable_url = package1.get_latest_non_vulnerable_url()
+
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertRedirects(response, f"/login/?next={latest_non_vulnerable_url}")
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(latest_non_vulnerable_url, follow=True)
+        list_url = reverse("component_catalog:package_list", query={"q": "pkg:pypi/django"})
+        self.assertRedirects(response, list_url)
+        self.assertContains(response, "pkg:pypi/django@5.0.1 is not available in the Dataspace.")
+        self.assertContains(response, package1.get_absolute_url())
+
+        add_perm(self.basic_user, "add_package")
+        response = self.client.get(latest_non_vulnerable_url)
+        add_url = reverse("component_catalog:package_add")
+        expected_url = f"{add_url}?package_url=pkg%3Apypi%2Fdjango%405.0.1"
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
+
+        non_vulnerable_package = make_package(self.dataspace, package_url="pkg:pypi/django@5.0.1")
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertRedirects(response, non_vulnerable_package.get_absolute_url())
+
+        package1.update(latest_non_vulnerable_version="")
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertEqual(404, response.status_code)
+
+        package_without_purl = make_package(self.dataspace, latest_non_vulnerable_version="5.0.1")
+        response = self.client.get(package_without_purl.get_latest_non_vulnerable_url())
+        self.assertEqual(404, response.status_code)
+
+        alternate_dataspace = Dataspace.objects.create(name="Alternate")
+        alternate_package = make_package(
+            alternate_dataspace,
+            package_url="pkg:pypi/django@5.0",
+            latest_non_vulnerable_version="5.0.1",
+        )
+        response = self.client.get(alternate_package.get_latest_non_vulnerable_url())
+        self.assertEqual(404, response.status_code)
+
     def test_package_details_view_aboutcode_tab(self):
         details_url = self.package1.get_absolute_url()
         self.client.login(username=self.super_user.username, password="secret")

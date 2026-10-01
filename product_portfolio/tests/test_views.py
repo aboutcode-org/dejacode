@@ -526,6 +526,19 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             response, f'id="vulnerabilities-{product_package1.id}" class="collapse show"'
         )
 
+    def test_product_portfolio_tab_vulnerability_view_fixed_in_link(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(
+            self.dataspace, package_url="pkg:pypi/django@1.0", latest_non_vulnerable_version="2.0"
+        )
+        make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        latest_non_vulnerable_url = package1.get_latest_non_vulnerable_url()
+        self.assertContains(response, f'<a href="{latest_non_vulnerable_url}" target="_blank"')
+        self.assertContains(response, "Fixed in 2.0")
+
     def test_product_portfolio_tab_vulnerability_view_fully_analyzed_package_collapsed(self):
         self.client.login(username="nexb_user", password="secret")
         package1 = make_package(self.dataspace)

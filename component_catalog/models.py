@@ -2129,6 +2129,9 @@ class Package(
     def get_export_cyclonedx_url(self):
         return self.get_url("export_cyclonedx")
 
+    def get_latest_non_vulnerable_url(self):
+        return self.get_url("latest_non_vulnerable")
+
     @classmethod
     def get_identifier_fields(cls, *args, purl_fields_only=False, **kwargs):
         """
