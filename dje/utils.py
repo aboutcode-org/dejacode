@@ -424,12 +424,31 @@ def construct_changes_details_message(changes_details):
     return "".join(msg)
 
 
+def natural_sort_key(value):
+    """
+    Return a sort key that orders the numbers embedded in `value` numerically:
+    "v2" sorts before "v10".
+
+    `re.split` with a capturing group always alternates text and digits parts,
+    starting with text (possibly empty), so the compared parts at a given position
+    are always of the same type.
+    """
+    return [
+        int(part) if index % 2 else part for index, part in enumerate(re.split(r"(\d+)", value))
+    ]
+
+
 def version_sort_key(item):
     """
     Replace the '.' by '~' that comes at the end of the ASCII table.
     https://natsort.readthedocs.io/en/master/examples.html
     """
     return item.replace(".", "~") + "z"
+
+
+def version_natural_sort_key(instance):
+    """Return a natural sort key for the `version` of the provided `instance`."""
+    return natural_sort_key(version_sort_key(instance.version))
 
 
 def group_by_name_version(object_list):
@@ -440,10 +459,8 @@ def group_by_name_version(object_list):
     Sort by ``version`` within each group, using a natural sort,
     reversed so that the highest version number comes first.
     """
-    from natsort import natsorted
-
     return [
-        natsorted(group, key=lambda x: version_sort_key(x.version), reverse=True)
+        sorted(group, key=version_natural_sort_key, reverse=True)
         for key, group in groupby(object_list, key=attrgetter("name"))
     ]
 

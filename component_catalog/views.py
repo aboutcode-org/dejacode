@@ -45,7 +45,6 @@ from django.views.generic import FormView
 from django.views.generic.edit import BaseFormView
 
 from crispy_forms.utils import render_crispy_form
-from natsort import natsorted
 from packageurl import PackageURL
 
 from component_catalog.filters import ComponentFilterSet
@@ -92,6 +91,7 @@ from dje.utils import is_available
 from dje.utils import is_hx_request
 from dje.utils import is_uuid4
 from dje.utils import localized_datetime
+from dje.utils import natural_sort_key
 from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -287,7 +287,7 @@ class TabVulnerabilityMixin:
         if not vulnerability.fixed_by_packages:
             return
 
-        fixed_packages_sorted = natsorted(vulnerability.fixed_by_packages)
+        fixed_packages_sorted = sorted(vulnerability.fixed_by_packages, key=natural_sort_key)
         add_package_url = reverse("component_catalog:package_add")
 
         fixed_packages_values = []
