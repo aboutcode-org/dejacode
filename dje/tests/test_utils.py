@@ -42,6 +42,7 @@ from dje.utils import is_purl_str
 from dje.utils import localized_datetime
 from dje.utils import merge_common_non_empty_values
 from dje.utils import merge_relations
+from dje.utils import natural_sort_key
 from dje.utils import normalize_newlines_as_CR_plus_LF
 from dje.utils import plain_purls_equal
 from dje.utils import remove_field_from_query_dict
@@ -379,6 +380,30 @@ class DJEUtilsTestCase(TestCase):
             ]
 
             self.assertEqual(test["expected"], results)
+
+    def test_dje_utils_natural_sort_key(self):
+        self.assertEqual(["v", 10, ""], natural_sort_key("v10"))
+        self.assertEqual(["", 1, ".", 10, "rc"], natural_sort_key("1.10rc"))
+        self.assertEqual(["abc"], natural_sort_key("abc"))
+        self.assertEqual([""], natural_sort_key(""))
+
+        values = ["v10", "v2", "v1", "v1.10", "v1.9", "a", "10", "9"]
+        expected = ["9", "10", "a", "v1", "v1.9", "v1.10", "v2", "v10"]
+        self.assertEqual(expected, sorted(values, key=natural_sort_key))
+
+        purls = [
+            "pkg:pypi/django@4.2.10",
+            "pkg:pypi/django@4.2.9",
+            "pkg:pypi/django@4.10.0",
+            "pkg:pypi/django@4.2.0",
+        ]
+        expected = [
+            "pkg:pypi/django@4.2.0",
+            "pkg:pypi/django@4.2.9",
+            "pkg:pypi/django@4.2.10",
+            "pkg:pypi/django@4.10.0",
+        ]
+        self.assertEqual(expected, sorted(purls, key=natural_sort_key))
 
     def test_remove_field_from_query_dict(self):
         self.assertEqual("", remove_field_from_query_dict({}, "a"))

@@ -78,14 +78,6 @@ wheels = [
 ]
 
 [[package]]
-name = "bleach-allowlist"
-version = "1.0.3"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "bleach_allowlist-1.0.3-py2.py3-none-any.whl" },
-]
-
-[[package]]
 name = "boolean-py"
 version = "5.0"
 source = { registry = "thirdparty/dist" }
@@ -190,7 +182,6 @@ dependencies = [
     { name = "asgiref" },
     { name = "attrs" },
     { name = "bleach" },
-    { name = "bleach-allowlist" },
     { name = "boolean-py" },
     { name = "certifi" },
     { name = "charset-normalizer" },
@@ -230,7 +221,6 @@ dependencies = [
     { name = "markupsafe" },
     { name = "model-bakery" },
     { name = "msgspec" },
-    { name = "natsort" },
     { name = "odfdo" },
     { name = "openpyxl" },
     { name = "packageurl-python" },
@@ -277,7 +267,6 @@ requires-dist = [
     { name = "asgiref", specifier = "==3.12.1" },
     { name = "attrs", specifier = "==26.1.0" },
     { name = "bleach", specifier = "==6.4.0" },
-    { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
     { name = "certifi", specifier = "==2026.7.22" },
     { name = "charset-normalizer", specifier = "==3.5.1" },
@@ -317,7 +306,6 @@ requires-dist = [
     { name = "markupsafe", specifier = "==3.0.3" },
     { name = "model-bakery", specifier = "==1.24.1" },
     { name = "msgspec", specifier = "==0.21.1" },
-    { name = "natsort", specifier = "==8.4.0" },
     { name = "odfdo", specifier = "==3.26.3" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
@@ -659,14 +647,6 @@ source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "msgspec-0.21.1-cp314-cp314-macosx_11_0_arm64.whl" },
     { path = "msgspec-0.21.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
-]
-
-[[package]]
-name = "natsort"
-version = "8.4.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "natsort-8.4.0-py3-none-any.whl" },
 ]
 
 [[package]]
