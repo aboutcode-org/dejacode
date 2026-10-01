@@ -12,7 +12,7 @@ supported-markers = [
 
 [options]
 exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
-exclude-newer-span = "P7D"
+exclude-newer-span = "P3D"
 
 [[package]]
 name = "aboutcode-toolkit"
@@ -44,10 +44,10 @@ wheels = [
 
 [[package]]
 name = "annotated-types"
-version = "0.7.0"
+version = "0.8.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "annotated_types-0.7.0-py3-none-any.whl" },
+    { path = "annotated_types-0.8.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -60,10 +60,10 @@ wheels = [
 
 [[package]]
 name = "attrs"
-version = "25.4.0"
+version = "26.1.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "attrs-25.4.0-py3-none-any.whl" },
+    { path = "attrs-26.1.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -120,10 +120,10 @@ wheels = [
 
 [[package]]
 name = "click"
-version = "8.3.3"
+version = "8.5.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "click-8.3.3-py3-none-any.whl" },
+    { path = "click-8.5.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -172,16 +172,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cython"
-version = "3.2.4"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "cython-3.2.4-py3-none-any.whl" },
-    { path = "cython-3.2.4-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "cython-3.2.4-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
-]
-
-[[package]]
 name = "defusedxml"
 version = "0.7.1"
 source = { registry = "thirdparty/dist" }
@@ -210,7 +200,6 @@ dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "croniter" },
     { name = "cyclonedx-python-lib" },
-    { name = "cython" },
     { name = "defusedxml" },
     { name = "django" },
     { name = "django-altcha" },
@@ -235,48 +224,33 @@ dependencies = [
     { name = "inflection" },
     { name = "jinja2" },
     { name = "jsonfield" },
-    { name = "jsonschema" },
-    { name = "jsonschema-specifications" },
     { name = "license-expression" },
     { name = "lxml" },
     { name = "markdown" },
     { name = "markupsafe" },
-    { name = "maturin" },
     { name = "model-bakery" },
     { name = "msgspec" },
     { name = "natsort" },
-    { name = "oauthlib" },
     { name = "odfdo" },
     { name = "openpyxl" },
     { name = "packageurl-python" },
     { name = "packaging" },
-    { name = "pip" },
     { name = "psycopg" },
     { name = "py-serializable" },
     { name = "pyasn1" },
     { name = "pyasn1-modules" },
     { name = "pydantic" },
     { name = "pydantic-core" },
-    { name = "pyjwt" },
-    { name = "pypng" },
     { name = "python-dateutil" },
     { name = "python-ldap" },
-    { name = "python-mimeparse" },
-    { name = "python3-openid" },
     { name = "pytz" },
     { name = "pyyaml" },
     { name = "qrcode" },
     { name = "redis" },
-    { name = "referencing" },
     { name = "requests" },
-    { name = "requests-oauthlib" },
-    { name = "rpds-py" },
     { name = "rq" },
     { name = "saneyaml" },
-    { name = "semantic-version" },
     { name = "setuptools" },
-    { name = "setuptools-rust" },
-    { name = "setuptools-scm" },
     { name = "six" },
     { name = "sortedcontainers" },
     { name = "sqlparse" },
@@ -287,9 +261,7 @@ dependencies = [
     { name = "uritemplate" },
     { name = "urllib3" },
     { name = "webencodings" },
-    { name = "wheel" },
     { name = "xlsxwriter" },
-    { name = "zipp" },
 ]
 
 [package.optional-dependencies]
@@ -301,21 +273,20 @@ dev = [
 requires-dist = [
     { name = "aboutcode-toolkit", specifier = "==11.1.1" },
     { name = "altcha", specifier = "==1.0.0" },
-    { name = "annotated-types", specifier = "==0.7.0" },
+    { name = "annotated-types", specifier = "==0.8.0" },
     { name = "asgiref", specifier = "==3.12.1" },
-    { name = "attrs", specifier = "==25.4.0" },
+    { name = "attrs", specifier = "==26.1.0" },
     { name = "bleach", specifier = "==6.4.0" },
     { name = "bleach-allowlist", specifier = "==1.0.3" },
     { name = "boolean-py", specifier = "==5.0" },
     { name = "certifi", specifier = "==2026.7.22" },
     { name = "charset-normalizer", specifier = "==3.5.1" },
     { name = "clamd", specifier = "==1.0.2" },
-    { name = "click", specifier = "==8.3.3" },
+    { name = "click", specifier = "==8.5.0" },
     { name = "confusable-homoglyphs", specifier = "==3.3.1" },
     { name = "crispy-bootstrap5", specifier = "==2026.9" },
     { name = "croniter", specifier = "==6.2.4" },
     { name = "cyclonedx-python-lib", specifier = "==11.12.0" },
-    { name = "cython", specifier = "==3.2.4" },
     { name = "defusedxml", specifier = "==0.7.1" },
     { name = "django", specifier = "==6.1.1" },
     { name = "django-altcha", specifier = "==1.0.0" },
@@ -335,67 +306,50 @@ requires-dist = [
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
     { name = "fakeredis", specifier = "==2.38.0" },
-    { name = "gunicorn", specifier = "==26.1.0" },
-    { name = "idna", specifier = "==3.19" },
+    { name = "gunicorn", specifier = "==26.2.0" },
+    { name = "idna", specifier = "==3.20" },
     { name = "inflection", specifier = "==0.5.1" },
     { name = "jinja2", specifier = "==3.1.6" },
     { name = "jsonfield", specifier = "==3.2.0" },
-    { name = "jsonschema", specifier = "==4.26.0" },
-    { name = "jsonschema-specifications", specifier = "==2025.9.1" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
-    { name = "markdown", specifier = "==3.10.2" },
+    { name = "markdown", specifier = "==3.11" },
     { name = "markupsafe", specifier = "==3.0.3" },
-    { name = "maturin", specifier = "==1.11.5" },
-    { name = "model-bakery", specifier = "==1.23.3" },
+    { name = "model-bakery", specifier = "==1.24.1" },
     { name = "msgspec", specifier = "==0.21.1" },
     { name = "natsort", specifier = "==8.4.0" },
-    { name = "oauthlib", specifier = "==3.3.1" },
-    { name = "odfdo", specifier = "==3.22.0" },
+    { name = "odfdo", specifier = "==3.26.3" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
-    { name = "packaging", specifier = "==26.2" },
-    { name = "pip", specifier = "==26.2.1" },
-    { name = "psycopg", specifier = "==3.3.5" },
+    { name = "packaging", specifier = "==26.3" },
+    { name = "psycopg", specifier = "==3.3.6" },
     { name = "py-serializable", specifier = "==2.1.0" },
     { name = "pyasn1", specifier = "==0.6.4" },
     { name = "pyasn1-modules", specifier = "==0.4.2" },
-    { name = "pydantic", specifier = "==2.12.5" },
-    { name = "pydantic-core", specifier = "==2.41.5" },
-    { name = "pyjwt", specifier = "==2.13.0" },
-    { name = "pypng", specifier = "==0.20220715.0" },
+    { name = "pydantic", specifier = "==2.13.5" },
+    { name = "pydantic-core", specifier = "==2.46.5" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
-    { name = "python-ldap", specifier = "==3.4.5" },
-    { name = "python-mimeparse", specifier = "==2.0.0" },
-    { name = "python3-openid", specifier = "==3.2.0" },
-    { name = "pytz", specifier = "==2026.2" },
+    { name = "python-ldap", specifier = "==3.4.8" },
+    { name = "pytz", specifier = "==2026.4" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "redis", specifier = "==8.1.0" },
-    { name = "referencing", specifier = "==0.37.0" },
     { name = "requests", specifier = "==2.34.2" },
-    { name = "requests-oauthlib", specifier = "==2.0.0" },
-    { name = "rpds-py", specifier = "==0.30.0" },
     { name = "rq", specifier = "==2.12.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
-    { name = "semantic-version", specifier = "==2.10.0" },
     { name = "setuptools", specifier = "==84.0.0" },
-    { name = "setuptools-rust", specifier = "==1.12.0" },
-    { name = "setuptools-scm", specifier = "==9.2.2" },
     { name = "six", specifier = "==1.17.0" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
     { name = "sqlparse", specifier = "==0.6.0" },
-    { name = "swapper", specifier = "==1.4.0" },
+    { name = "swapper", specifier = "==1.5.0" },
     { name = "tblib", specifier = "==3.2.2" },
     { name = "typing-extensions", specifier = "==4.16.0" },
     { name = "typing-inspection", specifier = "==0.4.4" },
     { name = "uritemplate", specifier = "==4.2.0" },
-    { name = "urllib3", specifier = "==2.7.0" },
+    { name = "urllib3", specifier = "==2.8.0" },
     { name = "webencodings", specifier = "==0.6.1" },
-    { name = "wheel", specifier = "==0.48.0" },
     { name = "xlsxwriter", specifier = "==3.2.9" },
-    { name = "zipp", specifier = "==4.1.0" },
 ]
 provides-extras = ["dev"]
 
@@ -605,18 +559,18 @@ wheels = [
 
 [[package]]
 name = "gunicorn"
-version = "26.1.0"
+version = "26.2.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "gunicorn-26.1.0-py3-none-any.whl" },
+    { path = "gunicorn-26.2.0-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "idna"
-version = "3.19"
+version = "3.20"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "idna-3.19-py3-none-any.whl" },
+    { path = "idna-3.20-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -650,31 +604,6 @@ wheels = [
 ]
 
 [[package]]
-name = "jsonschema"
-version = "4.26.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "attrs" },
-    { name = "jsonschema-specifications" },
-    { name = "referencing" },
-    { name = "rpds-py" },
-]
-wheels = [
-    { path = "jsonschema-4.26.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "jsonschema-specifications"
-version = "2025.9.1"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "referencing" },
-]
-wheels = [
-    { path = "jsonschema_specifications-2025.9.1-py3-none-any.whl" },
-]
-
-[[package]]
 name = "license-expression"
 version = "30.4.4"
 source = { registry = "thirdparty/dist" }
@@ -696,10 +625,10 @@ wheels = [
 
 [[package]]
 name = "markdown"
-version = "3.10.2"
+version = "3.11"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "markdown-3.10.2-py3-none-any.whl" },
+    { path = "markdown-3.11-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -713,24 +642,14 @@ wheels = [
 ]
 
 [[package]]
-name = "maturin"
-version = "1.11.5"
-source = { registry = "thirdparty/dist" }
-sdist = { path = "maturin-1.11.5.tar.gz" }
-wheels = [
-    { path = "maturin-1.11.5-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl" },
-    { path = "maturin-1.11.5-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl" },
-]
-
-[[package]]
 name = "model-bakery"
-version = "1.23.3"
+version = "1.24.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django" },
 ]
 wheels = [
-    { path = "model_bakery-1.23.3-py3-none-any.whl" },
+    { path = "model_bakery-1.24.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -751,22 +670,15 @@ wheels = [
 ]
 
 [[package]]
-name = "oauthlib"
-version = "3.3.1"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "oauthlib-3.3.1-py3-none-any.whl" },
-]
-
-[[package]]
 name = "odfdo"
-version = "3.22.0"
+version = "3.26.3"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "lxml" },
+    { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "odfdo-3.22.0-py3-none-any.whl" },
+    { path = "odfdo-3.26.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -790,26 +702,18 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.2"
+version = "26.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "packaging-26.2-py3-none-any.whl" },
-]
-
-[[package]]
-name = "pip"
-version = "26.2.1"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pip-26.2.1-py3-none-any.whl" },
+    { path = "packaging-26.3-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "psycopg"
-version = "3.3.5"
+version = "3.3.6"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "psycopg-3.3.5-py3-none-any.whl" },
+    { path = "psycopg-3.3.6-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -844,7 +748,7 @@ wheels = [
 
 [[package]]
 name = "pydantic"
-version = "2.12.5"
+version = "2.13.5"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "annotated-types" },
@@ -853,36 +757,19 @@ dependencies = [
     { name = "typing-inspection" },
 ]
 wheels = [
-    { path = "pydantic-2.12.5-py3-none-any.whl" },
+    { path = "pydantic-2.13.5-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "pydantic-core"
-version = "2.41.5"
+version = "2.46.5"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { path = "pydantic_core-2.41.5.tar.gz" }
 wheels = [
-    { path = "pydantic_core-2.41.5-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "pydantic_core-2.41.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
-]
-
-[[package]]
-name = "pyjwt"
-version = "2.13.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pyjwt-2.13.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "pypng"
-version = "0.20220715.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "pypng-0.20220715.0-py3-none-any.whl" },
+    { path = "pydantic_core-2.46.5-cp314-cp314-macosx_11_0_arm64.whl" },
+    { path = "pydantic_core-2.46.5-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
 ]
 
 [[package]]
@@ -898,39 +785,20 @@ wheels = [
 
 [[package]]
 name = "python-ldap"
-version = "3.4.5"
+version = "3.4.8"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "pyasn1" },
     { name = "pyasn1-modules" },
 ]
-sdist = { path = "python_ldap-3.4.5.tar.gz" }
-
-[[package]]
-name = "python-mimeparse"
-version = "2.0.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "python_mimeparse-2.0.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "python3-openid"
-version = "3.2.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "defusedxml" },
-]
-wheels = [
-    { path = "python3_openid-3.2.0-py3-none-any.whl" },
-]
+sdist = { path = "python_ldap-3.4.8.tar.gz" }
 
 [[package]]
 name = "pytz"
-version = "2026.2"
+version = "2026.4"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "pytz-2026.2-py2.py3-none-any.whl" },
+    { path = "pytz-2026.4-py2.py3-none-any.whl" },
 ]
 
 [[package]]
@@ -960,18 +828,6 @@ wheels = [
 ]
 
 [[package]]
-name = "referencing"
-version = "0.37.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "attrs" },
-    { name = "rpds-py" },
-]
-wheels = [
-    { path = "referencing-0.37.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "requests"
 version = "2.34.2"
 source = { registry = "thirdparty/dist" }
@@ -983,28 +839,6 @@ dependencies = [
 ]
 wheels = [
     { path = "requests-2.34.2-py3-none-any.whl" },
-]
-
-[[package]]
-name = "requests-oauthlib"
-version = "2.0.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "oauthlib" },
-    { name = "requests" },
-]
-wheels = [
-    { path = "requests_oauthlib-2.0.0-py2.py3-none-any.whl" },
-]
-
-[[package]]
-name = "rpds-py"
-version = "0.30.0"
-source = { registry = "thirdparty/dist" }
-sdist = { path = "rpds_py-0.30.0.tar.gz" }
-wheels = [
-    { path = "rpds_py-0.30.0-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "rpds_py-0.30.0-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
 ]
 
 [[package]]
@@ -1041,43 +875,11 @@ wheels = [
 ]
 
 [[package]]
-name = "semantic-version"
-version = "2.10.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "semantic_version-2.10.0-py2.py3-none-any.whl" },
-]
-
-[[package]]
 name = "setuptools"
 version = "84.0.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "setuptools-84.0.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "setuptools-rust"
-version = "1.12.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "semantic-version" },
-    { name = "setuptools" },
-]
-wheels = [
-    { path = "setuptools_rust-1.12.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "setuptools-scm"
-version = "9.2.2"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-    { name = "setuptools" },
-]
-wheels = [
-    { path = "setuptools_scm-9.2.2-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1106,10 +908,10 @@ wheels = [
 
 [[package]]
 name = "swapper"
-version = "1.4.0"
+version = "1.5.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "swapper-1.4.0-py2.py3-none-any.whl" },
+    { path = "swapper-1.5.0-py2.py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1149,10 +951,10 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.7.0"
+version = "2.8.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "urllib3-2.7.0-py3-none-any.whl" },
+    { path = "urllib3-2.8.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1164,28 +966,9 @@ wheels = [
 ]
 
 [[package]]
-name = "wheel"
-version = "0.48.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "packaging" },
-]
-wheels = [
-    { path = "wheel-0.48.0-py3-none-any.whl" },
-]
-
-[[package]]
 name = "xlsxwriter"
 version = "3.2.9"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "xlsxwriter-3.2.9-py3-none-any.whl" },
-]
-
-[[package]]
-name = "zipp"
-version = "4.1.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "zipp-4.1.0-py3-none-any.whl" },
 ]

@@ -97,12 +97,12 @@ docs:
 ########################################################################################
 
 outdated:
-	@echo "-> Check for outdated packages (with 7 days cooldown)"
+	@echo "-> Check for outdated packages (with 3 days cooldown)"
 	uv sync --frozen --quiet
 	uv pip list --outdated \
 		--no-config \
 		--index-url https://pypi.org/simple \
-		--exclude-newer "7 days"
+		--exclude-newer "3 days"
 	@echo "-> Audit the project's dependencies for known vulnerabilities"
 	uv audit
 
@@ -116,6 +116,7 @@ upgrade:
 		--only-binary=:all: \
 		--platform manylinux_2_28_x86_64 \
 		--platform manylinux_2_17_x86_64 \
+		--platform manylinux_2_12_x86_64 \
 		--python-version 3.14 \
 		--dest ./thirdparty/dist/
 	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
