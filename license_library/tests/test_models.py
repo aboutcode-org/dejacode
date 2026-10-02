@@ -8,6 +8,7 @@
 
 from collections import OrderedDict
 
+from django.core.cache import caches
 from django.test import TestCase
 
 from license_expression import LicenseSymbol
@@ -497,6 +498,21 @@ class LicenseModelsTestCase(TestCase):
             "https://scancode-licensedb.aboutcode.org/license-1",
         ]
         self.assertEqual(expected, self.license1.get_all_urls())
+
+    def test_license_model_save_deletes_dataspace_licensing_cache_entry(self):
+        licensing_cache = caches["licensing"]
+        dataspace_key = str(self.dataspace.uuid)
+        other_dataspace_key = str(self.other_dataspace.uuid)
+        licensing_cache.set(dataspace_key, "licensing")
+        licensing_cache.set(other_dataspace_key, "other_licensing")
+        caches["default"].set("session", "data")
+        self.addCleanup(caches["default"].delete, "session")
+
+        self.license1.save()
+
+        self.assertIsNone(licensing_cache.get(dataspace_key))
+        self.assertEqual("other_licensing", licensing_cache.get(other_dataspace_key))
+        self.assertEqual("data", caches["default"].get("session"))
 
 
 class LicenseChoiceModelTestCase(TestCase):
