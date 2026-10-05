@@ -29,8 +29,8 @@
                 edit_link.hover(function(){
                     // Refresh the pk as the select value may have changed
                     pk = hidden_field.val();
-                    var edit_href = _.string.sprintf('%s%s/', add_href, pk);
-                    console.log(_.string.sprintf('edit_href: %s', edit_href));
+                    var edit_href = `${add_href}${pk}/`;
+                    console.log(`edit_href: ${edit_href}`);
                     $(this).attr('href', edit_href);
                     return false;
                 });
