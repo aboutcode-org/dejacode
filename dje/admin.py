@@ -53,6 +53,7 @@ from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 from django.views.generic import RedirectView
 
 from django_registration.backends.activation.views import RegistrationView
@@ -1697,7 +1698,7 @@ class DejacodeUserAdmin(
             ),
             path(
                 "<path:object_id>/send_activation_email/",
-                self.admin_site.admin_view(self.send_activation_email),
+                self.admin_site.admin_view(require_POST(self.send_activation_email)),
                 name="{}_{}_send_activation_email".format(*info),
             ),
         ]

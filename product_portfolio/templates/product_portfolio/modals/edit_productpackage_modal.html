@@ -9,7 +9,11 @@
       </div>
       <div class="modal-footer">
         {% if has_delete_productpackage or has_delete_productcomponent %}
-          <a id="update-productrelation-delete" class="btn btn-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="top" title="Click here to delete this relationship">Delete</a>
+          <form id="update-productrelation-delete" method="post" class="me-auto">
+            {% csrf_token %}
+            <input type="hidden" name="delete" value="1">
+            <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Click here to delete this relationship">Delete</button>
+          </form>
         {% endif %}
         <input type="button" name="close" value="Close" class="btn btn-secondary" data-bs-dismiss="modal">
         <input type="button" id="update-productrelation-submit" value="Update" class="btn btn-primary btn-success">

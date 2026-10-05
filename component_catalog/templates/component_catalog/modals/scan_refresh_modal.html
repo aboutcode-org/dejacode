@@ -15,7 +15,10 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <a class="btn btn-success refresh-confirm" href="/">Refresh Scan</a>
+        <form method="post" class="refresh-confirm">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">Refresh Scan</button>
+        </form>
       </div>
     </div>
   </div>

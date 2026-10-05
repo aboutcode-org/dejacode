@@ -1432,6 +1432,7 @@ class PackageDetailsView(
 
 
 @login_required
+@require_POST
 def package_scan_view(request, dataspace, uuid):
     user = request.user
     dataspace = user.dataspace
@@ -1477,7 +1478,7 @@ def package_scan_view(request, dataspace, uuid):
             messages.error(request, scancode_msg)
 
     if is_hxr:
-        return Http404
+        raise Http404
 
     return redirect(f"{package.details_url}#scan")
 
@@ -1672,6 +1673,7 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
 
 @login_required
+@require_POST
 def delete_scan_view(request, project_uuid):
     dataspace = request.user.dataspace
     if not dataspace.enable_package_scanning:
@@ -1696,6 +1698,7 @@ def delete_scan_view(request, project_uuid):
 
 
 @login_required
+@require_POST
 def refresh_scan_view(request, project_uuid):
     user = request.user
     dataspace = user.dataspace

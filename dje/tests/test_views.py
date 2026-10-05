@@ -20,6 +20,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from guardian.shortcuts import assign_perm
+from notifications.models import Notification
 
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
@@ -335,7 +336,7 @@ class DJEViewsTestCase(TestCase):
         change_url = reverse("admin:dje_dataspace_change", args=[self.dataspace2.pk])
 
         # TEMPLATE_DATASPACE not defined
-        response = self.client.get(clone_url)
+        response = self.client.post(clone_url)
         self.assertRedirects(response, changelist_url)
         response = self.client.get(change_url)
         self.assertNotContains(response, "Clone dataset from")
@@ -347,13 +348,40 @@ class DJEViewsTestCase(TestCase):
         with override_settings(TEMPLATE_DATASPACE=template_dataspace):
             response = self.client.get(change_url)
             self.assertContains(response, "Clone dataset from")
-            response = self.client.get(clone_url, follow=True)
+            self.assertContains(
+                response,
+                f'<form id="clone-dataset-form" method="post" action="{clone_url}" hidden>',
+            )
+            response = self.client.get(clone_url)
+            self.assertEqual(405, response.status_code)
+            self.assertEqual(0, len(mail.outbox))
+            response = self.client.post(clone_url, follow=True)
             self.assertRedirects(response, changelist_url)
             self.assertContains(response, expected)
 
         self.assertEqual("[DejaCode] Dataspace cloning completed", mail.outbox[0].subject)
         self.assertTrue("Cloning process initiated at" in mail.outbox[0].body)
         self.assertTrue("Data copy completed." in mail.outbox[0].body)
+
+    def test_mark_all_notifications_as_read_view(self):
+        Notification.objects.create(recipient=self.user, actor=self.user, verb="Test")
+        url = reverse("notifications:mark_all_as_read")
+        unread_url = reverse("notifications:unread")
+
+        response = self.client.post(url)
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
+        self.client.login(username=self.user.username, password="secret")
+        response = self.client.get(unread_url)
+        self.assertContains(response, f'<form method="post" action="{url}">')
+
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+        self.assertEqual(1, self.user.notifications.unread().count())
+
+        response = self.client.post(url)
+        self.assertRedirects(response, unread_url)
+        self.assertEqual(0, self.user.notifications.unread().count())
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_global_search_list_view(self):
