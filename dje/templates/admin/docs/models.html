@@ -8,7 +8,7 @@
         {% for app_verbose_name, models in help_data.items %}
           <li data-toggle="collapse" data-target="#{{ app_verbose_name|slugify }}-dropdown" class="collapsed" aria-expanded="false">
             <a>
-              <i class="fa fa-dot-circle-o fa-lg"></i>
+              <i class="fa fa-caret-right fa-fw"></i>
               {{ app_verbose_name }}
               <span class="arrow"></span>
             </a>

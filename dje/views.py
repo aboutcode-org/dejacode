@@ -2130,6 +2130,7 @@ def docs_models_view(request):
         "workflow",
         "reporting",
         "policy",
+        "vulnerabilities",
     ]
 
     model_classes = [
