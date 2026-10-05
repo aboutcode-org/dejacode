@@ -80,6 +80,11 @@
           window.location.hash = target;
         });
       });
+
+      // Keep the section open when a model link is clicked
+      document.querySelectorAll('ul#menu-content .sub-menu a').forEach(link => {
+        link.addEventListener('click', event => event.stopPropagation());
+      });
     });
   </script>
 {% endblock %}

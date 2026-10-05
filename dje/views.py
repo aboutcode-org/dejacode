@@ -2131,6 +2131,7 @@ def docs_models_view(request):
         "reporting",
         "policy",
         "vulnerabilities",
+        "vulnerabilities_triage",
     ]
 
     model_classes = [
