@@ -15,7 +15,8 @@
     {% endif %}
     {% if change and template_dataspace and user.is_superuser and user.dataspace.is_reference %}
         <li>
-            <a href="{% url opts|admin_urlname:'clonedataset' object_id %}" class="grp-state-focus">{% trans 'Clone dataset from' %} {{ template_dataspace }}</a>
+            <form id="clone-dataset-form" method="post" action="{% url opts|admin_urlname:'clonedataset' object_id %}" hidden>{% csrf_token %}</form>
+            <a href="javascript://" onclick="document.getElementById('clone-dataset-form').submit();" class="grp-state-focus">{% trans 'Clone dataset from' %} {{ template_dataspace }}</a>
         </li>
     {% endif %}
 {% endblock %}

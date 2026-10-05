@@ -44,9 +44,12 @@
             Submit Scan Request
           </button>
         {% else %}
-          <a id="submit-scan-request" class="btn btn-success" href="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}">
-            Submit Scan Request
-          </a>
+          <form method="post" action="{% url 'component_catalog:package_scan' user.dataspace object.uuid %}">
+            {% csrf_token %}
+            <button id="submit-scan-request" type="submit" class="btn btn-success">
+              Submit Scan Request
+            </button>
+          </form>
         {% endif %}
       </div>
     </div>

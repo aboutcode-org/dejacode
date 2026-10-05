@@ -98,9 +98,12 @@
           {% endif %}
           {% if request.user.dataspace.enable_purldb_access %}
             <div class="dropdown-header">PurlDB</div>
-            <a class="dropdown-item" id="improve_from_purldb" href="{{ object.get_improve_packages_from_purldb_url }}">
-              <i class="fas fa-database"></i> <strong>Improve</strong> Packages from PurlDB
-            </a>
+            <form method="post" action="{{ object.get_improve_packages_from_purldb_url }}">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item" id="improve_from_purldb">
+                <i class="fas fa-database"></i> <strong>Improve</strong> Packages from PurlDB
+              </button>
+            </form>
           {% endif %}
           </div>
       </div>
@@ -226,7 +229,8 @@
           // Ensure the td has an ID (assign one if missing)
           if (!td.id) td.id = "td-" + Math.random().toString(36).substr(2, 9); // Generate a random ID
 
-          confirmButton.setAttribute('hx-get', PackageScanURL);
+          confirmButton.setAttribute('hx-post', PackageScanURL);
+          confirmButton.setAttribute('hx-headers', JSON.stringify({'X-CSRFToken': csrftoken}));
           confirmButton.setAttribute("hx-target", `#${td.id}`); // Set hx-target to the ID
           htmx.process(confirmButton); // Notify HTMX about the attribute changes.
         });
@@ -267,7 +271,7 @@
           // Not in the DOM if the user has not the proper permissions
           let delete_button = $('#update-productrelation-delete');
           if (delete_button && can_delete) {
-              delete_button.attr('href', edit_url + '?delete=1');
+              delete_button.attr('action', edit_url);
               delete_button.show();
           }
           else {

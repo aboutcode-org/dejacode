@@ -16,6 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import resolve_url
+from django.test import Client
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -2494,11 +2495,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productpackage.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productpackage"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.get(f"{edit_url}?delete=1")
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(ProductPackage.objects.filter(pk=productpackage.pk).exists())
+
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Package relationship {productpackage} successfully deleted."
         self.assertContains(response, msg)
@@ -2513,6 +2518,39 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(wrong_url)
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["content-type"])
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.delete_scan")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
+    def test_product_portfolio_delete_scan_htmx_view_csrf(
+        self, mock_fetch_scan_list, mock_delete, mock_is_configured
+    ):
+        mock_is_configured.return_value = True
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.save()
+        mock_fetch_scan_list.return_value = {"count": 1}
+        mock_delete.return_value = True
+        project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
+        delete_url = reverse(
+            "product_portfolio:scan_delete_htmx", args=[project_uuid, self.package1.uuid]
+        )
+
+        client = Client(enforce_csrf_checks=True)
+        client.login(username=self.super_user.username, password="secret")
+
+        response = client.get(delete_url)
+        self.assertEqual(405, response.status_code)
+
+        response = client.delete(delete_url)
+        self.assertEqual(403, response.status_code)
+        mock_delete.assert_not_called()
+
+        response = client.get(self.product1.get_absolute_url())
+        self.assertContains(response, 'hx-headers=\'{"X-CSRFToken": "')
+        csrf_token = client.cookies["csrftoken"].value
+        response = client.delete(delete_url, headers={"X-CSRFToken": csrf_token})
+        self.assertEqual(200, response.status_code)
+        mock_delete.assert_called_once()
 
     def test_product_portfolio_edit_productrelation_ajax_view_escape_relation_instance(self):
         package = make_package(self.dataspace, filename='"><script>alert(1)</script>')
@@ -2573,11 +2611,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productcomponent"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
@@ -2636,11 +2674,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productcomponent"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
@@ -3609,13 +3647,19 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
         self.client.login(username=self.basic_user.username, password="secret")
         url = self.product1.get_url("improve_packages_from_purldb")
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assertEqual(404, response.status_code)
 
         self.assertTrue(self.super_user.has_perm("change_product", self.product1))
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_url("improve_packages_from_purldb")
-        response = self.client.get(url, follow=True)
+        response = self.client.get(self.product1.get_absolute_url())
+        self.assertContains(response, f'<form method="post" action="{url}">')
+
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+
+        response = self.client.post(url, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages from PurlDB in progress...")
 
@@ -3625,7 +3669,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
             status=ScanCodeProject.Status.IMPORT_STARTED,
         )
-        response = self.client.get(url, follow=True)
+        response = self.client.post(url, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages already in progress...")
 

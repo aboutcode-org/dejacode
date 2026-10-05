@@ -1678,7 +1678,7 @@ def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
     has_delete_permission = user.has_perm(f"product_portfolio.delete_{relationship_model_name}")
-    if request.GET.get("delete"):
+    if request.method == "POST" and request.POST.get("delete"):
         if has_delete_permission:
             History.log_deletion(user, relation_instance)
             relation_verbose_name = relation_type.replace("-", " ")
@@ -2957,6 +2957,7 @@ def scancodeio_project_download_input_view(request, scancodeproject_uuid):
 
 
 @login_required
+@require_POST
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
     guarded_qs = Product.objects.get_queryset(user)
@@ -3095,7 +3096,6 @@ def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, prese
 
 
 @login_required
-@csrf_exempt
 @require_http_methods(["DELETE"])
 def delete_scan_htmx_view(request, project_uuid, package_uuid):
     dataspace = request.user.dataspace
