@@ -167,7 +167,7 @@
 {% endblock %}
 
 {% block javascripts %}
-  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
+  <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-CZRhZl16VkLNMzSV5/VEWxVEMWM8t2DMoy7EJSc4w9DxTRcYWGsapJB7Br6g5EEr" crossorigin="anonymous"></script>
   {% if component_add_form %}
     <script src="{% static 'js/csrf_header.js' %}" integrity="sha384-H61e46QMjASwnZFb/rwCl9PANtdqt1dbKU8gnGOh9lIGQEoi1B6qkWROHnrktD3R" crossorigin="anonymous"></script>
   {% endif %}
@@ -177,7 +177,7 @@
     document.addEventListener('DOMContentLoaded', function () {
       let related_verbose_name = '{{ related_verbose_name|capfirst }}';
 
-      NEXB.warnOnUnsavedChanges('#grid-formset-form, #grid-configuration-form');
+      DejaCode.warnOnUnsavedChanges('#grid-formset-form, #grid-configuration-form');
 
       // Disable all form elements except the component autocomplete
       // The elements are enabled back as soon as the component is set

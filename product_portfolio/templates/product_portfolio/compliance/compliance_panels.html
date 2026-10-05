@@ -20,7 +20,7 @@
             {% if has_change_permission %}
               <form hx-post="{{ product.get_evaluate_policy_rules_url }}"
                     hx-swap="none"
-                    hx-on--before-request="NEXB.displayOverlay('{% trans "Re-evaluating policy rules..." %}')">
+                    hx-on--before-request="DejaCode.displayOverlay('{% trans "Re-evaluating policy rules..." %}')">
                 {% csrf_token %}
                 <button type="submit"
                         class="btn btn-link p-0 text-body-tertiary lh-1"

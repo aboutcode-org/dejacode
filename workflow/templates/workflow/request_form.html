@@ -81,10 +81,10 @@
       });
 
       const requestForm = $('form#workflow-request-form');
-      NEXB.warnOnUnsavedChanges('form#workflow-request-form');
+      DejaCode.warnOnUnsavedChanges('form#workflow-request-form');
       requestForm.on('submit', function () {
         $('button').prop('disabled', true);
-        NEXB.displayOverlay("Saving...");
+        DejaCode.displayOverlay("Saving...");
       })
     });
   </script>

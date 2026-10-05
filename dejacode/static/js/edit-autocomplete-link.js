@@ -11,7 +11,7 @@
 // This is inspired/forked from edit-related-link.js
 (function($) {
     $(document).ready(function(){
-        NEXB.install_edit_autocomplete_links = function(elem) {
+        DejaCode.install_edit_autocomplete_links = function(elem) {
             // We are building the Edit links based on the href of the Add link
             // If there is no Add link (no permission) then we don't build/display the Edit link
             elem.find('.ui-autocomplete-input').each(function(){
@@ -53,14 +53,14 @@
                 });
             });
         };
-        NEXB.install_edit_autocomplete_links($(document));
+        DejaCode.install_edit_autocomplete_links($(document));
 
         // add the edit link to a new inline form when the user adds one
         $('a.grp-add-handler').click(function(){
             var group = $(this).parents('[id$="-group"]');
             var last_index = group.find('[id$="-TOTAL_FORMS"]').val() - 1;
             var form = $(group.find('.grp-dynamic-form')[last_index]);
-            NEXB.install_edit_autocomplete_links(form);
+            DejaCode.install_edit_autocomplete_links(form);
         });
     });
 })(grp.jQuery);

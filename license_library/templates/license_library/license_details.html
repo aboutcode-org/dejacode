@@ -23,12 +23,12 @@
                 $(document).ready(function () {
                     var annotator = $('#licensetext .clipboard').annotator({readOnly: true}).data('annotator');
                     annotator.addPlugin('Store', {
-                        prefix: NEXB.client_data.api_url,
+                        prefix: DejaCode.client_data.api_url,
                         urls: {
                             search: 'license_annotations/?format=json'
                         },
                         loadFromSearch: {
-                            license: NEXB.client_data.license_pk
+                            license: DejaCode.client_data.license_pk
                         }
                     });
                     annotator.addPlugin('TagsInSelect', {
@@ -52,14 +52,14 @@
                         AnonymousPlugin.prototype.pluginInit = function () {
                             this.subscribe('annotationsLoaded', function (annotations) {
                                 var position_anchors = function () {
-                                    $.each(NEXB.client_data.annotation_pks, function (index, pk) {
+                                    $.each(DejaCode.client_data.annotation_pks, function (index, pk) {
                                         var top = $('span.annotator-hl[data-annotation-id="' + pk + '"]').offset().top;
                                         var anchor = $('.reverse_annotation_link[data-annotation-id="' + pk + '"]');
                                         anchor.offset({top: top}).css('display', 'block').css('width', '100%').css('padding-left', '80%');
                                     });
                                 };
 
-                                $.each(NEXB.client_data.annotation_pks, function (index, pk) {
+                                $.each(DejaCode.client_data.annotation_pks, function (index, pk) {
                                     var anchor = $('<a class="reverse_annotation_link" href="#" title="See license tag" data-annotation-id="' + pk + '"><i class="fas fa-tag"></i></a>');
                                     anchor.on('click', function (e) {
                                         e.preventDefault();

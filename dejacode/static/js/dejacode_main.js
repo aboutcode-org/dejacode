@@ -294,10 +294,7 @@ function setupClipboardButtons() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  NEXB = {};
-  NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
-
-  NEXB.displayOverlay = function(text) {
+  DejaCode.displayOverlay = function(text) {
     const overlay = document.createElement('div');
     overlay.id = 'overlay';
     overlay.textContent = text;
@@ -323,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Ask for confirmation before leaving the page with unsaved changes in the forms
-  NEXB.warnOnUnsavedChanges = (selector) => {
+  DejaCode.warnOnUnsavedChanges = (selector) => {
     let hasUnsavedChanges = false;
     document.querySelectorAll(selector).forEach((form) => {
       form.addEventListener('input', () => { hasUnsavedChanges = true; });
