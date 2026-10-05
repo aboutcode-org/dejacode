@@ -165,8 +165,6 @@
 {% block javascripts %}
   {{ block.super }}
   <script src="{% static 'js/scroll_to.js' %}" integrity="sha384-5b5N+CiBiLgPGLMj4/gsf7MiPclQO0wtbtg1aUq+wogLo8D59FAoRjL/TfuKZf/t" crossorigin="anonymous"></script>
-  <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
-  <script src="{% static 'js/clipboard-2.0.0.min.js' %}" integrity="sha384-5tfO0soa+FisnuBhaHP2VmPXQG/JZ8dLcRL43IkJFzbsXTXT6zIX8q8sIT0VSe2G" crossorigin="anonymous"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       $('.delete_attachment_link').click(function() {
@@ -181,23 +179,7 @@
         $('#delete_comment_uuid').attr('value', uuid);
       });
 
-      $('form#add-comment').dirtyForms();
-
-      // clipboard.js
-      var clip = new ClipboardJS(".btn-clipboard", {
-        target: function(trigger){
-          return trigger.nextElementSibling
-        }
-      });
-      clip.on("success", function(clip){
-        $(clip.trigger)
-          .attr("title", "Copied!")
-          .tooltip("_fixTitle")
-          .tooltip("show")
-          .attr("title","Copy to clipboard")
-          .tooltip("_fixTitle");
-        clip.clearSelection()
-      });
+      NEXB.warnOnUnsavedChanges('form#add-comment');
     });
   </script>
 {% endblock %}

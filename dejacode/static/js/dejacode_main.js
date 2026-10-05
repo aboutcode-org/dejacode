@@ -276,6 +276,23 @@ function setupPaginationKeys() {
   });
 }
 
+function setupClipboardButtons() {
+  // Copy the content of the element following a `.btn-clipboard` button.
+  // Delegated on the document to support the content loaded asynchronously.
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('.btn-clipboard');
+    if (!button) return;
+
+    await navigator.clipboard.writeText(button.nextElementSibling.innerText);
+
+    const tooltip = bootstrap.Tooltip.getOrCreateInstance(button);
+    tooltip.setContent({'.tooltip-inner': 'Copied!'});
+    button.addEventListener('hidden.bs.tooltip', () => {
+      tooltip.setContent({'.tooltip-inner': 'Copy to clipboard'});
+    }, {once: true});
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   NEXB = {};
   NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
@@ -305,6 +322,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
   }
 
+  // Ask for confirmation before leaving the page with unsaved changes in the forms
+  NEXB.warnOnUnsavedChanges = (selector) => {
+    let hasUnsavedChanges = false;
+    document.querySelectorAll(selector).forEach((form) => {
+      form.addEventListener('input', () => { hasUnsavedChanges = true; });
+      form.addEventListener('submit', () => { hasUnsavedChanges = false; });
+    });
+    window.addEventListener('beforeunload', (event) => {
+      if (hasUnsavedChanges) event.preventDefault();
+    });
+  };
+
   setupTooltips();
   setupPopovers();
   setupSelectionCheckboxes();
@@ -316,4 +345,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDismissibleAlerts();
   setupScrollToTargets();
   setupPaginationKeys();
+  setupClipboardButtons();
 });

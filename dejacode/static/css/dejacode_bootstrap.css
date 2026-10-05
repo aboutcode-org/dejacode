@@ -614,7 +614,7 @@ table.purldb-table .column-license_expression {
 
 /* -- Object form (add/edit) -- */
 .datepicker {
-  width: 130px;
+  width: auto;
 }
 body.object-form .invalid-feedback {
   display: block;

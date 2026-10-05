@@ -307,13 +307,7 @@ class AutocompleteInput(widgets.TextInput):
 
 
 class DatePicker(widgets.DateInput):
-    class Media:
-        css = {
-            "all": ("flatpickr/flatpickr-4.5.2.min.css",),
-        }
-        js = [
-            "flatpickr/flatpickr-4.5.2.min.js",
-        ]
+    input_type = "date"
 
     def __init__(self, attrs=None):
         super().__init__(attrs=attrs)

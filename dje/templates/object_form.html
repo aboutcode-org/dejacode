@@ -49,8 +49,6 @@
   {{ form.identifier_fields|json_script:"identifier_fields" }}
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      if (typeof(flatpickr) != 'undefined') $('.datepicker').flatpickr();
-
       {% if form.fields.license_expression and licenses_data_for_builder %}
         let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
         const licenseExpressionInputIds = [
