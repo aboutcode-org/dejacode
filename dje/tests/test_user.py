@@ -33,6 +33,7 @@ from dje.registration import DejaCodeActivationView
 from dje.tests import create
 from dje.tests import create_superuser
 from dje.tests import create_user
+from dje.tests import get_activation_key_from_email
 
 
 class UsersTestCase(TestCase):
@@ -386,12 +387,7 @@ class UsersTestCase(TestCase):
 
         self.assertEqual("[DejaCode] Please activate your account", mail.outbox[0].subject)
         body = mail.outbox[0].body
-
-        # Grep the key from the email body (now in querystring format)
-        activation_key = ""
-        for line in body.split("\n"):
-            if "activation_key=" in line:
-                activation_key = line.partition("activation_key=")[-1].strip()
+        activation_key = get_activation_key_from_email(body)
 
         activation_url = reverse("django_registration_activate")
         self.assertTrue("DejaCode {} account".format(self.other_user.dataspace.name) in body)
