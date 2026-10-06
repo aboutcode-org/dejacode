@@ -28,8 +28,8 @@ def build_user_search(user_searches, user_dn, user_filterstr):
 
     try:
         definitions = json.loads(user_searches)
-    except json.JSONDecodeError as e:
-        raise ImproperlyConfigured(f"Invalid JSON in AUTH_LDAP_USER_SEARCHES: {e}") from e
+    except json.JSONDecodeError as error:
+        raise ImproperlyConfigured(f"Invalid JSON in AUTH_LDAP_USER_SEARCHES: {error}") from error
 
     if not isinstance(definitions, list):
         raise ImproperlyConfigured("AUTH_LDAP_USER_SEARCHES must be a JSON list")
@@ -48,6 +48,11 @@ def build_user_search(user_searches, user_dn, user_filterstr):
         if not base_dn or not filterstr:
             raise ImproperlyConfigured(
                 f"AUTH_LDAP_USER_SEARCHES[{index}] must define 'base' and 'filter'"
+            )
+
+        if "%(user)s" not in filterstr:
+            raise ImproperlyConfigured(
+                f"AUTH_LDAP_USER_SEARCHES[{index}] 'filter' must include the %(user)s placeholder"
             )
 
         searches.append(LDAPSearch(base_dn, ldap.SCOPE_SUBTREE, filterstr))

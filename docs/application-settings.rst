@@ -400,24 +400,11 @@ must define:
 
 All configured searches are combined using ``LDAPSearchUnion``.
 
-Example:
+Example, as a single line:
 
 .. code-block:: python
 
-    AUTH_LDAP_USER_SEARCHES = """
-    [
-        {
-            "base": "ou=users,dc=example,dc=com",
-            "filter": "(uid=%(user)s)"
-        },
-        {
-            "base": "ou=otherusers,dc=example,dc=com",
-            "filter": "(uid=%(user)s)"
-        }
-    ]
-    """
-
-For usage in a ``docker.env`` file only a single line string is accepted.
+    AUTH_LDAP_USER_SEARCHES=[{"base": "ou=users,dc=example,dc=com", "filter": "(uid=%(user)s)"}, {"base": "ou=otherusers,dc=example,dc=com", "filter": "(uid=%(user)s)"}]
 
 AUTOCREATE_USER
 ---------------
