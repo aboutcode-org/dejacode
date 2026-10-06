@@ -6,7 +6,8 @@
     {{ block.super }}
     {% if change %}
         <li>
-            <a href="{% url opts|admin_urlname:'send_activation_email' object_id %}" class="grp-state-focus">{% trans 'Re-send activation email' %}</a>
+            <form id="send-activation-email-form" method="post" action="{% url opts|admin_urlname:'send_activation_email' object_id %}" hidden>{% csrf_token %}</form>
+            <a href="javascript://" onclick="document.getElementById('send-activation-email-form').submit();" class="grp-state-focus">{% trans 'Re-send activation email' %}</a>
         </li>
     {% endif %}
 {% endblock %}

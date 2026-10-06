@@ -57,6 +57,7 @@ from django.utils.decorators import method_decorator
 from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import FormView
@@ -1639,6 +1640,7 @@ def object_compare_view(request):
 
 
 @login_required
+@require_POST
 def clone_dataset_view(request, pk):
     """Call the clonedataset management command as a an async task."""
     changelist_url = reverse("admin:dje_dataspace_changelist")
@@ -2128,6 +2130,8 @@ def docs_models_view(request):
         "workflow",
         "reporting",
         "policy",
+        "vulnerabilities",
+        "vulnerabilities_triage",
     ]
 
     model_classes = [
@@ -2314,6 +2318,14 @@ class AllNotificationsList(
     notifications_views.AllNotificationsList,
 ):
     pass
+
+
+@login_required
+@require_POST
+def mark_all_notifications_as_read_view(request):
+    """Replace the `notifications` library view, which marks as read on GET requests."""
+    request.user.notifications.mark_all_as_read()
+    return redirect("notifications:unread")
 
 
 class IntegrationsStatusView(

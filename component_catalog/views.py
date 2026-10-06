@@ -8,7 +8,6 @@
 
 import json
 from collections import Counter
-from operator import itemgetter
 from urllib.parse import quote_plus
 
 from django.apps import apps
@@ -46,7 +45,6 @@ from django.views.generic import FormView
 from django.views.generic.edit import BaseFormView
 
 from crispy_forms.utils import render_crispy_form
-from natsort import natsorted
 from packageurl import PackageURL
 
 from component_catalog.filters import ComponentFilterSet
@@ -78,6 +76,7 @@ from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import ScanStatus
 from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
+from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dje import tasks
 from dje.client_data import add_client_data
 from dje.models import DejacodeUser
@@ -87,10 +86,12 @@ from dje.urn_resolver import URN_HELP_TEXT
 from dje.utils import get_cpe_vuln_link
 from dje.utils import get_help_text as ght
 from dje.utils import get_preserved_filters
+from dje.utils import get_safe_referer
 from dje.utils import is_available
 from dje.utils import is_hx_request
 from dje.utils import is_uuid4
 from dje.utils import localized_datetime
+from dje.utils import natural_sort_key
 from dje.utils import remove_empty_values
 from dje.utils import str_to_id_list
 from dje.views import AcceptAnonymousMixin
@@ -188,7 +189,7 @@ class AddToProductFormMixin(BaseFormView):
         else:
             msg = f"Error assigning the {opts.model_name} to this product."
             messages.error(self.request, msg)
-            redirect_url = self.request.path
+            redirect_url = self.object.get_absolute_url()
 
         return redirect(redirect_url)
 
@@ -240,7 +241,8 @@ class AddToProductMultipleMixin(BaseFormView):
         return redirect(redirect_url)
 
     def form_invalid(self, form):
-        return redirect(self.request.path)
+        opts = self.model._meta
+        return redirect(f"{opts.app_label}:{opts.model_name}_list")
 
 
 def include_policy(view_instance):
@@ -261,7 +263,8 @@ class TabVulnerabilityMixin:
 
         label = (
             f"Vulnerabilities"
-            f' <span class="badge badge-vulnerability">{len(vulnerabilities_qs)}</span>'
+            f' <span class="badge bg-danger-subtle text-danger-emphasis">'
+            f"{len(vulnerabilities_qs)}</span>"
         )
 
         vulnerabilities = []
@@ -272,6 +275,7 @@ class TabVulnerabilityMixin:
 
         context = {
             "vulnerabilities": vulnerabilities,
+            "vulnerablecode_todos_url": VulnerableCode(self.object.dataspace).advisory_todos_url,
         }
 
         return {
@@ -280,55 +284,27 @@ class TabVulnerabilityMixin:
         }
 
     def get_fixed_packages_html(self, vulnerability, dataspace):
-        if not vulnerability.fixed_packages:
+        if not vulnerability.fixed_by_packages:
             return
 
-        fixed_packages_sorted = natsorted(vulnerability.fixed_packages, key=itemgetter("purl"))
+        fixed_packages_sorted = sorted(vulnerability.fixed_by_packages, key=natural_sort_key)
         add_package_url = reverse("component_catalog:package_add")
-        vulnerability_icon = (
-            '<span data-bs-toggle="tooltip" title="Vulnerabilities"'
-            ' data-boundary="viewport">'
-            '<i class="fas fa-bug vulnerability mx-1"></i>'
-            "</span>"
-        )
-        no_vulnerabilities_icon = (
-            '<span class="fa-stack fa-small text-muted-light ms-1"'
-            ' data-bs-toggle="tooltip" title="No vulnerabilities found"'
-            ' data-boundary="viewport">'
-            '  <i class="fas fa-bug fa-stack-1x"></i>'
-            '  <i class="fas fa-ban fa-stack-2x"></i>'
-            "</span>"
-        )
 
         fixed_packages_values = []
-        for fixed_package in fixed_packages_sorted:
-            purl = fixed_package.get("purl")
-            is_vulnerable = fixed_package.get("is_vulnerable")
+        for purl in fixed_packages_sorted:
             package_instances = Package.objects.scope(dataspace).for_package_url(purl)
 
             for package in package_instances:
-                absolute_url = package.get_absolute_url()
-                display_value = package.get_html_link(href=absolute_url)
-                if is_vulnerable:
-                    display_value += package.get_html_link(
-                        href=f"{absolute_url}#vulnerabilities",
-                        value=mark_safe(vulnerability_icon),
-                    )
-                else:
-                    display_value += no_vulnerabilities_icon
+                display_value = package.get_html_link(href=package.get_absolute_url())
                 fixed_packages_values.append(display_value)
 
             if not package_instances:
-                display_value = purl.replace("pkg:", "")
-                if is_vulnerable:
-                    display_value += vulnerability_icon
-                else:
-                    display_value += no_vulnerabilities_icon
                 # Warning: do not add spaces between HTML elements as this content
                 # is displayed in a <pre>
-                display_value += (
+                display_value = (
+                    f"{purl.replace('pkg:', '')}"
                     f'<a href="{add_package_url}?package_url={purl}"'
-                    f'   target="_blank">'
+                    f'   class="ms-1" target="_blank">'
                     f'<span data-bs-toggle="tooltip" title="Add Package"'
                     f'      data-boundary="viewport">'
                     f'<i class="fas fa-plus-circle"></i>'
@@ -1050,11 +1026,11 @@ class PackageListView(
 
             if component.is_active:
                 return redirect(f"{component.get_absolute_url()}#packages")
-            return redirect(request.path)
+            return redirect("component_catalog:package_list")
 
         error_msg = f"Error assigning packages to a component.\n{form.errors}"
         messages.error(request, mark_safe(error_msg))
-        return redirect(request.path)
+        return redirect("component_catalog:package_list")
 
     def post(self, request, *args, **kwargs):
         if request.POST.get("submit-add-to-component-form"):
@@ -1420,7 +1396,7 @@ class PackageDetailsView(
             error_msg = f"Error assigning values to the package.\n{form.errors}"
             messages.error(request, mark_safe(error_msg))
 
-        return redirect(f"{request.path}#essentials")
+        return redirect(f"{self.object.get_absolute_url()}#essentials")
 
     def post_add_to_component(self, form_class):
         request = self.request
@@ -1434,11 +1410,11 @@ class PackageDetailsView(
             messages.success(self.request, msg)
             if component.is_active:
                 return redirect(f"{component.get_absolute_url()}#packages")
-            return redirect(request.path)
+            return redirect(self.object)
 
         msg = format_html("Error assigning the package to a component.\n{}", form.errors)
         messages.error(request, msg)
-        return redirect(request.path)
+        return redirect(self.object)
 
     def post(self, request, *args, **kwargs):
         if not hasattr(self, "object"):
@@ -1456,6 +1432,7 @@ class PackageDetailsView(
 
 
 @login_required
+@require_POST
 def package_scan_view(request, dataspace, uuid):
     user = request.user
     dataspace = user.dataspace
@@ -1501,9 +1478,45 @@ def package_scan_view(request, dataspace, uuid):
             messages.error(request, scancode_msg)
 
     if is_hxr:
-        return Http404
+        raise Http404
 
     return redirect(f"{package.details_url}#scan")
+
+
+@login_required
+@require_GET
+def package_latest_non_vulnerable_view(request, dataspace, uuid):
+    """
+    Redirect to the Package matching the latest non-vulnerable version when available
+    in the Dataspace, or to the Package add form pre-filled from its Package URL.
+    Users without the add permission are redirected to the list of available versions.
+    """
+    user = request.user
+    user_dataspace = user.dataspace
+    package = get_object_or_404(Package, uuid=uuid, dataspace=user_dataspace)
+    if not (package.package_url and package.latest_non_vulnerable_version):
+        raise Http404
+
+    package_url_fields = {
+        "type": package.type,
+        "namespace": package.namespace,
+        "name": package.name,
+    }
+    non_vulnerable_purl = PackageURL(
+        **package_url_fields,
+        version=package.latest_non_vulnerable_version,
+    ).to_string()
+    dataspace_packages = Package.objects.scope(user_dataspace)
+    if non_vulnerable_package := dataspace_packages.for_package_url(non_vulnerable_purl).first():
+        return redirect(non_vulnerable_package)
+
+    if not user.has_perm("component_catalog.add_package"):
+        messages.warning(request, f"{non_vulnerable_purl} is not available in the Dataspace.")
+        query = {"q": PackageURL(**package_url_fields).to_string()}
+        return redirect(reverse("component_catalog:package_list", query=query))
+
+    query = {"package_url": non_vulnerable_purl}
+    return redirect(reverse("component_catalog:package_add", query=query))
 
 
 @login_required
@@ -1660,6 +1673,7 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
 
 
 @login_required
+@require_POST
 def delete_scan_view(request, project_uuid):
     dataspace = request.user.dataspace
     if not dataspace.enable_package_scanning:
@@ -1678,12 +1692,13 @@ def delete_scan_view(request, project_uuid):
         raise Http404("Scan could not be deleted.")
 
     messages.success(request, "Scan deleted.")
-    if referer := request.META.get("HTTP_REFERER"):
+    if referer := get_safe_referer(request):
         return redirect(referer)
     return redirect("component_catalog:scan_list")
 
 
 @login_required
+@require_POST
 def refresh_scan_view(request, project_uuid):
     user = request.user
     dataspace = user.dataspace
@@ -1697,7 +1712,7 @@ def refresh_scan_view(request, project_uuid):
         raise Http404("Scan could not be refreshed.")
 
     messages.success(request, "Refresh Scan started.")
-    if referer := request.META.get("HTTP_REFERER"):
+    if referer := get_safe_referer(request):
         return redirect(referer)
     return redirect("component_catalog:scan_list")
 

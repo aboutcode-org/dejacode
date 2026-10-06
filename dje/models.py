@@ -614,6 +614,12 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
         ),
     )
 
+    policy_rules_config = models.JSONField(
+        blank=True,
+        default=dict,
+        help_text=_("Override default policy rule settings for this dataspace."),
+    )
+
     def __str__(self):
         return f"{self.dataspace}"
 
@@ -960,7 +966,7 @@ class DataspacedModel(DataspaceForeignKeyValidationMixin, models.Model):
 
             current_value = getattr(self, field_name, None)
             update_conditions = [
-                not current_value,
+                not current_value and current_value != value,
                 current_value != value and override,
                 current_value == "unknown" and override_unknown,
             ]
@@ -1137,6 +1143,7 @@ class DataspacedModel(DataspaceForeignKeyValidationMixin, models.Model):
                 field.related_model is Dataspace,
                 isinstance(field, models.AutoField),
                 isinstance(field, models.UUIDField),
+                getattr(field, "auto_now_add", False) or getattr(field, "auto_now", False),
                 not field.null and not field.blank and not field.has_default(),
                 field.name in ALWAYS_EXCLUDE,
             ]

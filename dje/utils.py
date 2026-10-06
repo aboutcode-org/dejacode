@@ -31,6 +31,7 @@ from django.utils.formats import date_format
 from django.utils.formats import get_format
 from django.utils.html import format_html
 from django.utils.html import mark_safe
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.http import urlencode
 
 import requests
@@ -336,6 +337,27 @@ def get_model_class_from_path(path):
     return apps.get_model(app_name, model)
 
 
+def clone_related_objects(model_class, fk_field_name, source_id, target_object, save_kwargs=None):
+    """
+    Duplicate the `model_class` instances related to `source_id` onto `target_object`.
+
+    Return a list of (original_pk, cloned_instance) pairs.
+    """
+    related_objects = model_class.objects.filter(**{f"{fk_field_name}__id": source_id})
+    save_kwargs = save_kwargs or {}
+
+    cloned_pairs = []
+    for relation in related_objects:
+        original_pk = relation.pk
+        relation.id = None
+        relation.uuid = uuid.uuid4()
+        setattr(relation, fk_field_name, target_object)
+        relation.save(**save_kwargs)
+        cloned_pairs.append((original_pk, relation))
+
+    return cloned_pairs
+
+
 def merge_relations(original, duplicate):
     """Move `original` object references (ManyToOneRel, GenericRelation) from `duplicate`."""
     if original.__class__ != duplicate.__class__ or original.dataspace != duplicate.dataspace:
@@ -402,12 +424,31 @@ def construct_changes_details_message(changes_details):
     return "".join(msg)
 
 
+def natural_sort_key(value):
+    """
+    Return a sort key that orders the numbers embedded in `value` numerically:
+    "v2" sorts before "v10".
+
+    `re.split` with a capturing group always alternates text and digits parts,
+    starting with text (possibly empty), so the compared parts at a given position
+    are always of the same type.
+    """
+    return [
+        int(part) if index % 2 else part for index, part in enumerate(re.split(r"(\d+)", value))
+    ]
+
+
 def version_sort_key(item):
     """
     Replace the '.' by '~' that comes at the end of the ASCII table.
     https://natsort.readthedocs.io/en/master/examples.html
     """
     return item.replace(".", "~") + "z"
+
+
+def version_natural_sort_key(instance):
+    """Return a natural sort key for the `version` of the provided `instance`."""
+    return natural_sort_key(version_sort_key(instance.version))
 
 
 def group_by_name_version(object_list):
@@ -418,10 +459,8 @@ def group_by_name_version(object_list):
     Sort by ``version`` within each group, using a natural sort,
     reversed so that the highest version number comes first.
     """
-    from natsort import natsorted
-
     return [
-        natsorted(group, key=lambda x: version_sort_key(x.version), reverse=True)
+        sorted(group, key=version_natural_sort_key, reverse=True)
         for key, group in groupby(object_list, key=attrgetter("name"))
     ]
 
@@ -475,6 +514,18 @@ def get_referer_resolver(request):
 
     with suppress(Resolver404):
         return resolve(urlparse(referer).path)
+
+
+def get_safe_referer(request):
+    """Return the `HTTP_REFERER` request header only when it targets the current host."""
+    referer = request.META.get("HTTP_REFERER")
+    is_safe_url = url_has_allowed_host_and_scheme(
+        url=referer,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    )
+    if is_safe_url:
+        return referer
 
 
 def get_instance_from_resolver(resolver):

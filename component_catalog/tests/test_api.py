@@ -1107,7 +1107,11 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         data = {"download_url": "https://download.url"}
         response = self.client.post(self.package_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-        expected = [ErrorDetail(string="['package_url or filename required']", code="invalid")]
+        expected = {
+            "non_field_errors": [
+                ErrorDetail(string="package_url or filename required", code="invalid")
+            ]
+        }
         self.assertEqual(expected, response.data)
 
         data = {
@@ -1228,13 +1232,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         # Same download_url, same filename
         data["download_url"] = self.package1.download_url
         response = self.client.post(self.package_list_url, data)
-        expected1 = "duplicate key value violates unique constraint"
-        expected2 = (
-            "Key (dataspace_id, type, namespace, name, version, qualifiers, subpath,"
-            " download_url, filename)"
-        )
-        self.assertContains(response, expected1, status_code=400)
-        self.assertContains(response, expected2, status_code=400)
+        expected = "A record with the same unique values already exists."
+        self.assertContains(response, expected, status_code=400)
 
         # Same download_url, same filename, name
         data["name"] = "Name"
@@ -1243,8 +1242,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         # Same download_url, same filename, same name
         response = self.client.post(self.package_list_url, data)
-        self.assertContains(response, expected1, status_code=400)
-        self.assertContains(response, expected2, status_code=400)
+        self.assertContains(response, expected, status_code=400)
 
     def test_api_package_endpoint_create_update_keywords(self):
         keyword1 = ComponentKeyword.objects.create(label="Keyword1", dataspace=self.dataspace)
@@ -1339,7 +1337,11 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         self.client.login(username="super_user", password="secret")
         vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
         vulnerability2 = make_vulnerability(self.dataspace)
-        self.package1.update(risk_score=9.0)
+        self.package1.update(
+            risk_score=9.0,
+            next_non_vulnerable_version="1.2.4",
+            latest_non_vulnerable_version="2.0.0",
+        )
 
         data = {"is_vulnerable": "yes"}
         response = self.client.get(self.package_list_url, data)
@@ -1349,6 +1351,8 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
 
         results = response.data["results"]
         self.assertEqual("9.0", results[0]["risk_score"])
+        self.assertEqual("1.2.4", results[0]["next_non_vulnerable_version"])
+        self.assertEqual("2.0.0", results[0]["latest_non_vulnerable_version"])
         self.assertEqual(
             vulnerability1.advisory_id,
             results[0]["affected_by_vulnerabilities"][0]["advisory_id"],

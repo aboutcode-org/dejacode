@@ -26,14 +26,19 @@ from dejacode_toolkit.utils import sha512
 CONTENT_MAX_LENGTH = 536870912  # 512 MB
 DEFAULT_TIMEOUT = 5
 
+# Some sites (e.g. crates.io) reject requests without an identifying User-Agent.
+USER_AGENT = "DejaCode (https://github.com/aboutcode-org/dejacode)"
+
 
 class DataCollectionException(Exception):
     pass
 
 
 def collect_package_data(url):
+    headers = {"User-Agent": USER_AGENT}
+
     try:
-        response = requests.get(url, timeout=DEFAULT_TIMEOUT, stream=True)
+        response = requests.get(url, headers=headers, timeout=DEFAULT_TIMEOUT, stream=True)
     except (TimeoutError, requests.RequestException) as e:
         raise DataCollectionException(e)
 

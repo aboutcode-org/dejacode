@@ -242,21 +242,9 @@ let
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
         version = dep["version"]
-        # Handle 'django_notifications_patched' and 'django-rest-hooks' seperately
-        if name == "django-rest-hooks" or name == "django_notifications_patched":
-            if name == "django-rest-hooks" and version == "1.6.1":
-                nix_content += "    " + name + " = python.pkgs.buildPythonPackage {\n"
-                nix_content += '        pname = "django-rest-hooks";\n'
-                nix_content += '        version = "1.6.1";\n'
-                nix_content += '        format = "wheel";\n'
-                nix_content += "        src = pkgs.fetchurl {\n"
-                nix_content += '          url = "https://github.com/aboutcode-org/django-rest-hooks/releases/download/1.6.1/django_rest_hooks-1.6.1-py2.py3-none-any.whl";\n'
-                nix_content += (
-                    '          sha256 = "1byakq3ghpqhm0mjjkh8v5y6g3wlnri2vvfifyi9ky36l12vqx74";\n'
-                )
-                nix_content += "        };\n"
-                nix_content += "    };\n"
-            elif name == "django_notifications_patched" and version == "2.0.0":
+        # Handle 'django_notifications_patched' seperately
+        if name == "django_notifications_patched":
+            if name == "django_notifications_patched" and version == "2.0.0":
                 nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
                 nix_content += '        pname = "django_notifications_patched";\n'
                 nix_content += '        version = "2.0.0";\n'

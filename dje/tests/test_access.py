@@ -41,7 +41,7 @@ from dje.models import is_dataspace_related
 from dje.tests import create_user
 from dje.tests import refresh_url_cache
 from license_library.models import License
-from notification.models import Webhook
+from notification.models import WebhookSubscription
 from product_portfolio.models import Product
 
 
@@ -439,14 +439,14 @@ class LoginAttemptsTrackingTestCase(TestCase):
         attempt = AccessAttempt.objects.get(username=credentials["username"])
         self.assertEqual(2, attempt.failures_since_start)
 
-    @mock.patch("requests.Session.post", autospec=True)
+    @mock.patch("requests.post")
     def test_notification_on_unsuccessful_login_attempts(self, method_mock):
+        method_mock.return_value = None
         user = create_user(username="real_user", dataspace=self.dataspace)
         extra_payload = {"username": "DejaCode Webhook"}
-        Webhook.objects.create(
+        WebhookSubscription.objects.create(
             dataspace=self.dataspace,
-            target="http://127.0.0.1:8000/",
-            user=user,
+            target_url="http://127.0.0.1:8000/",
             event="user.locked_out",
             extra_payload=extra_payload,
         )

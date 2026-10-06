@@ -36,6 +36,7 @@ from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
+from component_catalog.models import PackageAffectedByVulnerability
 from component_catalog.models import PackageAlreadyExistsWarning
 from component_catalog.models import Subcomponent
 from component_catalog.tests import make_package
@@ -1372,8 +1373,14 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
 
         for model_class, expected in input_data:
-            results = [f.name for f in model_class().get_exclude_candidates_fields()]
+            results = [field.name for field in model_class().get_exclude_candidates_fields()]
             self.assertEqual(sorted(expected), sorted(results))
+
+    def test_package_affected_by_vulnerability_excludes_auto_now_add_fields(self):
+        field_names = [
+            field.name for field in PackageAffectedByVulnerability().get_exclude_candidates_fields()
+        ]
+        self.assertNotIn("detected_date", field_names)
 
     def test_component_create_with_or_and_and_in_license_name_and_key(self):
         or_license = License.objects.create(
@@ -2465,6 +2472,21 @@ class ComponentCatalogModelsTestCase(TestCase):
             ),
         }
         self.assertEqual(expected_data, collect_package_data(download_url))
+
+    @mock.patch("requests.get")
+    def test_collect_package_data_user_agent(self, mock_get):
+        mock_get.return_value = mock.Mock(
+            content=b"\x00",
+            headers={"content-length": 1},
+            status_code=200,
+            url="http://domain.com/a.zip",
+        )
+
+        collect_package_data("http://domain.com/a.zip")
+        self.assertEqual(
+            download.USER_AGENT,
+            mock_get.call_args.kwargs["headers"]["User-Agent"],
+        )
 
     def test_package_create_save_set_usage_policy_from_license(self):
         from policy.models import AssociatedPolicy

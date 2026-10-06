@@ -7,14 +7,15 @@
 #
 
 from django.contrib.admin.widgets import AdminTextInputWidget
-from django.db.models.fields import BLANK_CHOICE_DASH
 from django.forms import widgets
 from django.forms.utils import flatatt
+from django.utils.html import escape
 from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext as _
 
+from django_filters.conf import settings as django_filters_settings
 from django_filters.widgets import LinkWidget
 
 
@@ -67,7 +68,7 @@ class DropDownWidget(LinkWidget):
 
     def render_option(self, name, selected_choices, option_value, option_label):
         option_value = str(option_value)
-        if option_label == BLANK_CHOICE_DASH[0][1]:
+        if option_label == django_filters_settings.EMPTY_CHOICE_LABEL:
             option_label = _("All")
 
         data = self.data.copy()
@@ -98,6 +99,30 @@ class DropDownRightWidget(DropDownWidget):
     def __init__(self, attrs=None, choices=(), *args, **kwargs):
         super().__init__(attrs, choices, *args, **kwargs)
         self.right_align = True
+
+
+class LabeledDropDownWidget(DropDownWidget):
+    """Render as a button displaying the filter label and the selected choice label."""
+
+    dropdown_template = """
+    <div class="dropdown">
+      <button type="button" class="btn btn-sm btn-outline-dark dropdown-toggle {active}"
+              data-bs-toggle="dropdown" aria-expanded="false" aria-label="{label} filter">
+        <span class="opacity-75">{label}:</span> {link_content}
+      </button>
+      {menu}
+    </div>
+    """
+
+    def get_selected_label(self, value):
+        if not value:
+            return _("All")
+        choice_labels = {str(choice_value): label for choice_value, label in self.choices}
+        return choice_labels.get(str(value), value)
+
+    def render(self, name, value, attrs=None, renderer=None, choices=()):
+        self.link_content = escape(self.get_selected_label(value))
+        return super().render(name, value, attrs, renderer, choices)
 
 
 class DropDownAsListWidget(DropDownRightWidget):
@@ -282,13 +307,7 @@ class AutocompleteInput(widgets.TextInput):
 
 
 class DatePicker(widgets.DateInput):
-    class Media:
-        css = {
-            "all": ("flatpickr/flatpickr-4.5.2.min.css",),
-        }
-        js = [
-            "flatpickr/flatpickr-4.5.2.min.js",
-        ]
+    input_type = "date"
 
     def __init__(self, attrs=None):
         super().__init__(attrs=attrs)

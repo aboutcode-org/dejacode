@@ -68,7 +68,28 @@
     </div>
     <div class="col-6 col-md-3">
       <div class="bg-body-secondary rounded-3 p-3">
-        <div class="small text-body-secondary mb-1">{% trans "License issues" %}</div>
+        <div class="small text-body-secondary mb-1">{% trans "Policy violations" %}</div>
+        {% if products_with_policy_violations %}
+          <a href="?policy_violations=true" class="fs-4 fw-medium lh-sm text-danger">
+            {{ products_with_policy_violations }}
+          </a>
+        {% else %}
+          <div class="fs-4 fw-medium lh-sm text-success">
+            {{ products_with_policy_violations }}
+          </div>
+        {% endif %}
+        <div class="text-body-tertiary fs-xs mt-1">
+          {% if products_with_policy_violations %}
+            {% trans "products with active rule violations" %}
+          {% else %}
+            {% trans "No active policy violations" %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="bg-body-secondary rounded-3 p-3">
+        <div class="small text-body-secondary mb-1">{% trans "License compliance" %}</div>
         {% if products_with_license_issues %}
           <a href="?license_compliance_issues=true" class="fs-4 fw-medium lh-sm text-danger">
             {{ products_with_license_issues }}
@@ -80,24 +101,9 @@
         {% endif %}
         <div class="text-body-tertiary fs-xs mt-1">
           {% if products_with_license_issues %}
-            {% trans "products with policy violations" %}
+            {% trans "products with license compliance alerts" %}
           {% else %}
             {% trans "All products within policy" %}
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="bg-body-secondary rounded-3 p-3">
-        <div class="small text-body-secondary mb-1">{% trans "Security issues" %}</div>
-        <div class="fs-4 fw-medium lh-sm {% if products_with_critical_or_high %}text-danger{% elif products_with_vulnerabilities %}text-warning-orange{% else %}text-success{% endif %}">
-          {{ products_with_critical_or_high }}
-        </div>
-        <div class="text-body-tertiary fs-xs mt-1">
-          {% if products_with_critical_or_high %}
-            {% trans "products with critical/high vulnerabilities" %}
-          {% else %}
-            {% trans "No critical or high vulnerabilities" %}
           {% endif %}
         </div>
       </div>
@@ -127,8 +133,8 @@
         <tr>
           <th class="fw-medium">{% trans "Product" %}</th>
           <th class="fw-medium text-end">{% trans "Packages" %}</th>
+          <th class="fw-medium text-end">{% trans "Policy violations" %}</th>
           <th class="fw-medium text-end">{% trans "License compliance" %}</th>
-          <th class="fw-medium text-end">{% trans "Security compliance" %}</th>
           <th class="fw-medium text-end">{% trans "Vulnerabilities" %}</th>
         </tr>
       </thead>
@@ -147,6 +153,15 @@
               </a>
             </td>
             <td class="text-end">
+              {% if product.policy_violation_count %}
+                <a href="{{ product_url }}#compliance" class="badge bg-danger-subtle text-danger-emphasis text-decoration-none">
+                  {{ product.policy_violation_count }} {% trans "rule" %}{{ product.policy_violation_count|pluralize }} {% trans "triggered" %}
+                </a>
+              {% else %}
+                <span class="text-body-tertiary small">{% trans "None" %}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
               {% if product.license_error_count %}
                 <a href="{{ product_url }}?licenses-usage_policy__compliance_alert=error#licenses" class="badge bg-danger-subtle text-danger-emphasis">
                   {{ product.license_error_count }} {% trans "error" %}{{ product.license_error_count|pluralize }}
@@ -159,19 +174,6 @@
               {% endif %}
               {% if not product.license_error_count and not product.license_warning_count %}
                 <a href="{{ product_url }}#licenses" class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</a>
-              {% endif %}
-            </td>
-            <td class="text-end">
-              {% if product.max_risk_level == "critical" %}
-                <span class="badge bg-danger-subtle text-danger-emphasis">{% trans "Critical" %}</span>
-              {% elif product.max_risk_level == "high" %}
-                <span class="badge bg-warning-orange-subtle text-warning-orange">{% trans "High" %}</span>
-              {% elif product.max_risk_level == "medium" %}
-                <span class="badge bg-warning-subtle text-warning-emphasis">{% trans "Medium" %}</span>
-              {% elif product.max_risk_level == "low" %}
-                <span class="badge bg-info-subtle text-info-emphasis">{% trans "Low" %}</span>
-              {% else %}
-                <span class="badge bg-success-subtle text-success-emphasis">{% trans "OK" %}</span>
               {% endif %}
             </td>
             <td class="text-end">

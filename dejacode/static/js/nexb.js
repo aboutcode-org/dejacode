@@ -20,7 +20,7 @@ define([
     var App = Ember.Application.create();
     window.App = App;
 
-    App.client_data = Ember.Object.create(NEXB.client_data);
+    App.client_data = Ember.Object.create(DejaCode.client_data);
 
     var TemplatedViewController = Ember.Object.extend({
         templateFunction: null,

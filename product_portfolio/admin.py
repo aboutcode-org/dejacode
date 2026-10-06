@@ -46,6 +46,7 @@ from dje.list_display import AsURL
 from dje.permissions import assign_all_object_permissions
 from dje.permissions import get_limited_perms_for_model
 from dje.utils import is_purl_fragment
+from policy.tasks import evaluate_all_products_rules_task
 from product_portfolio.filters import ComponentCompletenessListFilter
 from product_portfolio.forms import ProductAdminForm
 from product_portfolio.forms import ProductComponentAdminForm
@@ -58,6 +59,8 @@ from product_portfolio.forms import ProductRelatedAdminForm
 from product_portfolio.importers import CodebaseResourceImporter
 from product_portfolio.importers import ProductComponentImporter
 from product_portfolio.importers import ProductPackageImporter
+from product_portfolio.importers import paused_product_package_reevaluation
+from product_portfolio.importers import reevaluate_products
 from product_portfolio.inlines import CodebaseResourceUsageDeployedFromInline
 from product_portfolio.inlines import CodebaseResourceUsageDeployedToInline
 from product_portfolio.inlines import ProductComponentInline
@@ -71,6 +74,7 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from reporting.filters import ReportingQueryListFilter
+from vulnerabilities.triage.models import ProductTriageRuleset
 
 
 @admin.register(ProductStatus, site=dejacode_site)
@@ -239,12 +243,14 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
         if "_saveasnew" in request.POST:
             old_product_id = request.resolver_match.kwargs.get("object_id")
             old_product = self.get_object(request, old_product_id)
-            for model_class in [ProductComponent, ProductPackage]:
-                for relationship in model_class.objects.filter(product=old_product):
-                    relationship.id = None
-                    relationship.uuid = uuid.uuid4()
-                    relationship.product = obj
-                    relationship.save()
+            with paused_product_package_reevaluation():
+                for model_class in [ProductComponent, ProductPackage, ProductTriageRuleset]:
+                    for relationship in model_class.objects.filter(product=old_product):
+                        relationship.id = None
+                        relationship.uuid = uuid.uuid4()
+                        relationship.product = obj
+                        relationship.save()
+            reevaluate_products([obj])
 
     def get_obj_perms_user_select_form(self, request):
         """
@@ -384,7 +390,7 @@ class ProductAdmin(
         ProductPackageInline,
     ]
     form = ProductAdminForm
-    actions = []
+    actions = ["evaluate_policy_rules"]
     actions_to_remove = ["copy_to", "compare_with", "delete_selected"]
     navigation_buttons = True
     activity_log = False
@@ -394,6 +400,15 @@ class ProductAdmin(
     email_notification_on = []  # Turned off for security reasons
     awesomplete_data = {"primary_language": PROGRAMMING_LANGUAGES}
     readonly_fields = DataspacedAdmin.readonly_fields + ("get_feature_datalist",)
+
+    def evaluate_policy_rules(self, request, queryset):
+        product_uuids = list(queryset.values_list("uuid", flat=True))
+        evaluate_all_products_rules_task.delay(product_uuids=product_uuids)
+        self.message_user(
+            request, f"Policy rules evaluation enqueued for {len(product_uuids)} product(s)."
+        )
+
+    evaluate_policy_rules.short_description = _("Evaluate policy rules")
 
     def get_feature_datalist(self, obj):
         if obj.pk:

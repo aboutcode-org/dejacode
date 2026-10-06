@@ -1,9 +1,9 @@
 {% if risk_score %}
   <span class="badge
-    {% if risk_score >= 8.0 %}bg-danger
-    {% elif risk_score >= 6.0 %}bg-warning-orange
-    {% elif risk_score >= 3.0 %}text-bg-warning
-    {% else %}bg-secondary
+    {% if risk_score >= 8.0 %}bg-danger-subtle text-danger-emphasis
+    {% elif risk_score >= 6.0 %}bg-warning-subtle text-warning-emphasis
+    {% elif risk_score >= 3.0 %}bg-info-subtle text-info-emphasis
+    {% else %}bg-secondary-subtle text-secondary-emphasis
     {% endif %}
   ">
     {% if label %}

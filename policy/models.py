@@ -244,3 +244,32 @@ class AssociatedPolicy(DataspacedModel):
         if self.from_policy.content_type == self.to_policy.content_type:
             raise AssertionError
         super().save(*args, **kwargs)
+
+
+class AbstractPolicyViolation(models.Model):
+    """Shared fields for all concrete policy violation models. No DB table."""
+
+    violation_count = models.PositiveIntegerField(
+        default=0,
+        help_text=_("Number of objects currently violating the rule."),
+    )
+    detected_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_("The date and time when this violation was first detected."),
+    )
+    last_checked = models.DateTimeField(
+        auto_now=True,
+        help_text=_("The date and time of the last evaluation."),
+    )
+    resolved = models.BooleanField(
+        default=False,
+        help_text=_("Indicates whether this violation has been resolved."),
+    )
+    resolved_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_("The date and time when this violation was resolved."),
+    )
+
+    class Meta:
+        abstract = True

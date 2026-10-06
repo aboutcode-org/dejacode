@@ -85,14 +85,14 @@ class VulnerabilitiesFetchTestCase(TestCase):
         response_json = json.loads(response_file.read_text())
         mock_bulk_search_by_purl.return_value = response_json
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(13):
             results = fetch_for_packages(
                 queryset, self.dataspace, batch_size=1, update=True, log_func=buffer.write
             )
-        self.assertEqual(results, {"created": 2, "updated": 0})
+        self.assertEqual(results, {"created": 3, "updated": 0})
 
         self.assertEqual("Progress: 1/1", buffer.getvalue())
-        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        self.assertEqual(3, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.filter(
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
@@ -100,14 +100,30 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(Decimal("0.5"), vulnerability.exploitability)
         self.assertEqual(Decimal("6.8"), vulnerability.weighted_severity)
         self.assertEqual(Decimal("3.4"), vulnerability.risk_score)
+        self.assertEqual(["pkg:pypi/idna@3.7"], vulnerability.fixed_by_packages)
+        self.assertEqual(1, vulnerability.todo_count)
+        self.assertFalse(vulnerability.is_curation)
+        self.assertEqual([], vulnerability.curating_advisories)
+        curation_vulnerability = package1.affected_by_vulnerabilities.filter(
+            advisory_uid="pypa/idna/PYSEC-2026-215"
+        ).get()
+        self.assertEqual(0, curation_vulnerability.todo_count)
+        self.assertTrue(curation_vulnerability.is_curation)
+        expected_curating_advisories = [
+            "http://public.vulnerablecode.io/advisories/gitlab/pypi/idna/CVE-2026-45409"
+        ]
+        self.assertEqual(expected_curating_advisories, curation_vulnerability.curating_advisories)
         package1.refresh_from_db()
         pp1.refresh_from_db()
         self.assertEqual(Decimal("3.4"), package1.risk_score)
         self.assertEqual(Decimal("3.4"), pp1.weighted_risk_score)
+        self.assertEqual("3.15", package1.next_non_vulnerable_version)
+        self.assertEqual("3.15", package1.latest_non_vulnerable_version)
 
         purpose1 = make_product_item_purpose(self.dataspace, exposure_factor=0.5)
         pp1.raw_update(purpose=purpose1)
         response_json["results"][0]["affected_by_vulnerabilities"][0]["risk_score"] = 10.0
+        response_json["results"][0]["affected_by_vulnerabilities"][0]["todo_count"] = 0
         mock_bulk_search_by_purl.return_value = response_json
         with self.assertNumQueries(10):
             results = fetch_for_packages(
@@ -118,6 +134,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
         self.assertEqual(Decimal("10.0"), vulnerability.risk_score)
+        self.assertEqual(0, vulnerability.todo_count)
         package1.refresh_from_db()
         pp1.refresh_from_db()
         self.assertEqual(Decimal("3.4"), package1.risk_score)
@@ -151,11 +168,11 @@ class VulnerabilitiesFetchTestCase(TestCase):
         mock_bulk_search_by_purl.side_effect = [response_36, response_37]
 
         results = fetch_for_packages(queryset, self.dataspace, batch_size=1, update=True)
-        # 2 vulnerabilities created from response_36; the shared one is NOT re-updated
+        # 3 vulnerabilities created from response_36; the shared one is NOT re-updated
         # when encountered in response_37's batch, because created_advisory_uids guards it.
-        self.assertEqual(results, {"created": 2, "updated": 0})
+        self.assertEqual(results, {"created": 3, "updated": 0})
 
-    @mock.patch("vulnerabilities.fetch.find_and_fire_hook")
+    @mock.patch("vulnerabilities.fetch.fire_webhooks")
     def test_vulnerabilities_fetch_notify_vulnerability_data_update(self, mock_fire_hook):
         notify_vulnerability_data_update(self.dataspace)
         mock_fire_hook.assert_not_called()

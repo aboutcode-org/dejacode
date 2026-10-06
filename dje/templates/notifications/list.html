@@ -18,7 +18,10 @@
           </h1>
         </div>
         <div class="col-auto">
-          <a class="btn btn-outline-dark btn-sm" href="{% url 'notifications:mark_all_as_read' %}">Mark all as read</a>
+          <form method="post" action="{% url 'notifications:mark_all_as_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-dark btn-sm">Mark all as read</button>
+          </form>
         </div>
       </div>
     </div>

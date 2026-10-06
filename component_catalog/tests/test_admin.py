@@ -2184,7 +2184,7 @@ class ComponentAdminViewsTestCase(TestCase):
         url = reverse("admin:component_catalog_subcomponent_changelist")
         response = self.client.get(url)
         expected = [
-            ("", "---------"),
+            ("", "- Select an option -"),
             ("set_policy", "Set usage policy from components"),
             ("mass_update", "Mass update"),
         ]

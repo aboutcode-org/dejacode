@@ -7,6 +7,7 @@
 #
 
 import json
+import uuid
 from unittest.mock import patch
 
 from django.conf import settings
@@ -15,13 +16,53 @@ from django.test import TestCase
 
 from dje.models import Dataspace
 from dje.tests import create_superuser
-from notification.models import Webhook
-from notification.tasks import deliver_hook_wrapper
+from notification.models import WebhookSubscription
+from notification.tasks import deliver_webhook_task
+from product_portfolio.tests import make_product
 from workflow.models import Priority
 from workflow.models import Question
 from workflow.models import Request
 from workflow.models import RequestComment
 from workflow.models import RequestTemplate
+
+
+class DeliverWebhookTaskTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.webhook = WebhookSubscription.objects.create(
+            dataspace=self.dataspace,
+            target_url="http://127.0.0.1:8000/",
+            event="policy.violation_detected",
+        )
+
+    @patch("notification.models.WebhookSubscription.deliver")
+    def test_deliver_webhook_task_resolves_secured_model_instance(self, mock_deliver):
+        product = make_product(self.dataspace)
+        deliver_webhook_task(
+            webhook_subscription_uuid=self.webhook.uuid,
+            payload_override={"text": "test"},
+            instance_app_label="product_portfolio",
+            instance_model_name="product",
+            instance_pk=product.pk,
+        )
+        mock_deliver.assert_called_once()
+        delivered_instance = mock_deliver.call_args[0][0]
+        self.assertEqual(product, delivered_instance)
+
+    def test_deliver_webhook_task_missing_subscription_logs_error(self):
+        with self.assertLogs("dje", level="ERROR") as captured:
+            deliver_webhook_task(webhook_subscription_uuid=uuid.uuid4())
+        self.assertTrue(any("not found" in line for line in captured.output))
+
+    def test_deliver_webhook_task_missing_instance_logs_error(self):
+        with self.assertLogs("dje", level="ERROR") as captured:
+            deliver_webhook_task(
+                webhook_subscription_uuid=self.webhook.uuid,
+                instance_app_label="product_portfolio",
+                instance_model_name="product",
+                instance_pk=99999999,
+            )
+        self.assertTrue(any("not found" in line for line in captured.output))
 
 
 class NotificationTasksTestCase(TestCase):
@@ -52,16 +93,18 @@ class NotificationTasksTestCase(TestCase):
 
         self.priority1 = Priority.objects.create(label="Urgent", dataspace=self.nexb_dataspace)
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_creation_generic_url(self, method_mock):
         method_mock.return_value = None
 
         self.client.login(username="nexb_user", password="secret")
         url = self.request_template1.get_absolute_url()
 
-        target = "http://127.0.0.1:8000/"
-        webhook = Webhook.objects.create(
-            dataspace=self.nexb_dataspace, target=target, user=self.nexb_user, event="request.added"
+        target_url = "http://127.0.0.1:8000/"
+        webhook = WebhookSubscription.objects.create(
+            dataspace=self.nexb_dataspace,
+            target_url=target_url,
+            event="request.added",
         )
 
         data = {
@@ -78,7 +121,7 @@ class NotificationTasksTestCase(TestCase):
         expected = {
             "uuid": str(webhook.uuid),
             "event": "request.added",
-            "target": target,
+            "target": target_url,
         }
         self.assertEqual(expected, results["hook"])
         data = results["data"]
@@ -88,7 +131,7 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual("open", data["status"])
         self.assertEqual(self.nexb_user.username, data["assignee"])
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_creation_slack_url(self, method_mock):
         method_mock.return_value = None
 
@@ -96,9 +139,11 @@ class NotificationTasksTestCase(TestCase):
         url = self.request_template1.get_absolute_url()
         site_url = settings.SITE_URL.rstrip("/")
 
-        target = "https://hooks.slack.com"
-        Webhook.objects.create(
-            dataspace=self.nexb_dataspace, target=target, user=self.nexb_user, event="request.added"
+        target_url = "https://hooks.slack.com"
+        WebhookSubscription.objects.create(
+            dataspace=self.nexb_dataspace,
+            target_url=target_url,
+            event="request.added",
         )
 
         data = {
@@ -130,17 +175,16 @@ class NotificationTasksTestCase(TestCase):
 
         self.assertEqual(expected, results["attachments"])
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_edition_generic_url(self, method_mock):
         method_mock.return_value = None
 
         self.client.login(username="nexb_user", password="secret")
 
-        target = "http://127.0.0.1:8000/"
-        webhook = Webhook.objects.create(
+        target_url = "http://127.0.0.1:8000/"
+        webhook = WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target=target,
-            user=self.nexb_user,
+            target_url=target_url,
             event="request.updated",
         )
 
@@ -161,7 +205,7 @@ class NotificationTasksTestCase(TestCase):
         expected = {
             "uuid": str(webhook.uuid),
             "event": "request.updated",
-            "target": target,
+            "target": target_url,
         }
         self.assertEqual(expected, results["hook"])
         data = results["data"]
@@ -171,18 +215,17 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual("open", data["status"])
         self.assertEqual(self.nexb_user.username, data["assignee"])
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_edition_slack_url(self, method_mock):
         method_mock.return_value = None
 
         self.client.login(username="nexb_user", password="secret")
         site_url = settings.SITE_URL.rstrip("/")
 
-        target = "https://hooks.slack.com"
-        Webhook.objects.create(
+        target_url = "https://hooks.slack.com"
+        WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target=target,
-            user=self.nexb_user,
+            target_url=target_url,
             event="request.updated",
         )
 
@@ -219,7 +262,7 @@ class NotificationTasksTestCase(TestCase):
 
         self.assertEqual(expected, results["attachments"])
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_add_comment_generic_url(self, method_mock):
         method_mock.return_value = None
 
@@ -233,11 +276,10 @@ class NotificationTasksTestCase(TestCase):
         )
         url = request1.get_absolute_url()
 
-        target = "http://127.0.0.1:8000/"
-        webhook = Webhook.objects.create(
+        target_url = "http://127.0.0.1:8000/"
+        webhook = WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target=target,
-            user=self.nexb_user,
+            target_url=target_url,
             event="request_comment.added",
         )
 
@@ -250,7 +292,7 @@ class NotificationTasksTestCase(TestCase):
         expected = {
             "uuid": str(webhook.uuid),
             "event": "request_comment.added",
-            "target": target,
+            "target": target_url,
         }
         self.assertEqual(expected, results["hook"])
         data = results["data"]
@@ -258,7 +300,7 @@ class NotificationTasksTestCase(TestCase):
         self.assertEqual("nexb_user", data["user"])
         self.assertEqual("A comment content", data["text"])
 
-    @patch("requests.Session.post", autospec=True)
+    @patch("requests.post")
     def test_notification_task_on_workflow_request_add_comment_slack_url(self, method_mock):
         method_mock.return_value = None
 
@@ -273,11 +315,10 @@ class NotificationTasksTestCase(TestCase):
         url = request1.get_absolute_url()
         site_url = settings.SITE_URL.rstrip("/")
 
-        target = "https://hooks.slack.com"
-        Webhook.objects.create(
+        target_url = "https://hooks.slack.com"
+        WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target=target,
-            user=self.nexb_user,
+            target_url=target_url,
             event="request_comment.added",
         )
 
@@ -305,38 +346,29 @@ class NotificationTasksTestCase(TestCase):
 
         self.assertEqual(expected, results["attachments"])
 
-    @patch("requests.Session.post", autospec=True)
-    def test_notification_task_deliver_hook_task_extra_payload(self, method_mock):
+    @patch("requests.post")
+    def test_notification_webhook_extra_payload_merged_into_payload(self, method_mock):
         method_mock.return_value = None
 
-        target = "https://localhost"
-        base_payload = {
-            "key1": "base1",
-            "key2": "base2",
-        }
-        extra_payload = {
-            "key2": "extra2",
-            "key3": "extra3",
-        }
-        webhook = Webhook.objects.create(
+        self.client.login(username="nexb_user", password="secret")
+        url = self.request_template1.get_absolute_url()
+
+        extra_payload = {"custom_key": "custom_value", "title": "overridden_title"}
+        WebhookSubscription.objects.create(
             dataspace=self.nexb_dataspace,
-            target=target,
-            user=self.nexb_user,
+            target_url="https://localhost",
             event="request.added",
             extra_payload=extra_payload,
         )
 
-        deliver_hook_wrapper(
-            target=webhook.target,
-            payload=base_payload,
-            instance=None,
-            hook=webhook,
-        )
+        data = {
+            "title": "Title",
+            "field_0": "Value for field_0",
+            "content_type": self.component_ct.id,
+            "assignee": self.nexb_user.id,
+        }
+        self.client.post(url, data)
 
         results = json.loads(method_mock.call_args_list[0][1]["data"])
-        expected = {
-            "key1": "base1",
-            "key2": "extra2",  # extra_payload always overrides the base_payload
-            "key3": "extra3",
-        }
-        self.assertEqual(expected, results)
+        self.assertEqual("custom_value", results["data"]["custom_key"])
+        self.assertEqual("overridden_title", results["data"]["title"])

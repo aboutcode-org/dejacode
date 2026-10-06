@@ -29,6 +29,11 @@ from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
 
 
+# Command used to regenerate the idna_3.6_response.json test fixture:
+# curl -s -X POST "https://public.vulnerablecode.io/api/v3/packages" \
+# -H "Content-Type: application/json" \
+# -H "User-Agent: VCIO_API_AGENT" \
+# -d '{"purls": ["pkg:pypi/idna@3.6"], "details": true}' | jq .
 class VulnerabilitiesModelsTestCase(TestCase):
     data = Path(__file__).parent / "data"
 
@@ -44,8 +49,9 @@ class VulnerabilitiesModelsTestCase(TestCase):
         mock_bulk_search.return_value = json.loads(response_file.read_text())
 
         affected_by_vulnerabilities = package1.get_entry_for_package(vulnerablecode)
-        self.assertEqual(2, len(affected_by_vulnerabilities))
+        self.assertEqual(3, len(affected_by_vulnerabilities))
         self.assertEqual("pypa/idna/PYSEC-2024-60", affected_by_vulnerabilities[0]["advisory_uid"])
+        self.assertEqual(["pkg:pypi/idna@3.7"], affected_by_vulnerabilities[0]["fixed_by_packages"])
 
     @mock.patch("vulnerabilities.models.AffectedByVulnerabilityMixin.get_entry_for_package")
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
@@ -74,12 +80,19 @@ class VulnerabilitiesModelsTestCase(TestCase):
         package1 = make_package(self.dataspace, package_url="pkg:pypi/idna@3.6")
         package1.fetch_vulnerabilities()
 
-        self.assertEqual(2, Vulnerability.objects.scope(self.dataspace).count())
-        self.assertEqual(2, package1.affected_by_vulnerabilities.count())
+        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(3, package1.affected_by_vulnerabilities.count())
         vulnerability = package1.affected_by_vulnerabilities.filter(
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
         self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
+        self.assertEqual(["pkg:pypi/idna@3.7"], vulnerability.fixed_by_packages)
+
+        # This code path (single-package fetch) does not go through
+        # vulnerabilities.fetch.process_vc_entry, so the purl-level fields are not set.
+        package1.refresh_from_db()
+        self.assertEqual("", package1.next_non_vulnerable_version)
+        self.assertEqual("", package1.latest_non_vulnerable_version)
 
     def test_vulnerability_mixin_create_vulnerabilities(self):
         response_file = self.data / "vulnerabilities" / "idna_3.6_response.json"
@@ -91,7 +104,7 @@ class VulnerabilitiesModelsTestCase(TestCase):
         product1 = make_product(self.dataspace, inventory=[package1])
         package1.create_vulnerabilities(vulnerabilities_data)
 
-        self.assertEqual(3, Vulnerability.objects.scope(self.dataspace).count())
+        self.assertEqual(4, Vulnerability.objects.scope(self.dataspace).count())
         self.assertEqual("5.0", str(package1.risk_score))
         self.assertEqual("5.0", str(product1.productpackages.get().weighted_risk_score))
 
@@ -194,17 +207,17 @@ class VulnerabilitiesModelsTestCase(TestCase):
         self.assertQuerySetEqual(vulnerability2.affected_packages.all(), [package1])
         self.assertQuerySetEqual(vulnerability2.affected_components.all(), [component1])
 
-    def test_vulnerability_model_fixed_packages_count_generated_field(self):
+    def test_vulnerability_model_fixed_by_packages_count_generated_field(self):
         vulnerability1 = make_vulnerability(dataspace=self.dataspace)
-        self.assertEqual(0, vulnerability1.fixed_packages_count)
+        self.assertEqual(0, vulnerability1.fixed_by_packages_count)
 
-        vulnerability1.fixed_packages = [
-            {"purl": "pkg:pypi/gitpython@3.1.41", "is_vulnerable": True},
-            {"purl": "pkg:pypi/gitpython@3.2", "is_vulnerable": False},
+        vulnerability1.fixed_by_packages = [
+            "pkg:pypi/gitpython@3.1.41",
+            "pkg:pypi/gitpython@3.2",
         ]
         vulnerability1.save()
         vulnerability1.refresh_from_db()
-        self.assertEqual(2, vulnerability1.fixed_packages_count)
+        self.assertEqual(2, vulnerability1.fixed_by_packages_count)
 
     def test_vulnerability_model_create_from_data(self):
         package1 = make_package(self.dataspace)
@@ -319,6 +332,38 @@ class VulnerabilitiesModelsTestCase(TestCase):
         }
         self.assertEqual(expected, as_dict["analysis"])
 
+    def test_vulnerability_model_as_cyclonedx_is_reachable_property(self):
+        vulnerability = make_vulnerability(self.dataspace)
+        package = make_package(self.dataspace)
+        product_package = make_product_package(make_product(self.dataspace), package=package)
+
+        def make_analysis(is_reachable):
+            return VulnerabilityAnalysis(
+                product_package=product_package,
+                vulnerability=vulnerability,
+                dataspace=self.dataspace,
+                state=VulnerabilityAnalysis.State.IN_TRIAGE,
+                is_reachable=is_reachable,
+            )
+
+        cdx = vulnerability.as_cyclonedx(affected_instances=[package], analysis=make_analysis(True))
+        as_dict = json.loads(cdx.as_json())
+        self.assertEqual(
+            [{"name": "aboutcode:is_reachable", "value": "true"}], as_dict["properties"]
+        )
+
+        cdx = vulnerability.as_cyclonedx(
+            affected_instances=[package], analysis=make_analysis(False)
+        )
+        as_dict = json.loads(cdx.as_json())
+        self.assertEqual(
+            [{"name": "aboutcode:is_reachable", "value": "false"}], as_dict["properties"]
+        )
+
+        cdx = vulnerability.as_cyclonedx(affected_instances=[package], analysis=make_analysis(None))
+        as_dict = json.loads(cdx.as_json())
+        self.assertNotIn("properties", as_dict)
+
     def test_vulnerability_model_vulnerability_analysis_save(self):
         vulnerability1 = make_vulnerability(dataspace=self.dataspace)
         product_package1 = make_product_package(make_product(self.dataspace))
@@ -327,13 +372,8 @@ class VulnerabilitiesModelsTestCase(TestCase):
             product_package=product_package1,
             vulnerability=vulnerability1,
             dataspace=self.dataspace,
+            state=VulnerabilityAnalysis.State.RESOLVED,
         )
-
-        msg = "At least one of state, justification, responses or detail must be provided."
-        with self.assertRaisesMessage(ValueError, msg):
-            analysis.save()
-
-        analysis.state = VulnerabilityAnalysis.State.RESOLVED
         analysis.save()
 
         # Refresh from db
@@ -435,3 +475,33 @@ class VulnerabilitiesModelsTestCase(TestCase):
         vulnerability1.save()
         vulnerability1.refresh_from_db()
         self.assertEqual("critical", vulnerability1.risk_level)
+
+    def test_vulnerability_highest_ssvc_decision(self):
+        vulnerability1 = make_vulnerability(self.dataspace)
+        self.assertIsNone(vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Track"}]
+        self.assertEqual("Track", vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Track"}, {"decision": "Act"}]
+        self.assertEqual("Act", vulnerability1.highest_ssvc_decision)
+
+        vulnerability1.ssvc_trees = [{"decision": "Attend"}, {"decision": "Track*"}]
+        self.assertEqual("Attend", vulnerability1.highest_ssvc_decision)
+
+    def test_vulnerability_curating_advisory_links(self):
+        vulnerability1 = make_vulnerability(self.dataspace)
+        self.assertEqual([], vulnerability1.curating_advisory_links)
+
+        vulnerability1.curating_advisories = [
+            "https://vcio/advisories/nvd_importer/CVE-2024-0001/",
+            "https://vcio/advisories/gitlab/pypi/idna/CVE-2026-45409",
+        ]
+        expected = [
+            ("https://vcio/advisories/nvd_importer/CVE-2024-0001/", "nvd_importer/CVE-2024-0001"),
+            (
+                "https://vcio/advisories/gitlab/pypi/idna/CVE-2026-45409",
+                "gitlab/pypi/idna/CVE-2026-45409",
+            ),
+        ]
+        self.assertEqual(expected, vulnerability1.curating_advisory_links)

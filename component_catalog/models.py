@@ -1799,6 +1799,7 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
             "filename",
             "license_expression",
             "risk_score",
+            "latest_non_vulnerable_version",
             "dataspace__name",
             "dataspace__show_usage_policy_in_user_views",
         )
@@ -1977,6 +1978,17 @@ class Package(
         related_name="affected_%(class)ss",
         help_text=_("Vulnerabilities affecting this object."),
     )
+    # Based on vulnerablecode.vulnerabilities.models.Package
+    next_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The next version, following this one, that is not vulnerable."),
+    )
+    latest_non_vulnerable_version = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("The latest available version that is not vulnerable."),
+    )
 
     objects = DataspacedManager.from_queryset(PackageQuerySet)()
 
@@ -2116,6 +2128,9 @@ class Package(
 
     def get_export_cyclonedx_url(self):
         return self.get_url("export_cyclonedx")
+
+    def get_latest_non_vulnerable_url(self):
+        return self.get_url("latest_non_vulnerable")
 
     @classmethod
     def get_identifier_fields(cls, *args, purl_fields_only=False, **kwargs):

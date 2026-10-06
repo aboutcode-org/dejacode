@@ -9,6 +9,7 @@
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
+from django.db.models import FETCH_PEERS
 
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import ComponentStatus
@@ -61,7 +62,7 @@ class Command(BaseCommand):
         models.extend(POLICY_MODELS)
 
         for model_class in models:
-            qs = model_class.objects.scope(dataspace).select_related()
+            qs = model_class.objects.scope(dataspace).fetch_mode(FETCH_PEERS)
             data += list(qs)
 
         return ExcludeFieldsSerializer().serialize(

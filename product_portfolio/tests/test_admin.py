@@ -6,6 +6,8 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from unittest.mock import patch
+
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.test import TestCase
 from django.urls import NoReverseMatch
@@ -23,6 +25,8 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.tests import make_product_dependency
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageRuleset
 
 
 class ProductPortfolioAdminsTestCase(TestCase):
@@ -101,7 +105,11 @@ class ProductPortfolioAdminsTestCase(TestCase):
     def test_product_security_admin_changelist_available_actions(self):
         self.client.login(username=self.user.username, password="secret")
         response = self.client.get(self.product_changelist_url)
-        expected = [("", "---------"), ("mass_update", "Mass update")]
+        expected = [
+            ("", "- Select an option -"),
+            ("evaluate_policy_rules", "Evaluate policy rules"),
+            ("mass_update", "Mass update"),
+        ]
         self.assertEqual(expected, response.context_data["action_form"].fields["action"].choices)
 
         with self.assertRaises(NoReverseMatch):
@@ -424,6 +432,12 @@ class ProductPortfolioAdminsTestCase(TestCase):
         ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
 
         url = self.product1.get_admin_url()
         data = {
@@ -441,6 +455,40 @@ class ProductPortfolioAdminsTestCase(TestCase):
         new_product = Product.unsecured_objects.get(name=self.product1.name, version="new version")
         self.assertEqual(1, new_product.productcomponents.count())
         self.assertEqual(1, new_product.productpackages.count())
+        self.assertEqual(1, new_product.product_triage_rulesets.count())
+
+    @patch("product_portfolio.admin.reevaluate_products")
+    def test_product_admin_changeform_save_as_evaluates_the_new_product_once(self, mock_reevaluate):
+        # Cloning must evaluate the new product exactly once, not once per cloned
+        # ProductPackage relationship.
+        package2 = make_package(self.dataspace)
+        ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        ProductPackage.objects.create(
+            product=self.product1, package=package2, dataspace=self.dataspace
+        )
+        self.client.login(username=self.user.username, password="secret")
+
+        url = self.product1.get_admin_url()
+        data = {
+            "_saveasnew": "Save as new",
+            "name": self.product1.name,
+            "version": "new version 2",
+            "productcomponents-INITIAL_FORMS": 0,
+            "productcomponents-TOTAL_FORMS": 0,
+            "productpackages-INITIAL_FORMS": 0,
+            "productpackages-TOTAL_FORMS": 0,
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        new_product = Product.unsecured_objects.get(
+            name=self.product1.name, version="new version 2"
+        )
+        self.assertEqual(2, new_product.productpackages.count())
+        mock_reevaluate.assert_called_once_with([new_product])
 
     def test_codebaseresource_admin_changeform_product_prefill_on_save_addanother(self):
         self.client.login(username=self.user.username, password="secret")
@@ -539,3 +587,26 @@ class ProductPortfolioAdminsTestCase(TestCase):
         dependency = self.product1.dependencies.get()
         self.assertEqual(self.package1, dependency.for_package)
         self.assertEqual(package2, dependency.resolved_to_package)
+
+
+class EvaluatePolicyRulesActionTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(name="Product1", dataspace=self.dataspace)
+        self.product2 = Product.objects.create(name="Product2", dataspace=self.dataspace)
+
+    @patch("product_portfolio.admin.evaluate_all_products_rules_task.delay")
+    def test_evaluate_policy_rules_action_queues_task_for_selected_products(self, mock_delay):
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("admin:product_portfolio_product_changelist")
+        data = {
+            "action": "evaluate_policy_rules",
+            "_selected_action": [self.product1.pk, self.product2.pk],
+        }
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(200, response.status_code)
+        mock_delay.assert_called_once()
+        called_uuids = set(mock_delay.call_args[1]["product_uuids"])
+        self.assertIn(self.product1.uuid, called_uuids)
+        self.assertIn(self.product2.uuid, called_uuids)

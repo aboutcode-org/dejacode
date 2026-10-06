@@ -33,6 +33,7 @@ from dje.registration import DejaCodeActivationView
 from dje.tests import create
 from dje.tests import create_superuser
 from dje.tests import create_user
+from dje.tests import get_activation_key_from_email
 
 
 class UsersTestCase(TestCase):
@@ -375,7 +376,19 @@ class UsersTestCase(TestCase):
         self.assertTrue(self.other_user.is_active)
 
         url = reverse("admin:dje_dejacodeuser_send_activation_email", args=[self.other_user.id])
-        response = self.client.get(url, follow=True)
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+        self.other_user.refresh_from_db()
+        self.assertTrue(self.other_user.is_active)
+        self.assertEqual(len(mail.outbox), 0)
+
+        change_url = reverse("admin:dje_dejacodeuser_change", args=[self.other_user.id])
+        response = self.client.get(change_url)
+        self.assertContains(
+            response, f'<form id="send-activation-email-form" method="post" action="{url}" hidden>'
+        )
+
+        response = self.client.post(url, follow=True)
         expected = "An activation email will be sent shortly to the email address."
         self.assertContains(response, expected)
 
@@ -386,12 +399,7 @@ class UsersTestCase(TestCase):
 
         self.assertEqual("[DejaCode] Please activate your account", mail.outbox[0].subject)
         body = mail.outbox[0].body
-
-        # Grep the key from the email body (now in querystring format)
-        activation_key = ""
-        for line in body.split("\n"):
-            if "activation_key=" in line:
-                activation_key = line.partition("activation_key=")[-1].strip()
+        activation_key = get_activation_key_from_email(body)
 
         activation_url = reverse("django_registration_activate")
         self.assertTrue("DejaCode {} account".format(self.other_user.dataspace.name) in body)

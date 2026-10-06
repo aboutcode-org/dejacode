@@ -134,7 +134,7 @@ class JiraIntegration(BaseIntegration):
         - https://<domain>.atlassian.net/jira/servicedesk/projects/PROJECTKEY/...
         """
         parsed = urlparse(url)
-        if not parsed.netloc.endswith("atlassian.net"):
+        if not parsed.netloc.endswith(".atlassian.net"):
             raise ValueError("Invalid Jira Cloud domain.")
 
         base_url = f"{parsed.scheme}://{parsed.netloc}"

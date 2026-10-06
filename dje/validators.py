@@ -26,7 +26,7 @@ validate_version = validators.RegexValidator(
 )
 
 generic_uri_validator = validators.RegexValidator(
-    re.compile(r"^[\w+-_]+://[\S]+$"),
+    re.compile(r"^[\w+.-]+://[\S]+$"),
     message=_("Enter a valid URI."),
     code="invalid",
 )

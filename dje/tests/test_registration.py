@@ -24,6 +24,7 @@ from django_registration.backends.activation.views import REGISTRATION_SALT
 from django_registration.backends.activation.views import RegistrationView
 
 from dje.registration import REGISTRATION_DEFAULT_GROUPS
+from dje.tests import get_activation_key_from_email
 from dje.tests import refresh_url_cache
 
 
@@ -130,14 +131,12 @@ class DejaCodeUserRegistrationTestCase(TestCase):
         )
 
         self.assertEqual("[DejaCode] Please activate your account", mail.outbox[1].subject)
-        activation_key = RegistrationView().get_activation_key(user)
         activation_url = reverse("django_registration_activate")
-        # Check the validity of URL in activation email
-        # WARNING: The key of the URL set in the email may be different since it is not
-        # generated at the same time as the `activation_key` and the result is based on
-        # the timestamp.
-        expected_url_in_email = f"{activation_url}?activation_key={activation_key}"
-        self.assertTrue(expected_url_in_email in mail.outbox[1].body)
+        activation_key = get_activation_key_from_email(mail.outbox[1].body)
+        self.assertIn(f"{activation_url}?activation_key={activation_key}", mail.outbox[1].body)
+        # The emailed key is a valid signature of the username
+        username = signing.loads(activation_key, salt=REGISTRATION_SALT)
+        self.assertEqual(self.registration_data["username"], username)
         # Activate the account via POST (django-registration 5.x requires POST)
         response = self.client.post(
             activation_url,

@@ -67,6 +67,8 @@ ALWAYS_EXCLUDE = [
     "default_assignee",
     "affected_by_vulnerabilities",
     "risk_score",
+    "next_non_vulnerable_version",
+    "latest_non_vulnerable_version",
 ]
 
 

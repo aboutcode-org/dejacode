@@ -1,6 +1,27 @@
 Release notes
 =============
 
+### Version 5.9.0
+
+* feat: VCIO v3 advisories migration by @tdruez in https://github.com/aboutcode-org/dejacode/pull/534
+* feat: retry on 429 with Retry-After support in VulnerableCode session by @tdruez in https://github.com/aboutcode-org/dejacode/pull/550
+* feat: add API action to manage object level permission on Products by @tdruez in https://github.com/aboutcode-org/dejacode/pull/395
+* feat: [five-c] AboutCode app for alerts and notifications by @tdruez in https://github.com/aboutcode-org/dejacode/pull/551
+* feat: [five-c] Create rules-based engine #409 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/552
+* feat: [five-c] Create extended policy rules set #411 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/556
+* docs: [five-c] add usage and configuration documentation  #416 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/557
+* docs: [five-c] add tutorial and how-to documentation #418 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/558
+* [cravex2-reachability] Implement rule tools triaging vulnerabilities by @tdruez in https://github.com/aboutcode-org/dejacode/pull/560
+* [cravex2-reachability] Integrate triage rules in CRAVEX API #365 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/564
+* [cravex2-reachability] Add documentation for triage rules by @tdruez in https://github.com/aboutcode-org/dejacode/pull/565
+* [cravex2-reachability] Enhance the vulnerability-ranking system for trees by @tdruez in https://github.com/aboutcode-org/dejacode/pull/566
+* [cravex2-reachability] Consume extended reachability from symbols analysis by @tdruez in https://github.com/aboutcode-org/dejacode/pull/568
+* [cravex2-reachability] Process extended reachability by @tdruez in https://github.com/aboutcode-org/dejacode/pull/569
+* fix: run "Improve from PurlDB" asynchronously by @tdruez in https://github.com/aboutcode-org/dejacode/pull/570
+* feat: add fixed_by_packages data from VCIO API v3 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/571
+* fix: revert RQ to working version by @tdruez in https://github.com/aboutcode-org/dejacode/pull/573
+* fix: add User-Agent value for data collection HTTP requests by @tdruez in https://github.com/aboutcode-org/dejacode/pull/574
+
 ### Version 5.8.1
 
 * fix: improve performances and logging for SCIO importer (#546)

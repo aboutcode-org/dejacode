@@ -1,7 +1,21 @@
 {% load i18n %}
-{% load as_icon from dje_tags %}
 
-{% include 'tabs/pagination.html' with search_verbose_name="packages" %}
+{% include 'tabs/pagination.html' with search_verbose_name="packages" extra_nav_item_template="product_portfolio/includes/vulnerabilities_nav_items.html" hide_filters_breadcrumbs=True %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 mb-3 bg-body-tertiary border rounded-3">
+  <span class="small fw-semibold text-uppercase text-body-secondary me-1">{% trans "Filters" %}</span>
+  {{ filterset.form.weighted_risk_score }}
+  {% if has_triage_rulesets %}
+    {{ filterset.form.triage_action }}
+  {% endif %}
+  {{ filterset.form.vulnerability_analyses__state }}
+  {{ filterset.form.is_reachable }}
+  {% if filterset.is_active %}
+    <a class="ms-auto small" href="{{ product.get_absolute_url }}#{{ tab_id }}">
+      {% trans "Clear search and filters" %}
+    </a>
+  {% endif %}
+</div>
 
 {% if risk_threshold %}
   <small class="d-inline-flex mb-3 px-2 py-1 fw-semibold text-warning-emphasis bg-warning-subtle border border-warning-subtle rounded-2">
@@ -10,121 +24,245 @@
   </small>
 {% endif %}
 
-<table class="table table-bordered table-md text-break">
-  {% include 'includes/object_list_table_header.html' with filter=filterset include_actions=True %}
-  <tbody>
-    {% for product_package in page_obj.object_list %}
-      <tr>
-        <td rowspan="{{ product_package.package.vulnerability_count }}">
-          <strong>
-            <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
-          </strong>
-          {% if product_package.purpose %}
-            <div class="text-nowrap mt-1">
-              {{ product_package.purpose.label_with_icon }}
-              {% if product_package.purpose.exposure_factor %}
-                <div>
-                  <i class="fas fa-arrow-alt-circle-right"></i>
-                  Exposure factor: {{ product_package.purpose.exposure_factor }}
-                </div>
-              {% endif %}
-              <div>
-                {{ product_package.is_deployed|as_icon }}
-                {% if product_package.is_deployed %}Deployed{% else %}Not deployed{% endif %}
-              </div>
-            </div>
+{% for product_package in page_obj.object_list %}
+  {% if product_package.display_vulnerabilities %}
+    <div class="card shadow-sm mb-3 vulnerabilities-card">
+      <div class="card-header bg-body-tertiary sticky-top z-2 d-flex flex-wrap align-items-center gap-2 py-2" style="top: 64px;">
+        <button type="button" class="btn btn-link p-0 text-body-secondary vulnerabilities-collapse-toggle{% if product_package.is_collapsed %} collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#vulnerabilities-{{ product_package.id }}" aria-expanded="{% if product_package.is_collapsed %}false{% else %}true{% endif %}" aria-controls="vulnerabilities-{{ product_package.id }}" aria-label="{% trans 'Toggle vulnerabilities' %}">
+          <i class="fas fa-chevron-down fa-fw"></i>
+        </button>
+        <strong>
+          <a href="{{ product_package.package.get_absolute_url }}#vulnerabilities" target="_blank">{{ product_package.package }}</a>
+        </strong>
+        {% trans "Risk" as risk_label %}
+        {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=product_package.weighted_risk_score label=risk_label only %}
+        {% if product_package.is_deployed %}
+          <span class="badge text-bg-light border">{% trans "Deployed" %}</span>
+        {% endif %}
+        {% if product_package.purpose %}
+          <span class="badge text-bg-light border">{{ product_package.purpose.label }}</span>
+        {% endif %}
+        {% if product_package.package.latest_non_vulnerable_version %}
+          <a href="{{ product_package.package.get_latest_non_vulnerable_url }}" target="_blank" class="badge bg-success-subtle text-success-emphasis text-decoration-none" data-bs-toggle="tooltip" title="{% trans 'Latest non-vulnerable version' %}">
+            <i class="fa-solid fa-circle-up me-1"></i>{% trans "Fixed in" %} {{ product_package.package.latest_non_vulnerable_version }}
+          </a>
+        {% endif %}
+        <div class="ms-auto d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
+          {% if product_package.purpose.exposure_factor %}
+            <span>{% trans "Exposure factor:" %} {{ product_package.purpose.exposure_factor }}</span>
           {% endif %}
-        </td>
-        <td rowspan="{{ product_package.package.vulnerability_count }}">
-          {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=product_package.weighted_risk_score only %}
-        </td>
-        {% for vulnerability in product_package.package.affected_by_vulnerabilities.all %}
-          {% if not forloop.first %}<tr>{% endif %}
-            <td rowspan="{{ vulnerability.affected_packages_count }}">
-              <strong>
-                {% if vulnerability.resource_url %}
-                  <a href="{{ vulnerability.resource_url }}" target="_blank">
-                    {{ vulnerability.advisory_id }}
-                    <i class="fa-solid fa-up-right-from-square mini"></i>
-                  </a>
-                {% else %}
-                  {{ vulnerability.advisory_id }}
-                {% endif %}
-                {% if vulnerability.summary %}
-                  <span class="float-end" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
-                    <i class="fa-solid fa-circle-info text-muted"></i>
-                  </span>
-                {% endif %}
-              </strong>
-              <div>
-                {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score label="Risk:" only %}
-                {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
-              </div>
-              {% if vulnerability.aliases %}
-                <div class="mt-2">
-                  {% include 'component_catalog/includes/vulnerability_aliases.html' with aliases=vulnerability.aliases only %}
-                </div>
-              {% endif %}
-            </td>
-            <td>
-              {% if vulnerability.vulnerability_analysis %}
-                {% if vulnerability.vulnerability_analysis.state %}
-                  <strong>{{ vulnerability.vulnerability_analysis.get_state_display }}</strong>
-                {% endif %}
-                {% if vulnerability.vulnerability_analysis.detail %}
-                  <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ vulnerability.vulnerability_analysis.detail|linebreaksbr }}">
-                    <i class="fa-solid fa-circle-info text-muted"></i>
-                  </span>
-                {% endif %}
-              {% endif %}
-            </td>
-            <td>
-              {% if vulnerability.vulnerability_analysis.justification %}
-                {{ vulnerability.vulnerability_analysis.get_justification_display }}
-              {% endif %}
-            </td>
-            <td>
-              {% if vulnerability.vulnerability_analysis.responses %}
-                <ul class="ps-3 m-0">
-                  {% for response in vulnerability.vulnerability_analysis.responses %}
-                    <li>{{ response }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            </td>
-            <td class="text-center">
-              {% if vulnerability.vulnerability_analysis.is_reachable %}
-                <i class="fa-solid fa-circle-radiation text-danger fs-6" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
-              {% elif vulnerability.vulnerability_analysis.is_reachable is False %}
-                <i class="fa-solid fa-bug-slash" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
-              {% endif %}
-            </td>
-            <td class="p-1">
-              <span data-bs-toggle="modal"
-                    data-bs-target="#vulnerability-analysis-modal"
-                    data-advisory-uid="{{ vulnerability.advisory_uid }}"
-                    data-package-identifier="{{ product_package.package.identifier }}"
-                    data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product_package.uuid vulnerability.advisory_uid %}"
-              >
-                <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0" aria-label="Edit">
-                  <i class="far fa-edit fa-sm"></i>
-                </button>
-              </span>
-            </td>
-            {% if not forloop.first %}</tr>{% endif %}
-          {% endfor %}
-        </tr>
-    {% empty %}
-      <tr>
-        <td colspan="10">
-          No results.
-          {% if filterset.is_active %}
-            <a href="#" hx-get="{{ request.path }}?all=true#{{ tab_id }}" hx-target="{{ tab_id_html }}">
-              Clear search and filters
-            </a>
+          <span>
+            {% if product_package.display_vulnerabilities|length != product_package.vulnerability_count %}
+              <strong class="text-body">{{ product_package.display_vulnerabilities|length }}</strong> {% trans "of" %}
+            {% endif %}
+            {% blocktrans count counter=product_package.vulnerability_count %}<strong class="text-body">{{ counter }}</strong> vulnerability{% plural %}<strong class="text-body">{{ counter }}</strong> vulnerabilities{% endblocktrans %}
+          </span>
+          {% if product_package.known_exploits_count %}
+            <span class="badge bg-danger-subtle text-danger-emphasis">{% blocktrans count counter=product_package.known_exploits_count %}{{ counter }} known exploit{% plural %}{{ counter }} known exploits{% endblocktrans %}</span>
           {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+          <span class="d-flex align-items-center gap-2">
+            <span class="progress" role="progressbar" aria-label="{% trans 'Analyzed vulnerabilities' %}" aria-valuenow="{{ product_package.analyzed_count }}" aria-valuemin="0" aria-valuemax="{{ product_package.vulnerability_count }}" style="width: 80px; height: 6px;">
+              <span class="progress-bar bg-success" style="width: {% widthratio product_package.analyzed_count product_package.vulnerability_count 100 %}%"></span>
+            </span>
+            {{ product_package.analyzed_count }}/{{ product_package.vulnerability_count }} {% trans "analyzed" %}
+          </span>
+        </div>
+      </div>
+      <div id="vulnerabilities-{{ product_package.id }}" class="collapse{% if not product_package.is_collapsed %} show{% endif %}">
+        <table class="table table-md table-hover text-break small mb-0 product-vulnerabilities-table">
+          {% include 'includes/object_list_table_header.html' with include_actions=True %}
+          <tbody>
+            {% for vulnerability in product_package.display_vulnerabilities %}
+              <tr{% if forloop.counter > 5 %} class="d-none"{% endif %}>
+                <td>
+                  <strong>
+                    {% if vulnerability.resource_url %}
+                      <a href="{{ vulnerability.resource_url }}" target="_blank">
+                        {{ vulnerability.advisory_id }}
+                        <i class="fa-solid fa-up-right-from-square mini"></i>
+                      </a>
+                    {% else %}
+                      {{ vulnerability.advisory_id }}
+                    {% endif %}
+                    {% if vulnerability.aliases or vulnerability.highest_ssvc_decision %}
+                      <span class="dropdown d-inline" data-bs-toggle="tooltip" title="{% trans 'Aliases and SSVC decision' %}">
+                        <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Aliases and SSVC decision' %}">
+                          <i class="fa-solid fa-circle-info fa-xs text-muted ms-1"></i>
+                        </button>
+                        {% include 'component_catalog/includes/vulnerability_info_menu.html' with vulnerability=vulnerability only %}
+                      </span>
+                    {% endif %}
+                  </strong>
+                  <span class="ms-1">
+                    {% include 'vulnerabilities/includes/curation_badges.html' with vulnerability=vulnerability vulnerablecode_todos_url=vulnerablecode_todos_url only %}
+                  </span>
+                  {% if vulnerability.summary %}
+                    <div class="vulnerability-summary text-body-secondary small mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-custom-class="wide-popover" data-bs-content="{{ vulnerability.summary|linebreaksbr }}">
+                      {{ vulnerability.summary }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if vulnerability.risk_score %}
+                    {% include 'vulnerabilities/includes/risk_score_badge.html' with risk_score=vulnerability.risk_score only %}
+                  {% else %}
+                    <span class="text-body-tertiary">&ndash;</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% include 'vulnerabilities/includes/exploitability.html' with instance=vulnerability only %}
+                </td>
+                {% if has_triage_rulesets %}
+                <td>
+                  {% if vulnerability.triage_record %}
+                    {% with record=vulnerability.triage_record %}
+                      {% if record.recommended_action %}
+                        <span class="badge {{ record.action_badge_class }} d-block text-start">
+                          <i class="fas {{ record.action_icon }} me-1"></i>{{ record.action_label }}
+                        </span>
+                      {% endif %}
+                      <div class="small text-body-secondary mt-1 ps-1">
+                        <i class="fas fa-layer-group fa-xs me-1"></i>{{ record.ruleset.name }}
+                      </div>
+                      {% if record.request %}
+                        <div class="small mt-1 ps-1">
+                          <a href="{{ record.request.get_absolute_url }}" target="_blank" class="text-body-secondary">
+                            {% include 'workflow/includes/request_status_icon.html' with req=record.request %}
+                            <span class="fw-semibold">Request #{{ record.request_id }}</span>
+                          </a>
+                        </div>
+                      {% endif %}
+                      <div class="small text-body-tertiary mt-1 ps-1">
+                        {% trans "Since:" %} {{ record.detected_date|date:"M j, Y" }}
+                      </div>
+                    {% endwith %}
+                  {% endif %}
+                </td>
+                {% endif %}
+                <td class="stretch-cell">
+                  {% with analysis=vulnerability.vulnerability_analysis %}
+                    <div class="d-flex flex-column h-100">
+                      {% if analysis %}
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                          {% if analysis.state %}
+                            <span class="badge {{ analysis.state_badge_class }}">
+                              {{ analysis.get_state_display }}
+                            </span>
+                          {% endif %}
+                          {% if analysis.is_reachable %}
+                            <i class="fa-solid fa-circle-radiation text-danger" data-bs-toggle="tooltip" title="Vulnerability is reachable"></i>
+                          {% elif analysis.is_reachable is False %}
+                            <i class="fa-solid fa-bug-slash text-body-secondary" data-bs-toggle="tooltip" title="Vulnerability is NOT reachable"></i>
+                          {% endif %}
+                          {% if analysis.justification %}
+                            <span class="small text-body-secondary">{{ analysis.get_justification_display }}</span>
+                          {% endif %}
+                          {% for response in analysis.response_labels %}
+                            <span class="badge bg-light text-body-secondary border fw-normal">{{ response }}</span>
+                          {% endfor %}
+                        </div>
+                        {% if analysis.detail %}
+                          <div class="small text-body-secondary mt-1" data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-html="true" data-bs-content="{{ analysis.detail|linebreaksbr }}">
+                            <i class="fa-solid fa-circle-info text-muted me-1"></i>{{ analysis.detail|truncatechars:70 }}
+                          </div>
+                        {% endif %}
+                        {% if analysis.applied_by_preset %}
+                          <div class="small text-body-tertiary mt-1">
+                            <i class="fas fa-bolt text-warning fa-xs me-1"></i>{% trans "Auto-applied:" %} {{ analysis.applied_by_preset.name }}
+                          </div>
+                        {% elif analysis.last_modified_by or analysis.created_by %}
+                          <div class="small text-body-tertiary mt-1">
+                            <i class="fas fa-user fa-xs me-1"></i>{{ analysis.last_modified_by|default:analysis.created_by }}
+                            &middot; {{ analysis.last_updated|date:"M j, Y" }}
+                          </div>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-body-tertiary small fst-italic">{% trans "Not analyzed" %}</span>
+                      {% endif %}
+                    </div>
+                  {% endwith %}
+                </td>
+                <td class="text-nowrap">
+                  <div class="d-flex align-items-center justify-content-end gap-2">
+                    {% if analysis_presets and not vulnerability.vulnerability_analysis %}
+                      <span class="dropdown d-inline" data-bs-toggle="tooltip" title="Apply analysis preset">
+                        <button type="button" class="btn btn-link p-0" data-bs-toggle="dropdown" aria-label="Quick action">
+                          <i class="fas fa-bolt fa-sm text-warning"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li><h6 class="dropdown-header small">Apply preset</h6></li>
+                          {% for preset in analysis_presets %}
+                          <li>
+                            <button type="button" class="dropdown-item small quick-preset-btn"
+                                    data-apply-url="{% url 'product_portfolio:apply_analysis_preset' product_package.uuid preset.pk vulnerability.advisory_uid %}">
+                              {{ preset.name }}
+                            </button>
+                          </li>
+                          {% endfor %}
+                        </ul>
+                      </span>
+                    {% endif %}
+                    <span data-bs-toggle="modal"
+                          data-bs-target="#vulnerability-analysis-modal"
+                          data-advisory-uid="{{ vulnerability.advisory_uid }}"
+                          data-package-identifier="{{ product_package.package.identifier }}"
+                          data-edit-url="{% url 'product_portfolio:vulnerability_analysis_form' product_package.uuid vulnerability.advisory_uid %}"
+                    >
+                      {% if vulnerability.vulnerability_analysis %}
+                        <button type="button" data-bs-toggle="tooltip" title="Edit analysis" class="btn btn-link p-0" aria-label="Edit analysis">
+                          <i class="far fa-edit fa-sm"></i>
+                        </button>
+                      {% else %}
+                        <button type="button" data-bs-toggle="tooltip" title="Add analysis" class="btn btn-link p-0" aria-label="Add analysis">
+                          <i class="far fa-edit fa-sm"></i>
+                        </button>
+                      {% endif %}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+            {% if product_package.display_vulnerabilities|length > 5 %}
+              <tr>
+                <td colspan="{% if has_triage_rulesets %}6{% else %}5{% endif %}" class="text-center bg-body-tertiary p-1">
+                  <button type="button" class="btn btn-link btn-sm text-decoration-none" data-show-more-vulnerabilities>
+                    {% blocktrans count counter=product_package.display_vulnerabilities|length|add:"-5" %}Show {{ counter }} more vulnerability{% plural %}Show {{ counter }} more vulnerabilities{% endblocktrans %}
+                  </button>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}
+{% if not has_displayed_vulnerabilities %}
+  <p class="text-body-secondary">
+    No results.
+    {% if filterset.is_active %}
+      <a href="{{ product.get_absolute_url }}#{{ tab_id }}">
+        Clear search and filters
+      </a>
+    {% endif %}
+  </p>
+{% endif %}
+
+<script>
+  document.querySelectorAll('[data-vulnerabilities-collapse]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.vulnerabilitiesCollapse;
+      document.querySelectorAll('.vulnerabilities-card > .collapse').forEach((element) => {
+        bootstrap.Collapse.getOrCreateInstance(element, { toggle: false })[action]();
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-show-more-vulnerabilities]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const showMoreRow = button.closest('tr');
+      showMoreRow.parentElement.querySelectorAll('tr.d-none').forEach((row) => row.classList.remove('d-none'));
+      showMoreRow.remove();
+    });
+  });
+</script>

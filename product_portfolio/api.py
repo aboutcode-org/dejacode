@@ -7,6 +7,8 @@
 #
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 import django_filters
 from rest_framework import permissions
@@ -42,14 +44,21 @@ from product_portfolio.filters import ComponentCompletenessAPIFilter
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import ProductCloneForm
 from product_portfolio.forms import PullProjectDataForm
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ScanCodeProject
 from vulnerabilities.api import VulnerabilityAnalysisSerializer
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
 
 base_extra_kwargs = {
     "licenses": {
@@ -200,6 +209,11 @@ class ProductFilterSet(DataspacedAPIFilterSet):
         field_name="packages__affected_by_vulnerabilities__advisory_id",
         label="Affected by (advisory_id)",
     )
+    has_reachable_vulnerability = django_filters.BooleanFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        label="Has reachable vulnerability",
+        distinct=True,
+    )
 
     class Meta:
         model = Product
@@ -218,6 +232,7 @@ class ProductFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "is_vulnerable",
             "affected_by",
+            "has_reachable_vulnerability",
         )
 
 
@@ -343,6 +358,95 @@ class ScanCodeProjectSerializer(DataspacedSerializer):
         )
 
 
+class ProductPolicyViolationSerializer(serializers.ModelSerializer):
+    rule_label = serializers.ReadOnlyField()
+    rule_description = serializers.ReadOnlyField()
+    rule_severity = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ProductPolicyViolation
+        fields = (
+            "rule_type",
+            "rule_label",
+            "rule_description",
+            "rule_severity",
+            "violation_count",
+            "detected_date",
+            "resolved",
+            "resolved_date",
+        )
+
+
+class TriageRecordSerializer(serializers.ModelSerializer):
+    advisory_id = serializers.ReadOnlyField(source="vulnerability.advisory_id")
+    ruleset = serializers.ReadOnlyField(source="ruleset.name")
+    request = serializers.StringRelatedField()
+
+    class Meta:
+        model = TriageRecord
+        fields = (
+            "advisory_id",
+            "ruleset",
+            "recommended_action",
+            "matched_rules",
+            "request",
+            "detected_date",
+            "last_checked",
+        )
+
+
+class TriageRulesetAssignmentSerializer(serializers.Serializer):
+    uuid = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    recommended_action = serializers.CharField(read_only=True)
+    precedence = serializers.IntegerField(read_only=True)
+    assigned = serializers.BooleanField(read_only=True)
+
+
+class AssignTriageRulesetSerializer(serializers.Serializer):
+    ruleset = serializers.UUIDField()
+    assigned = serializers.BooleanField()
+
+
+class CanChangeProduct(permissions.BasePermission):
+    """Allows the action only if the user has the `change_product` object permission."""
+
+    def has_object_permission(self, request, view, obj):
+        return request.user.has_perm("product_portfolio.change_product", obj)
+
+
+class ProductCloneSerializer(serializers.Serializer):
+    name = serializers.CharField(
+        required=True,
+        help_text=ProductCloneForm.base_fields["name"].help_text,
+    )
+    version = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text=ProductCloneForm.base_fields["version"].help_text,
+    )
+    copy_inventory = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_inventory"].label),
+    )
+    copy_codebase_resources = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_codebase_resources"].label),
+    )
+    copy_triage_rulesets = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_triage_rulesets"].label),
+    )
+    copy_object_permissions = serializers.BooleanField(
+        required=False,
+        default=True,
+        help_text=str(ProductCloneForm.base_fields["copy_object_permissions"].label),
+    )
+
+
 class ProductViewSet(
     ObjectPermissionsMixin,
     SendAboutFilesMixin,
@@ -401,6 +505,43 @@ class ProductViewSet(
         super().perform_create(serializer)
         assign_all_object_permissions(self.request.user, serializer.instance)
 
+    @action(
+        detail=True,
+        methods=["post"],
+        serializer_class=ProductCloneSerializer,
+        permission_classes=[
+            permissions.IsAuthenticated,
+            permissions.DjangoModelPermissions,
+            CanChangeProduct,
+        ],
+    )
+    def clone(self, request, *args, **kwargs):
+        """
+        Clone this Product into a new one.
+
+        Always copies the base Product fields under the given name/version.
+        Optionally copies the inventory (Components, Packages, and Dependencies),
+        Codebase resources, Vulnerability triage rules, and object Permissions,
+        depending on the submitted flags (all default to true).
+        """
+        product = self.get_object()
+
+        clone_serializer = ProductCloneSerializer(data=request.data)
+        if not clone_serializer.is_valid():
+            return Response(clone_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        form = ProductCloneForm(
+            user=request.user,
+            source_product=product,
+            data=clone_serializer.validated_data,
+        )
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        cloned_product = form.save()
+        serializer = ProductSerializer(cloned_product, context=self.get_serializer_context())
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     @action(detail=True)
     def imports(self, request, uuid):
         """
@@ -412,6 +553,77 @@ class ProductViewSet(
         scancode_projects = product.scancodeprojects.all()
         projects_data = ScanCodeProjectSerializer(scancode_projects, many=True).data
         return Response(projects_data)
+
+    @action(detail=True, url_path="policy_violations")
+    def policy_violations(self, request, uuid):
+        """List active policy violations for this product, with rule details and counts."""
+        product = self.get_object()
+        violations = product.policy_violations.unresolved()
+        serializer = ProductPolicyViolationSerializer(violations, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, url_path="triage_records")
+    def triage_records(self, request, uuid):
+        """List active triage recommendations for this product, one per vulnerability."""
+        product = self.get_object()
+        records = product.triage_records.highest_precedence().select_related(
+            "vulnerability", "ruleset", "request"
+        )
+        serializer = TriageRecordSerializer(records, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="manage_triage_rulesets",
+        serializer_class=AssignTriageRulesetSerializer,
+    )
+    def manage_triage_rulesets(self, request, uuid):
+        """
+        GET: list every enabled triage ruleset in this product's dataspace, each flagged
+        with whether it is currently assigned to this product.
+
+        POST: assign or unassign a single ruleset for this product.
+        Body: {"ruleset": "<uuid>", "assigned": true}
+        """
+        product = self.get_object()
+
+        if request.method == "POST":
+            serializer = AssignTriageRulesetSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            ruleset = get_object_or_404(
+                TriageRuleset.objects.scope(product.dataspace).filter(enabled=True),
+                uuid=serializer.validated_data["ruleset"],
+            )
+            assigned = serializer.validated_data["assigned"]
+
+            with transaction.atomic():
+                assignment = ProductTriageRuleset.objects.filter(
+                    product=product, ruleset=ruleset
+                ).first()
+                if assigned and not assignment:
+                    ProductTriageRuleset.objects.create(
+                        product=product, ruleset=ruleset, dataspace=product.dataspace
+                    )
+                    reevaluate_product_rulesets(product)
+                elif not assigned and assignment:
+                    assignment.delete()
+                    delete_triage_records_for_assignment(ruleset=ruleset, product=product)
+                    reevaluate_product_rulesets(product)
+            return Response(status=status.HTTP_200_OK)
+
+        assigned_ruleset_ids = set(
+            product.product_triage_rulesets.values_list("ruleset_id", flat=True)
+        )
+        rulesets = TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True).order_by(
+            "-precedence", "name"
+        )
+        for ruleset in rulesets:
+            ruleset.assigned = ruleset.id in assigned_ruleset_ids
+        serializer = TriageRulesetAssignmentSerializer(rulesets, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], serializer_class=LoadSBOMsFormSerializer)
     def load_sboms(self, request, *args, **kwargs):
@@ -756,6 +968,11 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
         field_name="package__affected_by_vulnerabilities__advisory_id",
         label="Affected by (advisory_id)",
     )
+    has_reachable_vulnerability = django_filters.BooleanFilter(
+        field_name="vulnerability_analyses__is_reachable",
+        label="Has reachable vulnerability",
+        distinct=True,
+    )
 
     class Meta:
         model = ProductPackage
@@ -769,6 +986,7 @@ class ProductPackageFilterSet(DataspacedAPIFilterSet):
             "last_modified_date",
             "is_vulnerable",
             "affected_by",
+            "has_reachable_vulnerability",
         )
 
 

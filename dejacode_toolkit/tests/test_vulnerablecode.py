@@ -40,6 +40,13 @@ class VulnerableCodenTestCase(TestCase):
     def setUp(self):
         self.service = VulnerableCode(make_dataspace())
 
+    def test_advisory_todos_url(self):
+        expected = "https://public.vulnerablecode.io/advisories/todos/"
+        self.assertEqual(expected, self.service.advisory_todos_url)
+
+        with patch.object(VulnerableCode, "is_configured", return_value=False):
+            self.assertIsNone(self.service.advisory_todos_url)
+
     def test_get_session_retry_configuration(self):
         session = self.service.get_session()
         adapter = session.get_adapter("https://example.com")

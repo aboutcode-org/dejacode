@@ -13,3 +13,6 @@ from django.utils.translation import gettext_lazy as _
 class PolicyConfig(AppConfig):
     name = "policy"
     verbose_name = _("Policy")
+
+    def ready(self):
+        import policy.signals  # noqa: F401

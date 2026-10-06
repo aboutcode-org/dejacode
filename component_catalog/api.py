@@ -697,6 +697,8 @@ class PackageSerializer(
             "last_modified_date",
             "collect_data",
             "risk_score",
+            "next_non_vulnerable_version",
+            "latest_non_vulnerable_version",
             "affected_by_vulnerabilities",
         )
         extra_kwargs = {

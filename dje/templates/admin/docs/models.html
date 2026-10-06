@@ -8,7 +8,7 @@
         {% for app_verbose_name, models in help_data.items %}
           <li data-toggle="collapse" data-target="#{{ app_verbose_name|slugify }}-dropdown" class="collapsed" aria-expanded="false">
             <a>
-              <i class="fa fa-dot-circle-o fa-lg"></i>
+              <i class="fa fa-caret-right fa-fw"></i>
               {{ app_verbose_name }}
               <span class="arrow"></span>
             </a>
@@ -77,8 +77,13 @@
       document.querySelectorAll('ul#menu-content li[data-toggle="collapse"]').forEach(item => {
         item.addEventListener('click', function () {
           const target = this.getAttribute('data-target').replace('-dropdown', '');
-          window.location.replace(target);
+          window.location.hash = target;
         });
+      });
+
+      // Keep the section open when a model link is clicked
+      document.querySelectorAll('ul#menu-content .sub-menu a').forEach(link => {
+        link.addEventListener('click', event => event.stopPropagation());
       });
     });
   </script>

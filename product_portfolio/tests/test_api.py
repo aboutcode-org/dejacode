@@ -24,6 +24,7 @@ from rest_framework.exceptions import ErrorDetail
 from component_catalog.models import Component
 from component_catalog.models import ComponentKeyword
 from component_catalog.models import Package
+from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.models import History
 from dje.tests import MaxQueryMixin
@@ -43,11 +44,18 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
+from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.engine import evaluate_ruleset
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.tests import make_product_triage_ruleset
+from vulnerabilities.triage.tests import make_triage_ruleset
 
 
 class ProductAPITestCase(MaxQueryMixin, TestCase):
@@ -447,6 +455,58 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected, response.data)
         self.assertEqual(1, ScanCodeProject.objects.count())
 
+    def test_api_product_endpoint_clone_action(self):
+        url = reverse("api_v2:product-clone", args=[self.product1.uuid])
+        make_product_package(self.product1)
+        make_product_triage_ruleset(self.product1)
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, response.status_code)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        # The global `add_product` permission alone is not enough: object-level
+        # `change_product` on the source Product is also required.
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={"name": self.product1.name, "version": "2.0"})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+        assign_perm("change_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = {"name": ["This field is required."]}
+        self.assertEqual(expected, response.data)
+
+        # The copy_* flags default to true when omitted from the payload
+        data = {"name": self.product1.name, "version": "2.0"}
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+        cloned_product = Product.objects.get_queryset(self.base_user).get(version="2.0")
+        self.assertEqual(str(cloned_product.uuid), response.data["uuid"])
+        self.assertEqual(1, cloned_product.productpackages.count())
+        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+
+        # Submitting the same name/version again is rejected
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        # Explicitly opting out of a copy flag is honored
+        data = {
+            "name": self.product1.name,
+            "version": "3.0",
+            "copy_inventory": False,
+            "copy_triage_rulesets": False,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        empty_clone = Product.objects.get_queryset(self.base_user).get(version="3.0")
+        self.assertEqual(0, empty_clone.productpackages.count())
+        self.assertEqual(0, empty_clone.product_triage_rulesets.count())
+
     def test_api_product_endpoint_import_from_scan_action(self):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
 
@@ -715,6 +775,204 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("errors", response.data)
+
+    def test_api_product_endpoint_policy_violations_action(self):
+        url = reverse("api_v2:product-policy-violations", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
+
+        violation = ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=5,
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data))
+        entry = response.data[0]
+        self.assertEqual("usage_policy_error", entry["rule_type"])
+        self.assertEqual(5, entry["violation_count"])
+        self.assertFalse(entry["resolved"])
+        self.assertIsNone(entry["resolved_date"])
+        self.assertIn("rule_label", entry)
+        self.assertIn("rule_description", entry)
+        self.assertIn("rule_severity", entry)
+        self.assertIn("detected_date", entry)
+
+        violation.resolved = True
+        violation.save()
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
+
+    def test_api_product_endpoint_triage_records_action(self):
+        url = reverse("api_v2:product-triage-records", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual([], response.data)
+
+        package = make_package(self.dataspace)
+        make_product_package(self.product1, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            recommended_action=TriageAction.UPGRADE,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+        evaluate_ruleset(ruleset, self.product1)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(1, len(response.data))
+        entry = response.data[0]
+        self.assertEqual(vulnerability.advisory_id, entry["advisory_id"])
+        self.assertEqual(ruleset.name, entry["ruleset"])
+        self.assertEqual(TriageAction.UPGRADE, entry["recommended_action"])
+        self.assertEqual(["risk_score"], entry["matched_rules"])
+        self.assertIsNone(entry["request"])
+        self.assertIn("detected_date", entry)
+        self.assertIn("last_checked", entry)
+
+    def test_api_product_endpoint_manage_triage_rulesets_get(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+
+        assigned_ruleset = make_triage_ruleset(self.dataspace, name="Assigned Ruleset")
+        make_product_triage_ruleset(self.product1, ruleset=assigned_ruleset)
+        unassigned_ruleset = make_triage_ruleset(self.dataspace, name="Unassigned Ruleset")
+        make_triage_ruleset(self.dataspace, name="Disabled Ruleset", enabled=False)
+
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(2, len(response.data))
+        entries_by_name = {entry["name"]: entry for entry in response.data}
+        self.assertTrue(entries_by_name[assigned_ruleset.name]["assigned"])
+        self.assertFalse(entries_by_name[unassigned_ruleset.name]["assigned"])
+        self.assertNotIn("Disabled Ruleset", entries_by_name)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_assigns(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        package = make_package(self.dataspace)
+        make_product_package(self.product1, package=package)
+        vulnerability = make_vulnerability(self.dataspace, affecting=package, risk_score=9.0)
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            recommended_action=TriageAction.UPGRADE,
+            rules_config={"risk_score": {"is_active": True, "min_risk_score": 8.0}},
+        )
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": True}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+        triage_record = self.product1.triage_records.get()
+        self.assertEqual(vulnerability, triage_record.vulnerability)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_unassigns(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace)
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": False}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_unassigns_form_encoded(self):
+        # Regression: a form-encoded "false" string must not be treated as truthy.
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace)
+        make_product_triage_ruleset(self.product1, ruleset=ruleset)
+
+        data = {"ruleset": str(ruleset.uuid), "assigned": "false"}
+        response = self.client.post(url, data=data)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertFalse(
+            ProductTriageRuleset.objects.filter(product=self.product1, ruleset=ruleset).exists()
+        )
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_requires_both_fields(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data={}, content_type="application/json")
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_rejects_non_dict_body(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        response = self.client.post(url, data=[], content_type="application/json")
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_rejects_disabled_ruleset(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        assign_perm("change_product", self.base_user, self.product1)
+
+        ruleset = make_triage_ruleset(self.dataspace, enabled=False)
+        data = {"ruleset": str(ruleset.uuid), "assigned": True}
+        response = self.client.post(url, data=data, content_type="application/json")
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
 
 class ProductRelatedAPITestCase(TestCase):
@@ -1346,6 +1604,57 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertEqual(0, response.data["count"])
         self.assertNotContains(response, self.product1_detail_url)
         self.assertNotContains(response, self.product2_detail_url)
+
+    def test_api_productpackage_has_reachable_vulnerability_filter(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.pp1_detail_url)
+
+        data = {"has_reachable_vulnerability": "false"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(0, response.data["count"])
+
+    def test_api_product_has_reachable_vulnerability_filter(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+        self.assertContains(response, self.product1_detail_url)
+        self.assertNotContains(response, self.product2_detail_url)
+
+        data = {"has_reachable_vulnerability": "false"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(0, response.data["count"])
+
+    def test_api_product_has_reachable_vulnerability_filter_no_duplicates(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability1, is_reachable=True)
+        make_vulnerability_analysis(self.pp1, vulnerability2, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.product_list_url, data)
+        self.assertEqual(1, response.data["count"])
+
+    def test_api_productpackage_has_reachable_vulnerability_filter_no_duplicates(self):
+        self.client.login(username="super_user", password="secret")
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=self.package1)
+        vulnerability2 = make_vulnerability(self.dataspace, affecting=self.package1)
+        make_vulnerability_analysis(self.pp1, vulnerability1, is_reachable=True)
+        make_vulnerability_analysis(self.pp1, vulnerability2, is_reachable=True)
+
+        data = {"has_reachable_vulnerability": "true"}
+        response = self.client.get(self.productpackage_list_url, data)
+        self.assertEqual(1, response.data["count"])
 
     def test_api_codebaseresource_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")

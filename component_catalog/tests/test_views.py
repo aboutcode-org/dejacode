@@ -49,6 +49,7 @@ from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import ExternalReference
 from dje.models import ExternalSource
 from dje.models import History
@@ -1355,6 +1356,51 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         for expected in expecteds:
             self.assertContains(response, expected)
 
+    def test_package_latest_non_vulnerable_view(self):
+        package1 = make_package(
+            self.dataspace,
+            package_url="pkg:pypi/django@5.0",
+            latest_non_vulnerable_version="5.0.1",
+        )
+        latest_non_vulnerable_url = package1.get_latest_non_vulnerable_url()
+
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertRedirects(response, f"/login/?next={latest_non_vulnerable_url}")
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(latest_non_vulnerable_url, follow=True)
+        list_url = reverse("component_catalog:package_list", query={"q": "pkg:pypi/django"})
+        self.assertRedirects(response, list_url)
+        self.assertContains(response, "pkg:pypi/django@5.0.1 is not available in the Dataspace.")
+        self.assertContains(response, package1.get_absolute_url())
+
+        add_perm(self.basic_user, "add_package")
+        response = self.client.get(latest_non_vulnerable_url)
+        add_url = reverse("component_catalog:package_add")
+        expected_url = f"{add_url}?package_url=pkg%3Apypi%2Fdjango%405.0.1"
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
+
+        non_vulnerable_package = make_package(self.dataspace, package_url="pkg:pypi/django@5.0.1")
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertRedirects(response, non_vulnerable_package.get_absolute_url())
+
+        package1.update(latest_non_vulnerable_version="")
+        response = self.client.get(latest_non_vulnerable_url)
+        self.assertEqual(404, response.status_code)
+
+        package_without_purl = make_package(self.dataspace, latest_non_vulnerable_version="5.0.1")
+        response = self.client.get(package_without_purl.get_latest_non_vulnerable_url())
+        self.assertEqual(404, response.status_code)
+
+        alternate_dataspace = Dataspace.objects.create(name="Alternate")
+        alternate_package = make_package(
+            alternate_dataspace,
+            package_url="pkg:pypi/django@5.0",
+            latest_non_vulnerable_version="5.0.1",
+        )
+        response = self.client.get(alternate_package.get_latest_non_vulnerable_url())
+        self.assertEqual(404, response.status_code)
+
     def test_package_details_view_aboutcode_tab(self):
         details_url = self.package1.get_absolute_url()
         self.client.login(username=self.super_user.username, password="secret")
@@ -2028,6 +2074,14 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(self.package1_tab_scan_url)
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
+        scan_url = reverse(
+            "component_catalog:package_scan", args=[self.dataspace.name, self.package1.uuid]
+        )
+        expected_form = (
+            rf'<form method="post" action="{scan_url}">'
+            r'\s*<input type="hidden" name="csrfmiddlewaretoken" value="\w+">'
+        )
+        self.assertRegex(response.content.decode(), expected_form)
 
         alternate = Dataspace.objects.create(name="Alternate")
         alternate_user = create_superuser("alternate_user", alternate)
@@ -2944,29 +2998,110 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
         delete_url = reverse("component_catalog:scan_delete", args=[project_uuid])
 
-        response = self.client.get(delete_url)
+        response = self.client.post(delete_url)
         self.assertRedirects(response, f"/login/?next={delete_url}")
 
         self.client.login(username=self.super_user.username, password="secret")
         response = self.client.get(delete_url)
+        self.assertEqual(405, response.status_code)
+        mock_delete_scan.assert_not_called()
+
+        response = self.client.post(delete_url)
         self.assertEqual(404, response.status_code)
 
         self.dataspace.enable_package_scanning = True
         self.dataspace.save()
         mock_fetch_scan_list.return_value = None
-        response = self.client.get(delete_url)
+        response = self.client.post(delete_url)
         self.assertEqual(404, response.status_code)
 
         mock_fetch_scan_list.return_value = {"count": 1}
         mock_delete_scan.return_value = True
-        response = self.client.get(delete_url, follow=True)
+        response = self.client.post(delete_url, follow=True)
         scan_list_url = reverse("component_catalog:scan_list")
         self.assertRedirects(response, scan_list_url)
         self.assertContains(response, "Scan deleted.")
 
         mock_delete_scan.return_value = False
-        response = self.client.get(delete_url)
+        response = self.client.post(delete_url)
         self.assertEqual(404, response.status_code)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.refresh_scan")
+    def test_refresh_scan_view(self, mock_refresh_scan):
+        project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
+        refresh_url = reverse("component_catalog:scan_refresh", args=[project_uuid])
+
+        response = self.client.post(refresh_url)
+        self.assertRedirects(response, f"/login/?next={refresh_url}")
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(refresh_url)
+        self.assertEqual(405, response.status_code)
+        mock_refresh_scan.assert_not_called()
+
+        response = self.client.post(refresh_url)
+        self.assertEqual(404, response.status_code)
+
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.save()
+        mock_refresh_scan.return_value = mock.Mock(status_code=200)
+        response = self.client.post(refresh_url, follow=True)
+        self.assertRedirects(response, reverse("component_catalog:scan_list"))
+        self.assertContains(response, "Refresh Scan started.")
+        mock_refresh_scan.assert_called_once_with(project_uuid)
+
+        mock_refresh_scan.return_value = mock.Mock(status_code=400)
+        response = self.client.post(refresh_url)
+        self.assertEqual(404, response.status_code)
+
+    @mock.patch("component_catalog.views.tasks.scancodeio_submit_scan")
+    @mock.patch("component_catalog.views.is_available")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    def test_package_scan_view(self, mock_is_configured, mock_is_available, mock_submit_scan):
+        mock_is_configured.return_value = True
+        mock_is_available.return_value = True
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.save()
+        self.package1.download_url = "https://download.url/package.zip"
+        self.package1.save()
+        scan_url = reverse(
+            "component_catalog:package_scan", args=[self.dataspace.name, self.package1.uuid]
+        )
+
+        response = self.client.post(scan_url)
+        self.assertRedirects(response, f"/login/?next={scan_url}")
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(scan_url)
+        self.assertEqual(405, response.status_code)
+        mock_submit_scan.assert_not_called()
+
+        response = self.client.post(scan_url, follow=True)
+        self.assertRedirects(response, f"{self.package1.details_url}#scan")
+        self.assertContains(response, "The Package URL was submitted to ScanCode.io for scanning.")
+        mock_submit_scan.assert_called_once_with(
+            uris=self.package1.download_url,
+            user_uuid=self.super_user.uuid,
+            dataspace_uuid=self.dataspace.uuid,
+        )
+
+        mock_is_configured.return_value = False
+        response = self.client.post(scan_url, headers={"HX-Request": "true"})
+        self.assertEqual(404, response.status_code)
+
+    def test_scan_modals_post_with_csrf_token(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.save()
+
+        with mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list") as fetch:
+            fetch.return_value = None
+            response = self.client.get(reverse("component_catalog:scan_list"))
+
+        content = response.content.decode()
+        csrf_input = r'\s*<input type="hidden" name="csrfmiddlewaretoken"'
+        self.assertRegex(content, r'<form method="post" class="delete-confirm">' + csrf_input)
+        self.assertRegex(content, r'<form method="post" class="refresh-confirm">' + csrf_input)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
@@ -3022,6 +3157,37 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, expected)
         self.assertContains(response, 'id="tab_vulnerabilities"')
         self.assertContains(response, self.vulnerability1.advisory_id)
+
+    def test_package_details_view_tab_vulnerabilities_fixed_by_packages(self):
+        fixing_package = make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        self.vulnerability1.fixed_by_packages = [
+            "pkg:pypi/idna@3.7",
+            "pkg:pypi/idna@9.9.9",
+        ]
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+
+        # A known package is linked directly.
+        self.assertContains(response, fixing_package.get_absolute_url())
+        # An unknown package offers an "Add Package" link instead.
+        self.assertContains(response, "idna@9.9.9")
+        self.assertContains(response, "package_url=pkg:pypi/idna@9.9.9")
+
+    def test_package_details_view_tab_vulnerabilities_curation_badges(self):
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace, vulnerablecode_url="https://vcio/"
+        )
+        self.vulnerability1.is_curation = True
+        self.vulnerability1.todo_count = 2
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+        self.assertContains(response, '<i class="fas fa-check me-1"></i>Curated')
+        expected = f'href="https://vcio/advisories/todos/?search={self.vulnerability1.advisory_id}"'
+        self.assertContains(response, expected)
 
     def test_vulnerablecode_get_plain_purls(self):
         purls = get_plain_purls(packages=[])

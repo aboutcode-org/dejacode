@@ -24,6 +24,7 @@ from django.db.models import FloatField
 from django.db.models import Max
 from django.db.models import OuterRef
 from django.db.models import Q
+from django.db.models import Subquery
 from django.db.models import Value
 from django.db.models import When
 from django.db.models.functions import Coalesce
@@ -56,6 +57,8 @@ from dje.models import colored_icon_mixin_factory
 from dje.validators import generic_uri_validator
 from dje.validators import validate_url_segment
 from dje.validators import validate_version
+from policy.models import AbstractPolicyViolation
+from policy.rules import RULE_REGISTRY
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import AffectedByVulnerabilityRelationship
@@ -89,9 +92,9 @@ class FieldChangesMixin:
     """
 
     @classmethod
-    def from_db(cls, db, field_names, values):
+    def from_db(cls, db, field_names, values, *, fetch_mode=None):
         """Store the original field values as loaded from the db on the instance."""
-        new = super().from_db(db, field_names, values)
+        new = super().from_db(db, field_names, values, fetch_mode=fetch_mode)
         new._loaded_values = dict(zip(field_names, values))
         return new
 
@@ -139,6 +142,9 @@ class ProductStatus(BaseStatusMixin, DataspacedModel):
 
 
 class ProductQuerySet(DataspacedQuerySet):
+    def exclude_locked(self):
+        return self.exclude(configuration_status__is_locked=True)
+
     def with_risk_threshold(self):
         return self.annotate(
             risk_threshold=Coalesce(
@@ -213,6 +219,7 @@ class ProductQuerySet(DataspacedQuerySet):
             self.with_risk_threshold()
             .with_vulnerability_counts()
             .with_license_compliance_counts()
+            .with_policy_violation_count()
             .annotate(package_count=Count("productpackages", distinct=True))
             .order_by(
                 F("max_risk_score").desc(nulls_last=True),
@@ -224,12 +231,13 @@ class ProductQuerySet(DataspacedQuerySet):
         )
 
     def with_compliance_issues(self):
-        """Filter to products that have license or critical/high vulnerability issues."""
+        """Filter to products that have license, vulnerability, or policy violation issues."""
         return self.filter(
             Q(license_error_count__gt=0)
             | Q(license_warning_count__gt=0)
             | Q(critical_count__gt=0)
             | Q(high_count__gt=0)
+            | Q(policy_violation_count__gt=0)
         )
 
     def with_has_vulnerable_packages(self):
@@ -238,6 +246,23 @@ class ProductQuerySet(DataspacedQuerySet):
         )
         return self.annotate(
             has_vulnerable_packages=Exists(vulnerable_productpackage_qs),
+        )
+
+    def with_policy_violation_count(self):
+        subquery = (
+            ProductPolicyViolation.objects.filter(
+                product=OuterRef("pk"),
+                rule_type__in=RULE_REGISTRY.keys(),
+            )
+            .unresolved()
+            .values("product")
+            .annotate(violation_count=models.Count("id"))
+            .values("violation_count")
+        )
+        return self.annotate(
+            policy_violation_count=Coalesce(
+                Subquery(subquery, output_field=models.IntegerField()), Value(0)
+            ),
         )
 
 
@@ -286,7 +311,7 @@ class ProductSecuredManager(DataspacedManager):
         ).scope(user.dataspace)
 
         if exclude_locked:
-            queryset = queryset.exclude(configuration_status__is_locked=True)
+            queryset = queryset.exclude_locked()
 
         if include_inactive:
             return queryset
@@ -408,7 +433,7 @@ class Product(
     # WARNING: Bypass the security system implemented in ProductSecuredManager.
     # This is to be used only in a few cases where the User scoping is not appropriated.
     # For example: `self.dataspace.product_set(manager='unsecured_objects').count()`
-    unsecured_objects = DataspacedManager()
+    unsecured_objects = DataspacedManager.from_queryset(ProductQuerySet)()
 
     class Meta(BaseProductMixin.Meta):
         permissions = (("view_product", "Can view product"),)
@@ -466,6 +491,15 @@ class Product(
 
     def get_export_security_compliance_url(self):
         return self.get_url("export_security_compliance")
+
+    def get_evaluate_policy_rules_url(self):
+        return self.get_url("evaluate_policy_rules")
+
+    def get_manage_triage_rulesets_url(self):
+        return self.get_url("manage_triage_rulesets")
+
+    def get_clone_url(self):
+        return self.get_url("clone")
 
     @property
     def cyclonedx_bom_ref(self):
@@ -1901,3 +1935,48 @@ class ProductDependency(HistoryFieldsMixin, DataspacedModel):
                     "The 'for_package' cannot be the same as 'resolved_to_package'."
                 )
         super().save(*args, **kwargs)
+
+
+class ProductPolicyViolationQuerySet(ProductSecuredQuerySet):
+    def unresolved(self):
+        return self.filter(resolved=False)
+
+
+class ProductPolicyViolation(DataspacedModel, AbstractPolicyViolation):
+    """Concrete policy violation scoped to a product."""
+
+    product = models.ForeignKey(
+        to="product_portfolio.Product",
+        on_delete=models.CASCADE,
+        related_name="policy_violations",
+        help_text=_("The product in the context of which this violation was detected."),
+    )
+    rule_type = models.CharField(
+        max_length=50,
+        help_text=_("The rule type from the rule registry that triggered this violation."),
+    )
+
+    objects = DataspacedManager.from_queryset(ProductPolicyViolationQuerySet)()
+
+    class Meta:
+        unique_together = (("dataspace", "uuid"), ("rule_type", "product"))
+        ordering = ["-detected_date"]
+
+    def __str__(self):
+        return f"{self.rule_type} / {self.product}: {self.violation_count} violation(s)"
+
+    @cached_property
+    def rule_handler(self):
+        return RULE_REGISTRY.get(self.rule_type)
+
+    @property
+    def rule_label(self):
+        return self.rule_handler.label if self.rule_handler else self.rule_type
+
+    @property
+    def rule_description(self):
+        return self.rule_handler.description if self.rule_handler else ""
+
+    @property
+    def rule_severity(self):
+        return self.rule_handler.severity if self.rule_handler else "warning"

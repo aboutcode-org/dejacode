@@ -18,6 +18,7 @@
           Cancel
         </button>
         <button hx-swap="outerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                 hx-on--before-request="
                   let target = document.querySelector(this.getAttribute('hx-target'));
                   if (target) target.innerHTML = 'Deleting...';

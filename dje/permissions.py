@@ -7,7 +7,9 @@
 #
 
 from guardian.shortcuts import assign_perm as guardian_assign_perm
+from guardian.shortcuts import get_groups_with_perms
 from guardian.shortcuts import get_perms_for_model
+from guardian.shortcuts import get_users_with_perms
 
 
 def get_protected_fields(model_class, user):
@@ -34,6 +36,19 @@ def assign_all_object_permissions(user, obj):
     perms = get_limited_perms_for_model(obj._meta.model)  # view/change/delete
     for perm in perms:
         guardian_assign_perm(perm, user, obj)
+
+
+def copy_object_permissions(source, target):
+    """Copy the user and group object permissions from `source` to `target`."""
+    users_with_perms = get_users_with_perms(source, attach_perms=True)
+    for user, perms in users_with_perms.items():
+        for perm in perms:
+            guardian_assign_perm(perm, user, target)
+
+    groups_with_perms = get_groups_with_perms(source, attach_perms=True)
+    for group, perms in groups_with_perms.items():
+        for perm in perms:
+            guardian_assign_perm(perm, group, target)
 
 
 def get_all_tabsets():

@@ -828,9 +828,10 @@ class License(
         return f"{self.short_name} ({self.key})"
 
     def save(self, *args, **kwargs):
-        """Clear the licensing cache on License object changes."""
+        """Clear the licensing cache entry of the License Dataspace on changes."""
         super().save(*args, **kwargs)
-        caches["licensing"].clear()
+        # Delete only this Dataspace entry: `clear()` would flush the whole Redis database.
+        caches["licensing"].delete(str(self.dataspace.uuid))
 
     def clean(self, from_api=False):
         if self.is_active is False and self.spdx_license_key:

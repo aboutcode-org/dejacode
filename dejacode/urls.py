@@ -16,7 +16,6 @@ from django.views.defaults import page_not_found
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 
-from notifications.views import mark_all_as_read
 from rest_framework.routers import DefaultRouter
 
 from component_catalog.api import ComponentViewSet
@@ -42,6 +41,7 @@ from dje.views import UnreadNotificationsList
 from dje.views import api_docs_view
 from dje.views import home_view
 from dje.views import index_dispatch
+from dje.views import mark_all_notifications_as_read_view
 from dje.views import urn_resolve_view
 from license_library.api import LicenseAnnotationViewSet
 from license_library.api import LicenseViewSet
@@ -55,6 +55,8 @@ from product_portfolio.api import ProductViewSet
 from reporting.api import ReportViewSet
 from vulnerabilities.api import VulnerabilityAnalysisViewSet
 from vulnerabilities.api import VulnerabilityViewSet
+from vulnerabilities.triage.api import AnalysisPresetViewSet
+from vulnerabilities.triage.api import TriageRulesetViewSet
 from workflow.api import RequestTemplateViewSet
 from workflow.api import RequestViewSet
 
@@ -83,6 +85,8 @@ api_router.register("external_references", ExternalReferenceViewSet)
 api_router.register("usage_policies", UsagePolicyViewSet)
 api_router.register("vulnerabilities", VulnerabilityViewSet)
 api_router.register("vulnerability_analyses", VulnerabilityAnalysisViewSet)
+api_router.register("triage_rulesets", TriageRulesetViewSet)
+api_router.register("analysis_presets", AnalysisPresetViewSet)
 
 
 urlpatterns = [
@@ -156,7 +160,7 @@ urlpatterns += [
 notification_patterns = [
     path("", UnreadNotificationsList.as_view(), name="unread"),
     path("all/", AllNotificationsList.as_view(), name="all"),
-    path("mark_all_as_read/", mark_all_as_read, name="mark_all_as_read"),
+    path("mark_all_as_read/", mark_all_notifications_as_read_view, name="mark_all_as_read"),
     path(
         "send_scan_notification/<str:key>/", send_scan_notification, name="send_scan_notification"
     ),

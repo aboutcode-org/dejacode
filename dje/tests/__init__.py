@@ -7,6 +7,7 @@
 #
 
 import random
+import re
 import string
 import sys
 from importlib import reload
@@ -61,6 +62,11 @@ def add_perms(user, codenames):
     for codename in codenames:
         user.user_permissions.add(Permission.objects.get(codename=codename))
     return User.objects.get(pk=user.pk)
+
+
+def get_activation_key_from_email(email_body):
+    """Return the activation key included in the activation link of the `email_body`."""
+    return re.search(r"activation_key=(\S+)", email_body).group(1)
 
 
 def refresh_url_cache():

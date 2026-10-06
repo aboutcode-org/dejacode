@@ -329,7 +329,6 @@ PREREQ_APPS = [
     "crispy_bootstrap5",
     "guardian",
     "django_filters",
-    "rest_hooks",
     "notifications",
     "axes",
     "django_otp",
@@ -348,6 +347,7 @@ PROJECT_APPS = [
     "policy",
     "notification",
     "vulnerabilities",
+    "vulnerabilities.triage",
 ]
 
 EXTRA_APPS = env.list("EXTRA_APPS", default=[])
@@ -475,10 +475,18 @@ RQ_QUEUES = {
         "SSL": env.bool("DEJACODE_RQ_REDIS_SSL", default=False),
     },
 }
+# COMMIT_MODE "on_db_commit" enqueues jobs through transaction.on_commit(),
+# so a job is only picked up by a worker once its transaction is committed.
+RQ = {
+    "COMMIT_MODE": "on_db_commit",
+}
 
 # Cron jobs (scheduler)
 daily_at_3am = "0 3 * * *"
+hourly = "0 * * * *"
 DEJACODE_VULNERABILITIES_CRON = env.str("DEJACODE_VULNERABILITIES_CRON", default=daily_at_3am)
+DEJACODE_POLICY_RULES_CRON = env.str("DEJACODE_POLICY_RULES_CRON", default=hourly)
+DEJACODE_VULNERABILITY_TRIAGE_CRON = env.str("DEJACODE_VULNERABILITY_TRIAGE_CRON", default=hourly)
 
 
 def enable_rq_eager_mode():
@@ -501,6 +509,11 @@ def enable_rq_eager_mode():
         return FakeStrictRedis() if use_strict_redis else FakeRedis()
 
     connection_utils.get_redis_connection = get_fake_redis_connection
+
+    # Default COMMIT_MODE is "on_db_commit": jobs are enqueued through
+    # transaction.on_commit(), which never fires inside a TestCase since its
+    # wrapping transaction is always rolled back. "auto" enqueues immediately.
+    RQ["COMMIT_MODE"] = "auto"
 
 
 DEJACODE_ASYNC = env.bool("DEJACODE_ASYNC", default=False)
@@ -593,6 +606,10 @@ LOGGING = {
             "propagate": False,
             "level": "DEBUG" if DEBUG else DEJACODE_LOG_LEVEL,
         },
+        "django_altcha": {
+            "handlers": ["null"] if IS_TESTS else ["console"],
+            "level": "WARNING",
+        },
     },
 }
 
@@ -665,21 +682,10 @@ ACCOUNT_ACTIVATION_DAYS = 10
 # django-altcha
 ALTCHA_HMAC_KEY = env.str("DEJACODE_ALTCHA_HMAC_KEY", default="")
 
-# https://github.com/zapier/django-rest-hooks
-HOOK_FINDER = "notification.models.find_and_fire_hook"
-HOOK_DELIVERER = "notification.tasks.deliver_hook_wrapper"
-HOOK_EVENTS = {
-    # 'any.event.name': 'App.Model.Action' (created/updated/deleted)
-    # If you want a Hook to be triggered for all users, add '+' to built-in Hooks.
-    "request.added": "workflow.Request.created+",
-    "request.updated": "workflow.Request.updated+",
-    "request_comment.added": "workflow.RequestComment.created+",
-    "user.added_or_updated": None,
-    "user.locked_out": None,
-    "vulnerability.data_update": None,
-}
-# Provide context variables to the `Webhook` values such as `extra_headers`.
-HOOK_ENV = env.dict("HOOK_ENV", default={})
+# Provide context variables to WebhookSubscription extra_headers template values.
+# HOOK_ENV is the legacy name, kept for backward compatibility.
+_legacy_hook_env = env.dict("HOOK_ENV", default={})
+DEJACODE_WEBHOOK_ENV = env.dict("DEJACODE_WEBHOOK_ENV", default=_legacy_hook_env)
 
 # Django-axes
 # Enable or disable Axes plugin functionality

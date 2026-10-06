@@ -65,7 +65,7 @@
             let download_urls = $("#download-urls").val();
             if (!download_urls) return;
 
-            NEXB.displayOverlay("Package data collection in progress...");
+            DejaCode.displayOverlay("Package data collection in progress...");
             console.log('Submitting URLs:', download_urls);
             $.ajax({
                 url: add_form.attr('data-add-url'),

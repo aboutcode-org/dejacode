@@ -60,6 +60,7 @@ from django.views.generic.detail import BaseDetailView
 import odfdo
 import saneyaml
 from crispy_forms.utils import render_crispy_form
+from django_filters.conf import settings as django_filters_settings
 from guardian.shortcuts import get_perms as guardian_get_perms
 from openpyxl import Workbook
 
@@ -86,6 +87,7 @@ from dje.templatetags.dje_tags import urlize_target_blank
 from dje.utils import chunked
 from dje.utils import get_help_text
 from dje.utils import get_object_compare_diff
+from dje.utils import get_safe_referer
 from dje.utils import group_by_simple
 from dje.utils import is_uuid4
 from dje.utils import style_xlsx_worksheet
@@ -109,9 +111,12 @@ from dje.views import TabContentView
 from dje.views import TabField
 from dje.views import TableHeaderMixin
 from dje.views_formset import FormSetView
+from dje.widgets import LabeledDropDownWidget
 from license_library.filters import LicenseFilterSet
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
+from policy.engine import evaluate_rules
+from policy.rules import RULE_REGISTRY
 from product_portfolio.filters import CodebaseResourceFilterSet
 from product_portfolio.filters import DependencyFilterSet
 from product_portfolio.filters import ProductComponentFilterSet
@@ -123,6 +128,7 @@ from product_portfolio.forms import ComparisonExcludeFieldsForm
 from product_portfolio.forms import ImportFromScanForm
 from product_portfolio.forms import ImportManifestsForm
 from product_portfolio.forms import LoadSBOMsForm
+from product_portfolio.forms import ProductCloneForm
 from product_portfolio.forms import ProductComponentForm
 from product_portfolio.forms import ProductComponentInlineForm
 from product_portfolio.forms import ProductCustomComponentForm
@@ -148,6 +154,40 @@ from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import Vulnerability
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import get_risk_level
+from vulnerabilities.triage.engine import delete_triage_records_for_assignment
+from vulnerabilities.triage.engine import reevaluate_product_rulesets
+from vulnerabilities.triage.models import AnalysisPreset
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
+from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
+from vulnerabilities.triage.rules import rule_parameters_from_config
+
+TRIAGE_ACTION_STYLES = {
+    "upgrade": ("bg-danger-subtle text-danger-emphasis", "fa-arrow-circle-up"),
+    "apply_patch": ("bg-danger-subtle text-danger-emphasis", "fa-wrench"),
+    "replace_package": ("bg-warning-subtle text-warning-emphasis", "fa-exchange-alt"),
+    "forensic_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-search"),
+    "reachability_analysis": ("bg-warning-subtle text-warning-emphasis", "fa-sitemap"),
+    "change_config": ("bg-info-subtle text-info-emphasis", "fa-cog"),
+    "notify": ("bg-primary-subtle text-primary-emphasis", "fa-bell"),
+    "create_request": ("bg-secondary-subtle text-secondary-emphasis", "fa-file-alt"),
+}
+TRIAGE_ACTION_DEFAULT_STYLE = (
+    "bg-secondary-subtle text-secondary-emphasis",
+    "fa-exclamation-circle",
+)
+
+ANALYSIS_STATE_STYLES = {
+    "exploitable": "bg-danger-subtle text-danger-emphasis",
+    "in_triage": "bg-warning-subtle text-warning-emphasis",
+    "resolved": "bg-success-subtle text-success-emphasis",
+    "resolved_with_pedigree": "bg-success-subtle text-success-emphasis",
+    "not_affected": "bg-secondary-subtle text-secondary-emphasis",
+    "false_positive": "bg-secondary-subtle text-secondary-emphasis",
+}
+ANALYSIS_STATE_DEFAULT_STYLE = "bg-secondary-subtle text-secondary-emphasis"
 
 
 class BaseProductViewMixin:
@@ -422,7 +462,10 @@ class ProductDetailsView(
 
         if self.object.notice_text:
             notice_field = self.get_tab_fields([TabField("notice_text")])[0]
-            tab_data["fields"].append(notice_field)
+            if tab_data is None:
+                tab_data = {"fields": [notice_field]}
+            else:
+                tab_data["fields"].append(notice_field)
 
         return tab_data
 
@@ -1191,6 +1234,10 @@ class ProductTabDependenciesView(
         return context_data
 
 
+def has_triage_column_condition(view):
+    return getattr(view, "has_triage_rulesets", True)
+
+
 class ProductTabVulnerabilitiesView(
     LoginRequiredMixin,
     BaseProductViewMixin,
@@ -1205,44 +1252,186 @@ class ProductTabVulnerabilitiesView(
     table_model = ProductPackage
     filterset_class = ProductPackageFilterSet
     table_headers = (
-        Header("affected_packages", _("Package"), help_text="Affected product packages"),
-        Header("weighted_risk_score", _("Risk"), filter="weighted_risk_score"),
         Header(
             "advisory_uid",
-            _("Vulnerabilities"),
-            help_text="Vulnerabilities affecting the product package",
+            _("Vulnerability"),
+            help_text=_("Vulnerability affecting the product package"),
+        ),
+        Header("risk_score", _("Risk"), help_text=_("Risk score of the vulnerability")),
+        Header(
+            "exploitability",
+            _("Exploitability"),
+            help_text=_("Availability of known exploits for the vulnerability"),
+        ),
+        Header(
+            "triage_action",
+            _("Recommendation"),
+            help_text=_("Action recommended by the triage engine for this vulnerability"),
+            condition=has_triage_column_condition,
         ),
         Header(
             "vulnerability_analyses__state",
-            _("Status"),
-            help_text=_("Exploitability analysis status"),
-            filter="vulnerability_analyses__state",
-        ),
-        Header(
-            "vulnerability_analyses__justification",
-            _("Justification"),
-            help_text=_("The rationale of why the impact analysis state was asserted."),
-            filter="vulnerability_analyses__justification",
-        ),
-        Header(
-            "vulnerability_analyses__responses",
-            _("Responses"),
+            _("Analysis"),
             help_text=_(
-                "A response to the vulnerability by the manufacturer, supplier, or project "
-                "responsible for the affected component or service."
+                "Exploitability analysis: status, justification, responses and reachability."
             ),
-            filter="responses",
-        ),
-        Header(
-            "vulnerability_analyses__is_reachable",
-            _("Reach"),
-            help_text=_(
-                "Indicates whether the vulnerability is reachable in the context of "
-                "this product package."
-            ),
-            filter="is_reachable",
         ),
     )
+
+    toolbar_filters = {
+        "weighted_risk_score": _("Risk"),
+        "triage_action": _("Recommendation"),
+        "vulnerability_analyses__state": _("Analysis"),
+        "is_reachable": _("Reachability"),
+    }
+
+    def setup_toolbar_filters(self):
+        for field_name, label in self.toolbar_filters.items():
+            toolbar_filter = self.filterset.filters[field_name]
+            toolbar_filter.label = label
+            toolbar_filter.extra["widget"] = LabeledDropDownWidget(
+                label=label, anchor=f"#{self.tab_id}"
+            )
+
+        analysis_filter = self.filterset.filters["vulnerability_analyses__state"]
+        analysis_filter.extra["null_label"] = _("Not analyzed")
+
+    def attach_vulnerability_analyses(self, page_obj):
+        """Set the matching VulnerabilityAnalysis instance on each prefetched vulnerability."""
+        response_labels = dict(VulnerabilityAnalysis.Response.choices)
+
+        for product_package in page_obj.object_list:
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
+                for analysis in vulnerability.vulnerability_analyses.all():
+                    if analysis.product_package_id == product_package.id:
+                        vulnerability.vulnerability_analysis = analysis
+                        analysis.state_badge_class = ANALYSIS_STATE_STYLES.get(
+                            analysis.state, ANALYSIS_STATE_DEFAULT_STYLE
+                        )
+                        analysis.response_labels = [
+                            response_labels.get(response, response)
+                            for response in analysis.responses or []
+                        ]
+                        break
+
+    def attach_vulnerability_summary(self, page_obj):
+        """Set the vulnerability, analyzed, and known exploits counts on each product_package."""
+        has_active_filters = self.filterset.is_active()
+
+        for product_package in page_obj.object_list:
+            vulnerabilities = product_package.package.affected_by_vulnerabilities.all()
+            analyzed_count = sum(
+                1
+                for vulnerability in vulnerabilities
+                if getattr(vulnerability, "vulnerability_analysis", None)
+            )
+
+            product_package.vulnerability_count = len(vulnerabilities)
+            product_package.analyzed_count = analyzed_count
+            # Fully analyzed packages are collapsed, unless filters are active.
+            product_package.is_collapsed = (
+                analyzed_count == len(vulnerabilities) and not has_active_filters
+            )
+            product_package.known_exploits_count = sum(
+                1
+                for vulnerability in vulnerabilities
+                if vulnerability.exploitability == Vulnerability.KNOWN_EXPLOITS
+            )
+
+    REACHABILITY_FILTER_MAP = {"yes": True, "no": False, "unknown": None}
+
+    def get_vulnerability_display_filters(self):
+        """Return the active per-vulnerability filters from the request."""
+        params = self.request.GET
+        prefix = self.tab_id
+        return {
+            "triage_action": params.get(f"{prefix}-triage_action", ""),
+            "state": params.get(f"{prefix}-vulnerability_analyses__state", ""),
+            "justification": params.get(f"{prefix}-vulnerability_analyses__justification", ""),
+            "is_reachable": params.get(f"{prefix}-is_reachable", ""),
+        }
+
+    @staticmethod
+    def value_matches_filter(value, filter_value):
+        """Return True if the value matches the filter value, the null choice matching empty."""
+        if filter_value == django_filters_settings.NULL_CHOICE_VALUE:
+            return not value
+        return value == filter_value
+
+    def vulnerability_passes_display_filters(self, vulnerability, display_filters):
+        """Return True if the vulnerability matches all active display filters."""
+        triage_action = display_filters.get("triage_action")
+        if triage_action:
+            record = getattr(vulnerability, "triage_record", None)
+            if getattr(record, "recommended_action", "") != triage_action:
+                return False
+
+        analysis = getattr(vulnerability, "vulnerability_analysis", None)
+        state = display_filters.get("state")
+        if state:
+            if not self.value_matches_filter(getattr(analysis, "state", ""), state):
+                return False
+
+        justification = display_filters.get("justification")
+        if justification:
+            if not self.value_matches_filter(getattr(analysis, "justification", ""), justification):
+                return False
+
+        is_reachable_filter = display_filters.get("is_reachable")
+        if is_reachable_filter in self.REACHABILITY_FILTER_MAP:
+            expected = self.REACHABILITY_FILTER_MAP[is_reachable_filter]
+            actual = None if analysis is None else analysis.is_reachable
+            if actual != expected:
+                return False
+
+        return True
+
+    def attach_triage_data(self, product, page_obj):
+        """
+        Attach the winning TriageRecord to each vulnerability and build
+        display_vulnerabilities on each product_package, filtered by any
+        active per-vulnerability filters.
+        """
+        vulnerability_ids = {
+            vulnerability.id
+            for product_package in page_obj.object_list
+            for vulnerability in product_package.package.affected_by_vulnerabilities.all()
+        }
+        action_labels = dict(TriageAction.choices)
+        triage_records = list(
+            TriageRecord.objects.filter(
+                product=product,
+                vulnerability_id__in=vulnerability_ids,
+            )
+            .highest_precedence()
+            .select_related("ruleset", "request")
+        )
+        for record in triage_records:
+            record.action_label = action_labels.get(
+                record.recommended_action, record.recommended_action
+            )
+            badge_class, icon = TRIAGE_ACTION_STYLES.get(
+                record.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
+            )
+            record.action_badge_class = badge_class
+            record.action_icon = icon
+
+        triage_by_vulnerability = {record.vulnerability_id: record for record in triage_records}
+        display_filters = self.get_vulnerability_display_filters()
+        has_display_filters = any(display_filters.values())
+
+        for product_package in page_obj.object_list:
+            all_vulnerabilities = list(product_package.package.affected_by_vulnerabilities.all())
+            for vulnerability in all_vulnerabilities:
+                vulnerability.triage_record = triage_by_vulnerability.get(vulnerability.id)
+            if has_display_filters:
+                product_package.display_vulnerabilities = [
+                    vulnerability
+                    for vulnerability in all_vulnerabilities
+                    if self.vulnerability_passes_display_filters(vulnerability, display_filters)
+                ]
+            else:
+                product_package.display_vulnerabilities = all_vulnerabilities
 
     def get_context_data(self, **kwargs):
         product = self.object
@@ -1253,9 +1442,12 @@ class ProductTabVulnerabilitiesView(
             risk_threshold = product.get_vulnerabilities_risk_threshold()
 
         base_productpackage_qs = product.get_vulnerable_productpackages(risk_threshold)
+        vulnerability_analyses_qs = VulnerabilityAnalysis.objects.select_related(
+            "created_by", "last_modified_by", "applied_by_preset"
+        )
         vulnerability_qs = Vulnerability.objects.prefetch_related(
-            "vulnerability_analyses"
-        ).order_by("-risk_score")
+            Prefetch("vulnerability_analyses", queryset=vulnerability_analyses_qs)
+        ).order_by(F("risk_score").desc(nulls_last=True))
         package_qs = (
             Package.objects.all()
             .only_rendering_fields()
@@ -1273,7 +1465,7 @@ class ProductTabVulnerabilitiesView(
                 Prefetch("package", package_qs),
             )
             .order_by(
-                "-weighted_risk_score",
+                F("weighted_risk_score").desc(nulls_last=True),
                 "package__name",
             )
         )
@@ -1285,6 +1477,11 @@ class ProductTabVulnerabilitiesView(
             prefix=self.tab_id,
             anchor=f"#{self.tab_id}",
         )
+        self.setup_toolbar_filters()
+
+        self.has_triage_rulesets = product.product_triage_rulesets.filter(
+            ruleset__enabled=True
+        ).exists()
 
         # The self.filterset needs to be set before calling super()
         context_data = super().get_context_data(**kwargs)
@@ -1293,21 +1490,35 @@ class ProductTabVulnerabilitiesView(
         page_number = self.request.GET.get(self.query_dict_page_param)
         page_obj = paginator.get_page(page_number)
 
-        # Set the proper VulnerabilityAnalysis instance on the Package instance
-        for product_package in page_obj.object_list:
-            for vulnerability in product_package.package.affected_by_vulnerabilities.all():
-                for analysis in vulnerability.vulnerability_analyses.all():
-                    if analysis.product_package_id == product_package.id:
-                        vulnerability.vulnerability_analysis = analysis
-                        continue
+        self.attach_vulnerability_analyses(page_obj)
+        self.attach_vulnerability_summary(page_obj)
+        self.attach_triage_data(product, page_obj)
 
+        analysis_presets = list(AnalysisPreset.objects.scope(product.dataspace))
+        has_change_permission = "change_product" in guardian_get_perms(self.request.user, product)
+        can_manage_triage_rules = (
+            has_change_permission and self.request.user.dataspace.enable_vulnerablecodedb_access
+        )
+        manage_triage_rules_nav_item_template = None
+        if can_manage_triage_rules:
+            manage_triage_rules_nav_item_template = (
+                "product_portfolio/includes/manage_triage_rules_nav_item.html"
+            )
         context_data.update(
             {
                 "filterset": self.filterset,
                 "page_obj": page_obj,
                 "total_count": base_productpackage_qs.count(),
+                "has_displayed_vulnerabilities": any(
+                    product_package.display_vulnerabilities
+                    for product_package in page_obj.object_list
+                ),
                 "search_query": self.request.GET.get("vulnerabilities-q", ""),
                 "risk_threshold": risk_threshold,
+                "has_triage_rulesets": self.has_triage_rulesets,
+                "analysis_presets": analysis_presets,
+                "manage_triage_rules_nav_item_template": manage_triage_rules_nav_item_template,
+                "vulnerablecode_todos_url": VulnerableCode(product.dataspace).advisory_todos_url,
             }
         )
 
@@ -1333,13 +1544,7 @@ class ProductTabActivityView(
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         scancode_projects = self.object.scancodeprojects.all()
-        submitted_projects = self.get_submitted_projects(scancode_projects)
-
-        # Check the status of the "submitted" projects on ScanCode.io and update the
-        # local ScanCodeProject instances accordingly.
-        scancodeio = ScanCodeIO(self.request.user.dataspace)
-        for submitted_project in submitted_projects:
-            self.synchronize(scancodeio=scancodeio, project=submitted_project)
+        self.synchronize_scancodeio_projects(scancode_projects)
 
         history_entries = (
             History.objects.get_for_object(self.object)
@@ -1350,9 +1555,9 @@ class ProductTabActivityView(
         context_data.update(
             {
                 "tab_view_url": self.object.get_url("tab_activity"),
-                # Imports
+                # Actions
                 "scancode_projects": scancode_projects,
-                "has_projects_in_progress": bool(submitted_projects),
+                "has_projects_in_progress": scancode_projects.in_progress().exists(),
                 # Requests
                 "requests": self.object.get_requests(self.request.user),
                 # History
@@ -1362,20 +1567,32 @@ class ProductTabActivityView(
 
         return context_data
 
-    @staticmethod
-    def get_submitted_projects(scancode_projects):
-        submitted_types = [
+    def synchronize_scancodeio_projects(self, scancode_projects):
+        """
+        Poll ScanCode.io for the run status of the projects submitted to it as
+        external pipeline runs (SBOM and manifest imports), and update the
+        local ScanCodeProject status accordingly.
+        Other action types are handled entirely by local RQ tasks and have no
+        external run to poll.
+        """
+        scancodeio_project_types = [
             ScanCodeProject.ProjectType.LOAD_SBOMS,
             ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
         ]
-        return [
+        pending_scancodeio_projects = [
             project
             for project in scancode_projects
             if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type in submitted_types
+            and project.type in scancodeio_project_types
         ]
+        if not pending_scancodeio_projects:
+            return
 
-    def synchronize(self, scancodeio, project):
+        scancodeio = ScanCodeIO(self.request.user.dataspace)
+        for project in pending_scancodeio_projects:
+            self.synchronize_scancodeio_project_status(scancodeio, project)
+
+    def synchronize_scancodeio_project_status(self, scancodeio, project):
         scan_detail_url = scancodeio.get_scan_detail_url(project.project_uuid)
         scan_data = scancodeio.fetch_scan_data(scan_detail_url)
         if not scan_data:
@@ -1461,7 +1678,7 @@ def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
         return JsonResponse({"error_message": "Permission denied"}, status=403)
 
     has_delete_permission = user.has_perm(f"product_portfolio.delete_{relationship_model_name}")
-    if request.GET.get("delete"):
+    if request.method == "POST" and request.POST.get("delete"):
         if has_delete_permission:
             History.log_deletion(user, relation_instance)
             relation_verbose_name = relation_type.replace("-", " ")
@@ -1490,15 +1707,19 @@ def edit_productrelation_ajax_view(request, relation_type, relation_uuid):
 
     rendered_form = render_crispy_form(form)
 
-    relationship_field = f"""
+    relationship_field = format_html(
+        """
     <div class="mb-3">
       <label for="id_relationship_instance" class="col-form-label form-label">
-        {related_model_name.title()}
+        {label}
       </label>
-      <input type="text" value="{relation_instance}" class="form-control" disabled
+      <input type="text" value="{value}" class="form-control" disabled
        id="id_relationship_instance">
     </div>
-    """
+    """,
+        label=related_model_name.title(),
+        value=relation_instance,
+    )
 
     if relation_type != "custom-component":
         rendered_form = relationship_field + rendered_form
@@ -2063,6 +2284,98 @@ def scan_all_packages_view(request, dataspace, name, version=""):
     return redirect(product)
 
 
+@require_POST
+@login_required
+def evaluate_policy_rules_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+
+    evaluate_rules(product)
+
+    return HttpResponse(headers={"HX-Refresh": "true"})
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+def manage_triage_rulesets_view(request, dataspace, name, version=""):
+    guarded_qs = Product.objects.get_queryset(request.user, perms="change_product")
+    product = get_object_or_404(
+        guarded_qs,
+        name=unquote_plus(name),
+        version=unquote_plus(version),
+        dataspace__name=dataspace,
+    )
+    available_rulesets = list(
+        TriageRuleset.objects.filter(dataspace=product.dataspace, enabled=True)
+        .select_related("analysis_preset")
+        .order_by("-precedence", "name")
+    )
+
+    if request.method == "POST":
+        submitted_uuids = set(request.POST.getlist("ruleset_uuids"))
+        current_assignments = {
+            str(ptr.ruleset.uuid): ptr
+            for ptr in ProductTriageRuleset.objects.filter(
+                product=product, ruleset__enabled=True
+            ).select_related("ruleset")
+        }
+        with transaction.atomic():
+            for ruleset in available_rulesets:
+                ruleset_uuid = str(ruleset.uuid)
+                if ruleset_uuid in submitted_uuids and ruleset_uuid not in current_assignments:
+                    ProductTriageRuleset.objects.create(
+                        product=product,
+                        ruleset=ruleset,
+                        dataspace=product.dataspace,
+                    )
+            for ruleset_uuid, assignment in current_assignments.items():
+                if ruleset_uuid not in submitted_uuids:
+                    assignment.delete()
+                    delete_triage_records_for_assignment(
+                        ruleset=assignment.ruleset, product=product
+                    )
+            reevaluate_product_rulesets(product)
+        return JsonResponse({"success": True})
+
+    assigned_ruleset_ids = set(product.product_triage_rulesets.values_list("ruleset_id", flat=True))
+    action_labels = dict(TriageAction.choices)
+
+    for ruleset in available_rulesets:
+        ruleset.action_label = action_labels.get(
+            ruleset.recommended_action, ruleset.recommended_action
+        )
+        action_badge_class, action_icon = TRIAGE_ACTION_STYLES.get(
+            ruleset.recommended_action, TRIAGE_ACTION_DEFAULT_STYLE
+        )
+        ruleset.action_badge_class = action_badge_class
+        ruleset.action_icon = action_icon
+        active_rules = []
+        for rule_type, config in ruleset.rules_config.items():
+            if rule_type not in TRIAGE_RULE_REGISTRY or not config.get("is_active"):
+                continue
+            handler = TRIAGE_RULE_REGISTRY[rule_type]
+            params = rule_parameters_from_config(config)
+            params_str = ", ".join(
+                f"{key.replace('_', ' ')}: {value}" for key, value in params.items()
+            )
+            active_rules.append({"label": handler.label, "params_str": params_str})
+        ruleset.active_rules = active_rules
+
+    return render(
+        request,
+        "product_portfolio/modals/manage_triage_rulesets_form.html",
+        {
+            "available_rulesets": available_rulesets,
+            "assigned_ruleset_ids": assigned_ruleset_ids,
+        },
+    )
+
+
 @login_required
 def import_from_scan_view(request, dataspace, name, version=""):
     """
@@ -2088,7 +2401,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
                 warnings, created_counts = form.save(product=product)
             except ValidationError as error:
                 messages.error(request, " ".join(error.messages))
-                return redirect(request.path)
+                return redirect(product.get_import_from_scan_url())
 
             if not created_counts:
                 messages.warning(request, "Nothing imported.")
@@ -2131,6 +2444,7 @@ class BaseProductManageGridView(
     filterset_class = None
     can_delete_permission = None
     configuration_session_key = None
+    grid_url_name = None
     base_fields = []
 
     def get_relationship_queryset(self):
@@ -2142,6 +2456,8 @@ class BaseProductManageGridView(
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
         if "update-grid-configuration" in request.POST:
             grid_configuration_form = ProductGridConfigurationForm(data=request.POST)
             if grid_configuration_form.is_valid():
@@ -2150,7 +2466,6 @@ class BaseProductManageGridView(
                 messages.success(request, "Grid configuration updated.")
             return redirect(self.get_success_url())
 
-        self.object = self.get_object()
         self.filterset = self.get_filterset()
         return super().post(request, *args, **kwargs)
 
@@ -2165,7 +2480,7 @@ class BaseProductManageGridView(
         Use the HTTP_REFERER when available allows to keep the request.GET
         state of the view, keeping sort and filters for example.
         """
-        return self.request.META.get("HTTP_REFERER") or self.request.path
+        return get_safe_referer(self.request) or self.object.get_url(self.grid_url_name)
 
     def formset_valid(self, formset):
         request = self.request
@@ -2263,6 +2578,7 @@ class ManageComponentGridView(BaseProductManageGridView):
     form_class = ProductComponentInlineForm
     filterset_class = ProductComponentFilterSet
     configuration_session_key = "component_grid_configuration"
+    grid_url_name = "manage_components"
     base_fields = [
         "product",
         "component",
@@ -2295,6 +2611,7 @@ class ManagePackageGridView(BaseProductManageGridView):
     form_class = ProductPackageInlineForm
     filterset_class = ProductPackageFilterSet
     configuration_session_key = "package_grid_configuration"
+    grid_url_name = "manage_packages"
     base_fields = [
         "product",
         "package",
@@ -2536,6 +2853,28 @@ class ImportManifestsView(BaseProductImportFormView):
     success_msg = "Manifest file submitted to ScanCode.io for inspection."
 
 
+class ProductCloneView(BaseProductImportFormView):
+    template_name = "product_portfolio/clone_product_form.html"
+    form_class = ProductCloneForm
+    permission_required = "product_portfolio.add_product"
+
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["user"] = self.request.user
+        form_kwargs["source_product"] = self.object
+        return form_kwargs
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+        cloned_product = form.save()
+
+        messages.success(
+            self.request,
+            f'Product "{self.object}" was successfully cloned into "{cloned_product}".',
+        )
+        return redirect(cloned_product)
+
+
 @method_decorator(require_POST, name="dispatch")
 class PullProjectDataFromScanCodeIOView(BaseProductImportFormView):
     form_class = PullProjectDataForm
@@ -2618,6 +2957,7 @@ def scancodeio_project_download_input_view(request, scancodeproject_uuid):
 
 
 @login_required
+@require_POST
 def improve_packages_from_purldb_view(request, dataspace, name, version=""):
     user = request.user
     guarded_qs = Product.objects.get_queryset(user)
@@ -2648,7 +2988,7 @@ def improve_packages_from_purldb_view(request, dataspace, name, version=""):
         messages.error(request, "Improve Packages already in progress...")
     else:
         transaction.on_commit(
-            lambda: improve_packages_from_purldb_task(
+            lambda: improve_packages_from_purldb_task.delay(
                 product_uuid=product.uuid,
                 user_uuid=user.uuid,
             )
@@ -2722,7 +3062,40 @@ def vulnerability_analysis_form_view(request, productpackage_uuid, advisory_uid)
 
 
 @login_required
-@csrf_exempt
+@require_POST
+def apply_analysis_preset_view(request, productpackage_uuid, advisory_uid, preset_id):
+    user = request.user
+    dataspace = user.dataspace
+
+    product_package_qs = ProductPackage.objects.product_secured(user, perms="change_product")
+    product_package = get_object_or_404(product_package_qs, uuid=productpackage_uuid)
+    vulnerability = get_object_or_404(
+        Vulnerability.objects.scope(dataspace), advisory_uid=advisory_uid
+    )
+    preset = get_object_or_404(AnalysisPreset.objects.scope(dataspace), pk=preset_id)
+
+    existing = VulnerabilityAnalysis.objects.scope(dataspace).get_or_none(
+        product_package=product_package,
+        vulnerability=vulnerability,
+    )
+    if existing:
+        return JsonResponse(
+            {"error": "An analysis already exists for this vulnerability."}, status=400
+        )
+
+    analysis = VulnerabilityAnalysis(
+        product_package=product_package,
+        vulnerability=vulnerability,
+        dataspace=dataspace,
+    )
+    preset.apply_to_analysis(analysis)
+    analysis.applied_by_preset = preset
+    analysis.save()
+
+    return JsonResponse({"success": "applied"}, status=200)
+
+
+@login_required
 @require_http_methods(["DELETE"])
 def delete_scan_htmx_view(request, project_uuid, package_uuid):
     dataspace = request.user.dataspace
@@ -2766,12 +3139,15 @@ class ProductTabComplianceView(
         product = self.object
         productpackages = product.productpackages.all()
         licenses = License.objects.filter(productpackage__in=productpackages)
+        user_perms = guardian_get_perms(self.request.user, product)
 
         context.update(
             {
                 **self.get_package_compliance_context(productpackages),
                 **self.get_license_compliance_context(licenses),
                 **self.get_security_compliance_context(product),
+                **self.get_policy_compliance_context(product),
+                "has_change_permission": "change_product" in user_perms,
             }
         )
 
@@ -2840,6 +3216,42 @@ class ProductTabComplianceView(
             "license_distribution": license_distribution[:distribution_limit],
             "license_distribution_limit": distribution_limit,
             "remaining_license_count": max(0, len(license_distribution) - distribution_limit),
+        }
+
+    @staticmethod
+    def get_policy_compliance_context(product):
+        registry_order = list(RULE_REGISTRY)
+
+        def rule_registry_position(violation):
+            return registry_order.index(violation.rule_type)
+
+        policy_violations = sorted(
+            product.policy_violations.filter(rule_type__in=RULE_REGISTRY.keys()).unresolved(),
+            key=rule_registry_position,
+        )
+        violated_rule_types = {violation.rule_type for violation in policy_violations}
+
+        rules_config = product.dataspace.get_configuration("policy_rules_config") or {}
+
+        all_rules = [
+            {
+                "label": handler.label,
+                "description": handler.description,
+                "rule_type": rule_type,
+                "severity": handler.severity,
+                "is_violated": rule_type in violated_rule_types,
+            }
+            for rule_type, handler in RULE_REGISTRY.items()
+            if rules_config.get(rule_type, {}).get("is_active", False)
+        ]
+        has_error_violation = any(
+            violation.rule_severity == "error" for violation in policy_violations
+        )
+        return {
+            "policy_violations": policy_violations,
+            "policy_violation_count": len(policy_violations),
+            "has_error_violation": has_error_violation,
+            "all_rules": all_rules,
         }
 
     @staticmethod
@@ -3049,6 +3461,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
         "medium_count": "Medium",
         "low_count": "Low",
         "vulnerability_count": "Total vulnerabilities",
+        "policy_violation_count": "Policy violations",
     }
 
     def get_queryset(self):
@@ -3069,6 +3482,8 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
             Q(license_error_count__gt=0) | Q(license_warning_count__gt=0)
         ).count()
 
+        products_with_policy_violations = products.filter(policy_violation_count__gt=0).count()
+
         products_with_critical_or_high = products.filter(
             Q(critical_count__gt=0) | Q(high_count__gt=0)
         ).count()
@@ -3086,6 +3501,7 @@ class ComplianceDashboardView(LoginRequiredMixin, ExportComplianceMixin, Dataspa
                 "total_products": context["paginator"].count,
                 "products_with_issues": products_with_issues,
                 "products_with_license_issues": products_with_license_issues,
+                "products_with_policy_violations": products_with_policy_violations,
                 "products_with_critical_or_high": products_with_critical_or_high,
                 "total_vulnerabilities": totals["total_vulnerabilities"] or 0,
                 "total_critical": totals["total_critical"] or 0,
@@ -3240,7 +3656,7 @@ class ProductSecurityComplianceExportView(
         "exploitability": "Exploitability",
         "weighted_severity": "Weighted severity",
         "affected_package_count": "Affected packages",
-        "fixed_packages_count": "Fixed packages",
+        "fixed_by_packages_count": "Fixed packages",
         "resource_url": "Reference URL",
         "advisory_uid": "Advisory UID",
     }

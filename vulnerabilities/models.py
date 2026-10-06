@@ -19,6 +19,7 @@ from django.db.models import When
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from cyclonedx import model as cdx_model
 from cyclonedx.model import vulnerability as cdx_vulnerability
 
 from dje.fields import JSONListField
@@ -119,12 +120,12 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "(e.g., 'CVE-2017-1000136')."
         ),
     )
-    fixed_packages = JSONListField(
+    fixed_by_packages = JSONListField(
         blank=True,
-        help_text=_("A list of packages that are not affected by this vulnerability."),
+        help_text=_("A list of packages that fix this vulnerability."),
     )
-    fixed_packages_count = models.GeneratedField(
-        expression=models.Func(models.F("fixed_packages"), function="jsonb_array_length"),
+    fixed_by_packages_count = models.GeneratedField(
+        expression=models.Func(models.F("fixed_by_packages"), function="jsonb_array_length"),
         output_field=models.IntegerField(),
         db_persist=True,
     )
@@ -132,10 +133,26 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         blank=True,
         help_text=_("A list of SSVC decision trees for this vulnerability."),
     )
+    todo_count = models.PositiveIntegerField(
+        default=0,
+        help_text=_(
+            "Number of open curation ToDos (data issues such as conflicting affected "
+            "packages) reported by VulnerableCode for this advisory."
+        ),
+    )
+    is_curation = models.BooleanField(
+        default=False,
+        help_text=_("Indicates whether this is a curation advisory."),
+    )
+    curating_advisories = JSONListField(
+        blank=True,
+        help_text=_("A list of URLs of the advisories curated by this curation advisory."),
+    )
+    KNOWN_EXPLOITS = 2.0
     EXPLOITABILITY_CHOICES = [
         (0.5, _("No exploits known")),
         (1.0, _("Potential exploits")),
-        (2.0, _("Known exploits")),
+        (KNOWN_EXPLOITS, _("Known exploits")),
     ]
     exploitability = models.DecimalField(
         null=True,
@@ -208,6 +225,22 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             if alias.startswith("CVE-"):
                 return alias
 
+    @property
+    def highest_ssvc_decision(self):
+        """Return the most severe SSVC decision among this vulnerability's published trees."""
+        decisions = {tree.get("decision") for tree in self.ssvc_trees}
+        for decision in ("Act", "Attend", "Track*", "Track"):
+            if decision in decisions:
+                return decision
+
+    @property
+    def curating_advisory_links(self):
+        """Return (url, label) pairs, the label being the advisory UID from the URL."""
+        return [
+            (advisory_url, advisory_url.rstrip("/").split("/advisories/")[-1])
+            for advisory_url in self.curating_advisories
+        ]
+
     def add_affected(self, instances, update_score=True):
         """Assign the ``instances`` (Package or Product) as affected by this vulnerability."""
         if not isinstance(instances, (list, tuple, models.QuerySet)):
@@ -258,7 +291,16 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             for instance in affected_instances
         ]
 
-        analysis = analysis.as_cyclonedx() if analysis else None
+        properties = None
+        if analysis is not None and analysis.is_reachable is not None:
+            properties = [
+                cdx_model.Property(
+                    name="aboutcode:is_reachable",
+                    value="true" if analysis.is_reachable else "false",
+                )
+            ]
+
+        cdx_analysis = analysis.as_cyclonedx() if analysis else None
 
         source = cdx_vulnerability.VulnerabilitySource(
             name="VulnerableCode",
@@ -270,12 +312,13 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             source=source,
             description=self.summary,
             affects=affects,
-            analysis=analysis,
+            analysis=cdx_analysis,
+            properties=properties,
         )
 
 
-class VulnerabilityAnalysisMixin(models.Model):
-    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+class VulnerabilityAnalysisContentMixin(models.Model):
+    """Core analysis content fields, shared with AnalysisPreset. CycloneDX-aligned."""
 
     # cyclonedx.model.impact_analysis.ImpactAnalysisState
     class State(models.TextChoices):
@@ -344,6 +387,14 @@ class VulnerabilityAnalysisMixin(models.Model):
             "details on why the component or service is not impacted by this vulnerability."
         ),
     )
+
+    class Meta:
+        abstract = True
+
+
+class VulnerabilityAnalysisMixin(VulnerabilityAnalysisContentMixin):
+    """Aligned with the cyclonedx.model.vulnerability.VulnerabilityAnalysis"""
+
     first_issued = models.DateTimeField(
         auto_now_add=True,
         help_text=_("The date and time (timestamp) when the analysis was first issued."),
@@ -356,29 +407,16 @@ class VulnerabilityAnalysisMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
-        # At least one of those fields must be provided.
-        main_fields = [
-            self.state,
-            self.justification,
-            self.responses,
-            self.detail,
-        ]
-        if not any(main_fields):
-            raise ValueError(
-                "At least one of state, justification, responses or detail must be provided."
-            )
-
-        super().save(*args, **kwargs)
-
     def as_cyclonedx(self):
-        state = None
-        if self.state:
-            state = cdx_vulnerability.ImpactAnalysisState(self.state)
+        if not any([self.state, self.justification, self.responses, self.detail]):
+            return None
 
-        justification = None
-        if self.justification:
-            justification = cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+        state = cdx_vulnerability.ImpactAnalysisState(self.state) if self.state else None
+        justification = (
+            cdx_vulnerability.ImpactAnalysisJustification(self.justification)
+            if self.justification
+            else None
+        )
 
         return cdx_vulnerability.VulnerabilityAnalysis(
             state=state,
@@ -392,6 +430,14 @@ class AffectedByVulnerabilityRelationship(DataspacedModel):
     vulnerability = models.ForeignKey(
         to="vulnerabilities.Vulnerability",
         on_delete=models.CASCADE,
+    )
+    detected_date = models.DateTimeField(
+        auto_now_add=True,
+        help_text=_(
+            "Date and time when this vulnerability was first detected on this object. "
+            "Used to measure how long a vulnerability has remained unaddressed. "
+            "Defaults to the time the record was created."
+        ),
     )
 
     class Meta:
@@ -536,6 +582,17 @@ class VulnerabilityAnalysis(
         help_text=_(
             "Indicates whether the vulnerability is reachable in the context of this "
             "product package."
+        ),
+    )
+    applied_by_preset = models.ForeignKey(
+        to="vulnerabilities_triage.AnalysisPreset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="applied_analyses",
+        help_text=_(
+            "The analysis preset that automatically created this analysis."
+            " Cleared when a user edits the analysis manually."
         ),
     )
 

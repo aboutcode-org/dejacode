@@ -35,10 +35,6 @@ class DejaCodeConfig(AppConfig):
 
         action_end.connect(successful_mass_update)
 
-        from rest_framework.renderers import DocumentationRenderer
-
-        DocumentationRenderer.languages = []
-
         # Ensure that mappings are always dumped in the items order when using `yaml.safe_dump`.
         def ordered_dumper(dumper, data):
             return dumper.represent_mapping("tag:yaml.org,2002:map", data.items())

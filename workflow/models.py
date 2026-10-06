@@ -9,6 +9,7 @@
 import json
 import logging
 import os
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -25,12 +26,6 @@ from django.utils.html import escape
 from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
-import markdown
-from bleach import Cleaner
-from bleach.linkifier import LinkifyFilter
-from bleach_allowlist import markdown_attrs
-from bleach_allowlist import markdown_tags
-
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
 from dje.models import DataspacedModel
@@ -41,6 +36,7 @@ from dje.models import get_unsecured_manager
 from workflow import integrations
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
+from workflow.rendering import markdown_to_safe_html
 
 logger = logging.getLogger("dje")
 
@@ -589,7 +585,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         return users
 
     def serialize_hook(self, hook):
-        if "hooks.slack.com" in hook.target:
+        if urlparse(hook.target_url).hostname == "hooks.slack.com":
             return request_slack_payload(self, created="added" in hook.event)
 
         from workflow.api import RequestSerializer
@@ -761,35 +757,11 @@ class RequestComment(AbstractRequestEvent):
         )
 
     def as_html(self):
-        """
-        Convert user provided commented content into HTML using markdown.
-        The URLs are converted into links using the bleach Linkify feature.
-        The HTML code is sanitized using bleach to prevent XSS attacks.
-        The clean needs to be applied to the Markdown’s output, not the input.
-
-        See https://michelf.ca/blog/2010/markdown-and-xss/ for details.
-
-        See also the chapter about safe mode in
-        https://python-markdown.github.io/change_log/release-3.0/
-        """
-        unsafe_html = markdown.markdown(
-            text=self.text,
-            extensions=["markdown.extensions.nl2br"],
-        )
-
-        # Using `Cleaner()` with the 1LinkifyFilter1 to clean and linkify in one pass.
-        # See https://bleach.readthedocs.io/en/latest/linkify.html notes
-        cleaner = Cleaner(
-            tags=markdown_tags,
-            attributes=markdown_attrs,
-            filters=[LinkifyFilter],
-        )
-        html = cleaner.clean(unsafe_html)
-
-        return mark_safe(html)
+        """Convert user provided commented content into sanitized HTML using markdown."""
+        return markdown_to_safe_html(self.text)
 
     def serialize_hook(self, hook):
-        if "hooks.slack.com" in hook.target:
+        if urlparse(hook.target_url).hostname == "hooks.slack.com":
             return request_comment_slack_payload(self)
 
         from workflow.api import RequestCommentSerializer

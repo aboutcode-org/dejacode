@@ -20,6 +20,8 @@ from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import ObjectDoesNotExist
 from django.db.models import Q
+from django.db.models.signals import post_delete
+from django.db.models.signals import post_save
 from django.utils.translation import gettext_lazy as _
 
 from license_expression import Licensing
@@ -40,6 +42,8 @@ from dje.importers import ModelChoiceFieldForImport
 from dje.models import Dataspace
 from dje.utils import get_help_text
 from dje.utils import is_uuid4
+from policy.signals import evaluate_product_rules_on_productpackage_change
+from policy.tasks import evaluate_product_rules_task
 from product_portfolio.forms import ProductComponentLicenseExpressionFormMixin
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import CodebaseResourceUsage
@@ -50,6 +54,9 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.triage.signals import reevaluate_on_analysis_change
+from vulnerabilities.triage.signals import reevaluate_on_product_package_change
+from vulnerabilities.triage.tasks import reevaluate_product_triage_rulesets_task
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +67,46 @@ def log_elapsed(label):
     start = time.perf_counter()
     yield
     logger.info(f"{label}: {time.perf_counter() - start:.1f}s")
+
+
+@contextmanager
+def paused_product_package_reevaluation():
+    """
+    Pause re-evaluation signals for the duration of a bulk import.
+
+    Covers ProductPackage add/remove and VulnerabilityAnalysis create/update signals so that
+    each triggers at most once per affected product. Call `reevaluate_products()` after the
+    import to run the evaluation exactly once instead of once per imported row.
+    """
+    from vulnerabilities.models import VulnerabilityAnalysis
+
+    productpackage_receivers = [
+        evaluate_product_rules_on_productpackage_change,
+        reevaluate_on_product_package_change,
+    ]
+    for receiver in productpackage_receivers:
+        post_save.disconnect(receiver, sender=ProductPackage)
+        post_delete.disconnect(receiver, sender=ProductPackage)
+
+    post_save.disconnect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+    post_delete.disconnect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+
+    try:
+        yield
+    finally:
+        for receiver in productpackage_receivers:
+            post_save.connect(receiver, sender=ProductPackage)
+            post_delete.connect(receiver, sender=ProductPackage)
+
+        post_save.connect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+        post_delete.connect(reevaluate_on_analysis_change, sender=VulnerabilityAnalysis)
+
+
+def reevaluate_products(products):
+    """Queue the policy and triage re-evaluation once for each of the given products."""
+    for product in products:
+        evaluate_product_rules_task.delay(product_uuid=product.uuid)
+        reevaluate_product_triage_rulesets_task.delay(product_uuid=product.uuid)
 
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
@@ -229,6 +276,14 @@ class ProductPackageImportForm(ProductRelationshipMixin):
 
 class ProductPackageImporter(BaseImporter):
     model_form = ProductPackageImportForm
+
+    def save_all(self):
+        with paused_product_package_reevaluation():
+            super().save_all()
+
+        touched_product_packages = self.results["added"] + self.results["modified"]
+        products = {product_package.product for product_package in touched_product_packages}
+        reevaluate_products(products)
 
 
 class CodebaseResourceImportForm(CleanProductMixin, BaseImportModelForm):
@@ -434,7 +489,9 @@ class ImportFromScan:
         self.create_scancode_project()
         self.load_data_from_file()
         self.validate_headers()
-        self.import_packages()
+        with paused_product_package_reevaluation():
+            self.import_packages()
+        reevaluate_products([self.product])
         if self.create_codebase_resources:
             self.import_codebase_resources()
         self.update_scancode_project()
@@ -668,8 +725,11 @@ class ImportFromScan:
 
 class ImportPackageFromScanCodeIO:
     """
-    Creates, and assign to a product, packages in Dejacode from a ScanCode.io project
-    discovered packages.
+    Import packages discovered by a ScanCode.io project and assign them to a product.
+
+    For each package, associated vulnerabilities are imported and linked, including
+    reachability data when available.
+    Dependencies can optionally be imported as well.
     """
 
     unique_together_fields = [
@@ -720,7 +780,9 @@ class ImportPackageFromScanCodeIO:
                 self.dependencies = scancodeio.fetch_project_dependencies(self.project_uuid)
 
         with log_elapsed("import_packages"):
-            self.import_packages()
+            with paused_product_package_reevaluation():
+                self.import_packages()
+        reevaluate_products([self.product])
 
         if self.create_dependencies:
             with log_elapsed("import_dependencies"):
@@ -763,9 +825,11 @@ class ImportPackageFromScanCodeIO:
         if not vulnerabilities:
             return
 
+        vulnerability = vulnerabilities[0]
+
         if cdx_vulnerability := vulnerability_data.get("cdx_vulnerability_data"):
             if analysis_data := cdx_vulnerability.get("analysis"):
-                # CycloneDX model uses "response" while the local model uses "response"
+                # CycloneDX model uses "response" while the local model uses "responses"
                 if response_value := analysis_data.pop("response", None):
                     analysis_data["responses"] = response_value
 
@@ -773,9 +837,29 @@ class ImportPackageFromScanCodeIO:
                     user=product_package.dataspace,
                     data={
                         "product_package": product_package,
-                        "vulnerability": vulnerabilities[0],
+                        "vulnerability": vulnerability,
                         **analysis_data,
                     },
+                )
+
+        # Import reachability from the "symbol reachability analysis" scan when available.
+        is_reachable_raw = vulnerability_data.get("is_reachable")
+        is_reachable = None
+        if is_reachable_raw == "yes":
+            is_reachable = True
+        elif is_reachable_raw == "no":
+            is_reachable = False
+
+        if is_reachable is not None:
+            analysis, created = VulnerabilityAnalysis.objects.get_or_create(
+                product_package=product_package,
+                vulnerability=vulnerability,
+                dataspace=product_package.dataspace,
+                defaults={"is_reachable": is_reachable},
+            )
+            if not created and analysis.is_reachable is None:
+                VulnerabilityAnalysis.objects.filter(pk=analysis.pk).update(
+                    is_reachable=is_reachable
                 )
 
     def import_package(self, package_data):

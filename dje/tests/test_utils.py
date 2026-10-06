@@ -25,6 +25,7 @@ from dejacode_toolkit.utils import md5
 from dejacode_toolkit.utils import sha1
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.utils import clone_related_objects
 from dje.utils import database_re_escape
 from dje.utils import extract_name_version
 from dje.utils import get_duplicates
@@ -41,6 +42,7 @@ from dje.utils import is_purl_str
 from dje.utils import localized_datetime
 from dje.utils import merge_common_non_empty_values
 from dje.utils import merge_relations
+from dje.utils import natural_sort_key
 from dje.utils import normalize_newlines_as_CR_plus_LF
 from dje.utils import plain_purls_equal
 from dje.utils import remove_field_from_query_dict
@@ -54,6 +56,8 @@ Owner = apps.get_model("organization", "owner")
 License = apps.get_model("license_library", "license")
 ExternalReference = apps.get_model("dje", "ExternalReference")
 ExternalSource = apps.get_model("dje", "ExternalSource")
+Product = apps.get_model("product_portfolio", "Product")
+ProductComponent = apps.get_model("product_portfolio", "ProductComponent")
 
 
 class DJEUtilsTestCase(TestCase):
@@ -227,6 +231,27 @@ class DJEUtilsTestCase(TestCase):
         with self.assertRaises(AssertionError):
             merge_relations(original, alternate_owner)
 
+    def test_dje_utils_clone_related_objects(self):
+        nexb_dataspace = Dataspace.objects.create(name="nexB")
+        product1 = Product.objects.create(name="p1", dataspace=nexb_dataspace)
+        product2 = Product.objects.create(name="p2", dataspace=nexb_dataspace)
+        component1 = Component.objects.create(name="c1", dataspace=nexb_dataspace)
+        relation1 = ProductComponent.objects.create(
+            product=product1, component=component1, dataspace=nexb_dataspace
+        )
+
+        cloned_pairs = clone_related_objects(ProductComponent, "product", product1.id, product2)
+
+        self.assertEqual(1, product1.productcomponents.count())
+        self.assertEqual(relation1, product1.productcomponents.get())
+        cloned_relation = product2.productcomponents.get()
+        self.assertNotEqual(relation1.pk, cloned_relation.pk)
+        self.assertNotEqual(relation1.uuid, cloned_relation.uuid)
+        self.assertEqual(component1, cloned_relation.component)
+        self.assertEqual(product2.dataspace, cloned_relation.dataspace)
+
+        self.assertEqual([(relation1.pk, cloned_relation)], cloned_pairs)
+
     def test_dje_utils_group_by_name_version(self):
         test_cases = [
             {
@@ -355,6 +380,30 @@ class DJEUtilsTestCase(TestCase):
             ]
 
             self.assertEqual(test["expected"], results)
+
+    def test_dje_utils_natural_sort_key(self):
+        self.assertEqual(["v", 10, ""], natural_sort_key("v10"))
+        self.assertEqual(["", 1, ".", 10, "rc"], natural_sort_key("1.10rc"))
+        self.assertEqual(["abc"], natural_sort_key("abc"))
+        self.assertEqual([""], natural_sort_key(""))
+
+        values = ["v10", "v2", "v1", "v1.10", "v1.9", "a", "10", "9"]
+        expected = ["9", "10", "a", "v1", "v1.9", "v1.10", "v2", "v10"]
+        self.assertEqual(expected, sorted(values, key=natural_sort_key))
+
+        purls = [
+            "pkg:pypi/django@4.2.10",
+            "pkg:pypi/django@4.2.9",
+            "pkg:pypi/django@4.10.0",
+            "pkg:pypi/django@4.2.0",
+        ]
+        expected = [
+            "pkg:pypi/django@4.2.0",
+            "pkg:pypi/django@4.2.9",
+            "pkg:pypi/django@4.2.10",
+            "pkg:pypi/django@4.10.0",
+        ]
+        self.assertEqual(expected, sorted(purls, key=natural_sort_key))
 
     def test_remove_field_from_query_dict(self):
         self.assertEqual("", remove_field_from_query_dict({}, "a"))

@@ -9,12 +9,14 @@
 import io
 import json
 from unittest import mock
+from unittest.mock import patch
 from urllib.parse import quote
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.shortcuts import resolve_url
+from django.test import Client
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -31,6 +33,7 @@ from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dejacode_toolkit import scancodeio
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import History
 from dje.outputs import get_spdx_extracted_licenses
 from dje.tests import MaxQueryMixin
@@ -50,6 +53,7 @@ from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from product_portfolio.models import ScanCodeProject
@@ -61,6 +65,10 @@ from product_portfolio.views import ManageComponentGridView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.models import AnalysisPreset
+from vulnerabilities.triage.models import ProductTriageRuleset
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRuleset
 from workflow.models import Request
 from workflow.models import RequestTemplate
 
@@ -198,7 +206,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_url("tab_activity")
 
         response = self.client.get(url)
-        self.assertContains(response, "No imports yet")
+        self.assertContains(response, "No actions yet")
         self.assertContains(response, "No requests yet")
         self.assertContains(response, "No changes yet")
 
@@ -213,7 +221,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertTrue(response.context["has_projects_in_progress"])
         htmx_refresh = 'hx-trigger="load delay:10s" hx-swap="outerHTML"'
         self.assertContains(response, htmx_refresh)
-        self.assertContains(response, "Imports are currently in progress.")
+        self.assertContains(response, "Actions are currently in progress.")
         self.assertContains(response, "Import SBOM")
 
         project.status = ScanCodeProject.Status.SUCCESS
@@ -222,7 +230,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertFalse(response.context["has_projects_in_progress"])
         self.assertContains(response, "Import SBOM")
         self.assertNotContains(response, "hx-trigger")
-        self.assertNotContains(response, "Imports are currently in progress.")
+        self.assertNotContains(response, "Actions are currently in progress.")
 
         expected = "File:"
         download_url = reverse(
@@ -235,6 +243,28 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, expected)
         self.assertContains(response, download_url)
+
+    def test_product_portfolio_detail_view_tab_activity_in_progress_any_type(self):
+        """has_projects_in_progress is not limited to the ScanCode.io submitted types."""
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_activity")
+
+        project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+            status=ScanCodeProject.Status.IMPORT_STARTED,
+        )
+
+        response = self.client.get(url)
+        self.assertTrue(response.context["has_projects_in_progress"])
+        self.assertContains(response, "Actions are currently in progress.")
+
+        project.status = ScanCodeProject.Status.SUCCESS
+        project.save()
+        response = self.client.get(url)
+        self.assertFalse(response.context["has_projects_in_progress"])
+        self.assertNotContains(response, "Actions are currently in progress.")
 
     def test_product_portfolio_detail_view_tab_dependency_view(self):
         self.client.login(username="nexb_user", password="secret")
@@ -275,7 +305,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.client.login(username="nexb_user", password="secret")
         url = self.product1.get_url("tab_vulnerabilities")
 
-        with self.assertMaxQueries(9):
+        with self.assertMaxQueries(12):
             response = self.client.get(url)
         self.assertContains(response, "0 results")
 
@@ -289,20 +319,78 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(4, product1.packages.vulnerable().count())
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(12):
+        with self.assertMaxQueries(16):
             response = self.client.get(url)
         self.assertContains(response, "4 results")
 
     def test_product_portfolio_tab_vulnerability_view_filters(self):
         self.client.login(username="nexb_user", password="secret")
+        # The "Recommendation" column, and its triage_action filter, only render when the
+        # product has at least one enabled TriageRuleset assigned to it.
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset",
+            recommended_action=TriageAction.UPGRADE,
+            precedence=100,
+            dataspace=self.dataspace,
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
+
         url = self.product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
-        self.assertContains(response, "?vulnerabilities-weighted_risk_score=#vulnerabilities")
-        self.assertContains(response, "?vulnerabilities-sort=weighted_risk_score#vulnerabilities")
-        response = self.client.get(
-            url + "?vulnerabilities-sort=weighted_risk_score#vulnerabilities"
+        self.assertContains(response, "?vulnerabilities-triage_action=#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-triage_action=upgrade#vulnerabilities")
+        self.assertContains(
+            response, "?vulnerabilities-vulnerability_analyses__state=#vulnerabilities"
         )
-        self.assertContains(response, "?vulnerabilities-sort=-weighted_risk_score#vulnerabilities")
+
+    def test_product_portfolio_tab_vulnerability_view_filters_toolbar(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(
+            product_package1, vulnerability1, state=VulnerabilityAnalysis.State.IN_TRIAGE
+        )
+        url = product1.get_url("tab_vulnerabilities")
+
+        response = self.client.get(url)
+        self.assertContains(response, '<span class="opacity-75">Risk:</span> All')
+        self.assertContains(
+            response, "?vulnerabilities-weighted_risk_score=critical#vulnerabilities"
+        )
+        self.assertContains(response, "?vulnerabilities-is_reachable=yes#vulnerabilities")
+        self.assertContains(response, "?vulnerabilities-is_reachable=no#vulnerabilities")
+        self.assertNotContains(response, "Clear search and filters")
+
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=in_triage")
+        self.assertContains(response, '<span class="opacity-75">Analysis:</span> In Triage')
+        self.assertContains(response, f'href="{product1.get_absolute_url()}#vulnerabilities"')
+        # The active filters are displayed in the toolbar in place of the breadcrumbs.
+        self.assertNotContains(response, "fa-times-circle")
+
+    def test_product_portfolio_tab_vulnerability_view_not_analyzed_filter(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        analyzed_vulnerability = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, analyzed_vulnerability)
+        url = product1.get_url("tab_vulnerabilities")
+
+        # A partially analyzed package is included, displaying only its not analyzed entries.
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, '<span class="opacity-75">Analysis:</span> Not analyzed')
+        self.assertContains(response, vulnerability1.advisory_id)
+        self.assertNotContains(response, analyzed_vulnerability.advisory_id)
+        self.assertNotContains(response, "No results.")
+
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        response = self.client.get(f"{url}?vulnerabilities-vulnerability_analyses__state=null")
+        self.assertContains(response, "No results.")
 
     def test_product_portfolio_tab_vulnerability_view_packages_row_rendering(self):
         self.client.login(username="nexb_user", password="secret")
@@ -317,11 +405,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = product1.get_url("tab_vulnerabilities")
         response = self.client.get(url)
         expected = f"""
-        <td rowspan="2">
-          <strong>
-            <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
-          </strong>
-        </td>
+        <strong>
+          <a href="{p1.get_absolute_url()}#vulnerabilities" target="_blank">{p1}</a>
+        </strong>
         """
         self.assertContains(response, expected, html=True)
 
@@ -332,8 +418,8 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
               data-package-identifier="{p1}"
               data-edit-url="/products/vulnerability_analysis/{pp1.uuid}/{vulnerability1.advisory_uid}/"
         >
-        <button type="button" data-bs-toggle="tooltip" title="Edit" class="btn btn-link p-0"
-                aria-label="Edit">
+        <button type="button" data-bs-toggle="tooltip" title="Add analysis" class="btn btn-link p-0"
+                aria-label="Add analysis">
             <i class="far fa-edit fa-sm"></i>
           </button>
         </span>
@@ -357,7 +443,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         make_vulnerability_analysis(product_package2, vulnerability2)
 
         url = product1.get_url("tab_vulnerabilities")
-        with self.assertMaxQueries(12):
+        with self.assertMaxQueries(15):
             self.client.get(url)
 
     def test_product_portfolio_tab_vulnerability_risk_threshold(self):
@@ -402,22 +488,112 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
 
         expected = """
-        <td>
-          <strong>Resolved</strong>
-          <span data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
-                data-bs-html="true" data-bs-content="detail">
-            <i class="fa-solid fa-circle-info text-muted"></i>
-          </span>
-        </td>
-        <td>Code Not Present</td>
-        <td>
-          <ul class="ps-3 m-0">
-            <li>can_not_fix</li>
-            <li>rollback</li>
-          </ul>
+        <td class="stretch-cell">
+          <div class="d-flex flex-column h-100">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="badge bg-success-subtle text-success-emphasis">Resolved</span>
+              <span class="small text-body-secondary">Code Not Present</span>
+              <span class="badge bg-light text-body-secondary border fw-normal">Can Not Fix</span>
+              <span class="badge bg-light text-body-secondary border fw-normal">Rollback</span>
+            </div>
+            <div class="small text-body-secondary mt-1" data-bs-toggle="popover"
+                 data-bs-placement="top" data-bs-trigger="hover focus"
+                 data-bs-html="true" data-bs-content="detail">
+              <i class="fa-solid fa-circle-info text-muted me-1"></i>detail
+            </div>
+          </div>
         </td>
         """
         self.assertContains(response, expected, html=True)
+
+    def test_product_portfolio_tab_vulnerability_view_package_card_summary(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        known_exploit_vulnerability = make_vulnerability(
+            self.dataspace, affecting=[package1], exploitability=2.0
+        )
+        for index in range(5):
+            make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, known_exploit_vulnerability)
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        self.assertContains(response, '<strong class="text-body">6</strong> vulnerabilities')
+        self.assertContains(response, "1 known exploit<")
+        self.assertContains(response, "1/6 analyzed")
+        self.assertContains(response, "Show 1 more vulnerability\n")
+        self.assertContains(
+            response, f'id="vulnerabilities-{product_package1.id}" class="collapse show"'
+        )
+
+    def test_product_portfolio_tab_vulnerability_view_fixed_in_link(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(
+            self.dataspace, package_url="pkg:pypi/django@1.0", latest_non_vulnerable_version="2.0"
+        )
+        make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        latest_non_vulnerable_url = package1.get_latest_non_vulnerable_url()
+        self.assertContains(response, f'<a href="{latest_non_vulnerable_url}" target="_blank"')
+        self.assertContains(response, "Fixed in 2.0")
+
+    def test_product_portfolio_tab_vulnerability_view_fully_analyzed_package_collapsed(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package1 = product1.productpackages.get(package=package1)
+        make_vulnerability_analysis(product_package1, vulnerability1)
+        url = product1.get_url("tab_vulnerabilities")
+        collapsed_body = f'id="vulnerabilities-{product_package1.id}" class="collapse"'
+
+        response = self.client.get(url)
+        self.assertContains(response, collapsed_body)
+        self.assertContains(response, "vulnerabilities-collapse-toggle collapsed")
+
+        # Expanded when a search or filter is active.
+        response = self.client.get(f"{url}?vulnerabilities-q={package1.filename}")
+        self.assertNotContains(response, collapsed_body)
+
+    def test_product_portfolio_tab_vulnerability_view_aliases_menu(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1], aliases=["CVE-2024-0001"])
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        expected = (
+            '<a class="dropdown-item small" href="https://nvd.nist.gov/vuln/detail/CVE-2024-0001"'
+        )
+        self.assertContains(response, expected)
+
+    def test_product_portfolio_tab_vulnerability_view_curation_badges(self):
+        self.client.login(username="nexb_user", password="secret")
+        DataspaceConfiguration.objects.update_or_create(
+            dataspace=self.dataspace, defaults={"vulnerablecode_url": "https://vcio/"}
+        )
+        package1 = make_package(self.dataspace)
+        make_vulnerability(
+            self.dataspace,
+            affecting=[package1],
+            advisory_id="GHSA-aaaa-bbbb-cccc",
+            is_curation=True,
+            curating_advisories=["https://vcio/advisories/nvd/CVE-2024-0001"],
+            todo_count=2,
+        )
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        self.assertContains(response, '<i class="fas fa-check me-1"></i>Curated')
+        self.assertContains(response, 'href="https://vcio/advisories/nvd/CVE-2024-0001"')
+        self.assertContains(response, "nvd/CVE-2024-0001")
+        self.assertContains(
+            response, 'href="https://vcio/advisories/todos/?search=GHSA-aaaa-bbbb-cccc"'
+        )
+        self.assertContains(response, "2 ToDos")
 
     @mock.patch("dejacode_toolkit.vulnerablecode.VulnerableCode.is_configured")
     def test_product_portfolio_detail_view_include_tab_vulnerability_analysis_modal(
@@ -1979,6 +2155,12 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
         )
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
         initial_product_count = Product.objects.get_queryset(self.super_user).count()
 
         data = {
@@ -2000,6 +2182,103 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.productcomponents.count())
         self.assertEqual(1, cloned_product.productpackages.count())
         self.assertEqual(1, cloned_product.codebaseresources.count())
+        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+
+    def test_product_portfolio_product_clone_view(self):
+        clone_url = self.product1.get_clone_url()
+        self.client.login(username=self.basic_user.username, password="secret")
+
+        assign_perm("view_product", self.basic_user, self.product1)
+        response = self.client.get(clone_url)
+        self.assertEqual(403, response.status_code)
+
+        assign_perm("change_product", self.basic_user, self.product1)
+        response = self.client.get(clone_url)
+        self.assertEqual(403, response.status_code)
+
+        self.basic_user = add_perms(self.basic_user, ["add_product"])
+        response = self.client.get(clone_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.product1.name, response.context["form"]["name"].value())
+        self.assertEqual("1.0 (copy)", response.context["form"]["version"].value())
+
+        license1 = make_license(self.dataspace, key="license1")
+        ProductComponent.objects.create(
+            product=self.product1,
+            component=self.component1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
+        )
+        ProductPackage.objects.create(
+            product=self.product1,
+            package=self.package1,
+            license_expression=license1.key,
+            dataspace=self.dataspace,
+        )
+        CodebaseResource.objects.create(
+            path="/path1/", product=self.product1, dataspace=self.dataspace
+        )
+        make_product_dependency(self.product1)
+        ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
+        )
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
+        )
+        assign_perm("view_product", self.super_user, self.product1)
+        initial_product_count = Product.objects.get_queryset(self.basic_user).count()
+
+        data = {
+            "name": self.product1.name,
+            "version": "2.0",
+            "copy_inventory": "on",
+            "copy_codebase_resources": "on",
+            "copy_triage_rulesets": "on",
+            "copy_object_permissions": "on",
+        }
+        response = self.client.post(clone_url, data, follow=True)
+
+        new_count = Product.objects.get_queryset(self.basic_user).count()
+        self.assertEqual(new_count, initial_product_count + 1)
+        cloned_product = Product.objects.get_queryset(self.basic_user).get(version="2.0")
+        self.assertRedirects(response, cloned_product.get_absolute_url())
+        self.assertContains(response, "was successfully cloned into")
+
+        self.assertNotEqual(self.product1.id, cloned_product.id)
+        self.assertEqual(1, cloned_product.productcomponents.count())
+        self.assertEqual(1, cloned_product.productpackages.count())
+        self.assertEqual(1, cloned_product.codebaseresources.count())
+        self.assertEqual(1, cloned_product.dependencies.count())
+        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+        self.assertIn("view_product", get_user_perms(self.super_user, cloned_product))
+
+        cloned_productcomponent = cloned_product.productcomponents.get()
+        self.assertEqual(license1.key, cloned_productcomponent.license_expression)
+        self.assertEqual([license1], list(cloned_productcomponent.licenses.all()))
+        cloned_productpackage = cloned_product.productpackages.get()
+        self.assertEqual(license1.key, cloned_productpackage.license_expression)
+        self.assertEqual([license1], list(cloned_productpackage.licenses.all()))
+
+        # Submitting the same name/version again is rejected.
+        response = self.client.post(clone_url, data)
+        self.assertEqual(200, response.status_code)
+        expected = "Product with this Name and Version already exists."
+        self.assertContains(response, expected)
+
+        # Unchecking every option only creates the base Product.
+        data["version"] = "3.0"
+        data["copy_inventory"] = ""
+        data["copy_codebase_resources"] = ""
+        data["copy_triage_rulesets"] = ""
+        data["copy_object_permissions"] = ""
+        response = self.client.post(clone_url, data, follow=True)
+        empty_clone = Product.objects.get_queryset(self.basic_user).get(version="3.0")
+        self.assertEqual(0, empty_clone.productcomponents.count())
+        self.assertEqual(0, empty_clone.productpackages.count())
+        self.assertEqual(0, empty_clone.codebaseresources.count())
+        self.assertEqual(0, empty_clone.dependencies.count())
+        self.assertEqual(0, empty_clone.product_triage_rulesets.count())
+        self.assertNotIn("view_product", get_user_perms(self.super_user, empty_clone))
 
     def test_product_portfolio_product_delete_view(self):
         delete_url = self.product1.get_delete_url()
@@ -2216,11 +2495,15 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productpackage.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productpackage"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.get(f"{edit_url}?delete=1")
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(ProductPackage.objects.filter(pk=productpackage.pk).exists())
+
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Package relationship {productpackage} successfully deleted."
         self.assertContains(response, msg)
@@ -2235,6 +2518,55 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(wrong_url)
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["content-type"])
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_configured")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.delete_scan")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
+    def test_product_portfolio_delete_scan_htmx_view_csrf(
+        self, mock_fetch_scan_list, mock_delete, mock_is_configured
+    ):
+        mock_is_configured.return_value = True
+        self.dataspace.enable_package_scanning = True
+        self.dataspace.save()
+        mock_fetch_scan_list.return_value = {"count": 1}
+        mock_delete.return_value = True
+        project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
+        delete_url = reverse(
+            "product_portfolio:scan_delete_htmx", args=[project_uuid, self.package1.uuid]
+        )
+
+        client = Client(enforce_csrf_checks=True)
+        client.login(username=self.super_user.username, password="secret")
+
+        response = client.get(delete_url)
+        self.assertEqual(405, response.status_code)
+
+        response = client.delete(delete_url)
+        self.assertEqual(403, response.status_code)
+        mock_delete.assert_not_called()
+
+        response = client.get(self.product1.get_absolute_url())
+        self.assertContains(response, 'hx-headers=\'{"X-CSRFToken": "')
+        csrf_token = client.cookies["csrftoken"].value
+        response = client.delete(delete_url, headers={"X-CSRFToken": csrf_token})
+        self.assertEqual(200, response.status_code)
+        mock_delete.assert_called_once()
+
+    def test_product_portfolio_edit_productrelation_ajax_view_escape_relation_instance(self):
+        package = make_package(self.dataspace, filename='"><script>alert(1)</script>')
+        productpackage = ProductPackage.objects.create(
+            product=self.product1, package=package, dataspace=self.dataspace
+        )
+        edit_url = reverse(
+            "product_portfolio:edit_productrelation_ajax", args=["package", productpackage.uuid]
+        )
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(edit_url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "<script>alert(1)</script>")
+        expected = 'value="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"'
+        self.assertContains(response, expected)
 
     def test_product_portfolio_edit_productrelation_ajax_view_component(self):
         purpose = ProductItemPurpose.objects.create(
@@ -2279,11 +2611,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productcomponent"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
@@ -2342,11 +2674,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(expected_messages, [entry.change_message for entry in history_entries])
         self.assertEqual(self.basic_user, productcomponent.product.last_modified_by)
 
-        response = self.client.get(f"{edit_url}?delete=1")
+        response = self.client.post(edit_url, data={"delete": 1})
         self.assertRedirects(response, product_url + "#inventory")
 
         add_perms(self.basic_user, ["delete_productcomponent"])
-        response = self.client.get(f"{edit_url}?delete=1", follow=True)
+        response = self.client.post(edit_url, data={"delete": 1}, follow=True)
         self.assertRedirects(response, product_url + "#inventory")
         msg = f"Component relationship {productcomponent} successfully deleted."
         self.assertContains(response, msg)
@@ -2696,7 +3028,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = (
             '<select name="form-0-review_status" class="select form-select" disabled'
             ' aria-describedby="id_form-0-review_status_helptext" id="id_form-0-review_status">'
-            ' <option value="" selected>---------</option>'
+            ' <option value="" selected>- Select an option -</option>'
             "</select>"
         )
         self.assertContains(response, expected, html=True)
@@ -3315,13 +3647,19 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertFalse(self.basic_user.has_perm("change_product", self.product1))
         self.client.login(username=self.basic_user.username, password="secret")
         url = self.product1.get_url("improve_packages_from_purldb")
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assertEqual(404, response.status_code)
 
         self.assertTrue(self.super_user.has_perm("change_product", self.product1))
         self.client.login(username=self.super_user.username, password="secret")
         url = self.product1.get_url("improve_packages_from_purldb")
-        response = self.client.get(url, follow=True)
+        response = self.client.get(self.product1.get_absolute_url())
+        self.assertContains(response, f'<form method="post" action="{url}">')
+
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+
+        response = self.client.post(url, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages from PurlDB in progress...")
 
@@ -3331,7 +3669,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
             status=ScanCodeProject.Status.IMPORT_STARTED,
         )
-        response = self.client.get(url, follow=True)
+        response = self.client.post(url, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertContains(response, "Improve Packages already in progress...")
 
@@ -3407,6 +3745,54 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(product_package, analysis.product_package)
         self.assertEqual(vulnerability1, analysis.vulnerability)
         self.assertEqual("resolved", analysis.state)
+
+    def test_product_portfolio_apply_analysis_preset_view(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package = ProductPackage.objects.get(product=product1, package=package1)
+        preset = AnalysisPreset.objects.create(
+            name="Preset1",
+            state="not_affected",
+            detail="Not deployed",
+            dataspace=self.dataspace,
+        )
+
+        url = reverse(
+            "product_portfolio:apply_analysis_preset",
+            args=[product_package.uuid, preset.pk, vulnerability1.advisory_uid],
+        )
+        response = self.client.post(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(b'{"success": "applied"}', response.content)
+        analysis = VulnerabilityAnalysis.objects.get()
+        self.assertEqual(product_package, analysis.product_package)
+        self.assertEqual(vulnerability1, analysis.vulnerability)
+        self.assertEqual("not_affected", analysis.state)
+        self.assertEqual(preset, analysis.applied_by_preset)
+
+    def test_product_portfolio_apply_analysis_preset_view_existing_analysis(self):
+        self.client.login(username=self.super_user.username, password="secret")
+
+        package1 = make_package(self.dataspace)
+        vulnerability1 = make_vulnerability(self.dataspace, affecting=[package1])
+        product1 = make_product(self.dataspace, inventory=[package1])
+        product_package = ProductPackage.objects.get(product=product1, package=package1)
+        make_vulnerability_analysis(product_package, vulnerability1, state="exploitable")
+        preset = AnalysisPreset.objects.create(
+            name="Preset1", state="not_affected", dataspace=self.dataspace
+        )
+
+        url = reverse(
+            "product_portfolio:apply_analysis_preset",
+            args=[product_package.uuid, preset.pk, vulnerability1.advisory_uid],
+        )
+        response = self.client.post(url)
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(1, VulnerabilityAnalysis.objects.count())
+        self.assertEqual("exploitable", VulnerabilityAnalysis.objects.get().state)
 
     def test_product_portfolio_tab_compliance_view_empty(self):
         self.client.login(username="nexb_user", password="secret")
@@ -4241,3 +4627,208 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         data = json.loads(response.content)
         advisory_ids = [entry["advisory_id"] for entry in data]
         self.assertIn(vulnerability.advisory_id, advisory_ids)
+
+
+class EvaluatePolicyRulesViewTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.basic_user = create_user("basic_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_get_returns_405(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.get(url)
+        self.assertEqual(405, response.status_code)
+
+    def test_post_without_login_redirects(self):
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(302, response.status_code)
+
+    def test_post_without_change_perm_returns_404(self):
+        self.client.login(username="basic_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(404, response.status_code)
+
+    @patch("product_portfolio.views.evaluate_rules")
+    def test_post_with_change_perm_evaluates_and_returns_hx_refresh(self, mock_evaluate):
+        mock_evaluate.return_value = ([], 0)
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_evaluate_policy_rules_url()
+        response = self.client.post(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("true", response.headers["HX-Refresh"])
+        mock_evaluate.assert_called_once_with(self.product1)
+
+
+class ManageTriageRulesetsViewTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.basic_user = create_user("basic_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+        self.ruleset = TriageRuleset.objects.create(
+            name="Upgrade Ruleset",
+            recommended_action=TriageAction.UPGRADE,
+            precedence=100,
+            dataspace=self.dataspace,
+        )
+
+    def test_get_without_login_redirects(self):
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertEqual(302, response.status_code)
+
+    def test_get_without_change_perm_returns_404(self):
+        self.client.login(username="basic_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code)
+
+    def test_get_with_change_perm_renders_available_rulesets(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, self.ruleset.name)
+        self.assertNotContains(response, "checked")
+
+    def test_get_displays_the_ruleset_analysis_preset(self):
+        preset = AnalysisPreset.objects.create(
+            name="Auto-Close Preset", state="not_affected", dataspace=self.dataspace
+        )
+        self.ruleset.analysis_preset = preset
+        self.ruleset.save()
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertContains(response, preset.name)
+
+    def test_get_marks_the_assigned_rulesets_as_checked(self):
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertContains(response, "checked")
+
+    def test_post_without_change_perm_returns_404(self):
+        self.client.login(username="basic_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.post(url)
+        self.assertEqual(404, response.status_code)
+
+    @patch("product_portfolio.views.reevaluate_product_rulesets")
+    def test_post_assigns_the_submitted_rulesets(self, mock_reevaluate):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.post(url, {"ruleset_uuids": [str(self.ruleset.uuid)]})
+        self.assertEqual(b'{"success": true}', response.content)
+        self.assertTrue(
+            ProductTriageRuleset.objects.filter(
+                product=self.product1, ruleset=self.ruleset
+            ).exists()
+        )
+        mock_reevaluate.assert_called_once_with(self.product1)
+
+    @patch("product_portfolio.views.delete_triage_records_for_assignment")
+    @patch("product_portfolio.views.reevaluate_product_rulesets")
+    def test_post_unassigns_the_deselected_rulesets(self, mock_reevaluate, mock_delete):
+        ProductTriageRuleset.objects.create(
+            product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.post(url, {"ruleset_uuids": []})
+        self.assertEqual(b'{"success": true}', response.content)
+        self.assertFalse(
+            ProductTriageRuleset.objects.filter(
+                product=self.product1, ruleset=self.ruleset
+            ).exists()
+        )
+        mock_delete.assert_called_once_with(ruleset=self.ruleset, product=self.product1)
+        mock_reevaluate.assert_called_once_with(self.product1)
+
+
+class TabCompliancePolicyContextTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_no_violations_context_is_empty(self):
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.context["policy_violations"])
+        self.assertEqual(0, response.context["policy_violation_count"])
+
+    def test_active_violation_appears_in_context(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=3,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["policy_violation_count"])
+        self.assertEqual(1, len(response.context["policy_violations"]))
+
+    def test_stale_rule_type_filtered_from_context(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="removed_rule",
+            violation_count=1,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        self.assertEqual(0, response.context["policy_violation_count"])
+
+    def test_all_rules_context_only_includes_active_rules(self):
+        DataspaceConfiguration.objects.create(
+            dataspace=self.dataspace,
+            policy_rules_config={"usage_policy_error": {"is_active": True}},
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_url("tab_compliance")
+        response = self.client.get(url)
+        rule_types = [rule["rule_type"] for rule in response.context["all_rules"]]
+        self.assertIn("usage_policy_error", rule_types)
+        self.assertNotIn("license_coverage_gap", rule_types)
+
+
+class ComplianceDashboardPolicyViolationsTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.super_user = create_superuser("nexb_user", self.dataspace)
+        self.product1 = Product.objects.create(
+            name="Product1", version="1.0", dataspace=self.dataspace
+        )
+
+    def test_products_with_policy_violations_count(self):
+        ProductPolicyViolation.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            rule_type="usage_policy_error",
+            violation_count=2,
+        )
+        self.client.login(username="nexb_user", password="secret")
+        url = reverse("product_portfolio:compliance_dashboard")
+        response = self.client.get(url)
+        self.assertEqual(1, response.context["products_with_policy_violations"])
+        self.assertEqual(1, response.context["products_with_issues"])

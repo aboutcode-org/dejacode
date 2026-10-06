@@ -40,6 +40,7 @@ from product_portfolio.models import ProductItemPurpose
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ScanCodeProject
+from vulnerabilities.models import VulnerabilityAnalysis
 
 
 class ProductRelationImporterTestCase(TestCase):
@@ -377,6 +378,28 @@ class ProductRelationImporterTestCase(TestCase):
         self.assertEqual("notes", productpackage.notes)
         self.assertEqual(False, productpackage.is_deployed)
         self.assertEqual(True, productpackage.is_modified)
+
+    @mock.patch("product_portfolio.importers.reevaluate_product_triage_rulesets_task")
+    @mock.patch("product_portfolio.importers.evaluate_product_rules_task")
+    def test_productpackage_import_evaluates_each_product_once_for_multiple_rows(
+        self, mock_policy_task, mock_triage_task
+    ):
+        formset_data = self.package_formset_data.copy()
+        package1 = Package.objects.create(filename="p1.zip", dataspace=self.dataspace)
+        package2 = Package.objects.create(filename="p2.zip", dataspace=self.dataspace)
+
+        formset_data["form-TOTAL_FORMS"] = "2"
+        formset_data["form-0-package"] = package1.filename
+        formset_data["form-1-product"] = formset_data["form-0-product"]
+        formset_data["form-1-package"] = package2.filename
+
+        importer = ProductPackageImporter(self.super_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+
+        self.assertEqual(2, len(importer.results["added"]))
+        mock_policy_task.delay.assert_called_once_with(product_uuid=self.p1.uuid)
+        mock_triage_task.delay.assert_called_once_with(product_uuid=self.p1.uuid)
 
 
 class CodebaseResourceImporterTestCase(TestCase):
@@ -1392,3 +1415,159 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual("code_not_present", analysis.justification)
         self.assertEqual("AAAA", analysis.detail)
         self.assertEqual(["can_not_fix", "update"], analysis.responses)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_is_reachable(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        def make_vulnerability_entry(advisory_id, is_reachable):
+            return {
+                "advisory_uid": f"github_osv/{advisory_id}",
+                "summary": "A vulnerability",
+                "is_reachable": is_reachable,
+                "cdx_vulnerability_data": {
+                    "analysis": {"state": "in_triage", "detail": "Under review"},
+                },
+            }
+
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [
+                    make_vulnerability_entry("GHSA-yes", "yes"),
+                    make_vulnerability_entry("GHSA-no", "no"),
+                    make_vulnerability_entry("GHSA-unknown", "unknown"),
+                ],
+            }
+        ]
+        mock_fetch_dependencies.return_value = []
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        importer.save()
+
+        yes_analysis = VulnerabilityAnalysis.objects.get(
+            vulnerability__advisory_uid="github_osv/GHSA-yes"
+        )
+        no_analysis = VulnerabilityAnalysis.objects.get(
+            vulnerability__advisory_uid="github_osv/GHSA-no"
+        )
+        unknown_analysis = VulnerabilityAnalysis.objects.get(
+            vulnerability__advisory_uid="github_osv/GHSA-unknown"
+        )
+
+        self.assertTrue(yes_analysis.is_reachable)
+        self.assertFalse(no_analysis.is_reachable)
+        self.assertIsNone(unknown_analysis.is_reachable)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_is_reachable_not_overwritten(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [
+                    {
+                        "advisory_uid": "github_osv/GHSA-existing",
+                        "summary": "A vulnerability",
+                        "is_reachable": "no",
+                        "cdx_vulnerability_data": {
+                            "analysis": {"state": "in_triage", "detail": "Under review"},
+                        },
+                    }
+                ],
+            }
+        ]
+        mock_fetch_dependencies.return_value = []
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        importer.save()
+
+        analysis = VulnerabilityAnalysis.objects.get(
+            vulnerability__advisory_uid="github_osv/GHSA-existing"
+        )
+        self.assertFalse(analysis.is_reachable)
+
+        # A second import with a conflicting value must not overwrite the existing one.
+        # Reassign return_value because import_package pops "affected_by_vulnerabilities".
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [
+                    {
+                        "advisory_uid": "github_osv/GHSA-existing",
+                        "summary": "A vulnerability",
+                        "is_reachable": "yes",
+                    }
+                ],
+            }
+        ]
+        importer2 = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        importer2.save()
+
+        analysis.refresh_from_db()
+        self.assertFalse(analysis.is_reachable)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_dependencies")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_project_packages")
+    def test_product_portfolio_import_packages_from_scio_importer_is_reachable_without_cdx(
+        self, mock_fetch_packages, mock_fetch_dependencies
+    ):
+        # When cdx_vulnerability_data is absent, a minimal VulnerabilityAnalysis is still
+        # created to record the is_reachable value from the scan.
+        mock_fetch_packages.return_value = [
+            {
+                "purl": "pkg:maven/abc/abc@1.0",
+                "type": "maven",
+                "namespace": "abc",
+                "name": "abc",
+                "version": "1.0",
+                "affected_by_vulnerabilities": [
+                    {
+                        "advisory_uid": "github_osv/GHSA-no-cdx",
+                        "summary": "A vulnerability",
+                        "is_reachable": "yes",
+                    }
+                ],
+            }
+        ]
+        mock_fetch_dependencies.return_value = []
+
+        importer = ImportPackageFromScanCodeIO(
+            user=self.super_user,
+            project_uuid=uuid.uuid4(),
+            product=self.product1,
+        )
+        importer.save()
+
+        analysis = VulnerabilityAnalysis.objects.get(
+            vulnerability__advisory_uid="github_osv/GHSA-no-cdx"
+        )
+        self.assertTrue(analysis.is_reachable)
+        self.assertFalse(analysis.state)

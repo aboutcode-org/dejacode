@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 import django_filters
+from django_filters.conf import settings as django_filters_settings
 from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.filters import IsVulnerableBooleanFilter
@@ -31,16 +32,21 @@ from dje.widgets import BootstrapSelectMultipleWidget
 from dje.widgets import DropDownRightWidget
 from dje.widgets import DropDownWidget
 from license_library.models import License
+from policy.rules import RULE_REGISTRY
 from product_portfolio.models import CodebaseResource
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductDependency
 from product_portfolio.models import ProductPackage
+from product_portfolio.models import ProductPolicyViolation
 from product_portfolio.models import ProductStatus
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.models import VulnerabilityAnalysisMixin
+from vulnerabilities.triage.models import TriageAction
+from vulnerabilities.triage.models import TriageRecord
 
 
 class HasComplianceIssueFilter(django_filters.BooleanFilter):
@@ -149,6 +155,10 @@ class ProductFilterSet(DataspacedFilterSet):
         label=_("License issues"),
         method="filter_license_compliance_issues",
     )
+    policy_violations = django_filters.BooleanFilter(
+        label=_("Policy violations"),
+        method="filter_policy_violations",
+    )
 
     class Meta:
         model = Product
@@ -189,9 +199,18 @@ class ProductFilterSet(DataspacedFilterSet):
         condition = Exists(has_alert)
         return queryset.filter(condition if value else ~condition)
 
+    def filter_policy_violations(self, queryset, name, value):
+        if value is None:
+            return queryset
+        has_violation = ProductPolicyViolation.objects.filter(
+            product_id=OuterRef("pk"),
+            rule_type__in=RULE_REGISTRY.keys(),
+        ).unresolved()
+        condition = Exists(has_violation)
+        return queryset.filter(condition if value else ~condition)
+
 
 class BaseProductRelationFilterSet(DataspacedFilterSet):
-    field_name_prefix = None
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
@@ -221,14 +240,6 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
             ),
         ),
     )
-    exploitability = django_filters.ChoiceFilter(
-        label=_("Exploitability"),
-        choices=Vulnerability.EXPLOITABILITY_CHOICES,
-    )
-    weighted_severity = ScoreRangeFilter(
-        label=_("Severity"),
-        score_ranges=RISK_SCORE_RANGES,
-    )
     weighted_risk_score = ScoreRangeFilter(
         label=_("Risk score"),
         score_ranges=RISK_SCORE_RANGES,
@@ -248,6 +259,21 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         field_name="licenses__usage_policy__compliance_alert",
         distinct=True,
     )
+    policy_rule = django_filters.CharFilter(
+        label=_("Policy rule"),
+        method="filter_by_policy_rule",
+    )
+
+    def filter_by_policy_rule(self, queryset, name, value):
+        """Filter packages that triggered the given policy rule type."""
+        if queryset.model is not ProductPackage:
+            return queryset.none()
+        handler = RULE_REGISTRY.get(value)
+        if not handler:
+            return queryset
+        rules_config = self.dataspace.get_configuration("policy_rules_config") or {}
+        parameters = rules_config.get(value, {}).get("parameters", {})
+        return handler.filter_queryset(queryset, parameters).distinct()
 
     @staticmethod
     def filter_object_type(queryset, name, value):
@@ -275,15 +301,8 @@ class BaseProductRelationFilterSet(DataspacedFilterSet):
         self.filters["purpose"].extra["to_field_name"] = "label"
         self.filters["purpose"].extra["widget"] = DropDownWidget(anchor=self.anchor)
 
-        field_name_prefix = self.field_name_prefix
-        for field_name in ["exploitability", "weighted_severity"]:
-            field = self.filters[field_name]
-            field.extra["widget"] = DropDownWidget(anchor=self.anchor)
-            field.field_name = f"{field_name_prefix}__{field_name}"
-
 
 class ProductComponentFilterSet(BaseProductRelationFilterSet):
-    field_name_prefix = "component"
     q = SearchFilter(
         label=_("Search"),
         search_fields=[
@@ -331,10 +350,10 @@ class ProductComponentFilterSet(BaseProductRelationFilterSet):
 
 
 class ProductPackageFilterSet(BaseProductRelationFilterSet):
-    field_name_prefix = "package"
     dropdown_fields = [
         "is_modified",
         "weighted_risk_score",
+        "triage_action",
         "vulnerability_analyses__state",
         "vulnerability_analyses__justification",
         "responses",
@@ -374,6 +393,12 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             anchor="#inventory", right_align=True, link_content='<i class="fas fa-bug"></i>'
         ),
     )
+    vulnerability_analyses__state = django_filters.ChoiceFilter(
+        label=_("Vulnerability analyses state"),
+        choices=VulnerabilityAnalysisMixin.State.choices,
+        null_label="(No values)",
+        method="filter_analysis_state",
+    )
     responses = django_filters.ChoiceFilter(
         field_name="vulnerability_analyses__responses",
         lookup_expr="icontains",
@@ -387,6 +412,13 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             ("no", _("Not reachable")),
             ("unknown", _("Reachability not known")),
         ),
+    )
+
+    triage_action = django_filters.ChoiceFilter(
+        label=_("Triage action"),
+        choices=TriageAction.choices,
+        empty_label=_("All actions"),
+        method="filter_triage_action",
     )
     compliance_issues = HasComplianceIssueFilter(
         field_name="package__usage_policy__compliance_alert",
@@ -404,12 +436,40 @@ class ProductPackageFilterSet(BaseProductRelationFilterSet):
             "vulnerability_analyses__state",
             "vulnerability_analyses__justification",
             "is_reachable",
-            "exploitability",
         ]
+
+    @staticmethod
+    def filter_triage_action(queryset, name, value):
+        if not value:
+            return queryset
+        primary_triage = TriageRecord.objects.highest_precedence().filter(
+            product=OuterRef("product"),
+            vulnerability__affected_packages__productpackages=OuterRef("pk"),
+            recommended_action=value,
+        )
+        return queryset.filter(Exists(primary_triage)).distinct()
+
+    @staticmethod
+    def filter_analysis_state(queryset, name, value):
+        """
+        Filter on the analysis state. The null choice matches the product packages
+        with at least one vulnerability that has no analysis state.
+        """
+        if value != django_filters_settings.NULL_CHOICE_VALUE:
+            return queryset.filter(vulnerability_analyses__state=value)
+
+        analyses_with_state = VulnerabilityAnalysis.objects.filter(
+            product_package=OuterRef(OuterRef("pk")),
+            vulnerability=OuterRef("pk"),
+        ).exclude(state="")
+        not_analyzed_vulnerabilities = Vulnerability.objects.filter(
+            ~Exists(analyses_with_state),
+            affected_packages__productpackages=OuterRef("pk"),
+        )
+        return queryset.filter(Exists(not_analyzed_vulnerabilities))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters["vulnerability_analyses__state"].extra["null_label"] = "(No values)"
         self.filters["vulnerability_analyses__justification"].extra["null_label"] = "(No values)"
 
 

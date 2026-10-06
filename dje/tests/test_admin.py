@@ -13,10 +13,12 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from dje.admin import PolicyRulesConfigurationForm
 from dje.copier import copy_object
 from dje.filters import DataspaceFilter
 from dje.filters import MissingInFilter
 from dje.models import Dataspace
+from dje.models import DataspaceConfiguration
 from dje.models import History
 from dje.search import advanced_search
 from dje.tests import add_perm
@@ -25,6 +27,7 @@ from dje.tests import create_admin
 from dje.tests import create_superuser
 from dje.tests import create_user
 from organization.models import Owner
+from policy.rules import RULE_REGISTRY
 
 
 class DataspacedModelAdminTestCase(TestCase):
@@ -178,6 +181,8 @@ class DataspacedModelAdminTestCase(TestCase):
             "update_packages_from_scan": True,
             "configuration-TOTAL_FORMS": 0,
             "configuration-INITIAL_FORMS": 0,
+            "configuration-2-TOTAL_FORMS": 0,
+            "configuration-2-INITIAL_FORMS": 0,
         }
 
         response = self.client.post(url, data)
@@ -611,3 +616,78 @@ class GroupAdminTestCase(TestCase):
             'attachment; filename="dejacode_group_permission.csv"', response["Content-Disposition"]
         )
         self.assertEqual(b",change_license\r\nchange license,X\r\n", response.content)
+
+
+class PolicyRulesConfigurationFormTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.config = DataspaceConfiguration.objects.create(dataspace=self.dataspace)
+        self.Form = PolicyRulesConfigurationForm
+
+    def _bound_form(self, extra_data=None):
+        data = {}
+        for rule_type in RULE_REGISTRY:
+            data[f"rule_{rule_type}_enabled"] = False
+            data[f"rule_{rule_type}_threshold"] = ""
+        if extra_data:
+            data.update(extra_data)
+        return self.Form(data=data, instance=self.config)
+
+    def test_enabled_rule_included_in_config(self):
+        form = self._bound_form({"rule_usage_policy_error_enabled": True})
+        self.assertTrue(form.is_valid(), form.errors)
+        result = form.build_policy_rules_config()
+        self.assertIn("usage_policy_error", result)
+        self.assertTrue(result["usage_policy_error"]["is_active"])
+
+    def test_disabled_rule_not_in_config(self):
+        form = self._bound_form()
+        self.assertTrue(form.is_valid(), form.errors)
+        result = form.build_policy_rules_config()
+        self.assertEqual({}, result)
+
+    def test_threshold_saved_when_set(self):
+        form = self._bound_form(
+            {
+                "rule_usage_policy_error_enabled": True,
+                "rule_usage_policy_error_threshold": "3",
+            }
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        result = form.build_policy_rules_config()
+        self.assertEqual(3, result["usage_policy_error"]["threshold"])
+
+    def test_initial_values_loaded_from_existing_config(self):
+        self.config.policy_rules_config = {
+            "usage_policy_error": {"is_active": True, "threshold": 7}
+        }
+        self.config.save()
+        form = self.Form(instance=self.config)
+        self.assertTrue(form.fields["rule_usage_policy_error_enabled"].initial)
+        self.assertEqual(7, form.fields["rule_usage_policy_error_threshold"].initial)
+        self.assertFalse(form.fields["rule_license_coverage_gap_enabled"].initial)
+
+    def test_save_persists_policy_rules_config_to_db(self):
+        form = self._bound_form({"rule_usage_policy_error_enabled": True})
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        self.config.refresh_from_db()
+        self.assertTrue(self.config.policy_rules_config["usage_policy_error"]["is_active"])
+
+    def test_inline_shows_rule_fieldsets_on_existing_dataspace(self):
+        self.super_user = create_superuser("super_user", self.dataspace)
+        self.client.login(username="super_user", password="secret")
+        url = reverse("admin:dje_dataspace_change", args=[self.dataspace.pk])
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "Policy Rules Configuration")
+        for rule_type in RULE_REGISTRY:
+            self.assertContains(response, f"rule_{rule_type}_enabled")
+
+    def test_inline_not_shown_on_dataspace_add(self):
+        self.super_user = create_superuser("super_user", self.dataspace)
+        self.client.login(username="super_user", password="secret")
+        url = reverse("admin:dje_dataspace_add")
+        response = self.client.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, "rule_usage_policy_error_enabled")

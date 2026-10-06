@@ -58,6 +58,8 @@ class HistoryTestCase(TestCase):
             "name": "new_dataspace",
             "configuration-TOTAL_FORMS": 0,
             "configuration-INITIAL_FORMS": 0,
+            "configuration-2-TOTAL_FORMS": 0,
+            "configuration-2-INITIAL_FORMS": 0,
         }
 
         self.client.post(url, params)

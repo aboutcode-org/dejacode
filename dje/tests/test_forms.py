@@ -110,7 +110,7 @@ class DJEFormsTestCase(TestCase):
 
     def test_copy_defaults_form_get_all_dataspaced_models(self):
         dataspaced_models = CopyDefaultsForm.get_all_dataspaced_models()
-        self.assertEqual(10, len(dataspaced_models))
+        self.assertEqual(11, len(dataspaced_models))
         self.assertEqual(7, len(dataspaced_models.get("Component Catalog")))
         self.assertIn("Subcomponent", str(dataspaced_models.get("Component Catalog")))
 

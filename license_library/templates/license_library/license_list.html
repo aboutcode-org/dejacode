@@ -24,7 +24,7 @@
       'container': 'body',
       'content': function(element){
         const category_pk = $(element).data('category-pk');
-        return NEXB.client_data.license_categories[category_pk];
+        return DejaCode.client_data.license_categories[category_pk];
       },
       'title': function(element){ return $(element).text(); }
     });
