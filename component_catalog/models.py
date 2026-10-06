@@ -2590,7 +2590,7 @@ class Package(
         package = cls.create_from_data(user, package_data)
         return package
 
-    def get_purldb_entries(self, user, max_request_call=0, timeout=10):
+    def get_purldb_entries(self, user, timeout=10):
         """
         Return the PurlDB entries that correspond to this Package instance.
 
@@ -2599,11 +2599,7 @@ class Package(
         2. Download URL - High accuracy, matches specific package source
         3. Package URL - Broadest match, may return multiple versions/variants
 
-        A `max_request_call` integer can be provided to limit the number of
-        HTTP requests made to the PackageURL server.
-        By default, one request will be made per field until a match is found.
-        Providing max_request_call=1 will stop after the first request, even
-        is nothing was found.
+        One request is made per field until a match is found.
         """
         payloads = []
         purldb_entries = []
@@ -2621,10 +2617,7 @@ class Package(
             payloads.append({"purl": package_url})
 
         purldb = PurlDB(user.dataspace)
-        for index, payload in enumerate(payloads):
-            if max_request_call and index >= max_request_call:
-                return
-
+        for payload in payloads:
             if purldb_entries := purldb.find_packages(payload, timeout):
                 break
 
