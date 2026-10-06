@@ -3374,6 +3374,35 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         notification.refresh_from_db()
         self.assertFalse(notification.unread)
 
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
+    def test_package_details_view_purldb_tab_match_by_purl(
+        self, mock_is_configured, mock_find_packages
+    ):
+        mock_is_configured.return_value = True
+        self.dataspace.enable_purldb_access = True
+        self.dataspace.save()
+        self.package1.download_url = "https://download.url/package1.zip"
+        self.package1.set_package_url("pkg:pypi/package1@1.0")
+        self.package1.save()
+        purldb_entry = {
+            "purl": "pkg:pypi/package1@1.0",
+            "type": "pypi",
+            "name": "package1",
+            "version": "1.0",
+            "description": "Description from PurlDB",
+        }
+
+        def find_packages_by_purl_only(payload, timeout):
+            if "purl" in payload:
+                return [purldb_entry]
+
+        mock_find_packages.side_effect = find_packages_by_purl_only
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.get_url("tab_purldb"))
+        self.assertNotContains(response, "No entries found in the PurlDB for this package.")
+        self.assertContains(response, "Description from PurlDB")
+
     @mock.patch("dejacode_toolkit.purldb.PurlDB.request_get")
     @mock.patch("dejacode_toolkit.purldb.PurlDB.is_configured")
     def test_package_details_view_purldb_tab(self, mock_is_configured, mock_request_get):

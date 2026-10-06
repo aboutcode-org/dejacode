@@ -2654,6 +2654,26 @@ class ComponentCatalogModelsTestCase(TestCase):
         self.assertEqual([purldb_entry1, purldb_entry2], purldb_entries)
 
     @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
+    def test_package_model_get_purldb_entries_fallback_to_purl(self, mock_find_packages):
+        purl = "pkg:golang/github.com/open-telemetry/receiver/hostmetricsreceiver@v0.141.0"
+        download_url = "https://proxy.golang.org/github.com/open-telemetry/receiver/@v/v0.141.0.zip"
+        package1 = make_package(self.dataspace, package_url=purl, download_url=download_url)
+        purldb_entry = {"purl": purl, "download_url": ""}
+
+        def find_packages_by_purl_only(payload, timeout):
+            if "purl" in payload:
+                return [purldb_entry]
+
+        mock_find_packages.side_effect = find_packages_by_purl_only
+        purldb_entries = package1.get_purldb_entries(user=self.user)
+        self.assertEqual([purldb_entry], purldb_entries)
+        expected_calls = [
+            mock.call({"download_url": download_url}, 10),
+            mock.call({"purl": purl}, 10),
+        ]
+        self.assertEqual(expected_calls, mock_find_packages.call_args_list)
+
+    @mock.patch("dejacode_toolkit.purldb.PurlDB.find_packages")
     def test_package_model_get_purldb_entries_plain_purls_equal(self, mock_find_packages):
         purl1 = "pkg:maven/core/jackson-core@2.18.3?type=jar"
         purl2 = "pkg:maven/core/jackson-core@2.18.3?classifier=sources&type=jar"
