@@ -9,76 +9,83 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase
 
+import ldap
 from django_auth_ldap.config import LDAPSearch
 from django_auth_ldap.config import LDAPSearchUnion
 
-from dejacode.ldap_config import build_user_search
+from dejacode.ldap_config import build_user_search_union
+from dejacode.ldap_config import get_user_search
 
 
-class BuildUserSearchTestCase(SimpleTestCase):
-    def test_build_user_search_fallback_to_single_search_when_empty(self):
-        user_search = build_user_search("", "ou=users,dc=example,dc=com", "(uid=%(user)s)")
+class LDAPConfigTestCase(SimpleTestCase):
+    def test_ldap_config_get_user_search(self):
+        search_definition = {"base": "ou=users,dc=example,dc=com", "filter": "(uid=%(user)s)"}
+        user_search = get_user_search(0, search_definition)
         self.assertIsInstance(user_search, LDAPSearch)
         self.assertEqual("ou=users,dc=example,dc=com", user_search.base_dn)
+        self.assertEqual(ldap.SCOPE_SUBTREE, user_search.scope)
         self.assertEqual("(uid=%(user)s)", user_search.filterstr)
 
-    def test_build_user_search_valid_json_returns_union(self):
-        user_searches = (
-            '[{"base": "ou=a,dc=example,dc=com", "filter": "(uid=%(user)s)"},'
-            ' {"base": "ou=b,dc=example,dc=com", "filter": "(cn=%(user)s)"}]'
+    def test_ldap_config_get_user_search_not_an_object(self):
+        expected_message = "AUTH_LDAP_USER_SEARCHES[2] must be a JSON object"
+        with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
+            get_user_search(2, "ou=users,dc=example,dc=com")
+
+    def test_ldap_config_get_user_search_invalid_base_or_filter(self):
+        invalid_definitions = [
+            {"filter": "(uid=%(user)s)"},
+            {"base": "ou=users,dc=example,dc=com"},
+            {"base": "", "filter": "(uid=%(user)s)"},
+            {"base": ["ou=users,dc=example,dc=com"], "filter": "(uid=%(user)s)"},
+            {"base": "ou=users,dc=example,dc=com", "filter": 123},
+        ]
+        expected_message = (
+            "AUTH_LDAP_USER_SEARCHES[0] must define 'base' and 'filter' as non-empty strings"
         )
-        user_search = build_user_search(user_searches, "", "")
-        self.assertIsInstance(user_search, LDAPSearchUnion)
-        search_values = [(search.base_dn, search.filterstr) for search in user_search.searches]
+        for search_definition in invalid_definitions:
+            with self.subTest(search_definition=search_definition):
+                with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
+                    get_user_search(0, search_definition)
+
+    def test_ldap_config_get_user_search_filter_without_user_placeholder(self):
+        search_definition = {"base": "ou=users,dc=example,dc=com", "filter": "(objectClass=person)"}
+        expected_message = "[0] 'filter' must include the %(user)s placeholder"
+        with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
+            get_user_search(0, search_definition)
+
+    def test_ldap_config_build_user_search_union(self):
+        user_searches = (
+            '[{"base": "ou=users,dc=example,dc=com", "filter": "(uid=%(user)s)"},'
+            ' {"base": "ou=staff,dc=example,dc=com", "filter": "(cn=%(user)s)"}]'
+        )
+        user_search_union = build_user_search_union(user_searches)
+        self.assertIsInstance(user_search_union, LDAPSearchUnion)
+        search_values = [
+            (search.base_dn, search.filterstr) for search in user_search_union.searches
+        ]
         expected = [
-            ("ou=a,dc=example,dc=com", "(uid=%(user)s)"),
-            ("ou=b,dc=example,dc=com", "(cn=%(user)s)"),
+            ("ou=users,dc=example,dc=com", "(uid=%(user)s)"),
+            ("ou=staff,dc=example,dc=com", "(cn=%(user)s)"),
         ]
         self.assertEqual(expected, search_values)
 
-    def test_build_user_search_single_entry_still_returns_union(self):
-        user_searches = '[{"base": "ou=a,dc=example,dc=com", "filter": "(uid=%(user)s)"}]'
-        user_search = build_user_search(user_searches, "", "")
-        self.assertIsInstance(user_search, LDAPSearchUnion)
-        search_values = [(search.base_dn, search.filterstr) for search in user_search.searches]
-        self.assertEqual([("ou=a,dc=example,dc=com", "(uid=%(user)s)")], search_values)
-
-    def test_build_user_search_invalid_json_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, "Invalid JSON"):
-            build_user_search("{not json", "", "")
-
-    def test_build_user_search_not_a_list_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, "must be a JSON list"):
-            build_user_search('{"base": "x", "filter": "y"}', "", "")
-
-    def test_build_user_search_empty_list_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, "cannot be empty"):
-            build_user_search("[]", "", "")
-
-    def test_build_user_search_entry_not_object_raises(self):
-        with self.assertRaisesMessage(ImproperlyConfigured, "[0] must be a JSON object"):
-            build_user_search('["not an object"]', "", "")
-
-    def test_build_user_search_missing_base_raises(self):
-        user_searches = '[{"filter": "(uid=%(user)s)"}]'
-        with self.assertRaisesMessage(ImproperlyConfigured, "[0] must define 'base' and 'filter'"):
-            build_user_search(user_searches, "", "")
-
-    def test_build_user_search_missing_filter_raises(self):
-        user_searches = '[{"base": "ou=a,dc=example,dc=com"}]'
-        with self.assertRaisesMessage(ImproperlyConfigured, "[0] must define 'base' and 'filter'"):
-            build_user_search(user_searches, "", "")
-
-    def test_build_user_search_filter_without_user_placeholder_raises(self):
-        user_searches = '[{"base": "ou=a,dc=example,dc=com", "filter": "(objectClass=person)"}]'
-        expected_message = "[0] 'filter' must include the %(user)s placeholder"
+    def test_ldap_config_build_user_search_union_invalid_json(self):
+        expected_message = "Invalid JSON in AUTH_LDAP_USER_SEARCHES"
         with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
-            build_user_search(user_searches, "", "")
+            build_user_search_union("{not json")
 
-    def test_build_user_search_error_index_points_to_bad_entry(self):
+    def test_ldap_config_build_user_search_union_not_a_non_empty_list(self):
+        expected_message = "AUTH_LDAP_USER_SEARCHES must be a non-empty JSON list"
+        for user_searches in ["[]", '{"base": "ou=users,dc=example,dc=com"}', '"text"']:
+            with self.subTest(user_searches=user_searches):
+                with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
+                    build_user_search_union(user_searches)
+
+    def test_ldap_config_build_user_search_union_invalid_entry_index(self):
         user_searches = (
-            '[{"base": "ou=a,dc=example,dc=com", "filter": "(uid=%(user)s)"},'
-            ' {"base": "ou=b,dc=example,dc=com"}]'
+            '[{"base": "ou=users,dc=example,dc=com", "filter": "(uid=%(user)s)"},'
+            ' {"base": "ou=staff,dc=example,dc=com"}]'
         )
-        with self.assertRaisesMessage(ImproperlyConfigured, "[1] must define 'base' and 'filter'"):
-            build_user_search(user_searches, "", "")
+        expected_message = "AUTH_LDAP_USER_SEARCHES[1] must define 'base' and 'filter'"
+        with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
+            build_user_search_union(user_searches)

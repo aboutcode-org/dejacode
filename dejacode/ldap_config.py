@@ -15,46 +15,40 @@ from django_auth_ldap.config import LDAPSearch
 from django_auth_ldap.config import LDAPSearchUnion
 
 
-def build_user_search(user_searches, user_dn, user_filterstr):
-    """
-    Return the ``AUTH_LDAP_USER_SEARCH`` object.
+def get_user_search(index, search_definition):
+    """Return an ``LDAPSearch`` from one ``AUTH_LDAP_USER_SEARCHES`` entry."""
+    entry_name = f"AUTH_LDAP_USER_SEARCHES[{index}]"
 
-    When ``user_searches`` (a raw JSON string) is provided, parse and validate
-    it and return an ``LDAPSearchUnion``. Otherwise, fall back to a single
-    ``LDAPSearch`` built from ``user_dn`` and ``user_filterstr``.
-    """
-    if not user_searches:
-        return LDAPSearch(user_dn, ldap.SCOPE_SUBTREE, user_filterstr)
+    if not isinstance(search_definition, dict):
+        raise ImproperlyConfigured(f"{entry_name} must be a JSON object")
 
+    base_dn = search_definition.get("base")
+    filterstr = search_definition.get("filter")
+
+    has_base_and_filter = all(isinstance(value, str) and value for value in (base_dn, filterstr))
+    if not has_base_and_filter:
+        raise ImproperlyConfigured(
+            f"{entry_name} must define 'base' and 'filter' as non-empty strings"
+        )
+
+    if "%(user)s" not in filterstr:
+        raise ImproperlyConfigured(f"{entry_name} 'filter' must include the %(user)s placeholder")
+
+    return LDAPSearch(base_dn, ldap.SCOPE_SUBTREE, filterstr)
+
+
+def build_user_search_union(user_searches):
+    """Return an ``LDAPSearchUnion`` from the ``AUTH_LDAP_USER_SEARCHES`` JSON string."""
     try:
-        definitions = json.loads(user_searches)
+        search_definitions = json.loads(user_searches)
     except json.JSONDecodeError as error:
         raise ImproperlyConfigured(f"Invalid JSON in AUTH_LDAP_USER_SEARCHES: {error}") from error
 
-    if not isinstance(definitions, list):
-        raise ImproperlyConfigured("AUTH_LDAP_USER_SEARCHES must be a JSON list")
+    if not isinstance(search_definitions, list) or not search_definitions:
+        raise ImproperlyConfigured("AUTH_LDAP_USER_SEARCHES must be a non-empty JSON list")
 
-    if not definitions:
-        raise ImproperlyConfigured("AUTH_LDAP_USER_SEARCHES cannot be empty")
-
-    searches = []
-    for index, entry in enumerate(definitions):
-        if not isinstance(entry, dict):
-            raise ImproperlyConfigured(f"AUTH_LDAP_USER_SEARCHES[{index}] must be a JSON object")
-
-        base_dn = entry.get("base")
-        filterstr = entry.get("filter")
-
-        if not base_dn or not filterstr:
-            raise ImproperlyConfigured(
-                f"AUTH_LDAP_USER_SEARCHES[{index}] must define 'base' and 'filter'"
-            )
-
-        if "%(user)s" not in filterstr:
-            raise ImproperlyConfigured(
-                f"AUTH_LDAP_USER_SEARCHES[{index}] 'filter' must include the %(user)s placeholder"
-            )
-
-        searches.append(LDAPSearch(base_dn, ldap.SCOPE_SUBTREE, filterstr))
-
+    searches = [
+        get_user_search(index, search_definition)
+        for index, search_definition in enumerate(search_definitions)
+    ]
     return LDAPSearchUnion(*searches)
