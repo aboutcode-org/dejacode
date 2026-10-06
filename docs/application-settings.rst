@@ -383,28 +383,29 @@ It must return exactly one result for authentication to succeed.
     AUTH_LDAP_USER_DN="ou=users,dc=example,dc=com"
     AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 
-AUTH_LDAP_USER_SEARCHES
------------------------
+USER_SEARCHES
+-------------
 
-To search across multiple LDAP locations, use
-``AUTH_LDAP_USER_SEARCHES``.
+When users are stored in several locations of the LDAP directory, for example in
+different organizational units, use ``AUTH_LDAP_USER_SEARCHES`` instead of
+``USER_DN``.
 
-When this setting is provided, it overrides both
-``AUTH_LDAP_USER_DN`` and ``AUTH_LDAP_USER_FILTERSTR``.
+The value is a JSON list with one entry per location:
 
-The setting must contain a JSON list of search definitions. Each entry
-must define:
+- ``base``: the distinguished name of the location.
+- ``filter``: the filter to find the user, including the ``%(user)s`` placeholder.
 
-- ``base``: The base DN to search
-- ``filter``: The LDAP filter (must include ``%(user)s``)
-
-All configured searches are combined using ``LDAPSearchUnion``.
-
-Example, as a single line:
+The following example searches users in both ``employees`` and ``contractors``:
 
 .. code-block:: python
 
-    AUTH_LDAP_USER_SEARCHES=[{"base": "ou=users,dc=example,dc=com", "filter": "(uid=%(user)s)"}, {"base": "ou=otherusers,dc=example,dc=com", "filter": "(uid=%(user)s)"}]
+    AUTH_LDAP_USER_SEARCHES=[{"base": "ou=employees,dc=example,dc=com", "filter": "(uid=%(user)s)"}, {"base": "ou=contractors,dc=example,dc=com", "filter": "(uid=%(user)s)"}]
+
+All locations are searched, and the username must match exactly one user across
+them for authentication to succeed.
+When set, ``AUTH_LDAP_USER_DN`` and ``AUTH_LDAP_USER_FILTERSTR`` are ignored.
+
+.. note:: The value must be written on a single line.
 
 AUTOCREATE_USER
 ---------------
