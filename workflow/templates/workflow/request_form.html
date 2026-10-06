@@ -71,7 +71,6 @@
 
 {% block javascripts %}
   {{ block.super }}
-  <script src="{% static 'js/jquery.dirtyforms.2.0.0.min.js' %}" integrity="sha384-xesGfeB9VUH4sEN2ROWGaWMcYi5B/NjoBb5XK6cvcuUyL6f+GI2B7kcCzbqsJcwc" crossorigin="anonymous"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       $('#button-id-cancel').click(function(event) {
@@ -82,10 +81,10 @@
       });
 
       const requestForm = $('form#workflow-request-form');
-      requestForm.dirtyForms();
+      DejaCode.warnOnUnsavedChanges('form#workflow-request-form');
       requestForm.on('submit', function () {
         $('button').prop('disabled', true);
-        NEXB.displayOverlay("Saving...");
+        DejaCode.displayOverlay("Saving...");
       })
     });
   </script>

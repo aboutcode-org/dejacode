@@ -13,7 +13,7 @@ if (typeof(grp) !== 'undefined') {
 
 (function($){
     let operators = ['AND', 'OR', 'WITH'];
-    let expression_field_name = NEXB.client_data.expression_field_name;
+    let expression_field_name = DejaCode.client_data.expression_field_name;
 
     function update_license_list(related_field, awesomplete_instance) {
         let object_id = related_field.val();
@@ -68,7 +68,7 @@ if (typeof(grp) !== 'undefined') {
         }
         else {
             // Reloads the original license_data when the Component is removed
-            awesomplete_instance.list = operators.concat(NEXB.client_data.license_data);
+            awesomplete_instance.list = operators.concat(DejaCode.client_data.license_data);
             awesomplete_instance.evaluate();
             awesomplete_instance.close();
             update_related_field_header(related_field, '');
@@ -81,7 +81,7 @@ if (typeof(grp) !== 'undefined') {
         console.log('Setup license expression builder for #' + element.id);
 
         max_items = max_items || 100;
-        license_data = license_data || NEXB.client_data.license_data;
+        license_data = license_data || DejaCode.client_data.license_data;
 
         let awesomplete = new Awesomplete(element, {
             list: operators.concat(license_data),
@@ -155,14 +155,14 @@ if (typeof(grp) !== 'undefined') {
     }
 
     // Only true in the admin context
-    if (NEXB.patch_grappelli_grp_inline) {
+    if (DejaCode.patch_grappelli_grp_inline) {
         $(document).ready(function(){
             // Collects all license_expression fields in main form and inlines, excluding "*-__prefix__-license_expression"
             let license_expression_fields = $("[id$='" + expression_field_name + "']").not("[id$='__-" + expression_field_name + "']");
             license_expression_fields.each(function() {
                 add_expression_builder(this);
             });
-            NEXB.patch_grappelli_grp_inline(add_expression_builder_in_inlines_on_add_another);
+            DejaCode.patch_grappelli_grp_inline(add_expression_builder_in_inlines_on_add_another);
         });
     }
 })($);

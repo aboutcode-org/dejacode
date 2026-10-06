@@ -242,7 +242,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelector('#scan_all_packages_submit').addEventListener('click', function() {
-          NEXB.displayOverlay("Submitting Scan Request...");
+          DejaCode.displayOverlay("Submitting Scan Request...");
         })
       });
     </script>
@@ -250,7 +250,7 @@
 
   {% if has_edit_productpackage or has_edit_productcomponent or has_add_productcomponent %}
     <script src="{% static 'awesomplete/awesomplete-1.1.5.min.js' %}" integrity="sha384-p5NIw+GEWbrK/9dC3Vuxh36c2HL0ETAXQ81nk8gl1B7FHZmXehonZWs/HBqunmCI" crossorigin="anonymous"></script>
-    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-CZRhZl16VkLNMzSV5/VEWxVEMWM8t2DMoy7EJSc4w9DxTRcYWGsapJB7Br6g5EEr" crossorigin="anonymous"></script>
     <script>
       $(document).ready(function () {
         let edit_modal = $('#edit-productrelation-modal');
@@ -339,7 +339,7 @@
         document.getElementById("submit-triage-rulesets").addEventListener("click", function () {
           const manageUrl = this.dataset.manageUrl;
           const form = document.getElementById("manage-triage-rulesets-form");
-          NEXB.displayOverlay("Evaluating triage rules...");
+          DejaCode.displayOverlay("Evaluating triage rules...");
           fetch(manageUrl, {
             method: "POST",
             headers: { "X-CSRFToken": csrftoken },
@@ -347,7 +347,7 @@
           })
             .then(r => r.json())
             .then(data => { if (data.success) location.reload(); })
-            .catch(() => { NEXB.closeOverlay?.(); });
+            .catch(() => { DejaCode.closeOverlay?.(); });
         });
       });
     </script>
@@ -536,7 +536,7 @@
         const improveFromPurldb = document.querySelector('#improve_from_purldb');
         if (!improveFromPurldb) return;
         improveFromPurldb.addEventListener('click', function() {
-          NEXB.displayOverlay("Fetching data from PurlDB...");
+          DejaCode.displayOverlay("Fetching data from PurlDB...");
         })
       });
     </script>

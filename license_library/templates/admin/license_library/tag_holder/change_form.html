@@ -11,7 +11,7 @@
                         var tr_div = $(this).parent().parent();
                         var text_div = tr_div.find('.text div')[0];
                         var guidance_div = tr_div.find('.guidance div')[0];
-                        var tag_data = NEXB.client_data.tags_dict[selected_id];
+                        var tag_data = DejaCode.client_data.tags_dict[selected_id];
                         $(text_div).html(tag_data.text);
                         $(guidance_div).html(tag_data.guidance);
                     });

@@ -1,7 +1,7 @@
 {{ client_data|json_script:"client_data" }}
 <script>
-  NEXB = {};
-  NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
+  DejaCode = {};
+  DejaCode.client_data = JSON.parse(document.getElementById("client_data").textContent);
 
   document.addEventListener("DOMContentLoaded", function () {
     // Detects the user's current timezone using the browser's API

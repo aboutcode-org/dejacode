@@ -68,8 +68,6 @@
 
 {% block javascripts %}
     {{ block.super }}
-    <script src="{% static 'js/underscore-min.js' %}" integrity="sha384-vied7n5P66xFsutta/+hVcYu4YamRGsQQt0a3aeD3TotQbxFw7FU/PqURWBKMqOG" crossorigin="anonymous"></script>
-    <script src="{% static 'js/underscore.string.min.js' %}" integrity="sha384-dBBWt7KQ4Is2ZI1CImdIvLjF+VXUIPYNFIvVCgkvTDm4iBwA6Y0QYxYS6IN3vVDA" crossorigin="anonymous"></script>
     {{ identifier_fields|json_script:"identifier_fields" }}
     <script type="text/javascript">
         (function($) {

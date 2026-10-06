@@ -137,10 +137,10 @@
     {{ block.super }}
     {{ client_data|json_script:"client_data" }}
     <script>
-        NEXB = {};
-        NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
+        DejaCode = {};
+        DejaCode.client_data = JSON.parse(document.getElementById("client_data").textContent);
 
-        NEXB.displayOverlay = function(text) {
+        DejaCode.displayOverlay = function(text) {
           const overlay = document.createElement('div');
           overlay.id = 'overlay';
           overlay.textContent = text;
@@ -170,7 +170,7 @@
         // and cannot be easily extended without duplicated a lot of code,
         // we are extending the `grappelli.updateSelectFilter` function as a workaround,
         // which is called within the `onAfterAdded` function.
-        NEXB.patch_grappelli_grp_inline = function patch_grappelli_grp_inline(patch_callback) {
+        DejaCode.patch_grappelli_grp_inline = function patch_grappelli_grp_inline(patch_callback) {
             // Saves the original function
             var original_updateSelectFilter = grappelli.updateSelectFilter;
             // Overrides the `updateSelectFilter` function to inject the `patch_callback` function

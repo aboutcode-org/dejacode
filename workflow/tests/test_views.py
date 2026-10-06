@@ -1092,7 +1092,7 @@ class RequestUserViewsTestCase(TestCase):
         url = reverse("workflow:request_edit", args=[request_instance.uuid])
         response = self.client.get(url)
         expected = (
-            '<input type="text" name="field_1" placeholder="YYYY-MM-DD" '
+            '<input type="date" name="field_1" placeholder="YYYY-MM-DD" '
             'class="datepicker form-control" aria-describedby="id_field_1_helptext" '
             'id="id_field_1">'
         )
@@ -1108,7 +1108,7 @@ class RequestUserViewsTestCase(TestCase):
 
         response = self.client.get(url)
         expected = (
-            '<input type="text" name="field_1" value="2015-11-11" '
+            '<input type="date" name="field_1" value="2015-11-11" '
             'placeholder="YYYY-MM-DD" class="datepicker form-control" '
             'aria-describedby="id_field_1_helptext" id="id_field_1">'
         )

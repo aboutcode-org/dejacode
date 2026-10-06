@@ -9,7 +9,7 @@
 */
 (function($){
     $(document).ready(function(){
-        let awesomplete_data = NEXB.client_data.awesomplete_data;
+        let awesomplete_data = DejaCode.client_data.awesomplete_data;
         $.each(awesomplete_data, function (key, value) {
              let input = $("input[id$='" + key + "']");   // Supports Inlines
              input.each(function() {

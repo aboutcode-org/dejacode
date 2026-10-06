@@ -276,11 +276,25 @@ function setupPaginationKeys() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  NEXB = {};
-  NEXB.client_data = JSON.parse(document.getElementById("client_data").textContent);
+function setupClipboardButtons() {
+  // Copy the content of the element following a `.btn-clipboard` button.
+  // Delegated on the document to support the content loaded asynchronously.
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('.btn-clipboard');
+    if (!button) return;
 
-  NEXB.displayOverlay = function(text) {
+    await navigator.clipboard.writeText(button.nextElementSibling.innerText);
+
+    const tooltip = bootstrap.Tooltip.getOrCreateInstance(button);
+    tooltip.setContent({'.tooltip-inner': 'Copied!'});
+    button.addEventListener('hidden.bs.tooltip', () => {
+      tooltip.setContent({'.tooltip-inner': 'Copy to clipboard'});
+    }, {once: true});
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  DejaCode.displayOverlay = function(text) {
     const overlay = document.createElement('div');
     overlay.id = 'overlay';
     overlay.textContent = text;
@@ -305,6 +319,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
   }
 
+  // Ask for confirmation before leaving the page with unsaved changes in the forms
+  DejaCode.warnOnUnsavedChanges = (selector) => {
+    let hasUnsavedChanges = false;
+    document.querySelectorAll(selector).forEach((form) => {
+      form.addEventListener('input', () => { hasUnsavedChanges = true; });
+      form.addEventListener('submit', () => { hasUnsavedChanges = false; });
+    });
+    window.addEventListener('beforeunload', (event) => {
+      if (hasUnsavedChanges) event.preventDefault();
+    });
+  };
+
   setupTooltips();
   setupPopovers();
   setupSelectionCheckboxes();
@@ -316,4 +342,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDismissibleAlerts();
   setupScrollToTargets();
   setupPaginationKeys();
+  setupClipboardButtons();
 });

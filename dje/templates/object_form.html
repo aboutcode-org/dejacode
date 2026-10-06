@@ -43,14 +43,12 @@
 {% block javascripts %}
   {{ block.super }}
   {% if form.fields.license_expression %}
-    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-sb1eCgSzQ43/Yt/kNTeuZ9XmmY0rfloyqPka6VPMR6ZWJsK0pTfsAnTHY7XRZUgd" crossorigin="anonymous"></script>
+    <script src="{% static 'js/license_expression_builder.js' %}" integrity="sha384-CZRhZl16VkLNMzSV5/VEWxVEMWM8t2DMoy7EJSc4w9DxTRcYWGsapJB7Br6g5EEr" crossorigin="anonymous"></script>
   {% endif %}
   {{ licenses_data_for_builder|json_script:"licenses_data_for_builder" }}
   {{ form.identifier_fields|json_script:"identifier_fields" }}
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      if (typeof(flatpickr) != 'undefined') $('.datepicker').flatpickr();
-
       {% if form.fields.license_expression and licenses_data_for_builder %}
         let licenses_data_for_builder = JSON.parse(document.getElementById("licenses_data_for_builder").textContent);
         const licenseExpressionInputIds = [

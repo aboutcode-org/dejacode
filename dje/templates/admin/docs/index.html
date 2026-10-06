@@ -12,13 +12,20 @@
         <link href="{% static 'rest_framework/css/bootstrap.min.css' %}" rel="stylesheet">
         <link href="{% static 'rest_framework/css/bootstrap-theme.min.css' %}" rel="stylesheet">
         <link href="{% static 'rest_framework/css/font-awesome-4.0.3.css' %}" rel="stylesheet">
-        <link href="{% static 'rest_framework/docs/css/base.css' %}" rel="stylesheet">
-        <link href="{% static 'rest_framework/docs/css/jquery.json-view.min.css' %}" rel="stylesheet">
-
-        <link href="{% static 'rest_framework/docs/img/favicon.ico' %}" rel="shortcut icon">
 
         {% if code_style %}<style>{{ code_style }}</style>{% endif %}
-        <script src="{% static 'rest_framework/js/coreapi-0.1.1.js' %}"></script>
+        {# Replaces the sidebar styles of the DRF docs base.css, no longer shipped by DRF #}
+        <style>
+          .sidebar { position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; background-color: #f7f7f9; border-right: 1px solid #e1e1e8; }
+          .sidebar .brand { margin: 0; padding: 15px; font-size: 20px; border-bottom: 1px solid #e1e1e8; }
+          .sidebar ul { list-style: none; margin: 0; padding: 0; }
+          .sidebar .menu-content { display: block; }
+          .sidebar .menu-content > li > a { display: block; padding: 8px 15px; color: #333; font-weight: bold; cursor: pointer; }
+          .sidebar .sub-menu a { display: block; padding: 4px 15px 4px 37px; color: #555; }
+          .sidebar a:hover, .sidebar a:focus { background-color: #e9e9ef; text-decoration: none; }
+          .sidebar .menu-content > li:not(.collapsed) > a .fa-caret-right { transform: rotate(90deg); }
+          #main { margin-left: 270px; }
+        </style>
 
         <script src="{% static 'rest_framework/js/jquery-3.7.1.min.js' %}"></script>
         <script src="{% static 'rest_framework/js/bootstrap.min.js' %}"></script>
