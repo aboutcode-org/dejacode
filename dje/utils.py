@@ -517,7 +517,7 @@ def get_referer_resolver(request):
 
 
 def get_safe_referer(request):
-    """Return the `HTTP_REFERER` request header only when it targets the current host."""
+    """Return the path of the `HTTP_REFERER` request header when it targets the current host."""
     referer = request.META.get("HTTP_REFERER")
     is_safe_url = url_has_allowed_host_and_scheme(
         url=referer,
@@ -525,7 +525,10 @@ def get_safe_referer(request):
         require_https=request.is_secure(),
     )
     if is_safe_url:
-        return referer
+        parsed_referer = urlparse(referer)
+        # A path starting with "//" would be read by browsers as another host
+        path = "/" + parsed_referer.path.lstrip("/")
+        return parsed_referer._replace(scheme="", netloc="", path=path).geturl()
 
 
 def get_instance_from_resolver(resolver):

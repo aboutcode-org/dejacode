@@ -34,6 +34,7 @@ from dje.utils import get_instance_from_resolver
 from dje.utils import get_object_compare_diff
 from dje.utils import get_plain_purl
 from dje.utils import get_referer_resolver
+from dje.utils import get_safe_referer
 from dje.utils import get_zipfile
 from dje.utils import group_by_name_version
 from dje.utils import is_available
@@ -492,6 +493,23 @@ class DJEUtilsTestCase(TestCase):
         request = factory.request(HTTP_REFERER=component1.get_admin_url())
         instance = get_instance_from_referer(request)
         self.assertEqual(instance, component1)
+
+    def test_get_safe_referer(self):
+        factory = RequestFactory()
+        self.assertIsNone(get_safe_referer(factory.request()))
+
+        test_cases = [
+            ("http://testserver/products/?sort=name#inventory", "/products/?sort=name#inventory"),
+            ("/products/", "/products/"),
+            ("http://testserver//evil.com/page", "/evil.com/page"),
+            ("http://testserver", "/"),
+            ("https://evil.com/page", None),
+            ("//evil.com/page", None),
+            ("javascript:alert(1)", None),
+        ]
+        for referer, expected in test_cases:
+            request = factory.request(HTTP_REFERER=referer)
+            self.assertEqual(expected, get_safe_referer(request), msg=referer)
 
     @mock.patch("dje.utils.requests.get")
     @mock.patch("dje.utils.requests.head")
