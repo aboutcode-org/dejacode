@@ -49,7 +49,9 @@ class LDAPConfigTestCase(SimpleTestCase):
 
     def test_ldap_config_get_user_search_filter_without_user_placeholder(self):
         search_definition = {"base": "ou=users,dc=example,dc=com", "filter": "(objectClass=person)"}
-        expected_message = "[0] 'filter' must include the %(user)s placeholder"
+        expected_message = (
+            "AUTH_LDAP_USER_SEARCHES[0] 'filter' must include the %(user)s placeholder"
+        )
         with self.assertRaisesMessage(ImproperlyConfigured, expected_message):
             get_user_search(0, search_definition)
 

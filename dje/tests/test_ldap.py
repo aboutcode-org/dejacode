@@ -43,6 +43,7 @@ from django_auth_ldap.config import LDAPSearch
 from guardian.shortcuts import assign_perm
 from ldap.ldapobject import SimpleLDAPObject
 
+from dejacode.ldap_config import build_user_search_union
 from dje.ldap_backend import DejaCodeLDAPBackend
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
@@ -175,6 +176,18 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         self.assertEqual(user.first_name, "Robert")
         self.assertEqual(user.last_name, "Smith")
         self.assertEqual(user.email, "bob@test.com")
+
+    @override_settings(
+        AUTH_LDAP_USER_DN_TEMPLATE=None,
+        AUTH_LDAP_USER_SEARCH=build_user_search_union(
+            '[{"base": "ou=groups,o=test", "filter": "(uid=%(user)s)"},'
+            ' {"base": "ou=people,o=test", "filter": "(uid=%(user)s)"}]'
+        ),
+    )
+    def test_ldap_authentication_user_search_union(self):
+        user = authenticate(username="bob", password="secret")
+        self.assertEqual("bob", user.username)
+        self.assertEqual("bob@test.com", user.email)
 
     def test_ldap_group_active_properly_setup_and_searchable(self):
         conn = self.ldap_object_class(self.server.ldap_uri)
