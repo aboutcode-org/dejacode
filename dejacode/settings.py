@@ -18,6 +18,8 @@ import ldap
 from django_auth_ldap.config import GroupOfNamesType
 from django_auth_ldap.config import LDAPSearch
 
+from dejacode.ldap_config import build_user_search_union
+
 # The home directory of the dejacode user that owns the installation.
 PROJECT_DIR = environ.Path(__file__) - 1
 ROOT_DIR = PROJECT_DIR - 1
@@ -782,6 +784,14 @@ AUTH_LDAP_USER_DN = env.str("AUTH_LDAP_USER_DN", default="")
 AUTH_LDAP_USER_FILTERSTR = env.str("AUTH_LDAP_USER_FILTERSTR", default="")
 
 AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_DN, ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_FILTERSTR)
+
+# Optional: search users in several locations of the LDAP directory.
+# A JSON list with one entry per location: a "base" DN and a "filter" including %(user)s.
+# When set, AUTH_LDAP_USER_DN and AUTH_LDAP_USER_FILTERSTR are ignored.
+# AUTH_LDAP_USER_SEARCHES=[{"base": "ou=staff,dc=example,dc=com", "filter": "(uid=%(user)s)"}, ...]
+AUTH_LDAP_USER_SEARCHES = env.str("AUTH_LDAP_USER_SEARCHES", default="")
+if AUTH_LDAP_USER_SEARCHES:
+    AUTH_LDAP_USER_SEARCH = build_user_search_union(AUTH_LDAP_USER_SEARCHES)
 
 # When AUTH_LDAP_AUTOCREATE_USER is True (default), a new DejaCode user will be
 # created in the database with the minimum permission (a read-only user).

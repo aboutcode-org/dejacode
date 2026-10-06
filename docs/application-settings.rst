@@ -383,6 +383,30 @@ It must return exactly one result for authentication to succeed.
     AUTH_LDAP_USER_DN="ou=users,dc=example,dc=com"
     AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 
+USER_SEARCHES
+-------------
+
+When users are stored in several locations of the LDAP directory, for example in
+different organizational units, use ``AUTH_LDAP_USER_SEARCHES`` instead of
+``USER_DN``.
+
+The value is a JSON list with one entry per location:
+
+- ``base``: the distinguished name of the location.
+- ``filter``: the filter to find the user, including the ``%(user)s`` placeholder.
+
+The following example searches users in both ``employees`` and ``contractors``:
+
+.. code-block:: python
+
+    AUTH_LDAP_USER_SEARCHES=[{"base": "ou=employees,dc=example,dc=com", "filter": "(uid=%(user)s)"}, {"base": "ou=contractors,dc=example,dc=com", "filter": "(uid=%(user)s)"}]
+
+All locations are searched, and the username must match exactly one user across
+them for authentication to succeed.
+When set, ``AUTH_LDAP_USER_DN`` and ``AUTH_LDAP_USER_FILTERSTR`` are ignored.
+
+.. note:: The value must be written on a single line.
+
 AUTOCREATE_USER
 ---------------
 
