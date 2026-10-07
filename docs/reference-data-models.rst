@@ -68,6 +68,9 @@ Product model
 
 * **Release date** - Use the date picker to specify your product release date.
 
+* **Vulnerabilities risk threshold** - A risk value between 0.0 and 10.0 used to
+  prioritize and control the level of attention to vulnerabilities.
+
 .. _data_model_package:
 
 Package model
@@ -102,7 +105,7 @@ Package model
   For (a very simple) example, ``Licensed by Starship LLC under Apache 2.0``
 
 * **Holder** - The name(s) of the copyright holder(s) of a package,
-  as documented in the code
+  as documented in the code.
 
 * **Author** - The name(s) of the author(s) of a package as documented in the code.
 
@@ -112,4 +115,4 @@ Package model
   This must be a valid URL.
 
 * **Primary language** - Use the autocomplete feature to enter and select a
-  a primary language. For example, ``Python``
+  primary language. For example, ``Python``

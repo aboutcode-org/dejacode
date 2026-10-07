@@ -10,18 +10,18 @@ installation experience.
 
 There are three ways to run DejaCode:
 
-- :ref:`run_with_docker` — **simplest option**, no repository checkout or build step
+- :ref:`run_with_docker`: **simplest option**, no repository checkout or build step
   required. Uses the pre-built Docker image published on GitHub.
-- :ref:`enterprise_deployment` — same pre-built image with custom nginx configuration,
+- :ref:`enterprise_deployment`: same pre-built image with custom nginx configuration,
   domain settings, and hardware recommendations for production servers.
-- :ref:`local_development_installation` — Docker-based setup for contributors.
+- :ref:`local_development_installation`: Docker-based setup for contributors.
 
 .. _run_with_docker:
 
 Run with Docker
 ===============
 
-This is the simplest way to get DejaCode running. You only need **Docker** —
+This is the simplest way to get DejaCode running. You only need **Docker**:
 no repository checkout, no build step required.
 
 1. Get Docker
@@ -74,7 +74,7 @@ Follow the prompt instructions, providing the required information:
 
    Open a web browser and visit |localhost_link| to **access the web UI**.
 
-   You can sign-in with the credentials you created above.
+   You can sign in with the credentials you created above.
 
    You can move onto the Tutorials section starting with the :ref:`user_tutorial_1`.
 
@@ -142,8 +142,8 @@ Restart the stack to apply::
 3. Configure nginx
 ------------------
 
-The default nginx configuration embedded in ``compose.yml`` is suitable for
-local use. For production, replace it with your own configuration file.
+The default nginx configuration is suitable for local use. For production, replace it
+with your own configuration file.
 
 The installer downloads a default nginx configuration to
 ``~/.dejacode/etc/nginx/conf.d/default.conf``. Replace it with your own
@@ -160,9 +160,9 @@ default set of data, including license and organization libraries.
 
 **AboutCode integrations are pre-configured** to connect to public instances of:
 
-- **ScanCode.io** — package scanning. See :ref:`dejacode_dataspace_scancodeio`.
-- **PurlDB** — database of scanned packages. See :ref:`dejacode_dataspace_purldb`.
-- **VulnerableCode** — package vulnerability data. See :ref:`dejacode_dataspace_vulnerablecode`.
+- **ScanCode.io**: package scanning. See :ref:`dejacode_dataspace_scancodeio`.
+- **PurlDB**: database of scanned packages. See :ref:`dejacode_dataspace_purldb`.
+- **VulnerableCode**: package vulnerability data. See :ref:`dejacode_dataspace_vulnerablecode`.
 
 .. warning::
     For enterprise deployments it is **strongly recommended to run your own
@@ -195,8 +195,8 @@ Local development installation
 
 .. note::
     This section is for contributors to DejaCode. The development environment
-    runs entirely in Docker — no local Python or PostgreSQL installation required.
-    Please refer to the Contributing guide for instructions on submitting changes.
+    runs entirely in Docker: no local Python or PostgreSQL installation required.
+    Please refer to :ref:`contributing` for instructions on submitting changes.
 
 Clone and configure
 -------------------

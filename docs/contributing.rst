@@ -19,7 +19,7 @@ resources to help you get started.
 Do Your Homework
 ================
 
-Before adding a contribution or create a new issue, take a look at the project’s
+Before adding a contribution or creating a new issue, take a look at the project’s
 `README <https://github.com/aboutcode-org/dejacode#readme>`_, read through our
 `documentation <https://dejacode.readthedocs.io/en/latest/>`_,
 and browse existing `issues <https://github.com/aboutcode-org/dejacode/issues>`_,
@@ -45,13 +45,13 @@ and encourage new contributors to work on those issues for a smooth start.
 
     You do not need our permission to work on an open issue.
     A good start is to present your understanding of the problem/bug and how you
-    would fix it. Providing some code using a pull request will come handy,
+    would fix it. Providing some code using a pull request will come in handy,
     but being able to explain a solution is always a good start.
 
     Make sure to read through this page and follow the recommendations.
 
 .. warning::
-    **"Is this issue is open?"**
+    **"Is this issue open?"**
 
     Unless closed, yes it is open.
 
@@ -61,7 +61,7 @@ Report Issues
 - Report a new `bug <https://github.com/aboutcode-org/dejacode/issues>`_; just remember to be
   as specific as possible.
 - Create a `new issue <https://github.com/aboutcode-org/dejacode/issues>`_ to request a
-  feature, submit a feedback, or ask a question.
+  feature, submit feedback, or ask a question.
 - Look into existing `bugs <https://github.com/aboutcode-org/dejacode/labels/bug>`_,
   try to reproduce the issue on your side, and discuss solutions in the comments.
 
@@ -74,7 +74,7 @@ Code Contributions
 
 Code is contributed to the codebase using **pull requests**.
 A pull request should always be attached to an existing issue.
-When there is no existing issues, start by `creating one <https://github.com/aboutcode-org/dejacode/issues>`_
+When there is no existing issue, start by `creating one <https://github.com/aboutcode-org/dejacode/issues>`_
 to discuss potential solutions and implementation details before writing any code.
 
 We use several conventions to ensure code quality regarding format, testing, and
@@ -110,7 +110,7 @@ attribution.
 
 .. note::
     Pull requests that are not passing the automated integration tests are unlikely
-    to be reviewed. Focus on making all the "Checks" to pass before asking for a
+    to be reviewed. Focus on making all the "Checks" pass before asking for a
     code review.
 
 Documentation Improvements

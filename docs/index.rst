@@ -80,6 +80,11 @@ Tutorial documents provide specific instructions to help you get started.
 - :ref:`user_tutorial_1`
 - :ref:`user_tutorial_2`
 - :ref:`user_tutorial_3`
+- :ref:`user_tutorial_4_vulnerabilities`
+- :ref:`user_tutorial_5_sboms`
+- :ref:`user_tutorial_6_vuln_report`
+- :ref:`user_tutorial_7_policy_rules`
+- :ref:`user_tutorial_8_vulnerability_triage`
 
 
 How-To Documents
@@ -89,6 +94,11 @@ How-To documents explain how to accomplish specific tasks.
 
 - :ref:`how_to_1`
 - :ref:`how_to_2`
+- :ref:`how_to_3`
+- :ref:`how_to_4`
+- :ref:`how_to_5`
+- :ref:`how_to_6`
+- :ref:`how_to_7`
 
 
 Reference Documents
@@ -96,8 +106,13 @@ Reference Documents
 
 Reference documents describe application concepts in depth.
 
+- :ref:`data_model`
+- :ref:`reference_vulnerability_management`
+- :ref:`reference_policy_rules`
+- :ref:`reference_vulnerability_triage`
 - :ref:`reference_1`
 - :ref:`reference_2`
+- :ref:`reference_3_cravex`
 
 
 Indices and Tables

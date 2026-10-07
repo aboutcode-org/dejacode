@@ -8,7 +8,7 @@ generic way. You can use it to fetch, create, and update DejaCode Requests
 from your own scripts or applications.
 
 The full REST API documentation is also available in the DejaCode web UI under
-**Tools > API Documentation**.
+:guilabel:`API Documentation` in the :guilabel:`Developer` section of the side menu.
 
 This guide focuses specifically on interacting with **DejaCode Requests**.
 
@@ -20,18 +20,18 @@ This guide focuses specifically on interacting with **DejaCode Requests**.
 Prerequisites
 -------------
 
-- A **DejaCode API Key**, available from your **Profile** settings page.
+- A **DejaCode API Key**, available from your :guilabel:`Profile Settings` page.
 
 Authentication
 --------------
 
 Include your **API Key** in the "Authorization" HTTP header for every request.
-The key must be prefixed by the string literal ``Token`` followed by a space:
+The key must be prefixed by the string literal ``Token`` followed by a space::
 
     Authorization: Token abcdef123456
 
 .. warning::
-    Treat your API key like a password — keep it secret and secure.
+    Treat your API key like a password: keep it secret and secure.
 
 Example using cURL::
 

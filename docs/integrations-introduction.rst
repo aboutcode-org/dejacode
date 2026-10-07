@@ -68,7 +68,7 @@ or **log the change**.
 
 Webhooks can be configured for a **variety of events**, and the payload can be
 extended with **custom fields** and **headers**. They are especially powerful when
-combined with the REST API — **webhooks deliver the trigger**, and **API calls perform
+combined with the REST API: **webhooks deliver the trigger**, and **API calls perform
 follow-up actions**.
 
 Generic integrations

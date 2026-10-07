@@ -62,21 +62,21 @@ Setting the Package URL in DejaCode
 ===================================
 
 When you create a new Package in DejaCode, the application automatically derives the
-Package URL elements when you save it from the data your provide, primarily from the
+Package URL elements when you save it from the data you provide, primarily from the
 Download URL value.
 
 For existing Packages in DejaCode that do not have the Package URL set, you can use
 the Administrative Browse Packages form to select those Packages and use the
-:guilabel:`Set Package URL "purl" from the Download URL command` to prompt DejaCode
+:guilabel:`Set Package URL "purl" from the Download URL` action to prompt DejaCode
 to calculate and set a Package URL using the available Package data.
 
 Package Vulnerability Tracking
 ==============================
 
-In DejaCode, there is a Dataspace option to "Enable VulnerableCodeDB access"
+In DejaCode, there is a Dataspace option to **Enable VulnerableCodeDB access**
 that authorizes DejaCode to access the VulnerableCodeDB using a Package URL (purl) to
 determine if there are any reported vulnerabilities for a specific Package and return
-the Vulnerability ID and related URLs to a Vulnerabilities tab in the Package details
+the Vulnerability ID and related URLs to a :guilabel:`Vulnerabilities` tab in the Package details
 user view. DejaCode displays a Vulnerability icon next to the Package identifier in
 the user view list, and also in any Product Inventory list using that Package.
 
@@ -88,7 +88,7 @@ Your system administrator can configure DejaCode to provide the necessary creden
 to access a VulnerableCodeDB.
 
 For more information about the open source VulnerableCode project, see
-https://github.com/nexB/vulnerablecode
+https://github.com/aboutcode-org/vulnerablecode
 
 .. note:: Refer to :ref:`user_tutorial_2` for package creation and maintenance
   procedures.

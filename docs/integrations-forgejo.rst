@@ -22,7 +22,7 @@ To enable integration, you need a **personal access token** from Forgejo.
 1. **Generate a Token**:
 
    - Log into your Forgejo instance
-   - Go to your **User settings** → **Applications** → **Generate New Token**
+   - Go to your **User settings** > **Applications** > **Generate New Token**
    - Set a clear name like ``DejaCode Integration``
    - Select **permissions**:
 
@@ -40,8 +40,8 @@ DejaCode Dataspace Configuration
 
 To use your Forgejo token in DejaCode:
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Dataspaces**, and select your Dataspace
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Dataspaces`, and select your Dataspace
 3. Scroll to the **Forgejo Integration** section under **Configuration**
 4. Paste your Forgejo token in the **Forgejo token** field
 5. Save the form
@@ -49,8 +49,8 @@ To use your Forgejo token in DejaCode:
 Activate Forgejo Integration on Request Templates
 -------------------------------------------------
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Workflow** > **Request templates**
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Workflow > Request templates`
 3. Create or edit a Request Template in your Dataspace
 4. Set the **Issue Tracker ID** field to your Forgejo repository URL, e.g.::
 

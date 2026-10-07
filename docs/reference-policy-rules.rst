@@ -13,8 +13,8 @@ affected packages and the detection date. Violations are automatically resolved 
 underlying condition is corrected.
 
 All rules are **disabled by default**. Each dataspace activates and configures the
-rules that are relevant to its compliance program via the **Dataspace Configuration**
-form.
+rules that are relevant to its compliance program via the **Policy Rules Configuration**
+section of the Dataspace form.
 
 1. Built-in Rules
 -----------------
@@ -114,8 +114,8 @@ by the REST API.
 3. Configuration
 ----------------
 
-Policy rules are configured per dataspace using the **Dataspace Configuration** form
-in the Admin interface under **Dataspaces > Dataspace configurations**.
+Policy rules are configured per dataspace in the **Policy Rules Configuration** section
+of the Dataspace form, in the Admin interface under :guilabel:`Dataspaces`.
 
 .. seealso::
     For step-by-step instructions on enabling and configuring rules through the Admin
@@ -198,7 +198,7 @@ any of the following changes occur:
 - A **product** is saved.
 - A **package is added to or removed from** a product.
 - A **package** record is updated (for example, a new vulnerability is linked to it).
-- The **Dataspace Configuration** is saved, which triggers re-evaluation of all
+- The **Policy Rules Configuration** is saved, which triggers re-evaluation of all
   products in the dataspace.
 
 4.2 Manual Re-evaluation
@@ -207,7 +207,7 @@ any of the following changes occur:
 Rules can also be re-evaluated on demand in two ways:
 
 - From the **Product Administration** form in the Admin interface, using the
-  **Evaluate policy rules** bulk action on the product list.
+  :guilabel:`Evaluate policy rules` bulk action on the product list.
 - From the **compliance tab** of a product detail page, using the re-evaluate button
   next to the policy violations panel.
 
@@ -277,5 +277,5 @@ The response is a list of active (unresolved) violations, each including:
 Only active (unresolved) violations are returned by this endpoint.
 
 .. seealso::
-    Refer to the **API documentation** from the :guilabel:`Tools` menu for detailed
-    guidance on authentication and available endpoints.
+    Refer to :guilabel:`API Documentation` in the :guilabel:`Developer` section of the
+    side menu for detailed guidance on authentication and available endpoints.

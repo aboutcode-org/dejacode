@@ -7,8 +7,9 @@ Settings file
 
 DejaCode is configured with environment variables stored in a ``.env`` file.
 
-The ``.env`` file is created at the root of the DejaCode codebase during its
-installation.
+The ``.env`` file is created during the installation: in ``~/.dejacode/`` when using
+the installer (see :ref:`run_with_docker`), or at the root of the DejaCode codebase
+for a local development installation.
 You can configure your preferences using the following settings in the ``.env``
 file.
 
@@ -18,24 +19,24 @@ file.
     `Django Settings <https://docs.djangoproject.com/en/dev/ref/settings/>`_.
 
 .. tip::
-    Settings specific to DejaCode are all prefixed with ``DEJACODE_``.
+    Most settings specific to DejaCode are prefixed with ``DEJACODE_``.
 
 **Restarting the services is required following any changes to .env:**
 
 .. code-block:: bash
 
-    docker compose restart web worker
+    dejacode restart web worker
 
 DATABASE
 --------
 
 The database can be configured using the following settings::
 
-    DEJACODE_DB_HOST=localhost
-    DEJACODE_DB_NAME=dejacode_db
-    DEJACODE_DB_USER=user
-    DEJACODE_DB_PASSWORD=password
-    DEJACODE_DB_PORT=5432
+    DATABASE_HOST=localhost
+    DATABASE_NAME=dejacode_db
+    DATABASE_USER=user
+    DATABASE_PASSWORD=password
+    DATABASE_PORT=5432
 
 ALLOWED_HOSTS
 -------------
@@ -66,7 +67,7 @@ responsible to provide your own validation of the Host header.
 EMAIL
 -----
 
-This settings enables the email notification feature in DejaCode.
+These settings enable the email notification feature in DejaCode.
 If set, the provided username, password and email/SMTP server details are used
 to send email notifications to your DejaCode users.
 
@@ -112,8 +113,8 @@ registration, activation, and password reset.
 ANONYMOUS_USERS_DATASPACE
 -------------------------
 
-One Dataspace can be designed as accessible to anyone in a view-only mode.
-Set this with an existing Dataspace name to enable view-only access to anonymous, no
+One Dataspace can be designated as accessible to anyone in a view-only mode.
+Set this with an existing Dataspace name to enable view-only access to anonymous, non
 logged-in users.
 
 .. code-block:: python
@@ -124,7 +125,7 @@ REFERENCE_DATASPACE
 -------------------
 
 An administrative User in the Reference Dataspace can see and copy data from every
-Dataspace; otherwise, the User can only see data from his/her assigned Dataspace
+Dataspace; otherwise, the User can only see data from their assigned Dataspace
 and copy from the Reference Dataspace. An administrative User in the Reference
 Dataspace can also maintain User definitions for all Dataspaces.
 
@@ -145,8 +146,8 @@ SESSION
 You can control whether the DejaCode session framework uses web browser-lifetime
 sessions vs. persistent sessions with the ``SESSION_EXPIRE_AT_BROWSER_CLOSE`` setting.
 If ``SESSION_EXPIRE_AT_BROWSER_CLOSE`` is set to True, DejaCode cookies will expire as
-soon as a user closes his or her web browser.
-Use this if you want the user to have to log-in every time they open a browser.
+soon as a user closes their web browser.
+Use this if you want the user to have to log in every time they open a browser.
 
 .. code-block:: python
 
@@ -167,7 +168,7 @@ longer than this value.
 DEJACODE_PAGINATE_BY
 --------------------
 
-The number of objects display per page for each object type can be customized with the
+The number of objects displayed per page for each object type can be customized with the
 following setting::
 
     DEJACODE_PAGINATE_BY=product=20,package=100,license=100,report=50,request=50,scan=50
@@ -176,7 +177,7 @@ DEJACODE_LOG_LEVEL
 ------------------
 
 By default, only a minimum of logging messages is displayed in the console, mostly
-to provide some progress about pipeline run execution.
+to provide some progress about background task execution.
 
 Default: ``INFO``
 
@@ -206,8 +207,8 @@ True.
 TIME_ZONE
 ---------
 
-A string representing the time zone for the current ScanCode.io installation. By
-default the ``US/Pacific`` time zone is used::
+A string representing the time zone for the current DejaCode installation. By
+default the ``UTC`` time zone is used. For example::
 
     TIME_ZONE=US/Pacific
 
@@ -264,7 +265,7 @@ the availability of these integrations exclusively to the designated Dataspace.
 SCANCODEIO
 ----------
 
-Provide the URL and API key of your `ScanCode.io <https://github.com/nexB/scancode.io>`_
+Provide the URL and API key of your `ScanCode.io <https://github.com/aboutcode-org/scancode.io>`_
 instance.
 
 .. code-block:: python
@@ -281,7 +282,7 @@ instance.
 PURLDB
 ------
 
-Provide the URL and API key of your `PurlDB <https://github.com/nexB/purldb>`_ instance.
+Provide the URL and API key of your `PurlDB <https://github.com/aboutcode-org/purldb>`_ instance.
 
 .. code-block:: python
 
@@ -298,7 +299,7 @@ VULNERABLECODE
 --------------
 
 You can either run your own instance of
-`VulnerableCode <https://github.com/nexB/vulnerablecode>`_
+`VulnerableCode <https://github.com/aboutcode-org/vulnerablecode>`_
 or connect to the public one https://public.vulnerablecode.io/.
 
 .. note:: Providing an API key is optional when using the public VulnerableCode instance.
@@ -315,8 +316,8 @@ or connect to the public one https://public.vulnerablecode.io/.
 LDAP Integration
 ================
 
-AUTHENTICATION_BACKEND
-----------------------
+AUTHENTICATION_BACKENDS
+-----------------------
 
 This setting enables users to authenticate against an LDAP server.
 
@@ -388,7 +389,7 @@ USER_SEARCHES
 
 When users are stored in several locations of the LDAP directory, for example in
 different organizational units, use ``AUTH_LDAP_USER_SEARCHES`` instead of
-``USER_DN``.
+``AUTH_LDAP_USER_DN``.
 
 The value is a JSON list with one entry per location:
 
@@ -470,11 +471,11 @@ explained above and also do these additional tasks:
 
 * In the reference nexB Dataspace, create the DejaCode groups and associated
   permissions through
-  the DejaCode admin interface. From the Admin dashboard: ``Administration`` >
-  ``Groups``.
+  the DejaCode admin interface. From the :guilabel:`Admin Dashboard`:
+  :guilabel:`Administration > Groups`.
 * Configure DejaCode settings to enable LDAP groups retrieval by adding these lines to
   your DejaCode settings file.
-  Set the proper ``AUTH_LDAP_GROUP_SEARCH`` values matching for your LDAP
+  Set the proper ``AUTH_LDAP_GROUP_SEARCH`` values matching your LDAP
   configuration.
 
 .. code-block:: python
@@ -489,11 +490,11 @@ Configuration examples
 Configuration 1
 ---------------
 
-* LDAP as the only way to log-in DejaCode.
+* LDAP as the only way to log in to DejaCode.
 * Unencrypted connections with the LDAP server.
 * Anonymous bind to the LDAP server.
 * Users need to be manually created in DejaCode by an administrator first.
-* No mapping for users attributes is defined
+* No mapping for users attributes is defined.
 * Users field values in the database are not updated at authentication time.
 * Users are located using the ``uid`` attribute with the
   ``ou=users,dc=example,dc=com`` distinguished name.
@@ -510,7 +511,7 @@ Configuration 1
 Configuration 2
 ---------------
 
-* LDAP as the first way to log-in, and then using a DejaCode user account if
+* LDAP as the first way to log in, and then using a DejaCode user account if
   the authentication through LDAP was not successful.
 * Encrypted connections with the LDAP server.
 * Binding to the LDAP server using ``cn=admin,ou=users,dc=example,dc=com`` for
@@ -524,7 +525,7 @@ Configuration 2
 
 .. code-block:: python
 
-    AUTHENTICATION_BACKENDSdje.ldap_backend.DejaCodeLDAPBackend,django.contrib.auth.backends.ModelBackend
+    AUTHENTICATION_BACKENDS=dje.ldap_backend.DejaCodeLDAPBackend,django.contrib.auth.backends.ModelBackend
     AUTH_LDAP_SERVER_URI=ldaps://ldap.server.com:636
     AUTH_LDAP_BIND_DN=cn=admin,ou=users,dc=example,dc=com
     AUTH_LDAP_BIND_PASSWORD=pw

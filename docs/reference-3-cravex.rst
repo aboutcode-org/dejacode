@@ -21,7 +21,7 @@ Key Objectives of the CRA
 
 * **Enhanced Cybersecurity**: The CRA aims to improve the cybersecurity of products
   with digital elements, including both hardware and software.
-* **Manufacturer Responsibility**:  The CRA places responsibility on manufacturers to
+* **Manufacturer Responsibility**: The CRA places responsibility on manufacturers to
   ensure the cybersecurity of their products throughout the entire lifecycle, from design
   to end-of-life.
 * **EU-Wide Standardization**: The CRA aims to establish common cybersecurity rules and
