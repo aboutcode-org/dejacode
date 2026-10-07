@@ -4,7 +4,7 @@
 Tutorial 2 - Working with Packages
 ==================================
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 Add a Package from a Download URL
 =================================
@@ -21,15 +21,15 @@ Click the green :guilabel:`Add` button.
 
 DejaCode presents the new Package.
 
-- Refresh your browser page to see the :guilabel:`Actions` tab.
+- Refresh your browser page to see the :guilabel:`Scan` tab.
 - Explore the scan results.
 - Select values to apply to the new Package definition, such as one or more licenses,
-  a Copyright statement, and a Primary langauge.
+  a Copyright statement, and a Primary language.
 - Click the :guilabel:`Set values to Package` button.
 - Review, and optionally modify, the values in the modal dialog.
 - Click the :guilabel:`Set values` button.
 - Review the updated Package definition.
-- Click the :guilabel:`Edit icon` (the pencil) near the top of the form.
+- Click the :guilabel:`Edit` icon (the pencil) next to the Package name.
 - Make suitable changes to the Package definition; for example,
   enter text in the **Description** field.
 - Click the :guilabel:`Update Package` button.
@@ -43,7 +43,7 @@ Select :guilabel:`Packages` from the main menu bar.
 Select the :guilabel:`Add Package form` option from the
 green :guilabel:`Add Package` dropdown.
 Enter the values that you know, you can refer to :ref:`data_model_package` for details
-about each fields.
+about each field.
 
 .. note:: A Filename or a Package URL (type + name) is required.
   The other fields are optional.
@@ -54,14 +54,14 @@ using the Download URL and apply them to the package definition."
 Click the :guilabel:`Add Package` button.
 
 .. note:: DejaCode validates your entry, creates the package, applies automatic
-  updates, and submits the a scan request to ScanCode.io if you have that enabled.
+  updates, and submits a scan request to ScanCode.io if you have that enabled.
 
 Review and edit your new package.
 
 Import a Package to DejaCode from the PurlDB
 ============================================
 
-Select the :guilabel:`PurlDB` option from the main menu bar :guilabel:`Tools` dropdown.
+Select :guilabel:`PurlDB` from the :guilabel:`Integrations` section of the side menu.
 
 Use the :guilabel:`Filters` button to enter filtering or sorting criteria.
 For example, select ``Release date (descending)`` to see recent data.
@@ -83,12 +83,12 @@ Select :guilabel:`Packages` from the main menu bar.
 
 Select the :guilabel:`Import packages` option from the green :guilabel:`Add Package` dropdown.
 
-Click the :guilabel:`Download immport template` button.
-DejaCode uses your browser to download a file named ``pakcage_import_template.csv``.
+Click the :guilabel:`Download import template` button.
+DejaCode uses your browser to download a file named ``package_import_template.csv``.
 Open that file in a spreadsheet editor (such as Excel) and save it with a meaningful
 name that describes the data you intend to import.
 
-Enter the values for one or more packages into the CSV.  You can get additional help
+Enter the values for one or more packages into the CSV. You can get additional help
 for each field by clicking the :guilabel:`Show/hide Supported Columns` option on the
 Import form in DejaCode.
 Save your package import CSV.
@@ -109,16 +109,16 @@ Improve Package Data by Scanning
 Select :guilabel:`Packages` from the main menu bar.
 
 Identify and select a Package that needs to be improved.
-Click the :guilabel:`Actions` button on the Package details form.
+On the :guilabel:`Scan` tab, click the :guilabel:`Submit Scan Request` button.
 
-Optionally follow the progress of the Scan by selecting the :guilabel:`Scans`
-option from the :guilabel:`Tools` dropdown on the main menu bar.
+Optionally follow the progress of the Scan by selecting :guilabel:`Scans`
+from the :guilabel:`Integrations` section of the side menu.
 
 Open or refresh the Package form when the Scan is completed.
-Review the results on the Scan tab, select data to apply to the Package definition,
+Review the results on the :guilabel:`Scan` tab, select data to apply to the Package definition,
 modify that data as needed, and click the :guilabel:`Set values` button to save the updates.
 
-Optionally click the :guilabel:`Download Scan data` button at the bottom of the `Scan` tab
+Optionally click the :guilabel:`Download Scan results` button on the :guilabel:`Scan` tab
 to export a JSON-formatted file with the detailed scan results. You can view that file
 in a readable format using a browser such as Firefox.
 

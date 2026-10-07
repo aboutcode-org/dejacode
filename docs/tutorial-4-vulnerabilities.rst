@@ -3,7 +3,7 @@
 Tutorial 4 - Managing Product Vulnerabilities
 =============================================
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 Create a Product
 ----------------
@@ -24,12 +24,12 @@ Load Scan Results to your Product
 
 1. Download the following ScanCode Scan results example from:
 
-   `<https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/starship_engine_2.0_scan_results.json>`_.
+   `<https://github.com/aboutcode-org/dejacode/raw/refs/heads/main/docs/sboms/starship_engine_2.0_scan_results.json>`_.
 
 2. On the Product details page, from the :guilabel:`Actions` dropdown, select
    :guilabel:`Import ScanCode scan results`:
 
-   * Click the :guilabel:`Choose File` button under the **Upload file** field.
+   * Click the :guilabel:`Choose File` button under the **Scan results JSON file** field.
    * Select the **starship_engine_2.0_scan_results.json** file and click the
      :guilabel:`Open` button.
    * Click the :guilabel:`Import` button.
@@ -78,7 +78,7 @@ Export CycloneDX SBOM with VEX
 ------------------------------
 
 1. On the Product details page, from the :guilabel:`Share` dropdown, select
-   :guilabel:`CycloneDX SBOM + VEX`.
+   :guilabel:`SBOM+VEX (combined)` in the :guilabel:`CycloneDX` section.
 
 .. image:: images/tutorial-4-vulnerabilities/share-cdx.jpg
    :width: 300

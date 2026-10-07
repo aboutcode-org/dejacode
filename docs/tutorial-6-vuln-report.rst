@@ -8,12 +8,12 @@ loaded it into a DejaCode Product as described in :ref:`user_tutorial_5_sboms`.
 You would like to create a Report to analyze the vulnerabilities in
 that Product, share it with your team, and track your issue resolution progress.
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 Create a DejaCode Query
 -----------------------
 
-1. Select :guilabel:`Dashboard` from the dropdown menu under your user name.
+1. Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 
 .. image:: images/tutorial-6-vuln-report/go-to-admin-dashboard.png
    :width: 200
@@ -43,7 +43,7 @@ Create a DejaCode Query
 5. Define the Query Filters.
 
    * Scroll down to the :guilabel:`Filters` section of the form and click the
-     **Add another filter** command.
+     :guilabel:`Add another filter` command.
    * Select "Product>>" from the :guilabel:`Field Name` list.
    * Select "name" from the list of Product fields.
    * Select "Case-insensitive exact match" from the :guilabel:`Lookup` list.
@@ -51,7 +51,7 @@ Create a DejaCode Query
    * Check the :guilabel:`Runtime Parameter` option.
    * Accept the default unchecked :guilabel:`Negate` option.
 
-   * Click the **Add another filter** command.
+   * Click the :guilabel:`Add another filter` command.
    * Select "Product>>" from the :guilabel:`Field Name` list.
    * Select "version" from the list of Product fields.
    * Select "Case-insensitive exact match" from the :guilabel:`Lookup` list.
@@ -59,10 +59,10 @@ Create a DejaCode Query
    * Check the :guilabel:`Runtime Parameter` option.
    * Accept the default unchecked :guilabel:`Negate` option.
 
-   * Click the **Add another filter** command.
+   * Click the :guilabel:`Add another filter` command.
    * Select "weighted_risk_score" from the :guilabel:`Field Name` list.
    * Select "Greater than or equal to" from the :guilabel:`Lookup` list.
-   * Enter "3"  (without the quotes) in the :guilabel:`Value` field.
+   * Enter "3" (without the quotes) in the :guilabel:`Value` field.
    * Check the :guilabel:`Runtime Parameter` option.
    * Accept the default unchecked :guilabel:`Negate` option.
 
@@ -74,11 +74,11 @@ Create a DejaCode Query
 6. Define the Query Order.
 
    * In the :guilabel:`Order Fields` section of the form click the
-     **Add another order field** command.
+     :guilabel:`Add another order field` command.
    * Select "weighted_risk_score" from the :guilabel:`Field Name` list.
    * Select "descending" from the :guilabel:`Sort` list.
 
-   * Click the **Add another order field** command.
+   * Click the :guilabel:`Add another order field` command.
    * Select "package" from the :guilabel:`Field Name` list.
    * Select "ascending" from the :guilabel:`Sort` list.
 
@@ -96,7 +96,7 @@ Create a DejaCode Column Template
 .. image:: images/tutorial-6-vuln-report/go-to-admin-reporting.png
    :width: 500
 
-2. On the Reporting Administration form select :guilabel:`Column templates` .
+2. On the Reporting Administration form select :guilabel:`Column templates`.
 
 .. image:: images/tutorial-6-vuln-report/go-to-admin-column-templates.png
    :width: 500
@@ -119,34 +119,34 @@ Create a DejaCode Column Template
 5. Define the Column Template Fields.
 
    * Scroll down to the :guilabel:`Column Template Assigned Fields` section of the
-     form and click the **Add another column template assigned field** command.
+     form and click the :guilabel:`Add another column template assigned field` command.
    * Select "product>>" from the :guilabel:`Field Name` list.
    * Select "name" from the list of Product fields.
    * Enter "Product" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "product>>" from the :guilabel:`Field Name` list.
    * Select "version" from the list of Product fields.
    * Enter "Version" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "weighted_risk_score" from the :guilabel:`Field Name` list.
    * Enter "Risk" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "package>>" from the :guilabel:`Field Name` list.
    * Select "filename" from the list of package fields.
    * Enter "Filename" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "is_deployed" from the :guilabel:`Field Name` list.
    * Enter "Deployed" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "is_modified" from the :guilabel:`Field Name` list.
    * Enter "Modified" in the :guilabel:`Display name` field.
 
-   * Click the **Add another column template assigned field** command.
+   * Click the :guilabel:`Add another column template assigned field` command.
    * Select "notes" from the :guilabel:`Field Name` list.
    * Enter "Notes" in the :guilabel:`Display name` field.
 
@@ -177,7 +177,7 @@ Create a DejaCode Report
 
 .. image:: images/tutorial-6-vuln-report/go-to-admin-reporting-2.png
 
-2. On the Reporting Administration form select :guilabel:`Reports` .
+2. On the Reporting Administration form select :guilabel:`Reports`.
 
 .. image:: images/tutorial-6-vuln-report/go-to-admin-reports.png
    :width: 500
@@ -221,6 +221,6 @@ Create a DejaCode Report
 .. image:: images/tutorial-6-vuln-report/export-report-to-xlsx.png
 
 .. note::
-    Since you specified "User available" for this report, it is also available on
-    the Reports page. Access that page using the "Reports" option of the "Tools"
-    dropdown from the main DejaCode menu bar.
+    Since you specified :guilabel:`User available` for this report, it is also
+    available on the Reports page. Access that page using :guilabel:`Reports` from
+    the :guilabel:`Tools` section of the side menu.

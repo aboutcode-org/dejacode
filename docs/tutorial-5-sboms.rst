@@ -4,7 +4,7 @@ Tutorial 5 - Working with SBOMs in a Product
 ============================================
 
 You have just received a Software Bill of Materials (SBOM) from your supplier.
-Sign into DejaCode.
+Sign in to DejaCode.
 
 Create a Product
 ----------------
@@ -30,9 +30,9 @@ Load an SBOM to your Product
 2. On the Product details page, from the :guilabel:`Actions` dropdown, select
    :guilabel:`Import SBOM`:
 
-   * Click the Browse field beneath :guilabel:`SBOM file or zip archive`
-   * Select the **storm-core-1.0.cdx.json** file and leave the additional options
-     unchecked and click the :guilabel:`Load Packages` button.
+   * Click the :guilabel:`Choose File` button on the **SBOM file or zip archive** field.
+   * Select the **storm-core-1.0.1.cdx.json** file, leave the additional options
+     unchecked, and click the :guilabel:`Import` button.
 
 .. image:: images/tutorial-5-sboms/action-load-packages-from-sbom.jpg
    :width: 300
@@ -45,9 +45,9 @@ Load an SBOM to your Product
 
 .. image:: images/tutorial-5-sboms/inventory-tab-1.jpg
 
-5. You can enrich the data provided by your supplier,
+5. You can enrich the data provided by your supplier.
    From the :guilabel:`Actions` dropdown, select
-   :guilabel:`Improve Packages from PurlDB`:
+   :guilabel:`Improve Packages from PurlDB`.
 
 .. image:: images/tutorial-5-sboms/improve-packages-from-purldb.jpg
    :width: 300
@@ -93,8 +93,8 @@ Review Vulnerabilities Affecting Your Product
 3. You can sort and filter by Risk, Exploitability and Severity, as well as other
    fields, to focus on specific Vulnerabilities.
 
-4. You can set a specific Risk Threshold for your Product. Click the pencil icon
-   next to the Product name, scroll down to :guilabel:`Vulnerabilitiesrisk threshold`
+4. You can set a specific Risk Threshold for your Product. Click the :guilabel:`Edit` icon
+   next to the Product name, scroll down to :guilabel:`Vulnerabilities risk threshold`
    and enter a value such as 9 and click the :guilabel:`Update Product` button
    to filter your results to show only critical items.
 
@@ -117,7 +117,7 @@ Export CycloneDX SBOM with VEX
 ------------------------------
 
 1. On the Product details page, from the :guilabel:`Share` dropdown, select
-   :guilabel:`CycloneDX SBOM + VEX`.
+   :guilabel:`SBOM+VEX (combined)` in the :guilabel:`CycloneDX` section.
 
 .. image:: images/tutorial-5-sboms/share-cdx.jpg
    :width: 300

@@ -4,12 +4,12 @@
 Tutorial 3 - Working with Reports
 =================================
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 Create a Reporting Query
 ========================
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Queries` option in the :guilabel:`Reporting` panel.
 - Click the :guilabel:`Add query` button in the upper right section of the form.
 - Enter a **Name**. For this example, enter ``Quarterly License Activity``.
@@ -68,7 +68,7 @@ Click the :guilabel:`Save and continue editing` button in the lower right sectio
 Create a Column Template
 ========================
 
-- Select the :guilabel:`Administration` in the upper right section of the form.
+- Select :guilabel:`Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Column templates` option in the :guilabel:`Reporting` panel.
 - Click the :guilabel:`Add column template` button in the upper right section of the form.
 - Enter a **Name**. For this example, enter ``Quarterly License Activity``.
@@ -94,7 +94,7 @@ Add additional Assigned Fields as follows:
  - any additional fields that interest you.
 
 - Click the :guilabel:`Save and continue editing` button in the lower right section of the form.
-- You can optionally change the order of the fields using the ``Move item`` icon.
+- You can optionally change the order of the fields using the ``Move item`` icon
   in the right hand section of each Assigned Field.
 - Click the :guilabel:`Save` button in the lower right section of the form.
 
@@ -103,7 +103,7 @@ Add additional Assigned Fields as follows:
 Create a DejaCode Report
 ========================
 
-- Select the :guilabel:`Administration` in the upper right section of the form.
+- Select :guilabel:`Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Reports` option in the :guilabel:`Reporting` panel.
 - Click the :guilabel:`Add report` button in the upper right section of the form.
 - Enter a **Name**. For this example, enter ``Quarterly License Activity``.
@@ -120,35 +120,35 @@ Review the Report results:
 
 - Click the link icon to the left of a License Key to view that License.
 - Export the Report results to an ``xlsx`` formatted file.
-- Modify the value of any Field Parameter and click the **Rerun Report** button.
+- Modify the value of any Field Parameter and click the :guilabel:`Rerun Report` button.
 - Experiment with various Export formats and Field Parameter values.
 
-Select the :guilabel:`Reports` option from the main menu bar :guilabel:`Tools` dropdown.
+Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu.
 
 Select other Reports to run and review.
 
 Manage Your Report Collection
 =============================
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Reports` option in the :guilabel:`Reporting` panel.
 - In the search field on the right, enter ``name:activity`` and press Return.
 - Use the checkbox in the first column to select one or more reports, including
   your new report.
 - Select ``Mass update`` from the dropdown in the lower left section of the form
-  and click the **Go** button.
+  and click the :guilabel:`Go` button.
 - Check **Update** on the ``Group`` row.
 - Enter ``Activity`` in the **New value** field.
 - Click the :guilabel:`Update records` button in the lower right section of the form.
 - Review the results of your updates on the ``Browse Reports`` form.
-- Select the :guilabel:`Reports` option from the main menu bar :guilabel:`Tools` dropdown.
+- Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu.
 
 .. note:: The selected reports are now grouped together under your ``Group`` label.
 
 You can return to the ``Browse Reports`` form at any time to review and update the ``Group``
 assignments to meet your requirements.
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Reports` option in the :guilabel:`Reporting` panel.
 - On the ``Browse Reports`` form, click the :guilabel:`View Reference Data` button
   in the upper left section of the form.
@@ -160,4 +160,4 @@ assignments to meet your requirements.
 
 Continue refining and reviewing your reports.
 
-In Tutorial 4, we'll go further!
+In :ref:`user_tutorial_4_vulnerabilities`, we'll go further!
