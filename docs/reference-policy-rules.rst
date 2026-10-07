@@ -219,7 +219,7 @@ Rules can also be re-evaluated on demand in two ways:
 
 .. image:: images/reference-policy-rules/compliance-tab-policy-violations.jpg
 
-The **Compliance** tab on each product detail page displays an overview of active
+The :guilabel:`Compliance` tab on each product detail page displays an overview of active
 policy violations. For each triggered rule, the table shows:
 
 - The rule label and severity (color-coded badge).

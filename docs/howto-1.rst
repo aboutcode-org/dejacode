@@ -60,7 +60,7 @@ Assign your Usage Policies to Licenses
 
 **Filter Licenses as Needed**
 
-- Use the **Filter** dropdown in the upper right to restrict the amount of data that you
+- Use the :guilabel:`Filter` dropdown in the upper right to restrict the amount of data that you
   process to a manageable list. For example, you can:
 - Filter to see all Licenses where **Usage Policy** is empty.
 - Filter to see Licenses in a **Category**, **License profile**, or **License style**.
@@ -85,7 +85,7 @@ Assign your Usage Policies to Components
 
 **Filter Components as Needed**
 
-- Use the **Filter** dropdown in the upper right to restrict the amount of data that you
+- Use the :guilabel:`Filter` dropdown in the upper right to restrict the amount of data that you
   process to a manageable list. For example, you can:
 - Filter to see all Components where **Usage Policy** is empty.
 - Select a **Reporting query** to perform more complex filtering.
