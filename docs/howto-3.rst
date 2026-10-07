@@ -11,7 +11,7 @@ Web User Interface
 ==================
 
 1. Navigate to the product details view.
-2. Click on the "Share" menu.
+2. Click the :guilabel:`Share` dropdown.
 3. Download the desired SBOM format from the available options.
 
 REST API Endpoints

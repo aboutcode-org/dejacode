@@ -4,7 +4,7 @@
 How To 2 - Take Advantage of Reference Data
 ===========================================
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 .. note:: Sign in as a User with full administrative permissions.
 
@@ -16,7 +16,7 @@ by creating Queries and Reports. One way to get started on this is to explore th
 Queries that are already defined in Reference Data. This is a good way to get better
 acquainted with methods for taking advantage of the various Query features.
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Queries` option in the :guilabel:`Reporting` panel.
 - Review the Queries currently defined for your dataspace.
 - Optionally click the :guilabel:`View Reference Data` button in the upper left section
@@ -24,7 +24,7 @@ acquainted with methods for taking advantage of the various Query features.
   click the :guilabel:`Copy to my Dataspace` button to the left of any entry in order to
   add or update a Query to your own Dataspace from Reference Data.
 - Alternatively you can click to select multiple Queries on the Browse form, and then
-  you can use the :guilabel:`Copy selected objects` choice in the dropdown in the
+  you can use the :guilabel:`Copy the selected objects` choice in the dropdown in the
   lower left part of the form. Follow the prompts to copy or update the Reference
   Queries to your own Dataspace.
 
@@ -44,8 +44,8 @@ to your own Dataspace. Simply follow the prompts to make those changes.
 Check for Recently Updated Objects in Reference Data
 ====================================================
 
-As and administrative user, you can use the dropdown list in the upper-right corner
-of DejaCode to select Components, Packages, Licenses or Owners to navigate to the
+As an administrative user, you can use the dropdown under your user name
+to select Components, Packages, Licenses or Owners to navigate to the
 Administrator's Browse forms for those objects. From the Browse form, you can click
 the :guilabel:`View Reference Data` button in the upper left section of the form to
 prompt DejaCode to show you the current contents of Reference Data. Note that the
@@ -59,7 +59,7 @@ Preserving Specific Field Values in Your Dataspace
 
 When you copy Reference Data that already exists in your own Dataspace, you should
 note that DejaCode allows you to exclude certain fields when you take that action.
-An important example where this is important to you is the **Usage Policy** field,
+An important example is the **Usage Policy** field,
 since that is a value you set to comply with your own business requirements. By default,
 DejaCode excludes **Usage Policy** when updating an object to your Dataspace from
 Reference Data, and you may also select other fields to preserve as well.

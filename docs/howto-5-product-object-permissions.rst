@@ -13,8 +13,8 @@ user(s) or by permission group(s) or both.
 
 To begin setting Object Permissions for a Product:
 
-From the DejaCode Home page, use the right-hand dropdown menu and select **Products**
-to go to Product Administration.
+From the DejaCode Home page, select :guilabel:`Admin Dashboard` from the dropdown
+under your user name, then select **Products** to go to Product Administration.
 
 .. image:: images/howto-5-product-object-permissions/go-to-admin.jpg
    :width: 200
@@ -25,7 +25,7 @@ or Version.
 
 .. image:: images/howto-5-product-object-permissions/open-a-product.jpg
 
-On the **Change Product** form, click the **Object permissions** button in the
+On the **Change Product** form, click the :guilabel:`Object permissions` button in the
 upper-right-hand corner of the form.
 
 .. image:: images/howto-5-product-object-permissions/object-permissions-button.jpg
@@ -40,7 +40,7 @@ Select a DejaCode User from the User dropdown list.
 
 .. image:: images/howto-5-product-object-permissions/select-a-user.jpg
 
-Click the **Manage User** button.
+Click the :guilabel:`Manage user` button.
 
 .. image:: images/howto-5-product-object-permissions/user-available-permissions.jpg
 
@@ -49,13 +49,13 @@ you can select an Available Permission and click the right-pointing arrow.
 
 .. image:: images/howto-5-product-object-permissions/user-chosen-permissions.jpg
 
-Click the **Save** button to commit your choices. Click the **Object permissions**
-"breadcrumb" to return to that form.
+Click the :guilabel:`Save` button to commit your choices. Click the
+:guilabel:`Object permissions` breadcrumb to return to that form.
 
 .. image:: images/howto-5-product-object-permissions/return-to-object-permissions.jpg
 
 Note that the **Users** table presents the updated User permissions, and that you
-can click on **Edit** to revise User permissions.
+can click :guilabel:`Edit` to revise User permissions.
 
 .. image:: images/howto-5-product-object-permissions/updated-user-permissions.jpg
 
@@ -68,7 +68,7 @@ Select a Group from the Group dropdown list.
 
 .. image:: images/howto-5-product-object-permissions/select-a-group.jpg
 
-Click the **Manage Group** button.
+Click the :guilabel:`Manage group` button.
 
 .. image:: images/howto-5-product-object-permissions/group-available-permissions.jpg
 
@@ -77,13 +77,13 @@ you can select an Available Permission and click the right-pointing arrow.
 
 .. image:: images/howto-5-product-object-permissions/group-chosen-permissions.jpg
 
-Click the **Save** button to commit your choices. Click the **Object permissions**
-"breadcrumb" to return to that form.
+Click the :guilabel:`Save` button to commit your choices. Click the
+:guilabel:`Object permissions` breadcrumb to return to that form.
 
 .. image:: images/howto-5-product-object-permissions/return-to-object-permissions.jpg
 
 Note that the **Groups** table presents the updated Group permissions, and that you
-can click on **Edit** to revise Group permissions.
+can click :guilabel:`Edit` to revise Group permissions.
 
 .. image:: images/howto-5-product-object-permissions/updated-group-permissions.jpg
 
@@ -115,9 +115,9 @@ the ``Authorization`` header::
 
 The following permission codenames can be assigned to users or groups:
 
-- ``view_product`` -- allows viewing the product
-- ``change_product`` -- allows editing the product
-- ``delete_product`` -- allows deleting the product
+- ``view_product``: allows viewing the product
+- ``change_product``: allows editing the product
+- ``delete_product``: allows deleting the product
 
 **Finding the Product UUID**
 

@@ -135,7 +135,7 @@ Manage Your Report Collection
 - In the search field on the right, enter ``name:activity`` and press Return.
 - Use the checkbox in the first column to select one or more reports, including
   your new report.
-- Select ``Mass update`` from the dropdown in the lower left section of the form
+- Select :guilabel:`Mass update` from the dropdown in the lower left section of the form
   and click the :guilabel:`Go` button.
 - Check **Update** on the ``Group`` row.
 - Enter ``Activity`` in the **New value** field.
@@ -153,7 +153,7 @@ assignments to meet your requirements.
 - On the ``Browse Reports`` form, click the :guilabel:`View Reference Data` button
   in the upper left section of the form.
 - Use the checkbox in the first column to select one or more reports that interest you.
-- Select ``Copy the selected objects`` from the dropdown in the lower left section
+- Select :guilabel:`Copy the selected objects` from the dropdown in the lower left section
   of the form and click the :guilabel:`Go` button.
 - Follow the prompts on the following forms to complete your Copy action.
 - Review and edit the copied reports in your own Dataspace.

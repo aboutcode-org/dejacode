@@ -18,7 +18,7 @@ thresholds.
 1. Access the Policy Rules Configuration
 ----------------------------------------
 
-1. From the DejaCode **Administration dashboard**, navigate to :guilabel:`Dataspaces`.
+1. From the :guilabel:`Admin Dashboard`, navigate to :guilabel:`Dataspaces`.
 2. Open your Dataspace by clicking on its name.
 3. Scroll down to the **Policy Rules Configuration** section.
 
@@ -85,9 +85,10 @@ of visibility.
 
 **Compliance Dashboard**
 
-The :guilabel:`Compliance Dashboard` is a dedicated page (accessible from the main
-menu) providing an overview of all products with their compliance metrics, including a
-**Policy violations** column showing the number of active violations per product.
+The :guilabel:`Compliance Dashboard` is a dedicated page (select
+:guilabel:`Compliance` from the main menu bar) providing an overview of all products
+with their compliance metrics, including a **Policy violations** column showing the
+number of active violations per product.
 Use this view to identify at a glance which products have triggered rules and
 prioritize which ones to address first.
 
