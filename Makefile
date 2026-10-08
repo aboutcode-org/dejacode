@@ -89,8 +89,8 @@ check:
 docs:
 	@echo "-> Builds the documentation"
 	rm -rf ${DOCS_LOCATION}/_build/
-	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
-	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build --fail-on-warning -b singlehtml ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/singlehtml/
+	uvx --from sphinx==9.1.0 --with furo==2025.12.19 sphinx-build --fail-on-warning -b html ${DOCS_LOCATION} ${DOCS_LOCATION}/_build/html/
 
 ########################################################################################
 # Utilities
