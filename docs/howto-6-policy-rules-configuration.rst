@@ -15,10 +15,10 @@ thresholds.
     Refer to :ref:`reference_policy_rules` for a complete description of all available
     rules, configuration options, and violation lifecycle.
 
-1. Access the Policy Rules Configuration
-----------------------------------------
+Access the Policy Rules Configuration
+-------------------------------------
 
-1. From the DejaCode **Administration dashboard**, navigate to :guilabel:`Dataspaces`.
+1. From the :guilabel:`Admin Dashboard`, navigate to :guilabel:`Dataspaces`.
 2. Open your Dataspace by clicking on its name.
 3. Scroll down to the **Policy Rules Configuration** section.
 
@@ -27,8 +27,8 @@ thresholds.
 Each built-in rule is listed with its label, description, threshold, and optional
 parameters.
 
-2. Enable a Rule
-----------------
+Enable a Rule
+-------------
 
 To activate a rule check the :guilabel:`Enable this rule` checkbox.
 
@@ -45,8 +45,8 @@ currently open violations for that rule are automatically resolved.
     Rules that are not enabled are skipped during evaluation and any previously open
     violations for those rules are automatically resolved.
 
-3. Set a Threshold
-------------------
+Set a Threshold
+---------------
 
 By default, a single violation is enough to trigger a rule. The :guilabel:`Threshold`
 field lets you tolerate a certain number of violations before a triggered state is
@@ -58,8 +58,8 @@ rule is only triggered when more than 2 packages have no license expression.
 This is useful when a small number of violations is acceptable during remediation
 phases.
 
-4. Configure Rule Parameters
-----------------------------
+Configure Rule Parameters
+-------------------------
 
 Only vulnerability-based rules expose additional parameter fields to narrow their scope.
 
@@ -77,48 +77,19 @@ For the **Vulnerability Stale** rule, two parameters are available:
 .. image:: images/howto-6-policy-rules-configuration/vulnerability-rule-parameters.jpg
    :width: 300
 
-5. Investigate Violations
--------------------------
+Investigate Violations
+----------------------
 
-Once rules are active and violations have been detected, DejaCode provides two levels
-of visibility.
+Once rules are active, the number of active violations per product is displayed in
+the :guilabel:`Compliance Dashboard` (select :guilabel:`Compliance` from the main menu
+bar), and the triggered rules in the :guilabel:`Compliance` tab of each product.
 
-**Compliance Dashboard**
+.. seealso::
+    :ref:`user_tutorial_7_policy_rules` for how users review, drill into, and resolve
+    the violations.
 
-The :guilabel:`Compliance Dashboard` is a dedicated page (accessible from the main
-menu) providing an overview of all products with their compliance metrics, including a
-**Policy violations** column showing the number of active violations per product.
-Use this view to identify at a glance which products have triggered rules and
-prioritize which ones to address first.
-
-.. image:: images/howto-6-policy-rules-configuration/compliance-dashboard-violations-column.jpg
-   :width: 400
-
-**Compliance tab drill-down**
-
-From the :guilabel:`Compliance Dashboard`, click the policy violations count on a
-product row to open its :guilabel:`Compliance` tab directly.
-The **Policy violations** panel lists each triggered rule with its violation count
-and detection date.
-
-.. image:: images/howto-6-policy-rules-configuration/compliance-tab-policy-violations.jpg
-
-.. tip::
-    To see the status of all active rules, including those that are not triggered,
-    click the info icon next to the panel title. A modal opens showing every enabled
-    rule with its current status: **Triggered** or **OK**.
-
-To drill into the affected packages for a specific rule:
-
-1. In the **Policy violations** panel, locate the rule you want to investigate.
-2. Click the violation count in the **In violation** column.
-
-The product inventory opens pre-filtered to show only the packages that triggered
-that rule. You can use the inventory's standard filters and sorting to prioritize
-remediation.
-
-6. Set Up Notifications
------------------------
+Set Up Notifications
+--------------------
 
 DejaCode can notify external systems automatically when policy violations are detected
 or resolved, without requiring manual checks of the compliance tab.

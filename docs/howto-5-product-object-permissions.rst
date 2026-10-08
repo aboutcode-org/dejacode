@@ -8,13 +8,13 @@ This chapter explains how to set the Object Permissions on a Product to make it
 visible to other users who are not superusers. You can assign permissions by individual
 user(s) or by permission group(s) or both.
 
-1. Go to DejaCode Product Administration
-----------------------------------------
+Go to DejaCode Product Administration
+-------------------------------------
 
 To begin setting Object Permissions for a Product:
 
-From the DejaCode Home page, use the right-hand dropdown menu and select **Products**
-to go to Product Administration.
+From the DejaCode Home page, select :guilabel:`Admin Dashboard` from the dropdown
+under your user name, then select **Products** to go to Product Administration.
 
 .. image:: images/howto-5-product-object-permissions/go-to-admin.jpg
    :width: 200
@@ -25,13 +25,13 @@ or Version.
 
 .. image:: images/howto-5-product-object-permissions/open-a-product.jpg
 
-On the **Change Product** form, click the **Object permissions** button in the
+On the **Change Product** form, click the :guilabel:`Object permissions` button in the
 upper-right-hand corner of the form.
 
 .. image:: images/howto-5-product-object-permissions/object-permissions-button.jpg
 
-2. Set Product Object Permissions by DejaCode User
---------------------------------------------------
+Set Product Object Permissions by DejaCode User
+-----------------------------------------------
 
 Note that the DejaCode User who originally created the Product is already in the
 **Users** table.
@@ -40,7 +40,7 @@ Select a DejaCode User from the User dropdown list.
 
 .. image:: images/howto-5-product-object-permissions/select-a-user.jpg
 
-Click the **Manage User** button.
+Click the :guilabel:`Manage user` button.
 
 .. image:: images/howto-5-product-object-permissions/user-available-permissions.jpg
 
@@ -49,18 +49,18 @@ you can select an Available Permission and click the right-pointing arrow.
 
 .. image:: images/howto-5-product-object-permissions/user-chosen-permissions.jpg
 
-Click the **Save** button to commit your choices. Click the **Object permissions**
-"breadcrumb" to return to that form.
+Click the :guilabel:`Save` button to commit your choices. Click the
+:guilabel:`Object permissions` breadcrumb to return to that form.
 
 .. image:: images/howto-5-product-object-permissions/return-to-object-permissions.jpg
 
 Note that the **Users** table presents the updated User permissions, and that you
-can click on **Edit** to revise User permissions.
+can click :guilabel:`Edit` to revise User permissions.
 
 .. image:: images/howto-5-product-object-permissions/updated-user-permissions.jpg
 
-3. Set Product Object Permissions by Group
-------------------------------------------
+Set Product Object Permissions by Group
+---------------------------------------
 
 Note that you can set permissions by User or Group or both.
 
@@ -68,7 +68,7 @@ Select a Group from the Group dropdown list.
 
 .. image:: images/howto-5-product-object-permissions/select-a-group.jpg
 
-Click the **Manage Group** button.
+Click the :guilabel:`Manage group` button.
 
 .. image:: images/howto-5-product-object-permissions/group-available-permissions.jpg
 
@@ -77,13 +77,13 @@ you can select an Available Permission and click the right-pointing arrow.
 
 .. image:: images/howto-5-product-object-permissions/group-chosen-permissions.jpg
 
-Click the **Save** button to commit your choices. Click the **Object permissions**
-"breadcrumb" to return to that form.
+Click the :guilabel:`Save` button to commit your choices. Click the
+:guilabel:`Object permissions` breadcrumb to return to that form.
 
 .. image:: images/howto-5-product-object-permissions/return-to-object-permissions.jpg
 
 Note that the **Groups** table presents the updated Group permissions, and that you
-can click on **Edit** to revise Group permissions.
+can click :guilabel:`Edit` to revise Group permissions.
 
 .. image:: images/howto-5-product-object-permissions/updated-group-permissions.jpg
 
@@ -93,8 +93,8 @@ examples and not recommendations.
 You have now made the Product visible, and optionally editable, by DejaCode Users
 that are not superusers.
 
-4. Manage Product Object Permissions via the REST API
------------------------------------------------------
+Manage Product Object Permissions via the REST API
+--------------------------------------------------
 
 Product object permissions can also be managed programmatically through the REST API.
 This is especially useful for CI/CD pipelines that create Product versions automatically
@@ -115,9 +115,9 @@ the ``Authorization`` header::
 
 The following permission codenames can be assigned to users or groups:
 
-- ``view_product`` -- allows viewing the product
-- ``change_product`` -- allows editing the product
-- ``delete_product`` -- allows deleting the product
+- ``view_product``: allows viewing the product
+- ``change_product``: allows editing the product
+- ``delete_product``: allows deleting the product
 
 **Finding the Product UUID**
 
@@ -127,8 +127,8 @@ Retrieve the UUID from the product list endpoint::
 
 The ``uuid`` field is included in each product entry of the response.
 
-4.1 List current permissions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+List current permissions
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Retrieve all users and groups that currently have permissions on a product::
 
@@ -152,8 +152,8 @@ Response::
         ]
     }
 
-4.2 Assign permissions to a user
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Assign permissions to a user
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Provide ``user`` (username) and a ``permissions`` list::
 
@@ -169,8 +169,8 @@ Successful response::
 
     {"status": "permissions assigned"}
 
-4.3 Assign permissions to a group
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Assign permissions to a group
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use ``group`` (group name) instead of ``user``. All members of the group will
 inherit the assigned permissions::
@@ -187,8 +187,8 @@ This is the recommended approach when multiple users need access to the same set
 of products. Manage group membership via the DejaCode admin, then assign the group
 to each product once.
 
-4.4 Remove permissions from a user or group
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Remove permissions from a user or group
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use the ``DELETE`` method with the same body format::
 
@@ -214,8 +214,8 @@ Successful response::
 
     {"status": "permissions removed"}
 
-4.5 Automate permissions in a CI/CD pipeline
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Automate permissions in a CI/CD pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following shell script illustrates how to create a Product version and immediately
 assign permissions to a group, so that team members can view it without any manual

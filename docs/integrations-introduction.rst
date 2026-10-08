@@ -1,12 +1,15 @@
 .. _integrations_introduction:
 
-Integrations overview
+Integrations Overview
 =====================
 
 DejaCode offers several ways to connect with other tools and services, enabling
 **automation**, **synchronization**, and **streamlined workflows**. Depending on your
 needs, you can choose from :ref:`platform_specific_integrations`, the
 :ref:`rest_api_integration`, or the :ref:`webhook_integration`.
+
+To collect package scans, PurlDB data, and vulnerabilities, DejaCode also relies on
+the :ref:`integrations_aboutcode`.
 
 .. _platform_specific_integrations:
 
@@ -68,7 +71,7 @@ or **log the change**.
 
 Webhooks can be configured for a **variety of events**, and the payload can be
 extended with **custom fields** and **headers**. They are especially powerful when
-combined with the REST API — **webhooks deliver the trigger**, and **API calls perform
+combined with the REST API: **webhooks deliver the trigger**, and **API calls perform
 follow-up actions**.
 
 Generic integrations

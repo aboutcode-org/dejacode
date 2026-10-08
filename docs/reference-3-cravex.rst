@@ -1,10 +1,11 @@
 .. _reference_3_cravex:
 
-========================================
-Reference 3 - CRAVEX support in DejaCode
-========================================
+Cyber Resilience Act (CRA) Support
+==================================
 
-This essay describes DejaCode features that support CRA compliance activities.
+This page describes the DejaCode features that support CRA compliance activities.
+They were developed as part of the `CRAVEX <https://nlnet.nl/project/CRAVEX/>`_
+project (Cyber Resilience Application for Vulnerability Exploitability Exchange).
 
 The EU's Cyber Resilience Act (CRA) aims to enhance the cybersecurity of products
 with digital elements, ensuring that hardware and software sold in the EU are
@@ -21,7 +22,7 @@ Key Objectives of the CRA
 
 * **Enhanced Cybersecurity**: The CRA aims to improve the cybersecurity of products
   with digital elements, including both hardware and software.
-* **Manufacturer Responsibility**:  The CRA places responsibility on manufacturers to
+* **Manufacturer Responsibility**: The CRA places responsibility on manufacturers to
   ensure the cybersecurity of their products throughout the entire lifecycle, from design
   to end-of-life.
 * **EU-Wide Standardization**: The CRA aims to establish common cybersecurity rules and

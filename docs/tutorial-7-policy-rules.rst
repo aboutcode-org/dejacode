@@ -1,3 +1,5 @@
+.. _user_tutorial_7_policy_rules:
+
 Tutorial 7 - Managing Policy Violations
 =======================================
 
@@ -10,12 +12,13 @@ what they mean, drilling into the affected packages, and resolving them.
     rules and their violation lifecycle. If you are an administrator and need to enable
     or configure rules, refer to :ref:`how_to_6`.
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
-1. Open the Compliance Dashboard
---------------------------------
+Open the Compliance Dashboard
+-----------------------------
 
-1. From the main menu, navigate to the :guilabel:`Compliance Dashboard`.
+1. Select :guilabel:`Compliance` from the main menu bar to open the
+   :guilabel:`Compliance Dashboard`.
 
 .. image:: images/tutorial-7-policy-rules/compliance-dashboard.jpg
 
@@ -25,8 +28,8 @@ Sign into DejaCode.
 3. Click the policy violations count on a product row to open its
    :guilabel:`Compliance` tab directly.
 
-2. Review Policy Violations
----------------------------
+Review Policy Violations
+------------------------
 
 The **Policy violations** panel shows the active violations for the product.
 
@@ -52,8 +55,8 @@ if only warning rules are triggered.
    :width: 400
    :align: center
 
-3. Drill Into Affected Packages
--------------------------------
+Drill Into Affected Packages
+----------------------------
 
 1. In the **Policy violations** table, click the count in the **In violation** column
    for the rule you want to investigate.
@@ -68,17 +71,18 @@ if only warning rules are triggered.
 3. Review the packages and decide what action to take: update a license expression,
    assign a usage policy, or triage a vulnerability.
 
-4. Resolve a Violation
-----------------------
+Resolve a Violation
+-------------------
 
 Violations are resolved automatically when the underlying condition is corrected.
 The following example shows how to resolve a **Vulnerability Unresolved** violation
 by completing a vulnerability analysis.
 
-1. From the filtered inventory, click a package to open its detail page.
-2. Navigate to the :guilabel:`Vulnerabilities` tab.
-3. For each vulnerability, click :guilabel:`Edit analysis` and set the analysis state
-   to a terminal value such as **Resolved** or **Not affected**.
+1. Note the affected packages from the filtered inventory.
+2. Navigate to the :guilabel:`Vulnerabilities` tab of the product.
+3. For each vulnerability of these packages, click the :guilabel:`Edit analysis`
+   icon and set the analysis state to a terminal value such as **Resolved** or
+   **Not Affected**.
 
 .. image:: images/tutorial-7-policy-rules/vulnerability-analysis-form.jpg
    :width: 400
@@ -90,8 +94,8 @@ by completing a vulnerability analysis.
 Once all vulnerabilities on a package have a terminal analysis, that package is no
 longer counted as a violation for the **Vulnerability Unresolved** rule.
 
-5. Re-evaluate and Confirm
---------------------------
+Re-evaluate and Confirm
+-----------------------
 
 After correcting the underlying condition, trigger a manual re-evaluation to update
 the violation count immediately rather than waiting for the next automatic run.

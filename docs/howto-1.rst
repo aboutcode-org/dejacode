@@ -1,17 +1,16 @@
 .. _how_to_1:
 
-=====================================
-How To 1 - Manage your Usage Policies
+How To 1 - Manage Your Usage Policies
 =====================================
 
-Sign into DejaCode.
+Sign in to DejaCode.
 
 .. note:: Sign in as a User with full administrative permissions.
 
 Review and Maintain your Usage Policies
-=======================================
+---------------------------------------
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Usage Policies` option in the :guilabel:`Policy` panel.
 - Review the Usage Policies currently defined for your dataspace.
 - Optionally click the :guilabel:`View Reference Data` button in the upper left section
@@ -23,7 +22,7 @@ Review and Maintain your Usage Policies
 **Examine the Details**:
 
 - Open a Usage Policy or add a new one.
-- The **Field Name** should concisely express a Usage Policy defined by your
+- The **Label** should concisely express a Usage Policy defined by your
   organization.
 - The **Object type** identifies the kind of object governed by the Usage Policy.
   Consider, for example, that your Usage Policy list may vary somewhat for Licenses as
@@ -54,23 +53,23 @@ Click the :guilabel:`Save` button in the lower right section of the form.
 Review your progress in the Usage Policies list.
 
 Assign your Usage Policies to Licenses
-======================================
+--------------------------------------
 
-- Select the :guilabel:`Licenses` option from the dropdown beneath your User name.
+- Select :guilabel:`Licenses` from the dropdown under your user name.
 
 **Filter Licenses as Needed**
 
-- Use the **Filter** dropdown in the upper right to restrict the amount of data that you
+- Use the :guilabel:`Filter` dropdown in the upper right to restrict the amount of data that you
   process to a manageable list. For example, you can:
 - Filter to see all Licenses where **Usage Policy** is empty.
-- Filter to see Licenses in a **Category** , **License profile** , or **License style** .
+- Filter to see Licenses in a **Category**, **License profile**, or **License style**.
 - Select a **Reporting query** to perform more complex filtering.
 
 **Perform Mass Updates to Set License Usage Policies**
 
 - Use the checkboxes on the left side of the form to select Licenses for update.
-- Select the **Mass update** option from the dropdown in the lower left and
-  click the **Go** button.
+- Select the :guilabel:`Mass update` option from the dropdown in the lower left and
+  click the :guilabel:`Go` button.
 - Check the **Usage policy** field and choose the Policy to apply to the selected
   Licenses.
 - Click the :guilabel:`Update records` button in the lower right.
@@ -79,13 +78,13 @@ Continue this process to assign Usage Policies to all of your Licenses.
 You can also assign a Usage Policy to a single License on the Change License form.
 
 Assign your Usage Policies to Components
-========================================
+----------------------------------------
 
-- Select the :guilabel:`Components` option from the dropdown beneath your User name.
+- Select :guilabel:`Components` from the dropdown under your user name.
 
 **Filter Components as Needed**
 
-- Use the **Filter** dropdown in the upper right to restrict the amount of data that you
+- Use the :guilabel:`Filter` dropdown in the upper right to restrict the amount of data that you
   process to a manageable list. For example, you can:
 - Filter to see all Components where **Usage Policy** is empty.
 - Select a **Reporting query** to perform more complex filtering.
@@ -93,18 +92,18 @@ Assign your Usage Policies to Components
 **Set Component Usage Policies from Licenses**
 
 - Use the checkboxes on the left side of the form to select Components for update.
-- Select the **Set usage policy from licenses** option from the dropdown in the lower
-  left and click the **Go** button.
+- Select the :guilabel:`Set usage policy from licenses` option from the dropdown in
+  the lower left and click the :guilabel:`Go` button.
 - Use the checkboxes on the right to select Components to update.
-- Click the **Set policies** button in the lower right to apply updates.
-- Continue this proess to assign Usage Policies to all of your Components.
+- Click the :guilabel:`Set policies` button in the lower right to apply updates.
+- Continue this process to assign Usage Policies to all of your Components.
 - Note that you can also edit any Component to specify a Usage Policy different from
   its primary License.
 
 Use the same process to set Package Usage Policies from Licenses.
 
 The Importance of Package and Component Usage Policy Assignments
-================================================================
+----------------------------------------------------------------
 
 Note that when you are familiar with the way that product teams actually use a
 package or component, you may want to set the usage policy on those items to reflect
@@ -117,9 +116,9 @@ that your usage of that item is only going to execute the code in a certain way 
 set the item usage policy to reflect that.
 
 Make Usage Policies Visible to your Users
-=========================================
+-----------------------------------------
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Dataspaces` option in the :guilabel:`Administration` panel.
 - Select your Dataspace to open it and edit the details.
 - In the :guilabel:`User Interface Settings` section,
@@ -128,13 +127,13 @@ Make Usage Policies Visible to your Users
 - Save your work.
 
 Review Usage Policy Impact
-==========================
+--------------------------
 
 - Open the User View List of Licenses, Components, or Packages to see the Usage Policy
   Icon associated with objects that have Usage Policy assigned. If you open one of these
   objects to see the details view, there is also a Usage Policy tab that shows more
   extensive information about the Policy, including your Guidelines.
-- Open a Product and select the Inventory tab. In addition to the Usage Policy Icons,
+- Open a Product and select the :guilabel:`Inventory` tab. In addition to the Usage Policy Icons,
   you will also see that Items with a Compliance Alert are highlighted with yellow for
   a warning and red for an error, as you defined on the associated Usage Policies.
 - You can add the Usage Policy Label as a field to your Column Templates in order to
@@ -144,15 +143,15 @@ Review Usage Policy Impact
 Continue refining and reviewing your Usage Policies.
 
 Export License Policy Definitions
-=================================
+---------------------------------
 
 You can export a list of your License Keys along with associated Usage Policy details
 to a YAML-formatted file. This file can be used by other tools such as the open source
 ScanCode Toolkit (scancode-toolkit).
 
-- Select the :guilabel:`Dashboard` option from the dropdown beneath your User name.
+- Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Usage Policies` option in the :guilabel:`Policy` panel.
-- Click the :guilabel:`Export License Policies as YAML` button in the upper right
+- Click the :guilabel:`Download License Policies as YAML` button in the upper right
   section of the form.
 - View or edit the exported **license_policies.yml** file in your preferred text editor.
 - Use the file as an input option to ScanCode Toolkit to enhance the output results.

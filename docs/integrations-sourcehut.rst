@@ -31,7 +31,7 @@ To enable integration, you need a SourceHut **API token**.
 
    It is recommended to **create a dedicated SourceHut user** with a clear, descriptive
    name such as ``dejacode-integration``. This ensures that all SourceHut issues
-   managed by integration are clearly attributed to that user, improving traceability
+   managed by the integration are clearly attributed to that user, improving traceability
    and auditability.
 
 DejaCode Dataspace Configuration
@@ -39,8 +39,8 @@ DejaCode Dataspace Configuration
 
 To use your SourceHut token in DejaCode:
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Dataspaces**, and select your Dataspace
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Dataspaces`, and select your Dataspace
 3. Scroll to the **SourceHut Integration** section under **Configuration**
 4. Paste your SourceHut token in the **SourceHut token** field
 5. Save the form
@@ -48,8 +48,8 @@ To use your SourceHut token in DejaCode:
 Activate SourceHut Integration on Request Templates
 ---------------------------------------------------
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Workflow** > **Request templates**
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Workflow > Request templates`
 3. Create or edit a Request Template in your Dataspace
 4. Set the **Issue Tracker ID** field to your SourceHut project URL, e.g.::
 
@@ -60,4 +60,4 @@ Once the integration is configured:
 - New **Requests** using this template will be automatically pushed to SourceHut
 - Field updates (like title or priority) and **status changes** (e.g. closed) will be
   synced
-- New **Comments** on a DejaCode Request will be propagated to the SourceHut ticket
+- New **Comments** on a DejaCode Request will be propagated to the SourceHut ticket.

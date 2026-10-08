@@ -31,7 +31,7 @@ appropriate permissions.
 
    Under **Scopes**, select:
 
-   - ``api`` — Full access to create, update, and comment on issues
+   - ``api``: Full access to create, update, and comment on issues
 
 .. note::
 
@@ -43,15 +43,15 @@ appropriate permissions.
 3. **Generate the Token**:
 
    - Click **Create token**
-   - Copy the token and store it securely — you’ll need it for the next step
+   - Copy the token and store it securely: you will need it for the next step
 
 DejaCode Dataspace Configuration
 --------------------------------
 
 To use your GitLab token in DejaCode:
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Dataspaces**, and select your Dataspace
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Dataspaces`, and select your Dataspace
 3. Scroll to the **GitLab Integration** section under **Configuration**
 4. Paste your GitLab token in the **GitLab token** field
 5. Save the form
@@ -59,8 +59,8 @@ To use your GitLab token in DejaCode:
 Activate GitLab Integration on Request Templates
 ------------------------------------------------
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Workflow** > **Request templates**
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Workflow > Request templates`
 3. Create or edit a Request Template in your Dataspace
 4. Set the **Issue Tracker ID** field to your GitLab project URL, e.g.::
 

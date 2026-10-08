@@ -1,6 +1,5 @@
 .. _contributing:
 
-========================
 Contributing to DejaCode
 ========================
 
@@ -17,9 +16,9 @@ resources to help you get started.
     - That your Contributions to DejaCode are licensed under Apache-2.0.
 
 Do Your Homework
-================
+----------------
 
-Before adding a contribution or create a new issue, take a look at the project’s
+Before adding a contribution or creating a new issue, take a look at the project’s
 `README <https://github.com/aboutcode-org/dejacode#readme>`_, read through our
 `documentation <https://dejacode.readthedocs.io/en/latest/>`_,
 and browse existing `issues <https://github.com/aboutcode-org/dejacode/issues>`_,
@@ -27,13 +26,13 @@ to develop some understanding of the project and confirm whether a given
 issue/feature has previously been discussed.
 
 Ways to Contribute
-==================
+------------------
 
 Contributing to the codebase is not the only way to add value to DejaCode or
 join our community. Below are some examples to get involved:
 
 First Timers
-------------
+^^^^^^^^^^^^
 
 You are here to help, but you're a new contributor! No worries, we always
 welcome newcomer contributors. We maintain some
@@ -45,23 +44,23 @@ and encourage new contributors to work on those issues for a smooth start.
 
     You do not need our permission to work on an open issue.
     A good start is to present your understanding of the problem/bug and how you
-    would fix it. Providing some code using a pull request will come handy,
+    would fix it. Providing some code using a pull request will come in handy,
     but being able to explain a solution is always a good start.
 
     Make sure to read through this page and follow the recommendations.
 
 .. warning::
-    **"Is this issue is open?"**
+    **"Is this issue open?"**
 
     Unless closed, yes it is open.
 
 Report Issues
--------------
+^^^^^^^^^^^^^
 
 - Report a new `bug <https://github.com/aboutcode-org/dejacode/issues>`_; just remember to be
   as specific as possible.
 - Create a `new issue <https://github.com/aboutcode-org/dejacode/issues>`_ to request a
-  feature, submit a feedback, or ask a question.
+  feature, submit feedback, or ask a question.
 - Look into existing `bugs <https://github.com/aboutcode-org/dejacode/labels/bug>`_,
   try to reproduce the issue on your side, and discuss solutions in the comments.
 
@@ -70,11 +69,11 @@ Report Issues
     to confirm whether a given issue or a question has previously been discussed.
 
 Code Contributions
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Code is contributed to the codebase using **pull requests**.
 A pull request should always be attached to an existing issue.
-When there is no existing issues, start by `creating one <https://github.com/aboutcode-org/dejacode/issues>`_
+When there is no existing issue, start by `creating one <https://github.com/aboutcode-org/dejacode/issues>`_
 to discuss potential solutions and implementation details before writing any code.
 
 We use several conventions to ensure code quality regarding format, testing, and
@@ -110,11 +109,11 @@ attribution.
 
 .. note::
     Pull requests that are not passing the automated integration tests are unlikely
-    to be reviewed. Focus on making all the "Checks" to pass before asking for a
+    to be reviewed. Focus on making all the "Checks" pass before asking for a
     code review.
 
 Documentation Improvements
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Documentation is a critical aspect of any project that is usually neglected or
 overlooked. We value any suggestions to improve
@@ -126,7 +125,7 @@ overlooked. We value any suggestions to improve
     to help guide new users.
 
 Other Ways
-----------
+^^^^^^^^^^
 
 You want to contribute to other aspects of the DejaCode project, and you
 can't find what you're looking for! You can always discuss new topics, ask
@@ -136,7 +135,7 @@ questions, and interact with us and other community members on
 .. _contributing_resources:
 
 Helpful Resources
-=================
+-----------------
 
 - Review our `comprehensive guide <https://scancode-toolkit.readthedocs.io/en/latest/contribute/index.html>`_
   for more details on how to add quality contributions to our codebase and documentation

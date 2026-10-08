@@ -1,34 +1,12 @@
 .. _data_model:
 
-================
-Models reference
-================
-
-DejaCode Modules
-================
-
-DejaCode includes the following modules:
-
-* **Product Portfolio**: Record and maintain software inventories for your products.
-* **Component and Packages Catalog**: Identify the origin, licensing terms and
-  relationships of open source and other software components by consulting the catalog.
-  Communicate your company usage policy for components to your users, and provide
-  them with detailed guidance.
-* **License Library**: Understand software licensing terms with the nexB library
-  of open source and proprietary licenses. Communicate your company usage policy
-  for licenses to your users, and provide them with detailed guidance.
-* **Reporting**: Create your own reports, from your queries and column templates,
-  to explore, analyze and export your DejaCode application data.
-* **Workflow Requests**: Create your own request templates to enable your users
-  to submit requests regarding your products, components, licenses and their
-  policies, and to track the progress of each request.
-* **API**: Use the DejaCode API to integrate with your other data sources and
-  applications.
+Data Models
+===========
 
 .. _data_model_product:
 
 Product model
-=============
+-------------
 
 * **Name** - Your product name. Required field (the only required field).
 
@@ -68,10 +46,13 @@ Product model
 
 * **Release date** - Use the date picker to specify your product release date.
 
+* **Vulnerabilities risk threshold** - A risk value between 0.0 and 10.0 used to
+  prioritize and control the level of attention to vulnerabilities.
+
 .. _data_model_package:
 
 Package model
-=============
+-------------
 
 * **Filename** - The exact filename of the package.
 
@@ -102,7 +83,7 @@ Package model
   For (a very simple) example, ``Licensed by Starship LLC under Apache 2.0``
 
 * **Holder** - The name(s) of the copyright holder(s) of a package,
-  as documented in the code
+  as documented in the code.
 
 * **Author** - The name(s) of the author(s) of a package as documented in the code.
 
@@ -112,4 +93,4 @@ Package model
   This must be a valid URL.
 
 * **Primary language** - Use the autocomplete feature to enter and select a
-  a primary language. For example, ``Python``
+  primary language. For example, ``Python``

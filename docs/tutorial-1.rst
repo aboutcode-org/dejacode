@@ -1,18 +1,24 @@
 .. _user_tutorial_1:
 
-===============================
-Tutorial 1 - Your first Product
+Tutorial 1 - Your First Product
 ===============================
 
-Sign into DejaCode.
+.. note::
+    **Before you start**:
+
+    - Permission to add Products.
+    - :guilabel:`Check for new Package versions` requires the PurlDB integration
+      (:ref:`dejacode_dataspace_purldb`).
+
+Sign in to DejaCode.
 
 Create a Product
-================
+----------------
 
 1. Select :guilabel:`Products` from the main menu bar.
 
 2. Click the green :guilabel:`Add Product` button. Enter the values that you know,
-you can refer to :ref:`data_model_product` for details about each fields.
+   you can refer to :ref:`data_model_product` for details about each field.
 
 3. Set a **name**, and click the :guilabel:`Add Product` button at the bottom of the
    form.
@@ -20,7 +26,7 @@ you can refer to :ref:`data_model_product` for details about each fields.
 .. note:: You are ready to assign Inventory objects to your Product!
 
 Load a Software Bill of Materials (SBOM) to your Product
-========================================================
+--------------------------------------------------------
 
 You have the flexibility to employ either your CycloneDX, SPDX, or AboutFile
 Software Bill of Materials (SBOMs).
@@ -35,17 +41,17 @@ On the Product details page, from the :guilabel:`Actions` dropdown, select
 * Click the :guilabel:`Choose File` button on the **SBOM file or zip archive** field.
 * Select your SBOM (.cdx.json or .spdx.json) and click the :guilabel:`Open` button.
 * Check the :guilabel:`Update existing packages with discovered packages data` option.
-* Click the :guilabel:`Load Packages` button.
+* Click the :guilabel:`Import` button.
 
 DejaCode presents the :guilabel:`Imports` tab. Refresh your screen from the browser
 to see the status of your import.
 
-View your import results in the :guilabel:`Inventory tab`.
+View your import results in the :guilabel:`Inventory` tab.
 
 .. note:: Continue assigning packages to your Product as required.
 
 Assign Packages to your Product
-===============================
+-------------------------------
 
 From the :guilabel:`Manage` dropdown, select :guilabel:`Packages`:
 
@@ -55,7 +61,7 @@ From the :guilabel:`Manage` dropdown, select :guilabel:`Packages`:
   DejaCode gets the license ``mit`` from the package definition.
 * Click the :guilabel:`Save` button.
 
-You can see the results by selecting the :guilabel:`Inventory tab`.
+You can see the results by selecting the :guilabel:`Inventory` tab.
 
 Select :guilabel:`Packages` from the main menu bar.
 
@@ -65,21 +71,23 @@ Select :guilabel:`Packages` from the main menu bar.
 * Select your product from the dropdown list.
 * Click the :guilabel:`Add to Product` button.
 
-View your results in the :guilabel:`Inventory tab`.
+View your results in the :guilabel:`Inventory` tab.
 
 .. note:: Continue assigning packages to your Product as required.
 
-Review your progress
-====================
+.. _user_tutorial_1_review_progress:
 
-Click the :guilabel:`Attribution` button:
+Review your progress
+--------------------
+
+Click the :guilabel:`Generate Attribution` icon button:
 
 * Accept all the default attribution configuration settings.
-* Scroll down and click the :guilabel:`Generate Attribution`.
+* Scroll down and click the :guilabel:`Generate Attribution` button.
 * Explore the attribution document that DejaCode presents to you.
 * Save the document to your local file system using your browser File Save command.
 
-Select :guilabel:`Reports` from the :guilabel:`Tools` dropdown:
+Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu:
 
 * Select an appropriate report such as ``2-Product Package Analysis``.
 * Enter your product Name and Version and click :guilabel:`Rerun Report`.
@@ -87,7 +95,7 @@ Select :guilabel:`Reports` from the :guilabel:`Tools` dropdown:
 * Export the report to your local file system using the :guilabel:`Export` button.
 
 Check for New Versions of your Product Packages
-===============================================
+-----------------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -98,7 +106,7 @@ New Package Versions are displayed on the :guilabel:`Inventory` tab.
 You can click on new versions and add them to DejaCode from the PurlDB.
 
 Assign Catalog Components to your Product
-=========================================
+-----------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -112,77 +120,60 @@ From the :guilabel:`Manage` dropdown, select :guilabel:`Components`:
   DejaCode gets the license ``apache-2.0`` from the component definition.
 * Click the :guilabel:`Save` button.
 
-You can see the results by selecting the :guilabel:`Inventory tab`.
+You can see the results by selecting the :guilabel:`Inventory` tab.
 
-Select :guilabel:`Components` from the main menu bar.
+Select :guilabel:`Components` from the :guilabel:`Catalog` section of the side menu.
 
 * Locate one or more components to be used in your Product.
-* Use the checkbox on the left to select your package(s).
+* Use the checkbox on the left to select your component(s).
 * Select the ``Product`` option from the :guilabel:`Add to` dropdown.
 * Select your product from the dropdown list.
 * Click the :guilabel:`Add to Product` button.
 
-View your results in the :guilabel:`Inventory tab`.
+View your results in the :guilabel:`Inventory` tab.
 
 .. note:: Continue assigning components to your Product as required.
 
 Review your impact
-==================
+------------------
 
-Click the :guilabel:`Attribution` button:
-
-* Accept all the default attribution configuration settings.
-* Scroll down and click the :guilabel:`Generate Attribution`.
-* Explore the attribution document that DejaCode presents to you.
-* Save the document to your local file system using your browser File Save command.
-
-Select :guilabel:`Reports` from the :guilabel:`Tools` dropdown:
-
-* Select an appropriate report such as ``2-Product Component Analysis``.
-* Enter your product Name and Version and click :guilabel:`Rerun Report`.
-* Explore the results that DejaCode presents to you.
-* Export the report to your local file system using the :guilabel:`Export` button.
+Generate the attribution and run the reports again as described in
+:ref:`user_tutorial_1_review_progress`, using a report such as
+``2-Product Component Analysis``.
 
 Assign Custom Components to your Product
-========================================
+----------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
 Click the **Product name** of the Product you are defining to open it.
 
 From the :guilabel:`Manage` dropdown, select :guilabel:`Add custom Component`:
-Enter the data fields that define your custom Component.
+
+* Enter the data fields that define your custom Component.
 * Click the :guilabel:`Save` button.
-Your results are displayed on the :guilabel:`Inventory tab`.
 
-Click the :guilabel:`Attribution` button:
+Your results are displayed on the :guilabel:`Inventory` tab.
 
-* Accept all the default attribution configuration settings.
-* Scroll down and click the :guilabel:`Generate Attribution`.
-* Explore the attribution document that DejaCode presents to you.
-* Save the document to your local file system using your browser File Save command.
-
-Select :guilabel:`Reports` from the :guilabel:`Tools` dropdown:
-
-* Select an appropriate report such as ``2-Product Custom Component Analysis``.
-* Enter your product Name and Version and click :guilabel:`Rerun Report`.
-* Explore the results that DejaCode presents to you.
-* Export the report to your local file system using the :guilabel:`Export` button.
+Review the impact on your attribution and reports as described in
+:ref:`user_tutorial_1_review_progress`, using a report such as
+``2-Product Custom Component Analysis``.
 
 Review the Licenses that Impact your Product
-============================================
+--------------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
 Click the **Product name** of the Product you are defining to open it.
 
-From the :guilabel:`Manage` dropdown, select :guilabel:`License Summary`:
-Your Product Licenses are displayed on the :guilabel:`License summary form`.
-DejaCode displays the **Usage Policy** and all the **Items** for each **License**.
-Export the **License summary** by clicking the button :guilabel:`Export as CSV`.
+Click the :guilabel:`Compliance` tab.
+The **License compliance** panel displays the **Packages** and the **Policy**
+for each **License** of your Product.
+Export it from the download icon of the panel, for example as
+:guilabel:`Comma-separated Values (.csv)`.
 
 Assign Everything Else to your Product
-======================================
+--------------------------------------
 
 Continue refining and reviewing your product.
 

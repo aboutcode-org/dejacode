@@ -1,6 +1,6 @@
 .. _integrations_webhook:
 
-Webhook integration
+Webhook Integration
 ===================
 
 Webhooks provide a way for DejaCode to automatically send data to external systems
@@ -30,20 +30,20 @@ The following events can be configured as webhook triggers.
 
 **Request events**
 
-- ``request.added`` — A new request is created
-- ``request.updated`` — An existing request is modified
-- ``request_comment.added`` — A comment is added to a request
+- ``request.added``: A new request is created
+- ``request.updated``: An existing request is modified
+- ``request_comment.added``: A comment is added to a request
 
 **Vulnerability events**
 
-- ``vulnerability.data_update`` — Vulnerability data is updated (daily refresh or
+- ``vulnerability.data_update``: Vulnerability data is updated (daily refresh or
   package import)
 
 **Policy events**
 
-- ``policy.violation_detected`` — One or more new policy violations are detected
+- ``policy.violation_detected``: One or more new policy violations are detected
   during a rule evaluation run
-- ``policy.violation_resolved`` — One or more policy violations are resolved during
+- ``policy.violation_resolved``: One or more policy violations are resolved during
   a rule evaluation run
 
 .. seealso::
@@ -51,8 +51,8 @@ The following events can be configured as webhook triggers.
 
 **User events**
 
-- ``user.locked_out`` — A user account is locked out following failed login attempts
-- ``user.added_or_updated`` — A user account is created or modified
+- ``user.locked_out``: A user account is locked out following failed login attempts
+- ``user.added_or_updated``: A user account is created or modified
 
 .. note::
 
@@ -64,16 +64,16 @@ Webhook configuration
 
 Webhooks are managed from the **Admin UI**.
 
-1. Go to the **Administration dashboard**.
-2. Navigate to **Webhooks**.
-3. Click **Add webhook** to create a new one.
+1. Go to the :guilabel:`Admin Dashboard`.
+2. Navigate to :guilabel:`Notification > Webhook subscriptions`.
+3. Click :guilabel:`Add webhook subscription` to create a new one.
 4. Fill in the following fields:
 
-   - **Target URL** — The endpoint that will receive the POST requests.
-   - **Event** — The event name that will trigger the webhook.
-   - **Is active** — Enable or disable the webhook.
-   - **Extra payload** — Additional JSON data to include in the request body.
-   - **Extra headers** — Additional HTTP headers to include in the request.
+   - **Target URL**: The endpoint that will receive the POST requests.
+   - **Event**: The event name that will trigger the webhook.
+   - **Is active**: Enable or disable the webhook.
+   - **Extra payload**: Additional JSON data to include in the request body.
+   - **Extra headers**: Additional HTTP headers to include in the request.
 
 5. Save the webhook.
 
@@ -85,9 +85,9 @@ Payload structure
 
 DejaCode uses two payload formats depending on the event type.
 
-**Structured payload** (request events)
+**Structured payload** (request events and ``user.added_or_updated``)
 
-Request events use a structured JSON format containing a ``hook`` object with webhook
+These events use a structured JSON format containing a ``hook`` object with webhook
 metadata and a ``data`` object with the full serialized resource.
 
 Example payload for ``request.added``::
@@ -129,9 +129,9 @@ Example payload for ``request.added``::
       }
     }
 
-**Text payload** (vulnerability and policy events)
+**Text payload** (vulnerability, policy, and ``user.locked_out`` events)
 
-Vulnerability and policy events use a simpler format with a single ``text`` field
+These events use a simpler format with a single ``text`` field
 containing a human-readable summary of the event.
 
 Example payload for ``vulnerability.data_update``::

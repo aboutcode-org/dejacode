@@ -13,11 +13,11 @@ affected packages and the detection date. Violations are automatically resolved 
 underlying condition is corrected.
 
 All rules are **disabled by default**. Each dataspace activates and configures the
-rules that are relevant to its compliance program via the **Dataspace Configuration**
-form.
+rules that are relevant to its compliance program via the **Policy Rules Configuration**
+section of the Dataspace form.
 
-1. Built-in Rules
------------------
+Built-in Rules
+--------------
 
 Eight rules are available out of the box, organized into two categories: policy-based
 rules and vulnerability-based rules.
@@ -93,8 +93,8 @@ rules and vulnerability-based rules.
 - **Warning** rules are highlighted in yellow and indicate a condition that requires
   attention but does not necessarily block a release.
 
-2. Violation Lifecycle
-----------------------
+Violation Lifecycle
+-------------------
 
 Each policy violation is a record associated with a product and a rule type. Its
 lifecycle follows these states:
@@ -111,11 +111,11 @@ lifecycle follows these states:
 Only **active (unresolved)** violations are shown in the compliance tab and returned
 by the REST API.
 
-3. Configuration
-----------------
+Configuration
+-------------
 
-Policy rules are configured per dataspace using the **Dataspace Configuration** form
-in the Admin interface under **Dataspaces > Dataspace configurations**.
+Policy rules are configured per dataspace in the **Policy Rules Configuration** section
+of the Dataspace form, in the Admin interface under :guilabel:`Dataspaces`.
 
 .. seealso::
     For step-by-step instructions on enabling and configuring rules through the Admin
@@ -168,8 +168,8 @@ Each entry in the JSON object is keyed by the rule type and supports three optio
     set to ``true``, are skipped during evaluation and any previously open violations
     for those rules are automatically resolved.
 
-3.1 Rule Parameters
-^^^^^^^^^^^^^^^^^^^
+Rule Parameters
+^^^^^^^^^^^^^^^
 
 The following parameters are supported by rules that accept them:
 
@@ -186,11 +186,11 @@ The following parameters are supported by rules that accept them:
 - ``min_risk_score`` (float, 0.0-10.0): only consider vulnerabilities whose risk score
   is greater than or equal to this value. Defaults to ``8.0``.
 
-4. Evaluation
--------------
+Evaluation
+----------
 
-4.1 Automatic Evaluation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Automatic Evaluation
+^^^^^^^^^^^^^^^^^^^^
 
 Rules are re-evaluated automatically in the background (via the task queue) whenever
 any of the following changes occur:
@@ -198,49 +198,34 @@ any of the following changes occur:
 - A **product** is saved.
 - A **package is added to or removed from** a product.
 - A **package** record is updated (for example, a new vulnerability is linked to it).
-- The **Dataspace Configuration** is saved, which triggers re-evaluation of all
+- The **Policy Rules Configuration** is saved, which triggers re-evaluation of all
   products in the dataspace.
 
-4.2 Manual Re-evaluation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Manual Re-evaluation
+^^^^^^^^^^^^^^^^^^^^
 
 Rules can also be re-evaluated on demand in two ways:
 
 - From the **Product Administration** form in the Admin interface, using the
-  **Evaluate policy rules** bulk action on the product list.
+  :guilabel:`Evaluate policy rules` bulk action on the product list.
 - From the **compliance tab** of a product detail page, using the re-evaluate button
   next to the policy violations panel.
 
   .. image:: images/reference-policy-rules/manual-reevaluation-button.jpg
      :width: 400
 
-5. Compliance Tab
------------------
+Compliance Tab
+--------------
 
-.. image:: images/reference-policy-rules/compliance-tab-policy-violations.jpg
+Active violations are displayed in the :guilabel:`Compliance` tab of each product
+detail page, and summarized per product in the :guilabel:`Compliance Dashboard`.
 
-The **Compliance** tab on each product detail page displays an overview of active
-policy violations. For each triggered rule, the table shows:
+.. seealso::
+    :ref:`user_tutorial_7_policy_rules` for a walkthrough of the Compliance tab and
+    its drill-down to the affected packages.
 
-- The rule label and severity (color-coded badge).
-- The rule description.
-- The number of packages **in violation**, linked to the product inventory pre-filtered
-  to show only those packages.
-- The **detection date** of the violation.
-
-The badge count in the panel header reflects the total number of triggered rules. Its
-color is red if at least one error-severity rule is triggered, yellow if only
-warning-severity rules are triggered.
-
-Clicking the **info icon** next to the panel title opens a modal listing all active
-rules with their current status: **Triggered** or **OK**.
-
-.. image:: images/reference-policy-rules/compliance-tab-policy-rules.jpg
-   :width: 500
-   :align: center
-
-6. Webhook Notifications
-------------------------
+Webhook Notifications
+---------------------
 
 The policy rules engine fires webhook events when violations change state. These can be
 used to integrate DejaCode compliance alerts into external workflows such as Slack,
@@ -258,8 +243,8 @@ Two events are available:
     :ref:`integrations_webhook` for instructions on configuring webhook endpoints and
     event subscriptions.
 
-7. REST API
------------
+REST API
+--------
 
 Active policy violations for a product are accessible via the REST API at::
 
@@ -277,5 +262,5 @@ The response is a list of active (unresolved) violations, each including:
 Only active (unresolved) violations are returned by this endpoint.
 
 .. seealso::
-    Refer to the **API documentation** from the :guilabel:`Tools` menu for detailed
-    guidance on authentication and available endpoints.
+    Refer to :guilabel:`API Documentation` in the :guilabel:`Developer` section of the
+    side menu for detailed guidance on authentication and available endpoints.

@@ -1,9 +1,16 @@
 .. _user_tutorial_4_vulnerabilities:
 
-Tutorial 4 - Managing Product Vulnerabilities
-=============================================
+Tutorial 4 - Import Scan Results into a Product
+===============================================
 
-Sign into DejaCode.
+.. note::
+    **Before you start**:
+
+    - Permission to add Products.
+    - The VulnerableCodeDB integration
+      (:ref:`dejacode_dataspace_vulnerablecode`) enabled in your Dataspace.
+
+Sign in to DejaCode.
 
 Create a Product
 ----------------
@@ -24,12 +31,12 @@ Load Scan Results to your Product
 
 1. Download the following ScanCode Scan results example from:
 
-   `<https://github.com/aboutcode-org/dejacode/tree/main/docs/sboms/starship_engine_2.0_scan_results.json>`_.
+   `<https://github.com/aboutcode-org/dejacode/raw/refs/heads/main/docs/sboms/starship_engine_2.0_scan_results.json>`_.
 
 2. On the Product details page, from the :guilabel:`Actions` dropdown, select
    :guilabel:`Import ScanCode scan results`:
 
-   * Click the :guilabel:`Choose File` button under the **Upload file** field.
+   * Click the :guilabel:`Choose File` button under the **Scan results JSON file** field.
    * Select the **starship_engine_2.0_scan_results.json** file and click the
      :guilabel:`Open` button.
    * Click the :guilabel:`Import` button.
@@ -46,47 +53,12 @@ Load Scan Results to your Product
 .. image:: images/tutorial-4-vulnerabilities/vulnerability-icon.jpg
    :width: 300
 
-Review Vulnerabilities Affecting Your Product
----------------------------------------------
+Review, Analyze, and Export Vulnerabilities
+-------------------------------------------
 
-1. Navigate to the :guilabel:`Vulnerabilities` tab on the Product page, which presents
-   a comprehensive view of all the Vulnerabilities for your Product filtered to those
-   with a Risk greater than the Risk Threshold defined for your Dataspace.
+Your Product inventory now includes vulnerable packages. Continue with the same steps
+as for an imported SBOM, in :ref:`user_tutorial_5_sboms`:
 
-.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab.jpg
-
-2. You can filter by Risk, Recommendation, Analysis and Reachability to focus on
-   specific Vulnerabilities.
-
-Conduct Vulnerability Analysis
-------------------------------
-
-1. Review each vulnerability in the :guilabel:`Vulnerabilities` tab.
-
-.. image:: images/tutorial-4-vulnerabilities/vulnerability-analysis-modal.jpg
-
-2. Add details or analysis for each vulnerability as needed, which will
-   enhance reporting and exports.
-
-.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab-with-analysis.jpg
-
-.. seealso::
-    Refer to :ref:`how_to_4` for a detailed guide on each analysis field and its
-    meaning.
-
-Export CycloneDX SBOM with VEX
-------------------------------
-
-1. On the Product details page, from the :guilabel:`Share` dropdown, select
-   :guilabel:`CycloneDX SBOM + VEX`.
-
-.. image:: images/tutorial-4-vulnerabilities/share-cdx.jpg
-   :width: 300
-
-2. The analysis details you provide for product package vulnerabilities are
-   included in the ``vulnerabilities`` section of the CycloneDX VEX output.
-
-.. seealso::
-    Once your administrator has configured triage rulesets for your Dataspace, this
-    manual review is complemented by automated remediation recommendations. Refer to
-    :ref:`user_tutorial_8_vulnerability_triage` to get started.
+1. :ref:`user_tutorial_5_review_vulnerabilities`
+2. :ref:`user_tutorial_5_vulnerability_analysis`
+3. :ref:`user_tutorial_5_export_vex`

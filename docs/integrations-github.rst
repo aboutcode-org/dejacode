@@ -51,15 +51,15 @@ To enable integration, you need a GitHub **fine-grained personal access token (P
 5. **Save and Copy the Token**:
 
    - Click **Generate token**
-   - Copy the token and store it securely — you’ll need it for the next step
+   - Copy the token and store it securely: you will need it for the next step
 
 DejaCode Dataspace Configuration
 --------------------------------
 
 To use your GitHub token in DejaCode:
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Dataspaces**, and select your Dataspace
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Dataspaces`, and select your Dataspace
 3. Scroll to the **GitHub Integration** section under **Configuration**
 4. Paste your GitHub token in the **GitHub token** field
 5. Save the form
@@ -67,8 +67,8 @@ To use your GitHub token in DejaCode:
 Activate GitHub Integration on Request Templates
 ------------------------------------------------
 
-1. Go to the **Administration dashboard**
-2. Navigate to **Workflow** > **Request templates**
+1. Go to the :guilabel:`Admin Dashboard`
+2. Navigate to :guilabel:`Workflow > Request templates`
 3. Create or edit a Request Template in your Dataspace
 4. Set the **Issue Tracker ID** field to your GitHub repository URL, e.g.::
 

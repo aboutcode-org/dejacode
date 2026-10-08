@@ -1,21 +1,21 @@
 .. _reference_1:
 
-=====================================================================
-Reference 1 - Declared License Expression and License Clarity Scoring
-=====================================================================
+Declared License Expression and License Clarity Scoring
+=======================================================
 
 When you scan a Package from DejaCode, you can view the Scan Results in a
-:guilabel:`Actions` tab on the Package details user view. DejaCode presents a selection of
+:guilabel:`Scan` tab on the Package details user view. DejaCode presents a selection of
 scan details with an emphasis on license detection. You can also download the
-complete :guilabel:`Scan Results` in .json format.
+complete scan results in .json format with the :guilabel:`Download Scan results`
+button.
 
 License Summary Fields
-======================
+----------------------
 
-In DejaCode, the Scan tab of the Package details user view shows
-new license clarity scoring fields and new summary fields.
+In DejaCode, the :guilabel:`Scan` tab of the Package details user view shows
+license clarity scoring fields and summary fields.
 
-The new summary fields are:
+The summary fields are:
 
 - :guilabel:`declared_license_expression`
 - :guilabel:`declared_holder`
@@ -29,10 +29,10 @@ You can set the values from :guilabel:`declared_license_expression`,
 in DejaCode.
 
 Declared License Expression
-===========================
+---------------------------
 
 Declared License Expression is the primary license expression as determined from the
-declaration(s) of  the authors of the package.
+declaration(s) of the authors of the package.
 
 Note that the term declared_license_expression is used equivalently for the concept of
 a primary license expression in order to align with community usage, such as SPDX.
@@ -49,7 +49,7 @@ primary language of a package when it scans a codebase:
 
 - If there are multiple package manifests at the codebase root, then concatenate all
   of the license expressions and holders together and use those concatenated values
-  to construct the declared license expression and declared holder
+  to construct the declared license expression and declared holder.
 
 - If there is no package data, then collect license and holder information
   from key files (such as LICENSE, NOTICE, README, COPYING, ADDITIONAL_LICENSE_INFO).
@@ -66,7 +66,7 @@ varying standards for license declaration. It is possible that the declared lice
 expression constructed by this process may not appear literally in the codebase.
 
 License Clarity Scoring
-=======================
+-----------------------
 
 :guilabel:`License Clarity`
 License Clarity is a set of criteria that indicate how clearly, comprehensively and
@@ -90,7 +90,7 @@ Identification precision indicates how well the license statement(s) of the soft
 identify known licenses that can be designated by precise keys (identifiers) as provided
 in a publicly available license list, such as the ScanCode LicenseDB, the SPDX license
 list, the OSI license list, or a URL pointing to a specific license text in a project
-or organization website, Scoring Weight = 40.
+or organization website. Scoring Weight = 40.
 
 :guilabel:`License texts`
 License texts are provided to support the declared license expression in files such as
