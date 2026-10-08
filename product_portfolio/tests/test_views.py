@@ -62,6 +62,7 @@ from product_portfolio.tests import make_product_dependency
 from product_portfolio.tests import make_product_package
 from product_portfolio.tests import make_product_status
 from product_portfolio.views import ManageComponentGridView
+from product_portfolio.views import ProductTabInventoryView
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
@@ -918,6 +919,36 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         mock_fetch_scan_list.assert_called()
         self.assertContains(response, expected1)
         self.assertContains(response, expected2)
+
+    def test_product_portfolio_tab_inventory_view_inject_scan_data(self):
+        self.package1.update(download_url="https://download_url.value")
+        package2 = make_package(self.dataspace, download_url="https://download_url2.value")
+        scanned_product_package = make_product_package(self.product1, package=self.package1)
+        unscanned_product_package = make_product_package(self.product1, package=package2)
+        feature_grouped = {"": [scanned_product_package, unscanned_product_package]}
+        scancodeio = mock.Mock()
+
+        scancodeio.fetch_scans_by_download_url.return_value = {}
+        self.assertIsNone(ProductTabInventoryView.inject_scan_data(scancodeio, feature_grouped))
+        self.assertFalse(hasattr(scanned_product_package, "scan"))
+
+        scan_uuid = "5f2cdda6-fe86-4587-81f1-4d407d4d2c02"
+        scan = {"uuid": scan_uuid, "input_sources": [{"filename": "package1.zip"}]}
+        scancodeio.fetch_scans_by_download_url.return_value = {self.package1.download_url: scan}
+        injected = ProductTabInventoryView.inject_scan_data(scancodeio, feature_grouped)
+        self.assertEqual(feature_grouped, injected)
+        scancodeio.fetch_scans_by_download_url.assert_called_with(
+            [self.package1.download_url, package2.download_url]
+        )
+
+        self.assertEqual(scan, scanned_product_package.scan)
+        expected = reverse("component_catalog:scan_data_as_file", args=[scan_uuid, "package1.zip"])
+        self.assertEqual(expected, scanned_product_package.scan["download_result_url"])
+        expected = reverse(
+            "product_portfolio:scan_delete_htmx", args=[scan_uuid, self.package1.uuid]
+        )
+        self.assertEqual(expected, scanned_product_package.scan["delete_url"])
+        self.assertFalse(hasattr(unscanned_product_package, "scan"))
 
     def test_product_portfolio_detail_view_inventory_tab_display_vulnerabilities(self):
         ProductPackage.objects.create(

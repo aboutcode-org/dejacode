@@ -19,6 +19,7 @@ from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
 from component_catalog.models import Package
 from component_catalog.tests import make_package
+from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.models import Dataspace
 from dje.models import History
 from dje.tests import add_perms
@@ -1291,6 +1292,91 @@ class ProductPortfolioModelsTestCase(TestCase):
         self.assertFalse(scancode_project.can_start_import)
         scancode_project.status = ScanCodeProject.Status.FAILURE
         self.assertFalse(scancode_project.can_start_import)
+
+    def test_product_portfolio_scancode_project_queryset_pending_scancodeio_run(self):
+        sbom_import = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+        manifest_import = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUCCESS,
+        )
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.IMPROVE_FROM_PURLDB,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+
+        pending_imports = ScanCodeProject.objects.pending_scancodeio_run()
+        self.assertQuerySetEqual([sbom_import, manifest_import], pending_imports, ordered=False)
+
+    @mock.patch("product_portfolio.models.pull_project_data_from_scancodeio_task.delay")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    def test_product_portfolio_scancode_project_model_synchronize_scancodeio_run_status(
+        self, mock_fetch_scan_data, mock_pull_project_data
+    ):
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+        scancodeio = ScanCodeIO(self.dataspace)
+
+        unchanged_scan_data = [
+            None,
+            {"runs": []},
+            {"runs": [{"status": "success"}, {"status": "success"}]},
+            {"runs": [{"status": "running"}]},
+        ]
+        for scan_data in unchanged_scan_data:
+            mock_fetch_scan_data.return_value = scan_data
+            with self.captureOnCommitCallbacks(execute=True):
+                scancode_project.synchronize_scancodeio_run_status(scancodeio)
+            scancode_project.refresh_from_db()
+            self.assertEqual(ScanCodeProject.Status.SUBMITTED, scancode_project.status)
+            mock_pull_project_data.assert_not_called()
+
+        mock_fetch_scan_data.return_value = {"runs": [{"status": "success"}]}
+        with self.captureOnCommitCallbacks(execute=True):
+            scancode_project.synchronize_scancodeio_run_status(scancodeio)
+        mock_pull_project_data.assert_called_once_with(scancodeproject_uuid=scancode_project.uuid)
+
+        for run_status in ["failure", "stopped", "stale"]:
+            scancode_project.update(status=ScanCodeProject.Status.SUBMITTED)
+            mock_fetch_scan_data.return_value = {"runs": [{"status": run_status}]}
+            scancode_project.synchronize_scancodeio_run_status(scancodeio)
+            scancode_project.refresh_from_db()
+            self.assertEqual(ScanCodeProject.Status.FAILURE, scancode_project.status)
+
+    @mock.patch("product_portfolio.models.ScanCodeProject.synchronize_scancodeio_run_status")
+    def test_product_model_synchronize_scancodeio_imports(self, mock_synchronize_status):
+        self.product1.synchronize_scancodeio_imports()
+        mock_synchronize_status.assert_not_called()
+
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+        self.product1.synchronize_scancodeio_imports()
+        mock_synchronize_status.assert_called_once()
+        scancodeio = mock_synchronize_status.call_args.args[0]
+        self.assertIsInstance(scancodeio, ScanCodeIO)
+        self.assertEqual(self.dataspace, scancodeio.dataspace)
 
     def test_product_dependency_model_save_validation(self):
         package1 = Package.objects.create(filename="package1", dataspace=self.dataspace)

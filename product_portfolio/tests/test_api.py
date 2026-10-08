@@ -395,6 +395,132 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual([], entry["import_log"])
         self.assertEqual({}, entry["results"])
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    def test_api_product_endpoint_imports_action_synchronize_scancodeio_status(
+        self, mock_fetch_scan_data
+    ):
+        url = reverse("api_v2:product-imports", args=[self.product1.uuid])
+        self.client.login(username=self.super_user.username, password="secret")
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+
+        mock_fetch_scan_data.return_value = {"runs": [{"status": "stopped"}]}
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(ScanCodeProject.Status.FAILURE, response.data[0]["status"])
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scans_by_download_url")
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
+    def test_api_product_endpoint_scans_action(self, mock_is_available, mock_fetch_scans):
+        url = reverse("api_v2:product-scans", args=[self.product1.uuid])
+
+        self.client.login(username=self.base_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+        self.client.login(username=self.super_user.username, password="secret")
+        mock_is_available.return_value = False
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        expected = "The ScanCode.io service is not available"
+        self.assertEqual(expected, str(response.data["detail"]))
+
+        mock_is_available.return_value = True
+        mock_fetch_scans.return_value = {}
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status_counts": {}, "packages": []}
+        self.assertEqual(expected, response.data)
+
+        scanned_package = make_package(
+            self.dataspace,
+            package_url="pkg:pypi/django@5.2.1",
+            download_url="https://url.com/django-5.2.1.tar.gz",
+        )
+        unscanned_package = make_package(
+            self.dataspace,
+            package_url="pkg:pypi/requests@2.32.0",
+            download_url="https://url.com/requests-2.32.0.tar.gz",
+        )
+        not_scannable_package = make_package(self.dataspace, package_url="pkg:pypi/idna@3.10")
+        for package in [scanned_package, unscanned_package, not_scannable_package]:
+            make_product_package(self.product1, package=package)
+
+        running_scan_run = {
+            "status": "running",
+            "task_start_date": "2026-10-07T14:02:11Z",
+            "task_end_date": None,
+            "execution_time": None,
+        }
+        mock_fetch_scans.return_value = {
+            scanned_package.download_url: {"runs": [running_scan_run]},
+        }
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertCountEqual(
+            [scanned_package.download_url, unscanned_package.download_url],
+            mock_fetch_scans.call_args.args[0],
+        )
+        expected = {"running": 1, "no_scan": 1, "not_scannable": 1}
+        self.assertEqual(expected, response.data["status_counts"])
+
+        package_scans = {entry["uuid"]: entry for entry in response.data["packages"]}
+        scan_results_path = reverse("api_v2:package-scan-results", args=[scanned_package.uuid])
+        expected = {
+            "uuid": str(scanned_package.uuid),
+            "api_url": "http://testserver"
+            + reverse("api_v2:package-detail", args=[scanned_package.uuid]),
+            "purl": "pkg:pypi/django@5.2.1",
+            "download_url": "https://url.com/django-5.2.1.tar.gz",
+            "scan_status": "running",
+            "scan_start_date": "2026-10-07T14:02:11Z",
+            "scan_end_date": None,
+            "scan_execution_time": None,
+            "scan_results_url": f"http://testserver{scan_results_path}",
+        }
+        self.assertEqual(expected, package_scans[str(scanned_package.uuid)])
+
+        expected = {
+            "uuid": str(unscanned_package.uuid),
+            "api_url": "http://testserver"
+            + reverse("api_v2:package-detail", args=[unscanned_package.uuid]),
+            "purl": "pkg:pypi/requests@2.32.0",
+            "download_url": "https://url.com/requests-2.32.0.tar.gz",
+            "scan_status": "no_scan",
+            "scan_start_date": None,
+            "scan_end_date": None,
+            "scan_execution_time": None,
+            "scan_results_url": None,
+        }
+        self.assertEqual(expected, package_scans[str(unscanned_package.uuid)])
+
+        not_scannable_entry = package_scans[str(not_scannable_package.uuid)]
+        self.assertEqual("not_scannable", not_scannable_entry["scan_status"])
+        self.assertEqual("", not_scannable_entry["download_url"])
+        self.assertIsNone(not_scannable_entry["scan_results_url"])
+
+        success_scan_run = {
+            "status": "success",
+            "task_start_date": "2026-10-07T14:02:11Z",
+            "task_end_date": "2026-10-07T14:05:48Z",
+            "execution_time": 217,
+        }
+        mock_fetch_scans.return_value = {
+            scanned_package.download_url: {"runs": [success_scan_run]},
+        }
+        response = self.client.get(url, {"summary_only": "true"})
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        expected = {"status_counts": {"success": 1, "no_scan": 1, "not_scannable": 1}}
+        self.assertEqual(expected, response.data)
+
+        response = self.client.get(url, {"summary_only": "invalid"})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(["Must be a valid boolean."], response.data["summary_only"])
+
     def test_api_product_endpoint_load_sboms_action(self):
         url = reverse("api_v2:product-load-sboms", args=[self.product1.uuid])
 

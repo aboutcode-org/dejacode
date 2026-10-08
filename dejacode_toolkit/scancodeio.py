@@ -10,6 +10,7 @@ import io
 import json
 import zipfile
 from hashlib import md5
+from itertools import batched
 from urllib.parse import quote_plus
 
 from django.apps import apps
@@ -119,6 +120,19 @@ class ScanCodeIO(BaseService):
 
         logger.debug(f'{self.label}: fetch scan list payload="{payload}"')
         return self.request_get(url=self.project_api_url, params=payload)
+
+    def fetch_scans_by_download_url(self, download_urls):
+        """Return the scans of the provided `download_urls`, keyed by download URL."""
+        project_names = [get_project_name(url, self.dataspace.uuid) for url in download_urls]
+
+        scans = []
+        max_results_per_page = 50
+        for names in batched(project_names, max_results_per_page):
+            scan_list_data = self.fetch_scan_list(names=",".join(names))
+            if scan_list_data:
+                scans.extend(scan_list_data.get("results", []))
+
+        return {get_package_download_url(scan): scan for scan in scans}
 
     def fetch_scan_by_project_names(self, names):
         payload = {"names": ",".join(names)}
