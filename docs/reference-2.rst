@@ -73,22 +73,9 @@ to calculate and set a Package URL using the available Package data.
 Package Vulnerability Tracking
 ==============================
 
-In DejaCode, there is a Dataspace option to **Enable VulnerableCodeDB access**
-that authorizes DejaCode to access the VulnerableCodeDB using a Package URL (purl) to
-determine if there are any reported vulnerabilities for a specific Package and return
-the Vulnerability ID and related URLs to a :guilabel:`Vulnerabilities` tab in the Package details
-user view. DejaCode displays a Vulnerability icon next to the Package identifier in
-the user view list, and also in any Product Inventory list using that Package.
-
-You can view the VulnerableCodeDB details of an affected Package and use the links to
-access publicly available reports (e.g. CVE, CPE, GHSA, DSA), discussions, and status
-updates regarding the vulnerabilities.
-
-Your system administrator can configure DejaCode to provide the necessary credentials
-to access a VulnerableCodeDB.
-
-For more information about the open source VulnerableCode project, see
-https://github.com/aboutcode-org/vulnerablecode
+DejaCode uses the Package URL (purl) of each Package to get its known vulnerabilities
+from VulnerableCode. See :ref:`dejacode_dataspace_vulnerablecode` and
+:ref:`reference_vulnerability_management`.
 
 .. note:: Refer to :ref:`user_tutorial_2` for package creation and maintenance
   procedures.

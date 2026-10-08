@@ -8,6 +8,9 @@ DejaCode offers several ways to connect with other tools and services, enabling
 needs, you can choose from :ref:`platform_specific_integrations`, the
 :ref:`rest_api_integration`, or the :ref:`webhook_integration`.
 
+To collect package scans, PurlDB data, and vulnerabilities, DejaCode also relies on
+the :ref:`integrations_aboutcode`.
+
 .. _platform_specific_integrations:
 
 Platform-specific integrations

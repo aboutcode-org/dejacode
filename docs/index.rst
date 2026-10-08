@@ -86,6 +86,7 @@ New to DejaCode? Start with the :ref:`quickstart`.
     :caption: Integrations
 
     integrations-introduction
+    integrations-aboutcode
     integrations-forgejo
     integrations-github
     integrations-gitlab

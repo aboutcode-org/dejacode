@@ -247,18 +247,12 @@ SSL is disabled by default but can be enabled with the following configuration::
 AboutCode integrations
 ======================
 
-To **integrate DejaCode with other applications within the AboutCode stack**,
-you have the flexibility to configure and set up integrations using the following
-application settings.
+The following settings define the URL and API key of the AboutCode services for
+**all Dataspaces** of your DejaCode instance.
 
-It's important to understand that employing application settings will make these
-integrations **globally accessible across all Dataspaces** within your DejaCode
-instance.
-
-Alternatively, if you wish to tailor the availability of these features to a specific
-Dataspace, you can define and set those values directly within the :ref:`dataspace`
-configuration. This can be done through the Dataspace admin UI, allowing you to scope
-the availability of these integrations exclusively to the designated Dataspace.
+Each Dataspace still needs to enable the service, and can define its own URL and
+API key, which take precedence over these settings. See
+:ref:`integrations_aboutcode`.
 
 .. _dejacode_settings_scancodeio:
 
