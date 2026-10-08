@@ -76,7 +76,8 @@ Follow the prompt instructions, providing the required information:
 
    You can sign in with the credentials you created above.
 
-   You can move onto the Tutorials section starting with the :ref:`user_tutorial_1`.
+   Continue with the :ref:`quickstart_first_steps` of the Quick Start, then the
+   Tutorials section starting with :ref:`user_tutorial_1`.
 
 .. |localhost_link| raw:: html
 

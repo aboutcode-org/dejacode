@@ -8,6 +8,7 @@ Welcome to the very start of your DejaCode journey!
     :maxdepth: 2
     :caption: Getting Started
 
+    quickstart
     installation
     dataspace
     application-settings
