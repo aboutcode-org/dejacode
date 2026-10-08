@@ -1510,7 +1510,7 @@ class PackageAPITestCase(MaxQueryMixin, TestCase):
         mock_is_available.return_value = True
         for action_url in scan_actions_urls:
             response = self.client.get(action_url)
-            self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code, msg=action_url)
+            self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code, msg=action_url)
             expected = "Scan data is not available"
             self.assertEqual(expected, str(response.data["detail"]), msg=action_url)
 
