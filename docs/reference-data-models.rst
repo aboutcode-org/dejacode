@@ -4,27 +4,6 @@
 Models reference
 ================
 
-DejaCode Modules
-================
-
-DejaCode includes the following modules:
-
-* **Product Portfolio**: Record and maintain software inventories for your products.
-* **Component and Packages Catalog**: Identify the origin, licensing terms and
-  relationships of open source and other software components by consulting the catalog.
-  Communicate your company usage policy for components to your users, and provide
-  them with detailed guidance.
-* **License Library**: Understand software licensing terms with the nexB library
-  of open source and proprietary licenses. Communicate your company usage policy
-  for licenses to your users, and provide them with detailed guidance.
-* **Reporting**: Create your own reports, from your queries and column templates,
-  to explore, analyze and export your DejaCode application data.
-* **Workflow Requests**: Create your own request templates to enable your users
-  to submit requests regarding your products, components, licenses and their
-  policies, and to track the progress of each request.
-* **API**: Use the DejaCode API to integrate with your other data sources and
-  applications.
-
 .. _data_model_product:
 
 Product model

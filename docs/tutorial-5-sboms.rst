@@ -4,6 +4,16 @@ Tutorial 5 - Working with SBOMs in a Product
 ============================================
 
 You have just received a Software Bill of Materials (SBOM) from your supplier.
+
+.. note::
+    **Before you start**:
+
+    - Permission to add Products.
+    - Vulnerabilities require the VulnerableCodeDB integration
+      (:ref:`dejacode_dataspace_vulnerablecode`).
+    - Improving Packages requires the PurlDB integration
+      (:ref:`dejacode_dataspace_purldb`).
+
 Sign in to DejaCode.
 
 Create a Product

@@ -3,6 +3,13 @@
 Tutorial 4 - Managing Product Vulnerabilities
 =============================================
 
+.. note::
+    **Before you start**:
+
+    - Permission to add Products.
+    - The VulnerableCodeDB integration
+      (:ref:`dejacode_dataspace_vulnerablecode`) enabled in your Dataspace.
+
 Sign in to DejaCode.
 
 Create a Product

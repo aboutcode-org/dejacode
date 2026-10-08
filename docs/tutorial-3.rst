@@ -4,6 +4,11 @@
 Tutorial 3 - Working with Reports
 =================================
 
+.. note::
+    **Before you start**:
+
+    - A staff account with access to the :guilabel:`Admin Dashboard`.
+
 Sign in to DejaCode.
 
 Create a Reporting Query

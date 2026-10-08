@@ -4,6 +4,13 @@
 Tutorial 1 - Your first Product
 ===============================
 
+.. note::
+    **Before you start**:
+
+    - Permission to add Products.
+    - :guilabel:`Check for new Package versions` requires the PurlDB integration
+      (:ref:`dejacode_dataspace_purldb`).
+
 Sign in to DejaCode.
 
 Create a Product
@@ -69,6 +76,8 @@ View your results in the :guilabel:`Inventory` tab.
 
 .. note:: Continue assigning packages to your Product as required.
 
+.. _user_tutorial_1_review_progress:
+
 Review your progress
 ====================
 
@@ -129,19 +138,9 @@ View your results in the :guilabel:`Inventory` tab.
 Review your impact
 ==================
 
-Click the :guilabel:`Generate Attribution` icon button:
-
-* Accept all the default attribution configuration settings.
-* Scroll down and click the :guilabel:`Generate Attribution` button.
-* Explore the attribution document that DejaCode presents to you.
-* Save the document to your local file system using your browser File Save command.
-
-Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu:
-
-* Select an appropriate report such as ``2-Product Component Analysis``.
-* Enter your product Name and Version and click :guilabel:`Rerun Report`.
-* Explore the results that DejaCode presents to you.
-* Export the report to your local file system using the :guilabel:`Export` button.
+Generate the attribution and run the reports again as described in
+:ref:`user_tutorial_1_review_progress`, using a report such as
+``2-Product Component Analysis``.
 
 Assign Custom Components to your Product
 ========================================
@@ -157,19 +156,9 @@ From the :guilabel:`Manage` dropdown, select :guilabel:`Add custom Component`:
 
 Your results are displayed on the :guilabel:`Inventory` tab.
 
-Click the :guilabel:`Generate Attribution` icon button:
-
-* Accept all the default attribution configuration settings.
-* Scroll down and click the :guilabel:`Generate Attribution` button.
-* Explore the attribution document that DejaCode presents to you.
-* Save the document to your local file system using your browser File Save command.
-
-Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu:
-
-* Select an appropriate report such as ``2-Product Custom Component Analysis``.
-* Enter your product Name and Version and click :guilabel:`Rerun Report`.
-* Explore the results that DejaCode presents to you.
-* Export the report to your local file system using the :guilabel:`Export` button.
+Review the impact on your attribution and reports as described in
+:ref:`user_tutorial_1_review_progress`, using a report such as
+``2-Product Custom Component Analysis``.
 
 Review the Licenses that Impact your Product
 ============================================

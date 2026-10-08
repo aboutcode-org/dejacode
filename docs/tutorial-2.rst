@@ -4,6 +4,16 @@
 Tutorial 2 - Working with Packages
 ==================================
 
+.. note::
+    **Before you start**:
+
+    - Permission to add Packages.
+    - Scanning requires the ScanCode.io integration
+      (:ref:`dejacode_dataspace_scancodeio`).
+    - Importing from the PurlDB requires the PurlDB integration
+      (:ref:`dejacode_dataspace_purldb`).
+    - Importing from a CSV requires a staff account.
+
 Sign in to DejaCode.
 
 Add a Package from a Download URL

@@ -8,6 +8,13 @@ loaded it into a DejaCode Product as described in :ref:`user_tutorial_5_sboms`.
 You would like to create a Report to analyze the vulnerabilities in
 that Product, share it with your team, and track your issue resolution progress.
 
+.. note::
+    **Before you start**:
+
+    - A staff account with access to the :guilabel:`Admin Dashboard`.
+    - Risk scores require the VulnerableCodeDB integration
+      (:ref:`dejacode_dataspace_vulnerablecode`).
+
 Sign in to DejaCode.
 
 Create a DejaCode Query
