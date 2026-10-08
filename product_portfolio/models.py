@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db import transaction
 from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import Count
@@ -44,6 +45,8 @@ from component_catalog.models import KeywordsMixin
 from component_catalog.models import LicenseExpressionMixin
 from component_catalog.models import Package
 from component_catalog.models import component_mixin_factory
+from dejacode_toolkit.scancodeio import ScanCodeIO
+from dejacode_toolkit.scancodeio import ScanStatus
 from dje import tasks
 from dje.fields import LastModifiedByField
 from dje.models import DataspacedManager
@@ -59,6 +62,7 @@ from dje.validators import validate_url_segment
 from dje.validators import validate_version
 from policy.models import AbstractPolicyViolation
 from policy.rules import RULE_REGISTRY
+from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from vulnerabilities.fetch import fetch_for_packages
 from vulnerabilities.models import AffectedByVulnerabilityMixin
 from vulnerabilities.models import AffectedByVulnerabilityRelationship
@@ -738,6 +742,16 @@ class Product(
             user_uuid=user.uuid,
             dataspace_uuid=user.dataspace.uuid,
         )
+
+    def synchronize_scancodeio_imports(self):
+        """Update the status of the imports waiting on a ScanCode.io pipeline run."""
+        pending_imports = self.scancodeprojects.pending_scancodeio_run()
+        if not pending_imports:
+            return
+
+        scancodeio = ScanCodeIO(self.dataspace)
+        for scancode_project in pending_imports:
+            scancode_project.synchronize_scancodeio_run_status(scancodeio)
 
     def improve_packages_from_purl(self):
         """Infer missing packages download URL using the Package URL when possible."""
@@ -1692,6 +1706,22 @@ class ScanCodeProjectQuerySet(ProductSecuredQuerySet):
         ]
         return self.filter(status__in=in_progress_statuses)
 
+    def pending_scancodeio_run(self):
+        """
+        Return the imports submitted to ScanCode.io as external pipeline runs (SBOM
+        and manifest imports), still waiting on the run completion.
+        Other action types are handled entirely by local RQ tasks and have no
+        external run to poll.
+        """
+        scancodeio_project_types = [
+            ScanCodeProject.ProjectType.LOAD_SBOMS,
+            ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
+        ]
+        return self.filter(
+            status=ScanCodeProject.Status.SUBMITTED,
+            type__in=scancodeio_project_types,
+        )
+
 
 class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
     """Wrap Product imports, such as a ScanCode.io Project."""
@@ -1803,6 +1833,33 @@ class ScanCodeProject(HistoryFieldsMixin, DataspacedModel):
             ScanCodeProject.Status.FAILURE,
         ]
         return self.status not in blocking_statuses
+
+    def synchronize_scancodeio_run_status(self, scancodeio):
+        """
+        Poll ScanCode.io for the pipeline run status, as a fallback when the webhook
+        sent on run completion did not reach DejaCode.
+        """
+        scan_detail_url = scancodeio.get_scan_detail_url(self.project_uuid)
+        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
+        if not scan_data:
+            return
+
+        runs = scan_data.get("runs")
+        if not (runs and len(runs) == 1):
+            return
+
+        run = runs[0]
+        run_status = run.get("status")
+        if run_status != self.status:
+            if run_status == "success":
+                transaction.on_commit(
+                    lambda: pull_project_data_from_scancodeio_task.delay(
+                        scancodeproject_uuid=self.uuid,
+                    )
+                )
+            elif run_status in ScanStatus.ISSUES:
+                self.status = ScanCodeProject.Status.FAILURE
+                self.save(update_fields=["status"])
 
     def import_data_from_scancodeio(self):
         """Wrap to trigger the data import from ScanCode.io of the related Project."""

@@ -395,6 +395,24 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual([], entry["import_log"])
         self.assertEqual({}, entry["results"])
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    def test_api_product_endpoint_imports_action_synchronize_scancodeio_status(
+        self, mock_fetch_scan_data
+    ):
+        url = reverse("api_v2:product-imports", args=[self.product1.uuid])
+        self.client.login(username=self.super_user.username, password="secret")
+        ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+        )
+
+        mock_fetch_scan_data.return_value = {"runs": [{"status": "stopped"}]}
+        response = self.client.get(url)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(ScanCodeProject.Status.FAILURE, response.data[0]["status"])
+
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scans_by_download_url")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
     def test_api_product_endpoint_scans_action(self, mock_is_available, mock_fetch_scans):

@@ -1529,8 +1529,8 @@ class ProductTabActivityView(
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+        self.object.synchronize_scancodeio_imports()
         scancode_projects = self.object.scancodeprojects.all()
-        self.synchronize_scancodeio_projects(scancode_projects)
 
         history_entries = (
             History.objects.get_for_object(self.object)
@@ -1552,54 +1552,6 @@ class ProductTabActivityView(
         )
 
         return context_data
-
-    def synchronize_scancodeio_projects(self, scancode_projects):
-        """
-        Poll ScanCode.io for the run status of the projects submitted to it as
-        external pipeline runs (SBOM and manifest imports), and update the
-        local ScanCodeProject status accordingly.
-        Other action types are handled entirely by local RQ tasks and have no
-        external run to poll.
-        """
-        scancodeio_project_types = [
-            ScanCodeProject.ProjectType.LOAD_SBOMS,
-            ScanCodeProject.ProjectType.IMPORT_FROM_MANIFEST,
-        ]
-        pending_scancodeio_projects = [
-            project
-            for project in scancode_projects
-            if project.status == ScanCodeProject.Status.SUBMITTED
-            and project.type in scancodeio_project_types
-        ]
-        if not pending_scancodeio_projects:
-            return
-
-        scancodeio = ScanCodeIO(self.request.user.dataspace)
-        for project in pending_scancodeio_projects:
-            self.synchronize_scancodeio_project_status(scancodeio, project)
-
-    def synchronize_scancodeio_project_status(self, scancodeio, project):
-        scan_detail_url = scancodeio.get_scan_detail_url(project.project_uuid)
-        scan_data = scancodeio.fetch_scan_data(scan_detail_url)
-        if not scan_data:
-            return
-
-        runs = scan_data.get("runs")
-        if not (runs and len(runs) == 1):
-            return
-
-        run = runs[0]
-        run_status = run.get("status")
-        if run_status != project.status:
-            if run_status == "success":
-                transaction.on_commit(
-                    lambda: pull_project_data_from_scancodeio_task.delay(
-                        scancodeproject_uuid=project.uuid,
-                    )
-                )
-            elif run_status == "failure":
-                project.status = ScanCodeProject.Status.FAILURE
-                project.save(update_fields=["status"])
 
 
 @login_required

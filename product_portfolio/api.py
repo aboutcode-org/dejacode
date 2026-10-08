@@ -592,6 +592,7 @@ class ProductViewSet(
         Statuses: "submitted", "importing", "success", "failure", "warning".
         """
         product = self.get_object()
+        product.synchronize_scancodeio_imports()
         scancode_projects = product.scancodeprojects.all()
         projects_data = ScanCodeProjectSerializer(scancode_projects, many=True).data
         return Response(projects_data)
