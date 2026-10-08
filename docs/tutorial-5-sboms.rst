@@ -86,6 +86,8 @@ Load an SBOM to your Product
 
 .. image:: images/tutorial-5-sboms/compliance-status-all.jpg
 
+.. _user_tutorial_5_review_vulnerabilities:
+
 Review Vulnerabilities Affecting Your Product
 ---------------------------------------------
 
@@ -98,10 +100,10 @@ Review Vulnerabilities Affecting Your Product
    a comprehensive view of all the Vulnerabilities for your Product filtered to those
    with a Risk greater than the Risk Threshold defined for your Dataspace.
 
-.. image:: images/tutorial-5-sboms/product-vulnerabilities-tab-1.jpg
+.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab.jpg
 
-3. You can sort and filter by Risk, Exploitability and Severity, as well as other
-   fields, to focus on specific Vulnerabilities.
+3. You can filter by Risk, Recommendation, Analysis and Reachability to focus on
+   specific Vulnerabilities.
 
 4. You can set a specific Risk Threshold for your Product. Click the :guilabel:`Edit` icon
    next to the Product name, scroll down to :guilabel:`Vulnerabilities risk threshold`
@@ -111,17 +113,25 @@ Review Vulnerabilities Affecting Your Product
 .. image:: images/tutorial-5-sboms/product-vulnerabilities-risk-threshold.jpg
    :width: 300
 
+.. _user_tutorial_5_vulnerability_analysis:
+
 Conduct Vulnerability Analysis
 ------------------------------
 
 1. Review each vulnerability in the :guilabel:`Vulnerabilities` tab.
 
-.. image:: images/tutorial-5-sboms/vulnerability-analysis-modal.jpg
+.. image:: images/tutorial-4-vulnerabilities/vulnerability-analysis-modal.jpg
 
 2. Add details or analysis for each vulnerability as needed, which will
    enhance reporting and exports.
 
-.. image:: images/tutorial-5-sboms/vulnerabilities-tab-with-analysis.jpg
+.. image:: images/tutorial-4-vulnerabilities/vulnerabilities-tab-with-analysis.jpg
+
+.. seealso::
+    Refer to :ref:`how_to_4` for a detailed guide on each analysis field and its
+    meaning.
+
+.. _user_tutorial_5_export_vex:
 
 Export CycloneDX SBOM with VEX
 ------------------------------
@@ -129,8 +139,13 @@ Export CycloneDX SBOM with VEX
 1. On the Product details page, from the :guilabel:`Share` dropdown, select
    :guilabel:`SBOM+VEX (combined)` in the :guilabel:`CycloneDX` section.
 
-.. image:: images/tutorial-5-sboms/share-cdx.jpg
+.. image:: images/tutorial-4-vulnerabilities/share-cdx.jpg
    :width: 300
 
 2. The analysis details you provide for product package vulnerabilities are
    included in the ``vulnerabilities`` section of the CycloneDX VEX output.
+
+.. seealso::
+    Once your administrator has configured triage rulesets for your Dataspace, this
+    manual review is complemented by automated remediation recommendations. Refer to
+    :ref:`user_tutorial_8_vulnerability_triage` to get started.

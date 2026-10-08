@@ -217,27 +217,12 @@ Rules can also be re-evaluated on demand in two ways:
 Compliance Tab
 --------------
 
-.. image:: images/reference-policy-rules/compliance-tab-policy-violations.jpg
+Active violations are displayed in the :guilabel:`Compliance` tab of each product
+detail page, and summarized per product in the :guilabel:`Compliance Dashboard`.
 
-The :guilabel:`Compliance` tab on each product detail page displays an overview of active
-policy violations. For each triggered rule, the table shows:
-
-- The rule label and severity (color-coded badge).
-- The rule description.
-- The number of packages **in violation**, linked to the product inventory pre-filtered
-  to show only those packages.
-- The **detection date** of the violation.
-
-The badge count in the panel header reflects the total number of triggered rules. Its
-color is red if at least one error-severity rule is triggered, yellow if only
-warning-severity rules are triggered.
-
-Clicking the **info icon** next to the panel title opens a modal listing all active
-rules with their current status: **Triggered** or **OK**.
-
-.. image:: images/reference-policy-rules/compliance-tab-policy-rules.jpg
-   :width: 500
-   :align: center
+.. seealso::
+    :ref:`user_tutorial_7_policy_rules` for a walkthrough of the Compliance tab and
+    its drill-down to the affected packages.
 
 Webhook Notifications
 ---------------------
