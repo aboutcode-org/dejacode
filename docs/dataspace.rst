@@ -1,6 +1,5 @@
 .. _dataspace:
 
-=========
 Dataspace
 =========
 
@@ -35,7 +34,7 @@ integrity, enabling efficient updates, accommodating customization, and supporti
 multi-tenancy for a diverse range of organizations within a DejaCode installation.
 
 Setting up your License Library
-===============================
+-------------------------------
 
 After you have created your own Dataspace, you should copy the Reference License
 Library into it.
@@ -57,7 +56,7 @@ you can select a license to review its details and modify it as appropriate for 
 organization.
 
 Managing Users in your Dataspace
-================================
+--------------------------------
 
 As part of your DejaCode installation process you should have created a Superuser
 in the **nexB Reference Dataspace**; you want to keep that User for DevOps purposes
@@ -85,7 +84,7 @@ When you define a User, take note of specific essential fields:
   leave this field unchecked for most of your Users.
 
 User Permission Groups
-======================
+----------------------
 
 The **Permission Groups** are defined to support the most likely roles that your
 User Community will perform. You can get details about the application tasks
@@ -112,7 +111,7 @@ are the following:
     Group from the :guilabel:`Tab permissions` button of your Dataspace definition.
 
 Defining your Usage Policies
-============================
+----------------------------
 
 Usage Policies express how your organization allows the use of Licenses, Components,
 and Packages. The Reference Data provides sample Usage Policies that you can copy to
@@ -125,7 +124,7 @@ organizational requirements.
   Reference Data to your Dataspace.
 
 Reviewing your Dataspace settings
-=================================
+---------------------------------
 
 The presentation of your data to your user community, and the features available
 in your Dataspace, are controlled by a number of options in your Dataspace
@@ -151,7 +150,7 @@ button at the bottom of the form.
     field.
 
 Using your Component Catalog
-============================
+----------------------------
 
 After you have set up the License Library in your own Dataspace, and have defined your
 Usage Policies, you are ready to start working with **Components** and **Packages**.
@@ -163,7 +162,7 @@ Usage Policies, you are ready to start working with **Components** and **Package
 - Set their Usage Policies from their Licenses, as explained in :ref:`how_to_1`.
 
 Enabling integrations
-=====================
+---------------------
 
 To scan packages, browse the PurlDB, and track vulnerabilities, enable the AboutCode
 integrations in your Dataspace: see :ref:`integrations_aboutcode`.

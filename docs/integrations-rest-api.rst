@@ -4,13 +4,20 @@ REST API Integration
 ====================
 
 DejaCode offers a REST API to allow integration with external applications in a
-generic way. You can use it to fetch, create, and update DejaCode Requests
+generic way.
+
+This guide focuses on **DejaCode Requests**: how to fetch, create, and update them
 from your own scripts or applications.
 
-The full REST API documentation is also available in the DejaCode web UI under
-:guilabel:`API Documentation` in the :guilabel:`Developer` section of the side menu.
+The full REST API documentation, covering all the endpoints, is available in the
+DejaCode web UI under :guilabel:`API Documentation` in the :guilabel:`Developer`
+section of the side menu. Other endpoints are also described in:
 
-This guide focuses specifically on interacting with **DejaCode Requests**.
+- :ref:`how_to_3`: download the SBOMs of a Product.
+- :ref:`how_to_4`: vulnerability analyses.
+- :ref:`how_to_5`: Product object permissions.
+- :ref:`reference_policy_rules`: policy violations.
+- :ref:`reference_vulnerability_triage`: triage records and rulesets.
 
 .. note::
 

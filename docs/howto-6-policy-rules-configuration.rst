@@ -15,8 +15,8 @@ thresholds.
     Refer to :ref:`reference_policy_rules` for a complete description of all available
     rules, configuration options, and violation lifecycle.
 
-1. Access the Policy Rules Configuration
-----------------------------------------
+Access the Policy Rules Configuration
+-------------------------------------
 
 1. From the :guilabel:`Admin Dashboard`, navigate to :guilabel:`Dataspaces`.
 2. Open your Dataspace by clicking on its name.
@@ -27,8 +27,8 @@ thresholds.
 Each built-in rule is listed with its label, description, threshold, and optional
 parameters.
 
-2. Enable a Rule
-----------------
+Enable a Rule
+-------------
 
 To activate a rule check the :guilabel:`Enable this rule` checkbox.
 
@@ -45,8 +45,8 @@ currently open violations for that rule are automatically resolved.
     Rules that are not enabled are skipped during evaluation and any previously open
     violations for those rules are automatically resolved.
 
-3. Set a Threshold
-------------------
+Set a Threshold
+---------------
 
 By default, a single violation is enough to trigger a rule. The :guilabel:`Threshold`
 field lets you tolerate a certain number of violations before a triggered state is
@@ -58,8 +58,8 @@ rule is only triggered when more than 2 packages have no license expression.
 This is useful when a small number of violations is acceptable during remediation
 phases.
 
-4. Configure Rule Parameters
-----------------------------
+Configure Rule Parameters
+-------------------------
 
 Only vulnerability-based rules expose additional parameter fields to narrow their scope.
 
@@ -77,8 +77,8 @@ For the **Vulnerability Stale** rule, two parameters are available:
 .. image:: images/howto-6-policy-rules-configuration/vulnerability-rule-parameters.jpg
    :width: 300
 
-5. Investigate Violations
--------------------------
+Investigate Violations
+----------------------
 
 Once rules are active and violations have been detected, DejaCode provides two levels
 of visibility.
@@ -118,8 +118,8 @@ The product inventory opens pre-filtered to show only the packages that triggere
 that rule. You can use the inventory's standard filters and sorting to prioritize
 remediation.
 
-6. Set Up Notifications
------------------------
+Set Up Notifications
+--------------------
 
 DejaCode can notify external systems automatically when policy violations are detected
 or resolved, without requiring manual checks of the compliance tab.

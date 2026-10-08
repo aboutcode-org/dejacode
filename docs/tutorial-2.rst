@@ -1,6 +1,5 @@
 .. _user_tutorial_2:
 
-==================================
 Tutorial 2 - Working with Packages
 ==================================
 
@@ -17,7 +16,7 @@ Tutorial 2 - Working with Packages
 Sign in to DejaCode.
 
 Add a Package from a Download URL
-=================================
+---------------------------------
 
 Select :guilabel:`Packages` from the main menu bar.
 
@@ -46,7 +45,7 @@ DejaCode presents the new Package.
 - Review the updated Package definition.
 
 Create a Package using the data entry form
-==========================================
+------------------------------------------
 
 Select :guilabel:`Packages` from the main menu bar.
 
@@ -69,7 +68,7 @@ Click the :guilabel:`Add Package` button.
 Review and edit your new package.
 
 Import a Package to DejaCode from the PurlDB
-============================================
+--------------------------------------------
 
 Select :guilabel:`PurlDB` from the :guilabel:`Integrations` section of the side menu.
 
@@ -87,7 +86,7 @@ DejaCode validates the entry, creates the package, and applies automatic updates
 Review and edit your new package.
 
 Import Package Definitions from a CSV
-=====================================
+-------------------------------------
 
 Select :guilabel:`Packages` from the main menu bar.
 
@@ -114,7 +113,7 @@ Optionally edit and update the new package(s).
 Optionally add the new package(s) to a Product using the :guilabel:`Add to Product` button.
 
 Improve Package Data by Scanning
-================================
+--------------------------------
 
 Select :guilabel:`Packages` from the main menu bar.
 

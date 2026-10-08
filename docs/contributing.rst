@@ -1,6 +1,5 @@
 .. _contributing:
 
-========================
 Contributing to DejaCode
 ========================
 
@@ -17,7 +16,7 @@ resources to help you get started.
     - That your Contributions to DejaCode are licensed under Apache-2.0.
 
 Do Your Homework
-================
+----------------
 
 Before adding a contribution or creating a new issue, take a look at the project’s
 `README <https://github.com/aboutcode-org/dejacode#readme>`_, read through our
@@ -27,13 +26,13 @@ to develop some understanding of the project and confirm whether a given
 issue/feature has previously been discussed.
 
 Ways to Contribute
-==================
+------------------
 
 Contributing to the codebase is not the only way to add value to DejaCode or
 join our community. Below are some examples to get involved:
 
 First Timers
-------------
+^^^^^^^^^^^^
 
 You are here to help, but you're a new contributor! No worries, we always
 welcome newcomer contributors. We maintain some
@@ -56,7 +55,7 @@ and encourage new contributors to work on those issues for a smooth start.
     Unless closed, yes it is open.
 
 Report Issues
--------------
+^^^^^^^^^^^^^
 
 - Report a new `bug <https://github.com/aboutcode-org/dejacode/issues>`_; just remember to be
   as specific as possible.
@@ -70,7 +69,7 @@ Report Issues
     to confirm whether a given issue or a question has previously been discussed.
 
 Code Contributions
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Code is contributed to the codebase using **pull requests**.
 A pull request should always be attached to an existing issue.
@@ -114,7 +113,7 @@ attribution.
     code review.
 
 Documentation Improvements
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Documentation is a critical aspect of any project that is usually neglected or
 overlooked. We value any suggestions to improve
@@ -126,7 +125,7 @@ overlooked. We value any suggestions to improve
     to help guide new users.
 
 Other Ways
-----------
+^^^^^^^^^^
 
 You want to contribute to other aspects of the DejaCode project, and you
 can't find what you're looking for! You can always discuss new topics, ask
@@ -136,7 +135,7 @@ questions, and interact with us and other community members on
 .. _contributing_resources:
 
 Helpful Resources
-=================
+-----------------
 
 - Review our `comprehensive guide <https://scancode-toolkit.readthedocs.io/en/latest/contribute/index.html>`_
   for more details on how to add quality contributions to our codebase and documentation

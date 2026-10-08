@@ -1,6 +1,6 @@
 .. _integrations_introduction:
 
-Integrations overview
+Integrations Overview
 =====================
 
 DejaCode offers several ways to connect with other tools and services, enabling

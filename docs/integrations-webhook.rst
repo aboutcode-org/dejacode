@@ -1,6 +1,6 @@
 .. _integrations_webhook:
 
-Webhook integration
+Webhook Integration
 ===================
 
 Webhooks provide a way for DejaCode to automatically send data to external systems

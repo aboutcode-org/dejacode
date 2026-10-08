@@ -1,7 +1,6 @@
 .. _how_to_1:
 
-=====================================
-How To 1 - Manage your Usage Policies
+How To 1 - Manage Your Usage Policies
 =====================================
 
 Sign in to DejaCode.
@@ -9,7 +8,7 @@ Sign in to DejaCode.
 .. note:: Sign in as a User with full administrative permissions.
 
 Review and Maintain your Usage Policies
-=======================================
+---------------------------------------
 
 - Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Usage Policies` option in the :guilabel:`Policy` panel.
@@ -54,7 +53,7 @@ Click the :guilabel:`Save` button in the lower right section of the form.
 Review your progress in the Usage Policies list.
 
 Assign your Usage Policies to Licenses
-======================================
+--------------------------------------
 
 - Select :guilabel:`Licenses` from the dropdown under your user name.
 
@@ -79,7 +78,7 @@ Continue this process to assign Usage Policies to all of your Licenses.
 You can also assign a Usage Policy to a single License on the Change License form.
 
 Assign your Usage Policies to Components
-========================================
+----------------------------------------
 
 - Select :guilabel:`Components` from the dropdown under your user name.
 
@@ -104,7 +103,7 @@ Assign your Usage Policies to Components
 Use the same process to set Package Usage Policies from Licenses.
 
 The Importance of Package and Component Usage Policy Assignments
-================================================================
+----------------------------------------------------------------
 
 Note that when you are familiar with the way that product teams actually use a
 package or component, you may want to set the usage policy on those items to reflect
@@ -117,7 +116,7 @@ that your usage of that item is only going to execute the code in a certain way 
 set the item usage policy to reflect that.
 
 Make Usage Policies Visible to your Users
-=========================================
+-----------------------------------------
 
 - Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Dataspaces` option in the :guilabel:`Administration` panel.
@@ -128,7 +127,7 @@ Make Usage Policies Visible to your Users
 - Save your work.
 
 Review Usage Policy Impact
-==========================
+--------------------------
 
 - Open the User View List of Licenses, Components, or Packages to see the Usage Policy
   Icon associated with objects that have Usage Policy assigned. If you open one of these
@@ -144,7 +143,7 @@ Review Usage Policy Impact
 Continue refining and reviewing your Usage Policies.
 
 Export License Policy Definitions
-=================================
+---------------------------------
 
 You can export a list of your License Keys along with associated Usage Policy details
 to a YAML-formatted file. This file can be used by other tools such as the open source

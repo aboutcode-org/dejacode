@@ -1,13 +1,12 @@
 .. _data_model:
 
-================
-Models reference
-================
+Data Models
+===========
 
 .. _data_model_product:
 
 Product model
-=============
+-------------
 
 * **Name** - Your product name. Required field (the only required field).
 
@@ -53,7 +52,7 @@ Product model
 .. _data_model_package:
 
 Package model
-=============
+-------------
 
 * **Filename** - The exact filename of the package.
 

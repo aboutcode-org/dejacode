@@ -1,7 +1,6 @@
 .. _user_tutorial_1:
 
-===============================
-Tutorial 1 - Your first Product
+Tutorial 1 - Your First Product
 ===============================
 
 .. note::
@@ -14,7 +13,7 @@ Tutorial 1 - Your first Product
 Sign in to DejaCode.
 
 Create a Product
-================
+----------------
 
 1. Select :guilabel:`Products` from the main menu bar.
 
@@ -27,7 +26,7 @@ Create a Product
 .. note:: You are ready to assign Inventory objects to your Product!
 
 Load a Software Bill of Materials (SBOM) to your Product
-========================================================
+--------------------------------------------------------
 
 You have the flexibility to employ either your CycloneDX, SPDX, or AboutFile
 Software Bill of Materials (SBOMs).
@@ -52,7 +51,7 @@ View your import results in the :guilabel:`Inventory` tab.
 .. note:: Continue assigning packages to your Product as required.
 
 Assign Packages to your Product
-===============================
+-------------------------------
 
 From the :guilabel:`Manage` dropdown, select :guilabel:`Packages`:
 
@@ -79,7 +78,7 @@ View your results in the :guilabel:`Inventory` tab.
 .. _user_tutorial_1_review_progress:
 
 Review your progress
-====================
+--------------------
 
 Click the :guilabel:`Generate Attribution` icon button:
 
@@ -96,7 +95,7 @@ Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu:
 * Export the report to your local file system using the :guilabel:`Export` button.
 
 Check for New Versions of your Product Packages
-===============================================
+-----------------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -107,7 +106,7 @@ New Package Versions are displayed on the :guilabel:`Inventory` tab.
 You can click on new versions and add them to DejaCode from the PurlDB.
 
 Assign Catalog Components to your Product
-=========================================
+-----------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -136,14 +135,14 @@ View your results in the :guilabel:`Inventory` tab.
 .. note:: Continue assigning components to your Product as required.
 
 Review your impact
-==================
+------------------
 
 Generate the attribution and run the reports again as described in
 :ref:`user_tutorial_1_review_progress`, using a report such as
 ``2-Product Component Analysis``.
 
 Assign Custom Components to your Product
-========================================
+----------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -161,7 +160,7 @@ Review the impact on your attribution and reports as described in
 ``2-Product Custom Component Analysis``.
 
 Review the Licenses that Impact your Product
-============================================
+--------------------------------------------
 
 Select :guilabel:`Products` from the main menu bar.
 
@@ -174,7 +173,7 @@ Export it from the download icon of the panel, for example as
 :guilabel:`Comma-separated Values (.csv)`.
 
 Assign Everything Else to your Product
-======================================
+--------------------------------------
 
 Continue refining and reviewing your product.
 

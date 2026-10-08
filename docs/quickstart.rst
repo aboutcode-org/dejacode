@@ -1,6 +1,5 @@
 .. _quickstart:
 
-===========
 Quick Start
 ===========
 
@@ -8,7 +7,7 @@ This page takes you from zero to your first Product, with its inventory,
 vulnerabilities, and compliance status, in a few minutes.
 
 Choose your path
-================
+----------------
 
 - :ref:`quickstart_public_instance`: **evaluate DejaCode** without installing
   anything.
@@ -22,7 +21,7 @@ Both of the first two paths continue with the same :ref:`quickstart_first_steps`
 .. _quickstart_public_instance:
 
 Evaluate on the public instance
-===============================
+-------------------------------
 
 1. Open https://public.dejacode.com/ and click :guilabel:`Sign Up`.
 2. Fill in the form and click :guilabel:`Create account`.
@@ -38,7 +37,7 @@ Continue with :ref:`quickstart_first_steps`.
 .. _quickstart_local_install:
 
 Install on your machine
-=======================
+-----------------------
 
 You only need `Docker <https://docs.docker.com/get-docker/>`_.
 
@@ -60,7 +59,7 @@ Continue with :ref:`quickstart_first_steps`.
 .. _quickstart_first_steps:
 
 First steps
-===========
+-----------
 
 1. Select :guilabel:`Products` from the main menu bar, click the green
    :guilabel:`Add Product` button, set a **name**, and click :guilabel:`Add Product`.
@@ -83,7 +82,7 @@ First steps
    :guilabel:`SPDX document` or CycloneDX :guilabel:`SBOM`.
 
 Next steps
-==========
+----------
 
 - :ref:`user_tutorial_1` and the following tutorials walk through each feature in
   detail.

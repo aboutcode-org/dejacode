@@ -1,6 +1,5 @@
 .. _user_tutorial_3:
 
-=================================
 Tutorial 3 - Working with Reports
 =================================
 
@@ -12,7 +11,7 @@ Tutorial 3 - Working with Reports
 Sign in to DejaCode.
 
 Create a Reporting Query
-========================
+------------------------
 
 - Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Queries` option in the :guilabel:`Reporting` panel.
@@ -71,7 +70,7 @@ Click the :guilabel:`Save and continue editing` button in the lower right sectio
   created is in the list of Queries. Review the results.
 
 Create a Column Template
-========================
+------------------------
 
 - Select :guilabel:`Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Column templates` option in the :guilabel:`Reporting` panel.
@@ -106,7 +105,7 @@ Add additional Assigned Fields as follows:
 .. note:: You are now ready to use your Column Template in a DejaCode Report.
 
 Create a DejaCode Report
-========================
+------------------------
 
 - Select :guilabel:`Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Reports` option in the :guilabel:`Reporting` panel.
@@ -133,7 +132,7 @@ Select :guilabel:`Reports` from the :guilabel:`Tools` section of the side menu.
 Select other Reports to run and review.
 
 Manage Your Report Collection
-=============================
+-----------------------------
 
 - Select :guilabel:`Admin Dashboard` from the dropdown under your user name.
 - Select the :guilabel:`Reports` option in the :guilabel:`Reporting` panel.

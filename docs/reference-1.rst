@@ -1,8 +1,7 @@
 .. _reference_1:
 
-=====================================================================
-Reference 1 - Declared License Expression and License Clarity Scoring
-=====================================================================
+Declared License Expression and License Clarity Scoring
+=======================================================
 
 When you scan a Package from DejaCode, you can view the Scan Results in a
 :guilabel:`Scan` tab on the Package details user view. DejaCode presents a selection of
@@ -11,7 +10,7 @@ complete scan results in .json format with the :guilabel:`Download Scan results`
 button.
 
 License Summary Fields
-======================
+----------------------
 
 In DejaCode, the :guilabel:`Scan` tab of the Package details user view shows
 license clarity scoring fields and summary fields.
@@ -30,7 +29,7 @@ You can set the values from :guilabel:`declared_license_expression`,
 in DejaCode.
 
 Declared License Expression
-===========================
+---------------------------
 
 Declared License Expression is the primary license expression as determined from the
 declaration(s) of the authors of the package.
@@ -67,7 +66,7 @@ varying standards for license declaration. It is possible that the declared lice
 expression constructed by this process may not appear literally in the codebase.
 
 License Clarity Scoring
-=======================
+-----------------------
 
 :guilabel:`License Clarity`
 License Clarity is a set of criteria that indicate how clearly, comprehensively and

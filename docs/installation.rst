@@ -1,6 +1,5 @@
 .. _installation:
 
-============
 Installation
 ============
 
@@ -19,13 +18,13 @@ There are three ways to run DejaCode:
 .. _run_with_docker:
 
 Run with Docker
-===============
+---------------
 
 This is the simplest way to get DejaCode running. You only need **Docker**:
 no repository checkout, no build step required.
 
-1. Get Docker
--------------
+Get Docker
+^^^^^^^^^^
 
 Download and **install Docker** on your platform:
 |get_docker_link|.
@@ -34,8 +33,8 @@ Download and **install Docker** on your platform:
 
    <a href="https://docs.docker.com/get-docker/" target="_blank" class="external">Get Docker</a>
 
-2. Run the installer
---------------------
+Run the installer
+^^^^^^^^^^^^^^^^^
 
 Run the one-liner installer::
 
@@ -53,8 +52,8 @@ This script will:
     Override the default installation directory with:
     ``DEJACODE_HOME=/path/to/dir bash install.sh``
 
-3. Create an application user
------------------------------
+Create an application user
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -66,8 +65,8 @@ Follow the prompt instructions, providing the required information:
 - **Email Address**: Provide a valid email address.
 - **Strong Password**: Create a password following security guidelines.
 
-4. Access the application
--------------------------
+Access the application
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. admonition:: Congratulations!
    :class: tip
@@ -90,7 +89,7 @@ Follow the prompt instructions, providing the required information:
 .. _dejacode_command:
 
 Managing your installation
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``dejacode`` command is a thin wrapper around ``docker compose``. All standard
 ``docker compose`` subcommands work directly::
@@ -115,20 +114,20 @@ To completely remove DejaCode and all its data::
 .. _enterprise_deployment:
 
 Enterprise deployment
-=====================
+---------------------
 
 Enterprise deployments use the same pre-built image as the standard install,
 with additional configuration for your domain, a custom nginx setup, and
 dedicated server hardware.
 
-1. Install
-----------
+Install
+^^^^^^^
 
 Follow the :ref:`run_with_docker` steps. Once the stack is running, continue
 below to adapt it for production.
 
-2. Configure your domain
-------------------------
+Configure your domain
+^^^^^^^^^^^^^^^^^^^^^
 
 Edit ``~/.dejacode/.env`` and update the following settings to match your
 server's hostname or IP::
@@ -140,8 +139,8 @@ Restart the stack to apply::
 
     dejacode restart
 
-3. Configure nginx
-------------------
+Configure nginx
+^^^^^^^^^^^^^^^
 
 The default nginx configuration is suitable for local use. For production, replace it
 with your own configuration file.
@@ -153,8 +152,8 @@ and restart::
 
     dejacode down && dejacode up -d
 
-4. AboutCode integrations
---------------------------
+AboutCode integrations
+^^^^^^^^^^^^^^^^^^^^^^
 
 Upon initialization, the ``nexB`` reference :ref:`dataspace` is created with a
 default set of data, including license and organization libraries.
@@ -171,7 +170,7 @@ default set of data, including license and organization libraries.
     not submitted to public endpoints.
 
 Hardware requirements
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 +-----------+------------------------------------------------------------------+
 | Item      | Minimum                                                          |
@@ -192,7 +191,7 @@ Hardware requirements
 .. _local_development_installation:
 
 Local development installation
-==============================
+------------------------------
 
 .. note::
     This section is for contributors to DejaCode. The development environment
@@ -200,7 +199,7 @@ Local development installation
     Please refer to :ref:`contributing` for instructions on submitting changes.
 
 Clone and configure
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 #. Clone the `DejaCode repository <https://github.com/aboutcode-org/dejacode>`_::
 
@@ -211,7 +210,7 @@ Clone and configure
     make envfile_dev
 
 Run the app
------------
+^^^^^^^^^^^
 
 Build the development image and start all services::
 
@@ -229,14 +228,14 @@ Source code changes are reflected immediately without restarting the container.
         docker compose -f compose.dev.yml down
 
 Create an application user
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
     make superuser
 
 Tests
------
+^^^^^
 
 ::
 

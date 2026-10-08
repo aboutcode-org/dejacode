@@ -16,8 +16,8 @@ All rules are **disabled by default**. Each dataspace activates and configures t
 rules that are relevant to its compliance program via the **Policy Rules Configuration**
 section of the Dataspace form.
 
-1. Built-in Rules
------------------
+Built-in Rules
+--------------
 
 Eight rules are available out of the box, organized into two categories: policy-based
 rules and vulnerability-based rules.
@@ -93,8 +93,8 @@ rules and vulnerability-based rules.
 - **Warning** rules are highlighted in yellow and indicate a condition that requires
   attention but does not necessarily block a release.
 
-2. Violation Lifecycle
-----------------------
+Violation Lifecycle
+-------------------
 
 Each policy violation is a record associated with a product and a rule type. Its
 lifecycle follows these states:
@@ -111,8 +111,8 @@ lifecycle follows these states:
 Only **active (unresolved)** violations are shown in the compliance tab and returned
 by the REST API.
 
-3. Configuration
-----------------
+Configuration
+-------------
 
 Policy rules are configured per dataspace in the **Policy Rules Configuration** section
 of the Dataspace form, in the Admin interface under :guilabel:`Dataspaces`.
@@ -168,8 +168,8 @@ Each entry in the JSON object is keyed by the rule type and supports three optio
     set to ``true``, are skipped during evaluation and any previously open violations
     for those rules are automatically resolved.
 
-3.1 Rule Parameters
-^^^^^^^^^^^^^^^^^^^
+Rule Parameters
+^^^^^^^^^^^^^^^
 
 The following parameters are supported by rules that accept them:
 
@@ -186,11 +186,11 @@ The following parameters are supported by rules that accept them:
 - ``min_risk_score`` (float, 0.0-10.0): only consider vulnerabilities whose risk score
   is greater than or equal to this value. Defaults to ``8.0``.
 
-4. Evaluation
--------------
+Evaluation
+----------
 
-4.1 Automatic Evaluation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Automatic Evaluation
+^^^^^^^^^^^^^^^^^^^^
 
 Rules are re-evaluated automatically in the background (via the task queue) whenever
 any of the following changes occur:
@@ -201,8 +201,8 @@ any of the following changes occur:
 - The **Policy Rules Configuration** is saved, which triggers re-evaluation of all
   products in the dataspace.
 
-4.2 Manual Re-evaluation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Manual Re-evaluation
+^^^^^^^^^^^^^^^^^^^^
 
 Rules can also be re-evaluated on demand in two ways:
 
@@ -214,8 +214,8 @@ Rules can also be re-evaluated on demand in two ways:
   .. image:: images/reference-policy-rules/manual-reevaluation-button.jpg
      :width: 400
 
-5. Compliance Tab
------------------
+Compliance Tab
+--------------
 
 .. image:: images/reference-policy-rules/compliance-tab-policy-violations.jpg
 
@@ -239,8 +239,8 @@ rules with their current status: **Triggered** or **OK**.
    :width: 500
    :align: center
 
-6. Webhook Notifications
-------------------------
+Webhook Notifications
+---------------------
 
 The policy rules engine fires webhook events when violations change state. These can be
 used to integrate DejaCode compliance alerts into external workflows such as Slack,
@@ -258,8 +258,8 @@ Two events are available:
     :ref:`integrations_webhook` for instructions on configuring webhook endpoints and
     event subscriptions.
 
-7. REST API
------------
+REST API
+--------
 
 Active policy violations for a product are accessible via the REST API at::
 

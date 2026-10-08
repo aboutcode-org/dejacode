@@ -1,9 +1,8 @@
-====================
 Application Settings
 ====================
 
 Settings file
-=============
+-------------
 
 DejaCode is configured with environment variables stored in a ``.env`` file.
 
@@ -28,7 +27,7 @@ file.
     dejacode restart web worker
 
 DATABASE
---------
+^^^^^^^^
 
 The database can be configured using the following settings::
 
@@ -39,7 +38,7 @@ The database can be configured using the following settings::
     DATABASE_PORT=5432
 
 ALLOWED_HOSTS
--------------
+^^^^^^^^^^^^^
 
 A list of strings representing the host/domain names that this application can serve.
 
@@ -65,7 +64,7 @@ responsible to provide your own validation of the Host header.
     ALLOWED_HOSTS=*
 
 EMAIL
------
+^^^^^
 
 These settings enable the email notification feature in DejaCode.
 If set, the provided username, password and email/SMTP server details are used
@@ -89,7 +88,7 @@ to send email notifications to your DejaCode users.
     EMAIL_USE_TLS=True
 
 SITE_URL
---------
+^^^^^^^^
 
 The base URL of this DejaCode installation. This setting is required to build URLs that
 reference objects in the application. It is also used when including URLs in email
@@ -100,7 +99,7 @@ notifications.
     SITE_URL=http://www.yourdomain.com/
 
 DEJACODE_SUPPORT_EMAIL
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 An optional email address to reach the support team of this instance.
 When defined, it will be displayed in various views and emails related to account
@@ -111,7 +110,7 @@ registration, activation, and password reset.
     DEJACODE_SUPPORT_EMAIL=support@nexb.com
 
 ANONYMOUS_USERS_DATASPACE
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 One Dataspace can be designated as accessible to anyone in a view-only mode.
 Set this with an existing Dataspace name to enable view-only access to anonymous, non
@@ -122,7 +121,7 @@ logged-in users.
     ANONYMOUS_USERS_DATASPACE=DATASPACE_NAME
 
 REFERENCE_DATASPACE
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 An administrative User in the Reference Dataspace can see and copy data from every
 Dataspace; otherwise, the User can only see data from their assigned Dataspace
@@ -141,7 +140,7 @@ to nexB-provided reference data.
     REFERENCE_DATASPACE=nexB
 
 SESSION
--------
+^^^^^^^
 
 You can control whether the DejaCode session framework uses web browser-lifetime
 sessions vs. persistent sessions with the ``SESSION_EXPIRE_AT_BROWSER_CLOSE`` setting.
@@ -166,7 +165,7 @@ longer than this value.
 .. _dejacode_settings_paginate_by:
 
 DEJACODE_PAGINATE_BY
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 The number of objects displayed per page for each object type can be customized with the
 following setting::
@@ -174,7 +173,7 @@ following setting::
     DEJACODE_PAGINATE_BY=product=20,package=100,license=100,report=50,request=50,scan=50
 
 DEJACODE_LOG_LEVEL
-------------------
+^^^^^^^^^^^^^^^^^^
 
 By default, only a minimum of logging messages is displayed in the console, mostly
 to provide some progress about background task execution.
@@ -190,7 +189,7 @@ This mode can be enabled globally through the ``.env`` file::
 .. _clamd-settings:
 
 CLAMD_ENABLED
--------------
+^^^^^^^^^^^^^
 
 When enabled, DejaCode will perform virus scanning on any and all files that a
 user attempts to import in the various places where data imports are supported.
@@ -205,7 +204,7 @@ True.
     CLAMD_ENABLED=True
 
 TIME_ZONE
----------
+^^^^^^^^^
 
 A string representing the time zone for the current DejaCode installation. By
 default the ``UTC`` time zone is used. For example::
@@ -219,7 +218,7 @@ default the ``UTC`` time zone is used. For example::
 .. _dejacode_settings_job_queue_and_workers:
 
 Job Queue and Workers
-=====================
+---------------------
 
 DejaCode leverages the RQ (Redis Queue) Python library for job queuing and background
 processing with workers.
@@ -245,7 +244,7 @@ SSL is disabled by default but can be enabled with the following configuration::
 .. _dejacode_settings_aboutcode_integrations:
 
 AboutCode integrations
-======================
+----------------------
 
 The following settings define the URL and API key of the AboutCode services for
 **all Dataspaces** of your DejaCode instance.
@@ -257,7 +256,7 @@ API key, which take precedence over these settings. See
 .. _dejacode_settings_scancodeio:
 
 SCANCODEIO
-----------
+^^^^^^^^^^
 
 Provide the URL and API key of your `ScanCode.io <https://github.com/aboutcode-org/scancode.io>`_
 instance.
@@ -274,7 +273,7 @@ instance.
 .. _dejacode_settings_purldb:
 
 PURLDB
-------
+^^^^^^
 
 Provide the URL and API key of your `PurlDB <https://github.com/aboutcode-org/purldb>`_ instance.
 
@@ -290,7 +289,7 @@ Provide the URL and API key of your `PurlDB <https://github.com/aboutcode-org/pu
 .. _dejacode_settings_vulnerablecode:
 
 VULNERABLECODE
---------------
+^^^^^^^^^^^^^^
 
 You can either run your own instance of
 `VulnerableCode <https://github.com/aboutcode-org/vulnerablecode>`_
@@ -308,10 +307,10 @@ or connect to the public one https://public.vulnerablecode.io/.
     For detailed instructions, refer to :ref:`dejacode_dataspace_vulnerablecode`.
 
 LDAP Integration
-================
+----------------
 
 AUTHENTICATION_BACKENDS
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 This setting enables users to authenticate against an LDAP server.
 
@@ -332,7 +331,7 @@ For example, this can be useful if the LDAP server is down.
     AUTHENTICATION_BACKENDS=dje.ldap_backend.DejaCodeLDAPBackend,django.contrib.auth.backends.ModelBackend
 
 SERVER_URI
-----------
+^^^^^^^^^^
 
 The URI of the LDAP server.
 
@@ -341,7 +340,7 @@ The URI of the LDAP server.
     AUTH_LDAP_SERVER_URI=ldap://ldap.server.com:389
 
 START_TLS
----------
+^^^^^^^^^
 
 By default, LDAP connections are unencrypted.
 If you need a secure connection to the LDAP server, you can either use an
@@ -354,7 +353,7 @@ To enable StartTLS, set ``AUTH_LDAP_START_TLS`` to True.
     AUTH_LDAP_START_TLS=True
 
 BIND
-----
+^^^^
 
 ``AUTH_LDAP_BIND_DN`` and ``AUTH_LDAP_BIND_PASSWORD`` should be set with the
 distinguished name, and password to use when binding to the LDAP server.
@@ -367,7 +366,7 @@ distinguished name, and password to use when binding to the LDAP server.
     AUTH_LDAP_BIND_PASSWORD=""
 
 USER_DN
--------
+^^^^^^^
 
 The following setting is required to locate a user in the LDAP directory.
 The filter parameter should contain the placeholder %(user)s for the username.
@@ -379,7 +378,7 @@ It must return exactly one result for authentication to succeed.
     AUTH_LDAP_USER_FILTERSTR="(uid=%(user)s)"
 
 USER_SEARCHES
--------------
+^^^^^^^^^^^^^
 
 When users are stored in several locations of the LDAP directory, for example in
 different organizational units, use ``AUTH_LDAP_USER_SEARCHES`` instead of
@@ -403,7 +402,7 @@ When set, ``AUTH_LDAP_USER_DN`` and ``AUTH_LDAP_USER_FILTERSTR`` are ignored.
 .. note:: The value must be written on a single line.
 
 AUTOCREATE_USER
----------------
+^^^^^^^^^^^^^^^
 
 When ``AUTH_LDAP_AUTOCREATE_USER`` is True (default), a new DejaCode user will
 be created in the database with the minimum permission (a read-only user).
@@ -428,7 +427,7 @@ this Dataspace.
     AUTH_LDAP_AUTOCREATE_USER=False
 
 USER_ATTR_MAP
--------------
+^^^^^^^^^^^^^
 
 ``AUTH_LDAP_USER_ATTR_MAP`` is used to copy LDAP directory information into
 DejaCode user objects, at creation time (see ``AUTH_LDAP_AUTOCREATE_USER``) or
@@ -441,7 +440,7 @@ names.
     AUTH_LDAP_USER_ATTR_MAP=first_name=givenName,last_name=sn,email=mail
 
 ALWAYS_UPDATE_USER
-------------------
+^^^^^^^^^^^^^^^^^^
 
 By default, all mapped user fields will be updated each time the user logs in.
 To disable this, set ``AUTH_LDAP_ALWAYS_UPDATE_USER`` to False.
@@ -451,7 +450,7 @@ To disable this, set ``AUTH_LDAP_ALWAYS_UPDATE_USER`` to False.
     AUTH_LDAP_ALWAYS_UPDATE_USER=False
 
 Group permissions
------------------
+^^^^^^^^^^^^^^^^^
 
 User's LDAP group memberships can be used with the DejaCode group permissions system.
 
@@ -479,10 +478,10 @@ explained above and also do these additional tasks:
     AUTH_LDAP_GROUP_FILTERSTR="(objectClass=groupOfNames)"
 
 Configuration examples
-======================
+----------------------
 
 Configuration 1
----------------
+^^^^^^^^^^^^^^^
 
 * LDAP as the only way to log in to DejaCode.
 * Unencrypted connections with the LDAP server.
@@ -503,7 +502,7 @@ Configuration 1
     AUTH_LDAP_ALWAYS_UPDATE_USER=False
 
 Configuration 2
----------------
+^^^^^^^^^^^^^^^
 
 * LDAP as the first way to log in, and then using a DejaCode user account if
   the authentication through LDAP was not successful.

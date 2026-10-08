@@ -1,6 +1,5 @@
 .. _how_to_2:
 
-===========================================
 How To 2 - Take Advantage of Reference Data
 ===========================================
 
@@ -9,7 +8,7 @@ Sign in to DejaCode.
 .. note:: Sign in as a User with full administrative permissions.
 
 Explore and Copy Reference Data
-===============================
+-------------------------------
 
 In this example, you are researching ways to get the most out of your DejaCode data
 by creating Queries and Reports. One way to get started on this is to explore the
@@ -32,7 +31,7 @@ acquainted with methods for taking advantage of the various Query features.
   Reference Data to your own Dataspace.
 
 Check for Updates to a Specific Object in Reference Data
-========================================================
+--------------------------------------------------------
 
 In the DejaCode user view of your own Dataspace, when you are viewing the details of
 an Owner, a License, a Package, or a Component, you can click on a button in the upper
@@ -42,7 +41,7 @@ or that you can select specific fields to apply updated values from Reference Da
 to your own Dataspace. Simply follow the prompts to make those changes.
 
 Check for Recently Updated Objects in Reference Data
-====================================================
+----------------------------------------------------
 
 As an administrative user, you can use the dropdown under your user name
 to select Components, Packages, Licenses or Owners to navigate to the
@@ -55,7 +54,7 @@ objects that interest you, and you can follow a procedure similar to the one des
 above for Queries to copy or update Reference Data objects to your own Dataspace.
 
 Preserving Specific Field Values in Your Dataspace
-==================================================
+--------------------------------------------------
 
 When you copy Reference Data that already exists in your own Dataspace, you should
 note that DejaCode allows you to exclude certain fields when you take that action.

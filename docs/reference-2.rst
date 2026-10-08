@@ -1,8 +1,7 @@
 .. _reference_2:
 
-===========================================================
-Reference 2 - Understand the Package URL (purl) in DejaCode
-===========================================================
+Package URL (purl)
+==================
 
 A Package URL (purl) provides an exact, unique identification of a software object
 that also includes information about its origin.
@@ -15,7 +14,7 @@ critical to the usefulness of SBOMs (Software Bills of Materials) and for
 integration with vulnerability tracking services.
 
 Package URL Elements
-====================
+--------------------
 
 :guilabel:`Package URL (purl)`
 DejaCode dynamically derives a Package URL (purl) value as a string that combines all
@@ -59,7 +58,7 @@ complete Package URL string. You can also reference that in a Package-based
 Column Template in your DejaCode reports.
 
 Setting the Package URL in DejaCode
-===================================
+-----------------------------------
 
 When you create a new Package in DejaCode, the application automatically derives the
 Package URL elements when you save it from the data you provide, primarily from the
@@ -71,7 +70,7 @@ the Administrative Browse Packages form to select those Packages and use the
 to calculate and set a Package URL using the available Package data.
 
 Package Vulnerability Tracking
-==============================
+------------------------------
 
 DejaCode uses the Package URL (purl) of each Package to get its known vulnerabilities
 from VulnerableCode. See :ref:`dejacode_dataspace_vulnerablecode` and

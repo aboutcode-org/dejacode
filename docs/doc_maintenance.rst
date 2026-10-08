@@ -1,9 +1,8 @@
-====================
 Document Maintenance
 ====================
 
 Document Software Setup
-=======================
+-----------------------
 
 The DejaCode User Guide is built using Sphinx.
 See http://www.sphinx-doc.org/en/master/index.html
@@ -16,7 +15,7 @@ You create, build, and preview DejaCode documentation on your local machine.
 You commit your updates to the DejaCode repository on GitHub.
 
 Clone DejaCode
-==============
+--------------
 
 To get started, create or identify a working directory on your local machine.
 
@@ -37,7 +36,7 @@ Sphinx builds a local instance of the documentation .html files::
 You now have a local build of the DejaCode documents.
 
 Format and style
-================
+----------------
 
 Use the following tags to highlight elements of the documentation:
 
@@ -46,7 +45,7 @@ Use the following tags to highlight elements of the documentation:
 - Field: **Field Name**
 
 Improve DejaCode Documents
-==========================
+--------------------------
 
 Before you begin creating and modifying DejaCode documents, be sure that you
 understand the basics of reStructuredText as explained at
@@ -70,7 +69,7 @@ Validate the .rst files::
     make check
 
 Share DejaCode Document Improvements
-====================================
+------------------------------------
 
 Follow standard git procedures to upload your new and modified files.
 The following commands are examples::

@@ -14,8 +14,8 @@ what they mean, drilling into the affected packages, and resolving them.
 
 Sign in to DejaCode.
 
-1. Open the Compliance Dashboard
---------------------------------
+Open the Compliance Dashboard
+-----------------------------
 
 1. Select :guilabel:`Compliance` from the main menu bar to open the
    :guilabel:`Compliance Dashboard`.
@@ -28,8 +28,8 @@ Sign in to DejaCode.
 3. Click the policy violations count on a product row to open its
    :guilabel:`Compliance` tab directly.
 
-2. Review Policy Violations
----------------------------
+Review Policy Violations
+------------------------
 
 The **Policy violations** panel shows the active violations for the product.
 
@@ -55,8 +55,8 @@ if only warning rules are triggered.
    :width: 400
    :align: center
 
-3. Drill Into Affected Packages
--------------------------------
+Drill Into Affected Packages
+----------------------------
 
 1. In the **Policy violations** table, click the count in the **In violation** column
    for the rule you want to investigate.
@@ -71,8 +71,8 @@ if only warning rules are triggered.
 3. Review the packages and decide what action to take: update a license expression,
    assign a usage policy, or triage a vulnerability.
 
-4. Resolve a Violation
-----------------------
+Resolve a Violation
+-------------------
 
 Violations are resolved automatically when the underlying condition is corrected.
 The following example shows how to resolve a **Vulnerability Unresolved** violation
@@ -94,8 +94,8 @@ by completing a vulnerability analysis.
 Once all vulnerabilities on a package have a terminal analysis, that package is no
 longer counted as a violation for the **Vulnerability Unresolved** rule.
 
-5. Re-evaluate and Confirm
---------------------------
+Re-evaluate and Confirm
+-----------------------
 
 After correcting the underlying condition, trigger a manual re-evaluation to update
 the violation count immediately rather than waiting for the next automatic run.
