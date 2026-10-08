@@ -144,6 +144,29 @@ class ProductPortfolioTasksTestCase(MaxQueryMixin, TestCase):
         ]
         self.assertEqual(expected, cm.output)
 
+    @mock.patch("product_portfolio.models.ScanCodeProject.import_data_from_scancodeio")
+    def test_product_portfolio_pull_project_data_from_scancodeio_task_concurrent_start(
+        self, mock_import_data
+    ):
+        scancode_project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.product1.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUBMITTED,
+            created_by=self.super_user,
+        )
+        # A concurrent task started the import after this task read the status
+        ScanCodeProject.objects.filter(pk=scancode_project.pk).update(
+            status=ScanCodeProject.Status.IMPORT_STARTED
+        )
+
+        with mock.patch.object(ScanCodeProject.objects, "get", return_value=scancode_project):
+            with self.assertLogs(tasks_logger) as cm:
+                pull_project_data_from_scancodeio_task(scancodeproject_uuid=scancode_project.uuid)
+
+        self.assertEqual("ERROR:product_portfolio.tasks:Cannot start import", cm.output[-1])
+        mock_import_data.assert_not_called()
+
     @mock.patch("product_portfolio.models.Product.improve_packages_from_purldb")
     def test_product_portfolio_improve_packages_from_purldb_task(self, mock_improve):
         mock_improve.return_value = ["pkg1", "pkg2"]

@@ -10,6 +10,7 @@ import io
 import json
 import zipfile
 from hashlib import md5
+from itertools import batched
 from urllib.parse import quote_plus
 
 from django.apps import apps
@@ -22,7 +23,6 @@ from license_expression import Licensing
 
 from dejacode_toolkit import BaseService
 from dejacode_toolkit import logger
-from dje.utils import chunked
 
 
 class ScanCodeIO(BaseService):
@@ -127,7 +127,7 @@ class ScanCodeIO(BaseService):
 
         scans = []
         max_results_per_page = 50
-        for names in chunked(project_names, chunk_size=max_results_per_page):
+        for names in batched(project_names, max_results_per_page):
             scan_list_data = self.fetch_scan_list(names=",".join(names))
             if scan_list_data:
                 scans.extend(scan_list_data.get("results", []))

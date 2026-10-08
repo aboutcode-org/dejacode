@@ -93,10 +93,15 @@ def pull_project_data_from_scancodeio_task(scancodeproject_uuid):
         logger.error("Cannot start import")
         return
 
-    # Update the status to prevent from starting the task again
-    ScanCodeProject.objects.filter(uuid=scancode_project.uuid).update(
-        status=ScanCodeProject.Status.IMPORT_STARTED
-    )
+    # Update the status to prevent from starting the task again.
+    # Filtering on the status read above makes the update fail when a concurrent
+    # task already started the import.
+    updated_count = ScanCodeProject.objects.filter(
+        uuid=scancode_project.uuid, status=scancode_project.status
+    ).update(status=ScanCodeProject.Status.IMPORT_STARTED)
+    if not updated_count:
+        logger.error("Cannot start import")
+        return
 
     if scancode_project.type == scancode_project.ProjectType.LOAD_SBOMS:
         notification_verb = "Import SBOM"
