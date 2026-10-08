@@ -72,8 +72,6 @@ from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from dejacode_toolkit.purldb import PurlDB
 from dejacode_toolkit.scancodeio import ScanCodeIO
-from dejacode_toolkit.scancodeio import get_hash_uid
-from dejacode_toolkit.scancodeio import get_package_download_url
 from dejacode_toolkit.scancodeio import get_scan_results_as_file_url
 from dejacode_toolkit.utils import sha1
 from dejacode_toolkit.vulnerablecode import VulnerableCode
@@ -959,7 +957,7 @@ class ProductTabInventoryView(
         )
         if display_scan_features:
             context["display_scan_features"] = True
-            self.inject_scan_data(scancodeio, objects_by_feature, dataspace.uuid)
+            self.inject_scan_data(scancodeio, objects_by_feature)
 
         # 5. Display the compliance alert based on license policies
         if self.show_licenses_policy:
@@ -1024,7 +1022,7 @@ class ProductTabInventoryView(
         return context
 
     @staticmethod
-    def inject_scan_data(scancodeio, feature_grouped, dataspace_uuid):
+    def inject_scan_data(scancodeio, feature_grouped):
         download_urls = [
             product_package.package.download_url
             for product_packages in feature_grouped.values()
@@ -1036,21 +1034,9 @@ class ProductTabInventoryView(
         if not download_urls:
             return
 
-        scoped_url_uids = [
-            f"{get_hash_uid(url)}.{get_hash_uid(dataspace_uuid)}" for url in download_urls
-        ]
-
-        scans = []
-        max_results_per_page = 50
-        for names in chunked(scoped_url_uids, chunk_size=max_results_per_page):
-            scan_list_data = scancodeio.fetch_scan_list(names=",".join(names))
-            if scan_list_data:
-                scans.extend(scan_list_data.get("results", []))
-
-        if not scans:
+        scans_by_uri = scancodeio.fetch_scans_by_download_url(download_urls)
+        if not scans_by_uri:
             return
-
-        scans_by_uri = {get_package_download_url(scan): scan for scan in scans}
 
         injected_feature_grouped = {}
         for feature_label, productpackages in feature_grouped.items():

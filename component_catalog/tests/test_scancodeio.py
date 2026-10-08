@@ -19,6 +19,7 @@ from component_catalog.tests import make_package
 from dejacode_toolkit.scancodeio import ScanCodeIO
 from dejacode_toolkit.scancodeio import get_hash_uid
 from dejacode_toolkit.scancodeio import get_notice_text_from_key_files
+from dejacode_toolkit.scancodeio import get_project_name
 from dejacode_toolkit.scancodeio import update_package_from_existing_scan_data
 from dje.models import Dataspace
 from dje.models import History
@@ -116,6 +117,26 @@ class ScanCodeIOTestCase(TestCase):
             "format": "json",
         }
         self.assertEqual(expected, params)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
+    def test_scancodeio_fetch_scans_by_download_url(self, mock_fetch_scan_list):
+        scancodeio = ScanCodeIO(self.dataspace)
+        self.assertEqual({}, scancodeio.fetch_scans_by_download_url([]))
+        mock_fetch_scan_list.assert_not_called()
+
+        download_urls = [f"https://url.com/package{index}" for index in range(51)]
+        scan = {"input_sources": [{"download_url": download_urls[0]}]}
+        mock_fetch_scan_list.side_effect = [{"results": [scan]}, None]
+
+        scans_by_download_url = scancodeio.fetch_scans_by_download_url(download_urls)
+        self.assertEqual({download_urls[0]: scan}, scans_by_download_url)
+
+        project_names = [get_project_name(url, self.dataspace.uuid) for url in download_urls]
+        expected = [
+            mock.call(names=",".join(project_names[:50])),
+            mock.call(names=",".join(project_names[50:])),
+        ]
+        self.assertEqual(expected, mock_fetch_scan_list.mock_calls)
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.request_get")
     def test_scancodeio_find_project(self, mock_request_get):

@@ -6,9 +6,12 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+from collections import Counter
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 import django_filters
 from rest_framework import permissions
@@ -20,9 +23,11 @@ from rest_framework.response import Response
 
 from component_catalog.api import KeywordsField
 from component_catalog.api import PackageEmbeddedSerializer
+from component_catalog.api import ScanCodeUnavailable
 from component_catalog.api import ValidateLicenseExpressionMixin
 from component_catalog.filters import IsVulnerableFilter
 from component_catalog.license_expression_dje import clean_related_expression
+from dejacode_toolkit.scancodeio import ScanCodeIO
 from dje.api import AboutCodeFilesActionMixin
 from dje.api import CreateRetrieveUpdateListViewSet
 from dje.api import CycloneDXSOMActionMixin
@@ -408,6 +413,43 @@ class AssignTriageRulesetSerializer(serializers.Serializer):
     assigned = serializers.BooleanField()
 
 
+class ProductScansQuerySerializer(serializers.Serializer):
+    summary_only = serializers.BooleanField(
+        default=False,
+        help_text="Exclude the Packages list from the response.",
+    )
+
+
+def get_package_scan_status(package, scan):
+    if not package.download_url:
+        return "not_scannable"
+    if not scan:
+        return "no_scan"
+    return ScanCodeIO.get_status_from_scan_results(scan)
+
+
+def get_package_scan_entry(package, scan, request):
+    scan_run = {}
+    scan_results_url = None
+    if scan:
+        scan_run = next(iter(scan.get("runs", [])), {})
+        scan_results_path = reverse("api_v2:package-scan-results", args=[package.uuid])
+        scan_results_url = request.build_absolute_uri(scan_results_path)
+
+    package_api_path = reverse("api_v2:package-detail", args=[package.uuid])
+    return {
+        "uuid": str(package.uuid),
+        "api_url": request.build_absolute_uri(package_api_path),
+        "purl": package.package_url,
+        "download_url": package.download_url,
+        "scan_status": get_package_scan_status(package, scan),
+        "scan_start_date": scan_run.get("task_start_date"),
+        "scan_end_date": scan_run.get("task_end_date"),
+        "scan_execution_time": scan_run.get("execution_time"),
+        "scan_results_url": scan_results_url,
+    }
+
+
 class CanChangeProduct(permissions.BasePermission):
     """Allows the action only if the user has the `change_product` object permission."""
 
@@ -553,6 +595,42 @@ class ProductViewSet(
         scancode_projects = product.scancodeprojects.all()
         projects_data = ScanCodeProjectSerializer(scancode_projects, many=True).data
         return Response(projects_data)
+
+    @action(detail=True)
+    def scans(self, request, uuid):
+        """
+        Scan status of all the Packages of this Product, with counts by status.
+
+        Statuses: the ScanCode.io run statuses ("not_started", "queued", "running",
+        "success", "failure", "stopped", "stale"), "no_scan" for a Package never
+        scanned, and "not_scannable" for a Package without a download URL.
+
+        Use `?summary_only=true` to exclude the Packages list.
+        """
+        query_serializer = ProductScansQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        product = self.get_object()
+        scancodeio = ScanCodeIO(request.user.dataspace)
+        if not scancodeio.is_available():
+            raise ScanCodeUnavailable()
+
+        packages = product.packages.all()
+        download_urls = [package.download_url for package in packages if package.download_url]
+        scans_by_download_url = scancodeio.fetch_scans_by_download_url(download_urls)
+        package_scans = [
+            get_package_scan_entry(
+                package, scans_by_download_url.get(package.download_url), request
+            )
+            for package in packages
+        ]
+
+        scan_statuses = [package_scan["scan_status"] for package_scan in package_scans]
+        scans_data = {"status_counts": Counter(scan_statuses)}
+        if not query_serializer.validated_data["summary_only"]:
+            scans_data["packages"] = package_scans
+
+        return Response(scans_data)
 
     @action(detail=True, url_path="policy_violations")
     def policy_violations(self, request, uuid):
