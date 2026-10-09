@@ -97,6 +97,7 @@ class VulnerabilitiesFetchTestCase(TestCase):
             advisory_uid="pypa/idna/PYSEC-2024-60"
         ).get()
         self.assertEqual("PYSEC-2024-60", vulnerability.advisory_id)
+        self.assertEqual("pypa", vulnerability.datasource_id)
         self.assertEqual(Decimal("0.5"), vulnerability.exploitability)
         self.assertEqual(Decimal("6.8"), vulnerability.weighted_severity)
         self.assertEqual(Decimal("3.4"), vulnerability.risk_score)

@@ -50,6 +50,7 @@ class TriageRulesetFormTestCase(TestCase):
         self.assertIn("rule_risk_score_min_risk_score", form.fields)
         self.assertIn("rule_exploited_vulnerability_enabled", form.fields)
         self.assertNotIn("rule_exploited_vulnerability_min_risk_score", form.fields)
+        self.assertIn("rule_advisory_source_datasource_ids", form.fields)
 
     def test_save_builds_rules_config_from_the_submitted_rule_fields(self):
         data = {
@@ -88,6 +89,33 @@ class TriageRulesetFormTestCase(TestCase):
         self.assertEqual(
             {"is_active": False, "min_risk_score": 8.0}, ruleset.rules_config["risk_score"]
         )
+        self.assertEqual(
+            {"is_active": False, "datasource_ids": []}, ruleset.rules_config["advisory_source"]
+        )
+
+    def test_save_builds_a_list_parameter_from_comma_separated_values(self):
+        data = {
+            "name": "My Ruleset",
+            "precedence": 100,
+            "rule_advisory_source_enabled": "on",
+            "rule_advisory_source_datasource_ids": "ghsa, , nvd ",
+        }
+        form = TriageRulesetForm(data=data, instance=TriageRuleset(dataspace=self.dataspace))
+        self.assertTrue(form.is_valid(), form.errors)
+
+        ruleset = form.save()
+
+        self.assertEqual(
+            {"is_active": True, "datasource_ids": ["ghsa", "nvd"]},
+            ruleset.rules_config["advisory_source"],
+        )
+
+    def test_displays_a_list_parameter_as_comma_separated_values(self):
+        rules_config = {"advisory_source": {"is_active": True, "datasource_ids": ["ghsa", "nvd"]}}
+        ruleset = TriageRuleset(dataspace=self.dataspace, rules_config=rules_config)
+        form = TriageRulesetForm(instance=ruleset)
+
+        self.assertIn('value="ghsa, nvd"', str(form["rule_advisory_source_datasource_ids"]))
 
     def test_rejects_a_request_template_with_no_creator(self):
         # A RequestTemplate normally always has a creator (the admin form sets it on

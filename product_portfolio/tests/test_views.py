@@ -571,6 +571,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
 
+    def test_product_portfolio_tab_vulnerability_view_datasource_in_menu(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1], datasource_id="ghsa")
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        expected = '<span class="dropdown-item-text small"><strong>Source:</strong> ghsa</span>'
+        self.assertContains(response, expected)
+
     def test_product_portfolio_tab_vulnerability_view_curation_badges(self):
         self.client.login(username="nexb_user", password="secret")
         DataspaceConfiguration.objects.update_or_create(
@@ -4741,6 +4751,16 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         url = self.product1.get_manage_triage_rulesets_url()
         response = self.client.get(url)
         self.assertContains(response, preset.name)
+
+    def test_get_displays_a_list_rule_parameter_as_comma_separated_values(self):
+        self.ruleset.rules_config = {
+            "advisory_source": {"is_active": True, "datasource_ids": ["ghsa", "nvd"]},
+        }
+        self.ruleset.save()
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertContains(response, "Advisory Source (datasource ids: ghsa, nvd)")
 
     def test_get_marks_the_assigned_rulesets_as_checked(self):
         ProductTriageRuleset.objects.create(

@@ -18,6 +18,7 @@ from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
 from vulnerabilities.tests import make_vulnerability_analysis
+from vulnerabilities.triage.rules import AdvisorySourceTriageRule
 from vulnerabilities.triage.rules import DevOnlyPackageTriageRule
 from vulnerabilities.triage.rules import ExploitedVulnerabilityTriageRule
 from vulnerabilities.triage.rules import ReachableVulnerabilityTriageRule
@@ -26,6 +27,7 @@ from vulnerabilities.triage.rules import SSVCDecisionTriageRule
 from vulnerabilities.triage.rules import StaleVulnerabilityTriageRule
 from vulnerabilities.triage.rules import UnresolvedVulnerabilityTriageRule
 from vulnerabilities.triage.rules import WeightedRiskTriageRule
+from vulnerabilities.triage.rules import format_rule_parameter_value
 from vulnerabilities.triage.rules import rule_parameters_from_config
 
 
@@ -350,6 +352,45 @@ class DevOnlyPackageTriageRuleTestCase(TestCase):
         self.assertEqual([], list(matches))
 
 
+class AdvisorySourceTriageRuleTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.product = make_product(self.dataspace)
+        self.package = make_package(self.dataspace)
+
+    def test_matches_vulnerability_from_a_configured_datasource(self):
+        vulnerability = make_vulnerability(
+            self.dataspace, affecting=self.package, datasource_id="ghsa"
+        )
+        make_product_package(self.product, package=self.package)
+        matches = AdvisorySourceTriageRule().get_matching_vulnerabilities(
+            self.product, parameters={"datasource_ids": ["ghsa", "nvd"]}
+        )
+        self.assertEqual([vulnerability], list(matches))
+
+    def test_excludes_vulnerability_from_another_or_no_datasource(self):
+        make_vulnerability(self.dataspace, affecting=self.package, datasource_id="pypa")
+        make_vulnerability(self.dataspace, affecting=self.package)
+        make_product_package(self.product, package=self.package)
+        matches = AdvisorySourceTriageRule().get_matching_vulnerabilities(
+            self.product, parameters={"datasource_ids": ["ghsa"]}
+        )
+        self.assertEqual([], list(matches))
+
+    def test_matches_nothing_with_the_default_empty_datasource_ids(self):
+        make_vulnerability(self.dataspace, affecting=self.package, datasource_id="ghsa")
+        make_product_package(self.product, package=self.package)
+        matches = AdvisorySourceTriageRule().get_matching_vulnerabilities(self.product)
+        self.assertEqual([], list(matches))
+
+    def test_ignores_vulnerabilities_affecting_packages_outside_the_product(self):
+        make_vulnerability(self.dataspace, affecting=self.package, datasource_id="ghsa")
+        matches = AdvisorySourceTriageRule().get_matching_vulnerabilities(
+            self.product, parameters={"datasource_ids": ["ghsa"]}
+        )
+        self.assertEqual([], list(matches))
+
+
 class RuleParametersFromConfigTestCase(TestCase):
     def test_excludes_is_active_key(self):
         config = {"is_active": True, "min_risk_score": 7.0}
@@ -357,3 +398,11 @@ class RuleParametersFromConfigTestCase(TestCase):
 
     def test_returns_empty_dict_when_only_is_active_present(self):
         self.assertEqual({}, rule_parameters_from_config({"is_active": True}))
+
+
+class FormatRuleParameterValueTestCase(TestCase):
+    def test_joins_a_list_value_with_commas(self):
+        self.assertEqual("ghsa, nvd", format_rule_parameter_value(["ghsa", "nvd"]))
+
+    def test_returns_a_scalar_value_as_a_string(self):
+        self.assertEqual("8.0", format_rule_parameter_value(8.0))

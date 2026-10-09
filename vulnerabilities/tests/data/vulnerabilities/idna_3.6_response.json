@@ -9,6 +9,7 @@
         {
           "advisory_id": "PYSEC-2024-60",
           "advisory_uid": "pypa/idna/PYSEC-2024-60",
+          "datasource_id": "pypa",
           "aliases": [
             "CVE-2024-3651",
             "GHSA-jjg7-2v4v-x38h"
@@ -57,6 +58,7 @@
         {
           "advisory_id": "CVE-2026-45409",
           "advisory_uid": "gitlab/pypi/idna/CVE-2026-45409",
+          "datasource_id": "gitlab",
           "aliases": [
             "GHSA-65pc-fj4g-8rjx"
           ],
@@ -102,6 +104,7 @@
         {
           "advisory_id": "PYSEC-2026-215",
           "advisory_uid": "pypa/idna/PYSEC-2026-215",
+          "datasource_id": "pypa",
           "aliases": [
             "CVE-2026-45409",
             "GHSA-65pc-fj4g-8rjx"

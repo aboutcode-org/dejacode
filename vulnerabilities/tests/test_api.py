@@ -97,6 +97,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
 
     def test_api_vulnerabilities_detail_endpoint(self):
         self.vulnerability1.fixed_by_packages = ["pkg:pypi/idna@3.7"]
+        self.vulnerability1.datasource_id = "ghsa"
         self.vulnerability1.save()
         detail_url = reverse("api_v2:vulnerability-detail", args=[self.vulnerability1.uuid])
         self.client.login(username="super_user", password="secret")
@@ -107,6 +108,7 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, detail_url)
         self.assertIn(detail_url, response.data["api_url"])
         self.assertEqual(self.vulnerability1.advisory_uid, response.data["advisory_uid"])
+        self.assertEqual("ghsa", response.data["datasource_id"])
         self.assertEqual(str(self.vulnerability1.uuid), response.data["uuid"])
         self.assertEqual("0.0", response.data["risk_score"])
         self.assertEqual(["pkg:pypi/idna@3.7"], response.data["fixed_by_packages"])

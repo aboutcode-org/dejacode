@@ -38,6 +38,7 @@ class VulnerabilitySerializer(DataspacedSerializer):
             "api_url",
             "uuid",
             "advisory_uid",
+            "datasource_id",
             "advisory_id",
             "resource_url",
             "summary",

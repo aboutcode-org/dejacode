@@ -20,6 +20,7 @@ from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY
+from vulnerabilities.triage.rules import format_rule_parameter_value
 from vulnerabilities.triage.rules import rule_parameters_from_config
 
 
@@ -113,7 +114,9 @@ class TriageRulesetAdmin(DataspacedAdmin):
             handler = RULE_REGISTRY[rule_type]
             params = rule_parameters_from_config(config)
             if params:
-                param_str = ", ".join(f"{key}: {value}" for key, value in params.items())
+                param_str = ", ".join(
+                    f"{key}: {format_rule_parameter_value(value)}" for key, value in params.items()
+                )
                 label = f"{handler.label} ({param_str})"
             else:
                 label = handler.label

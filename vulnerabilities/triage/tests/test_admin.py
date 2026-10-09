@@ -11,6 +11,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from component_catalog.tests import make_package
+from dje.admin import dejacode_site
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from dje.tests import create_user
@@ -18,9 +19,11 @@ from product_portfolio.models import Product
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_package
 from vulnerabilities.tests import make_vulnerability
+from vulnerabilities.triage.admin import TriageRulesetAdmin
 from vulnerabilities.triage.engine import evaluate_ruleset
 from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
+from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.tests import make_product_triage_ruleset
 from vulnerabilities.triage.tests import make_triage_ruleset
 from workflow.models import RequestTemplate
@@ -179,3 +182,20 @@ class TriageRulesetAdminSaveModelTestCase(TestCase):
 
         self.assertEqual(1, ruleset.triage_records.count())
         self.assertEqual(original_request, TriageRecord.objects.get().request)
+
+
+class TriageRulesetAdminEnabledRulesTestCase(TestCase):
+    def setUp(self):
+        self.dataspace = Dataspace.objects.create(name="nexB")
+        self.ruleset_admin = TriageRulesetAdmin(TriageRuleset, dejacode_site)
+
+    def test_get_enabled_rules_joins_a_list_parameter_with_commas(self):
+        ruleset = make_triage_ruleset(
+            self.dataspace,
+            rules_config={
+                "risk_score": {"is_active": True, "min_risk_score": 7.5},
+                "advisory_source": {"is_active": True, "datasource_ids": ["ghsa", "nvd"]},
+            },
+        )
+        expected = "Risk Score (min_risk_score: 7.5)<br>Advisory Source (datasource_ids: ghsa, nvd)"
+        self.assertEqual(expected, self.ruleset_admin.get_enabled_rules(ruleset))
