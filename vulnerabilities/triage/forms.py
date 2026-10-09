@@ -10,6 +10,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from dje.forms import DataspacedAdminForm
+from dje.forms import JSONListField
 from vulnerabilities.models import VulnerabilityAnalysisContentMixin
 from vulnerabilities.triage.models import AnalysisPreset
 from vulnerabilities.triage.models import TriageAction
@@ -78,6 +79,13 @@ class TriageRulesetForm(DataspacedAdminForm):
         label = param_name.replace("_", " ").capitalize()
         help_text = param_spec["help_text"]
         default = param_spec["default"]
+        if isinstance(default, list):
+            return JSONListField(
+                label=label,
+                help_text=help_text,
+                required=False,
+                initial=initial_value,
+            )
         if isinstance(default, int):
             return forms.IntegerField(
                 label=label,
@@ -126,7 +134,9 @@ class TriageRulesetForm(DataspacedAdminForm):
             for param_name, param_spec in handler.parameters_schema.items():
                 default = param_spec["default"]
                 value = self.cleaned_data.get(f"rule_{rule_type}_{param_name}")
-                if value is not None:
+                if isinstance(default, list):
+                    rule_config[param_name] = value
+                elif value is not None:
                     coerced = int(value) if isinstance(default, int) else float(value)
                     rule_config[param_name] = coerced
                 else:

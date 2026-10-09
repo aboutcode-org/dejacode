@@ -246,6 +246,28 @@ class DevOnlyPackageTriageRule(BaseTriageRule):
         )
 
 
+class AdvisorySourceTriageRule(BaseTriageRule):
+    rule_type = "advisory_source"
+    label = "Advisory Source"
+    description = "Vulnerabilities reported by one of the configured VulnerableCode datasources."
+    parameters_schema = {
+        "datasource_ids": {
+            "default": [],
+            "help_text": "Comma-separated VulnerableCode datasource IDs, such as: ghsa, nvd.",
+        },
+    }
+
+    def get_matching_vulnerabilities(self, product, parameters=None):
+        Vulnerability = apps.get_model("vulnerabilities", "Vulnerability")
+        datasource_ids = (parameters or {}).get(
+            "datasource_ids", self.parameters_schema["datasource_ids"]["default"]
+        )
+        return Vulnerability.objects.filter(
+            affected_packages__productpackages__product=product,
+            datasource_id__in=datasource_ids,
+        ).distinct()
+
+
 RULE_REGISTRY = {
     RiskScoreTriageRule.rule_type: RiskScoreTriageRule(),
     WeightedRiskTriageRule.rule_type: WeightedRiskTriageRule(),
@@ -255,6 +277,7 @@ RULE_REGISTRY = {
     UnresolvedVulnerabilityTriageRule.rule_type: UnresolvedVulnerabilityTriageRule(),
     StaleVulnerabilityTriageRule.rule_type: StaleVulnerabilityTriageRule(),
     DevOnlyPackageTriageRule.rule_type: DevOnlyPackageTriageRule(),
+    AdvisorySourceTriageRule.rule_type: AdvisorySourceTriageRule(),
 }
 
 
