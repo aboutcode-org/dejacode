@@ -571,6 +571,16 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         )
         self.assertContains(response, expected)
 
+    def test_product_portfolio_tab_vulnerability_view_datasource_in_menu(self):
+        self.client.login(username="nexb_user", password="secret")
+        package1 = make_package(self.dataspace)
+        make_vulnerability(self.dataspace, affecting=[package1], datasource_id="ghsa")
+        product1 = make_product(self.dataspace, inventory=[package1])
+
+        response = self.client.get(product1.get_url("tab_vulnerabilities"))
+        expected = '<span class="dropdown-item-text small"><strong>Source:</strong> ghsa</span>'
+        self.assertContains(response, expected)
+
     def test_product_portfolio_tab_vulnerability_view_curation_badges(self):
         self.client.login(username="nexb_user", password="secret")
         DataspaceConfiguration.objects.update_or_create(
