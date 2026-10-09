@@ -1624,14 +1624,26 @@ class DejacodeUserAdmin(
             '{} <a href="{}" target="_blank" class="group-details-link">  (permission details)</a>'
         )
         groups_field.label = format_html(label_template, groups_field.label, permission_details_url)
+        if not request.user.is_superuser:
+            groups_field.queryset = request.user.groups.all()
 
         return form
 
+    def add_view(self, request, form_url="", extra_context=None):
+        """
+        Skip the UserAdmin check that requires the change permission to add users:
+        a non-superuser cannot set the superuser status nor assign groups beyond their own.
+        """
+        return admin.ModelAdmin.add_view(self, request, form_url, extra_context)
+
+    def response_add(self, request, obj, post_url_continue=None):
+        """Skip the UserAdmin redirect to the change form, not available to non-superusers."""
+        if not request.user.is_superuser:
+            return admin.ModelAdmin.response_add(self, request, obj, post_url_continue)
+        return super().response_add(request, obj, post_url_continue)
+
     def has_view_permission(self, request, obj=None):
         """User management is restricted to superusers, to prevent privilege escalation."""
-        return request.user.is_superuser
-
-    def has_add_permission(self, request):
         return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
@@ -1668,6 +1680,9 @@ class DejacodeUserAdmin(
 
         if obj and obj.dataspace != request.user.dataspace:
             readonly_fields += ("homepage_layout",)
+
+        if not request.user.is_superuser:
+            readonly_fields += ("is_superuser",)
 
         return readonly_fields
 
