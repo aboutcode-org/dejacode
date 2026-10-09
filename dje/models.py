@@ -1607,15 +1607,6 @@ class DejacodeUserQuerySet(DataspacedQuerySet):
     def admins(self):
         return self.filter(is_staff=True)
 
-    def with_privileges_beyond(self, user):
-        """
-        Return the users with privileges the provided `user` does not have:
-        superusers, and users in a group the `user` is not part of.
-        """
-        other_groups = Group.objects.exclude(user=user)
-        privileged_filter = models.Q(is_superuser=True) | models.Q(groups__in=other_groups)
-        return self.filter(privileged_filter).distinct()
-
 
 class DejacodeUserManager(BaseUserManager, DataspacedManager.from_queryset(DejacodeUserQuerySet)):
     def create_user(self, username, email, password, dataspace, **extra_fields):

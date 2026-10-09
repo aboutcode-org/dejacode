@@ -14,7 +14,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation
 from django.contrib.auth.hashers import get_hasher
 from django.contrib.auth.management.commands import changepassword
-from django.contrib.auth.models import Group
 from django.core import mail
 from django.core import signing
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -473,137 +472,54 @@ class UsersTestCase(TestCase):
         self.assertContains(response, card_layout_nexb.name)
         self.assertNotContains(response, card_layout_other.name)
 
-    def make_user_admin(self):
+    def test_user_admin_restricted_to_superusers(self):
         user_admin = create_admin("user_admin", self.nexb_dataspace)
-        codenames = ["add_dejacodeuser", "change_dejacodeuser", "delete_dejacodeuser"]
-        return add_perms(user_admin, codenames)
-
-    def get_user_change_data(self, user, **extra_data):
-        return {
-            "username": user.username,
-            "email": user.email,
-            "dataspace": user.dataspace_id,
-            "is_active": "on",
-            "is_staff": "on",
-            **extra_data,
-        }
-
-    def test_user_admin_non_superuser_cannot_grant_superuser_status(self):
-        user_admin = self.make_user_admin()
-        self.client.login(username=user_admin.username, password="secret")
-
-        add_url = reverse("admin:dje_dejacodeuser_add")
-        response = self.client.get(add_url)
-        self.assertNotContains(response, 'name="is_superuser"')
-
-        data = {
-            "username": "new_user",
-            "email": "user@mail.com",
-            "dataspace": self.nexb_dataspace.id,
-            "is_superuser": "on",
-        }
-        response = self.client.post(add_url, data)
-        self.assertEqual(302, response.status_code)
-        self.assertFalse(get_user_model().objects.get(username="new_user").is_superuser)
-
-        change_url = reverse("admin:dje_dejacodeuser_change", args=[user_admin.pk])
-        data = self.get_user_change_data(user_admin, is_superuser="on")
-        response = self.client.post(change_url, data)
-        self.assertEqual(302, response.status_code)
-        user_admin.refresh_from_db()
-        self.assertFalse(user_admin.is_superuser)
-
-    def test_user_admin_non_superuser_cannot_change_or_disable_privileged_user(self):
-        user_admin = self.make_user_admin()
-        engineer = create_user("engineer", self.nexb_dataspace)
-        engineer.groups.add(Group.objects.create(name="Engineering"))
-        self.client.login(username=user_admin.username, password="secret")
-
-        for privileged_user in [self.nexb_user, engineer]:
-            change_url = reverse("admin:dje_dejacodeuser_change", args=[privileged_user.pk])
-            response = self.client.get(change_url)
-            self.assertEqual(403, response.status_code)
-
-            data = self.get_user_change_data(privileged_user, email="attacker@mail.com")
-            response = self.client.post(change_url, data)
-            self.assertEqual(403, response.status_code)
-
-            delete_url = reverse("admin:dje_dejacodeuser_delete", args=[privileged_user.pk])
-            response = self.client.post(delete_url, {"post": "yes"})
-            self.assertEqual(403, response.status_code)
-
-            send_activation_email_url = reverse(
-                "admin:dje_dejacodeuser_send_activation_email", args=[privileged_user.pk]
-            )
-            response = self.client.post(send_activation_email_url)
-            self.assertEqual(403, response.status_code)
-            self.assertEqual(0, len(mail.outbox))
-
-            privileged_user.refresh_from_db()
-            self.assertTrue(privileged_user.is_active)
-            self.assertEqual("user@email.com", privileged_user.email)
-
-    def test_user_admin_non_superuser_cannot_set_privileged_user_inactive(self):
-        user_admin = self.make_user_admin()
-        engineer = create_user("engineer", self.nexb_dataspace)
-        engineer.groups.add(Group.objects.create(name="Engineering"))
+        codenames = ["view_dejacodeuser", "add_dejacodeuser", "change_dejacodeuser"]
+        user_admin = add_perms(user_admin, codenames + ["delete_dejacodeuser"])
         regular_user = create_user("regular_user", self.nexb_dataspace)
         self.client.login(username=user_admin.username, password="secret")
 
         changelist_url = reverse("admin:dje_dejacodeuser_changelist")
-        expected = "Only a superuser can set as inactive a user with privileges beyond yours."
-        for privileged_user in [self.nexb_user, engineer]:
-            data = {
-                "_selected_action": [privileged_user.pk, regular_user.pk],
-                "selected_across": 0,
-                "action": "set_inactive",
-            }
-            response = self.client.post(changelist_url, data, follow=True)
-            self.assertContains(response, expected)
-            privileged_user.refresh_from_db()
-            regular_user.refresh_from_db()
-            self.assertTrue(privileged_user.is_active)
-            self.assertTrue(regular_user.is_active)
+        add_url = reverse("admin:dje_dejacodeuser_add")
+        change_url = reverse("admin:dje_dejacodeuser_change", args=[regular_user.pk])
+        delete_url = reverse("admin:dje_dejacodeuser_delete", args=[regular_user.pk])
+        send_activation_email_url = reverse(
+            "admin:dje_dejacodeuser_send_activation_email", args=[regular_user.pk]
+        )
 
-        data["_selected_action"] = [regular_user.pk]
-        response = self.client.post(changelist_url, data, follow=True)
-        self.assertContains(response, "1 users set as inactive.")
+        for url in [changelist_url, add_url, change_url, delete_url]:
+            response = self.client.get(url)
+            self.assertEqual(403, response.status_code, msg=url)
+
+        data = {"username": "new_user", "email": "user@mail.com", "is_superuser": "on"}
+        response = self.client.post(add_url, data)
+        self.assertEqual(403, response.status_code)
+        self.assertFalse(get_user_model().objects.filter(username="new_user").exists())
+
+        data = {"username": regular_user.username, "email": "attacker@mail.com"}
+        response = self.client.post(change_url, data)
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(delete_url, {"post": "yes"})
+        self.assertEqual(403, response.status_code)
+
+        data = {
+            "_selected_action": [self.nexb_user.pk],
+            "selected_across": 0,
+            "action": "set_inactive",
+        }
+        response = self.client.post(changelist_url, data)
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(send_activation_email_url)
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(0, len(mail.outbox))
+
         regular_user.refresh_from_db()
-        self.assertFalse(regular_user.is_active)
-
-    def test_user_admin_non_superuser_can_only_assign_own_groups(self):
-        legal_group = Group.objects.create(name="Legal")
-        data_admin_group = Group.objects.create(name="Data Administration")
-        user_admin = self.make_user_admin()
-        user_admin.groups.add(legal_group)
-        legal_user = create_user("legal_user", self.nexb_dataspace)
-        legal_user.groups.add(legal_group)
-
-        change_url = reverse("admin:dje_dejacodeuser_change", args=[legal_user.pk])
-        self.client.login(username=self.nexb_user.username, password="secret")
-        response = self.client.get(change_url)
-        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
-        self.assertQuerySetEqual([legal_group, data_admin_group], groups_queryset, ordered=False)
-
-        self.client.login(username=user_admin.username, password="secret")
-        response = self.client.get(reverse("admin:dje_dejacodeuser_add"))
-        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
-        self.assertQuerySetEqual([legal_group], groups_queryset)
-
-        response = self.client.get(change_url)
-        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
-        self.assertQuerySetEqual([legal_group], groups_queryset)
-
-        data = self.get_user_change_data(legal_user, groups=[data_admin_group.pk])
-        response = self.client.post(change_url, data)
-        self.assertEqual(200, response.status_code)
-        self.assertIn("groups", response.context_data["adminform"].form.errors)
-        self.assertQuerySetEqual([legal_group], legal_user.groups.all())
-
-        data = self.get_user_change_data(legal_user, groups=[])
-        response = self.client.post(change_url, data)
-        self.assertEqual(302, response.status_code)
-        self.assertQuerySetEqual([], legal_user.groups.all())
+        self.nexb_user.refresh_from_db()
+        self.assertTrue(regular_user.is_active)
+        self.assertEqual("user@email.com", regular_user.email)
+        self.assertTrue(self.nexb_user.is_active)
 
     def test_user_model_send_internal_notification(self):
         notification = self.nexb_user.send_internal_notification(
@@ -840,26 +756,6 @@ class DejaCodeUserModelTestCase(TestCase):
         self.assertNotIn(active, admins_actives_qs)
         self.assertIn(superuser, admins_actives_qs)
         self.assertNotIn(inactive, admins_actives_qs)
-
-    def test_user_model_queryset_with_privileges_beyond(self):
-        legal_group = Group.objects.create(name="Legal")
-        engineering_group = Group.objects.create(name="Engineering")
-        user_admin = create_admin("user_admin", self.dataspace)
-        user_admin.groups.add(legal_group)
-        superuser = create_superuser("superuser", self.dataspace)
-        legal_user = create_user("legal_user", self.dataspace)
-        legal_user.groups.add(legal_group)
-        engineer = create_user("engineer", self.dataspace)
-        engineer.groups.add(engineering_group)
-        legal_engineer = create_user("legal_engineer", self.dataspace)
-        legal_engineer.groups.add(legal_group, engineering_group)
-        inactive_engineer = create_user("inactive_engineer", self.dataspace, is_active=False)
-        inactive_engineer.groups.add(engineering_group)
-        create_user("no_group_user", self.dataspace)
-
-        privileged_users = get_user_model().objects.with_privileges_beyond(user_admin)
-        expected = [superuser, engineer, legal_engineer, inactive_engineer]
-        self.assertQuerySetEqual(expected, privileged_users, ordered=False)
 
     def test_user_model_create_api_token(self):
         user = create_user("active", self.dataspace)

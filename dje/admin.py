@@ -1624,33 +1624,21 @@ class DejacodeUserAdmin(
             '{} <a href="{}" target="_blank" class="group-details-link">  (permission details)</a>'
         )
         groups_field.label = format_html(label_template, groups_field.label, permission_details_url)
-        if not request.user.is_superuser:
-            groups_field.queryset = request.user.groups.all()
 
         return form
 
-    @staticmethod
-    def is_protected_user(request, user):
-        """Return True if `user` has privileges beyond the non-superuser request user."""
-        if request.user.is_superuser:
-            return False
-        protected_users = DejacodeUser.objects.with_privileges_beyond(request.user)
-        return protected_users.filter(pk=user.pk).exists()
-
     def has_view_permission(self, request, obj=None):
-        if obj and self.is_protected_user(request, obj):
-            return False
-        return super().has_view_permission(request, obj)
+        """User management is restricted to superusers, to prevent privilege escalation."""
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
-        if obj and self.is_protected_user(request, obj):
-            return False
-        return super().has_change_permission(request, obj)
+        return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        if obj and self.is_protected_user(request, obj):
-            return False
-        return super().has_delete_permission(request, obj)
+        return request.user.is_superuser
 
     def get_queryset(self, request):
         """Scope the QuerySet to the current user Dataspace."""
@@ -1680,9 +1668,6 @@ class DejacodeUserAdmin(
 
         if obj and obj.dataspace != request.user.dataspace:
             readonly_fields += ("homepage_layout",)
-
-        if not request.user.is_superuser:
-            readonly_fields += ("is_superuser",)
 
         return readonly_fields
 
@@ -1788,11 +1773,6 @@ class DejacodeUserAdmin(
 
     @admin.display(description=_("Set selected users as inactive"))
     def set_inactive(self, request, queryset):
-        if not request.user.is_superuser and queryset.with_privileges_beyond(request.user).exists():
-            message = "Only a superuser can set as inactive a user with privileges beyond yours."
-            self.message_user(request, message, messages.ERROR)
-            return
-
         # Execute before the `update()` or the QuerySet will be empty
         for obj in queryset:
             History.log_change(request.user, obj, "Set as inactive.")
@@ -1848,10 +1828,10 @@ class DejacodeUserAdmin(
         Set the User inactive a send an activation link to the email address.
         See also registration.admin.RegistrationAdmin.resend_activation_email
         """
-        user = get_object_or_404(self.get_queryset(request), pk=unquote(object_id))
-        if not self.has_change_permission(request, user):
+        if not self.has_change_permission(request):
             raise PermissionDenied
 
+        user = get_object_or_404(self.get_queryset(request), pk=unquote(object_id))
         # User needs to be de-activated for the activation_key to work.
         # Also needs a unusable_password for the proper redirection.
         # See ActivationView.get_user() for implementation details.
