@@ -97,6 +97,11 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
             "e.g.: pysec_importer_v2/PYSEC-2020-2233"
         ),
     )
+    datasource_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_("ID of the VulnerableCode datasource of this advisory, such as ghsa or nginx."),
+    )
     advisory_id = models.CharField(
         max_length=200,
         help_text=_(
@@ -209,6 +214,7 @@ class Vulnerability(HistoryDateFieldsMixin, DataspacedModel):
         unique_together = (("dataspace", "advisory_uid"), ("dataspace", "uuid"))
         indexes = [
             models.Index(fields=["advisory_uid"]),
+            models.Index(fields=["datasource_id"]),
             models.Index(fields=["advisory_id"]),
             models.Index(fields=["exploitability"]),
             models.Index(fields=["weighted_severity"]),
