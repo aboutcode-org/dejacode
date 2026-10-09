@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation
 from django.contrib.auth.hashers import get_hasher
 from django.contrib.auth.management.commands import changepassword
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core import signing
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -30,7 +31,9 @@ from django_registration.backends.activation.views import REGISTRATION_SALT
 from dje.filters import DataspaceFilter
 from dje.models import Dataspace
 from dje.registration import DejaCodeActivationView
+from dje.tests import add_perms
 from dje.tests import create
+from dje.tests import create_admin
 from dje.tests import create_superuser
 from dje.tests import create_user
 from dje.tests import get_activation_key_from_email
@@ -469,6 +472,89 @@ class UsersTestCase(TestCase):
         self.assertContains(response, expected, html=True)
         self.assertContains(response, card_layout_nexb.name)
         self.assertNotContains(response, card_layout_other.name)
+
+    def test_user_admin_management_restricted_to_superusers(self):
+        user_admin = create_admin("user_admin", self.nexb_dataspace)
+        codenames = ["view_dejacodeuser", "add_dejacodeuser", "change_dejacodeuser"]
+        user_admin = add_perms(user_admin, codenames + ["delete_dejacodeuser"])
+        regular_user = create_user("regular_user", self.nexb_dataspace)
+        self.client.login(username=user_admin.username, password="secret")
+
+        changelist_url = reverse("admin:dje_dejacodeuser_changelist")
+        change_url = reverse("admin:dje_dejacodeuser_change", args=[regular_user.pk])
+        delete_url = reverse("admin:dje_dejacodeuser_delete", args=[regular_user.pk])
+        send_activation_email_url = reverse(
+            "admin:dje_dejacodeuser_send_activation_email", args=[regular_user.pk]
+        )
+
+        for url in [changelist_url, change_url, delete_url]:
+            response = self.client.get(url)
+            self.assertEqual(403, response.status_code, msg=url)
+
+        data = {"username": regular_user.username, "email": "attacker@mail.com"}
+        response = self.client.post(change_url, data)
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(delete_url, {"post": "yes"})
+        self.assertEqual(403, response.status_code)
+
+        data = {
+            "_selected_action": [self.nexb_user.pk],
+            "selected_across": 0,
+            "action": "set_inactive",
+        }
+        response = self.client.post(changelist_url, data)
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(send_activation_email_url)
+        self.assertEqual(403, response.status_code)
+        self.assertEqual(0, len(mail.outbox))
+
+        regular_user.refresh_from_db()
+        self.nexb_user.refresh_from_db()
+        self.assertTrue(regular_user.is_active)
+        self.assertEqual("user@email.com", regular_user.email)
+        self.assertTrue(self.nexb_user.is_active)
+
+    def test_user_admin_non_superuser_add_user(self):
+        legal_group = Group.objects.create(name="Legal")
+        data_admin_group = Group.objects.create(name="Data Administration")
+        user_admin = create_admin("user_admin", self.nexb_dataspace)
+        user_admin = add_perms(user_admin, ["add_dejacodeuser"])
+        user_admin.groups.add(data_admin_group)
+        add_url = reverse("admin:dje_dejacodeuser_add")
+
+        self.client.login(username=self.nexb_user.username, password="secret")
+        response = self.client.get(add_url)
+        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
+        self.assertQuerySetEqual([legal_group, data_admin_group], groups_queryset, ordered=False)
+
+        self.client.login(username=user_admin.username, password="secret")
+        response = self.client.get(add_url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotContains(response, 'name="is_superuser"')
+        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
+        self.assertQuerySetEqual([data_admin_group], groups_queryset)
+
+        data = {
+            "username": "new_user",
+            "email": "user@mail.com",
+            "dataspace": self.nexb_dataspace.id,
+            "groups": [legal_group.pk],
+        }
+        response = self.client.post(add_url, data)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("groups", response.context_data["adminform"].form.errors)
+        self.assertFalse(get_user_model().objects.filter(username="new_user").exists())
+
+        data["groups"] = [data_admin_group.pk]
+        data["is_superuser"] = "on"
+        response = self.client.post(add_url, data)
+        self.assertRedirects(response, reverse("admin:index"))
+        new_user = get_user_model().objects.get(username="new_user")
+        self.assertFalse(new_user.is_superuser)
+        self.assertQuerySetEqual([data_admin_group], new_user.groups.all())
+        self.assertEqual(1, len(mail.outbox))
 
     def test_user_model_send_internal_notification(self):
         notification = self.nexb_user.send_internal_notification(
