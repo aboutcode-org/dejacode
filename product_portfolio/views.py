@@ -160,6 +160,7 @@ from vulnerabilities.triage.models import TriageAction
 from vulnerabilities.triage.models import TriageRecord
 from vulnerabilities.triage.models import TriageRuleset
 from vulnerabilities.triage.rules import RULE_REGISTRY as TRIAGE_RULE_REGISTRY
+from vulnerabilities.triage.rules import format_rule_parameter_value
 from vulnerabilities.triage.rules import rule_parameters_from_config
 
 TRIAGE_ACTION_STYLES = {
@@ -2299,7 +2300,8 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
             handler = TRIAGE_RULE_REGISTRY[rule_type]
             params = rule_parameters_from_config(config)
             params_str = ", ".join(
-                f"{key.replace('_', ' ')}: {value}" for key, value in params.items()
+                f"{key.replace('_', ' ')}: {format_rule_parameter_value(value)}"
+                for key, value in params.items()
             )
             active_rules.append({"label": handler.label, "params_str": params_str})
         ruleset.active_rules = active_rules

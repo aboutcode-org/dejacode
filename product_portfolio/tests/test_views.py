@@ -4752,6 +4752,16 @@ class ManageTriageRulesetsViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertContains(response, preset.name)
 
+    def test_get_displays_a_list_rule_parameter_as_comma_separated_values(self):
+        self.ruleset.rules_config = {
+            "advisory_source": {"is_active": True, "datasource_ids": ["ghsa", "nvd"]},
+        }
+        self.ruleset.save()
+        self.client.login(username="nexb_user", password="secret")
+        url = self.product1.get_manage_triage_rulesets_url()
+        response = self.client.get(url)
+        self.assertContains(response, "Advisory Source (datasource ids: ghsa, nvd)")
+
     def test_get_marks_the_assigned_rulesets_as_checked(self):
         ProductTriageRuleset.objects.create(
             product=self.product1, ruleset=self.ruleset, dataspace=self.dataspace

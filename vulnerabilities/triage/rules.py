@@ -284,3 +284,10 @@ RULE_REGISTRY = {
 def rule_parameters_from_config(config):
     """Extract rule-specific parameters from a rule config dict, excluding is_active."""
     return {key: value for key, value in config.items() if key != "is_active"}
+
+
+def format_rule_parameter_value(value):
+    """Return the rule parameter ``value`` as a string, a list being joined with commas."""
+    if isinstance(value, list):
+        return ", ".join(value)
+    return str(value)
