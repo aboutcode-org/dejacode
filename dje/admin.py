@@ -1625,38 +1625,30 @@ class DejacodeUserAdmin(
         )
         groups_field.label = format_html(label_template, groups_field.label, permission_details_url)
         if not request.user.is_superuser:
-            groups_field.queryset = self.get_assignable_groups(request.user, obj)
+            groups_field.queryset = request.user.groups.all()
 
         return form
 
     @staticmethod
-    def get_assignable_groups(user, edited_user):
-        """
-        Return the groups a non-superuser `user` can assign: their own groups, plus the
-        current groups of the `edited_user` so they are kept on save.
-        """
-        groups_filter = models.Q(user=user)
-        if edited_user:
-            groups_filter |= models.Q(user=edited_user)
-        return Group.objects.filter(groups_filter).distinct()
-
-    @staticmethod
-    def is_protected_superuser(request, user):
-        """Return True if `user` is a superuser and the request user is not."""
-        return user.is_superuser and not request.user.is_superuser
+    def is_protected_user(request, user):
+        """Return True if `user` has privileges beyond the non-superuser request user."""
+        if request.user.is_superuser:
+            return False
+        protected_users = DejacodeUser.objects.with_privileges_beyond(request.user)
+        return protected_users.filter(pk=user.pk).exists()
 
     def has_view_permission(self, request, obj=None):
-        if obj and self.is_protected_superuser(request, obj):
+        if obj and self.is_protected_user(request, obj):
             return False
         return super().has_view_permission(request, obj)
 
     def has_change_permission(self, request, obj=None):
-        if obj and self.is_protected_superuser(request, obj):
+        if obj and self.is_protected_user(request, obj):
             return False
         return super().has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        if obj and self.is_protected_superuser(request, obj):
+        if obj and self.is_protected_user(request, obj):
             return False
         return super().has_delete_permission(request, obj)
 
@@ -1796,8 +1788,8 @@ class DejacodeUserAdmin(
 
     @admin.display(description=_("Set selected users as inactive"))
     def set_inactive(self, request, queryset):
-        if not request.user.is_superuser and queryset.filter(is_superuser=True).exists():
-            message = "Only a superuser can set a superuser as inactive."
+        if not request.user.is_superuser and queryset.with_privileges_beyond(request.user).exists():
+            message = "Only a superuser can set as inactive a user with privileges beyond yours."
             self.message_user(request, message, messages.ERROR)
             return
 

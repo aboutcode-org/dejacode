@@ -513,50 +513,57 @@ class UsersTestCase(TestCase):
         user_admin.refresh_from_db()
         self.assertFalse(user_admin.is_superuser)
 
-    def test_user_admin_non_superuser_cannot_change_or_disable_superuser(self):
+    def test_user_admin_non_superuser_cannot_change_or_disable_privileged_user(self):
         user_admin = self.make_user_admin()
+        engineer = create_user("engineer", self.nexb_dataspace)
+        engineer.groups.add(Group.objects.create(name="Engineering"))
         self.client.login(username=user_admin.username, password="secret")
 
-        change_url = reverse("admin:dje_dejacodeuser_change", args=[self.nexb_user.pk])
-        response = self.client.get(change_url)
-        self.assertEqual(403, response.status_code)
+        for privileged_user in [self.nexb_user, engineer]:
+            change_url = reverse("admin:dje_dejacodeuser_change", args=[privileged_user.pk])
+            response = self.client.get(change_url)
+            self.assertEqual(403, response.status_code)
 
-        data = self.get_user_change_data(self.nexb_user, is_active="")
-        response = self.client.post(change_url, data)
-        self.assertEqual(403, response.status_code)
+            data = self.get_user_change_data(privileged_user, email="attacker@mail.com")
+            response = self.client.post(change_url, data)
+            self.assertEqual(403, response.status_code)
 
-        delete_url = reverse("admin:dje_dejacodeuser_delete", args=[self.nexb_user.pk])
-        response = self.client.post(delete_url, {"post": "yes"})
-        self.assertEqual(403, response.status_code)
+            delete_url = reverse("admin:dje_dejacodeuser_delete", args=[privileged_user.pk])
+            response = self.client.post(delete_url, {"post": "yes"})
+            self.assertEqual(403, response.status_code)
 
-        send_activation_email_url = reverse(
-            "admin:dje_dejacodeuser_send_activation_email", args=[self.nexb_user.pk]
-        )
-        response = self.client.post(send_activation_email_url)
-        self.assertEqual(403, response.status_code)
-        self.assertEqual(0, len(mail.outbox))
+            send_activation_email_url = reverse(
+                "admin:dje_dejacodeuser_send_activation_email", args=[privileged_user.pk]
+            )
+            response = self.client.post(send_activation_email_url)
+            self.assertEqual(403, response.status_code)
+            self.assertEqual(0, len(mail.outbox))
 
-        self.nexb_user.refresh_from_db()
-        self.assertTrue(self.nexb_user.is_active)
-        self.assertTrue(self.nexb_user.is_superuser)
+            privileged_user.refresh_from_db()
+            self.assertTrue(privileged_user.is_active)
+            self.assertEqual("user@email.com", privileged_user.email)
 
-    def test_user_admin_non_superuser_cannot_set_superuser_inactive(self):
+    def test_user_admin_non_superuser_cannot_set_privileged_user_inactive(self):
         user_admin = self.make_user_admin()
+        engineer = create_user("engineer", self.nexb_dataspace)
+        engineer.groups.add(Group.objects.create(name="Engineering"))
         regular_user = create_user("regular_user", self.nexb_dataspace)
         self.client.login(username=user_admin.username, password="secret")
 
         changelist_url = reverse("admin:dje_dejacodeuser_changelist")
-        data = {
-            "_selected_action": [self.nexb_user.pk, regular_user.pk],
-            "selected_across": 0,
-            "action": "set_inactive",
-        }
-        response = self.client.post(changelist_url, data, follow=True)
-        self.assertContains(response, "Only a superuser can set a superuser as inactive.")
-        self.nexb_user.refresh_from_db()
-        regular_user.refresh_from_db()
-        self.assertTrue(self.nexb_user.is_active)
-        self.assertTrue(regular_user.is_active)
+        expected = "Only a superuser can set as inactive a user with privileges beyond yours."
+        for privileged_user in [self.nexb_user, engineer]:
+            data = {
+                "_selected_action": [privileged_user.pk, regular_user.pk],
+                "selected_across": 0,
+                "action": "set_inactive",
+            }
+            response = self.client.post(changelist_url, data, follow=True)
+            self.assertContains(response, expected)
+            privileged_user.refresh_from_db()
+            regular_user.refresh_from_db()
+            self.assertTrue(privileged_user.is_active)
+            self.assertTrue(regular_user.is_active)
 
         data["_selected_action"] = [regular_user.pk]
         response = self.client.post(changelist_url, data, follow=True)
@@ -566,41 +573,37 @@ class UsersTestCase(TestCase):
 
     def test_user_admin_non_superuser_can_only_assign_own_groups(self):
         legal_group = Group.objects.create(name="Legal")
-        engineering_group = Group.objects.create(name="Engineering")
         data_admin_group = Group.objects.create(name="Data Administration")
         user_admin = self.make_user_admin()
         user_admin.groups.add(legal_group)
-        engineer = create_user("engineer", self.nexb_dataspace)
-        engineer.groups.add(engineering_group)
+        legal_user = create_user("legal_user", self.nexb_dataspace)
+        legal_user.groups.add(legal_group)
 
-        change_url = reverse("admin:dje_dejacodeuser_change", args=[engineer.pk])
+        change_url = reverse("admin:dje_dejacodeuser_change", args=[legal_user.pk])
         self.client.login(username=self.nexb_user.username, password="secret")
         response = self.client.get(change_url)
         groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
-        expected = [legal_group, engineering_group, data_admin_group]
-        self.assertQuerySetEqual(expected, groups_queryset, ordered=False)
-
-        self.client.login(username=user_admin.username, password="secret")
-        response = self.client.get(change_url)
-        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
-        self.assertQuerySetEqual([legal_group, engineering_group], groups_queryset, ordered=False)
-
-        data = self.get_user_change_data(engineer, groups=[data_admin_group.pk])
-        response = self.client.post(change_url, data)
-        self.assertEqual(200, response.status_code)
-        self.assertIn("groups", response.context_data["adminform"].form.errors)
-        self.assertQuerySetEqual([engineering_group], engineer.groups.all())
-
-        data = self.get_user_change_data(engineer, groups=[legal_group.pk, engineering_group.pk])
-        response = self.client.post(change_url, data)
-        self.assertEqual(302, response.status_code)
-        expected = [legal_group, engineering_group]
-        self.assertQuerySetEqual(expected, engineer.groups.all(), ordered=False)
+        self.assertQuerySetEqual([legal_group, data_admin_group], groups_queryset, ordered=False)
 
         self.client.login(username=user_admin.username, password="secret")
         response = self.client.get(reverse("admin:dje_dejacodeuser_add"))
         groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
         self.assertQuerySetEqual([legal_group], groups_queryset)
+
+        response = self.client.get(change_url)
+        groups_queryset = response.context_data["adminform"].form.fields["groups"].queryset
+        self.assertQuerySetEqual([legal_group], groups_queryset)
+
+        data = self.get_user_change_data(legal_user, groups=[data_admin_group.pk])
+        response = self.client.post(change_url, data)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("groups", response.context_data["adminform"].form.errors)
+        self.assertQuerySetEqual([legal_group], legal_user.groups.all())
+
+        data = self.get_user_change_data(legal_user, groups=[])
+        response = self.client.post(change_url, data)
+        self.assertEqual(302, response.status_code)
+        self.assertQuerySetEqual([], legal_user.groups.all())
 
     def test_user_model_send_internal_notification(self):
         notification = self.nexb_user.send_internal_notification(
@@ -837,6 +840,26 @@ class DejaCodeUserModelTestCase(TestCase):
         self.assertNotIn(active, admins_actives_qs)
         self.assertIn(superuser, admins_actives_qs)
         self.assertNotIn(inactive, admins_actives_qs)
+
+    def test_user_model_queryset_with_privileges_beyond(self):
+        legal_group = Group.objects.create(name="Legal")
+        engineering_group = Group.objects.create(name="Engineering")
+        user_admin = create_admin("user_admin", self.dataspace)
+        user_admin.groups.add(legal_group)
+        superuser = create_superuser("superuser", self.dataspace)
+        legal_user = create_user("legal_user", self.dataspace)
+        legal_user.groups.add(legal_group)
+        engineer = create_user("engineer", self.dataspace)
+        engineer.groups.add(engineering_group)
+        legal_engineer = create_user("legal_engineer", self.dataspace)
+        legal_engineer.groups.add(legal_group, engineering_group)
+        inactive_engineer = create_user("inactive_engineer", self.dataspace, is_active=False)
+        inactive_engineer.groups.add(engineering_group)
+        create_user("no_group_user", self.dataspace)
+
+        privileged_users = get_user_model().objects.with_privileges_beyond(user_admin)
+        expected = [superuser, engineer, legal_engineer, inactive_engineer]
+        self.assertQuerySetEqual(expected, privileged_users, ordered=False)
 
     def test_user_model_create_api_token(self):
         user = create_user("active", self.dataspace)
