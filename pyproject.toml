@@ -34,7 +34,7 @@ dependencies = [
     "setuptools==84.0.0",
     "packaging==26.3",
     # Django
-    "django==6.1.1",
+    "django==6.1.2",
     "asgiref==3.12.1",
     "typing-extensions==4.16.0",
     "sqlparse==0.6.0",
@@ -42,7 +42,7 @@ dependencies = [
     "django-crispy-forms==2.7",
     "crispy-bootstrap5==2026.9",
     "django-grappelli==5.0.0",
-    "django-filter==26.1",
+    "django-filter==26.2",
     "django-registration==5.2.1",
     "confusable_homoglyphs==3.3.1",
     "django-guardian==3.5.0",
@@ -54,16 +54,18 @@ dependencies = [
     "altcha==1.0.0",
     "django-altcha==1.0.0",
     # REST API
-    "djangorestframework==3.18.1",
+    "djangorestframework==3.18.3",
     # API documentation
+    # Do not upgrade: 1.21.17+ requires swagger-spec-validator, which pulls jsonschema,
+    # referencing, rpds-py, jsonschema-specifications, and importlib-resources.
     "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
-    "pytz==2026.4",
+    "pytz==2026.5",
     # Track failed login attempts
     "django-axes==8.3.1",
     # Multi-factor authentication
-    "django-otp==1.7.3",
+    "django-otp==1.7.4",
     "qrcode==8.2",
     # Database
     "psycopg==3.3.6",
@@ -72,12 +74,12 @@ dependencies = [
     # Antivirus
     "clamd==1.0.2",
     # Testing
-    "model-bakery==1.24.1",
+    "model-bakery==1.24.2",
     # Task queue
     "rq==2.12.0",
     "croniter==6.2.4",
     "django-rq==4.2.0",
-    "fakeredis==2.38.0",
+    "fakeredis==2.39.0",
     # Libs
     "certifi==2026.7.22",
     "urllib3==2.8.0",
@@ -85,7 +87,7 @@ dependencies = [
     "six==1.17.0",
     "requests==2.34.2",
     "idna==3.20",
-    "charset-normalizer==3.5.1",
+    "charset-normalizer==3.5.2",
     "PyYAML==6.0.3",
     "XlsxWriter==3.2.9",
     # Markdown
@@ -111,7 +113,7 @@ dependencies = [
     "attrs==26.1.0",
     "click==8.5.0",
     "Jinja2==3.1.6",
-    "MarkupSafe==3.0.3",
+    "markupsafe==3.0.4",
     "saneyaml==0.6.1",
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
@@ -124,14 +126,14 @@ dependencies = [
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
     # CSAF
-    "pydantic==2.13.5",
-    "pydantic-core==2.46.5",
+    "pydantic==2.14.1",
+    "pydantic-core==2.50.1",
     "typing-inspection==0.4.4",
     "annotated-types==0.8.0",
     # OpenVEX
-    "msgspec==0.21.1",
+    "msgspec==0.22.0",
     # OpenDocument Format
-    "odfdo==3.26.3",
+    "odfdo==3.27.1",
     "lxml==6.1.3",
 ]
 
