@@ -1,6 +1,29 @@
 Release notes
 =============
 
+### Version 6.0.0
+
+* feat: Add support to search within multiple organisational units in ldap by @nicoklaus in https://github.com/aboutcode-org/dejacode/pull/535
+* feat: add ability to clone a Product by @tdruez in https://github.com/aboutcode-org/dejacode/pull/580
+* feat: [fedcode-next] Indicate curated advisory and link to curate on VCIO #562 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/581
+* feat: link to the latest non-vulnerable package from vulnerability tab by @tdruez in https://github.com/aboutcode-org/dejacode/pull/582
+* feat: add a Product REST API action to track the scan status of all packages by @tdruez in https://github.com/aboutcode-org/dejacode/pull/594
+* feat: capture the VulnerableCode advisory datasource_id #588 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/596
+* feat: add CycloneDX 1.7 export support and make it the default version by @tdruez in https://github.com/aboutcode-org/dejacode/pull/598
+* fix: code refinements regarding security and quality by @tdruez in https://github.com/aboutcode-org/dejacode/pull/583
+* fix: server-side cross-site scripting issue by @tdruez in https://github.com/aboutcode-org/dejacode/pull/586
+* fix: delete only the dataspace licensing cache entry on License save by @tdruez in https://github.com/aboutcode-org/dejacode/pull/587
+* fix: require POST and CSRF protection for all state-changing views by @tdruez in https://github.com/aboutcode-org/dejacode/pull/589
+* fix: redirect to the referer path only, never to a full URL by @tdruez in https://github.com/aboutcode-org/dejacode/pull/591
+* fix: match PurlDB entries by PURL in the package PurlDB tab when the … by @tdruez in https://github.com/aboutcode-org/dejacode/pull/592
+* fix: prevent privilege escalation by non-superusers in the user admin by @tdruez in https://github.com/aboutcode-org/dejacode/pull/595
+* docs: update, consolidate, and clarify the whole documentation by @tdruez in https://github.com/aboutcode-org/dejacode/pull/593
+* chore: upgrade Django to 6.1.x by @tdruez in https://github.com/aboutcode-org/dejacode/pull/578
+* chore: upgrade dependencies by @tdruez in https://github.com/aboutcode-org/dejacode/pull/579
+* chore: remove the natsort and bleach_allowlist dependencies by @tdruez in https://github.com/aboutcode-org/dejacode/pull/585
+* chore: remove unused JavaScript libraries by @tdruez in https://github.com/aboutcode-org/dejacode/pull/590
+* chore: upgrade dependencies by @tdruez in https://github.com/aboutcode-org/dejacode/pull/599
+
 ### Version 5.9.0
 
 * feat: VCIO v3 advisories migration by @tdruez in https://github.com/aboutcode-org/dejacode/pull/534
