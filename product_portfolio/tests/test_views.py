@@ -3354,9 +3354,9 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         url = self.product1.get_absolute_url()
 
         export_cyclonedx_url = self.product1.get_export_cyclonedx_url()
-        sbom_link = f"{export_cyclonedx_url}?spec_version=1.6"
-        vex_link = f"{export_cyclonedx_url}?spec_version=1.6&content=vex"
-        combined_link = f"{export_cyclonedx_url}?spec_version=1.6&content=combined"
+        sbom_link = f"{export_cyclonedx_url}?spec_version=1.7"
+        vex_link = f"{export_cyclonedx_url}?spec_version=1.7&content=vex"
+        combined_link = f"{export_cyclonedx_url}?spec_version=1.7&content=combined"
 
         response = self.client.get(url)
         self.assertContains(response, "SBOM")
@@ -3491,11 +3491,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         # }
         # self.assertDictEqual(expected, bom_as_dict)
 
-        self.assertEqual("http://cyclonedx.org/schema/bom-1.6.schema.json", bom_as_dict["$schema"])
+        self.assertEqual("http://cyclonedx.org/schema/bom-1.7.schema.json", bom_as_dict["$schema"])
 
         # Old spec version
-        response = self.client.get(export_cyclonedx_url, data={"spec_version": "1.5"})
-        self.assertIn('"specVersion": "1.5"', str(response.getvalue()))
+        response = self.client.get(export_cyclonedx_url, data={"spec_version": "1.6"})
+        self.assertIn('"specVersion": "1.6"', str(response.getvalue()))
 
         response = self.client.get(export_cyclonedx_url, data={"spec_version": "10.10"})
         self.assertEqual(404, response.status_code)

@@ -26,7 +26,7 @@ from dejacode_toolkit import csaf
 from dejacode_toolkit import openvex
 from dejacode_toolkit import spdx
 
-CYCLONEDX_DEFAULT_SPEC_VERSION = "1.6"
+CYCLONEDX_DEFAULT_SPEC_VERSION = "1.7"
 
 
 def safe_filename(filename):
