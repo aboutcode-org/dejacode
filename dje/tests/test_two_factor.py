@@ -11,12 +11,13 @@ from django.test import TestCase
 from django.urls import reverse
 
 import django_otp
-from django_otp.forms import OTPTokenForm
 from django_otp.oath import totp as oauth_totp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from dje.models import Dataspace
 from dje.tests import create_user
+from dje.two_factor import TwoFactorDisableForm
+from dje.two_factor import TwoFactorVerifyForm
 
 
 class TwoFactorAuthenticationTestCase(TestCase):
@@ -132,7 +133,7 @@ class TwoFactorAuthenticationTestCase(TestCase):
         response = self.client.post(self.tfa_disable_url, data=data)
         self.assertContains(response, "Please enter your OTP token.")
 
-        device_form_value = OTPTokenForm.device_choices(self.user)[0][0]
+        device_form_value = device.persistent_id
         data = {"otp_token": "123456", "otp_device": device_form_value}
         response = self.client.post(self.tfa_disable_url, data=data)
         form_error = "Invalid token. Please make sure you have entered it correctly."
@@ -178,7 +179,7 @@ class TwoFactorAuthenticationTestCase(TestCase):
         self.assertContains(response, "Please enter your OTP token.")
 
         valid_token = self._get_valid_token(device.bin_key)
-        device_form_value = OTPTokenForm.device_choices(self.user)[0][0]
+        device_form_value = device.persistent_id
         data = {
             "otp_token": valid_token,
             "otp_device": device_form_value,
@@ -190,3 +191,12 @@ class TwoFactorAuthenticationTestCase(TestCase):
         self.assertIn("_auth_user_id", session_keys)
         self.assertIn("_auth_user_hash", session_keys)
         self.assertIn("otp_device_id", session_keys)
+
+    def test_two_factor_authentication_token_form_preselects_user_device(self):
+        device = self._create_device(self.user)
+        expected = f'<option value="{device.persistent_id}" selected>default</option>'
+
+        for form_class in [TwoFactorDisableForm, TwoFactorVerifyForm]:
+            form = form_class(user=self.user)
+            self.assertEqual(device.persistent_id, form.fields["otp_device"].initial)
+            self.assertInHTML(expected, str(form["otp_device"]))

@@ -97,7 +97,11 @@ class WebhookSubscriptionModelTestCase(TestCase):
     @patch("requests.post")
     def test_webhook_subscription_deliver_request_exception_saves_error(self, mock_post):
         mock_post.side_effect = req.exceptions.ConnectionError("Connection refused")
-        delivery = self.webhook.deliver(None, payload_override={"key": "val"})
+        with self.assertLogs("aboutcode.notifications", level="ERROR") as captured:
+            delivery = self.webhook.deliver(None, payload_override={"key": "val"})
+        self.assertEqual(
+            ["Connection refused"], [record.getMessage() for record in captured.records]
+        )
         self.assertIsNotNone(delivery)
         self.assertFalse(delivery.delivered)
         self.assertIn("Connection refused", delivery.delivery_error)

@@ -139,7 +139,21 @@ class TwoFactorEnableForm(OTPAuthenticationFormMixin, forms.Form):
         return helper
 
 
-class TwoFactorDisableForm(OTPTokenForm):
+class TwoFactorTokenForm(OTPTokenForm):
+    """
+    Preselect the user device: the `otp_device` select is hidden and its first
+    choice is blank.
+    """
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+
+        user_device = next(django_otp.devices_for_user(user), None)
+        if user_device:
+            self.fields["otp_device"].initial = user_device.persistent_id
+
+
+class TwoFactorDisableForm(TwoFactorTokenForm):
     @property
     def helper(self):
         helper = FormHelper()
@@ -168,7 +182,7 @@ class TwoFactorDisableForm(OTPTokenForm):
         return helper
 
 
-class TwoFactorVerifyForm(OTPTokenForm):
+class TwoFactorVerifyForm(TwoFactorTokenForm):
     """Verify that the user provided `otp_token` is valid."""
 
     @property
