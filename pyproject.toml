@@ -56,6 +56,8 @@ dependencies = [
     # REST API
     "djangorestframework==3.18.3",
     # API documentation
+    # Do not upgrade: 1.21.17+ requires swagger-spec-validator, which pulls jsonschema,
+    # referencing, rpds-py, jsonschema-specifications, and importlib-resources.
     "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
