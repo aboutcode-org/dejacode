@@ -2187,14 +2187,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(change_url)
         self.assertContains(response, expected)
 
-        ProductComponent.objects.create(
+        product_component = ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        ProductPackage.objects.create(
+        product_package = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
         CodebaseResource.objects.create(
-            path="/path1/", product=self.product1, dataspace=self.dataspace
+            path="/path1/",
+            product=self.product1,
+            product_component=product_component,
+            product_package=product_package,
+            dataspace=self.dataspace,
         )
         ruleset = TriageRuleset.objects.create(
             name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
@@ -2224,6 +2228,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.productpackages.count())
         self.assertEqual(1, cloned_product.codebaseresources.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+
+        cloned_resource = cloned_product.codebaseresources.get()
+        self.assertEqual(cloned_product.productcomponents.get(), cloned_resource.product_component)
+        self.assertEqual(cloned_product.productpackages.get(), cloned_resource.product_package)
+        cloned_resource.full_clean()
 
     def test_product_portfolio_product_clone_view(self):
         clone_url = self.product1.get_clone_url()
