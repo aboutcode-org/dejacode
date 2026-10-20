@@ -107,25 +107,23 @@ def relink_cloned_codebase_resources(cloned_pairs_by_model):
     Point the cloned codebase resources to the cloned product component and package.
     A link to a relation that was not cloned is cleared, as it belongs to the source product.
     """
-    cloned_pks_by_model = {
-        model_class: {
-            original_pk: cloned_relation.pk for original_pk, cloned_relation in cloned_pairs
-        }
-        for model_class, cloned_pairs in cloned_pairs_by_model.items()
-    }
-    component_pks = cloned_pks_by_model.get(ProductComponent, {})
-    package_pks = cloned_pks_by_model.get(ProductPackage, {})
+    cloned_component_by_original_pk = dict(cloned_pairs_by_model.get(ProductComponent, []))
+    cloned_package_by_original_pk = dict(cloned_pairs_by_model.get(ProductPackage, []))
 
     linked_resources = [
         cloned_resource
-        for original_pk, cloned_resource in cloned_pairs_by_model.get(CodebaseResource, [])
+        for _, cloned_resource in cloned_pairs_by_model.get(CodebaseResource, [])
         if cloned_resource.product_component_id or cloned_resource.product_package_id
     ]
     for resource in linked_resources:
-        resource.product_component_id = component_pks.get(resource.product_component_id)
-        resource.product_package_id = package_pks.get(resource.product_package_id)
+        resource.product_component = cloned_component_by_original_pk.get(
+            resource.product_component_id
+        )
+        resource.product_package = cloned_package_by_original_pk.get(resource.product_package_id)
 
-    CodebaseResource.objects.bulk_update(linked_resources, ["product_component", "product_package"])
+    CodebaseResource.objects.bulk_update(
+        linked_resources, ["product_component", "product_package"], batch_size=1000
+    )
 
 
 class ProductForm(
