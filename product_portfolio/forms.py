@@ -291,7 +291,11 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         return helper
 
     def _clone_relations(self, model_class, target_product):
-        """Clone `model_class` relations from the source product onto `target_product`."""
+        """
+        Clone `model_class` relations from the source product onto `target_product`.
+
+        Return a list of (original_pk, cloned_relation) pairs.
+        """
         assigned_license_model = self.assigned_license_models.get(model_class)
         save_kwargs = {"copy": True} if assigned_license_model else None
 
@@ -300,11 +304,41 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         )
 
         if not assigned_license_model:
-            return
+            return cloned_pairs
 
         license_model, license_fk_name = assigned_license_model
         for original_pk, cloned_relation in cloned_pairs:
             clone_related_objects(license_model, license_fk_name, original_pk, cloned_relation)
+
+        return cloned_pairs
+
+    @staticmethod
+    def _relink_codebase_resources(cloned_pairs_by_model):
+        """
+        Point the cloned codebase resources to the cloned product component and package.
+        A link to a relation that was not cloned is cleared, as it belongs to the source product.
+        """
+        cloned_pks_by_model = {
+            model_class: {
+                original_pk: cloned_relation.pk for original_pk, cloned_relation in cloned_pairs
+            }
+            for model_class, cloned_pairs in cloned_pairs_by_model.items()
+        }
+        component_pks = cloned_pks_by_model.get(ProductComponent, {})
+        package_pks = cloned_pks_by_model.get(ProductPackage, {})
+
+        linked_resources = [
+            cloned_resource
+            for original_pk, cloned_resource in cloned_pairs_by_model.get(CodebaseResource, [])
+            if cloned_resource.product_component_id or cloned_resource.product_package_id
+        ]
+        for resource in linked_resources:
+            resource.product_component_id = component_pks.get(resource.product_component_id)
+            resource.product_package_id = package_pks.get(resource.product_package_id)
+
+        CodebaseResource.objects.bulk_update(
+            linked_resources, ["product_component", "product_package"]
+        )
 
     def save(self, commit=True):
         from product_portfolio.importers import paused_product_package_reevaluation
@@ -315,12 +349,16 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
         History.log_addition(self.user, instance)
         assign_all_object_permissions(self.user, instance)
 
+        cloned_pairs_by_model = {}
         with paused_product_package_reevaluation():
             for field_name, model_classes in self.relations_by_field.items():
                 if not self.cleaned_data.get(field_name):
                     continue
                 for model_class in model_classes:
-                    self._clone_relations(model_class, instance)
+                    cloned_pairs = self._clone_relations(model_class, instance)
+                    cloned_pairs_by_model[model_class] = cloned_pairs
+
+        self._relink_codebase_resources(cloned_pairs_by_model)
 
         reevaluate_products([instance])
 
