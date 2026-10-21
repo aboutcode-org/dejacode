@@ -7,6 +7,7 @@
   - `pyproject.toml`
   - `dejacode/__init__.py`
   - `CHANGELOG.rst` (set date)
+- Refresh `uv.lock` with `uvx uv lock` and check it with `uvx uv lock --check`
 - Commit and push this branch
 - Create a PR and merge once approved
 - Tag and push that tag. This will trigger the `create-github-release.yml`

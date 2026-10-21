@@ -1,6 +1,11 @@
 Release notes
 =============
 
+### Version 6.0.1
+
+* fix: relink cloned codebase resources to the cloned inventory #601 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/602
+* chore: upgrade certifi, uv, dependencies and service images by @tdruez in https://github.com/aboutcode-org/dejacode/pull/604
+
 ### Version 6.0.0
 
 * feat: Add support to search within multiple organisational units in ldap by @nicoklaus in https://github.com/aboutcode-org/dejacode/pull/535

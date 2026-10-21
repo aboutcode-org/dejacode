@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dejacode"
-version = "6.0.0"
+version = "6.0.1"
 description = "Automate open source license compliance and ensure supply chain integrity"
 readme = "README.rst"
 requires-python = ">=3.14,<3.15"
