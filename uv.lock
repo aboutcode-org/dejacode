@@ -87,10 +87,10 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.7.22"
+version = "2026.10.19"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "certifi-2026.7.22-py3-none-any.whl" },
+    { path = "certifi-2026.10.19-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -173,7 +173,7 @@ wheels = [
 
 [[package]]
 name = "dejacode"
-version = "5.9.0"
+version = "6.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aboutcode-toolkit" },
@@ -268,7 +268,7 @@ requires-dist = [
     { name = "attrs", specifier = "==26.1.0" },
     { name = "bleach", specifier = "==6.4.0" },
     { name = "boolean-py", specifier = "==5.0" },
-    { name = "certifi", specifier = "==2026.7.22" },
+    { name = "certifi", specifier = "==2026.10.19" },
     { name = "charset-normalizer", specifier = "==3.5.2" },
     { name = "clamd", specifier = "==1.0.2" },
     { name = "click", specifier = "==8.5.0" },
@@ -285,16 +285,16 @@ requires-dist = [
     { name = "django-debug-toolbar", specifier = "==8.0.0" },
     { name = "django-environ", specifier = "==0.14.0" },
     { name = "django-filter", specifier = "==26.2" },
-    { name = "django-grappelli", specifier = "==5.0.0" },
-    { name = "django-guardian", specifier = "==3.5.0" },
+    { name = "django-grappelli", specifier = "==5.0.1" },
+    { name = "django-guardian", specifier = "==3.5.1" },
     { name = "django-notifications-patched", specifier = "==2.0.0" },
-    { name = "django-otp", specifier = "==1.7.4" },
+    { name = "django-otp", specifier = "==1.7.5" },
     { name = "django-registration", specifier = "==5.2.1" },
     { name = "django-rq", specifier = "==4.2.0" },
     { name = "djangorestframework", specifier = "==3.18.3" },
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
-    { name = "fakeredis", specifier = "==2.39.0" },
+    { name = "fakeredis", specifier = "==2.40.0" },
     { name = "gunicorn", specifier = "==26.2.0" },
     { name = "idna", specifier = "==3.20" },
     { name = "inflection", specifier = "==0.5.1" },
@@ -302,11 +302,11 @@ requires-dist = [
     { name = "jsonfield", specifier = "==3.2.0" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
-    { name = "markdown", specifier = "==3.11" },
+    { name = "markdown", specifier = "==3.11.1" },
     { name = "markupsafe", specifier = "==3.0.4" },
     { name = "model-bakery", specifier = "==1.24.2" },
     { name = "msgspec", specifier = "==0.22.0" },
-    { name = "odfdo", specifier = "==3.27.1" },
+    { name = "odfdo", specifier = "==3.27.2" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.3" },
@@ -433,21 +433,21 @@ wheels = [
 
 [[package]]
 name = "django-grappelli"
-version = "5.0.0"
+version = "5.0.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "django_grappelli-5.0.0-py3-none-any.whl" },
+    { path = "django_grappelli-5.0.1-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "django-guardian"
-version = "3.5.0"
+version = "3.5.1"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django" },
 ]
 wheels = [
-    { path = "django_guardian-3.5.0-py3-none-any.whl" },
+    { path = "django_guardian-3.5.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -463,13 +463,13 @@ sdist = { path = "django-notifications-patched-2.0.0.tar.gz" }
 
 [[package]]
 name = "django-otp"
-version = "1.7.4"
+version = "1.7.5"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "django" },
 ]
 wheels = [
-    { path = "django_otp-1.7.4-py3-none-any.whl" },
+    { path = "django_otp-1.7.5-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -535,14 +535,14 @@ wheels = [
 
 [[package]]
 name = "fakeredis"
-version = "2.39.0"
+version = "2.40.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "redis" },
     { name = "sortedcontainers" },
 ]
 wheels = [
-    { path = "fakeredis-2.39.0-py3-none-any.whl" },
+    { path = "fakeredis-2.40.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -613,10 +613,10 @@ wheels = [
 
 [[package]]
 name = "markdown"
-version = "3.11"
+version = "3.11.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "markdown-3.11-py3-none-any.whl" },
+    { path = "markdown-3.11.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -650,14 +650,14 @@ wheels = [
 
 [[package]]
 name = "odfdo"
-version = "3.27.1"
+version = "3.27.2"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "lxml" },
     { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "odfdo-3.27.1-py3-none-any.whl" },
+    { path = "odfdo-3.27.2-py3-none-any.whl" },
 ]
 
 [[package]]

@@ -58,7 +58,7 @@ migrate:
 
 build:
 	@echo "-> Build the dev Docker images"
-	${COMPOSE} build
+	${COMPOSE} build --pull
 
 superuser:
 	${MANAGE} createsuperuser
