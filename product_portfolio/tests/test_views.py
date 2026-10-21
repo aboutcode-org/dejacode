@@ -2187,14 +2187,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(change_url)
         self.assertContains(response, expected)
 
-        ProductComponent.objects.create(
+        product_component = ProductComponent.objects.create(
             product=self.product1, component=self.component1, dataspace=self.dataspace
         )
-        ProductPackage.objects.create(
+        product_package = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
         CodebaseResource.objects.create(
-            path="/path1/", product=self.product1, dataspace=self.dataspace
+            path="/path1/",
+            product=self.product1,
+            product_component=product_component,
+            product_package=product_package,
+            dataspace=self.dataspace,
         )
         ruleset = TriageRuleset.objects.create(
             name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
@@ -2224,6 +2228,11 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, cloned_product.productpackages.count())
         self.assertEqual(1, cloned_product.codebaseresources.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+
+        cloned_resource = cloned_product.codebaseresources.get()
+        self.assertEqual(cloned_product.productcomponents.get(), cloned_resource.product_component)
+        self.assertEqual(cloned_product.productpackages.get(), cloned_resource.product_package)
+        cloned_resource.full_clean()
 
     def test_product_portfolio_product_clone_view(self):
         clone_url = self.product1.get_clone_url()
@@ -2320,6 +2329,51 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(0, empty_clone.dependencies.count())
         self.assertEqual(0, empty_clone.product_triage_rulesets.count())
         self.assertNotIn("view_product", get_user_perms(self.super_user, empty_clone))
+
+    def test_product_portfolio_product_clone_view_relinks_codebase_resources(self):
+        clone_url = self.product1.get_clone_url()
+        self.client.login(username=self.super_user.username, password="secret")
+
+        product_component = ProductComponent.objects.create(
+            product=self.product1, component=self.component1, dataspace=self.dataspace
+        )
+        product_package = ProductPackage.objects.create(
+            product=self.product1, package=self.package1, dataspace=self.dataspace
+        )
+        CodebaseResource.objects.create(
+            path="/path1/",
+            product=self.product1,
+            product_component=product_component,
+            product_package=product_package,
+            dataspace=self.dataspace,
+        )
+
+        data = {
+            "name": self.product1.name,
+            "version": "2.0",
+            "copy_inventory": "on",
+            "copy_codebase_resources": "on",
+        }
+        self.client.post(clone_url, data)
+        cloned_product = Product.unsecured_objects.get(name=self.product1.name, version="2.0")
+        cloned_resource = cloned_product.codebaseresources.get()
+        self.assertEqual(cloned_product.productcomponents.get(), cloned_resource.product_component)
+        self.assertEqual(cloned_product.productpackages.get(), cloned_resource.product_package)
+        cloned_resource.full_clean()
+
+        # Without the inventory, the links to the source product relations are cleared.
+        data["version"] = "3.0"
+        data["copy_inventory"] = ""
+        self.client.post(clone_url, data)
+        cloned_product = Product.unsecured_objects.get(name=self.product1.name, version="3.0")
+        cloned_resource = cloned_product.codebaseresources.get()
+        self.assertIsNone(cloned_resource.product_component)
+        self.assertIsNone(cloned_resource.product_package)
+        cloned_resource.full_clean()
+
+        source_resource = self.product1.codebaseresources.get()
+        self.assertEqual(product_component, source_resource.product_component)
+        self.assertEqual(product_package, source_resource.product_package)
 
     def test_product_portfolio_product_delete_view(self):
         delete_url = self.product1.get_delete_url()

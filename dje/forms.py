@@ -209,14 +209,21 @@ class DataspacedModelForm(ScopeAndProtectRelationships, forms.ModelForm):
         """
         Clone each defined m2m relations in `self.clone_m2m_classes` during
         the `save_as_new` process.
+
+        Return the (original_pk, cloned_instance) pairs grouped by model class.
         """
         field_name = self.instance._meta.model_name
 
+        cloned_pairs_by_model = {}
         for model_class in self.clone_m2m_classes:
             if model_class.__name__ == "Subcomponent":
                 field_name = "parent"
 
-            clone_related_objects(model_class, field_name, original_instance_id, cloned_instance)
+            cloned_pairs_by_model[model_class] = clone_related_objects(
+                model_class, field_name, original_instance_id, cloned_instance
+            )
+
+        return cloned_pairs_by_model
 
     @property
     def save_as_new_submit(self):
