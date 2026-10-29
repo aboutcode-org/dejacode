@@ -63,6 +63,9 @@ With ScanCode.io, you can:
 Scans are listed from :guilabel:`Scans` in the :guilabel:`Integrations` section of the
 side menu.
 
+.. seealso::
+    :ref:`reference_scancodeio_workflow` for the complete workflow with ScanCode.io.
+
 Install your own ScanCode.io server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

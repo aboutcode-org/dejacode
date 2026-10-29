@@ -62,3 +62,7 @@ as for an imported SBOM, in :ref:`user_tutorial_5_sboms`:
 1. :ref:`user_tutorial_5_review_vulnerabilities`
 2. :ref:`user_tutorial_5_vulnerability_analysis`
 3. :ref:`user_tutorial_5_export_vex`
+
+.. seealso::
+    :ref:`reference_scancodeio_workflow` to use ScanCode.io and DejaCode together beyond
+    a one-time import.

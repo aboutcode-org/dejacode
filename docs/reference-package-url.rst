@@ -1,4 +1,4 @@
-.. _reference_2:
+.. _reference_package_url:
 
 Package URL (purl)
 ==================
