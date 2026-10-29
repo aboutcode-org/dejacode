@@ -31,7 +31,8 @@ DejaCode includes the following modules:
 * **API**: Use the DejaCode API to integrate with your other data sources and
   applications.
 
-New to DejaCode? Start with the :ref:`quickstart`.
+New to DejaCode? Start with the :ref:`quickstart`. To see how DejaCode and ScanCode.io
+work together, read the :ref:`reference_scancodeio_workflow`.
 
 .. toctree::
     :maxdepth: 2
@@ -72,12 +73,13 @@ New to DejaCode? Start with the :ref:`quickstart`.
     :maxdepth: 1
     :caption: Reference
 
+    reference-scancodeio-workflow
     reference-data-models
-    reference-vulnerability-management
-    reference-policy-rules
-    reference-vulnerability-triage
-    reference-1
     reference-2
+    reference-1
+    reference-policy-rules
+    reference-vulnerability-management
+    reference-vulnerability-triage
     reference-3-cravex
 
 .. toctree::

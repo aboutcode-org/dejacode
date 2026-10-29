@@ -142,6 +142,8 @@ Review Usage Policy Impact
 
 Continue refining and reviewing your Usage Policies.
 
+.. _how_to_1_export_license_policies:
+
 Export License Policy Definitions
 ---------------------------------
 
@@ -155,3 +157,6 @@ ScanCode Toolkit (scancode-toolkit).
   section of the form.
 - View or edit the exported **license_policies.yml** file in your preferred text editor.
 - Use the file as an input option to ScanCode Toolkit to enhance the output results.
+- Provide the file to ScanCode.io, for the whole instance or per project, to flag each
+  detected license with your compliance alerts. See
+  `ScanCode.io License Policies <https://scancodeio.readthedocs.io/en/latest/policies.html>`_.
