@@ -75,12 +75,12 @@ work together, read the :ref:`reference_scancodeio_workflow`.
 
     reference-scancodeio-workflow
     reference-data-models
-    reference-2
-    reference-1
+    reference-package-url
+    reference-license-clarity
     reference-policy-rules
     reference-vulnerability-management
     reference-vulnerability-triage
-    reference-3-cravex
+    reference-cra-support
 
 .. toctree::
     :maxdepth: 1

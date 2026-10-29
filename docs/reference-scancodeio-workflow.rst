@@ -75,7 +75,7 @@ Package goes further: it detects the licenses and copyrights in its files.
 - :guilabel:`Scan all Packages` sends each Package of the Product with a download URL to
   ScanCode.io.
 - On the :guilabel:`Scan` tab of a Package, apply the detected values to its definition,
-  see :ref:`reference_1`.
+  see :ref:`reference_license_clarity`.
 - :guilabel:`Improve Packages from PurlDB` completes the Package metadata.
 
 A Package is scanned and reviewed once, and every Product that uses it benefits.
