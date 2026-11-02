@@ -10,7 +10,7 @@ Products over time.
 
 This page covers how the two work together. For everything else that DejaCode does, such
 as the License Library, Workflow Requests, and Reporting, see the
-:doc:`documentation home <index>`.
+:doc:`DejaCode documentation index <index>`.
 
 .. image:: images/reference-scancodeio-workflow/workflow.svg
    :width: 100%
