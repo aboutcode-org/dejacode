@@ -12,8 +12,6 @@ from django.forms.widgets import Select
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-import dateutil
-
 
 class BooleanSelect(Select):
     """
@@ -106,12 +104,8 @@ class DateFieldFilterSelect(Select):
         return timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
 
     def render(self, name, value, attrs=None, renderer=None):
-        if not value:
-            # Force an Exception, empty string Return today in the parser
-            value = "ERROR"
-
         try:
-            value_as_date = dateutil.parser.parse(value)
+            value_as_date = datetime.datetime.fromisoformat(value)
             # Make the parsed datetime timezone-aware to match "today" value
             if timezone.is_naive(value_as_date):
                 value_as_date = timezone.make_aware(value_as_date)
