@@ -16,6 +16,7 @@ from django.template.defaultfilters import filesizeformat
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext_lazy as _
 
+from dejacode_toolkit import clamav
 from dje.tasks import send_mail_to_admins_task
 from dje.validators import validate_list
 
@@ -142,30 +143,26 @@ class SmartFileField(forms.FileField):
     @staticmethod
     def scan_file_for_virus(file):
         """Run a ClamAV scan on the uploaded file to detect virus infection."""
-        import clamd
-
+        clamd_address = clamav.DEFAULT_UNIX_SOCKET_PATH
         if settings.CLAMD_USE_TCP:
-            clamd_socket = clamd.ClamdNetworkSocket(settings.CLAMD_TCP_ADDR)
-        else:
-            clamd_socket = clamd.ClamdUnixSocket()
+            clamd_address = (settings.CLAMD_TCP_ADDR, clamav.DEFAULT_TCP_PORT)
 
         try:
-            scan_response = clamd_socket.instream(file)
-        except clamd.ClamdError:
+            scan_status, scan_reason = clamav.scan_stream(file, clamd_address)
+        except clamav.StreamTooLargeError:
+            raise forms.ValidationError(_("File size is too large."))
+        except clamav.ClamdError:
             subject = "[DejaCode] Clamd Error"
             message = "Error with the ClamAV setup. Make sure the service is properly running."
             send_mail_to_admins_task.delay(subject, message)
             raise forms.ValidationError(
                 _("File upload disabled at the moment. Please contact your administrator.")
             )
-        except BrokenPipeError:
-            raise forms.ValidationError(_("File size is too large."))
 
-        for status, reason in scan_response.values():
-            if status == "FOUND":
-                raise forms.ValidationError(_("This file is infected. Upload aborted."))
-            elif status == "ERROR":
-                raise forms.ValidationError(_("File upload error."))
+        if scan_status == "FOUND":
+            raise forms.ValidationError(_("This file is infected. Upload aborted."))
+        if scan_status == "ERROR":
+            raise forms.ValidationError(_("File upload error."))
 
 
 class LastModifiedByField(models.ForeignKey):

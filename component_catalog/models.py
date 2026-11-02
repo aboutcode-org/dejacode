@@ -37,7 +37,6 @@ from django.utils.text import get_valid_filename
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext_lazy as _
 
-from attributecode.model import About
 from cyclonedx import model as cyclonedx_model
 from cyclonedx.model import component as cyclonedx_component
 from cyclonedx.model import contact as cyclonedx_contact
@@ -55,6 +54,7 @@ from component_catalog.license_expression_dje import get_expression_as_spdx
 from component_catalog.license_expression_dje import get_license_objects
 from component_catalog.license_expression_dje import parse_expression
 from component_catalog.license_expression_dje import render_expression_as_html
+from dejacode_toolkit import aboutcode
 from dejacode_toolkit import download
 from dejacode_toolkit import spdx
 from dejacode_toolkit.purldb import PurlDB
@@ -2335,9 +2335,7 @@ class Package(
         """Return ABOUT file data YAML formatted."""
         about_data = self.as_about(extra)
         if about_data:
-            about = About()
-            about.load_dict(about_data, base_dir="")
-            return about.dumps()
+            return aboutcode.dumps(about_data)
 
     @property
     def about_file_name(self):

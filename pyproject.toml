@@ -31,11 +31,11 @@ classifiers = [
 ]
 dependencies = [
     # Base configuration tools
-    "setuptools==84.0.0",
+    "setuptools==84.2.1",
     "packaging==26.3",
     # Django
     "django==6.1.2",
-    "asgiref==3.12.1",
+    "asgiref==3.13.0",
     "typing-extensions==4.16.0",
     "sqlparse==0.6.0",
     # Django apps
@@ -45,7 +45,7 @@ dependencies = [
     "django-filter==26.2",
     "django-registration==5.2.1",
     "confusable_homoglyphs==3.3.1",
-    "django-guardian==3.5.1",
+    "django-guardian==3.5.2",
     "django-environ==0.14.0",
     "django-debug-toolbar==8.0.0",
     # Parallel testing
@@ -61,7 +61,7 @@ dependencies = [
     "drf-yasg==1.21.15",
     "uritemplate==4.2.0",
     "inflection==0.5.1",
-    "pytz==2026.5",
+    "pytz==2026.6",
     # Track failed login attempts
     "django-axes==8.3.1",
     # Multi-factor authentication
@@ -71,36 +71,35 @@ dependencies = [
     "psycopg==3.3.6",
     # Cache
     "redis==8.1.0",
-    # Antivirus
-    "clamd==1.0.2",
     # Testing
     "model-bakery==1.24.2",
     # Task queue
     "rq==2.12.0",
+    "click==8.5.0",
     "croniter==6.2.4",
     "django-rq==4.2.0",
     "fakeredis==2.40.0",
     # Libs
-    "certifi==2026.10.19",
+    "certifi==2026.10.23",
     "urllib3==2.8.0",
-    "python-dateutil==2.9.0.post0",
+    "python-dateutil==3.0.0",
     "six==1.17.0",
+    "tzdata==2026.6",
     "requests==2.34.2",
     "idna==3.20",
     "charset-normalizer==3.5.2",
     "PyYAML==6.0.3",
-    "XlsxWriter==3.2.9",
     # Markdown
-    "markdown==3.11.1",
+    "markdown==3.11.2",
     "bleach==6.4.0",
     "webencodings==0.6.1",
     # Authentication
     "defusedxml==0.7.1",
     # LDAP Auth
     "python-ldap==3.4.8",
-    "pyasn1==0.6.4",
+    "pyasn1==0.6.5",
     "pyasn1-modules==0.4.2",
-    "django-auth-ldap==5.3.0",
+    "django-auth-ldap==5.4.0",
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",
@@ -108,13 +107,9 @@ dependencies = [
     "django_notifications_patched==2.0.0",
     "jsonfield==3.2.0",
     "swapper==1.5.0",
-    # AboutCode Toolkit
-    "aboutcode_toolkit==11.1.1",
-    "attrs==26.1.0",
-    "click==8.5.0",
-    "Jinja2==3.1.6",
-    "markupsafe==3.0.4",
+    # YAML
     "saneyaml==0.6.1",
+    # Spreadsheet
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
     # PackageURL
@@ -126,14 +121,14 @@ dependencies = [
     "sortedcontainers==2.4.0",
     "py-serializable==2.1.0",
     # CSAF
-    "pydantic==2.14.1",
-    "pydantic-core==2.50.1",
+    "pydantic==2.14.2",
+    "pydantic-core==2.50.2",
     "typing-inspection==0.4.4",
     "annotated-types==0.8.0",
     # OpenVEX
     "msgspec==0.22.0",
     # OpenDocument Format
-    "odfdo==3.27.2",
+    "odfdo==3.27.3",
     "lxml==6.1.3",
 ]
 
