@@ -84,6 +84,8 @@ First steps
 Next steps
 ----------
 
+- :ref:`reference_scancodeio_workflow` describes how DejaCode and ScanCode.io work
+  together.
 - :ref:`user_tutorial_1` and the following tutorials walk through each feature in
   detail.
 - :ref:`dataspace` explains how to set up your own Dataspace, users, and usage

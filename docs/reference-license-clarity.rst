@@ -1,4 +1,4 @@
-.. _reference_1:
+.. _reference_license_clarity:
 
 Declared License Expression and License Clarity Scoring
 =======================================================

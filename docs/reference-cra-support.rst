@@ -1,4 +1,4 @@
-.. _reference_3_cravex:
+.. _reference_cra_support:
 
 Cyber Resilience Act (CRA) Support
 ==================================
