@@ -75,6 +75,7 @@ dependencies = [
     "model-bakery==1.24.2",
     # Task queue
     "rq==2.12.0",
+    "click==8.5.0",
     "croniter==6.2.4",
     "django-rq==4.2.0",
     "fakeredis==2.40.0",
@@ -106,13 +107,9 @@ dependencies = [
     "django_notifications_patched==2.0.0",
     "jsonfield==3.2.0",
     "swapper==1.5.0",
-    # AboutCode Toolkit
-    "aboutcode_toolkit==11.1.1",
-    "attrs==26.1.0",
-    "click==8.5.0",
-    "Jinja2==3.1.6",
-    "markupsafe==3.0.4",
+    # YAML
     "saneyaml==0.6.1",
+    # Spreadsheet
     "openpyxl==3.1.5",
     "et-xmlfile==2.0.0",
     # PackageURL
