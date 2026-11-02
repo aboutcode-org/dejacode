@@ -46,11 +46,10 @@ from django.utils.html import smart_urlquote
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
-from notifications.models import Notification
-
 from aboutcode.api_auth import AbstractAPIToken
 from dje.fields import LastModifiedByField
 from dje.tasks import send_mail_task
+from notifications.models import Notification
 
 logger = logging.getLogger("dje")
 

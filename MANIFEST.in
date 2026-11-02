@@ -21,6 +21,7 @@ graft docs
 graft etc
 graft license_library
 graft notification
+graft notifications
 graft organization
 graft policy
 graft product_portfolio

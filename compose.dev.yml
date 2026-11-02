@@ -43,6 +43,7 @@ services:
       - ./dje:/opt/dejacode/dje
       - ./license_library:/opt/dejacode/license_library
       - ./notification:/opt/dejacode/notification
+      - ./notifications:/opt/dejacode/notifications
       - ./organization:/opt/dejacode/organization
       - ./policy:/opt/dejacode/policy
       - ./product_portfolio:/opt/dejacode/product_portfolio

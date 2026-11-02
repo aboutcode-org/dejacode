@@ -24,7 +24,6 @@ from django.utils.encoding import force_str
 
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_user_perms
-from notifications.models import Notification
 
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
@@ -42,6 +41,7 @@ from dje.tests import create_superuser
 from dje.tests import create_user
 from license_library.models import License
 from license_library.tests import make_license
+from notifications.models import Notification
 from organization.models import Owner
 from policy.models import UsagePolicy
 from policy.tests import make_usage_policy

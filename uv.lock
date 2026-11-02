@@ -163,7 +163,6 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-grappelli" },
     { name = "django-guardian" },
-    { name = "django-notifications-patched" },
     { name = "django-otp" },
     { name = "django-registration" },
     { name = "django-rq" },
@@ -174,7 +173,6 @@ dependencies = [
     { name = "gunicorn" },
     { name = "idna" },
     { name = "inflection" },
-    { name = "jsonfield" },
     { name = "license-expression" },
     { name = "lxml" },
     { name = "markdown" },
@@ -203,7 +201,6 @@ dependencies = [
     { name = "six" },
     { name = "sortedcontainers" },
     { name = "sqlparse" },
-    { name = "swapper" },
     { name = "tblib" },
     { name = "typing-extensions" },
     { name = "typing-inspection" },
@@ -243,7 +240,6 @@ requires-dist = [
     { name = "django-filter", specifier = "==26.2" },
     { name = "django-grappelli", specifier = "==5.0.1" },
     { name = "django-guardian", specifier = "==3.5.2" },
-    { name = "django-notifications-patched", specifier = "==2.0.0" },
     { name = "django-otp", specifier = "==1.7.5" },
     { name = "django-registration", specifier = "==5.2.1" },
     { name = "django-rq", specifier = "==4.2.0" },
@@ -254,7 +250,6 @@ requires-dist = [
     { name = "gunicorn", specifier = "==26.2.0" },
     { name = "idna", specifier = "==3.20" },
     { name = "inflection", specifier = "==0.5.1" },
-    { name = "jsonfield", specifier = "==3.2.0" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
     { name = "markdown", specifier = "==3.11.2" },
@@ -284,7 +279,6 @@ requires-dist = [
     { name = "six", specifier = "==1.17.0" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
     { name = "sqlparse", specifier = "==0.6.0" },
-    { name = "swapper", specifier = "==1.5.0" },
     { name = "tblib", specifier = "==3.2.2" },
     { name = "typing-extensions", specifier = "==4.16.0" },
     { name = "typing-inspection", specifier = "==0.4.4" },
@@ -405,17 +399,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-notifications-patched"
-version = "2.0.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "django" },
-    { name = "jsonfield" },
-    { name = "swapper" },
-]
-sdist = { path = "django-notifications-patched-2.0.0.tar.gz" }
-
-[[package]]
 name = "django-otp"
 version = "1.7.5"
 source = { registry = "thirdparty/dist" }
@@ -521,17 +504,6 @@ version = "0.5.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "inflection-0.5.1-py2.py3-none-any.whl" },
-]
-
-[[package]]
-name = "jsonfield"
-version = "3.2.0"
-source = { registry = "thirdparty/dist" }
-dependencies = [
-    { name = "django" },
-]
-wheels = [
-    { path = "jsonfield-3.2.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -818,14 +790,6 @@ version = "0.6.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "sqlparse-0.6.0-py3-none-any.whl" },
-]
-
-[[package]]
-name = "swapper"
-version = "1.5.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "swapper-1.5.0-py2.py3-none-any.whl" },
 ]
 
 [[package]]

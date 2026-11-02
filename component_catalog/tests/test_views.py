@@ -26,7 +26,6 @@ from django.utils import timezone
 from django.utils.encoding import force_str
 
 from guardian.shortcuts import assign_perm
-from notifications.models import Notification
 
 from component_catalog.forms import ComponentAddToProductForm
 from component_catalog.forms import ComponentForm
@@ -64,6 +63,7 @@ from license_library.models import LicenseAssignedTag
 from license_library.models import LicenseTag
 from license_library.models import LicenseTagGroup
 from license_library.models import LicenseTagGroupAssignedTag
+from notifications.models import Notification
 from organization.models import Owner
 from organization.models import Subowner
 from policy.models import UsagePolicy

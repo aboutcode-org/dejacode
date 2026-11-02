@@ -14,12 +14,12 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from guardian.shortcuts import assign_perm
-from notifications.models import Notification
 
 from dje.models import Dataspace
 from dje.tests import MaxQueryMixin
 from dje.tests import create_superuser
 from dje.tests import create_user
+from notifications.models import Notification
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import improve_packages_from_purldb_task
 from product_portfolio.tasks import logger as tasks_logger

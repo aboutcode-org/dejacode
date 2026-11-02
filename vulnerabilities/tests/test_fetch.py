@@ -14,12 +14,11 @@ from unittest import mock
 
 from django.test import TestCase
 
-from notifications.models import Notification
-
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import create_user
+from notifications.models import Notification
 from product_portfolio.tests import make_product
 from product_portfolio.tests import make_product_item_purpose
 from product_portfolio.tests import make_product_package

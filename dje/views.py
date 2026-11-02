@@ -74,7 +74,6 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from grappelli.views.related import AutocompleteLookup
 from grappelli.views.related import RelatedLookup
-from notifications import views as notifications_views
 
 from aboutcode.api_auth.views import BaseGenerateAPIKeyView
 from aboutcode.api_auth.views import BaseRevokeAPIKeyView
@@ -2306,24 +2305,25 @@ class NotificationsCountMixin:
         return context
 
 
-class UnreadNotificationsList(
-    NotificationsCountMixin,
-    notifications_views.UnreadNotificationsList,
-):
-    pass
+class NotificationsListView(LoginRequiredMixin, NotificationsCountMixin, ListView):
+    template_name = "notifications/list.html"
+    context_object_name = "notifications"
+    paginate_by = 20
 
 
-class AllNotificationsList(
-    NotificationsCountMixin,
-    notifications_views.AllNotificationsList,
-):
-    pass
+class UnreadNotificationsList(NotificationsListView):
+    def get_queryset(self):
+        return self.request.user.notifications.unread()
+
+
+class AllNotificationsList(NotificationsListView):
+    def get_queryset(self):
+        return self.request.user.notifications.all()
 
 
 @login_required
 @require_POST
 def mark_all_notifications_as_read_view(request):
-    """Replace the `notifications` library view, which marks as read on GET requests."""
     request.user.notifications.mark_all_as_read()
     return redirect("notifications:unread")
 

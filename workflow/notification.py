@@ -9,9 +9,8 @@
 from django.conf import settings
 from django.template.loader import render_to_string
 
-from notifications.signals import notify as internal_notification
-
 from dje.tasks import send_mail_task
+from notifications.models import Notification
 
 # WARNING: Using the name `req` in place of `request` for Request instance,
 # to avoid any conflict, especially in template contexts,
@@ -59,11 +58,11 @@ def send_request_notification(http_request, req, created, extra=None):
     # Remove the `action_user` from the internal notification recipients
     recipients.discard(action_user)
 
-    internal_notification.send(
-        sender=action_user,
+    Notification.objects.notify(
+        recipients=recipients,
+        actor=action_user,
         verb="{} Request".format("submitted" if created else "updated"),
         action_object=req,
-        recipient=list(recipients),
         description=extra.get("description") if extra else "",
     )
 
@@ -100,11 +99,11 @@ def send_request_comment_notification(http_request, comment, closed=False):
     emails = get_recipient_emails(recipients, req.cc_emails)
     send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, emails)
 
-    internal_notification.send(
-        sender=comment.user,
+    Notification.objects.notify(
+        recipients=recipients,
+        actor=comment.user,
         verb="commented on Request",
         action_object=req,
-        recipient=list(recipients),
         description=comment.text,
     )
 

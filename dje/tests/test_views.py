@@ -20,7 +20,6 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from guardian.shortcuts import assign_perm
-from notifications.models import Notification
 
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
@@ -30,6 +29,7 @@ from dje.tests import add_perm
 from dje.tests import create
 from dje.tests import create_superuser
 from dje.tests import create_user
+from notifications.models import Notification
 
 Owner = apps.get_model("organization", "Owner")
 Component = apps.get_model("component_catalog", "Component")
@@ -382,6 +382,26 @@ class DJEViewsTestCase(TestCase):
         response = self.client.post(url)
         self.assertRedirects(response, unread_url)
         self.assertEqual(0, self.user.notifications.unread().count())
+
+    def test_notifications_list_views(self):
+        Notification.objects.create(recipient=self.user, actor=self.user, verb="Read", unread=False)
+        Notification.objects.create(recipient=self.user, actor=self.super_user, verb="Unread")
+        Notification.objects.create(recipient=self.super_user, actor=self.user, verb="Other")
+        unread_url = reverse("notifications:unread")
+        all_url = reverse("notifications:all")
+
+        response = self.client.get(unread_url)
+        self.assertRedirects(response, f"{reverse('login')}?next={unread_url}")
+
+        self.client.login(username=self.user.username, password="secret")
+        response = self.client.get(unread_url)
+        self.assertEqual(["Unread"], [notice.verb for notice in response.context["notifications"]])
+        self.assertEqual(2, response.context["all_count"])
+        self.assertEqual(1, response.context["unread_count"])
+
+        response = self.client.get(all_url)
+        verbs = [notice.verb for notice in response.context["notifications"]]
+        self.assertEqual(["Unread", "Read"], verbs)
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_global_search_list_view(self):

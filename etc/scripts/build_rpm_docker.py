@@ -55,15 +55,11 @@ def build_rpm_with_docker():
     rpm_name = f"python3-{pkg_name.lower()}"
     rpm_version = project["version"].replace("-dev", "~dev")
 
-    # Generate requirements for RPM - exclude packages installed from GitHub
+    # Generate requirements for RPM
     dependencies = project["dependencies"]
 
-    filtered_dependencies = [
-        dep for dep in dependencies if "django-notifications-patched" not in dep
-    ]
-
     # Create a requirements.txt content for installation
-    requirements_content = "\n".join(filtered_dependencies)
+    requirements_content = "\n".join(dependencies)
 
     docker_cmd = [
         "docker",
@@ -185,10 +181,6 @@ cd %{{_sourcedir}}
 
 # Install system dependencies for psycopg
 dnf install -y postgresql-devel
-
-# Install non-PyPI dependencies
-/tmp/venv_build/bin/python -m pip install \\
-    https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz
 
 # Install the main package
 /tmp/venv_build/bin/python -m pip install -r requirements.txt

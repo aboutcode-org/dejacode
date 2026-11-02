@@ -103,10 +103,6 @@ dependencies = [
     # license expressions
     "boolean.py==5.0",
     "license-expression==30.4.4",
-    # django-notifications
-    "django_notifications_patched==2.0.0",
-    "jsonfield==3.2.0",
-    "swapper==1.5.0",
     # YAML
     "saneyaml==0.6.1",
     # Spreadsheet
