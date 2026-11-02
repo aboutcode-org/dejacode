@@ -26,8 +26,9 @@ from django.views.generic.list import MultipleObjectMixin
 
 import odfdo
 import saneyaml
-import xlsxwriter
+from openpyxl import Workbook
 
+from dje.utils import escape_xlsx_control_characters
 from dje.utils import get_preserved_filters
 from dje.views import AdminLinksDropDownMixin
 from dje.views import BootstrapCSSMixin
@@ -261,14 +262,16 @@ class ReportDetailsView(
         report_data = [context["headers"]] + context["output"]
 
         file_output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(file_output)
-        worksheet = workbook.add_worksheet()
+        workbook = Workbook()
+        worksheet = workbook.active
 
-        for row_index, row in enumerate(report_data):
-            for cell_index, cell in enumerate(row):
-                worksheet.write_string(row_index, cell_index, normalize_newlines(cell))
+        for row_index, row in enumerate(report_data, start=1):
+            for cell_index, cell in enumerate(row, start=1):
+                cell_value = escape_xlsx_control_characters(normalize_newlines(cell))
+                # Store as text: a value such as "=1+1" must never be evaluated as a formula
+                worksheet.cell(row_index, cell_index, cell_value).data_type = "s"
 
-        workbook.close()
+        workbook.save(file_output)
 
         return HttpResponse(file_output.getvalue(), **response_kwargs)
 

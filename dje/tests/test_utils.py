@@ -27,6 +27,7 @@ from dje.copier import copy_object
 from dje.models import Dataspace
 from dje.utils import clone_related_objects
 from dje.utils import database_re_escape
+from dje.utils import escape_xlsx_control_characters
 from dje.utils import extract_name_version
 from dje.utils import get_duplicates
 from dje.utils import get_instance_from_referer
@@ -665,3 +666,18 @@ class DJEUtilsTestCase(TestCase):
             "parties": ["a", "b"],
         }
         self.assertEqual(expected, merge_common_non_empty_values([entry1, entry2]))
+
+    def test_utils_escape_xlsx_control_characters(self):
+        inputs = [
+            # (value, expected)
+            ("", ""),
+            ("plain text", "plain text"),
+            ("tab\tand\nnewline", "tab\tand\nnewline"),
+            ("null\x00character", "null_x0000_character"),
+            ("page\x0cbreak", "page_x000C_break"),
+            ("unit\x1fseparator", "unit_x001F_separator"),
+            ("literal _x0041_ sequence", "literal _x005F_x0041_ sequence"),
+            ("=1+1", "=1+1"),
+        ]
+        for value, expected in inputs:
+            self.assertEqual(expected, escape_xlsx_control_characters(value))

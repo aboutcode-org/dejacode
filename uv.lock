@@ -103,14 +103,6 @@ wheels = [
 ]
 
 [[package]]
-name = "clamd"
-version = "1.0.2"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "clamd-1.0.2-py2.py3-none-any.whl" },
-]
-
-[[package]]
 name = "click"
 version = "8.5.0"
 source = { registry = "thirdparty/dist" }
@@ -185,7 +177,6 @@ dependencies = [
     { name = "boolean-py" },
     { name = "certifi" },
     { name = "charset-normalizer" },
-    { name = "clamd" },
     { name = "click" },
     { name = "confusable-homoglyphs" },
     { name = "crispy-bootstrap5" },
@@ -252,7 +243,6 @@ dependencies = [
     { name = "uritemplate" },
     { name = "urllib3" },
     { name = "webencodings" },
-    { name = "xlsxwriter" },
 ]
 
 [package.optional-dependencies]
@@ -271,7 +261,6 @@ requires-dist = [
     { name = "boolean-py", specifier = "==5.0" },
     { name = "certifi", specifier = "==2026.10.23" },
     { name = "charset-normalizer", specifier = "==3.5.2" },
-    { name = "clamd", specifier = "==1.0.2" },
     { name = "click", specifier = "==8.5.0" },
     { name = "confusable-homoglyphs", specifier = "==3.3.1" },
     { name = "crispy-bootstrap5", specifier = "==2026.9" },
@@ -339,7 +328,6 @@ requires-dist = [
     { name = "uritemplate", specifier = "==4.2.0" },
     { name = "urllib3", specifier = "==2.8.0" },
     { name = "webencodings", specifier = "==0.6.1" },
-    { name = "xlsxwriter", specifier = "==3.3.1" },
 ]
 provides-extras = ["dev"]
 
@@ -953,12 +941,4 @@ version = "0.6.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "webencodings-0.6.1-py3-none-any.whl" },
-]
-
-[[package]]
-name = "xlsxwriter"
-version = "3.3.1"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "xlsxwriter-3.3.1-py3-none-any.whl" },
 ]

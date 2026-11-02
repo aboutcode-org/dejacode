@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import io
 import uuid
 from unittest.mock import patch
 
@@ -15,6 +16,8 @@ from django.core.exceptions import FieldDoesNotExist
 from django.test import TestCase
 from django.urls import NoReverseMatch
 from django.urls import reverse
+
+from openpyxl import load_workbook
 
 from component_catalog.models import Component
 from dje.copier import copy_object
@@ -163,6 +166,25 @@ class ReportDetailsViewTestCase(MaxQueryMixin, TestCase):
 
         response = self.client.get(url + "?format=xlsx")
         self.assertEqual(200, response.status_code)
+
+    def test_report_details_view_xlsx_format(self):
+        License.objects.filter(key="license_0").update(
+            short_name="page\x0cbreak _x0041_", name="=1+1"
+        )
+        self.client.login(username="test", password="t3st")
+
+        response = self.client.get(self.report.get_absolute_url() + "?format=xlsx")
+        self.assertEqual(200, response.status_code)
+
+        worksheet = load_workbook(io.BytesIO(response.content)).active
+        self.assertEqual(151, worksheet.max_row)
+        header_values = [cell.value for cell in worksheet[1]]
+        self.assertEqual(["key", "short_name", "name"], header_values)
+
+        license_row = next(row for row in worksheet.iter_rows() if row[0].value == "license_0")
+        license_values = [cell.value for cell in license_row]
+        self.assertEqual(["license_0", "page_x000C_break _x005F_x0041_", "=1+1"], license_values)
+        self.assertEqual(["s", "s", "s"], [cell.data_type for cell in license_row])
 
     def test_using_m2m_with_no_records_in_a_column_template(self):
         component = Component.objects.create(name="c1", owner=self.owner, dataspace=self.dataspace)

@@ -825,3 +825,20 @@ def style_xlsx_worksheet(worksheet, headers=None, auto_width=True):
         for col_index, header in enumerate(headers, 1):
             column_letter = get_column_letter(col_index)
             worksheet.column_dimensions[column_letter].width = max(len(str(header)) + 4, 12)
+
+
+XLSX_ESCAPE_SEQUENCE_REGEX = re.compile(r"(_x[0-9a-fA-F]{4}_)")
+XLSX_CONTROL_CHARACTER_REGEX = re.compile(r"[\x00-\x08\x0b-\x1f]")
+
+
+def format_xlsx_control_character(control_character_match):
+    return f"_x{ord(control_character_match.group()):04X}_"
+
+
+def escape_xlsx_control_characters(value):
+    """
+    Return `value` with control characters escaped as `_xHHHH_` OOXML sequences.
+    A literal `_xHHHH_` is escaped first, so Excel does not read it as a control character.
+    """
+    value = XLSX_ESCAPE_SEQUENCE_REGEX.sub(r"_x005F\1", value)
+    return XLSX_CONTROL_CHARACTER_REGEX.sub(format_xlsx_control_character, value)
