@@ -7,8 +7,10 @@
 #
 
 import logging
+import operator
 import re
 from contextlib import suppress
+from functools import reduce
 from urllib.parse import quote_plus
 
 from django.contrib.postgres.fields import ArrayField
@@ -47,6 +49,7 @@ from packageurl.contrib import purl2url
 from packageurl.contrib import url2purl
 from packageurl.contrib.django.models import PackageURLMixin
 from packageurl.contrib.django.models import PackageURLQuerySetMixin
+from packageurl.contrib.django.utils import purl_to_lookups
 from packageurl.contrib.django.utils import without_empty_values
 
 from component_catalog.license_expression_dje import build_licensing
@@ -1760,6 +1763,18 @@ class PackageQuerySet(PackageURLQuerySetMixin, VulnerabilityQuerySetMixin, Datas
     def has_download_url(self):
         """Return objects with download URL defined."""
         return self.filter(~models.Q(download_url=""))
+
+    def for_package_urls(self, package_urls):
+        """Return objects matching any of the provided Package URL strings."""
+        package_url_filters = [
+            models.Q(**lookups)
+            for package_url in package_urls
+            if (lookups := purl_to_lookups(package_url))
+        ]
+        if not package_url_filters:
+            return self.none()
+
+        return self.filter(reduce(operator.or_, package_url_filters))
 
     def annotate_sortable_identifier(self):
         """

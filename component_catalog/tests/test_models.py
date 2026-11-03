@@ -2903,3 +2903,28 @@ class ComponentCatalogModelsTestCase(TestCase):
         qs = Package.objects.annotate_plain_package_url()
         self.assertEqual("pkg:pypi/django@5.0", qs.get(pk=package1.pk).plain_purl)
         self.assertEqual("", qs.get(pk=package2.pk).plain_purl)
+
+    def test_package_queryset_for_package_urls(self):
+        django_package = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        django_qualified_package = make_package(
+            self.dataspace, package_url="pkg:pypi/django@5.0?qualifier=true"
+        )
+        idna_package = make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        make_package(self.dataspace, package_url="pkg:pypi/django@4.2")
+        make_package(self.dataspace)
+
+        qs = Package.objects.for_package_urls(["pkg:pypi/django@5.0", "pkg:pypi/idna@3.7"])
+        expected = [django_package, django_qualified_package, idna_package]
+        self.assertQuerySetEqual(qs, expected, ordered=False)
+
+        qs = Package.objects.for_package_urls(["pkg:pypi/django@5.0?qualifier=true"])
+        self.assertQuerySetEqual(qs, [django_qualified_package])
+
+    def test_package_queryset_for_package_urls_invalid_and_empty(self):
+        idna_package = make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+
+        self.assertQuerySetEqual(Package.objects.for_package_urls([]), [])
+        self.assertQuerySetEqual(Package.objects.for_package_urls(["invalid"]), [])
+
+        qs = Package.objects.for_package_urls(["invalid", "pkg:pypi/idna@3.7"])
+        self.assertQuerySetEqual(qs, [idna_package])
