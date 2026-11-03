@@ -288,7 +288,9 @@ class TabVulnerabilityMixin:
             for package_url in vulnerability.fixed_by_packages
         }
         fixed_packages = list(
-            Package.objects.scope(self.object.dataspace).for_package_urls(fixed_by_package_urls)
+            Package.objects.scope(self.object.dataspace)
+            .for_package_urls(fixed_by_package_urls)
+            .only_rendering_fields()
         )
 
         vulnerabilities = []
