@@ -2289,7 +2289,9 @@ class APIWrapperListView(
         return context_data
 
 
-class NotificationsCountMixin:
+class NotificationsListView(LoginRequiredMixin, ListView):
+    template_name = "notifications/list.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_notifications = self.request.user.notifications
@@ -2303,12 +2305,6 @@ class NotificationsCountMixin:
             }
         )
         return context
-
-
-class NotificationsListView(LoginRequiredMixin, NotificationsCountMixin, ListView):
-    template_name = "notifications/list.html"
-    context_object_name = "notifications"
-    paginate_by = 20
 
 
 class UnreadNotificationsList(NotificationsListView):

@@ -384,9 +384,31 @@ class DJEViewsTestCase(TestCase):
         self.assertEqual(0, self.user.notifications.unread().count())
 
     def test_notifications_list_views(self):
-        Notification.objects.create(recipient=self.user, actor=self.user, verb="Read", unread=False)
-        Notification.objects.create(recipient=self.user, actor=self.super_user, verb="Unread")
-        Notification.objects.create(recipient=self.super_user, actor=self.user, verb="Other")
+        def get_verbs_by_model(grouped_notifications):
+            return {
+                content_type.model: [notice.verb for notice in notices]
+                for content_type, notices in grouped_notifications.items()
+            }
+
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.user,
+            verb="Read",
+            action_object=self.owner1,
+            unread=False,
+        )
+        Notification.objects.create(
+            recipient=self.user, actor=self.super_user, verb="Unread", action_object=self.owner1
+        )
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.super_user,
+            verb="Updated",
+            action_object=self.dataspace1,
+        )
+        Notification.objects.create(
+            recipient=self.super_user, actor=self.user, verb="Other", action_object=self.owner1
+        )
         unread_url = reverse("notifications:unread")
         all_url = reverse("notifications:all")
 
@@ -395,13 +417,14 @@ class DJEViewsTestCase(TestCase):
 
         self.client.login(username=self.user.username, password="secret")
         response = self.client.get(unread_url)
-        self.assertEqual(["Unread"], [notice.verb for notice in response.context["notifications"]])
-        self.assertEqual(2, response.context["all_count"])
-        self.assertEqual(1, response.context["unread_count"])
+        expected = {"dataspace": ["Updated"], "owner": ["Unread"]}
+        self.assertEqual(expected, get_verbs_by_model(response.context["grouped_notifications"]))
+        self.assertEqual(3, response.context["all_count"])
+        self.assertEqual(2, response.context["unread_count"])
 
         response = self.client.get(all_url)
-        verbs = [notice.verb for notice in response.context["notifications"]]
-        self.assertEqual(["Unread", "Read"], verbs)
+        expected = {"dataspace": ["Updated"], "owner": ["Unread", "Read"]}
+        self.assertEqual(expected, get_verbs_by_model(response.context["grouped_notifications"]))
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_global_search_list_view(self):
