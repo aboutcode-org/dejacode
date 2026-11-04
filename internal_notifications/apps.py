@@ -10,6 +10,9 @@ from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
 
-class NotificationsConfig(AppConfig):
-    name = "notifications"
+class InternalNotificationsConfig(AppConfig):
+    name = "internal_notifications"
+    # Label of the former django-notifications-patched app: keeps the table,
+    # the migration history, and the content types unchanged.
+    label = "notifications"
     verbose_name = _("Notifications")

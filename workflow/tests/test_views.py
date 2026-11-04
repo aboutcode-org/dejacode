@@ -29,7 +29,7 @@ from dje.tests import MaxQueryMixin
 from dje.tests import add_perm
 from dje.tests import create_superuser
 from dje.tests import create_user
-from notifications.models import Notification
+from internal_notifications.models import Notification
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus

@@ -242,76 +242,55 @@ let
         print("Processing {}/{}: {}".format(idx + 1, deps_size, dep["name"]))
         name = dep["name"]
         version = dep["version"]
-        # Handle 'django_notifications_patched' seperately
-        if name == "django_notifications_patched":
-            if name == "django_notifications_patched" and version == "2.0.0":
-                nix_content += "    " + name + " = self.buildPythonPackage rec {\n"
-                nix_content += '        pname = "django_notifications_patched";\n'
-                nix_content += '        version = "2.0.0";\n'
-                nix_content += '        format = "setuptools";\n'
-                nix_content += "        doCheck = false;\n"
-                nix_content += "        src = pkgs.fetchFromGitHub {\n"
-                nix_content += '           owner = "dejacode";\n'
-                nix_content += '           repo = "django-notifications-patched";\n'
-                nix_content += '           rev = "2.0.0";\n'
-                nix_content += '           url = "https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz";\n'
-                nix_content += (
-                    '           sha256 = "sha256-RDAp2PKWa2xA5ge25VqkmRm8HCYVS4/fq2xKc80LDX8=";\n'
-                )
-                nix_content += "        };\n"
-                nix_content += "    };\n"
-            else:
-                need_review_packages_list.append(dep)
-        else:
-            url = "https://pypi.org/pypi/{name}/{version}/json".format(name=name, version=version)
-            try:
-                response = requests.get(url, timeout=30)
-                response.raise_for_status()
-                data = response.json()
+        url = "https://pypi.org/pypi/{name}/{version}/json".format(name=name, version=version)
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            data = response.json()
 
-                url_section = data.get("urls", [])
-                build_from_src = True
-                package_added = False
+            url_section = data.get("urls", [])
+            build_from_src = True
+            package_added = False
 
+            for component in url_section:
+                if component.get("packagetype") == "bdist_wheel":
+                    whl_url = component.get("url")
+                    if not is_compatible_wheel(whl_url, py_version_major, py_version_minor):
+                        continue
+                    whl_sha256 = get_sha256_hash(whl_url)
+                    nix_content += "    " + name + " = buildCustomPackage {\n"
+                    nix_content += '        pname = "' + name + '";\n'
+                    nix_content += '        version = "' + version + '";\n'
+                    nix_content += '        format = "wheel";\n'
+                    nix_content += "        src = pkgs.fetchurl {\n"
+                    nix_content += '          url = "' + whl_url + '";\n'
+                    nix_content += '          sha256 = "' + whl_sha256 + '";\n'
+                    nix_content += "        };\n"
+                    nix_content += "    };\n"
+                    build_from_src = False
+                    package_added = True
+                    break
+
+            if build_from_src:
                 for component in url_section:
-                    if component.get("packagetype") == "bdist_wheel":
-                        whl_url = component.get("url")
-                        if not is_compatible_wheel(whl_url, py_version_major, py_version_minor):
-                            continue
-                        whl_sha256 = get_sha256_hash(whl_url)
+                    if component.get("packagetype") == "sdist":
+                        sdist_url = component.get("url")
+                        sdist_sha256 = get_sha256_hash(sdist_url)
                         nix_content += "    " + name + " = buildCustomPackage {\n"
                         nix_content += '        pname = "' + name + '";\n'
                         nix_content += '        version = "' + version + '";\n'
-                        nix_content += '        format = "wheel";\n'
+                        nix_content += '        format = "setuptools";\n'
                         nix_content += "        src = pkgs.fetchurl {\n"
-                        nix_content += '          url = "' + whl_url + '";\n'
-                        nix_content += '          sha256 = "' + whl_sha256 + '";\n'
+                        nix_content += '          url = "' + sdist_url + '";\n'
+                        nix_content += '          sha256 = "' + sdist_sha256 + '";\n'
                         nix_content += "        };\n"
                         nix_content += "    };\n"
-                        build_from_src = False
                         package_added = True
                         break
-
-                if build_from_src:
-                    for component in url_section:
-                        if component.get("packagetype") == "sdist":
-                            sdist_url = component.get("url")
-                            sdist_sha256 = get_sha256_hash(sdist_url)
-                            nix_content += "    " + name + " = buildCustomPackage {\n"
-                            nix_content += '        pname = "' + name + '";\n'
-                            nix_content += '        version = "' + version + '";\n'
-                            nix_content += '        format = "setuptools";\n'
-                            nix_content += "        src = pkgs.fetchurl {\n"
-                            nix_content += '          url = "' + sdist_url + '";\n'
-                            nix_content += '          sha256 = "' + sdist_sha256 + '";\n'
-                            nix_content += "        };\n"
-                            nix_content += "    };\n"
-                            package_added = True
-                            break
-                if not package_added:
-                    need_review_packages_list.append(dep)
-            except requests.exceptions.RequestException:
+            if not package_added:
                 need_review_packages_list.append(dep)
+        except requests.exceptions.RequestException:
+            need_review_packages_list.append(dep)
 
     nix_content += """
   };

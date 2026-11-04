@@ -10,7 +10,7 @@ from django.test import TestCase
 
 from dje.models import Dataspace
 from dje.tests import create_user
-from notifications.models import Notification
+from internal_notifications.models import Notification
 
 
 class NotificationModelTestCase(TestCase):

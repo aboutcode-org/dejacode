@@ -29,7 +29,7 @@ from dje.tests import add_perm
 from dje.tests import create
 from dje.tests import create_superuser
 from dje.tests import create_user
-from notifications.models import Notification
+from internal_notifications.models import Notification
 
 Owner = apps.get_model("organization", "Owner")
 Component = apps.get_model("component_catalog", "Component")

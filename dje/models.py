@@ -49,7 +49,7 @@ from django.utils.translation import gettext_lazy as _
 from aboutcode.api_auth import AbstractAPIToken
 from dje.fields import LastModifiedByField
 from dje.tasks import send_mail_task
-from notifications.models import Notification
+from internal_notifications.models import Notification
 
 logger = logging.getLogger("dje")
 
@@ -1880,7 +1880,7 @@ class DejacodeUser(DataspaceForeignKeyValidationMixin, AbstractUser):
         }
 
     def send_internal_notification(self, verb, **data):
-        """Similar to ``notify.send`` without relying on the Signal system."""
+        """Create an internal Notification sent by and to this user."""
         return Notification.objects.create(
             recipient=self,
             actor=self,

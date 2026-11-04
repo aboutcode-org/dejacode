@@ -39,9 +39,9 @@ from dje.tests import MaxQueryMixin
 from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
+from internal_notifications.models import Notification
 from license_library.models import License
 from license_library.tests import make_license
-from notifications.models import Notification
 from organization.models import Owner
 from policy.models import UsagePolicy
 from policy.tests import make_usage_policy

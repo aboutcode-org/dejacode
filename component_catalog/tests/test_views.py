@@ -58,12 +58,12 @@ from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
 from dje.views import PaginationMixin
+from internal_notifications.models import Notification
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from license_library.models import LicenseTag
 from license_library.models import LicenseTagGroup
 from license_library.models import LicenseTagGroupAssignedTag
-from notifications.models import Notification
 from organization.models import Owner
 from organization.models import Subowner
 from policy.models import UsagePolicy

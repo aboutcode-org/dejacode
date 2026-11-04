@@ -10,7 +10,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from dje.tasks import send_mail_task
-from notifications.models import Notification
+from internal_notifications.models import Notification
 
 # WARNING: Using the name `req` in place of `request` for Request instance,
 # to avoid any conflict, especially in template contexts,

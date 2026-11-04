@@ -329,7 +329,6 @@ PREREQ_APPS = [
     "crispy_bootstrap5",
     "guardian",
     "django_filters",
-    "notifications",
     "axes",
     "django_otp",
     "django_otp.plugins.otp_totp",
@@ -346,6 +345,7 @@ PROJECT_APPS = [
     "purldb",
     "policy",
     "notification",
+    "internal_notifications",
     "vulnerabilities",
     "vulnerabilities.triage",
 ]
