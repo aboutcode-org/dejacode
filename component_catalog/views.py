@@ -34,6 +34,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.html import escape
 from django.utils.html import format_html
 from django.utils.html import mark_safe
+from django.utils.http import urlencode
 from django.utils.text import normalize_newlines
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -46,6 +47,7 @@ from django.views.generic.edit import BaseFormView
 
 from crispy_forms.utils import render_crispy_form
 from packageurl import PackageURL
+from packageurl.contrib.django.utils import purl_to_lookups
 
 from component_catalog.filters import ComponentFilterSet
 from component_catalog.filters import PackageFilterSet
@@ -253,6 +255,19 @@ def include_type(view_instance):
     return view_instance.dataspace.show_type_in_component_list_view
 
 
+def get_packages_for_package_url(packages, package_url):
+    """Return the `packages` matching `package_url`, same as `for_package_url`."""
+    lookups = purl_to_lookups(package_url)
+    if not lookups:
+        return []
+
+    return [
+        package
+        for package in packages
+        if all(getattr(package, field_name) == value for field_name, value in lookups.items())
+    ]
+
+
 class TabVulnerabilityMixin:
     template = "component_catalog/tabs/tab_vulnerabilities.html"
 
@@ -267,9 +282,20 @@ class TabVulnerabilityMixin:
             f"{len(vulnerabilities_qs)}</span>"
         )
 
+        fixed_by_package_urls = {
+            package_url
+            for vulnerability in vulnerabilities_qs
+            for package_url in vulnerability.fixed_by_packages
+        }
+        fixed_packages = list(
+            Package.objects.scope(self.object.dataspace)
+            .for_package_urls(fixed_by_package_urls)
+            .only_rendering_fields()
+        )
+
         vulnerabilities = []
         for vulnerability in vulnerabilities_qs:
-            fixed_packages_html = self.get_fixed_packages_html(vulnerability, self.object.dataspace)
+            fixed_packages_html = self.get_fixed_packages_html(vulnerability, fixed_packages)
             vulnerability.fixed_packages_html = fixed_packages_html
             vulnerabilities.append(vulnerability)
 
@@ -283,7 +309,7 @@ class TabVulnerabilityMixin:
             "label": mark_safe(label),
         }
 
-    def get_fixed_packages_html(self, vulnerability, dataspace):
+    def get_fixed_packages_html(self, vulnerability, fixed_packages):
         if not vulnerability.fixed_by_packages:
             return
 
@@ -292,7 +318,7 @@ class TabVulnerabilityMixin:
 
         fixed_packages_values = []
         for purl in fixed_packages_sorted:
-            package_instances = Package.objects.scope(dataspace).for_package_url(purl)
+            package_instances = get_packages_for_package_url(fixed_packages, purl)
 
             for package in package_instances:
                 display_value = package.get_html_link(href=package.get_absolute_url())
@@ -301,15 +327,18 @@ class TabVulnerabilityMixin:
             if not package_instances:
                 # Warning: do not add spaces between HTML elements as this content
                 # is displayed in a <pre>
-                display_value = (
-                    f"{purl.replace('pkg:', '')}"
-                    f'<a href="{add_package_url}?package_url={purl}"'
-                    f'   class="ms-1" target="_blank">'
-                    f'<span data-bs-toggle="tooltip" title="Add Package"'
-                    f'      data-boundary="viewport">'
-                    f'<i class="fas fa-plus-circle"></i>'
-                    f"</span>"
-                    f"</a>"
+                display_value = format_html(
+                    "{}"
+                    '<a href="{}?{}"'
+                    '   class="ms-1" target="_blank">'
+                    '<span data-bs-toggle="tooltip" title="Add Package"'
+                    '      data-boundary="viewport">'
+                    '<i class="fas fa-plus-circle"></i>'
+                    "</span>"
+                    "</a>",
+                    purl.replace("pkg:", ""),
+                    add_package_url,
+                    urlencode({"package_url": purl}),
                 )
                 fixed_packages_values.append(display_value)
 

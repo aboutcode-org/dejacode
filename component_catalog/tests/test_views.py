@@ -16,10 +16,12 @@ from urllib.parse import quote
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.base import SessionBase
+from django.db import connection
 from django.http.response import Http404
 from django.test import TestCase
 from django.test import TransactionTestCase
 from django.test.client import RequestFactory
+from django.test.utils import CaptureQueriesContext
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -44,6 +46,7 @@ from component_catalog.views import ComponentAddView
 from component_catalog.views import ComponentListView
 from component_catalog.views import PackageListView
 from component_catalog.views import PackageTabScanView
+from component_catalog.views import get_packages_for_package_url
 from dejacode_toolkit.scancodeio import get_webhook_url
 from dejacode_toolkit.vulnerablecode import VulnerableCode
 from dejacode_toolkit.vulnerablecode import get_plain_purls
@@ -3173,7 +3176,78 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         self.assertContains(response, fixing_package.get_absolute_url())
         # An unknown package offers an "Add Package" link instead.
         self.assertContains(response, "idna@9.9.9")
-        self.assertContains(response, "package_url=pkg:pypi/idna@9.9.9")
+        self.assertContains(response, "package_url=pkg%3Apypi%2Fidna%409.9.9")
+
+    def test_package_details_view_tab_vulnerabilities_fixed_by_packages_escaped(self):
+        self.vulnerability1.fixed_by_packages = ["pkg:pypi/idna@<img src=x onerror=alert(1)>"]
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+
+        self.assertNotContains(response, "<img src=x onerror=alert(1)>")
+        self.assertContains(response, "pypi/idna@&lt;img src=x onerror=alert(1)&gt;")
+
+    def test_package_details_view_tab_vulnerabilities_fixed_by_packages_qualifiers(self):
+        self.vulnerability1.fixed_by_packages = [
+            "pkg:deb/debian/curl@7.50.3-1?arch=i386&distro=jessie"
+        ]
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        response = self.client.get(self.package1.details_url)
+
+        expected = (
+            "package_url=pkg%3Adeb%2Fdebian%2Fcurl%407.50.3-1%3Farch%3Di386%26distro%3Djessie"
+        )
+        self.assertContains(response, expected)
+
+    def test_package_details_view_tab_vulnerabilities_fixed_by_packages_num_queries(self):
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.7")
+        self.vulnerability1.fixed_by_packages = ["pkg:pypi/idna@3.7"]
+        self.vulnerability1.save()
+
+        self.client.login(username=self.super_user.username, password="secret")
+        # Warm up the caches so both measured requests start from the same state.
+        self.client.get(self.package1.details_url)
+        with CaptureQueriesContext(connection) as single_fixed_package_queries:
+            self.client.get(self.package1.details_url)
+
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.8")
+        make_package(self.dataspace, package_url="pkg:pypi/idna@3.9")
+        self.vulnerability1.fixed_by_packages = [
+            "pkg:pypi/idna@3.7",
+            "pkg:pypi/idna@3.8",
+            "pkg:pypi/idna@3.9",
+            "pkg:pypi/idna@9.9.9",
+        ]
+        self.vulnerability1.save()
+        with CaptureQueriesContext(connection) as multiple_fixed_packages_queries:
+            self.client.get(self.package1.details_url)
+
+        self.assertEqual(len(single_fixed_package_queries), len(multiple_fixed_packages_queries))
+
+    def test_package_views_get_packages_for_package_url(self):
+        django_package = make_package(self.dataspace, package_url="pkg:pypi/django@5.0")
+        django_qualified_package = make_package(
+            self.dataspace, package_url="pkg:pypi/django@5.0?qualifier=true"
+        )
+        django_old_package = make_package(self.dataspace, package_url="pkg:pypi/django@4.2")
+        packages = [django_package, django_qualified_package, django_old_package]
+
+        matched_packages = get_packages_for_package_url(packages, "pkg:pypi/django@5.0")
+        self.assertEqual([django_package, django_qualified_package], matched_packages)
+
+        matched_packages = get_packages_for_package_url(
+            packages, "pkg:pypi/django@5.0?qualifier=true"
+        )
+        self.assertEqual([django_qualified_package], matched_packages)
+
+        matched_packages = get_packages_for_package_url(packages, "pkg:pypi/django")
+        self.assertEqual(packages, matched_packages)
+
+        self.assertEqual([], get_packages_for_package_url(packages, "invalid"))
+        self.assertEqual([], get_packages_for_package_url([], "pkg:pypi/django@5.0"))
 
     def test_package_details_view_tab_vulnerabilities_curation_badges(self):
         DataspaceConfiguration.objects.create(
