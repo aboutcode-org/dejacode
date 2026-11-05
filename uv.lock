@@ -1,6 +1,6 @@
 version = 1
 revision = 5
-requires-python = "==3.14.*"
+requires-python = "==3.15.*"
 resolution-markers = [
     "sys_platform == 'linux'",
     "sys_platform == 'darwin'",
@@ -70,8 +70,8 @@ name = "charset-normalizer"
 version = "3.5.2"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "charset_normalizer-3.5.2-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "charset_normalizer-3.5.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "charset_normalizer-3.5.2-cp315-cp315-macosx_10_15_universal2.whl" },
+    { path = "charset_normalizer-3.5.2-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -128,6 +128,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cython"
+version = "3.3.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "cython-3.3.1-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "cython-3.3.1-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+]
+
+[[package]]
 name = "defusedxml"
 version = "0.7.1"
 source = { registry = "thirdparty/dist" }
@@ -152,6 +161,7 @@ dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "croniter" },
     { name = "cyclonedx-python-lib" },
+    { name = "cython" },
     { name = "defusedxml" },
     { name = "django" },
     { name = "django-altcha" },
@@ -229,6 +239,7 @@ requires-dist = [
     { name = "crispy-bootstrap5", specifier = "==2026.9" },
     { name = "croniter", specifier = "==6.2.4" },
     { name = "cyclonedx-python-lib", specifier = "==11.12.0" },
+    { name = "cython", specifier = "==3.3.1" },
     { name = "defusedxml", specifier = "==0.7.1" },
     { name = "django", specifier = "==6.1.2" },
     { name = "django-altcha", specifier = "==1.0.0" },
@@ -522,8 +533,8 @@ name = "lxml"
 version = "6.1.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "lxml-6.1.3-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "lxml-6.1.3-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "lxml-6.1.3-cp315-cp315-macosx_10_15_universal2.whl" },
+    { path = "lxml-6.1.3-cp315-cp315-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -550,8 +561,8 @@ name = "msgspec"
 version = "0.22.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "msgspec-0.22.0-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "msgspec-0.22.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "msgspec-0.22.0-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "msgspec-0.22.0-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -653,8 +664,8 @@ dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "pydantic_core-2.50.2-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "pydantic_core-2.50.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
+    { path = "pydantic_core-2.50.2-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "pydantic_core-2.50.2-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
 ]
 
 [[package]]
@@ -692,10 +703,6 @@ name = "pyyaml"
 version = "6.0.3"
 source = { registry = "thirdparty/dist" }
 sdist = { path = "pyyaml-6.0.3.tar.gz" }
-wheels = [
-    { path = "pyyaml-6.0.3-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
-]
 
 [[package]]
 name = "qrcode"
