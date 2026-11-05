@@ -58,10 +58,6 @@ def build_deb_with_docker():
     # Get all dependencies
     dependencies = project.get("dependencies", [])
 
-    filtered_dependencies = [
-        dep for dep in dependencies if "django_notifications_patched" not in dep
-    ]
-
     docker_cmd = [
         "docker",
         "run",
@@ -95,11 +91,8 @@ def build_deb_with_docker():
             # Clean previous build artifacts
             rm -rf build/
 
-            # Install non-PyPI dependencies
-            pip install https://github.com/dejacode/django-notifications-patched/archive/refs/tags/2.0.0.tar.gz
-
             # Install dependencies directly
-            {" && ".join([f'pip install "{dep}"' for dep in filtered_dependencies])}
+            {" && ".join([f'pip install "{dep}"' for dep in dependencies])}
 
             # Install build tool
             pip install build

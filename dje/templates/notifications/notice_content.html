@@ -9,12 +9,9 @@
     {% elif action_object_content_type|slugify == 'package' %}
       <i>(object not found)</i>
     {% endif %}
-    {% if notice.target %}
-      of {{ notice.target }}
-    {% endif %}
   </div>
   <small class="text-muted">
-    {{ notice.timesince }} ago
+    {{ notice.timestamp|timesince }} ago
   </small>
 </div>
 {% if notice.description %}

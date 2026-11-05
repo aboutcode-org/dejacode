@@ -19,6 +19,7 @@ graft dejacode_toolkit
 graft dje
 graft docs
 graft etc
+graft internal_notifications
 graft license_library
 graft notification
 graft organization

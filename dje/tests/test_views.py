@@ -20,7 +20,6 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from guardian.shortcuts import assign_perm
-from notifications.models import Notification
 
 from dje.models import Dataspace
 from dje.models import DataspaceConfiguration
@@ -30,6 +29,7 @@ from dje.tests import add_perm
 from dje.tests import create
 from dje.tests import create_superuser
 from dje.tests import create_user
+from internal_notifications.models import Notification
 
 Owner = apps.get_model("organization", "Owner")
 Component = apps.get_model("component_catalog", "Component")
@@ -382,6 +382,49 @@ class DJEViewsTestCase(TestCase):
         response = self.client.post(url)
         self.assertRedirects(response, unread_url)
         self.assertEqual(0, self.user.notifications.unread().count())
+
+    def test_notifications_list_views(self):
+        def get_verbs_by_model(grouped_notifications):
+            return {
+                content_type.model: [notice.verb for notice in notices]
+                for content_type, notices in grouped_notifications.items()
+            }
+
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.user,
+            verb="Read",
+            action_object=self.owner1,
+            unread=False,
+        )
+        Notification.objects.create(
+            recipient=self.user, actor=self.super_user, verb="Unread", action_object=self.owner1
+        )
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.super_user,
+            verb="Updated",
+            action_object=self.dataspace1,
+        )
+        Notification.objects.create(
+            recipient=self.super_user, actor=self.user, verb="Other", action_object=self.owner1
+        )
+        unread_url = reverse("notifications:unread")
+        all_url = reverse("notifications:all")
+
+        response = self.client.get(unread_url)
+        self.assertRedirects(response, f"{reverse('login')}?next={unread_url}")
+
+        self.client.login(username=self.user.username, password="secret")
+        response = self.client.get(unread_url)
+        expected = {"dataspace": ["Updated"], "owner": ["Unread"]}
+        self.assertEqual(expected, get_verbs_by_model(response.context["grouped_notifications"]))
+        self.assertEqual(3, response.context["all_count"])
+        self.assertEqual(2, response.context["unread_count"])
+
+        response = self.client.get(all_url)
+        expected = {"dataspace": ["Updated"], "owner": ["Unread", "Read"]}
+        self.assertEqual(expected, get_verbs_by_model(response.context["grouped_notifications"]))
 
     @override_settings(REFERENCE_DATASPACE="Dataspace")
     def test_global_search_list_view(self):

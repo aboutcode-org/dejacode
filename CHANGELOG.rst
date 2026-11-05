@@ -1,6 +1,12 @@
 Release notes
 =============
 
+### Version 6.1.0
+
+**Upgrade prerequisite:** upgrade to DejaCode 6.0.x and run its migrations before upgrading to this version. The internal notifications app replaces the django-notifications-patched dependency and requires the 6.0.x database schema.
+
+This release removes unused columns from the notifications table: back up the database before upgrading, as a rollback to an earlier version requires a database restore.
+
 ### Version 6.0.1
 
 * fix: relink cloned codebase resources to the cloned inventory #601 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/602

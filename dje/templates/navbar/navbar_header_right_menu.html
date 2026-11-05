@@ -1,5 +1,4 @@
 {% load i18n static %}
-{% load has_notification from notifications_tags %}
 
 {% block right-nav %}
   <li class="nav-item">
@@ -23,7 +22,7 @@
       <hr class="d-md-none my-2 text-white-50">
     </li>
     <li class="nav-item">
-      {% if user|has_notification %}
+      {% if user.notifications.unread.exists %}
         <a class="nav-link px-md-3 position-relative" href="{% url 'notifications:unread' %}" title="Unread notifications" data-bs-toggle="tooltip" aria-label="Unread notifications">
           <i class="fa-solid fa-bell"></i>
           <span class="d-none d-md-inline position-absolute translate-middle p-1 bg-danger rounded-circle"></span>

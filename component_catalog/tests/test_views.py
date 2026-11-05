@@ -28,7 +28,6 @@ from django.utils import timezone
 from django.utils.encoding import force_str
 
 from guardian.shortcuts import assign_perm
-from notifications.models import Notification
 
 from component_catalog.forms import ComponentAddToProductForm
 from component_catalog.forms import ComponentForm
@@ -62,6 +61,7 @@ from dje.tests import add_perms
 from dje.tests import create_superuser
 from dje.tests import create_user
 from dje.views import PaginationMixin
+from internal_notifications.models import Notification
 from license_library.models import License
 from license_library.models import LicenseAssignedTag
 from license_library.models import LicenseTag
