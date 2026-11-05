@@ -117,13 +117,13 @@ upgrade:
 		--platform manylinux_2_28_x86_64 \
 		--platform manylinux_2_17_x86_64 \
 		--platform manylinux_2_12_x86_64 \
-		--python-version 3.14 \
+		--python-version 3.15 \
 		--dest ./thirdparty/dist/
 	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
 	uvx pip download $(PACKAGE) \
 		--only-binary=:all: \
 		--platform macosx_11_0_arm64 \
-		--python-version 3.14 \
+		--python-version 3.15 \
 		--dest ./thirdparty/dist/
 	@echo "-> Update pyproject.toml and uv.lock"
 	uvx uv add $(PACKAGE)
