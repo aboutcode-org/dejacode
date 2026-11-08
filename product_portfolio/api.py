@@ -562,8 +562,9 @@ class ProductViewSet(
         Clone this Product into a new one.
 
         Always copies the base Product fields under the given name/version.
-        Optionally copies the inventory (Components, Packages, and Dependencies),
-        Codebase resources, Vulnerability triage rules, and object Permissions,
+        Optionally copies the inventory (Components, Packages, Dependencies, and
+        vulnerability analyses), Codebase resources and deployment links, Vulnerability
+        triage rules, and object Permissions,
         depending on the submitted flags (all default to true).
         """
         product = self.get_object()

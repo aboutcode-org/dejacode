@@ -583,8 +583,26 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
 
     def test_api_product_endpoint_clone_action(self):
         url = reverse("api_v2:product-clone", args=[self.product1.uuid])
-        make_product_package(self.product1)
+        product_package = make_product_package(self.product1)
         make_product_triage_ruleset(self.product1)
+        vulnerability = make_vulnerability(
+            self.product1.dataspace, affecting=[product_package.package]
+        )
+        source_analysis = make_vulnerability_analysis(product_package, vulnerability)
+        deployed_from = CodebaseResource.objects.create(
+            product=self.product1, path="/src/", dataspace=self.product1.dataspace
+        )
+        deployed_to = CodebaseResource.objects.create(
+            product=self.product1,
+            path="/deploy/",
+            is_deployment_path=True,
+            dataspace=self.product1.dataspace,
+        )
+        source_usage = CodebaseResourceUsage.objects.create(
+            dataspace=self.product1.dataspace,
+            deployed_from=deployed_from,
+            deployed_to=deployed_to,
+        )
 
         self.client.login(username=self.base_user.username, password="secret")
         response = self.client.get(url)
@@ -615,6 +633,15 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(str(cloned_product.uuid), response.data["uuid"])
         self.assertEqual(1, cloned_product.productpackages.count())
         self.assertEqual(1, cloned_product.product_triage_rulesets.count())
+        cloned_analysis = cloned_product.vulnerability_analyses.get()
+        self.assertEqual(cloned_product.productpackages.get(), cloned_analysis.product_package)
+        self.assertEqual(source_analysis.state, cloned_analysis.state)
+        self.assertEqual(source_analysis.justification, cloned_analysis.justification)
+        self.assertEqual(source_analysis.responses, cloned_analysis.responses)
+        self.assertEqual(source_analysis.detail, cloned_analysis.detail)
+        cloned_usage = CodebaseResourceUsage.objects.get(deployed_from__product=cloned_product)
+        self.assertNotEqual(source_usage.deployed_from_id, cloned_usage.deployed_from_id)
+        self.assertNotEqual(source_usage.deployed_to_id, cloned_usage.deployed_to_id)
 
         # Submitting the same name/version again is rejected
         response = self.client.post(url, data)
@@ -625,6 +652,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
             "name": self.product1.name,
             "version": "3.0",
             "copy_inventory": False,
+            "copy_codebase_resources": False,
             "copy_triage_rulesets": False,
         }
         response = self.client.post(url, data)
@@ -632,6 +660,11 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         empty_clone = Product.objects.get_queryset(self.base_user).get(version="3.0")
         self.assertEqual(0, empty_clone.productpackages.count())
         self.assertEqual(0, empty_clone.product_triage_rulesets.count())
+        self.assertEqual(0, empty_clone.vulnerability_analyses.count())
+        self.assertEqual(0, empty_clone.codebaseresources.count())
+        self.assertEqual(
+            0, CodebaseResourceUsage.objects.filter(deployed_from__product=empty_clone).count()
+        )
 
     def test_api_product_endpoint_import_from_scan_action(self):
         url = reverse("api_v2:product-import-from-scan", args=[self.product1.uuid])
