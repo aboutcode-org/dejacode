@@ -49,6 +49,7 @@ from product_portfolio.forms import ProductForm
 from product_portfolio.forms import ProductGridConfigurationForm
 from product_portfolio.forms import ProductPackageForm
 from product_portfolio.models import CodebaseResource
+from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductItemPurpose
@@ -2165,74 +2166,35 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         expected = f"Product &quot;{self.product1}&quot; was successfully updated."
         self.assertContains(response, expected)
 
-    def test_product_portfolio_product_update_save_as_new(self):
-        self.client.login(username=self.super_user.username, password="secret")
-
-        self.assertTrue(self.super_user.is_superuser)
+    def test_product_portfolio_product_update_does_not_expose_save_as_new(self):
+        self.client.force_login(self.super_user)
         add_url = reverse("product_portfolio:product_add")
         response = self.client.get(add_url)
         expected = 'value="Save as new"'
         self.assertNotContains(response, expected)
 
-        self.super_user.is_superuser = False
-        self.super_user.is_staff = False
-        self.super_user.save()
-        self.super_user = add_perms(self.super_user, ["change_product"])
-        assign_perm("change_product", self.super_user, self.product1)
         change_url = self.product1.get_change_url()
         response = self.client.get(change_url)
         self.assertNotContains(response, expected)
+        self.assertNotContains(response, 'name="save_as_new"')
 
-        self.super_user = add_perms(self.super_user, ["add_product"])
-        response = self.client.get(change_url)
-        self.assertContains(response, expected)
-
-        product_component = ProductComponent.objects.create(
-            product=self.product1, component=self.component1, dataspace=self.dataspace
-        )
-        product_package = ProductPackage.objects.create(
+    @patch("product_portfolio.importers.reevaluate_products")
+    def test_product_portfolio_product_clone_view_reevaluates_once(self, mock_reevaluate):
+        self.client.force_login(self.basic_user)
+        assign_perm("change_product", self.basic_user, self.product1)
+        self.basic_user = add_perms(self.basic_user, ["add_product"])
+        ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        CodebaseResource.objects.create(
-            path="/path1/",
-            product=self.product1,
-            product_component=product_component,
-            product_package=product_package,
-            dataspace=self.dataspace,
+
+        response = self.client.post(
+            self.product1.get_clone_url(),
+            {"name": self.product1.name, "version": "2.0", "copy_inventory": "on"},
         )
-        ruleset = TriageRuleset.objects.create(
-            name="Upgrade Ruleset", precedence=100, dataspace=self.dataspace
-        )
-        ProductTriageRuleset.objects.create(
-            product=self.product1, ruleset=ruleset, dataspace=self.dataspace
-        )
-        initial_product_count = Product.objects.get_queryset(self.super_user).count()
 
-        data = {
-            "name": self.product1.name,
-            "version": "new version",
-            "is_active": "on",
-            "save_as_new": "Save as new",
-        }
-
-        response = self.client.post(change_url, data, follow=True)
-
-        new_count = Product.objects.get_queryset(self.super_user).count()
-        self.assertEqual(new_count, initial_product_count + 1)
-        cloned_product = Product.objects.get_queryset(self.super_user).latest("id")
-        self.assertRedirects(response, cloned_product.get_absolute_url())
-        self.assertContains(response, "was successfully cloned.")
-
-        self.assertNotEqual(self.product1.id, cloned_product.id)
-        self.assertEqual(1, cloned_product.productcomponents.count())
-        self.assertEqual(1, cloned_product.productpackages.count())
-        self.assertEqual(1, cloned_product.codebaseresources.count())
-        self.assertEqual(1, cloned_product.product_triage_rulesets.count())
-
-        cloned_resource = cloned_product.codebaseresources.get()
-        self.assertEqual(cloned_product.productcomponents.get(), cloned_resource.product_component)
-        self.assertEqual(cloned_product.productpackages.get(), cloned_resource.product_package)
-        cloned_resource.full_clean()
+        self.assertEqual(302, response.status_code)
+        cloned_product = Product.unsecured_objects.get(name=self.product1.name, version="2.0")
+        mock_reevaluate.assert_called_once_with([cloned_product])
 
     def test_product_portfolio_product_clone_view(self):
         clone_url = self.product1.get_clone_url()
@@ -2259,11 +2221,18 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
             license_expression=license1.key,
             dataspace=self.dataspace,
         )
-        ProductPackage.objects.create(
+        product_package = ProductPackage.objects.create(
             product=self.product1,
             package=self.package1,
             license_expression=license1.key,
             dataspace=self.dataspace,
+        )
+        vulnerability = make_vulnerability(self.dataspace, affecting=[self.package1])
+        source_analysis = make_vulnerability_analysis(
+            product_package,
+            vulnerability,
+            is_reachable=True,
+            state=VulnerabilityAnalysis.State.EXPLOITABLE,
         )
         CodebaseResource.objects.create(
             path="/path1/", product=self.product1, dataspace=self.dataspace
@@ -2308,6 +2277,14 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         cloned_productpackage = cloned_product.productpackages.get()
         self.assertEqual(license1.key, cloned_productpackage.license_expression)
         self.assertEqual([license1], list(cloned_productpackage.licenses.all()))
+        cloned_analysis = cloned_product.vulnerability_analyses.get()
+        self.assertEqual(cloned_productpackage, cloned_analysis.product_package)
+        self.assertEqual(source_analysis.state, cloned_analysis.state)
+        self.assertEqual(source_analysis.justification, cloned_analysis.justification)
+        self.assertEqual(source_analysis.responses, cloned_analysis.responses)
+        self.assertEqual(source_analysis.is_reachable, cloned_analysis.is_reachable)
+        self.assertEqual(source_analysis.detail, cloned_analysis.detail)
+        self.assertNotEqual(source_analysis.pk, cloned_analysis.pk)
 
         # Submitting the same name/version again is rejected.
         response = self.client.post(clone_url, data)
@@ -2328,6 +2305,7 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(0, empty_clone.codebaseresources.count())
         self.assertEqual(0, empty_clone.dependencies.count())
         self.assertEqual(0, empty_clone.product_triage_rulesets.count())
+        self.assertEqual(0, empty_clone.vulnerability_analyses.count())
         self.assertNotIn("view_product", get_user_perms(self.super_user, empty_clone))
 
     def test_product_portfolio_product_clone_view_relinks_codebase_resources(self):
@@ -2340,12 +2318,23 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         product_package = ProductPackage.objects.create(
             product=self.product1, package=self.package1, dataspace=self.dataspace
         )
-        CodebaseResource.objects.create(
+        deployed_from = CodebaseResource.objects.create(
             path="/path1/",
             product=self.product1,
             product_component=product_component,
             product_package=product_package,
             dataspace=self.dataspace,
+        )
+        deployed_to = CodebaseResource.objects.create(
+            path="/deploy/path1/",
+            product=self.product1,
+            is_deployment_path=True,
+            dataspace=self.dataspace,
+        )
+        source_usage = CodebaseResourceUsage.objects.create(
+            dataspace=self.dataspace,
+            deployed_from=deployed_from,
+            deployed_to=deployed_to,
         )
 
         data = {
@@ -2356,24 +2345,41 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         }
         self.client.post(clone_url, data)
         cloned_product = Product.unsecured_objects.get(name=self.product1.name, version="2.0")
-        cloned_resource = cloned_product.codebaseresources.get()
+        cloned_resource = cloned_product.codebaseresources.get(path="/path1/")
         self.assertEqual(cloned_product.productcomponents.get(), cloned_resource.product_component)
         self.assertEqual(cloned_product.productpackages.get(), cloned_resource.product_package)
         cloned_resource.full_clean()
+        cloned_usage = CodebaseResourceUsage.objects.get(deployed_from__product=cloned_product)
+        self.assertEqual(cloned_product, cloned_usage.deployed_from.product)
+        self.assertEqual(cloned_product, cloned_usage.deployed_to.product)
+        self.assertNotEqual(source_usage.deployed_from_id, cloned_usage.deployed_from_id)
+        self.assertNotEqual(source_usage.deployed_to_id, cloned_usage.deployed_to_id)
 
         # Without the inventory, the links to the source product relations are cleared.
         data["version"] = "3.0"
         data["copy_inventory"] = ""
         self.client.post(clone_url, data)
         cloned_product = Product.unsecured_objects.get(name=self.product1.name, version="3.0")
-        cloned_resource = cloned_product.codebaseresources.get()
+        cloned_resource = cloned_product.codebaseresources.get(path="/path1/")
         self.assertIsNone(cloned_resource.product_component)
         self.assertIsNone(cloned_resource.product_package)
         cloned_resource.full_clean()
 
-        source_resource = self.product1.codebaseresources.get()
+        source_resource = self.product1.codebaseresources.get(path="/path1/")
         self.assertEqual(product_component, source_resource.product_component)
         self.assertEqual(product_package, source_resource.product_package)
+
+        data["version"] = "4.0"
+        data["copy_codebase_resources"] = ""
+        self.client.post(clone_url, data)
+        empty_resource_clone = Product.unsecured_objects.get(name=self.product1.name, version="4.0")
+        self.assertEqual(0, empty_resource_clone.codebaseresources.count())
+        self.assertEqual(
+            0,
+            CodebaseResourceUsage.objects.filter(
+                deployed_from__product=empty_resource_clone
+            ).count(),
+        )
 
     def test_product_portfolio_product_delete_view(self):
         delete_url = self.product1.get_delete_url()
