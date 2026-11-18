@@ -19,21 +19,26 @@ services:
       retries: 5
 
   redis:
-    image: docker.io/library/redis:8.8-alpine
+    image: docker.io/library/redis:8.10.3-alpine
     # Enable redis data persistence using the "Append Only File" with the
     # default policy of fsync every second. See https://redis.io/topics/persistence
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --loglevel warning
     volumes:
       - redis_data:/data
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
-    image: ghcr.io/aboutcode-org/dejacode:latest
+    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
     command: sh -c "
         ./manage.py migrate &&
         ./manage.py collectstatic --no-input --verbosity 0 --clear &&
         gunicorn dejacode.wsgi:application --bind :8000 --timeout 600 \
-          --workers 4 --worker-tmp-dir /dev/shm"
+          --workers ${GUNICORN_WORKERS:-4} --worker-tmp-dir /dev/shm"
     env_file:
       - docker.env
     expose:
@@ -42,16 +47,17 @@ services:
       - .env:/opt/dejacode/.env
       - static:/var/dejacode/static
       - media:/var/dejacode/media
+    restart: always
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       clamav:
         condition: service_started
 
   worker:
-    image: ghcr.io/aboutcode-org/dejacode:latest
+    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
     # Ensure that potential db migrations run first by waiting until "web" is up
     command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
       ./manage.py rqworker-pool --num-workers 2 --verbosity 1"
@@ -61,25 +67,33 @@ services:
       - .env:/opt/dejacode/.env
       # The media volume is required to access uploaded files from the worker
       - media:/var/dejacode/media
+    restart: always
     depends_on:
-      - redis
-      - db
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
 
   scheduler:
-    image: ghcr.io/aboutcode-org/dejacode:latest
+    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
     command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs"
     env_file:
       - docker.env
     volumes:
       - .env:/opt/dejacode/.env
+    restart: always
     depends_on:
-      - redis
-      - db
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
 
   nginx:
-    image: docker.io/library/nginx:1.30-alpine
+    image: docker.io/library/nginx:1.31.8-alpine-slim
     ports:
       - "${NGINX_PUBLISHED_HTTP_PORT:-80}:80"
       - "${NGINX_PUBLISHED_HTTPS_PORT:-443}:443"

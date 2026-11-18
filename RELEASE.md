@@ -6,6 +6,7 @@
 - Update the version in:
   - `pyproject.toml`
   - `dejacode/__init__.py`
+  - `compose.yml` and `compose.demo.yml` (the `ghcr.io/aboutcode-org/dejacode:vx.x.x` image tag)
   - `CHANGELOG.rst` (set date)
 - Refresh `uv.lock` with `uvx uv lock` and check it with `uvx uv lock --check`
 - Commit and push this branch
