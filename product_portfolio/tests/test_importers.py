@@ -843,6 +843,27 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual([], warnings)
         self.assertEqual({}, created_counts)
 
+    def test_product_portfolio_product_import_from_scan_scanpipe_tool_name(self):
+        # Test import_from_scan using the legacy "scanpipe" tool_name.
+        scan_input_location = self.testfiles_path / "scancodeio_scan_codebase_results.json"
+        scan_data = json.loads(scan_input_location.read_text())
+        scan_data["headers"][0]["tool_name"] = "scanpipe"
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            edited_input_location = Path(tmp_dir) / scan_input_location.name
+            edited_input_location.write_text(json.dumps(scan_data))
+            upload_file = wrap_as_temp_uploaded_file(edited_input_location)
+            importer = ImportFromScan(self.product1, self.super_user, upload_file)
+            warnings, created_counts = importer.save()
+
+        self.assertEqual([], warnings)
+        self.assertEqual(
+            {"Packages": 1, "Product Packages": 1, "Codebase Resources": 3}, created_counts
+        )
+        self.assertEqual(1, self.product1.packages.count())
+        self.assertEqual(1, self.product1.productpackages.count())
+        self.assertEqual(3, self.product1.codebaseresources.count())
+
     def test_product_portfolio_product_import_from_scan_package_without_purl(self):
         scan_input_location = self.testfiles_path / "package_without_purl.json"
         upload_file = wrap_as_temp_uploaded_file(scan_input_location)

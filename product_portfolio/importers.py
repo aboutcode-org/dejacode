@@ -520,7 +520,7 @@ class ImportFromScan:
             scan_options = header.get("options", {}).keys()
             self.validate_toolkit_options(scan_options)
 
-        elif tool_name == "scanpipe":
+        elif tool_name in ("scanpipe", "ScanCode.io"):
             if not (self.data.get("packages") or self.data.get("dependencies")):
                 raise ValidationError(
                     "This ScanCode.io output does not include packages nor dependencies data."
