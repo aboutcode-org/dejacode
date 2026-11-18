@@ -119,6 +119,13 @@ upgrade:
 		--platform manylinux_2_12_x86_64 \
 		--python-version 3.15 \
 		--dest ./thirdparty/dist/
+	@echo "-> Download $(PACKAGE) wheels for Linux ARM64"
+	uvx pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform manylinux_2_28_aarch64 \
+		--platform manylinux_2_17_aarch64 \
+		--python-version 3.15 \
+		--dest ./thirdparty/dist/
 	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
 	uvx pip download $(PACKAGE) \
 		--only-binary=:all: \

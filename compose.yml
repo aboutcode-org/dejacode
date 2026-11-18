@@ -92,7 +92,7 @@ services:
     restart: always
 
   clamav:
-    image: docker.io/clamav/clamav:1.5_base
+    image: docker.io/clamav/clamav:1.5.4_base-debian13-slim
     volumes:
       - clamav_data:/var/lib/clamav
       - media:/var/dejacode/media
