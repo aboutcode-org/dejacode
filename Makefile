@@ -46,7 +46,7 @@ shell:
 # make test              - full suite
 # make test k=<pattern>  - filter by name, e.g. make test k=test_name
 test:
-	${MANAGE} test --noinput --parallel auto $(if $(k),-k $(k),)
+	${COMPOSE} run --rm web ./manage.py test --noinput --parallel auto $(if $(k),-k $(k),)
 
 migrations:
 	@echo "-> Creates new database migrations"
