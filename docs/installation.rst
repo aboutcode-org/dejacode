@@ -83,8 +83,8 @@ Access the application
    <a href="http://localhost/" target="_blank" class="external">http://localhost/</a>
 
 .. note::
-    The pre-built image always corresponds to the most recent release and is tagged
-    ``latest``.
+    ``compose.yml`` pins the pre-built image to the DejaCode release it was
+    downloaded with.
 
 .. _dejacode_command:
 
@@ -100,11 +100,13 @@ The ``dejacode`` command is a thin wrapper around ``docker compose``. All standa
     dejacode ps             # show service status
     dejacode logs -f        # follow all logs
     dejacode logs -f web    # follow logs for a specific service
-    dejacode pull           # pull the latest image
+    dejacode pull           # pull the images defined in compose.yml
     dejacode exec web ./manage.py createsuperuser
 
-To update DejaCode to the latest release::
+To update DejaCode to the latest release, download the latest ``compose.yml``,
+then pull and restart::
 
+    curl -sSL https://raw.githubusercontent.com/aboutcode-org/dejacode/main/compose.yml -o ~/.dejacode/compose.yml
     dejacode pull && dejacode up -d
 
 To completely remove DejaCode and all its data::
@@ -151,6 +153,14 @@ configuration (TLS termination, custom headers, upstream settings, etc.)
 and restart::
 
     dejacode down && dejacode up -d
+
+Web server workers
+^^^^^^^^^^^^^^^^^^
+
+The web service runs 4 Gunicorn workers by default. To change it, set
+``GUNICORN_WORKERS`` in ``~/.dejacode/.env`` and apply::
+
+    dejacode up -d
 
 AboutCode integrations
 ^^^^^^^^^^^^^^^^^^^^^^

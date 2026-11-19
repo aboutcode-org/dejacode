@@ -46,7 +46,7 @@ shell:
 # make test              - full suite
 # make test k=<pattern>  - filter by name, e.g. make test k=test_name
 test:
-	${MANAGE} test --noinput --parallel auto $(if $(k),-k $(k),)
+	${COMPOSE} run --rm web ./manage.py test --noinput --parallel auto $(if $(k),-k $(k),)
 
 migrations:
 	@echo "-> Creates new database migrations"
@@ -117,13 +117,20 @@ upgrade:
 		--platform manylinux_2_28_x86_64 \
 		--platform manylinux_2_17_x86_64 \
 		--platform manylinux_2_12_x86_64 \
-		--python-version 3.14 \
+		--python-version 3.15 \
+		--dest ./thirdparty/dist/
+	@echo "-> Download $(PACKAGE) wheels for Linux ARM64"
+	uvx pip download $(PACKAGE) \
+		--only-binary=:all: \
+		--platform manylinux_2_28_aarch64 \
+		--platform manylinux_2_17_aarch64 \
+		--python-version 3.15 \
 		--dest ./thirdparty/dist/
 	@echo "-> Download $(PACKAGE) wheels for macOS ARM64"
 	uvx pip download $(PACKAGE) \
 		--only-binary=:all: \
 		--platform macosx_11_0_arm64 \
-		--python-version 3.14 \
+		--python-version 3.15 \
 		--dest ./thirdparty/dist/
 	@echo "-> Update pyproject.toml and uv.lock"
 	uvx uv add $(PACKAGE)

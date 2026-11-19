@@ -5,9 +5,13 @@ x-description: "Build override: builds the app image from source instead of usin
 services:
   web:
     build: .
+    image: dejacode:local
+    pull_policy: build
 
   worker:
-    build: .
+    image: dejacode:local
+    pull_policy: never
 
   scheduler:
-    build: .
+    image: dejacode:local
+    pull_policy: never

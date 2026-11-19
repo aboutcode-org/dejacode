@@ -1,6 +1,6 @@
 version = 1
 revision = 5
-requires-python = "==3.14.*"
+requires-python = "==3.15.*"
 resolution-markers = [
     "sys_platform == 'linux'",
     "sys_platform == 'darwin'",
@@ -70,16 +70,17 @@ name = "charset-normalizer"
 version = "3.5.2"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "charset_normalizer-3.5.2-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "charset_normalizer-3.5.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "charset_normalizer-3.5.2-cp315-cp315-macosx_10_15_universal2.whl" },
+    { path = "charset_normalizer-3.5.2-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl" },
+    { path = "charset_normalizer-3.5.2-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
 name = "click"
-version = "8.5.0"
+version = "8.5.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "click-8.5.0-py3-none-any.whl" },
+    { path = "click-8.5.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -104,13 +105,13 @@ wheels = [
 
 [[package]]
 name = "croniter"
-version = "6.2.4"
+version = "7.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "python-dateutil" },
 ]
 wheels = [
-    { path = "croniter-6.2.4-py3-none-any.whl" },
+    { path = "croniter-7.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -125,6 +126,16 @@ dependencies = [
 ]
 wheels = [
     { path = "cyclonedx_python_lib-11.12.0-py3-none-any.whl" },
+]
+
+[[package]]
+name = "cython"
+version = "3.3.1"
+source = { registry = "thirdparty/dist" }
+wheels = [
+    { path = "cython-3.3.1-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "cython-3.3.1-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl" },
+    { path = "cython-3.3.1-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -152,6 +163,7 @@ dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "croniter" },
     { name = "cyclonedx-python-lib" },
+    { name = "cython" },
     { name = "defusedxml" },
     { name = "django" },
     { name = "django-altcha" },
@@ -198,7 +210,6 @@ dependencies = [
     { name = "rq" },
     { name = "saneyaml" },
     { name = "setuptools" },
-    { name = "six" },
     { name = "sortedcontainers" },
     { name = "sqlparse" },
     { name = "tblib" },
@@ -224,16 +235,17 @@ requires-dist = [
     { name = "boolean-py", specifier = "==5.0" },
     { name = "certifi", specifier = "==2026.10.23" },
     { name = "charset-normalizer", specifier = "==3.5.2" },
-    { name = "click", specifier = "==8.5.0" },
+    { name = "click", specifier = "==8.5.1" },
     { name = "confusable-homoglyphs", specifier = "==3.3.1" },
     { name = "crispy-bootstrap5", specifier = "==2026.9" },
-    { name = "croniter", specifier = "==6.2.4" },
+    { name = "croniter", specifier = "==7.0.0" },
     { name = "cyclonedx-python-lib", specifier = "==11.12.0" },
+    { name = "cython", specifier = "==3.3.1" },
     { name = "defusedxml", specifier = "==0.7.1" },
-    { name = "django", specifier = "==6.1.2" },
+    { name = "django", specifier = "==6.1.3" },
     { name = "django-altcha", specifier = "==1.0.0" },
     { name = "django-auth-ldap", specifier = "==5.4.0" },
-    { name = "django-axes", specifier = "==8.3.1" },
+    { name = "django-axes", specifier = "==9.0.0" },
     { name = "django-crispy-forms", specifier = "==2.7" },
     { name = "django-debug-toolbar", specifier = "==8.0.0" },
     { name = "django-environ", specifier = "==0.14.0" },
@@ -247,41 +259,40 @@ requires-dist = [
     { name = "drf-yasg", specifier = "==1.21.15" },
     { name = "et-xmlfile", specifier = "==2.0.0" },
     { name = "fakeredis", specifier = "==2.40.0" },
-    { name = "gunicorn", specifier = "==26.2.0" },
+    { name = "gunicorn", specifier = "==27.0.1" },
     { name = "idna", specifier = "==3.20" },
     { name = "inflection", specifier = "==0.5.1" },
     { name = "license-expression", specifier = "==30.4.4" },
     { name = "lxml", specifier = "==6.1.3" },
-    { name = "markdown", specifier = "==3.11.2" },
+    { name = "markdown", specifier = "==3.11.3" },
     { name = "model-bakery", specifier = "==1.24.2" },
     { name = "msgspec", specifier = "==0.22.0" },
     { name = "odfdo", specifier = "==3.27.3" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "packageurl-python", specifier = "==0.17.6" },
     { name = "packaging", specifier = "==26.3" },
-    { name = "psycopg", specifier = "==3.3.6" },
-    { name = "py-serializable", specifier = "==2.1.0" },
+    { name = "psycopg", specifier = "==3.3.9" },
+    { name = "py-serializable", specifier = "==2.2.0" },
     { name = "pyasn1", specifier = "==0.6.5" },
     { name = "pyasn1-modules", specifier = "==0.4.2" },
-    { name = "pydantic", specifier = "==2.14.2" },
-    { name = "pydantic-core", specifier = "==2.50.2" },
-    { name = "python-dateutil", specifier = "==3.0.0" },
+    { name = "pydantic", specifier = "==2.14.3" },
+    { name = "pydantic-core", specifier = "==2.50.4" },
+    { name = "python-dateutil", specifier = "==4.0.0" },
     { name = "python-ldap", specifier = "==3.4.8" },
     { name = "pytz", specifier = "==2026.6" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "redis", specifier = "==8.1.0" },
     { name = "requests", specifier = "==2.34.2" },
-    { name = "rq", specifier = "==2.12.0" },
+    { name = "rq", specifier = "==3.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.14" },
     { name = "saneyaml", specifier = "==0.6.1" },
     { name = "setuptools", specifier = "==84.2.1" },
-    { name = "six", specifier = "==1.17.0" },
     { name = "sortedcontainers", specifier = "==2.4.0" },
-    { name = "sqlparse", specifier = "==0.6.0" },
+    { name = "sqlparse", specifier = "==0.6.1" },
     { name = "tblib", specifier = "==3.2.2" },
     { name = "typing-extensions", specifier = "==4.16.0" },
-    { name = "typing-inspection", specifier = "==0.4.4" },
+    { name = "typing-inspection", specifier = "==0.4.5" },
     { name = "tzdata", specifier = "==2026.6" },
     { name = "uritemplate", specifier = "==4.2.0" },
     { name = "urllib3", specifier = "==2.8.0" },
@@ -291,14 +302,14 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "django"
-version = "6.1.2"
+version = "6.1.3"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
 ]
 wheels = [
-    { path = "django-6.1.2-py3-none-any.whl" },
+    { path = "django-6.1.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -327,14 +338,14 @@ wheels = [
 
 [[package]]
 name = "django-axes"
-version = "8.3.1"
+version = "9.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "asgiref" },
     { name = "django" },
 ]
 wheels = [
-    { path = "django_axes-8.3.1-py3-none-any.whl" },
+    { path = "django_axes-9.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -484,10 +495,10 @@ wheels = [
 
 [[package]]
 name = "gunicorn"
-version = "26.2.0"
+version = "27.0.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "gunicorn-26.2.0-py3-none-any.whl" },
+    { path = "gunicorn-27.0.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -522,16 +533,17 @@ name = "lxml"
 version = "6.1.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "lxml-6.1.3-cp314-cp314-macosx_10_15_universal2.whl" },
-    { path = "lxml-6.1.3-cp314-cp314-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "lxml-6.1.3-cp315-cp315-macosx_10_15_universal2.whl" },
+    { path = "lxml-6.1.3-cp315-cp315-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl" },
+    { path = "lxml-6.1.3-cp315-cp315-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
 name = "markdown"
-version = "3.11.2"
+version = "3.11.3"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "markdown-3.11.2-py3-none-any.whl" },
+    { path = "markdown-3.11.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -550,8 +562,9 @@ name = "msgspec"
 version = "0.22.0"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "msgspec-0.22.0-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "msgspec-0.22.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
+    { path = "msgspec-0.22.0-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "msgspec-0.22.0-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl" },
+    { path = "msgspec-0.22.0-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
 ]
 
 [[package]]
@@ -595,21 +608,21 @@ wheels = [
 
 [[package]]
 name = "psycopg"
-version = "3.3.6"
+version = "3.3.9"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "psycopg-3.3.6-py3-none-any.whl" },
+    { path = "psycopg-3.3.9-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "py-serializable"
-version = "2.1.0"
+version = "2.2.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "defusedxml" },
 ]
 wheels = [
-    { path = "py_serializable-2.1.0-py3-none-any.whl" },
+    { path = "py_serializable-2.2.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -633,7 +646,7 @@ wheels = [
 
 [[package]]
 name = "pydantic"
-version = "2.14.2"
+version = "2.14.3"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "annotated-types" },
@@ -642,31 +655,31 @@ dependencies = [
     { name = "typing-inspection" },
 ]
 wheels = [
-    { path = "pydantic-2.14.2-py3-none-any.whl" },
+    { path = "pydantic-2.14.3-py3-none-any.whl" },
 ]
 
 [[package]]
 name = "pydantic-core"
-version = "2.50.2"
+version = "2.50.4"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "pydantic_core-2.50.2-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "pydantic_core-2.50.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
+    { path = "pydantic_core-2.50.4-cp315-cp315-macosx_11_0_arm64.whl" },
+    { path = "pydantic_core-2.50.4-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.whl" },
+    { path = "pydantic_core-2.50.4-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.whl" },
 ]
 
 [[package]]
 name = "python-dateutil"
-version = "3.0.0"
+version = "4.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
-    { name = "six" },
     { name = "tzdata" },
 ]
 wheels = [
-    { path = "python_dateutil-3.0.0-py2.py3-none-any.whl" },
+    { path = "python_dateutil-4.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -692,10 +705,6 @@ name = "pyyaml"
 version = "6.0.3"
 source = { registry = "thirdparty/dist" }
 sdist = { path = "pyyaml-6.0.3.tar.gz" }
-wheels = [
-    { path = "pyyaml-6.0.3-cp314-cp314-macosx_11_0_arm64.whl" },
-    { path = "pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl" },
-]
 
 [[package]]
 name = "qrcode"
@@ -729,7 +738,7 @@ wheels = [
 
 [[package]]
 name = "rq"
-version = "2.12.0"
+version = "3.0.0"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "click" },
@@ -737,7 +746,7 @@ dependencies = [
     { name = "redis" },
 ]
 wheels = [
-    { path = "rq-2.12.0-py3-none-any.whl" },
+    { path = "rq-3.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -746,6 +755,7 @@ version = "0.15.14"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "ruff-0.15.14-py3-none-macosx_11_0_arm64.whl" },
+    { path = "ruff-0.15.14-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" },
     { path = "ruff-0.15.14-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
 ]
 
@@ -769,14 +779,6 @@ wheels = [
 ]
 
 [[package]]
-name = "six"
-version = "1.17.0"
-source = { registry = "thirdparty/dist" }
-wheels = [
-    { path = "six-1.17.0-py2.py3-none-any.whl" },
-]
-
-[[package]]
 name = "sortedcontainers"
 version = "2.4.0"
 source = { registry = "thirdparty/dist" }
@@ -786,10 +788,10 @@ wheels = [
 
 [[package]]
 name = "sqlparse"
-version = "0.6.0"
+version = "0.6.1"
 source = { registry = "thirdparty/dist" }
 wheels = [
-    { path = "sqlparse-0.6.0-py3-none-any.whl" },
+    { path = "sqlparse-0.6.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -810,13 +812,13 @@ wheels = [
 
 [[package]]
 name = "typing-inspection"
-version = "0.4.4"
+version = "0.4.5"
 source = { registry = "thirdparty/dist" }
 dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { path = "typing_inspection-0.4.4-py3-none-any.whl" },
+    { path = "typing_inspection-0.4.5-py3-none-any.whl" },
 ]
 
 [[package]]
