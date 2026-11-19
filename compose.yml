@@ -102,7 +102,8 @@ services:
       - static:/var/dejacode/static/
       - webroot:/var/www/html/
     depends_on:
-      - web
+      web:
+        condition: service_started
     restart: always
 
   clamav:

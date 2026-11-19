@@ -211,6 +211,9 @@ default the ``UTC`` time zone is used. For example::
 
     TIME_ZONE=US/Pacific
 
+Scheduled tasks, such as the daily vulnerabilities update, run according to
+this time zone.
+
 .. note::
     You can view a detailed list of time zones `here.
     <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`_

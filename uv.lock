@@ -755,6 +755,7 @@ version = "0.15.14"
 source = { registry = "thirdparty/dist" }
 wheels = [
     { path = "ruff-0.15.14-py3-none-macosx_11_0_arm64.whl" },
+    { path = "ruff-0.15.14-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" },
     { path = "ruff-0.15.14-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
 ]
 
