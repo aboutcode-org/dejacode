@@ -20,7 +20,7 @@ services:
       start_interval: 1s
 
   web:
-    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
+    image: ghcr.io/aboutcode-org/dejacode:v6.1.0
     command: sh -c "
       ./manage.py migrate &&
       (./manage.py createsuperuser --noinput || true) &&

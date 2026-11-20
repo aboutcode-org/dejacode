@@ -7,6 +7,15 @@ Release notes
 
 This release removes unused columns from the notifications table: back up the database before upgrading, as a rollback to an earlier version requires a database restore.
 
+**Security:** this release fixes several vulnerabilities.
+Upgrading is recommended for all deployments.
+See the advisories for details and the actions to take after upgrading: https://github.com/aboutcode-org/dejacode/security/advisories
+
+**After upgrading:**
+
+* Revoke the API keys of the users with two-factor authentication enabled.
+* Forgejo and Jira integrations: check the new **Forgejo URL** and **Jira URL** fields of each Dataspace configuration, required when a token is set.
+
 ### Version 6.0.1
 
 * fix: relink cloned codebase resources to the cloned inventory #601 by @tdruez in https://github.com/aboutcode-org/dejacode/pull/602
