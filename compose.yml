@@ -33,7 +33,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
+    image: ghcr.io/aboutcode-org/dejacode:v6.1.0
     command: sh -c "
         ./manage.py migrate &&
         ./manage.py collectstatic --no-input --verbosity 0 --clear &&
@@ -57,7 +57,7 @@ services:
         condition: service_started
 
   worker:
-    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
+    image: ghcr.io/aboutcode-org/dejacode:v6.1.0
     # Ensure that potential db migrations run first by waiting until "web" is up
     command: wait-for-it --strict --timeout=180 web:8000 -- sh -c "
       ./manage.py rqworker-pool --num-workers 2 --verbosity 1"
@@ -77,7 +77,7 @@ services:
         condition: service_started
 
   scheduler:
-    image: ghcr.io/aboutcode-org/dejacode:v6.0.1
+    image: ghcr.io/aboutcode-org/dejacode:v6.1.0
     command: wait-for-it web:8000 -- sh -c "./manage.py rqcron dje.cron_jobs"
     env_file:
       - docker.env
