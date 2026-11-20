@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core import signing
 from django.core import validators
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -41,6 +42,11 @@ REGISTRATION_DEFAULT_GROUPS = (
     "Trial-View",
     "Trial-Level-1",
 )
+
+
+def get_activation_key_timestamp(activation_key):
+    """Return the Unix timestamp, in seconds, at which the signed `activation_key` was issued."""
+    return signing.b62_decode(activation_key.split(":")[-2])
 
 
 class DejaCodeActivationView(ActivationView):
@@ -87,6 +93,21 @@ class DejaCodeActivationView(ActivationView):
             return user
         except User.DoesNotExist:
             raise ActivationError(self.BAD_USERNAME_MESSAGE, code="bad_username")
+
+    def activate(self, form):
+        """Activate the user unless the activation key was issued before the last login."""
+        username = form.cleaned_data["activation_key"]
+        user = self.get_user(username)
+
+        # A key issued before the last login was already used, and the account may
+        # have been disabled since: replaying it must not reactivate the account.
+        key_timestamp = get_activation_key_timestamp(form.data["activation_key"])
+        if user.last_login and int(user.last_login.timestamp()) > key_timestamp:
+            raise ActivationError(self.ALREADY_ACTIVATED_MESSAGE, code="already_activated")
+
+        user.is_active = True
+        user.save()
+        return user
 
 
 class DejaCodeRegistrationForm(RegistrationFormUniqueEmail):

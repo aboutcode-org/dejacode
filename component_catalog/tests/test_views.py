@@ -6,7 +6,9 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import html
 import json
+import re
 import uuid
 from os.path import dirname
 from os.path import join
@@ -427,6 +429,16 @@ class ComponentUserViewsTestCase(MaxQueryMixin, TestCase):
             self.license1.get_absolute_url(), HTTP_REFERER=self.component1.get_absolute_url()
         )
         self.assertContains(response, "Return to component")
+
+    def test_return_to_component_link_escapes_referer_path(self):
+        self.client.login(username="nexb_user", password="t3st")
+        component_url = self.component1.get_absolute_url()
+        referer = component_url.replace(self.component1.name, '"><img src=x onerror=alert(1)>')
+        self.assertNotEqual(component_url, referer)
+
+        response = self.client.get(self.license1.get_absolute_url(), HTTP_REFERER=referer)
+        self.assertContains(response, "Return to component")
+        self.assertNotContains(response, "<img src=x onerror")
 
     def test_component_catalog_hierarchy_tab(self):
         self.client.login(username="nexb_user", password="t3st")
@@ -1739,6 +1751,20 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(self.component1.get_absolute_url())
         self.assertNotContains(response, about_url)
 
+    def test_package_create_ajax_view_escapes_submitted_urls(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        package_add_url = reverse("component_catalog:package_add_urls")
+        markup_url = "https://dejacode.com/<img/src=x/onerror=alert(1)>.zip"
+        self.package1.download_url = markup_url
+        self.package1.save()
+
+        self.client.post(package_add_url, {"download_urls": f"{markup_url} <b>invalid</b>"})
+        response = self.client.get(reverse("component_catalog:package_list"))
+        self.assertContains(response, "https://dejacode.com/&lt;img/src=x/onerror=alert(1)&gt;.zip")
+        self.assertContains(response, "&lt;b&gt;invalid&lt;/b&gt;")
+        self.assertNotContains(response, "<img/src=x")
+        self.assertNotContains(response, "<b>invalid</b>")
+
     def test_package_create_ajax_view(self):
         package_add_url = reverse("component_catalog:package_add_urls")
 
@@ -2940,6 +2966,30 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, len(values))
         self.assertIn("MATCH", values[0])
 
+    def test_package_details_view_get_license_expressions_scan_values_escapes_scan_data(self):
+        field_data = [{"value": "mit", "count": None}]
+        license_matches = {
+            "mit": {
+                'dir/"><img src=x>.txt': [
+                    {
+                        "license_expression": "mit",
+                        "matches": [{"license_expression": "<b>mit</b>", "matched_text": "text"}],
+                    }
+                ]
+            }
+        }
+
+        values = PackageTabScanView.get_license_expressions_scan_values(
+            self.dataspace, field_data, "license_expression", "checkbox", license_matches
+        )
+        # The browser decodes the attribute value before inserting it as HTML.
+        data_matches = re.search(r'data-matches="([^"]*)"', values[0]).group(1)
+        match_card = html.unescape(data_matches)
+        self.assertIn("dir/<strong>&quot;&gt;&lt;img src=x&gt;.txt</strong>", match_card)
+        self.assertIn("&lt;b&gt;mit&lt;/b&gt;", match_card)
+        self.assertNotIn("<img", match_card)
+        self.assertNotIn("<b>mit</b>", match_card)
+
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
     def test_scan_list_view(self, mock_fetch_scan_list):
         scan_list_url = reverse("component_catalog:scan_list")
@@ -3029,8 +3079,9 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.post(delete_url)
         self.assertEqual(404, response.status_code)
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.refresh_scan")
-    def test_refresh_scan_view(self, mock_refresh_scan):
+    def test_refresh_scan_view(self, mock_refresh_scan, mock_fetch_scan_list):
         project_uuid = "348df847-f48f-4ac7-b864-5785b44c65e2"
         refresh_url = reverse("component_catalog:scan_refresh", args=[project_uuid])
 
@@ -3047,6 +3098,12 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
 
         self.dataspace.enable_package_scanning = True
         self.dataspace.save()
+        mock_fetch_scan_list.return_value = {"count": 0}
+        response = self.client.post(refresh_url)
+        self.assertEqual(404, response.status_code)
+        mock_refresh_scan.assert_not_called()
+
+        mock_fetch_scan_list.return_value = {"count": 1}
         mock_refresh_scan.return_value = mock.Mock(status_code=200)
         response = self.client.post(refresh_url, follow=True)
         self.assertRedirects(response, reverse("component_catalog:scan_list"))
@@ -3106,9 +3163,12 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
         self.assertRegex(content, r'<form method="post" class="delete-confirm">' + csrf_input)
         self.assertRegex(content, r'<form method="post" class="refresh-confirm">' + csrf_input)
 
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.is_available")
-    def test_send_scan_data_as_file_view(self, mock_is_available, mock_fetch_scan_data):
+    def test_send_scan_data_as_file_view(
+        self, mock_is_available, mock_fetch_scan_data, mock_fetch_scan_list
+    ):
         mock_is_available.return_value = True
         mock_fetch_scan_data.return_value = {}
 
@@ -3126,6 +3186,12 @@ class PackageUserViewsTestCase(MaxQueryMixin, TestCase):
 
         self.dataspace.enable_package_scanning = True
         self.dataspace.save()
+        mock_fetch_scan_list.return_value = {"count": 0}
+        response = self.client.get(url)
+        self.assertEqual(404, response.status_code)
+        mock_fetch_scan_data.assert_not_called()
+
+        mock_fetch_scan_list.return_value = {"count": 1}
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/zip", response["content-type"])

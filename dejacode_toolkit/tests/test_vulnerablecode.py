@@ -40,6 +40,29 @@ class VulnerableCodenTestCase(TestCase):
     def setUp(self):
         self.service = VulnerableCode(make_dataspace())
 
+    @patch("dejacode_toolkit.vulnerablecode.VulnerableCode.bulk_search_by_purl")
+    def test_vulnerablecode_get_vulnerabilities_by_purl_cache_is_scoped_to_server(
+        self, mock_bulk_search
+    ):
+        purl = "pkg:pypi/cache-scope-test@1.0"
+        first_server = VulnerableCode(make_dataspace("https://first.vulnerablecode.example"))
+        second_server = VulnerableCode(make_dataspace("https://second.vulnerablecode.example"))
+
+        mock_bulk_search.return_value = {"count": 1, "results": ["first"]}
+        self.assertEqual(["first"], first_server.get_vulnerabilities_by_purl(purl))
+        self.assertEqual(["first"], first_server.get_vulnerabilities_by_purl(purl))
+        self.assertEqual(1, mock_bulk_search.call_count)
+
+        mock_bulk_search.return_value = {"count": 1, "results": ["second"]}
+        self.assertEqual(["second"], second_server.get_vulnerabilities_by_purl(purl))
+        self.assertEqual(2, mock_bulk_search.call_count)
+
+        # Another Dataspace on the same server, possibly with other credentials.
+        same_server = VulnerableCode(make_dataspace("https://first.vulnerablecode.example"))
+        mock_bulk_search.return_value = {"count": 1, "results": ["same server"]}
+        self.assertEqual(["same server"], same_server.get_vulnerabilities_by_purl(purl))
+        self.assertEqual(3, mock_bulk_search.call_count)
+
     def test_advisory_todos_url(self):
         expected = "https://public.vulnerablecode.io/advisories/todos/"
         self.assertEqual(expected, self.service.advisory_todos_url)

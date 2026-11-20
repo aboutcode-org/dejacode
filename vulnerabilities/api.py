@@ -15,12 +15,14 @@ from rest_framework import viewsets
 
 from component_catalog.models import Package
 from dje.api import DataspacedAPIFilterSet
+from dje.api import DataspacedHyperlinkedRelatedField
 from dje.api import DataspacedSerializer
 from dje.api import ExtraPermissionsViewSetMixin
 from dje.api import ProductRelatedViewSet
 from dje.api_custom import TabPermission
 from dje.filters import LastModifiedDateFilter
 from dje.filters import MultipleUUIDFilter
+from product_portfolio.models import ProductPackage
 from vulnerabilities.filters import ScoreRangeFilter
 from vulnerabilities.models import RISK_SCORE_RANGES
 from vulnerabilities.models import Vulnerability
@@ -120,21 +122,41 @@ class VulnerabilityViewSet(ExtraPermissionsViewSetMixin, viewsets.ReadOnlyModelV
     )
 
     def get_queryset(self):
+        user = self.request.user
         package_qs = Package.objects.only_rendering_fields()
+        productpackage_qs = ProductPackage.objects.product_secured(user).select_related("product")
 
         return (
             super()
             .get_queryset()
-            .scope(self.request.user.dataspace)
+            .scope(user.dataspace)
             .prefetch_related(
                 Prefetch("affected_packages", queryset=package_qs),
-                Prefetch("affected_packages__productpackages__product"),
+                Prefetch("affected_packages__productpackages", queryset=productpackage_qs),
             )
             .order_by_risk()
         )
 
 
+class EditableProductPackageField(serializers.HyperlinkedRelatedField):
+    """Accept only the ProductPackages of the Products that the user can change."""
+
+    def get_queryset(self):
+        user = self.context["request"].user
+        return ProductPackage.objects.product_secured(
+            user, perms=["view_product", "change_product"]
+        )
+
+
 class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSerializer):
+    product_package = EditableProductPackageField(
+        view_name="api_v2:productpackage-detail",
+        lookup_field="uuid",
+    )
+    vulnerability = DataspacedHyperlinkedRelatedField(
+        view_name="api_v2:vulnerability-detail",
+        lookup_field="uuid",
+    )
     advisory_uid = serializers.ReadOnlyField(source="vulnerability.advisory_uid")
     applied_by_preset = serializers.ReadOnlyField(source="applied_by_preset.name", allow_null=True)
     created_by = serializers.StringRelatedField()
@@ -160,14 +182,6 @@ class VulnerabilityAnalysisSerializer(DataspacedSerializer, serializers.ModelSer
             "last_updated",
         )
         extra_kwargs = {
-            "product_package": {
-                "view_name": "api_v2:productpackage-detail",
-                "lookup_field": "uuid",
-            },
-            "vulnerability": {
-                "view_name": "api_v2:vulnerability-detail",
-                "lookup_field": "uuid",
-            },
             "api_url": {
                 "view_name": "api_v2:vulnerabilityanalysis-detail",
                 "lookup_field": "uuid",

@@ -33,6 +33,7 @@ from django.dispatch import receiver
 from django.template.defaultfilters import filesizeformat
 from django.utils.functional import cached_property
 from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.text import format_lazy
 from django.utils.text import get_valid_filename
@@ -2560,9 +2561,13 @@ class Package(
             existing_packages = scoped_packages_qs.filter(download_url=url)
 
         if existing_packages:
-            package_links = [package.get_absolute_link() for package in existing_packages]
+            package_links = ((package.get_absolute_link(),) for package in existing_packages)
             raise PackageAlreadyExistsWarning(
-                f"{url} already exists in your Dataspace as {', '.join(package_links)}"
+                format_html(
+                    "{} already exists in your Dataspace as {}",
+                    url,
+                    format_html_join(", ", "{}", package_links),
+                )
             )
 
         # Matching in PurlDB early to avoid more processing in case of a match.
@@ -2590,7 +2595,7 @@ class Package(
             if package_match := scoped_packages_qs.filter(hash_filters).first():
                 package_link = package_match.get_absolute_link()
                 raise PackageAlreadyExistsWarning(
-                    f"{url} already exists in your Dataspace as {package_link}"
+                    format_html("{} already exists in your Dataspace as {}", url, package_link)
                 )
 
         # Duplicate the declared_license_expression into the license_expression field.

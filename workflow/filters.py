@@ -26,6 +26,17 @@ class FollowedByMeFilter(django_filters.Filter):
         return qs
 
 
+class RequestSearchFilter(SearchFilter):
+    """Search only the Requests whose details are visible to the current user."""
+
+    def filter(self, qs, value):
+        if not value:
+            return qs
+        # Without a request user, only the public Requests are searched.
+        user = getattr(self.parent.request, "user", None)
+        return super().filter(qs.with_details_permission(user), value)
+
+
 class RequestFilterSet(DataspacedFilterSet):
     related_only = [
         "status",
@@ -34,7 +45,7 @@ class RequestFilterSet(DataspacedFilterSet):
         "assignee",
         "priority",
     ]
-    q = SearchFilter(
+    q = RequestSearchFilter(
         label=_("Search"),
         search_fields=[
             "title",

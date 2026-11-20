@@ -25,11 +25,13 @@ from django.contrib.admin.utils import unquote
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.admin.widgets import AdminTextInputWidget
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.api import get_messages
@@ -67,7 +69,6 @@ from dje.filters import LimitToDataspaceListFilter
 from dje.filters import MissingInFilter
 from dje.forms import DataspaceAdminForm
 from dje.forms import DataspacedAdminForm
-from dje.forms import DejaCodeAuthenticationForm
 from dje.importers import import_view
 from dje.list_display import AsURL
 from dje.mass_update import mass_update_action
@@ -107,8 +108,6 @@ DELETION = History.DELETION
 
 
 class DejaCodeAdminSite(AdminSite):
-    login_template = "registration/login.html"
-    login_form = DejaCodeAuthenticationForm
     site_title = _("DejaCode Administration")
     site_header = _("DejaCode Administration")
     index_title = _("DejaCode Administration")
@@ -127,6 +126,17 @@ class DejaCodeAdminSite(AdminSite):
         ]
 
         return urls + super().get_urls()
+
+    def login(self, request, extra_context=None):
+        """Redirect to the main login view, which enforces two-factor authentication."""
+        # The main login view sends authenticated users back to `next`: an authenticated
+        # user without admin access would loop between both views.
+        if request.user.is_authenticated and not self.has_permission(request):
+            raise PermissionDenied
+
+        admin_index_url = reverse("admin:index", current_app=self.name)
+        next_url = request.GET.get(REDIRECT_FIELD_NAME, admin_index_url)
+        return redirect_to_login(next_url)
 
 
 dejacode_site = DejaCodeAdminSite()
@@ -780,7 +790,8 @@ class DataspacedAdmin(
         Add the email notification on bulk deletion through the default django
         'delete_selected' action.
         """
-        send_notification_email_on_queryset(request, queryset, DELETION)
+        if DELETION in self.email_notification_on:
+            send_notification_email_on_queryset(request, queryset, DELETION)
         super().delete_queryset(request, queryset)
 
     def get_urls(self):
@@ -1061,9 +1072,11 @@ class DataspaceConfigurationForm(forms.ModelForm):
             "vulnerabilities_risk_threshold",
             "purldb_url",
             "purldb_api_key",
+            "forgejo_url",
             "forgejo_token",
             "github_token",
             "gitlab_token",
+            "jira_url",
             "jira_user",
             "jira_token",
             "sourcehut_token",
@@ -1080,6 +1093,9 @@ class DataspaceConfigurationForm(forms.ModelForm):
         "sourcehut_token",
     ]
 
+    # The integration credentials are only sent to the URL set with them.
+    integration_url_fields = {"forgejo_token": "forgejo_url", "jira_token": "jira_url"}
+
     def __init__(self, *args, **kwargs):
         """Initialize the form and set HiddenValueWidget for specified fields."""
         super().__init__(*args, **kwargs)
@@ -1092,6 +1108,14 @@ class DataspaceConfigurationForm(forms.ModelForm):
             value = self.cleaned_data.get(field_name)
             if value == HiddenValueWidget.HIDDEN_VALUE:
                 del self.cleaned_data[field_name]
+
+        for token_field_name, url_field_name in self.integration_url_fields.items():
+            # A hidden unchanged token is not in cleaned_data: use the stored value.
+            token = self.cleaned_data.get(
+                token_field_name, getattr(self.instance, token_field_name)
+            )
+            if token and not self.cleaned_data.get(url_field_name):
+                self.add_error(url_field_name, "This URL is required to use the token.")
 
 
 class PolicyRulesConfigurationForm(forms.ModelForm):
@@ -1185,6 +1209,7 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             "Forgejo Integration",
             {
                 "fields": [
+                    "forgejo_url",
                     "forgejo_token",
                 ]
             },
@@ -1209,6 +1234,7 @@ class DataspaceConfigurationInline(DataspacedFKMixin, admin.StackedInline):
             "Jira Integration",
             {
                 "fields": [
+                    "jira_url",
                     "jira_user",
                     "jira_token",
                 ]
@@ -1462,7 +1488,9 @@ class ExternalSourceAdmin(DataspacedAdmin):
             )
             changelist_links.append([changelist_link])
 
-        html_list = "<ul>{}</ul>".format(format_html_join("", "<li>{}</li>", changelist_links))
+        html_list = format_html(
+            "<ul>{}</ul>", format_html_join("", "<li>{}</li>", changelist_links)
+        )
         return class_wrap(html_list, "width200")
 
     list_display = (

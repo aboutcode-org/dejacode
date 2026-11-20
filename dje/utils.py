@@ -70,7 +70,7 @@ def normalize_newlines_as_CR_plus_LF(text):
 
 def class_wrap(value, class_):
     """Return the given HTML wrapped in a div with the given class set."""
-    return format_html('<div class="{}">{}</div>', class_, mark_safe(value))
+    return format_html('<div class="{}">{}</div>', class_, value)
 
 
 def chunked(iterable, chunk_size):
@@ -676,9 +676,9 @@ def set_fields_from_object(source, target, fields):
 
 def get_cpe_vuln_link(cpe):
     base_url = "https://nvd.nist.gov/vuln/search/results"
-    params = "?adv_search=true&isCpeNameSearch=true"
-    vuln_url = f"{base_url}{params}&query={cpe}"
-    return mark_safe(f'<a target="_blank" href="{vuln_url}">{cpe}</a>')
+    params = urlencode({"adv_search": "true", "isCpeNameSearch": "true", "query": cpe})
+    vuln_url = f"{base_url}?{params}"
+    return format_html('<a target="_blank" href="{}">{}</a>', vuln_url, cpe)
 
 
 def safe_filename(filename):

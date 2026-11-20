@@ -502,15 +502,17 @@
 
               let upgradeAvailable = data['upgrade_available'];
               upgradeAvailable.forEach(function (value) {
-                let td = document.querySelector(`[data-purl="${value.purl}"]`);
+                let td = document.querySelector(`[data-purl="${CSS.escape(value.purl)}"]`);
                 if (td) {
-                  td.insertAdjacentHTML('beforeend', `
-                    <div>
-                      <a class="text-success" href="/purldb/${value.latest_version_uuid}/" target="_blank">
-                        <i class="fas fa-arrow-alt-circle-up"></i> Version ${value.latest_version} available
-                      </a>
-                    </div>
-                  `);
+                  const link = document.createElement('a');
+                  link.className = 'text-success';
+                  link.href = `/purldb/${encodeURIComponent(value.latest_version_uuid)}/`;
+                  link.target = '_blank';
+                  link.innerHTML = '<i class="fas fa-arrow-alt-circle-up"></i> ';
+                  link.append(`Version ${value.latest_version} available`);
+                  const wrapper = document.createElement('div');
+                  wrapper.append(link);
+                  td.append(wrapper);
                   td.parentElement.classList.add('new-version');
                   td.parentElement.style.display = '';
                 }

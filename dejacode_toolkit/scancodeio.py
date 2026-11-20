@@ -121,6 +121,11 @@ class ScanCodeIO(BaseService):
         logger.debug(f'{self.label}: fetch scan list payload="{payload}"')
         return self.request_get(url=self.project_api_url, params=payload)
 
+    def is_dataspace_project(self, project_uuid):
+        """Return True if the `project_uuid` scan project belongs to this Dataspace."""
+        scan_list = self.fetch_scan_list(uuid=str(project_uuid))
+        return bool(scan_list) and scan_list.get("count") == 1
+
     def fetch_scans_by_download_url(self, download_urls):
         """Return the scans of the provided `download_urls`, keyed by download URL."""
         project_names = [get_project_name(url, self.dataspace.uuid) for url in download_urls]

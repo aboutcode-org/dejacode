@@ -22,6 +22,7 @@ class JiraIntegration(BaseIntegration):
     """
 
     issuetype = "DejaCode Request"
+    base_url_field_name = "jira_url"
 
     def get_headers(self):
         jira_user = self.dataspace.get_configuration("jira_user")

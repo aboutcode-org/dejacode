@@ -7,6 +7,7 @@
 #
 
 import json
+import uuid
 from pathlib import Path
 from unittest import mock
 
@@ -117,6 +118,16 @@ class ScanCodeIOTestCase(TestCase):
             "format": "json",
         }
         self.assertEqual(expected, params)
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
+    def test_scancodeio_is_dataspace_project(self, mock_fetch_scan_list):
+        scancodeio = ScanCodeIO(self.dataspace)
+        project_uuid = uuid.uuid4()
+
+        for scan_list, expected in [(None, False), ({"count": 0}, False), ({"count": 1}, True)]:
+            mock_fetch_scan_list.return_value = scan_list
+            self.assertIs(expected, scancodeio.is_dataspace_project(project_uuid))
+        mock_fetch_scan_list.assert_called_with(uuid=str(project_uuid))
 
     @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_list")
     def test_scancodeio_fetch_scans_by_download_url(self, mock_fetch_scan_list):

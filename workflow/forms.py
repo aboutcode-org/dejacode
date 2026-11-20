@@ -331,8 +331,10 @@ class RequestForm(forms.ModelForm):
             pk_field: object_id,
         }
 
+        manager = content_type.model_class().objects
+        queryset = manager.get_queryset(user=self.user) if is_secured(manager) else manager.all()
         try:
-            self.content_object = content_type.get_object_for_this_type(**filters)
+            self.content_object = queryset.get(**filters)
         except ObjectDoesNotExist:
             # Instance with this id does not exists or not in the user dataspace
             return

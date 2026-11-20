@@ -43,8 +43,10 @@ To use your Forgejo token in DejaCode:
 1. Go to the :guilabel:`Admin Dashboard`
 2. Navigate to :guilabel:`Dataspaces`, and select your Dataspace
 3. Scroll to the **Forgejo Integration** section under **Configuration**
-4. Paste your Forgejo token in the **Forgejo token** field
-5. Save the form
+4. Enter the base URL of your Forgejo instance, such as ``https://forgejo.example.com``,
+   in the **Forgejo URL** field. The token is only sent to this URL.
+5. Paste your Forgejo token in the **Forgejo token** field
+6. Save the form
 
 Activate Forgejo Integration on Request Templates
 -------------------------------------------------

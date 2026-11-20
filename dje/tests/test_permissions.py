@@ -243,6 +243,19 @@ class DejaCodePermissionTestCase(TestCase):
         # Superuser users see all the tabs
         self.assertIsNone(get_authorized_tabs(Owner, self.super_user))
 
+    def test_permissions_copy_object_permissions_keeps_group_permissions_on_group(self):
+        Product = apps.get_model("product_portfolio", "Product")
+        source = Product.objects.create(name="Source", dataspace=self.dataspace)
+        target = Product.objects.create(name="Target", dataspace=self.dataspace)
+        group1 = Group.objects.create(name="Group1")
+        self.basic_user.groups.add(group1)
+        assign_perm("view_product", group1, source)
+
+        copy_object_permissions(source, target)
+
+        self.assertEqual(set(), set(get_user_perms(self.basic_user, target)))
+        self.assertEqual({"view_product"}, set(get_group_perms(group1, target)))
+
     def test_permissions_copy_object_permissions(self):
         Product = apps.get_model("product_portfolio", "Product")
         source = Product.objects.create(name="Source", dataspace=self.dataspace)

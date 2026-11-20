@@ -14,9 +14,11 @@ from django.test import TestCase
 from django.urls import reverse
 
 from component_catalog.models import Component
+from dje.admin import dejacode_site
 from dje.models import Dataspace
 from license_library.models import License
 from organization.models import Owner
+from reporting.admin import ColumnTemplateAdmin
 from reporting.models import ColumnTemplate
 from reporting.models import ColumnTemplateAssignedField
 from reporting.models import Filter
@@ -190,6 +192,20 @@ class ReportingAdminViewsTestCase(TestCase):
             "content_type": ["This field is required."],
         }
         self.assertEqual(expected, response.context_data["adminform"].form.errors)
+
+    def test_column_template_admin_get_field_names_escapes_field_names(self):
+        for seq, field_name in enumerate(["name", "tag:<img src=x>"]):
+            ColumnTemplateAssignedField.objects.create(
+                dataspace=self.dataspace,
+                column_template=self.column_template1,
+                field_name=field_name,
+                display_name=field_name,
+                seq=seq,
+            )
+
+        model_admin = ColumnTemplateAdmin(ColumnTemplate, dejacode_site)
+        expected = "name<br>tag:&lt;img src=x&gt;"
+        self.assertEqual(expected, model_admin.get_field_names(self.column_template1))
 
     def test_save_new_column_template_invalid_field_name(self):
         self.client.login(username="test", password="t3st")

@@ -222,6 +222,12 @@ class RequestQuerySet(DataspacedQuerySet):
             comments_count=models.Count("comments", distinct=True),
         )
 
+    def with_details_permission(self, user):
+        """Limit to the Requests whose details are visible to the `user`."""
+        if user and user.is_staff:
+            return self
+        return self.filter(Q(is_private=False) | Q(requester=user))
+
     def for_list_view(self, user):
         return (
             self.product_secured(user)
@@ -518,7 +524,7 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
                 value = data["value"]
                 if data["input_type"] == "BooleanField":
                     value = "Yes" if bool(data.get("value")) == 1 else "No"
-                line = str(html_template).format(label=data["label"], value=escape(value))
+                line = str(html_template).format(label=escape(data["label"]), value=escape(value))
             except KeyError:
                 return 'Error in the "Serialized data" value.'
             else:
@@ -548,6 +554,11 @@ class Request(HistoryDateFieldsMixin, DataspacedModel):
         requester or is an administrator.
         """
         return user == self.requester or user.is_staff or not self.is_private
+
+    def has_details_access(self, user):
+        """Return True if the `user` can currently view this Request details."""
+        visible_requests = Request.objects.product_secured(user).with_details_permission(user)
+        return visible_requests.filter(pk=self.pk).exists()
 
     def has_edit_permission(self, user):
         """

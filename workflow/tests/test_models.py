@@ -28,6 +28,7 @@ from workflow.models import RequestAttachment
 from workflow.models import RequestComment
 from workflow.models import RequestEvent
 from workflow.models import RequestTemplate
+from workflow.notification import get_authorized_recipients
 
 
 class WorkflowModelsTestCase(TestCase):
@@ -142,6 +143,17 @@ class WorkflowModelsTestCase(TestCase):
         expected = "Organization: Owner1<br>Project: Project1<br>YesNo: Yes"
         self.assertEqual(expected, self.request1.get_serialized_data_as_html())
 
+    def test_request_model_get_serialized_data_as_html_escapes_label(self):
+        self.question1.label = "<b>Organization</b>"
+        self.question1.save()
+        self.request1.serialized_data = json.dumps({self.question1.label: "Owner1"})
+        self.request1.save()
+        self.request1.refresh_from_db()
+
+        serialized_data_html = self.request1.get_serialized_data_as_html()
+        self.assertIn("&lt;b&gt;Organization&lt;/b&gt;: Owner1", serialized_data_html)
+        self.assertNotIn("<b>", serialized_data_html)
+
     def test_request_model_get_serialized_data_as_html_unicode_content(self):
         self.request1.serialized_data = json.dumps({self.question1.label: "\u2013"})
         self.request1.save()
@@ -165,6 +177,59 @@ class WorkflowModelsTestCase(TestCase):
         )
         expected = "<p>word {var_format} word</p>"
         self.assertEqual(expected, comment.as_html())
+
+    def test_request_queryset_with_details_permission(self):
+        self.request1.is_private = True
+        self.request1.save()
+        self.request2.is_private = False
+        self.request2.save()
+        request_qs = Request.objects.filter(pk__in=[self.request1.pk, self.request2.pk])
+
+        self.assertEqual(2, request_qs.with_details_permission(self.super_user).count())
+        requester_qs = request_qs.with_details_permission(self.request1.requester)
+        self.assertIn(self.request1, requester_qs)
+        self.assertEqual([self.request2], list(request_qs.with_details_permission(self.basic_user)))
+        self.assertEqual([self.request2], list(request_qs.with_details_permission(None)))
+
+    def test_request_model_has_details_access(self):
+        product = self.product_ct.model_class().objects.create(
+            name="Product1", dataspace=self.nexb_dataspace
+        )
+        self.request1.product_context = product
+        self.request1.save()
+        self.assertFalse(self.request1.has_details_access(self.basic_user))
+
+        assign_perm("view_product", self.basic_user, product)
+        self.assertTrue(self.request1.has_details_access(self.basic_user))
+
+        self.request1.is_private = True
+        self.request1.save()
+        self.assertFalse(self.request1.has_details_access(self.basic_user))
+
+    def test_request_notification_get_authorized_recipients(self):
+        product = self.product_ct.model_class().objects.create(
+            name="Product1", dataspace=self.nexb_dataspace
+        )
+        self.request1.product_context = product
+        self.request1.save()
+        RequestComment.objects.create(
+            request=self.request1,
+            user=self.basic_user,
+            text="Comment",
+            dataspace=self.nexb_dataspace,
+        )
+
+        recipients = get_authorized_recipients(self.request1)
+        self.assertEqual({self.request1.requester}, recipients)
+
+        assign_perm("view_product", self.basic_user, product)
+        recipients = get_authorized_recipients(self.request1)
+        self.assertEqual({self.request1.requester, self.basic_user}, recipients)
+
+        self.basic_user.is_active = False
+        self.basic_user.save()
+        recipients = get_authorized_recipients(self.request1)
+        self.assertEqual({self.request1.requester}, recipients)
 
     def test_request_model_get_involved_users(self):
         self.assertIsNone(self.request1.assignee)

@@ -17,10 +17,12 @@ from django.test import override_settings
 from django.urls import reverse
 
 from dje import notification
+from dje.admin import dejacode_site
 from dje.models import Dataspace
 from dje.notification import send_notification_email
 from dje.notification import send_notification_email_on_queryset
 from dje.tasks import send_mail_to_admins_task
+from organization.admin import OwnerAdmin
 from organization.models import Owner
 from organization.models import Subowner
 
@@ -111,6 +113,45 @@ class EmailNotificationTest(TestCase):
         send_notification_email(request, self.owner, notification.CHANGE, "Some changes...")
 
         self.assertEqual(len(mail.outbox), 2)
+
+    def test_successful_mass_update_follows_model_admin_email_notification_on(self):
+        request = self.factory.get("")
+        request.user = self.user
+        self.user.data_email_notification = True
+        self.user.save()
+        form = MagicMock(cleaned_data={"notes": "Private notes"})
+        modeladmin = MagicMock(email_notification_on=[])
+        queryset = Owner.objects.all()
+
+        notification.successful_mass_update(
+            None, "mass_update", request, queryset, modeladmin, form
+        )
+        self.assertEqual(0, len(mail.outbox))
+        modeladmin.log_change.assert_called_once()
+
+        modeladmin.email_notification_on = [notification.CHANGE]
+        notification.successful_mass_update(
+            None, "mass_update", request, queryset, modeladmin, form
+        )
+        self.assertEqual(1, len(mail.outbox))
+        self.assertIn("Private notes", mail.outbox[0].body)
+
+    def test_dataspaced_admin_delete_queryset_follows_email_notification_on(self):
+        request = self.factory.get("")
+        request.user = self.user
+        self.user.data_email_notification = True
+        self.user.save()
+        model_admin = OwnerAdmin(Owner, dejacode_site)
+
+        model_admin.email_notification_on = []
+        model_admin.delete_queryset(request, Owner.objects.filter(pk=self.owner.pk))
+        self.assertEqual(0, len(mail.outbox))
+        self.assertFalse(Owner.objects.filter(pk=self.owner.pk).exists())
+
+        owner = Owner.objects.create(name="Other Organization", dataspace=self.dataspace)
+        model_admin.email_notification_on = [notification.DELETION]
+        model_admin.delete_queryset(request, Owner.objects.filter(pk=owner.pk))
+        self.assertEqual(1, len(mail.outbox))
 
     def test_send_notification_email_on_queryset(self):
         request = self.factory.get("")

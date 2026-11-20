@@ -19,6 +19,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from guardian.shortcuts import assign_perm
+from guardian.shortcuts import remove_perm
 
 from component_catalog.models import Component
 from component_catalog.models import Package
@@ -42,6 +43,7 @@ from workflow.models import RequestEvent
 from workflow.models import RequestTemplate
 from workflow.notification import request_comment_slack_payload
 from workflow.notification import request_slack_payload
+from workflow.views import get_add_request_link
 
 
 class RequestUserViewsTestCase(TestCase):
@@ -164,6 +166,35 @@ class RequestUserViewsTestCase(TestCase):
         self.client.login(username="nexb_user", password="secret")
         response = self.client.get(url)
         self.assertContains(response, "#{}".format(self.request1.id))
+
+    def test_workflow_request_list_view_search_excludes_hidden_private_requests(self):
+        self.request1.notes = "confidential-merger"
+        self.request1.is_private = True
+        self.request1.save()
+        url = reverse("workflow:request_list") + "?q=confidential-merger"
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertNotIn(self.request1, response.context["object_list"])
+
+        self.client.login(username="nexb_user", password="secret")
+        response = self.client.get(url)
+        self.assertIn(self.request1, response.context["object_list"])
+
+    def test_workflow_request_list_view_search_does_not_change_hidden_choices(self):
+        self.request1.notes = "confidential-merger"
+        self.request1.is_private = True
+        self.request1.save()
+        list_url = reverse("workflow:request_list")
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(f"{list_url}?q=confidential-merger")
+        self.assertEqual([], list(response.context["filter"].filters["requester"].queryset))
+
+        self.client.login(username="nexb_user", password="secret")
+        response = self.client.get(f"{list_url}?q=confidential-merger")
+        requester_choices = list(response.context["filter"].filters["requester"].queryset)
+        self.assertEqual([self.request1.requester], requester_choices)
 
     def test_workflow_request_list_view_annotate_count(self):
         url = reverse("workflow:request_list")
@@ -370,6 +401,22 @@ class RequestUserViewsTestCase(TestCase):
         self.assertContains(response, 'name="submit_as_private"')
         self.assertContains(response, 'name="save_draft"')
         self.assertContains(response, 'name="submit"')
+
+    def test_workflow_request_add_view_applies_to_product_permission(self):
+        product = self.product_ct.model_class().objects.create(
+            name="Hidden Product", version="1.0", dataspace=self.nexb_dataspace
+        )
+        self.request_template1.content_type = self.product_ct
+        self.request_template1.save()
+        url = f"{self.request_template1.get_absolute_url()}?content_object_id={product.id}"
+
+        self.client.login(username=self.basic_user.username, password="secret")
+        response = self.client.get(url)
+        self.assertNotContains(response, "Hidden Product")
+
+        assign_perm("view_product", self.basic_user, product)
+        response = self.client.get(url)
+        self.assertContains(response, "Hidden Product")
 
     def test_workflow_request_add_view_include_applies_to(self):
         self.client.login(username="nexb_user", password="secret")
@@ -700,6 +747,15 @@ class RequestUserViewsTestCase(TestCase):
         )
         self.assertTrue(request_instance)
         self.assertFalse(request_instance.is_private)
+
+    def test_workflow_get_add_request_link_escapes_template_name(self):
+        self.request_template1.name = "<b>Template</b>"
+
+        expected = (
+            f'<a href="{self.request_template1.get_absolute_url()}">'
+            'Add a new "&lt;b&gt;Template&lt;/b&gt;" Request</a>'
+        )
+        self.assertEqual(expected, get_add_request_link(self.request_template1))
 
     def test_workflow_request_add_view_submit_form_with_content_object(self):
         self.client.login(username="nexb_user", password="secret")
@@ -1471,6 +1527,24 @@ class RequestUserViewsTestCase(TestCase):
         </a>
         """
         self.assertContains(response, expected, html=True)
+
+    def test_workflow_request_send_attachment_view_product_permission(self):
+        product = self.product_ct.model_class().objects.create(
+            name="Product1", dataspace=self.nexb_dataspace
+        )
+        self.request1.product_context = product
+        self.request1.save()
+        self.client.login(username="nexb_user", password="secret")
+        self._post_file_data(self.request1.get_absolute_url(), Path(__file__))
+        attachment = self.request1.attachments.latest("id")
+        attachment_url = reverse("workflow:send_attachment", args=[attachment.uuid])
+
+        assign_perm("view_product", self.basic_user, product)
+        self.client.login(username=self.basic_user.username, password="secret")
+        self.assertEqual(200, self.client.get(attachment_url).status_code)
+
+        remove_perm("view_product", self.basic_user, product)
+        self.assertEqual(404, self.client.get(attachment_url).status_code)
 
     def test_workflow_request_send_attachment_view(self):
         self.client.login(username="nexb_user", password="secret")

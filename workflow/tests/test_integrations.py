@@ -339,6 +339,7 @@ class JiraIntegrationTestCase(TestCase):
         self.addCleanup(patcher.stop)
 
         self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace.set_configuration("jira_url", "https://example.atlassian.net")
         self.dataspace.set_configuration("jira_user", "fake-user")
         self.dataspace.set_configuration("jira_token", "fake-token")
         self.super_user = create_superuser("nexb_user", self.dataspace)
@@ -408,6 +409,23 @@ class JiraIntegrationTestCase(TestCase):
         self.assertIn("Some value", body)
 
     @mock.patch("requests.Session.request")
+    def test_jira_credentials_only_sent_to_configured_url(self, mock_request):
+        self.jira.api_url = "https://attacker.atlassian.net/rest/api/3"
+        with self.assertRaises(ValueError):
+            self.jira.create_issue(project_key="PROJ", title="Issue Title")
+        mock_request.assert_not_called()
+
+    @mock.patch("requests.Session.request")
+    def test_jira_post_comment_on_another_host(self, mock_request):
+        with self.assertRaises(ValueError):
+            self.jira.post_comment(
+                repo_id="https://attacker.atlassian.net",
+                issue_id="PROJ-123",
+                comment_body="Test comment",
+            )
+        mock_request.assert_not_called()
+
+    @mock.patch("requests.Session.request")
     def test_jira_create_issue_calls_post(self, mock_request):
         mock_request.return_value.json.return_value = {"key": "PROJ-123"}
         mock_request.return_value.raise_for_status.return_value = None
@@ -458,6 +476,7 @@ class ForgejoIntegrationTestCase(TestCase):
         self.addCleanup(patcher.stop)
 
         self.dataspace = Dataspace.objects.create(name="nexB")
+        self.dataspace.set_configuration("forgejo_url", "https://code.forgejo.org")
         self.dataspace.set_configuration("forgejo_token", "fake-token")
         self.super_user = create_superuser("nexb_user", self.dataspace)
         self.component_ct = ContentType.objects.get(
@@ -483,6 +502,30 @@ class ForgejoIntegrationTestCase(TestCase):
             serialized_data='{"Example Question": "Some value"}',
         )
         self.forgejo = ForgejoIntegration(dataspace=self.dataspace)
+
+    def test_forgejo_is_allowed_url(self):
+        self.assertTrue(self.forgejo.is_allowed_url("https://code.forgejo.org/api/v1/repos"))
+        self.assertFalse(self.forgejo.is_allowed_url("https://forgejo.attacker.example/api/v1"))
+        self.assertFalse(self.forgejo.is_allowed_url("https://code.forgejo.org.attacker.example/"))
+        self.assertFalse(self.forgejo.is_allowed_url("https://code.forgejo.org@attacker.example/"))
+
+        self.dataspace.set_configuration("forgejo_url", "")
+        self.assertFalse(self.forgejo.is_allowed_url("https://code.forgejo.org/api/v1/repos"))
+
+    @mock.patch("requests.Session.request")
+    def test_forgejo_sync_with_template_on_another_host(self, mock_request):
+        self.request_template.issue_tracker_id = "https://forgejo.attacker.example/org/repo"
+        self.request_template.save()
+
+        with self.assertRaises(ValueError):
+            self.forgejo.sync(request=self.request)
+        mock_request.assert_not_called()
+
+    def test_forgejo_is_allowed_url_with_trailing_slash_in_configured_url(self):
+        self.dataspace.set_configuration("forgejo_url", "https://code.forgejo.org/")
+        self.assertTrue(self.forgejo.is_allowed_url("https://code.forgejo.org/api/v1/repos"))
+        self.assertTrue(self.forgejo.is_allowed_url("https://code.forgejo.org"))
+        self.assertFalse(self.forgejo.is_allowed_url("https://code.forgejo.org.attacker.example/"))
 
     def test_forgejo_extract_forgejo_info_valid_url(self):
         url = "https://code.forgejo.org/user/repo"

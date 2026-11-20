@@ -125,6 +125,7 @@ class ObjectPermissionsMixin:
                         "object_permissions": list(perms),
                     }
                     for user, perms in users_with_perms.items()
+                    if user.dataspace_id == obj.dataspace_id
                 ],
                 "groups": [
                     {

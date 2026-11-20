@@ -41,6 +41,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.utils.crypto import constant_time_compare
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
@@ -65,6 +66,7 @@ from qrcode.image.svg import SvgPathImage
 from dje.models import DejacodeUser
 
 TWOFA_USER_SESSION_KEY = "_2fa_user_id"
+TWOFA_USER_HASH_SESSION_KEY = "_2fa_user_hash"
 
 
 class TwoFactorEnableForm(OTPAuthenticationFormMixin, forms.Form):
@@ -223,15 +225,12 @@ class EnableView(
     @method_decorator(sensitive_post_parameters())
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        """Redirect if two-factor is already enabled."""
-        two_factor_enabled = django_otp.user_has_device(self.request.user)
+        """Redirect if two-factor is already enabled, for every HTTP method."""
+        two_factor_enabled = django_otp.user_has_device(request.user)
         if two_factor_enabled:
             return redirect(self.get_success_url())
 
-        return super().get(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_key(self):
         """Return the 2FA key from the session if available or generate a new one."""
@@ -326,6 +325,7 @@ class LoginView(DefaultLoginView):
         if two_factor_enabled and not is_verified():
             session = self.request.session
             session[TWOFA_USER_SESSION_KEY] = user.id
+            session[TWOFA_USER_HASH_SESSION_KEY] = user.get_session_auth_hash()
             session[BACKEND_SESSION_KEY] = user.backend
             return HttpResponseRedirect(reverse("account_2fa_verify"))
 
@@ -351,6 +351,11 @@ class VerifyView(DefaultLoginView):
         except models.ObjectDoesNotExist:
             raise Http404
 
+        # A password change since the first login step invalidates the pending login.
+        user_hash = self.request.session.get(TWOFA_USER_HASH_SESSION_KEY, "")
+        if not constant_time_compare(user_hash, user.get_session_auth_hash()):
+            raise Http404
+
         kwargs.update(
             {
                 "user": user,
@@ -374,6 +379,7 @@ class VerifyView(DefaultLoginView):
 
         with suppress(KeyError):
             del session[TWOFA_USER_SESSION_KEY]
+        session.pop(TWOFA_USER_HASH_SESSION_KEY, None)
 
         return HttpResponseRedirect(self.get_success_url())
 

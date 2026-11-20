@@ -136,10 +136,12 @@ def urlize_target_blank(value, autoescape=True):
     Also adds support for `ftp://`.
     """
     if value.startswith("ftp://"):
-        link = f'<a target="_blank" href="{value}" rel="noreferrer nofollow">{value}</a>'
-    else:
-        link = _urlize(value, nofollow=True, autoescape=autoescape)
-        link = link.replace("<a", '<a target="_blank"')
+        return format_html(
+            '<a target="_blank" href="{}" rel="noreferrer nofollow">{}</a>', value, value
+        )
+
+    link = _urlize(value, nofollow=True, autoescape=autoescape)
+    link = link.replace("<a", '<a target="_blank"')
     return mark_safe(link)
 
 

@@ -13,6 +13,7 @@ from django.core.exceptions import NON_FIELD_ERRORS
 from django.db.models import PositiveSmallIntegerField
 from django.forms import HiddenInput
 from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
@@ -337,8 +338,8 @@ class ColumnTemplateAdmin(DataspacedAdmin):
 
     @admin.display(description=_("Assigned fields"))
     def get_field_names(self, instance):
-        field_names = [assigned_field.field_name for assigned_field in instance.fields.all()]
-        return mark_safe("<br>".join(field_names))
+        field_names = ((assigned_field.field_name,) for assigned_field in instance.fields.all())
+        return format_html_join(mark_safe("<br>"), "{}", field_names)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

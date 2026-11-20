@@ -404,8 +404,9 @@ class DataspacedRelatedFieldMixin:
     if provided.
     """
 
-    def __init__(self, scope_content_type=False, **kwargs):
+    def __init__(self, scope_content_type=False, perms=None, **kwargs):
         self.scope_content_type = scope_content_type
+        self.perms = perms
         super().__init__(**kwargs)
 
     def get_queryset(self):
@@ -423,7 +424,8 @@ class DataspacedRelatedFieldMixin:
             if not queryset:
                 manager = field.related_model.objects
                 if is_secured(manager):
-                    queryset = manager.get_queryset(user=user)
+                    perms_kwargs = {"perms": self.perms} if self.perms else {}
+                    queryset = manager.get_queryset(user=user, **perms_kwargs)
                 else:
                     queryset = manager.all()
 

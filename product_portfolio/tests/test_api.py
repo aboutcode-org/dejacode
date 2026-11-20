@@ -11,6 +11,7 @@ import uuid
 from pathlib import Path
 from unittest import mock
 
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.files.base import ContentFile
 from django.test import TestCase
@@ -360,6 +361,27 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         product1 = Product.unsecured_objects.get(pk=self.product1.pk)
         self.assertEqual("Updated Name", product1.name)
 
+    def test_api_product_endpoint_update_requires_object_change_permission(self):
+        patch_data = json.dumps({"name": "Updated Name"})
+        add_perm(self.admin_user, "change_product")
+        assign_perm("view_product", self.admin_user, self.product1)
+        self.client.login(username=self.admin_user.username, password="secret")
+
+        response = self.client.patch(
+            self.product1_detail_url, data=patch_data, content_type="application/json"
+        )
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        product1 = Product.unsecured_objects.get(pk=self.product1.pk)
+        self.assertEqual(self.product1.name, product1.name)
+
+        assign_perm("change_product", self.admin_user, self.product1)
+        response = self.client.patch(
+            self.product1_detail_url, data=patch_data, content_type="application/json"
+        )
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        product1 = Product.unsecured_objects.get(pk=self.product1.pk)
+        self.assertEqual("Updated Name", product1.name)
+
     def test_api_product_endpoint_imports_action(self):
         url = reverse("api_v2:product-imports", args=[self.product1.uuid])
 
@@ -530,9 +552,12 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Required permissions
+        # Required permissions: the object view permission alone is not enough
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        assign_perm("change_product", self.base_user, self.product1)
 
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -560,9 +585,12 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Required permissions
+        # Required permissions: the object view permission alone is not enough
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        assign_perm("change_product", self.base_user, self.product1)
 
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -597,7 +625,7 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
         response = self.client.post(url, data={"name": self.product1.name, "version": "2.0"})
-        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
         assign_perm("change_product", self.base_user, self.product1)
 
@@ -642,9 +670,12 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Required permissions
+        # Required permissions: the object view permission alone is not enough
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        assign_perm("change_product", self.base_user, self.product1)
 
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -687,9 +718,12 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
-        # Required permissions
+        # Required permissions: the object view permission alone is not enough
         add_perm(self.base_user, "add_product")
         assign_perm("view_product", self.base_user, self.product1)
+        response = self.client.post(url, data={})
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        assign_perm("change_product", self.base_user, self.product1)
 
         response = self.client.post(url, data={})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
@@ -771,6 +805,25 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url, data={"spec_version": "10.10"})
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual("Spec version 10.10 not supported", response.data)
+
+    def test_api_product_endpoint_manage_permissions_excludes_other_dataspace_users(self):
+        team = Group.objects.create(name="shared-team")
+        local_user = create_user("local_user", self.dataspace)
+        local_user.groups.add(team)
+        other_dataspace = Dataspace.objects.create(name="Other Dataspace")
+        other_user = create_user("other_user", other_dataspace)
+        other_user.groups.add(team)
+        assign_perm("view_product", team, self.product1)
+
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("api_v2:product-manage-permissions", args=[self.product1.uuid])
+        response = self.client.get(url)
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        usernames = [user["username"] for user in response.data["users"]]
+        self.assertIn(local_user.username, usernames)
+        self.assertNotIn(other_user.username, usernames)
+        self.assertEqual([team.name], [group["name"] for group in response.data["groups"]])
 
     def test_api_product_endpoint_manage_permissions_action(self):
         from django.contrib.auth.models import Group
@@ -1001,6 +1054,19 @@ class ProductAPITestCase(MaxQueryMixin, TestCase):
         self.assertTrue(entries_by_name[assigned_ruleset.name]["assigned"])
         self.assertFalse(entries_by_name[unassigned_ruleset.name]["assigned"])
         self.assertNotIn("Disabled Ruleset", entries_by_name)
+
+    def test_api_product_endpoint_manage_triage_rulesets_post_requires_change(self):
+        url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
+        self.client.login(username=self.base_user.username, password="secret")
+        add_perm(self.base_user, "add_product")
+        assign_perm("view_product", self.base_user, self.product1)
+        ruleset = make_triage_ruleset(self.dataspace)
+
+        self.assertEqual(status.HTTP_200_OK, self.client.get(url).status_code)
+        data = {"ruleset": str(ruleset.uuid), "assigned": True}
+        response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertFalse(ProductTriageRuleset.objects.filter(product=self.product1).exists())
 
     def test_api_product_endpoint_manage_triage_rulesets_post_assigns(self):
         url = reverse("api_v2:product-manage-triage-rulesets", args=[self.product1.uuid])
@@ -1413,8 +1479,13 @@ class ProductRelatedAPITestCase(TestCase):
         response = self.client.post(self.productcomponent_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
+        # The object-level view permission on the Product is not enough
         assign_perm("view_product", self.admin_user, self.product1)
         add_perm(self.admin_user, "add_productcomponent")
+        response = self.client.post(self.productcomponent_list_url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        assign_perm("change_product", self.admin_user, self.product1)
         response = self.client.post(self.productcomponent_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
@@ -1541,6 +1612,7 @@ class ProductRelatedAPITestCase(TestCase):
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
         assign_perm("view_product", self.admin_user, self.product1)
+        assign_perm("change_product", self.admin_user, self.product1)
         add_perm(self.admin_user, "add_productcomponent")
         response = self.client.post(self.productcomponent_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
@@ -1658,8 +1730,13 @@ class ProductRelatedAPITestCase(TestCase):
         response = self.client.post(self.productpackage_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
+        # The object-level view permission on the Product is not enough
         assign_perm("view_product", self.admin_user, self.product1)
         add_perm(self.admin_user, "add_productpackage")
+        response = self.client.post(self.productpackage_list_url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        assign_perm("change_product", self.admin_user, self.product1)
         response = self.client.post(self.productpackage_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
@@ -1954,10 +2031,31 @@ class ProductRelatedAPITestCase(TestCase):
         response = self.client.post(self.codebase_resource_list_url, data)
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
+        # The object-level view permission on the Product is not enough
         assign_perm("view_product", self.admin_user, self.product1)
         add_perm(self.admin_user, "add_codebaseresource")
         response = self.client.post(self.codebase_resource_list_url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+        assign_perm("change_product", self.admin_user, self.product1)
+        response = self.client.post(self.codebase_resource_list_url, data)
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+
+    def test_api_codebaseresource_endpoint_update_to_view_only_product(self):
+        add_perm(self.admin_user, "change_codebaseresource")
+        assign_perm("view_product", self.admin_user, self.product1)
+        assign_perm("change_product", self.admin_user, self.product1)
+        assign_perm("view_product", self.admin_user, self.product2)
+        self.client.login(username=self.admin_user.username, password="secret")
+
+        product2_detail_url = reverse("api_v2:product-detail", args=[self.product2.uuid])
+        patch_data = json.dumps({"product": product2_detail_url})
+        response = self.client.patch(
+            self.codebase_resource1_detail_url, data=patch_data, content_type="application/json"
+        )
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.codebase_resource1.refresh_from_db()
+        self.assertEqual(self.product1, self.codebase_resource1.product)
 
     def test_api_codebaseresource_endpoint_create_full(self):
         self.client.login(username="super_user", password="secret")

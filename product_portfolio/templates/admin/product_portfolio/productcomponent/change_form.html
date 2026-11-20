@@ -11,9 +11,15 @@
 
             if (custom_name) {
                 let value = 'Lookup Component using "' + custom_name + '" from Custom Component name';
-                let custom_lookup_link = '<a href="#" class="custom-lookup">' + value + '</a>';
+                const custom_lookup_link = document.createElement('a');
+                custom_lookup_link.href = '#';
+                custom_lookup_link.className = 'custom-lookup';
+                custom_lookup_link.textContent = value;
+                const custom_lookup_wrapper = document.createElement('div');
+                custom_lookup_wrapper.style.paddingTop = '5px';
+                custom_lookup_wrapper.append(custom_lookup_link);
                 let related_component_input_c2 = $(".row.component .c-2");
-                related_component_input_c2.append('<div style="padding-top:5px;">' + custom_lookup_link + '</div>');
+                related_component_input_c2.append(custom_lookup_wrapper);
 
                 let lookup_id_component = $("#lookup_id_component");
                 $('.custom-lookup').click(function(e) {

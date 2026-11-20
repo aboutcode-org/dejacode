@@ -35,6 +35,7 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.staticfiles import finders
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.core.validators import EMPTY_VALUES
 from django.db import models
@@ -54,6 +55,7 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html
 from django.utils.html import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
@@ -102,6 +104,7 @@ from dje.models import History
 from dje.models import HistoryFieldsMixin
 from dje.models import is_secured
 from dje.permissions import get_authorized_tabs
+from dje.permissions import get_protected_fields
 from dje.tasks import call_management_command
 from dje.templatetags.dje_tags import urlize_target_blank
 from dje.urn import URNValidationError
@@ -1165,7 +1168,7 @@ class ObjectDetailsView(
                 return
             referer_path = urlparse(self.request.META.get("HTTP_REFERER")).path
             if referer_path != self.request.path:
-                return f'<a href="{referer_path}">Return to {verbose_name}</a>'
+                return format_html('<a href="{}">Return to {}</a>', referer_path, verbose_name)
 
     def get_context_data(self, **kwargs):
         """
@@ -1425,10 +1428,20 @@ def object_copy_view(request):
         model_class = get_model_class_from_path(request.path)
         config_form = CopyConfigurationForm(request.user, request.POST)
 
-        if not config_form.is_valid():
+        if not config_form.is_valid() or config_form.model_class != model_class:
             raise Http404
 
-        model_class = config_form.model_class
+        copy_candidates = request.POST.get("copy_candidates", "")
+        selected_for_update = request.POST.getlist("select_for_update")
+        missing_copy_permission = copy_candidates and not has_permission(
+            model_class, request.user, "add"
+        )
+        missing_update_permission = selected_for_update and not has_permission(
+            model_class, request.user, "change"
+        )
+        if missing_copy_permission or missing_update_permission:
+            raise PermissionDenied
+
         opts = model_class._meta
         preserved_filters = get_preserved_filters(
             request, model_class, parameter_name="_changelist_filters"
@@ -1436,8 +1449,11 @@ def object_copy_view(request):
 
         # We use False rather than empty list to keep track of the non-selection
         # vs unknown in lower level copy method.
-        exclude_copy = {model_class: config_form.cleaned_data.get("exclude_copy")}
-        exclude_update = {model_class: config_form.cleaned_data.get("exclude_update")}
+        protected_fields = get_protected_fields(model_class, request.user)
+        exclude_copy = {model_class: [*config_form.cleaned_data["exclude_copy"], *protected_fields]}
+        exclude_update = {
+            model_class: [*config_form.cleaned_data["exclude_update"], *protected_fields]
+        }
 
         # Append the m2m copy configuration
         for m2m_form in m2m_formset_class(request.POST, form_kwargs={"user": request.user}):
@@ -1457,9 +1473,6 @@ def object_copy_view(request):
                     else cleaned_data.get("exclude_update")
                 }
             )
-
-        copy_candidates = request.POST.get("copy_candidates", "")
-        selected_for_update = request.POST.getlist("select_for_update")
 
         source, copied, updated, errors = config_form.submit(
             copy_candidates, selected_for_update, exclude_copy, exclude_update
@@ -1572,23 +1585,28 @@ def object_compare_view(request):
     except ObjectDoesNotExist:
         return redirect(redirect_url)
 
+    # As a non-Reference user, the Reference Dataspace is the only allowed source.
+    if not request.user.dataspace.is_reference and not source_object.dataspace.is_reference:
+        return redirect(redirect_url)
+
     target_object = get_object_in(source_object, target_dataspace)
     if not target_object:
         error = f'No related object in the Dataspace "{target_dataspace}"'
         messages.warning(request, error)
         return redirect(redirect_url)
 
+    excluded = [
+        "last_modified_date",
+        "created_date",
+        "completion_level",
+        "usage_policy",
+        "guidance",
+        "guidance_url",
+        *get_protected_fields(model_class, request.user),
+    ]
+
     # First section of the view, presenting the per filed diff.
     if request.method == "GET":
-        excluded = [
-            "last_modified_date",
-            "created_date",
-            "completion_level",
-            "usage_policy",
-            "guidance",
-            "guidance_url",
-        ]
-
         compare_diff, compare_diff_m2m = get_object_compare_diff(
             source_object, target_object, excluded
         )
@@ -1607,9 +1625,16 @@ def object_compare_view(request):
         )
 
     # POST section of the view
+    compare_diff, _ = get_object_compare_diff(source_object, target_object, excluded)
+    comparable_field_names = {field.name for field in compare_diff}
+    selected_field_names = request.POST.getlist("checkbox_select")
+    has_invalid_field = not comparable_field_names.issuperset(selected_field_names)
+    if not has_permission(model_class, request.user, "change") or has_invalid_field:
+        raise PermissionDenied
+
     updated_fields = []
 
-    for field_name in request.POST.getlist("checkbox_select"):
+    for field_name in selected_field_names:
         field = source_object._meta.get_field(field_name)
         field_value = getattr(source_object, field_name)
 

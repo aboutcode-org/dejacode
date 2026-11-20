@@ -13,6 +13,8 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from dje.admin import DataspaceConfigurationForm
+from dje.admin import HiddenValueWidget
 from dje.admin import PolicyRulesConfigurationForm
 from dje.copier import copy_object
 from dje.filters import DataspaceFilter
@@ -352,6 +354,23 @@ class DataspacedModelAdminTestCase(TestCase):
         self.assertNotIn(copied_owner1, queryset)
         self.assertNotIn(owner2, queryset)
         self.assertIn(other_owner3, queryset)
+
+    def test_dataspace_configuration_form_requires_url_with_integration_token(self):
+        configuration = DataspaceConfiguration(dataspace=self.dataspace)
+        form = DataspaceConfigurationForm(data={"forgejo_token": "token"}, instance=configuration)
+        self.assertFalse(form.is_valid())
+        self.assertIn("forgejo_url", form.errors)
+
+        data = {"forgejo_token": "token", "forgejo_url": "https://forgejo.example.com"}
+        form = DataspaceConfigurationForm(data=data, instance=configuration)
+        self.assertTrue(form.is_valid(), form.errors)
+
+        # A stored token, left unchanged in the hidden field, also requires the URL.
+        configuration.jira_token = "stored-token"
+        data = {"jira_token": HiddenValueWidget.HIDDEN_VALUE}
+        form = DataspaceConfigurationForm(data=data, instance=configuration)
+        self.assertFalse(form.is_valid())
+        self.assertIn("jira_url", form.errors)
 
 
 class PermissionsTestCase(TestCase):

@@ -49,7 +49,9 @@ class RequestAPITestCase(TestCase):
         self.dataspace = Dataspace.objects.create(name="nexB")
         self.alternate_dataspace = Dataspace.objects.create(name="Alternate")
         self.base_user = create_user("base_user", self.dataspace, workflow_email_notification=True)
-        self.admin_user = create_admin("admin_user", self.dataspace)
+        self.admin_user = create_admin(
+            "admin_user", self.dataspace, workflow_email_notification=True
+        )
         self.super_user = create_superuser("super_user", self.dataspace)
 
         self.request_list_url = reverse("api_v2:request-list")
@@ -375,7 +377,7 @@ class RequestAPITestCase(TestCase):
             "title": "Title",
             "request_template": self.request_template1_detail_url,
             "status": Request.Status.OPEN,
-            "assignee": self.base_user.username,
+            "assignee": self.admin_user.username,
             "notes": "some notes",
             "is_private": True,
             "product_context": "",
@@ -400,7 +402,7 @@ class RequestAPITestCase(TestCase):
         self.assertIn("- Product context: (none)", body)
         self.assertIn("- Applies to: (none)", body)
         self.assertIn("- Submitted by: super_user", body)
-        self.assertIn("- Assigned to: base_user", body)
+        self.assertIn("- Assigned to: admin_user", body)
         self.assertIn("- Priority: (none)", body)
         self.assertIn(request.get_absolute_url(), body)
 

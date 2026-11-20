@@ -156,6 +156,9 @@ def successful_mass_update(sender, action, request, queryset, modeladmin, form, 
         if instance.__class__ == Component:
             instance.update_completion_level()
 
+    if History.CHANGE not in getattr(modeladmin, "email_notification_on", []):
+        return
+
     # Send 1 email notification including all the modified objects.
     message = "Changes details:\n\n"
     message += "\n\n".join(f"* {field}\nNew value: {value}" for field, value in changes)

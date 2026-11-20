@@ -168,6 +168,7 @@ class DataspacedFilterSet(FilterSetUtilsMixin, django_filters.FilterSet):
 
         filterset = self.__class__(
             data=data,
+            request=self.request,
             dataspace=self.dataspace,
             queryset=parent_qs,
             dynamic_qs=False,

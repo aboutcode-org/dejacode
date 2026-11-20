@@ -16,6 +16,10 @@
 </div>
 {% if notice.description %}
   <small class="mb-0 text-muted">
-    {{ notice.description|safe|linebreaksbr }}
+    {% if action_object_content_type.model == "vulnerability" %}
+      <a href="{% url 'vulnerabilities:vulnerability_list' %}?last_modified_date=today" target="_blank">{{ notice.description }}</a>
+    {% else %}
+      {{ notice.description|linebreaksbr }}
+    {% endif %}
   </small>
 {% endif %}

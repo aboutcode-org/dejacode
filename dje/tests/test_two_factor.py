@@ -13,9 +13,11 @@ from django.urls import reverse
 import django_otp
 from django_otp.oath import totp as oauth_totp
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.plugins.otp_totp.models import default_key
 
 from dje.models import Dataspace
 from dje.tests import create_user
+from dje.two_factor import EnableView
 from dje.two_factor import TwoFactorDisableForm
 from dje.two_factor import TwoFactorVerifyForm
 
@@ -99,6 +101,22 @@ class TwoFactorAuthenticationTestCase(TestCase):
 
         response = self.client.get(self.tfa_enable_url)
         self.assertRedirects(response, self.profile_url)
+
+    def test_two_factor_authentication_enable_2fa_with_existing_device(self):
+        device = self._create_device(self.user)
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.tfa_enable_url, data={})
+        self.assertRedirects(response, self.profile_url)
+
+        new_key = default_key()
+        session = self.client.session
+        session[EnableView.session_key_name] = new_key
+        session.save()
+        valid_token = self._get_valid_token(TOTPDevice(key=new_key).bin_key)
+        response = self.client.post(self.tfa_enable_url, data={"token": valid_token})
+        self.assertRedirects(response, self.profile_url)
+        self.assertEqual([device], list(django_otp.devices_for_user(self.user)))
 
     def test_two_factor_authentication_disable_2fa(self):
         response = self.client.get(self.tfa_disable_url)
@@ -191,6 +209,52 @@ class TwoFactorAuthenticationTestCase(TestCase):
         self.assertIn("_auth_user_id", session_keys)
         self.assertIn("_auth_user_hash", session_keys)
         self.assertIn("otp_device_id", session_keys)
+
+    def test_two_factor_authentication_alternate_login_routes_redirect_to_login(self):
+        self._create_device(self.user)
+        data = {"username": self.user.username, "password": "secret"}
+        alternate_login_urls = ["/account/login/", reverse("admin:login")]
+
+        for alternate_login_url in alternate_login_urls:
+            with self.subTest(alternate_login_url=alternate_login_url):
+                response = self.client.post(f"{alternate_login_url}?next=/admin/", data=data)
+                self.assertRedirects(
+                    response, f"{self.login_url}?next=/admin/", fetch_redirect_response=False
+                )
+                self.assertNotIn("_auth_user_id", self.client.session.keys())
+
+    def test_two_factor_authentication_admin_login_default_next_is_admin_index(self):
+        response = self.client.get(reverse("admin:login"))
+        expected_url = f"{self.login_url}?next={reverse('admin:index')}"
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
+
+    def test_two_factor_authentication_password_change_invalidates_pending_login(self):
+        device = self._create_device(self.user)
+        data = {"username": self.user.username, "password": "secret"}
+        response = self.client.post(self.login_url, data=data)
+        self.assertRedirects(response, self.tfa_verify_url)
+
+        self.user.set_password("new-Secret-p4ssword!")
+        self.user.save()
+
+        data = {
+            "otp_token": self._get_valid_token(device.bin_key),
+            "otp_device": device.persistent_id,
+        }
+        response = self.client.post(self.tfa_verify_url, data=data)
+        self.assertEqual(404, response.status_code)
+        self.assertNotIn("_auth_user_id", self.client.session.keys())
+
+    def test_two_factor_authentication_admin_login_authenticated_user_without_access(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("admin:login"))
+        self.assertEqual(403, response.status_code)
+
+        self.user.is_staff = True
+        self.user.save()
+        response = self.client.get(reverse("admin:login"))
+        expected_url = f"{self.login_url}?next={reverse('admin:index')}"
+        self.assertRedirects(response, expected_url, target_status_code=302)
 
     def test_two_factor_authentication_token_form_preselects_user_device(self):
         device = self._create_device(self.user)

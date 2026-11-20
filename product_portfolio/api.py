@@ -503,8 +503,6 @@ class ProductViewSet(
     lookup_field = "uuid"
     # `IsAuthenticated` and `DjangoModelPermissions` are the default values
     # set in the `DEFAULT_PERMISSION_CLASSES` settings.
-    # See http://www.django-rest-framework.org/api-guide/permissions/#djangoobjectpermissions
-    extra_permissions = (permissions.DjangoObjectPermissions,)
     search_fields = (
         "name",
         "version",
@@ -527,8 +525,13 @@ class ProductViewSet(
     )
 
     def get_queryset(self):
+        perms = ["view_product"]
+        # The permissions action has its own rules, which allow the Product creator.
+        if self.request.method not in SAFE_METHODS and self.action != "manage_permissions":
+            perms.append("change_product")
+
         return (
-            Product.objects.get_queryset(self.request.user)
+            Product.objects.get_queryset(self.request.user, perms=perms)
             .select_related(
                 "owner",
                 "configuration_status",
@@ -793,6 +796,7 @@ class BaseProductRelationSerializer(ValidateLicenseExpressionMixin, DataspacedSe
         view_name="api_v2:product-detail",
         lookup_field="uuid",
         allow_null=False,
+        perms=["view_product", "change_product"],
     )
     review_status = DataspacedSlugRelatedField(
         slug_field="label",
@@ -1098,6 +1102,7 @@ class CodebaseResourceSerializer(DataspacedSerializer):
         view_name="api_v2:product-detail",
         lookup_field="uuid",
         allow_null=False,
+        perms=["view_product", "change_product"],
     )
     deployed_to = DataspacedSlugRelatedField(
         many=True,
@@ -1212,6 +1217,7 @@ class ProductDependencySerializer(DataspacedSerializer):
         view_name="api_v2:product-detail",
         lookup_field="uuid",
         allow_null=False,
+        perms=["view_product", "change_product"],
     )
     for_package = DataspacedHyperlinkedRelatedField(
         view_name="api_v2:package-detail",

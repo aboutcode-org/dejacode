@@ -185,3 +185,4 @@ class VulnerabilitiesFetchTestCase(TestCase):
         self.assertEqual(1, Notification.objects.count())
         notification = Notification.objects.get()
         self.assertEqual("New vulnerabilities detected", notification.verb)
+        self.assertEqual("1 vulnerabilities affecting 1 packages", notification.description)

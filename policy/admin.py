@@ -11,6 +11,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.template.defaultfilters import linebreaksbr
 from django.urls import path
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.html import urlize
 from django.utils.translation import gettext_lazy as _
@@ -97,11 +98,13 @@ class UsagePolicyAdmin(ColoredIconAdminMixin, DataspacedAdmin):
     )
 
     def associated_policies(self, obj):
-        return mark_safe(
-            "<br>".join(
-                association.to_policy.str_with_content_type()
+        return format_html_join(
+            mark_safe("<br>"),
+            "{}",
+            (
+                (association.to_policy.str_with_content_type(),)
                 for association in obj.to_policies.all()
-            )
+            ),
         )
 
     def get_queryset(self, request):

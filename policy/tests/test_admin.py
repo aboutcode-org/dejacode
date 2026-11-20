@@ -11,10 +11,13 @@ from django.test import TestCase
 from django.urls import reverse
 
 from component_catalog.models import Component
+from dje.admin import dejacode_site
 from dje.models import Dataspace
 from dje.tests import create_superuser
 from license_library.models import License
 from organization.models import Owner
+from policy.admin import UsagePolicyAdmin
+from policy.models import AssociatedPolicy
 from policy.models import UsagePolicy
 
 
@@ -48,6 +51,19 @@ class UsagePolicyInAdminViewsTestCase(TestCase):
             content_type=self.component_ct,
             dataspace=self.other_dataspace,
         )
+
+    def test_usage_policy_admin_associated_policies_escapes_label(self):
+        self.component_policy.label = "<img src=x onerror=alert(1)>"
+        self.component_policy.save()
+        AssociatedPolicy.objects.create(
+            from_policy=self.license_policy,
+            to_policy=self.component_policy,
+            dataspace=self.dataspace,
+        )
+
+        model_admin = UsagePolicyAdmin(UsagePolicy, dejacode_site)
+        expected = "&lt;img src=x onerror=alert(1)&gt; (component)"
+        self.assertEqual(expected, model_admin.associated_policies(self.license_policy))
 
     def test_usage_policy_scoped_by_content_type_in_change_form(self):
         self.client.login(username="test", password="secret")

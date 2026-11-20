@@ -1501,6 +1501,32 @@ class ComponentCatalogModelsTestCase(TestCase):
         )
         self.assertEqual(expected, comp.get_license_expression_attribution())
 
+    def test_license_expression_mixin_attribution_escapes_license_short_name(self):
+        self.license1.short_name = "<img src=x onerror=alert(1)>"
+        self.license1.save()
+        component = Component.objects.create(
+            name="c 1",
+            dataspace=self.dataspace,
+            license_expression=self.license1.key,
+        )
+
+        expected = '<a href="#license_license1">&lt;img src=x onerror=alert(1)&gt;</a>'
+        self.assertEqual(expected, component.get_license_expression_attribution())
+
+    def test_package_model_create_from_url_already_exists_message_escapes_url(self):
+        download_url = "https://dejacode.com/<img src=x>.zip"
+        package = Package.objects.create(
+            filename="archive.zip", download_url=download_url, dataspace=self.dataspace
+        )
+
+        with self.assertRaises(PackageAlreadyExistsWarning) as context:
+            Package.create_from_url(url=download_url, user=self.user)
+        expected = (
+            "https://dejacode.com/&lt;img src=x&gt;.zip already exists in your Dataspace as "
+            f"{package.get_absolute_link()}"
+        )
+        self.assertEqual(expected, context.exception.message)
+
     def test_license_expression_mixin_get_primary_license(self):
         or_license = License.objects.create(
             key="orrible",

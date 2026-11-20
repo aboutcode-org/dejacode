@@ -383,6 +383,40 @@ class DJEViewsTestCase(TestCase):
         self.assertRedirects(response, unread_url)
         self.assertEqual(0, self.user.notifications.unread().count())
 
+    def test_notifications_list_view_escapes_description(self):
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.super_user,
+            verb="commented on Request",
+            action_object=self.owner1,
+            description="<img src=x onerror=alert(1)>",
+        )
+
+        self.client.login(username=self.user.username, password="secret")
+        response = self.client.get(reverse("notifications:all"))
+        self.assertContains(response, "&lt;img src=x onerror=alert(1)&gt;")
+        self.assertNotContains(response, "<img src=x onerror")
+
+    def test_notifications_list_view_vulnerability_data_update_link(self):
+        Notification.objects.create(
+            recipient=self.user,
+            actor=self.user,
+            verb="New vulnerabilities detected",
+            description="2 vulnerabilities affecting 1 packages",
+            action_object_content_type=ContentType.objects.get_for_model(
+                apps.get_model("vulnerabilities", "Vulnerability")
+            ),
+        )
+
+        self.client.login(username=self.user.username, password="secret")
+        response = self.client.get(reverse("notifications:all"))
+        vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
+        expected = (
+            f'<a href="{vulnerability_list_url}?last_modified_date=today" target="_blank">'
+            "2 vulnerabilities affecting 1 packages</a>"
+        )
+        self.assertContains(response, expected, html=True)
+
     def test_notifications_list_views(self):
         def get_verbs_by_model(grouped_notifications):
             return {

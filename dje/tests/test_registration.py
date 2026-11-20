@@ -6,6 +6,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import time
 from datetime import timedelta
 from unittest.mock import patch
 
@@ -24,6 +25,7 @@ from django_registration.backends.activation.views import REGISTRATION_SALT
 from django_registration.backends.activation.views import RegistrationView
 
 from dje.registration import REGISTRATION_DEFAULT_GROUPS
+from dje.registration import get_activation_key_timestamp
 from dje.tests import get_activation_key_from_email
 from dje.tests import refresh_url_cache
 
@@ -159,6 +161,31 @@ class DejaCodeUserRegistrationTestCase(TestCase):
             follow=True,
         )
         self.assertContains(response, "account is now active")
+
+    def test_user_registration_activation_key_replay_after_login_is_rejected(self):
+        self.client.post(reverse("django_registration_register"), self.registration_data)
+        activation_key = get_activation_key_from_email(mail.outbox[1].body)
+        user = get_user_model().objects.get(username=self.registration_data["username"])
+
+        # The user logged in after the key was issued, then was disabled.
+        user.last_login = timezone.now() + timedelta(seconds=2)
+        user.is_active = False
+        user.save()
+
+        activation_url = reverse("django_registration_activate")
+        response = self.client.post(activation_url, data={"activation_key": activation_key})
+        self.assertContains(response, "has already been activated")
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+    def test_user_registration_get_activation_key_timestamp(self):
+        before_timestamp = int(time.time())
+        activation_key = signing.dumps(obj="username", salt=REGISTRATION_SALT)
+        after_timestamp = int(time.time())
+
+        key_timestamp = get_activation_key_timestamp(activation_key)
+        self.assertGreaterEqual(key_timestamp, before_timestamp)
+        self.assertLessEqual(key_timestamp, after_timestamp)
 
     def test_user_registration_activation_form_displayed_on_get(self):
         url = reverse("django_registration_register")

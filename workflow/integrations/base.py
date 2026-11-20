@@ -23,6 +23,8 @@ class BaseIntegration:
     default_timeout = 10
     open_status = "open"
     closed_status = "closed"
+    # Dataspace configuration field holding the only base URL the credentials are sent to.
+    base_url_field_name = None
 
     def __init__(self, dataspace, timeout=None):
         if not dataspace:
@@ -43,8 +45,25 @@ class BaseIntegration:
         """
         raise NotImplementedError
 
+    def is_allowed_url(self, url):
+        """Return True if the integration credentials can be sent to the `url`."""
+        if not self.base_url_field_name:
+            return True
+
+        base_url = self.dataspace.get_configuration(self.base_url_field_name)
+        if not base_url:
+            return False
+
+        base_url = base_url.rstrip("/")
+        return url == base_url or url.startswith(f"{base_url}/")
+
     def request(self, method, url, params=None, data=None, json=None):
         """Send a HTTP request."""
+        if not self.is_allowed_url(url):
+            raise ValueError(
+                f"The {url} URL does not match the {self.base_url_field_name} set on the Dataspace."
+            )
+
         try:
             response = self.session.request(
                 method=method,

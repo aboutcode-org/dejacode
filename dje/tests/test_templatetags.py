@@ -48,6 +48,13 @@ class TemplateTagsTestCase(TestCase):
         for url, expected in inputs:
             self.assertEqual(expected, urlize_target_blank(url))
 
+    def test_dje_templatetags_urlize_target_blank_escapes_ftp_markup(self):
+        expected = (
+            '<a target="_blank" href="ftp://domain.com/&quot;&gt;&lt;img src=x&gt;"'
+            ' rel="noreferrer nofollow">ftp://domain.com/&quot;&gt;&lt;img src=x&gt;</a>'
+        )
+        self.assertEqual(expected, urlize_target_blank('ftp://domain.com/"><img src=x>'))
+
     def test_dje_templatetags_naturaltime_short(self):
         now = timezone.now()
 

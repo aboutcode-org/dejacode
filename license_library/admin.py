@@ -6,7 +6,6 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
-import json
 
 from django import forms
 from django.contrib import admin
@@ -452,7 +451,7 @@ class LicenseAdmin(ChangelistPopupPermissionMixin, DataspacedAdmin):
         template = "admin/license_library/license/annotation.html"
         context = {
             "object": obj,
-            "tag_labels": json.dumps(list(obj.get_tag_labels())),
+            "tag_labels": list(obj.get_tag_labels()),
             "tagset": tagset,
             "opts": self.model._meta,
             "preserved_filters": self.get_preserved_filters(request),

@@ -40,7 +40,7 @@ def assign_all_object_permissions(user, obj):
 
 def copy_object_permissions(source, target):
     """Copy the user and group object permissions from `source` to `target`."""
-    users_with_perms = get_users_with_perms(source, attach_perms=True)
+    users_with_perms = get_users_with_perms(source, attach_perms=True, with_group_users=False)
     for user, perms in users_with_perms.items():
         for perm in perms:
             guardian_assign_perm(perm, user, target)

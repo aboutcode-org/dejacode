@@ -19,6 +19,8 @@ class ForgejoIntegration(BaseIntegration):
     from DejaCode requests.
     """
 
+    base_url_field_name = "forgejo_url"
+
     def get_headers(self):
         forgejo_token = self.dataspace.get_configuration("forgejo_token")
         if not forgejo_token:

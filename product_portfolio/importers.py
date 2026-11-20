@@ -111,7 +111,7 @@ def reevaluate_products(products):
 
 class CleanProductMixin(ComponentRelatedFieldImportMixin):
     def clean_product(self):
-        queryset = Product.objects.get_queryset(self.user)
+        queryset = Product.objects.get_queryset(self.user, perms=["view_product", "change_product"])
         return self._clean_name_version_related_field("product", Product, queryset)
 
 

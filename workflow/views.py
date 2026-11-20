@@ -18,7 +18,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.html import mark_safe
+from django.utils.html import format_html
 
 from dje.utils import get_preserved_filters
 from dje.utils import group_by
@@ -87,6 +87,15 @@ class RequestListView(
         return context_data
 
 
+def get_add_request_link(request_template):
+    """Return a link to add a new Request from the `request_template`."""
+    return format_html(
+        '<a href="{}">Add a new "{}" Request</a>',
+        request_template.get_absolute_url(),
+        request_template.name,
+    )
+
+
 @login_required
 def request_add_view(request, template_uuid):
     """Form based on a RequestTemplate, to submit a new Request."""
@@ -115,14 +124,9 @@ def request_add_view(request, template_uuid):
                 f"Comments."
             )
 
-        msg += (
-            f"\n"
-            f'<a href="{request_template.get_absolute_url()}">'
-            f'Add a new "{request_template.name}" Request'
-            f"</a>"
+        messages.success(
+            request, format_html("{}\n{}", msg, get_add_request_link(request_template))
         )
-
-        messages.success(request, mark_safe(msg))
         return redirect(instance.get_absolute_url())
 
     return render(request, "workflow/request_form.html", {"form": form})
@@ -179,14 +183,9 @@ def request_edit_view(request, request_uuid):
             dataspace=request.user.dataspace,
         )
 
-        msg += (
-            f"\n"
-            f'<a href="{request_template.get_absolute_url()}">'
-            f'Add a new "{request_template.name}" Request'
-            f"</a>"
+        messages.success(
+            request, format_html("{}\n{}", msg, get_add_request_link(request_template))
         )
-
-        messages.success(request, mark_safe(msg))
         return redirect(request_instance)
 
     elif not form.has_changed():
@@ -355,7 +354,7 @@ def send_attachment_view(request, attachment_uuid):
     )
 
     error_conditions = [
-        not attachment.request.has_details_permission(request.user),
+        not attachment.request.has_details_access(request.user),
         not attachment.exists(),
     ]
 

@@ -601,7 +601,7 @@ class BaseImporter:
             History.log_addition(self.user, saved_instance)
             return
 
-        elif self.update_existing:
+        elif self.update_existing and self.has_change_permission():
             # We need to refresh the instance from the db because form.instance has
             # the unsaved form.cleaned_data modification at that stage.
             instance.refresh_from_db()
@@ -618,6 +618,16 @@ class BaseImporter:
                 return
 
         self.results["unmodified"].append(instance)
+
+    def has_change_permission(self):
+        """Return True if the user can change the existing records of the imported model."""
+        opts = self.model_class._meta
+        return self.user.has_perm(f"{opts.app_label}.{get_permission_codename('change', opts)}")
+
+    def has_skipped_updates(self):
+        """Return True if existing records were matched but not updated for lack of permission."""
+        has_unmodified = bool(self.results.get("unmodified"))
+        return has_unmodified and self.update_existing and not self.has_change_permission()
 
     def get_added_instance_ids(self):
         """Return the list of added instance ids."""

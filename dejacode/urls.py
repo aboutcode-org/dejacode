@@ -93,6 +93,9 @@ urlpatterns = [
     path("", index_dispatch, name="index_dispatch"),
     path("home/", home_view, name="home"),
     path("integrations_status/", IntegrationsStatusView.as_view(), name="integrations_status"),
+    # Shadow the password-only login of `django.contrib.auth.urls`:
+    # every login must go through the two-factor aware `login` view.
+    path("account/login/", RedirectView.as_view(pattern_name="login", query_string=True)),
     path("account/", include("django.contrib.auth.urls")),
     path("account/profile/", AccountProfileView.as_view(), name="account_profile"),
     path("account/generate_api_key/", GenerateAPIKeyView.as_view(), name="generate_api_key"),

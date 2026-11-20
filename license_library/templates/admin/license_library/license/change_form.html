@@ -103,7 +103,9 @@
                     var select = $(selects[i]);
                     select.next('a').hide();
                     var text = $(select.find("option:selected")[0]).text();
-                    select.after('<p>' + text + '</p>');
+                    const tag_label = document.createElement('p');
+                    tag_label.textContent = text;
+                    select.after(tag_label);
                     select.hide();
                 }
 
@@ -112,7 +114,7 @@
                     var tags_data = new Array();
                     {# The escapejs is essential in case of a tag.text containing multilines #}
                     {% for tag in tags %}
-                    tags_data['{{ tag.label }}'] = ['{{ tag.text|escapejs }}', '{{ tag.default_value|escapejs }}', '{{ tag.id }}', '{{ tag.guidance|escapejs }}'];
+                    tags_data['{{ tag.label|escapejs }}'] = ['{{ tag.text|escapejs }}', '{{ tag.default_value|escapejs }}', '{{ tag.id }}', '{{ tag.guidance|escapejs }}'];
                     {% endfor %}
 
                     var array = $(".license_tag > p:visible");  // Addition
@@ -123,11 +125,11 @@
                     value_mapping["False"] = 3;
 
                     for (i=0; i<array.length; i++) {
-                        text = array[i].innerHTML;
+                        text = array[i].textContent;
                         var tr_parent = array[i].parentNode.parentNode;
-                        var tag_text = '&nbsp;';
+                        var tag_text = '\u00a0';
                         var default_value = '';
-                        var guidance = '&nbsp;';
+                        var guidance = '\u00a0';
 
                         if (tags_data[text] !== undefined) {
                             tag_text = tags_data[text][0];
@@ -136,9 +138,15 @@
                         }
 
                         var td_text = $(tr_parent).find('.text')[0];
-                        td_text.innerHTML = '<div class="grp-readonly">' + tag_text + '</div>';
+                        const text_div = document.createElement('div');
+                        text_div.className = 'grp-readonly';
+                        text_div.textContent = tag_text;
+                        td_text?.replaceChildren(text_div);
                         var td_guidance = $(tr_parent).find('.guidance')[0];
-                        td_guidance.innerHTML = '<div class="grp-readonly">' + guidance + '</div>';
+                        const guidance_div = document.createElement('div');
+                        guidance_div.className = 'grp-readonly';
+                        guidance_div.textContent = guidance;
+                        td_guidance?.replaceChildren(guidance_div);
 
                         if (default_value == "True" || default_value == "False") {
                             var option = $(tr_parent).find('select:visible[id$="value"] option[value='+value_mapping[default_value]+']');

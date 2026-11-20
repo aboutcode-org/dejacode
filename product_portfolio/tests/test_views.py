@@ -24,6 +24,7 @@ from django.utils.encoding import force_str
 
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_user_perms
+from guardian.shortcuts import remove_perm
 
 from component_catalog.models import Component
 from component_catalog.models import ComponentAssignedPackage
@@ -201,6 +202,25 @@ class ProductPortfolioViewsTestCase(MaxQueryMixin, TestCase):
         response = self.client.get(url)
         self.assertContains(response, expected)
         self.assertIn("Activity", response.context["tabsets"])
+
+    @mock.patch("dejacode_toolkit.scancodeio.ScanCodeIO.fetch_scan_data")
+    def test_product_portfolio_scancodeio_project_status_view_product_permission(
+        self, mock_fetch_scan_data
+    ):
+        mock_fetch_scan_data.return_value = {}
+        project = ScanCodeProject.objects.create(
+            product=self.product1,
+            dataspace=self.dataspace,
+            type=ScanCodeProject.ProjectType.LOAD_SBOMS,
+            status=ScanCodeProject.Status.SUCCESS,
+        )
+        url = reverse("product_portfolio:scancodeio_project_status", args=[project.uuid])
+        assign_perm("view_product", self.basic_user, self.product1)
+        self.client.login(username=self.basic_user.username, password="secret")
+        self.assertEqual(200, self.client.get(url).status_code)
+
+        remove_perm("view_product", self.basic_user, self.product1)
+        self.assertEqual(404, self.client.get(url).status_code)
 
     def test_product_portfolio_detail_view_tab_activit_view(self):
         self.client.login(username="nexb_user", password="secret")

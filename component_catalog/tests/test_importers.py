@@ -26,6 +26,7 @@ from component_catalog.models import AcceptableLinkage
 from component_catalog.models import Component
 from component_catalog.models import ComponentStatus
 from component_catalog.models import ComponentType
+from component_catalog.models import Package
 from component_catalog.models import Subcomponent
 from dje.models import Dataspace
 from dje.models import History
@@ -1319,6 +1320,44 @@ class PackageImporterTestCase(TestCase):
         prepared_package = PackageImporter.prepare_package(package_data)
         self.assertEqual(expected, prepared_package)
 
+    def test_package_import_update_existing_requires_change_permission(self):
+        existing_package = Package.objects.create(filename="filename.zip", dataspace=self.dataspace)
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+            "form-0-copyright": "Imported copyright",
+        }
+        add_only_user = add_perm(create_admin("add_only_user", self.dataspace), "add_package")
+
+        importer = PackageImporter(add_only_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
+        importer.save_all()
+        self.assertEqual([existing_package], importer.results["unmodified"])
+        existing_package.refresh_from_db()
+        self.assertEqual("", existing_package.copyright)
+
+        change_user = add_perm(add_only_user, "change_package")
+        importer = PackageImporter(change_user, formset_data=formset_data)
+        importer.save_all()
+        self.assertEqual([existing_package], importer.results["modified"])
+
+    def test_package_import_view_warns_when_existing_records_are_not_updated(self):
+        Package.objects.create(filename="filename.zip", dataspace=self.dataspace)
+        add_only_user = add_perm(create_admin("add_only_user", self.dataspace), "add_package")
+        self.client.login(username=add_only_user.username, password="secret")
+        formset_data = {
+            "form-TOTAL_FORMS": "1",
+            "form-INITIAL_FORMS": "0",
+            "form-0-filename": "filename.zip",
+            "form-0-copyright": "Imported copyright",
+        }
+
+        url = reverse("admin:component_catalog_package_import")
+        response = self.client.post(url, formset_data, follow=True)
+        expected = "Existing records were not updated: the change permission is required."
+        self.assertContains(response, expected)
+
     def test_package_import_update_existing(self):
         formset_data = {
             "form-TOTAL_FORMS": "1",
@@ -1352,6 +1391,17 @@ class PackageImporterTestCase(TestCase):
         history_entry = History.objects.get_for_object(modified_package).get()
         expected_messages = "Updated notes from import"
         self.assertEqual(expected_messages, history_entry.change_message)
+
+    def test_package_import_view_escapes_license_expression_errors(self):
+        self.client.login(username=self.super_user.username, password="secret")
+        url = reverse("admin:component_catalog_package_import")
+
+        file = os.path.join(TESTFILES_LOCATION, "package_import_license_expression_markup.csv")
+        with open(file) as f:
+            response = self.client.post(url, {"file": f})
+        self.assertContains(response, "Invalid license key")
+        self.assertContains(response, "&lt;img src=x onerror=alert")
+        self.assertNotContains(response, "<img src=x onerror")
 
     def test_package_import_add_to_product(self):
         admin_user = create_admin("admin_user", self.dataspace)

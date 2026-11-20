@@ -100,6 +100,11 @@
             </div>
           {% endif %}
         {% endwith %}
+        {% if importer.has_skipped_updates %}
+          <div class="alert alert-warning">
+            Existing records were not updated: the change permission is required.
+          </div>
+        {% endif %}
         {% for action, objects in importer.results.items %}
           {% if objects %}
             <strong>{{ objects|length }} {{ action|title }} {{ importer.verbose_name|title }}s:</strong>

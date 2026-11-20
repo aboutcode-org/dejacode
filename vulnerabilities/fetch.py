@@ -12,7 +12,6 @@ from timeit import default_timer as timer
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.urls import reverse
 from django.utils import timezone
 
 from packageurl import PackageURL
@@ -337,23 +336,11 @@ def notify_vulnerability_data_update(dataspace):
         payload_override={"text": f"{subject}\n{message}"},
     )
 
-    # 2. Internal notifications (message with internal links)
-    vulnerability_list_url = reverse("vulnerabilities:vulnerability_list")
-    vulnerability_link = (
-        f'<a href="{vulnerability_list_url}?last_modified_date=today" target="_blank">'
-        f"{vulnerability_count} vulnerabilities</a>"
-    )
-    package_list_url = reverse("component_catalog:package_list")
-    package_link = (
-        f'<a href="{package_list_url}?is_vulnerable=yes&affected_by_last_modified_date=today" '
-        f'target="_blank"> {package_count} packages</a>'
-    )
-    message = f"{vulnerability_link} affecting {package_link}"
-
+    # 2. Internal notifications, the link to the vulnerability list is added on display
     users_to_notify = DejacodeUser.objects.get_vulnerability_notifications_users(dataspace)
     for user in users_to_notify:
         user.send_internal_notification(
             verb="New vulnerabilities detected",
-            description=f"{message}",
+            description=message,
             action_object_content_type=ContentType.objects.get_for_model(Vulnerability),
         )

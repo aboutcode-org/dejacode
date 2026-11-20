@@ -10,12 +10,15 @@
 from django.test import TestCase
 from django.urls import reverse
 
+from guardian.shortcuts import assign_perm
 from rest_framework import status
 
 from component_catalog.tests import make_package
 from dje.models import Dataspace
 from dje.tests import MaxQueryMixin
+from dje.tests import add_perm
 from dje.tests import create_superuser
+from dje.tests import create_user
 from product_portfolio.tests import make_product
 from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.tests import make_vulnerability
@@ -115,6 +118,20 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, len(response.data["affected_packages"]))
         self.assertEqual(1, len(response.data["affected_products"]))
 
+    def test_api_vulnerabilities_detail_endpoint_affected_products_permission(self):
+        basic_user = create_user("basic_user", self.dataspace)
+        detail_url = reverse("api_v2:vulnerability-detail", args=[self.vulnerability1.uuid])
+        self.client.login(username=basic_user.username, password="secret")
+
+        response = self.client.get(detail_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.data["affected_products"])
+
+        assign_perm("view_product", basic_user, self.product1)
+        response = self.client.get(detail_url)
+        affected_product_uuids = [product["uuid"] for product in response.data["affected_products"]]
+        self.assertEqual([str(self.product1.uuid)], affected_product_uuids)
+
     def test_api_vulnerability_analysis_list_endpoint_results(self):
         self.client.login(username="super_user", password="secret")
         make_vulnerability_analysis(self.product_package1, self.vulnerability1)
@@ -204,6 +221,43 @@ class VulnerabilitiesAPITestCase(MaxQueryMixin, TestCase):
         self.assertEqual(1, response.data["count"])
         self.assertNotContains(response, self.vulnerability1.advisory_id)
         self.assertContains(response, self.vulnerability2.advisory_id)
+
+    def test_api_vulnerability_analysis_endpoint_create_product_permission(self):
+        basic_user = add_perm(
+            create_user("basic_user", self.dataspace), "add_vulnerabilityanalysis"
+        )
+        assign_perm("view_product", basic_user, self.product1)
+        self.client.login(username=basic_user.username, password="secret")
+        product_package1_url = reverse(
+            "api_v2:productpackage-detail", args=[self.product_package1.uuid]
+        )
+        data = {
+            "product_package": product_package1_url,
+            "vulnerability": reverse(
+                "api_v2:vulnerability-detail", args=[self.vulnerability1.uuid]
+            ),
+            "state": VulnerabilityAnalysis.State.RESOLVED,
+        }
+
+        response = self.client.post(self.analysis_list_url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("product_package", response.data)
+
+        other_dataspace = Dataspace.objects.create(name="Other")
+        other_vulnerability = make_vulnerability(other_dataspace)
+        assign_perm("change_product", basic_user, self.product1)
+        data["vulnerability"] = reverse(
+            "api_v2:vulnerability-detail", args=[other_vulnerability.uuid]
+        )
+        response = self.client.post(self.analysis_list_url, data)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(["vulnerability"], list(response.data))
+
+        data["vulnerability"] = reverse(
+            "api_v2:vulnerability-detail", args=[self.vulnerability1.uuid]
+        )
+        response = self.client.post(self.analysis_list_url, data)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
 
     def test_api_vulnerability_analysis_endpoint_create(self):
         self.client.login(username="super_user", password="secret")

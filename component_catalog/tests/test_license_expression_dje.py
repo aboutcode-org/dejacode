@@ -14,6 +14,7 @@ from itertools import zip_longest
 from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils.html import conditional_escape
 
 from license_expression import ExpressionError
 from license_expression import LicenseSymbolLike
@@ -124,6 +125,23 @@ class LicenseExpressionDjeTestCase(TestCase):
                 " lgps-2.1-plus, oracle-bcl",
                 e.message,
             )
+
+    def test_normalize_expression_error_message_escapes_expression_markup(self):
+        licensing = build_licensing(list(as_symbols(["mit"])))
+        expression = "mit AND <b>bold</b>"
+
+        with self.assertRaises(ValidationError) as context:
+            normalize_and_validate_expression(expression, licensing)
+        rendered_message = conditional_escape(context.exception.message)
+        self.assertIn("&lt;b&gt;bold&lt;/b&gt;", rendered_message)
+        self.assertNotIn("<b>", rendered_message)
+
+        with self.assertRaises(ValidationError) as context:
+            normalize_and_validate_expression(expression, licensing, include_available=True)
+        rendered_message = conditional_escape(context.exception.message)
+        self.assertIn("&lt;b&gt;bold&lt;/b&gt;", rendered_message)
+        self.assertNotIn("<b>", rendered_message)
+        self.assertIn("<br>Available licenses: mit", rendered_message)
 
     def test_normalize_expression_raise_exception_if_symbol_has_spaces(self):
         expression = "gps-2.0 with classpath or gps-2.0-plus and lgpl 2.1-plus or oracle-bcl or"

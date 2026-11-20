@@ -54,15 +54,17 @@ class VulnerableCode(BaseService):
     ):
         """Get list of vulnerabilities providing a package `purl`."""
         plain_purl = get_plain_purl(purl)
+        # Each Dataspace has its own server and credentials: both are part of the cache key.
+        cache_key = f"vulnerablecode:{self.dataspace.uuid}:{self.api_url}:{plain_purl}"
 
-        cached_results = cache.get(plain_purl)
+        cached_results = cache.get(cache_key)
         if cached_results:
             return cached_results
 
         response = self.bulk_search_by_purl(purls=[plain_purl], timeout=timeout)
         if response and response.get("count"):
             results = response["results"]
-            cache.set(plain_purl, results)
+            cache.set(cache_key, results)
             return results
 
     def bulk_search_by_purl(

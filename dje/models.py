@@ -571,6 +571,15 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
         ),
     )
 
+    jira_url = models.URLField(
+        _("Jira URL"),
+        blank=True,
+        help_text=_(
+            "Base URL of your Jira Cloud site, such as https://example.atlassian.net. "
+            "The Jira credentials are only sent to this URL."
+        ),
+    )
+
     jira_user = models.CharField(
         _("Jira user email"),
         max_length=255,
@@ -588,6 +597,15 @@ class DataspaceConfiguration(DataspaceForeignKeyValidationMixin, models.Model):
         help_text=_(
             "API token generated from your Atlassian account, used to authenticate "
             "API requests to Jira Cloud. Keep this token secure."
+        ),
+    )
+
+    forgejo_url = models.URLField(
+        _("Forgejo URL"),
+        blank=True,
+        help_text=_(
+            "Base URL of your Forgejo instance, such as https://forgejo.example.com. "
+            "The Forgejo token is only sent to this URL."
         ),
     )
 

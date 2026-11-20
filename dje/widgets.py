@@ -84,10 +84,11 @@ class DropDownWidget(LinkWidget):
             # doseq is required for proper encoding,
             url = urlencode(data, doseq=True)
 
-        return self.option_string().format(
+        return format_html(
+            self.option_string(),
             css_class=css_class,
             query_string=url,
-            label=str(option_label),
+            label=option_label,
             anchor=self.anchor or "",
         )
 

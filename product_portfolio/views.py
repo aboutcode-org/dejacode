@@ -18,6 +18,7 @@ from urllib.parse import unquote_plus
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core import signing
@@ -47,6 +48,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
@@ -2317,6 +2319,7 @@ def manage_triage_rulesets_view(request, dataspace, name, version=""):
 
 
 @login_required
+@permission_required("product_portfolio.change_product", raise_exception=True)
 def import_from_scan_view(request, dataspace, name, version=""):
     """
     Import the scan results in a Product.
@@ -2327,7 +2330,7 @@ def import_from_scan_view(request, dataspace, name, version=""):
     user = request.user
     form_class = ImportFromScanForm
 
-    guarded_qs = Product.objects.get_queryset(user)
+    guarded_qs = Product.objects.get_queryset(user, perms="change_product")
     product = get_object_or_404(guarded_qs, name=unquote_plus(name), version=unquote_plus(version))
 
     if request.method == "POST":
@@ -2351,7 +2354,8 @@ def import_from_scan_view(request, dataspace, name, version=""):
                     msg += f"<br> &bull; {value} {key}"
                 messages.success(request, mark_safe(msg))
             if warnings:
-                messages.warning(request, mark_safe("<br>".join(warnings)))
+                warning_lines = ((warning,) for warning in warnings)
+                messages.warning(request, format_html_join(mark_safe("<br>"), "{}", warning_lines))
             return redirect(f"{product.get_absolute_url()}#activity")
     else:
         form = form_class(request.user)
@@ -2861,8 +2865,8 @@ def import_packages_from_scancodeio_view(request, key):
 def scancodeio_project_status_view(request, scancodeproject_uuid):
     template = "product_portfolio/scancodeio_project_status.html"
     dataspace = request.user.dataspace
-    base_qs = ScanCodeProject.objects.scope(dataspace)
-    scancode_project = get_object_or_404(base_qs, uuid=scancodeproject_uuid)
+    secured_qs = ScanCodeProject.objects.product_secured(user=request.user)
+    scancode_project = get_object_or_404(secured_qs, uuid=scancodeproject_uuid)
 
     scancodeio = ScanCodeIO(dataspace)
     scan_detail_url = scancodeio.get_scan_detail_url(scancode_project.project_uuid)
@@ -3045,9 +3049,7 @@ def delete_scan_htmx_view(request, project_uuid, package_uuid):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
-    scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
-
-    if not scan_list or scan_list.get("count") != 1:
+    if not scancodeio.is_dataspace_project(project_uuid):
         raise Http404("Scan not found.")
 
     scan_detail_url = scancodeio.get_scan_detail_url(project_uuid)

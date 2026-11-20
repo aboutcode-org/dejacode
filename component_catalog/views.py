@@ -33,6 +33,7 @@ from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 from django.utils.html import escape
 from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.http import urlencode
 from django.utils.text import normalize_newlines
@@ -1649,9 +1650,11 @@ def package_create_ajax_view(request):
         messages.warning(request, mark_safe(msg + "\n".join(packages)))
 
     if errors:
-        messages.error(request, mark_safe("\n".join(errors)))
+        messages.error(request, "\n".join(errors))
     if warnings:
-        messages.warning(request, mark_safe("\n".join(warnings)))
+        messages.warning(
+            request, format_html_join("\n", "{}", ((warning,) for warning in warnings))
+        )
 
     return JsonResponse({"redirect_url": redirect_url})
 
@@ -1692,6 +1695,9 @@ def send_scan_data_as_file_view(request, project_uuid, filename):
     if not scancodeio.is_available():
         raise Http404("The ScanCode.io service is not available")
 
+    if not scancodeio.is_dataspace_project(project_uuid):
+        raise Http404("Scan not found.")
+
     scan_data_as_zip = scancodeio.scan_data_as_zip(project_uuid, filename)
     return FileResponse(
         scan_data_as_zip,
@@ -1709,9 +1715,7 @@ def delete_scan_view(request, project_uuid):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
-    scan_list = scancodeio.fetch_scan_list(uuid=str(project_uuid))
-
-    if not scan_list or scan_list.get("count") != 1:
+    if not scancodeio.is_dataspace_project(project_uuid):
         raise Http404("Scan not found.")
 
     scan_detail_url = scancodeio.get_scan_detail_url(project_uuid)
@@ -1735,6 +1739,9 @@ def refresh_scan_view(request, project_uuid):
         raise Http404
 
     scancodeio = ScanCodeIO(dataspace)
+    if not scancodeio.is_dataspace_project(project_uuid):
+        raise Http404("Scan not found.")
+
     response = scancodeio.refresh_scan(str(project_uuid))
 
     if response.status_code != 200:
@@ -2087,9 +2094,9 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
     def _generate_license_match_card(cls, path, detection_data):
         if "/" in path:
             location, filename = path.rsplit("/", 1)
-            path_for_display = f"{location}/<strong>{filename}</strong>"
+            path_for_display = f"{escape(location)}/<strong>{escape(filename)}</strong>"
         else:
-            path_for_display = f"<strong>{path}</strong>"
+            path_for_display = f"<strong>{escape(path)}</strong>"
         path_for_display = cls._cleanup_braces(path_for_display)
 
         html_content = ""
@@ -2098,7 +2105,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                 matched_text = match.get("matched_text")
                 matched_text = escape(matched_text)
                 matched_text = cls._cleanup_braces(matched_text)
-                match_license_expression = match.get("license_expression")
+                match_license_expression = escape(match.get("license_expression"))
                 html_content += f"""
                 <div class="card-header py-1 border-top border-bottom-0">
                     Detected: <span class="fw-bold">{match_license_expression}</span>
@@ -2154,7 +2161,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
             checked_html = "checked" if checked else ""
             select_input = (
                 f'<input type="{input_type}" name="{field_name}" '
-                f'value="{license_expression}" {checked_html}>'
+                f'value="{escape(license_expression)}" {checked_html}>'
             )
 
             if count:
@@ -2178,7 +2185,7 @@ class PackageTabScanView(AcceptAnonymousMixin, TabContentView):
                     f' class="btn btn-primary badge text-bg-primary rounded-pill ms-1"'
                     f' data-bs-toggle="modal" '
                     f' data-bs-target="#scan-matches-modal"'
-                    f' data-license-key="{license_expression}"'
+                    f' data-license-key="{escape(license_expression)}"'
                     f' data-matches="{escape(match_data)}">'
                     f' <i class="far fa-file-alt"></i>'
                     f"</button>"

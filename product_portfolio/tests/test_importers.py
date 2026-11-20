@@ -17,13 +17,16 @@ from django.test import TestCase
 from django.urls import reverse
 
 from guardian.shortcuts import assign_perm
+from guardian.shortcuts import remove_perm
 
 from component_catalog.models import Component
 from component_catalog.models import Package
 from component_catalog.tests import make_package
 from dje.models import Dataspace
+from dje.tests import add_perm
 from dje.tests import create_admin
 from dje.tests import create_superuser
+from dje.tests import create_user
 from dje.tests import wrap_as_temp_uploaded_file
 from license_library.models import License
 from license_library.models import LicenseChoice
@@ -144,6 +147,17 @@ class ProductRelationImporterTestCase(TestCase):
         importer = ProductComponentImporter(self.super_user, formset_data=formset_data)
         importer.save_all()
         self.assertEqual(1, len(importer.results["added"]))
+
+    def test_productcomponent_import_product_requires_change_permission(self):
+        formset_data = self.component_formset_data.copy()
+        assign_perm("view_product", self.admin_user, self.p1)
+        importer = ProductComponentImporter(self.admin_user, formset_data=formset_data)
+        expected = [{"product": ["Could not find the product."]}]
+        self.assertEqual(expected, importer.formset.errors)
+
+        assign_perm("change_product", self.admin_user, self.p1)
+        importer = ProductComponentImporter(self.admin_user, formset_data=formset_data)
+        self.assertTrue(importer.formset.is_valid())
 
     def test_productcomponent_import_duplicated_empty_component_row_possible(self):
         formset_data = self.component_formset_data.copy()
@@ -997,6 +1011,31 @@ class ProductImportFromScanTestCase(TestCase):
         # Form `create_codebase_resources` option not provided
         self.assertEqual(0, self.product1.codebaseresources.count())
 
+    def test_product_portfolio_product_import_from_scan_view_requires_change_permission(self):
+        basic_user = create_user("basic_user", self.dataspace)
+        assign_perm("view_product", basic_user, self.product1)
+        assign_perm("change_product", basic_user, self.product1)
+        self.client.login(username=basic_user.username, password="secret")
+        scan_input_location = self.testfiles_path / "import_from_scan.json"
+        import_scan_url = self.product1.get_import_from_scan_url()
+
+        # The object permission alone is not enough, as for the other import views.
+        with scan_input_location.open() as f:
+            response = self.client.post(import_scan_url, {"upload_file": f})
+        self.assertEqual(403, response.status_code)
+
+        add_perm(basic_user, "change_product")
+        remove_perm("change_product", basic_user, self.product1)
+        with scan_input_location.open() as f:
+            response = self.client.post(import_scan_url, {"upload_file": f})
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(0, self.product1.packages.count())
+
+        assign_perm("change_product", basic_user, self.product1)
+        with scan_input_location.open() as f:
+            self.client.post(import_scan_url, {"upload_file": f})
+        self.assertEqual(1, self.product1.packages.count())
+
     def test_product_portfolio_product_import_from_scan_view_errors(self):
         self.client.login(username=self.super_user.username, password="secret")
         scan_input_location = self.testfiles_path / "package_data_validation_error.json"
@@ -1029,6 +1068,19 @@ class ProductImportFromScanTestCase(TestCase):
         self.assertEqual(1, self.product1.packages.count())
         self.assertEqual(1, self.product1.productpackages.count())
         self.assertEqual(0, self.product1.codebaseresources.count())
+
+    @mock.patch("product_portfolio.forms.ImportFromScanForm.save")
+    def test_product_portfolio_product_import_from_scan_view_escapes_warnings(self, mock_save):
+        mock_save.return_value = (['Path too long for "<img src=x onerror=alert(1)>"'], {})
+        self.client.login(username=self.super_user.username, password="secret")
+        scan_input_location = self.testfiles_path / "import_from_scan.json"
+
+        import_scan_url = self.product1.get_import_from_scan_url()
+        with scan_input_location.open() as f:
+            response = self.client.post(import_scan_url, {"upload_file": f}, follow=True)
+
+        self.assertContains(response, "&lt;img src=x onerror=alert(1)&gt;")
+        self.assertNotContains(response, "<img src=x onerror")
 
     def test_product_portfolio_product_import_from_scan_view_empty_packages(self):
         self.client.login(username=self.super_user.username, password="secret")

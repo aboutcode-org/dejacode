@@ -16,6 +16,12 @@ from dje.models import Dataspace
 
 
 class DejaCodeLDAPBackend(LDAPBackend):
+    def get_user(self, user_id):
+        """Reject inactive users, as the ModelBackend does, so deactivation ends sessions."""
+        user = super().get_user(user_id)
+        if user and user.is_active:
+            return user
+
     def get_or_build_user(self, username, ldap_user):
         """
         Add a new option AUTH_LDAP_AUTOCREATE_USER with default value True.

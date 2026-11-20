@@ -86,6 +86,8 @@ To use your Jira credentials in DejaCode:
 3. Scroll to the **Jira Integration** section under **Configuration**
 4. Enter:
 
+   - Your **Jira URL**, such as ``https://example.atlassian.net``. The credentials are
+     only sent to this URL.
    - Your **Jira user email**
    - Your **Jira API token**
 

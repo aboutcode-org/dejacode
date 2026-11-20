@@ -58,7 +58,10 @@ Annotator.Plugin.TagsInSelect = (function(_super) {
     this.input.append("<option value=''>Select any tag...</option>");
     for (var i = 0, len = this.options.values.length; i < len; i++) {
       var label = this.options.values[i];
-      this.input.append("<option value='" + label + "'>" + label + "</option>");
+      const option = document.createElement('option');
+      option.value = label;
+      option.textContent = label;
+      this.input.append(option);
     }
     return this.input;
   };

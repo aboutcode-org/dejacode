@@ -145,6 +145,32 @@ class LicenseModelsTestCase(TestCase):
 
         self.assertHTMLEqual(expected, html_result)
 
+    def test_license_profile_get_assigned_tags_html_escapes_tag_label(self):
+        self.tag1.label = "<img src=x onerror=alert(1)>"
+        self.tag1.save()
+        LicenseProfileAssignedTag.objects.create(
+            license_profile=self.license_profile,
+            license_tag=self.tag1,
+            value=True,
+            dataspace=self.dataspace,
+        )
+
+        html_result = self.license_profile.get_assigned_tags_html()
+        self.assertIn("<p>&lt;img src=x onerror=alert(1)&gt;</p>", html_result)
+        self.assertNotIn("<img src=x", html_result)
+
+    def test_license_render_escapes_attribute_values(self):
+        self.license1.short_name = "<b>Short</b>"
+        self.category.label = '"><img src=x>'
+        self.category.save()
+        self.license1.category = self.category
+
+        self.assertEqual("&lt;b&gt;Short&lt;/b&gt;", self.license1.render("{symbol.short_name}"))
+        expected = (
+            '<span data-bs-toggle="tooltip" title="&quot;&gt;&lt;img src=x&gt;">license-1</span>'
+        )
+        self.assertEqual(expected, self.license1.render("{symbol.key}", show_category=True))
+
     def test_license_unique_filters_for(self):
         selector = self.license1.unique_filters_for(self.other_dataspace)
         expected = {"key": self.license1.key, "dataspace": self.other_dataspace}

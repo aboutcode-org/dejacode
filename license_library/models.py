@@ -21,7 +21,9 @@ from django.db.models import Value
 from django.db.models.functions import Concat
 from django.template.defaultfilters import truncatechars
 from django.templatetags.static import static
+from django.utils.html import conditional_escape
 from django.utils.html import format_html
+from django.utils.html import format_html_join
 from django.utils.html import mark_safe
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -243,9 +245,10 @@ class LicenseProfile(DataspacedModel):
             img = static("img/icon-no-gray.png")
             if bool(obj.value):
                 img = static("img/icon-yes.png")
-            tags.append(template.format(obj.value, img, obj.license_tag.label))
+            tags.append((obj.value, img, obj.license_tag.label))
 
-        return format_html('<div class="assigned_tags">{}</div>', mark_safe("".join(tags)))
+        assigned_tags = format_html_join("", template, tags)
+        return format_html('<div class="assigned_tags">{}</div>', assigned_tags)
 
     get_assigned_tags_html.short_description = "Assigned tags"
 
@@ -422,6 +425,16 @@ class LicenseTagGroupAssignedTag(DataspacedModel):
         }
 
 
+class EscapedAttributes:
+    """Provide the attributes of `instance` as HTML-escaped values, for use in format strings."""
+
+    def __init__(self, instance):
+        self.instance = instance
+
+    def __getattr__(self, name):
+        return conditional_escape(getattr(self.instance, name))
+
+
 class LicenseSymbolMixin:
     """
     A mixin that makes the object behave and look like a license-expression
@@ -463,10 +476,16 @@ class LicenseSymbolMixin:
             # Ignore the template as we use our own HTML link rendering
             rendered = self.get_details_url_for_expression()
         else:
-            rendered = template.format(symbol=self)
+            # The expression is mostly rendered as HTML: escape the symbol attribute values.
+            # Non-HTML templates use validated values (key, spdx_id) that escaping leaves as is.
+            rendered = template.format(symbol=EscapedAttributes(self))
 
         if kwargs.get("show_category") and self.category_id:
-            rendered = f'<span data-bs-toggle="tooltip" title="{self.category}">{rendered}</span>'
+            rendered = format_html(
+                '<span data-bs-toggle="tooltip" title="{}">{}</span>',
+                self.category,
+                mark_safe(rendered),
+            )
 
         if show_policy and self.usage_policy_id:
             rendered = (

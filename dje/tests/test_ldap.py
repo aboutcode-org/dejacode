@@ -170,6 +170,15 @@ class DejaCodeLDAPBackendTestCase(TestCase):
         )
         self.dejacode_group_active.permissions.add(change_license_perm)
 
+    def test_ldap_backend_get_user_rejects_inactive_user(self):
+        user = create_user("ldap_session_user", self.nexb_dataspace)
+        backend = DejaCodeLDAPBackend()
+        self.assertEqual(user, backend.get_user(user.id))
+
+        user.is_active = False
+        user.save()
+        self.assertIsNone(backend.get_user(user.id))
+
     def test_ldap_authentication_populate_user(self):
         user = authenticate(username="bob", password="secret")
         self.assertEqual(user.username, "bob")

@@ -26,6 +26,12 @@ def get_recipient_emails(recipients, cc_emails):
     return list(emails)
 
 
+def get_authorized_recipients(req, exclude=None):
+    """Return the active users involved in the `req` Request who can still view its details."""
+    involved_users = req.get_involved_users(exclude=exclude)
+    return {user for user in involved_users if user.is_active and req.has_details_access(user)}
+
+
 def send_request_notification(http_request, req, created, extra=None):
     """
     Send an email notification following a Request creation or edition.
@@ -50,7 +56,7 @@ def send_request_notification(http_request, req, created, extra=None):
     template = "request_created_email.txt" if created else "request_updated_email.txt"
     body = render_to_string(f"workflow/{template}", data)
 
-    recipients = req.get_involved_users()
+    recipients = get_authorized_recipients(req)
 
     emails = get_recipient_emails(recipients, req.cc_emails)
     send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, emails)
@@ -94,7 +100,7 @@ def send_request_comment_notification(http_request, comment, closed=False):
     body = render_to_string("workflow/comment_created_email.txt", data)
 
     # Exclude the `comment.user` from any notifications
-    recipients = req.get_involved_users(exclude=comment.user)
+    recipients = get_authorized_recipients(req, exclude=comment.user)
 
     emails = get_recipient_emails(recipients, req.cc_emails)
     send_mail_task.delay(subject, body, settings.DEFAULT_FROM_EMAIL, emails)

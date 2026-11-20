@@ -148,24 +148,24 @@ def normalize_and_validate_expression(
     except ExpressionError as ee:
         msg = str(ee)
         if include_available:
-            msg += available_licenses_message(licensing)
-        raise ValidationError(mark_safe(msg), code="invalid")
+            msg = format_html("{}{}", msg, available_licenses_message(licensing))
+        raise ValidationError(msg, code="invalid")
 
     except ParseError as pe:
         msg = PARSE_ERRORS[pe.error_code]
         if pe.token_string:
             msg += ": " + pe.token_string
         if include_available:
-            msg += available_licenses_message(licensing)
-        raise ValidationError(mark_safe(msg), code="invalid")
+            msg = format_html("{}{}", msg, available_licenses_message(licensing))
+        raise ValidationError(msg, code="invalid")
 
     except (ValueError, TypeError) as ve:
         msg = "Invalid reference licenses data.\n" + str(ve)
-        raise ValidationError(mark_safe(msg), code="invalid")
+        raise ValidationError(msg, code="invalid")
 
     except Exception as e:
         msg = "Invalid license expression.\n" + str(e)
-        raise ValidationError(mark_safe(msg), code="invalid")
+        raise ValidationError(msg, code="invalid")
 
     # NOTE: we test for None because an expression cannot be resolved to
     # a boolean and a plain "if parsed" would attempt to resolve the
@@ -221,7 +221,7 @@ def available_licenses_message(licenses):
 
     if licensing.known_symbols:
         sorted_keys = ", ".join(sorted(licensing.known_symbols.keys()))
-        return f"<br>Available licenses: {sorted_keys}"
+        return format_html("<br>Available licenses: {}", sorted_keys)
     return ""
 
 

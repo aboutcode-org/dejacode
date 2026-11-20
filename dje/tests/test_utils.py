@@ -20,15 +20,18 @@ from django.test.client import RequestFactory
 from django.urls import ResolverMatch
 from django.urls import resolve
 from django.utils import timezone
+from django.utils.html import mark_safe
 
 from dejacode_toolkit.utils import md5
 from dejacode_toolkit.utils import sha1
 from dje.copier import copy_object
 from dje.models import Dataspace
+from dje.utils import class_wrap
 from dje.utils import clone_related_objects
 from dje.utils import database_re_escape
 from dje.utils import escape_xlsx_control_characters
 from dje.utils import extract_name_version
+from dje.utils import get_cpe_vuln_link
 from dje.utils import get_duplicates
 from dje.utils import get_instance_from_referer
 from dje.utils import get_instance_from_resolver
@@ -666,6 +669,25 @@ class DJEUtilsTestCase(TestCase):
             "parties": ["a", "b"],
         }
         self.assertEqual(expected, merge_common_non_empty_values([entry1, entry2]))
+
+    def test_utils_get_cpe_vuln_link(self):
+        expected = (
+            '<a target="_blank" href="https://nvd.nist.gov/vuln/search/results'
+            "?adv_search=true&amp;isCpeNameSearch=true"
+            '&amp;query=cpe%3A2.3%3Aa%3Avendor%3Aproduct%3A1.0">cpe:2.3:a:vendor:product:1.0</a>'
+        )
+        self.assertEqual(expected, get_cpe_vuln_link("cpe:2.3:a:vendor:product:1.0"))
+
+        link = get_cpe_vuln_link("<img src=x onerror=alert(1)>")
+        self.assertNotIn("<img", link)
+        self.assertIn(">&lt;img src=x onerror=alert(1)&gt;</a>", link)
+        self.assertIn("query=%3Cimg+src%3Dx+onerror%3Dalert%281%29%3E", link)
+
+    def test_utils_class_wrap(self):
+        self.assertEqual('<div class="width200">&lt;b&gt;</div>', class_wrap("<b>", "width200"))
+        self.assertEqual(
+            '<div class="width200"><b></div>', class_wrap(mark_safe("<b>"), "width200")
+        )
 
     def test_utils_escape_xlsx_control_characters(self):
         inputs = [

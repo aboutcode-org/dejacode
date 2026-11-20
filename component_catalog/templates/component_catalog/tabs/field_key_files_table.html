@@ -101,8 +101,18 @@
       line_number.append(`<span>${index+1}</span>`);
     });
 
-    let formatted_path = path.replace(filename, `<strong>${filename}</strong>`);
-    modal.find('.modal-title').html(`<i class="far fa-file-alt"></i> ${formatted_path}`);
+    const title_icon = document.createElement('i');
+    title_icon.className = 'far fa-file-alt';
+    const filename_element = document.createElement('strong');
+    filename_element.textContent = filename;
+    const filename_index = path.lastIndexOf(filename);
+    this.querySelector('.modal-title').replaceChildren(
+      title_icon,
+      ' ',
+      path.slice(0, filename_index),
+      filename_element,
+      path.slice(filename_index + filename.length),
+    );
     modal.find('.modal-body #summary').html($(summary));
     key_file_source.text(content);
     modal.find('.modal-body .card-header').html(`${line_count} lines <small class='ms-1'>${size}</small>`);
