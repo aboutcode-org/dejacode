@@ -13,6 +13,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Q
 from django.forms import BaseModelFormSet
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.urls import reverse_lazy
@@ -56,6 +57,7 @@ from dje.widgets import AutocompleteInput
 from dje.widgets import AwesompleteInputWidget
 from dje.widgets import DatePicker
 from product_portfolio.models import CodebaseResource
+from product_portfolio.models import CodebaseResourceUsage
 from product_portfolio.models import Product
 from product_portfolio.models import ProductComponent
 from product_portfolio.models import ProductComponentAssignedLicense
@@ -65,6 +67,7 @@ from product_portfolio.models import ProductPackageAssignedLicense
 from product_portfolio.models import ScanCodeProject
 from product_portfolio.tasks import pull_project_data_from_scancodeio_task
 from product_portfolio.tasks import scancodeio_submit_project_task
+from vulnerabilities.models import VulnerabilityAnalysis
 from vulnerabilities.triage.models import ProductTriageRuleset
 
 
@@ -133,13 +136,7 @@ class ProductForm(
     DataspacedModelForm,
 ):
     default_on_addition_fields = ["configuration_status"]
-    save_as = True
-    clone_m2m_classes = [
-        ProductComponent,
-        ProductPackage,
-        CodebaseResource,
-        ProductTriageRuleset,
-    ]
+    save_as = False
 
     keywords = KeywordsField()
 
@@ -196,11 +193,6 @@ class ProductForm(
         if user.has_perm("product_portfolio.delete_product"):
             assign_perm("delete_product", user, self.instance)
 
-    def _clone_m2m(self, original_instance_id, cloned_instance):
-        cloned_pairs_by_model = super()._clone_m2m(original_instance_id, cloned_instance)
-        relink_cloned_codebase_resources(cloned_pairs_by_model)
-        return cloned_pairs_by_model
-
     @property
     def helper(self):
         helper = super().helper
@@ -221,7 +213,6 @@ class ProductForm(
                 Group("vulnerabilities_risk_threshold", HTML(""), HTML("")),
                 HTML("<hr>"),
                 Submit("submit", self.submit_label, css_class="btn-success"),
-                self.save_as_new_submit,
             ),
         )
 
@@ -341,6 +332,52 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
 
         return cloned_pairs
 
+    def _clone_vulnerability_analyses(self, cloned_pairs_by_model, target_product):
+        cloned_package_by_original_pk = dict(cloned_pairs_by_model.get(ProductPackage, []))
+        if not cloned_package_by_original_pk:
+            return
+
+        for analysis in VulnerabilityAnalysis.objects.filter(product=self.source_product):
+            cloned_product_package = cloned_package_by_original_pk.get(analysis.product_package_id)
+            if not cloned_product_package:
+                continue
+
+            VulnerabilityAnalysis.objects.create(
+                dataspace=target_product.dataspace,
+                product_package=cloned_product_package,
+                vulnerability=analysis.vulnerability,
+                state=analysis.state,
+                justification=analysis.justification,
+                responses=analysis.responses,
+                is_reachable=analysis.is_reachable,
+                detail=analysis.detail,
+                created_by=self.user,
+                last_modified_by=self.user,
+            )
+
+    def _clone_deployment_links(self, cloned_pairs_by_model, target_product):
+        cloned_resource_by_original_pk = dict(cloned_pairs_by_model.get(CodebaseResource, []))
+        if not cloned_resource_by_original_pk:
+            return
+
+        original_resource_ids = set(cloned_resource_by_original_pk)
+        usages = CodebaseResourceUsage.objects.filter(
+            Q(deployed_from_id__in=original_resource_ids)
+            | Q(deployed_to_id__in=original_resource_ids)
+        )
+        for usage in usages:
+            deployed_from = cloned_resource_by_original_pk.get(usage.deployed_from_id)
+            deployed_to = cloned_resource_by_original_pk.get(usage.deployed_to_id)
+            if not deployed_from or not deployed_to:
+                continue
+
+            CodebaseResourceUsage.objects.create(
+                uuid=uuid.uuid4(),
+                dataspace=target_product.dataspace,
+                deployed_from=deployed_from,
+                deployed_to=deployed_to,
+            )
+
     def save(self, commit=True):
         from product_portfolio.importers import paused_product_package_reevaluation
         from product_portfolio.importers import reevaluate_products
@@ -359,7 +396,13 @@ class ProductCloneForm(NameVersionValidationFormMixin, forms.ModelForm):
                     cloned_pairs = self._clone_relations(model_class, instance)
                     cloned_pairs_by_model[model_class] = cloned_pairs
 
+            if self.cleaned_data.get("copy_inventory"):
+                self._clone_vulnerability_analyses(cloned_pairs_by_model, instance)
+
         relink_cloned_codebase_resources(cloned_pairs_by_model)
+
+        if self.cleaned_data.get("copy_codebase_resources"):
+            self._clone_deployment_links(cloned_pairs_by_model, instance)
 
         reevaluate_products([instance])
 

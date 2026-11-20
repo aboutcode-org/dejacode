@@ -7,7 +7,6 @@
 #
 
 import copy
-import uuid
 
 from django import forms
 from django.contrib import admin
@@ -59,8 +58,6 @@ from product_portfolio.forms import ProductRelatedAdminForm
 from product_portfolio.importers import CodebaseResourceImporter
 from product_portfolio.importers import ProductComponentImporter
 from product_portfolio.importers import ProductPackageImporter
-from product_portfolio.importers import paused_product_package_reevaluation
-from product_portfolio.importers import reevaluate_products
 from product_portfolio.inlines import CodebaseResourceUsageDeployedFromInline
 from product_portfolio.inlines import CodebaseResourceUsageDeployedToInline
 from product_portfolio.inlines import ProductComponentInline
@@ -74,7 +71,6 @@ from product_portfolio.models import ProductPackage
 from product_portfolio.models import ProductRelationStatus
 from product_portfolio.models import ProductStatus
 from reporting.filters import ReportingQueryListFilter
-from vulnerabilities.triage.models import ProductTriageRuleset
 
 
 @admin.register(ProductStatus, site=dejacode_site)
@@ -230,27 +226,10 @@ class DataspacedGuardedModelAdminMixin(ProhibitDataspaceLookupMixin, GuardedMode
         return super().has_delete_permission(request, obj)
 
     def save_model(self, request, obj, form, change):
-        """
-        Add view/change/delete Object permissions to the Product creator.
-
-        Add the copy of the ProductComponent and ProductPackage during a `save_as` since
-        those value are not in the form as inlines.
-        """
+        """Add view/change/delete Object permissions to the Product creator."""
         super().save_model(request, obj, form, change)
         if not change:
             assign_all_object_permissions(request.user, obj)
-
-        if "_saveasnew" in request.POST:
-            old_product_id = request.resolver_match.kwargs.get("object_id")
-            old_product = self.get_object(request, old_product_id)
-            with paused_product_package_reevaluation():
-                for model_class in [ProductComponent, ProductPackage, ProductTriageRuleset]:
-                    for relationship in model_class.objects.filter(product=old_product):
-                        relationship.id = None
-                        relationship.uuid = uuid.uuid4()
-                        relationship.product = obj
-                        relationship.save()
-            reevaluate_products([obj])
 
     def get_obj_perms_user_select_form(self, request):
         """
@@ -390,6 +369,7 @@ class ProductAdmin(
         ProductPackageInline,
     ]
     form = ProductAdminForm
+    save_as = False
     actions = ["evaluate_policy_rules"]
     actions_to_remove = ["copy_to", "compare_with", "delete_selected"]
     navigation_buttons = True
